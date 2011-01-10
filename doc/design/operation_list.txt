@@ -1,0 +1,108 @@
+The following list of operations are defined in the operation table (see sql/initial_data.sql)
+
+REVALs (acronym for commonly needed operations)
+R: remove (requires id, write)
+E: edit (requires id, read, write)
+V: view (requires id, read)
+A: add (requires write)
+L: list (requires read)
+
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+GENERAL
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+non db-derived
+  system_suspend
+
+`user`:
+  user_<REVAL>
+  user_login
+
+`site`:
+  site_<L>
+
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+PARTICIPANT
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+`sample`:
+  sample_<RAL>
+
+`sample_has_participant`
+  sample_participant_<RAL>
+
+`participant`:
+  participant_<REVAL>
+
+`contact`:
+  participant_contact_<REVAL>
+
+`appointment`:
+  participant_appointment_<REVAL>
+
+`consent`:
+  participant_consent_<REVAL>
+
+`availability`:
+  participant_availability_<REVAL>
+
+`phone_call`:
+  TBD
+
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+QUESTIONNAIRE
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+`qnaire`:
+  qnaire_<REVAL>
+
+`qnaire_has_sample`:
+  qnaire_sample_<RAL>
+
+`qnaire_has_script`:
+  qnaire_script_<RAL> (list has ordering)
+
+`script`
+  script_<REVAL>
+
+`interview`: (aka: qnaire_has_participant)
+  interview_<L>
+
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+SHIFTS
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+`shift_has_user`:
+  shift_user_<RAL>
+
+`shift`:
+  shift_<REVAL>
+
+`shift_template`:
+  shift_<REVAL>
+
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+OPERATIONS
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+`user_has_role`:
+  user_role_<RAL>
+
+`role`:
+  role_<REVAL>
+
+`role_has_operation`:
+  role_operation_<RAL>
+
+`operation`:
+  operation_<L>
+
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+NOTES
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-
+`participant_note`:
+  participant_note_<REVAL>
+
+`phone_call_note`:
+  phone_call_note_<REVAL>
+
+`qnaire_note`:
+  qnaire_note_<REVAL>
+
+`interview_note`:
+  interview_note_<REVAL>

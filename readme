@@ -1,0 +1,19 @@
+This document outlines Sabretooth's organization.  For install instructions see doc/install.readme
+
+api/
+  This is where the programming interface belongs.  This includes all packages, classes, functions,
+  settings, etc.
+
+tpl/
+  This is where display templates belong.  This includes twig templates, xslt, etc.
+
+web/
+  This is the public web directory that a web server usually links to.
+
+doc/
+  All documentation for Sabretooth is found here including the phpdoc generated API documentation
+  and design documents.
+
+sql/
+  This is where all sql needed to install the application belongs.  This includes database schemas,
+  default data, etc.

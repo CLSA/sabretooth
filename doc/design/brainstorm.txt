@@ -1,0 +1,101 @@
+User types
+-+-+-+-+-+-+-+-+-+-+-
+  Operator
+  Admin
+  Supervisor
+  Clerk
+  Tech
+  Viewer
+  Participant
+  Nouns
+
+Objects
+-+-+-+-+-+-+-+-+-+-+-
+  Contact Info
+  Note
+  Help
+  Queue
+  Sample
+  History
+  Call Result
+  Part Status
+  Info Status
+  Shift
+  Site
+  Station
+  Interview 
+  Call
+  Appointment
+  Availability
+  Questionnaire
+  Script
+  Assignment
+  Call Time Restriction
+  Participant Restriction
+  Report
+  Data Export
+
+Operations
+-+-+-+-+-+-+-+-+-+-+-
+  All users
+    Note
+    Read Help
+    Communicate
+  Tech
+    Suspend Accounts
+    Suspend System
+    System Status
+  Admin
+    Manage User (All)
+    Add Sample
+  Supervisor
+    Manage Shift
+    Manage User (Limited)
+    View Report (Limited)
+    Manage Queue
+    Manage Participant
+    Manage Survey
+    Manage Sample
+    Manage Site (Time, etc)
+  Operator
+    Call/End Call
+    Schedule Appointments
+    Interview 
+    Update Participant
+    Update Survey
+    Track Time (Work, Break, etc)
+    Call Another
+  Clerk
+    Add Consent Data
+    Update Participant
+    Manage Appointments
+  Viewer
+    View Reports (Limited)
+
+Status tracking
+-+-+-+-+-+-+-+-+-+-+-
+  Participant
+    condition (dead, unfit, language, out of sample, etc)
+  Dated Status (dates tracked)
+    verbal yes
+    verbal no
+    retracted
+    write yes
+    write no
+    mail request
+    mail sent
+    (soft refusal)
+  Interview
+    stage
+    complete
+    dormant
+    supervisor only
+  Call
+    busy
+    connect
+    answering machine msg (y/n)
+    wrong person
+    fax
+    disconnect
+    wrong number
+    language
