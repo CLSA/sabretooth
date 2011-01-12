@@ -1,0 +1,2 @@
+#!/bin/sh
+phpdoc -ti "Sabretooth Documentation" -d ../api/ -t phpdoc/

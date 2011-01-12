@@ -11,8 +11,19 @@
  */
 namespace sabretooth;
 
-$SETTINGS[ 'api_path' ] = '~/files/repositories/sabretooth/initial_design/api';
-$SETTINGS[ 'doc_path' ] = '~/files/repositories/sabretooth/initial_design/doc';
-$SETTINGS[ 'sql_path' ] = '~/files/repositories/sabretooth/initial_design/sql';
-$SETTINGS[ 'tpl_path' ] = '~/files/repositories/sabretooth/initial_design/tpl';
+// always leave as false when running as production server
+$SETTINGS[ 'development_mode' ] = true;
+
+// the location of sabretooth internal paths
+$SETTINGS[ 'api_path' ] = '/usr/local/lib/sabretooth/api';
+$SETTINGS[ 'doc_path' ] = '/usr/local/lib/sabretooth/doc';
+$SETTINGS[ 'sql_path' ] = '/usr/local/lib/sabretooth/sql';
+$SETTINGS[ 'tpl_path' ] = '/usr/local/lib/sabretooth/tpl';
+
+// the location of libraries
+$SETTINGS[ 'adodb_path' ] = '/usr/local/lib/adodb';
+$SETTINGS[ 'jquery_file' ] = '/usr/local/lib/jquery.js';
+$SETTINGS[ 'phpagi_path' ] = '/usr/local/lib/phpagi';
+$SETTINGS[ 'phpexcel_path' ] = '/usr/local/lib/phpexcel';
+$SETTINGS[ 'twig_path' ] = '/usr/local/lib/twig';
 ?>

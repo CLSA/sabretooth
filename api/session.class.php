@@ -7,7 +7,7 @@
  */
 
 namespace sabretooth\business;
-require_once $SETTINGS[ 'api_path' ].'\base_object.class.php';
+require_once $SETTINGS[ 'api_path' ].'/base_object.class.php';
 
 /**
  * session: handles all session-based information
