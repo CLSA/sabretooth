@@ -36,7 +36,7 @@ abstract class singleton
    */
   public static function singleton()
   {
-    if( !isset( self::$instance_list[ get_called_class() ] ) )
+    if( !self::exists() )
     {
       // if any arguments were passed to this method, pass them on to the contructor
       if( 0 < func_num_args() )
@@ -53,6 +53,11 @@ abstract class singleton
     return self::$instance_list[ get_called_class() ];
   }
   
+  public static function exists()
+  {
+    return isset( self::$instance_list[ get_called_class() ] );
+  }
+
   /**
    * The static array of all singletons.
    * @var mixed

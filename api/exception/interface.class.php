@@ -7,7 +7,6 @@
  */
 
 namespace sabretooth\exception;
-require_once API_PATH.'/exception/base_exception.class.php';
 
 /**
  * interface: user-interface exceptions

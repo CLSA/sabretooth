@@ -7,7 +7,6 @@
  */
 
 namespace sabretooth\database;
-require_once API_PATH.'/base_object.class.php';
 
 /**
  * active_record: abstract database table object

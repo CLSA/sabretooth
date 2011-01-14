@@ -7,7 +7,6 @@
  */
 
 namespace sabretooth\business;
-require_once API_PATH.'/base_object.class.php';
 
 /**
  * interview_queue: manages the creation of new interviews

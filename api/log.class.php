@@ -8,10 +8,6 @@
 
 namespace sabretooth;
 
-require_once API_PATH.'/singleton.class.php';
-require_once API_PATH.'/util.class.php';
-require_once API_PATH.'/database/log.class.php';
-
 // PEAR
 require_once 'Log.php';
 
@@ -162,6 +158,9 @@ final class log extends singleton
    */
   private function log( $message, $type )
   {
+    // make sure we have a session
+    if( !class_exists( 'sabretooth\session' ) || !session::exists() ) return;
+
     // handle logs differently when we are in developer mode
     if( util::devel_mode() )
     {
@@ -183,7 +182,7 @@ final class log extends singleton
       {
         // log minor stuff in firebug
         $this->initialize_logger( 'firebug' );
-        $this->loggers[ 'firebug' ]->log( $message."\n".$this->backtrace(), $type );
+        $this->loggers[ 'firebug' ]->log( $message, $type );
       }
     }
     else // we are in production mode
@@ -278,7 +277,7 @@ final class log extends singleton
  * A error handling function that uses the log class as the error handler
  * @ignore
  */
-$error_handler = function error_handler( $level, $message )
+$error_handler = function( $level, $message )
 {
   $message .= " (errno: $level)";
   if( E_PARSE == $level ||
@@ -318,5 +317,5 @@ $error_handler = function error_handler( $level, $message )
   return false;
 };
 
-set_error_handler( $error_handler );
+//set_error_handler( $error_handler );
 ?>

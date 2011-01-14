@@ -7,7 +7,6 @@
  */
 
 namespace sabretooth\interface;
-require_once API_PATH.'/base_object.class.php';
 
 /**
  * widget: abstract widget class

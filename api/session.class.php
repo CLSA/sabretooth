@@ -8,12 +8,6 @@
 
 namespace sabretooth;
 
-require_once API_PATH.'/singleton.class.php';
-require_once API_PATH.'/log.class.php';
-require_once API_PATH.'/database/site.class.php';
-require_once API_PATH.'/database/user.class.php';
-require_once API_PATH.'/exception/base_exception.class.php';
-require_once API_PATH.'/exception/database.class.php';
 require_once ADODB_PATH.'/adodb-exceptions.inc.php';
 require_once ADODB_PATH.'/adodb-errorhandler.inc.php';
 require_once ADODB_PATH.'/adodb.inc.php';

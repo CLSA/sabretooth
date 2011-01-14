@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <title>Sabretooth</title>
+  <script type="text/javascript" src="{{ jquery_file }}"></script>
+  <script type="text/javascript" src="{{ jquery_ui_file }}"></script>
+  <script type="text/javascript" src="{{ jquery_layout_file }}"></script>
+  <script type="text/javascript">
+  $(document).ready(
+    function()
+    {
+      var layout = $('body').layout( {
+        defaults: {
+          applyDefaultStyles: true,
+          spacing_open: 8,
+          spacing_closed: 16 },
+        south: {
+           slidable: true,
+           size: 384,
+           initClosed: true }
+      } );
+    }
+  );
+  </script>
+</head>
+
+<body>
+  <div class="ui-layout-center">
+    Sabretooth Window
+  </div>
+  <div class="ui-layout-south">
+    Limesurvey Window
+  </div>
+</body>
+
+</html>

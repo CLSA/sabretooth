@@ -9,7 +9,9 @@
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth
  */
+
 namespace sabretooth;
+global $SETTINGS;
 
 // always leave as false when running as production server
 $SETTINGS[ 'general' ][ 'development_mode' ] = false;
@@ -23,10 +25,15 @@ $SETTINGS[ 'paths' ][ 'TPL_PATH' ] = $SETTINGS[ 'paths' ][ 'SABRETOOTH_PATH' ].'
 
 // the location of libraries
 $SETTINGS[ 'paths' ][ 'ADODB_PATH' ] = '/usr/local/lib/adodb';
-$SETTINGS[ 'paths' ][ 'JQUERY_FILE' ] = '/usr/local/lib/jquery.js';
 $SETTINGS[ 'paths' ][ 'PHPAGI_PATH' ] = '/usr/local/lib/phpagi';
 $SETTINGS[ 'paths' ][ 'PHPEXCEL_PATH' ] = '/usr/local/lib/phpexcel';
 $SETTINGS[ 'paths' ][ 'TWIG_PATH' ] = '/usr/local/lib/twig';
+$SETTINGS[ 'paths' ][ 'JS_PATH' ] = 'js';
+
+// javascript libraries
+$SETTINGS[ 'paths' ][ 'JQUERY_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.js';
+$SETTINGS[ 'paths' ][ 'JQUERY_UI_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.ui.js';
+$SETTINGS[ 'paths' ][ 'JQUERY_LAYOUT_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.layout.js';
 
 // the location of log files
 $SETTINGS[ 'paths' ][ 'LOG_FILE' ] = '/var/local/sabretooth/log';

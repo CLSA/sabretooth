@@ -7,7 +7,6 @@
  */
 
 namespace sabretooth\database;
-require_once API_PATH.'/database/active_record.class.php';
 
 /**
  * interview: active record

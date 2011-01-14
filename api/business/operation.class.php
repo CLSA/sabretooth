@@ -7,7 +7,6 @@
  */
 
 namespace sabretooth\business;
-require_once API_PATH.'/base_object.class.php';
 
 /**
  * operation: abstract class for all operations

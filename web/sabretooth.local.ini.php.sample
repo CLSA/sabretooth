@@ -1,0 +1,14 @@
+<?php
+/**
+ * sabretooth.local.ini.php
+ * 
+ * Defines local initialization settings for sabretooth, overriding default settings found in
+ * sabretooth.ini.php
+ */
+
+namespace sabretooth;
+global $SETTINGS;
+
+$SETTINGS[ 'general' ][ 'development_mode' ] = true;
+$SETTINGS[ 'db' ][ 'password' ] = 'put your database password here';
+?>
