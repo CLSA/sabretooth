@@ -274,8 +274,11 @@ final class log extends singleton
   private $loggers;
 }
 
-// use the log class as the error handler
-$error_handler = function( $level, $message )
+/**
+ * A error handling function that uses the log class as the error handler
+ * @ignore
+ */
+$error_handler = function error_handler( $level, $message )
 {
   $message .= " (errno: $level)";
   if( E_PARSE == $level ||
