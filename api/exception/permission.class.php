@@ -7,7 +7,7 @@
  */
 
 namespace sabretooth\exception;
-require_once $SETTINGS[ 'api_path' ].'/exception/base_exception.class.php';
+require_once API_PATH.'/exception/base_exception.class.php';
 
 /**
  * permission: permission exceptions
@@ -19,12 +19,38 @@ class permission extends base_exception
 {
   /**
    * Constructor
-   * @author TBD
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\operation $operation the associated operation
+   * @param database\site $site the associated site (if null then the session's site is used)
+   * @param database\user $user the associated user (if null then the session's site is used)
+   * @param exception $previous the previous exception used for the exception chaining
    * @access public
    */
-   public function __construct( $message = "", $code = 0, $previous = NULL )
-   {
-     parent::__construct( $message, $code, $previous );
-   }
+  public function __construct( $operation, $site = NULL, $user = NULL, $previous = NULL )
+  {
+    $this->operation = $operation;
+    parent::__construct( 'operation "'.$operation->name.'" denied', $site, $user, $previous );
+  }
+
+  /**
+   * The site for which the denied operation was executed on
+   * @var database\site
+   * @access protected
+   */
+  protected $site = NULL;
+
+  /**
+   * The user which executed the denied operation
+   * @var database\site
+   * @access protected
+   */
+  protected $user = NULL;
+
+  /**
+   * The operation which was denied
+   * @var database\site
+   * @access protected
+   */
+  protected $operation = NULL;
 }
 ?>

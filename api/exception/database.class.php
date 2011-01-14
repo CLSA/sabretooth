@@ -7,7 +7,7 @@
  */
 
 namespace sabretooth\exception;
-require_once $SETTINGS[ 'api_path' ].'/exception/base_exception.class.php';
+require_once API_PATH.'/exception/base_exception.class.php';
 
 /**
  * database: database/sql exceptions

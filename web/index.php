@@ -16,29 +16,31 @@ if( file_exists( 'sabretooth.local.ini.php' ) )
   require_once 'sabretooth.local.ini.php';
 }
 
-// determine what errors to display
-ini_set( 'display_errors', $SETTINGS[ 'development_mode' ] ? '1' : '0' );
-error_reporting( $SETTINGS[ 'development_mode' ] ? E_ALL | E_STRICT : E_ALL );
+// define all paths
+foreach( $SETTINGS[ 'paths' ] as $path_name => $path_value )
+{
+  define( $path_name, $path_value );
+}
 
-// required classes
-require_once $SETTINGS[ 'api_path' ].'/util.class.php';
+// set up error handling
+ini_set( 'display_errors', '0' );
+// error_reporting is also called in session's constructor
+error_reporting( E_ALL | E_STRICT );
 
-$SETTINGS['Array'] = true;
-
-util::var_dump_html( $SETTINGS );
-
-echo DIRECTORY_SEPARATOR;
-require_once $SETTINGS[ 'api_path' ].'/business/session.class.php';
-/*
+// remaining required classes
+require_once API_PATH.'/log.class.php';
+require_once API_PATH.'/session.class.php';
 
 try
 {
-  print "yeehaw!";
-  // TODO: determine operation
-  //$session = business\session::get_instance();
+  // set up the session
+  $session = session::singleton( $SETTINGS );
+  $session->initialize();
+  util::var_dump_html( $session );
 }
-catch( exception $e )
+catch( \Exception $e )
 {
+  // TODO: need to handle exceptions properly
+  log::singleton()->err( "Uncaught ".$e->__toString() );
 }
-*/
 ?>

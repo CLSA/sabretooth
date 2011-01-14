@@ -12,18 +12,29 @@
 namespace sabretooth;
 
 // always leave as false when running as production server
-$SETTINGS[ 'development_mode' ] = true;
+$SETTINGS[ 'general' ][ 'development_mode' ] = false;
 
 // the location of sabretooth internal paths
-$SETTINGS[ 'api_path' ] = '/usr/local/lib/sabretooth/api';
-$SETTINGS[ 'doc_path' ] = '/usr/local/lib/sabretooth/doc';
-$SETTINGS[ 'sql_path' ] = '/usr/local/lib/sabretooth/sql';
-$SETTINGS[ 'tpl_path' ] = '/usr/local/lib/sabretooth/tpl';
+$SETTINGS[ 'paths' ][ 'SABRETOOTH_PATH' ] = '/usr/local/lib/sabretooth';
+$SETTINGS[ 'paths' ][ 'API_PATH' ] = $SETTINGS[ 'paths' ][ 'SABRETOOTH_PATH' ].'/api';
+$SETTINGS[ 'paths' ][ 'DOC_PATH' ] = $SETTINGS[ 'paths' ][ 'SABRETOOTH_PATH' ].'/doc';
+$SETTINGS[ 'paths' ][ 'SQL_PATH' ] = $SETTINGS[ 'paths' ][ 'SABRETOOTH_PATH' ].'/sql';
+$SETTINGS[ 'paths' ][ 'TPL_PATH' ] = $SETTINGS[ 'paths' ][ 'SABRETOOTH_PATH' ].'/tpl';
 
 // the location of libraries
-$SETTINGS[ 'adodb_path' ] = '/usr/local/lib/adodb';
-$SETTINGS[ 'jquery_file' ] = '/usr/local/lib/jquery.js';
-$SETTINGS[ 'phpagi_path' ] = '/usr/local/lib/phpagi';
-$SETTINGS[ 'phpexcel_path' ] = '/usr/local/lib/phpexcel';
-$SETTINGS[ 'twig_path' ] = '/usr/local/lib/twig';
+$SETTINGS[ 'paths' ][ 'ADODB_PATH' ] = '/usr/local/lib/adodb';
+$SETTINGS[ 'paths' ][ 'JQUERY_FILE' ] = '/usr/local/lib/jquery.js';
+$SETTINGS[ 'paths' ][ 'PHPAGI_PATH' ] = '/usr/local/lib/phpagi';
+$SETTINGS[ 'paths' ][ 'PHPEXCEL_PATH' ] = '/usr/local/lib/phpexcel';
+$SETTINGS[ 'paths' ][ 'TWIG_PATH' ] = '/usr/local/lib/twig';
+
+// the location of log files
+$SETTINGS[ 'paths' ][ 'LOG_FILE' ] = '/var/local/sabretooth/log';
+
+// database settings
+$SETTINGS[ 'db' ][ 'driver' ] = 'mysql';
+$SETTINGS[ 'db' ][ 'server' ] = 'localhost';
+$SETTINGS[ 'db' ][ 'username' ] = 'sabretooth';
+$SETTINGS[ 'db' ][ 'password' ] = '';
+$SETTINGS[ 'db' ][ 'database' ] = 'sabretooth';
 ?>

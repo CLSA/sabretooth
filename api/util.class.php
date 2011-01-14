@@ -28,6 +28,19 @@ final class util
   private function __construct() {}
 
   /**
+   * Returns whether the system is in development mode.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @static
+   * @return boolean
+   * @access public
+   */
+  public static function devel_mode()
+  {
+    return true == session::singleton()->get_setting( 'general', 'development_mode' );
+  }
+
+  /**
    * A replacement for print_r which is html-aware.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -40,20 +53,20 @@ final class util
     // get the var_dump string
     ob_start();
     var_dump( $data );
-    $output = "\n".ob_get_clean();
+    $output = ob_get_clean();
 
     // make strings magenta
     $output = preg_replace( '/("[^"]*")/', '<font color="magenta">${1}</font>', $output );
 
     // make types yellow and type braces red
     $output = preg_replace(
-      '/\n( *)(bool|int|float|string|array)\(([^)]*)\)/',
+      '/\n( *)(bool|int|float|string|array|object)\(([^)]*)\)/',
       "\n".'${1}<font color="yellow">${2}</font>'.
       '<font color="red">(</font>'.
       '<font color="white"> ${3} </font>'.
       '<font color="red">)</font>',
-      $output );
-    
+      "\n".$output );
+      
     // replace => with html arrows
     $output = str_replace( '=>', ' &#8658;', $output );
     

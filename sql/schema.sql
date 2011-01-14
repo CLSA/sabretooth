@@ -646,6 +646,33 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `sabretooth`.`log`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`log` ;
+
+CREATE  TABLE IF NOT EXISTS `sabretooth`.`log` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `user_id` INT UNSIGNED NOT NULL ,
+  `site_id` INT UNSIGNED NOT NULL ,
+  `date` TIMESTAMP NOT NULL ,
+  `text` TEXT NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_log_user1` (`user_id` ASC) ,
+  INDEX `fk_log_site1` (`site_id` ASC) ,
+  CONSTRAINT `fk_log_user1`
+    FOREIGN KEY (`user_id` )
+    REFERENCES `sabretooth`.`user` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_log_site1`
+    FOREIGN KEY (`site_id` )
+    REFERENCES `sabretooth`.`site` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Placeholder table for view `sabretooth`.`participant_primary_location`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `sabretooth`.`participant_primary_location` (`participant_id` INT, `contact_id` INT, `province` INT);

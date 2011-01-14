@@ -9,6 +9,7 @@
 namespace sabretooth;
 
 require_once API_PATH.'/singleton.class.php';
+require_once API_PATH.'/util.class.php';
 require_once API_PATH.'/database/log.class.php';
 
 // PEAR
@@ -146,7 +147,7 @@ final class log extends singleton
       if( 0 == $index ) continue; // first trace is this function
       if( 1 == $index ) continue; // second trace is the log function
       if( 2 == $index ) continue; // second trace is the public log function
-      $backtrace .= "  [".( $index - 2 )."] {$trace[ 'class' ]}::{$trace[ 'function' ]}()\n";
+      $backtrace .= '  ['.( $index - 2 ).'] '.$trace[ 'class' ].'::'.$trace[ 'function' ].'()'."\n";
     }
     return $backtrace;
   }
@@ -231,7 +232,8 @@ final class log extends singleton
         $conf = array(
           'lineFormat' => '<font color=red>%3$s in</font> '.
                           '<font color=blue>%8$s::%7$s</font> '.
-                          '<font color=red>(%6$s):</font> %4$s',
+                          '<font color=red>(%6$s):</font>'."\n".
+                          '%4$s',
           'timeFormat' => '%H:%M:%S',
           'error_prepend' => '<pre style="font-weight: bold; color: #B0B0B0; background: black">',
           'error_append' => '</pre>',
@@ -271,4 +273,47 @@ final class log extends singleton
    */
   private $loggers;
 }
+
+// use the log class as the error handler
+$error_handler = function( $level, $message )
+{
+  $message .= " (errno: $level)";
+  if( E_PARSE == $level ||
+      E_COMPILE_ERROR == $level )
+  {
+    log::singleton()->emerg( $message );
+    die( 2 );
+  }
+  else if( E_USER_ERROR == $level ||
+           E_CORE_ERROR == $level ||
+           E_ERROR == $level )
+  {
+    log::singleton()->err( $message );
+    die( 1 );
+  }
+  else if( E_COMPILE_WARNING == $level ||
+           E_CORE_WARNING == $level ||
+           E_WARNING == $level ||
+           E_STRICT == $level )
+  {
+    log::singleton()->warning( $message );
+  }
+  else if( E_NOTICE == $level ||
+           E_USER_NOTICE == $level ||
+           E_DEPRECATED == $level ||
+           E_USER_DEPRECATED == $level )
+  {
+    log::singleton()->notice( $message );
+  }
+  
+  // exception
+  else if( E_RECOVERABLE_ERROR == $level )
+  {
+    throw \Exception( $message );
+  }
+
+  return false;
+};
+
+set_error_handler( $error_handler );
 ?>

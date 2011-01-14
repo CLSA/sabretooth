@@ -1,3 +1,6 @@
+REPLACE INTO site SET id = 1000001, name = 'east';
+REPLACE INTO site SET id = 1000002, name = 'west';
+
 REPLACE INTO user SET id = 1000001, name = 'patrick';
 REPLACE INTO user SET id = 1000002, name = 'ron';
 REPLACE INTO user SET id = 1000003, name = 'val';
