@@ -41,6 +41,19 @@ final class util
   }
 
   /**
+   * Returns whether the system is in action mode.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @static
+   * @return boolean
+   * @access public
+   */
+  public static function action_mode()
+  {
+    return ACTION_MODE;
+  }
+
+  /**
    * A replacement for print_r which is html-aware.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

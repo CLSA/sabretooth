@@ -1,0 +1,54 @@
+{##
+ # settings.html
+ # 
+ # Allows the user to define configurable session-based settings.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @param string user_name
+ # @param string current_site_name
+ # @param string current_role_name
+ # @param array roles This is an associative array containing the names of all roles which the user
+                      has access to at the current site.
+ # @param array sites This is an associative array containing the names of all sites which the user
+                      has access to.
+ #}
+<table width="100%" cellspacing="0" cellpadding="0">
+  <tr>
+    <td align="left">
+      Welcome {{ this.user_name }}
+    </td>
+    <td align="right">
+      <button onclick="jQuery.post( 'index.php', { logout: 'logout' } );">logout</button>
+    </td>
+  </tr>
+  <tr><td colspan="2"><div style="padding-top: 6px;"></div></td></tr>
+  <tr><td colspan="2"><div style="border-top: 2px solid #CCC; padding-top: 6px;"></div></td></tr>
+  <tr>
+    <td align="left" >
+      Site: 
+      {% if 1 < this.sites|count %}
+      <select onchange="$.post( 'action.php',
+                                { operation: 'user.set_site' },
+                                function( data ) { console.log( data ); },
+                                'json' );">
+        {% for site in this.sites %}
+        <option{{ this.current_site_name == site ? ' selected' : '' }}>{{ site }}</option>
+        {% endfor %}
+      </select>
+      {% else %}
+      {{ this.current_site_name }}
+      {% endif %}
+    </td>
+    <td align="right">
+      Role: 
+      {% if 1 < this.roles|count %}
+      <select>
+        {% for role in this.roles %}
+        <option{{ this.current_role_name == role ? ' selected' : '' }}>{{ role }}</option>
+        {% endfor %}
+      </select>
+      {% else %}
+      {{ this.current_role_name }}
+      {% endif %}
+    </td>
+  </tr>
+</table>

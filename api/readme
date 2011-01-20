@@ -1,0 +1,4 @@
+Variable naming convensions:
+- database\* objects should be named $db_*
+- ui\widget objects should be named $w_*
+- arrays should either use a plural name or *_array

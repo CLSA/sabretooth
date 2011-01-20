@@ -29,11 +29,19 @@ $SETTINGS[ 'paths' ][ 'PHPAGI_PATH' ] = '/usr/local/lib/phpagi';
 $SETTINGS[ 'paths' ][ 'PHPEXCEL_PATH' ] = '/usr/local/lib/phpexcel';
 $SETTINGS[ 'paths' ][ 'TWIG_PATH' ] = '/usr/local/lib/twig';
 $SETTINGS[ 'paths' ][ 'JS_PATH' ] = 'js';
+$SETTINGS[ 'paths' ][ 'CSS_PATH' ] = 'css';
 
 // javascript libraries
-$SETTINGS[ 'paths' ][ 'JQUERY_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.js';
-$SETTINGS[ 'paths' ][ 'JQUERY_UI_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.ui.js';
-$SETTINGS[ 'paths' ][ 'JQUERY_LAYOUT_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.layout.js';
+$SETTINGS[ 'paths' ][ 'JQUERY_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.min.js';
+$SETTINGS[ 'paths' ][ 'JQUERY_UI_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery-ui.min.js';
+$SETTINGS[ 'paths' ][ 'JQUERY_LAYOUT_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.layout.min.js';
+$SETTINGS[ 'paths' ][ 'JQUERY_HOVERINTENT_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.hoverIntent.min.js';
+$SETTINGS[ 'paths' ][ 'JQUERY_METADATA_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.metadata.js';
+$SETTINGS[ 'paths' ][ 'JQUERY_FLIPTEXT_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery-mb.flipText.js';
+$SETTINGS[ 'paths' ][ 'JQUERY_EXTRUDER_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery-mb.extruder.js';
+
+// css files
+$SETTINGS[ 'paths' ][ 'JQUERY_UI_CSS_FILE' ] = $SETTINGS[ 'paths' ][ 'CSS_PATH' ].'/ui/jquery-ui.css';
 
 // the location of log files
 $SETTINGS[ 'paths' ][ 'LOG_FILE' ] = '/var/local/sabretooth/log';

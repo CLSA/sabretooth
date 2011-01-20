@@ -27,8 +27,24 @@ class base_exception extends \Exception
    */
   public function __construct( $message, $site = NULL, $user = NULL, $previous = NULL )
   {
-    $this->site = !is_null( $site ) ? $site : $this->site = \sabretooth\session::singleton()->get_site();
-    $this->user = !is_null( $user ) ? $user : $this->user = \sabretooth\session::singleton()->get_user();
+    if( !is_null( $site ) )
+    {
+      $this->site = $site;
+    }
+    else if( class_exists( \sabretooth\session::exists() ) )
+    {
+      $this->site = \sabretooth\session::singleton()->get_site();
+    }
+    
+    if( !is_null( $user ) )
+    {
+      $this->user = $user;
+    }
+    else if( class_exists( \sabretooth\session::exists() ) )
+    {
+      $this->user = \sabretooth\session::singleton()->get_user();
+    }
+    
     parent::__construct( "\n".
       ( $site ? $site->name : 'unknown' ).'@'.( $user ? $user->name : 'unknown' ).': '.$message,
       0,

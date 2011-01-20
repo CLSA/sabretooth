@@ -8,6 +8,13 @@
  * @vertion 0.1
  */
 namespace sabretooth;
+define( 'ACTION_MODE', false );
+
+if( isset( $_POST ) && isset( $_POST['logout'] ) && 'logout' == $_POST['logout'] )
+{
+  $method = 'http'.( 'on' == $_SERVER['HTTPS'] ? 's' : '' );
+  header( 'Location: '.$method.'://none:none@'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'] );
+}
 
 // set up error handling (error_reporting is also called in session's constructor)
 ini_set( 'display_errors', '0' );
@@ -47,20 +54,37 @@ try
   // set up the session
   $session = session::singleton( $SETTINGS );
   $session->initialize();
-  $user = new database\user();
+  
+  assert_options( ASSERT_ACTIVE, util::devel_mode() ? 1 : 0 );
+  assert_options( ASSERT_WARNING, 0 );
 
   // set up the template engine
   $loader = new \Twig_Loader_Filesystem( TPL_PATH );
-  $twig = new \Twig_Environment( $loader );
-  $template = $twig->loadTemplate( 'index.html' );
-  echo $template->render(
-    array( 'jquery_file' => JQUERY_FILE,
-           'jquery_ui_file' => JQUERY_UI_FILE,
-           'jquery_layout_file' => JQUERY_LAYOUT_FILE ) );
+  $twig = new \Twig_Environment( $loader, array( 'debug' => util::devel_mode(),
+                                                 'strict_variables' => util::devel_mode() ) );
+  $twig->addFilter( 'count', new \Twig_Filter_Function( 'count' ) );
+  foreach( $SETTINGS[ 'paths' ] as $path_name => $path_value )
+    $twig->addGlobal( $path_name, $path_value );
+  $twig_template = $twig->loadTemplate( 'index.html' );
+  
+  // create and setup the index widget
+  $w_index = new ui\index();
+  $w_index->set_variable( 'survey_active', false );
+
+  $output = $twig_template->render( ui\widget::get_variables() );
+  print $output;
+}
+// TODO: need to handle exceptions properly when in development mode using error dialogs
+catch( exception\database $e )
+{
+  log::singleton()->err( "Database ".$e->__toString() );
+}
+catch( \Twig_Error_Runtime $e )
+{
+  log::singleton()->err( "Template ".$e->__toString() );
 }
 catch( \Exception $e )
 {
-  // TODO: need to handle exceptions properly
   log::singleton()->err( "Uncaught ".$e->__toString() );
 }
 ?>

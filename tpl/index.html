@@ -1,37 +1,71 @@
+{##
+ # index.html
+ # 
+ # Base index file.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @param boolean survey_active Define whether a survey is active.
+ #}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
   <title>Sabretooth</title>
-  <script type="text/javascript" src="{{ jquery_file }}"></script>
-  <script type="text/javascript" src="{{ jquery_ui_file }}"></script>
-  <script type="text/javascript" src="{{ jquery_layout_file }}"></script>
+  <link href="{{ JQUERY_UI_CSS_FILE }}" rel="stylesheet" />
+  <link href="css/main.css" rel="stylesheet" />
+  <script type="text/javascript" src="{{ JQUERY_JS_FILE }}"></script>
+  <script type="text/javascript" src="{{ JQUERY_UI_JS_FILE }}"></script>
+  <script type="text/javascript" src="{{ JQUERY_LAYOUT_JS_FILE }}"></script>
+  <script type="text/javascript" src="{{ JQUERY_HOVERINTENT_JS_FILE }}"></script>
+  <script type="text/javascript" src="{{ JQUERY_METADATA_JS_FILE }}"></script>
+  <script type="text/javascript" src="{{ JQUERY_FLIPTEXT_JS_FILE }}"></script>
+  <script type="text/javascript" src="{{ JQUERY_EXTRUDER_JS_FILE }}"></script>
+  <script type="text/javascript" src="js/main.js"></script>
   <script type="text/javascript">
-  $(document).ready(
-    function()
-    {
+  {% if index.survey_active %}
+  /**
+   * Defines the layout when showing the survey pane.
+   * Should only be visible when there is an active survey.
+   */
+  $(document).ready( function() {
       var layout = $('body').layout( {
-        defaults: {
-          applyDefaultStyles: true,
-          spacing_open: 8,
-          spacing_closed: 16 },
-        south: {
-           slidable: true,
-           size: 384,
-           initClosed: true }
+      defaults: {
+        applyDefaultStyles: true,
+        spacing_open: 8,
+        spacing_closed: 16 },
+      south: {
+        slidable: true,
+        size: 384,
+        initClosed: true }
       } );
     }
   );
+  {% endif %}
   </script>
 </head>
 
 <body>
-  <div class="ui-layout-center">
-    Sabretooth Window
+  <div id="top_extruder" class="{title:'settings'}">
+  {% include "settings.html" with { 'this': settings } %}
   </div>
-  <div class="ui-layout-south">
-    Limesurvey Window
+  <div class="ui-layout-center" id="app_ui">
+    <p>So this is some text.</p>
+    <button>this is a test</button><br>
+    <a href="#" onclick="$.post( 'action.php',
+                                 { operation: 'user.list' },
+                                 function( data ) { console.log( data ); },
+                                 'json' );">get user list</a>
   </div>
+  {% if index.survey_active %}
+  <div class="ui-layout-south" id="survey_ui">
+    <object style="width: 100%; height: 100%; position: absolute"
+            id="survey_object"
+            data="http://gremlin/limesurvey/"
+            standby="Loading..."
+            type="application/xhtml+xml">
+      <p>Your browser is not supported, try with Firefox 3.6+</p>
+    </object>
+  </div>
+  {% endif %}
 </body>
 
 </html>

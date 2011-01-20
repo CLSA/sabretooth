@@ -8,8 +8,6 @@
 
 namespace sabretooth;
 
-require_once ADODB_PATH.'/adodb-exceptions.inc.php';
-require_once ADODB_PATH.'/adodb-errorhandler.inc.php';
 require_once ADODB_PATH.'/adodb.inc.php';
 
 /**
@@ -69,16 +67,12 @@ final class session extends singleton
     }
     $this->db->SetFetchMode( ADODB_FETCH_ASSOC );
 
-    // TODO: automatic primary site detection ('east' is just a placeholder)
-    $site_name = 'east';
-    $this->site = database\site::get_unique_record( 'name', $site_name );
-    if( NULL == $this->site )
-      log::singleton()->err( "Site '$site_name' not found." );
-
-    // determine the site and user database objects.
-    $this->user = database\user::get_unique_record( 'name', $_SERVER[ 'REMOTE_USER' ] );
-    if( NULL == $this->user )
-      log::singleton()->err( 'User "'.$_SERVER[ 'REMOTE_USER' ].'" not found.', NULL, 0 );
+    // determine the user (setting the user will also set the site and role)
+    $user_name = util::devel_mode() && defined( 'STDIN' )
+               ? $_SERVER[ 'USER' ]
+               : $_SERVER[ 'REMOTE_USER' ];
+    $this->set_user( database\user::get_unique_record( 'name', $user_name ) );
+    if( NULL == $this->user ) log::singleton()->err( 'User "'.$user_name.'" not found.' );
   }
   
   /**
@@ -107,16 +101,7 @@ final class session extends singleton
   }
 
   /**
-   * Get the current user.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return database\user
-   * @access public
-   */
-  public function get_user() { return $this->user; }
-
-  /**
-   * Get the current site.
+   * Get the database resource.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\site
@@ -128,13 +113,78 @@ final class session extends singleton
   }
 
   /**
-   * Get the database resource
+   * Get the current role
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\role
+   * @access public
+   */
+  public function get_role() { return $this->role; }
+
+  /**
+   * Set the current role
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\role $role
+   * @access public
+   */
+  public function set_role( $role )
+  {
+    $this->role = $role;
+  }
+
+  /**
+   * Get the current site
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\site
    * @access public
    */
   public function get_site() { return $this->site; }
+
+  /**
+   * Set the current site
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\site $site
+   * @access public
+   */
+  public function set_site( $site )
+  {
+    $this->site = $site;
+  }
+
+  /**
+   * Get the current user.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\user
+   * @access public
+   */
+  public function get_user() { return $this->user; }
+
+  /**
+   * Set the current user.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\user $user
+   * @access public
+   */
+  public function set_user( $user )
+  {
+    $this->user = $user;
+
+    // Determine the site and role (use the first one found)
+    if( $this->user )
+    {
+      $db_site_array = $this->user->get_sites();
+      if( 0 == count( $db_site_array ) ) log::singleton()->err( "User does not have access to any site." );
+      $this->set_site( $db_site_array[0] );
+      
+      $db_role_array = $this->user->get_roles( $this->site );
+      $this->set_role( $db_role_array[0] );
+    }
+  }
 
   /**
    * An array which holds .ini settings.

@@ -22,9 +22,19 @@ class database extends base_exception
    * @author TBD
    * @access public
    */
-   public function __construct( $message = "", $code = 0, $previous = NULL )
+   public function __construct(
+     $message, $sql = NULL, $site = NULL, $user = NULL, $previous = NULL )
    {
-     parent::__construct( $message, $code, $previous );
+     $this->sql = $sql;
+     $message .= is_null( $this->sql ) ? '' : "\n$sql";
+     parent::__construct( $message, $site, $user, $previous );
    }
+    
+  /**
+   * The sql which caused the exception.
+   * @var string
+   * @access protected
+   */
+  protected $sql = NULL;
 }
 ?>

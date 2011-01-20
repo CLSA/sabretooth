@@ -1,9 +1,41 @@
-REPLACE INTO site SET id = 1000001, name = 'east';
-REPLACE INTO site SET id = 1000002, name = 'west';
+-- This file has sample data for help with development.
+-- Though primary IDs are set as numbers which are unlikely to overrite data in an active instance,
+-- it is highly recommended to not run this script for anything other than development purposes.
+
+REPLACE INTO site SET id = 1000001, name = 'Dalhousie';
+REPLACE INTO site SET id = 1000002, name = 'McMaster';
+REPLACE INTO site SET id = 1000003, name = 'Manitoba';
+REPLACE INTO site SET id = 1000004, name = 'Sherbrooke';
+REPLACE INTO site SET id = 1000005, name = 'Usher';
+REPLACE INTO site SET id = 1000006, name = 'Victoria';
 
 REPLACE INTO user SET id = 1000001, name = 'patrick';
 REPLACE INTO user SET id = 1000002, name = 'ron';
 REPLACE INTO user SET id = 1000003, name = 'val';
+
+REPLACE INTO role SET id = 1000001, name = 'administrator';
+REPLACE INTO role SET id = 1000002, name = 'operator';
+REPLACE INTO role SET id = 1000003, name = 'clerk';
+
+REPLACE INTO user_access SET user_id = 1000001, role_id = 1000001, site_id = 1000002;
+REPLACE INTO user_access SET user_id = 1000001, role_id = 1000002, site_id = 1000002;
+REPLACE INTO user_access SET user_id = 1000001, role_id = 1000003, site_id = 1000002;
+REPLACE INTO user_access SET user_id = 1000001, role_id = 1000003, site_id = 1000003;
+REPLACE INTO user_access SET user_id = 1000001, role_id = 1000001, site_id = 1000006;
+REPLACE INTO user_access SET user_id = 1000001, role_id = 1000002, site_id = 1000006;
+REPLACE INTO user_access SET user_id = 1000002, role_id = 1000001, site_id = 1000001;
+REPLACE INTO user_access SET user_id = 1000002, role_id = 1000001, site_id = 1000002;
+REPLACE INTO user_access SET user_id = 1000002, role_id = 1000002, site_id = 1000002;
+REPLACE INTO user_access SET user_id = 1000002, role_id = 1000001, site_id = 1000003;
+REPLACE INTO user_access SET user_id = 1000002, role_id = 1000001, site_id = 1000004;
+REPLACE INTO user_access SET user_id = 1000002, role_id = 1000001, site_id = 1000005;
+REPLACE INTO user_access SET user_id = 1000002, role_id = 1000001, site_id = 1000006;
+REPLACE INTO user_access SET user_id = 1000003, role_id = 1000002, site_id = 1000001;
+REPLACE INTO user_access SET user_id = 1000003, role_id = 1000002, site_id = 1000002;
+REPLACE INTO user_access SET user_id = 1000003, role_id = 1000002, site_id = 1000003;
+REPLACE INTO user_access SET user_id = 1000003, role_id = 1000002, site_id = 1000004;
+REPLACE INTO user_access SET user_id = 1000003, role_id = 1000002, site_id = 1000005;
+REPLACE INTO user_access SET user_id = 1000003, role_id = 1000002, site_id = 1000006;
 
 REPLACE INTO participant SET id = 1000001, first_name = 'Jane', last_name = 'Doe', language = 'en';
 REPLACE INTO participant SET id = 1000002, first_name = 'John', last_name = 'Doe', language = 'en';

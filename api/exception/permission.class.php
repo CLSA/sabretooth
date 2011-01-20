@@ -32,20 +32,6 @@ class permission extends base_exception
   }
 
   /**
-   * The site for which the denied operation was executed on
-   * @var database\site
-   * @access protected
-   */
-  protected $site = NULL;
-
-  /**
-   * The user which executed the denied operation
-   * @var database\site
-   * @access protected
-   */
-  protected $user = NULL;
-
-  /**
    * The operation which was denied
    * @var database\site
    * @access protected

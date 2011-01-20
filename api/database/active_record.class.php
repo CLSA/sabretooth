@@ -23,7 +23,7 @@ abstract class active_record extends \sabretooth\base_object
    * The constructor either creates a new object which can then be insert into the database by
    * calling the {@link save} method, or, if an $primary_keys is provided then the row with the
    * primary id(s) equal to $primary_keys will be loaded.
-   * @author Patrick Emond <patrickdemond@gmail.com>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\database
    * @param integer|array $primary_keys The primary id value for this object (use an associative
    *                                  array if there are multiple primary keys)
@@ -31,6 +31,10 @@ abstract class active_record extends \sabretooth\base_object
    */
   public function __construct( $primary_keys = NULL )
   {
+    //\sabretooth\log::singleton()->debug( 'active_record: '.( is_null( $primary_keys )
+    //  ? 'creating new '.$this->get_table_name().' record'
+    //  : 'creating '.$this->get_table_name().' with primary key(s) '.$primary_keys ) );
+
     $db = \sabretooth\session::singleton()->get_db();
     
     // determine the columns for this table
@@ -44,13 +48,14 @@ abstract class active_record extends \sabretooth\base_object
     // validate the primary key (if there is one)
     if( NULL != $primary_keys )
     {
-      if( is_int( $primary_keys ) )
+      if( is_numeric( $primary_keys ) )
       {
         if( 1 != count( $this->primary_keys ) || 'id' != $this->primary_keys[0] )
         {
           throw new \sabretooth\exception\database(
             'Unable to create record, primary key "id" does not exist.' );
         }
+        $this->columns[ $this->primary_keys[0] ] = intval( $primary_keys );
       }
       else if( is_array( $primary_keys ) )
       {
@@ -93,7 +98,7 @@ abstract class active_record extends \sabretooth\base_object
    * The destructor will save the record to the database if auto-saving is on and the record
    * already exists in the database (new records must explicitely be saved to be added to the
    * database).
-   * @author Patrick Emond <patrickdemond@gmail.com>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function __destruct()
@@ -110,7 +115,7 @@ abstract class active_record extends \sabretooth\base_object
    * 
    * If this is a new record then this method does nothing, if the record is associated with a
    * primary key then the data from the corresponding row is loaded.
-   * @author Patrick Emond <patrickdemond@gmail.com>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function load()
@@ -150,7 +155,7 @@ abstract class active_record extends \sabretooth\base_object
    * 
    * If this is a new record then a new row will be inserted, if not then the row with the
    * corresponding id will be updated.
-   * @author Patrick Emond <patrickdemond@gmail.com>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\database
    * @access public
    */
@@ -209,7 +214,7 @@ abstract class active_record extends \sabretooth\base_object
    * Magic get method.
    *
    * Magic get method which returns the column value from the record's table
-   * @author Patrick Emond <patrickdemond@gmail.com>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name The name of the column or table being fetched from the database
    * @return mixed
    * @access public
@@ -217,9 +222,7 @@ abstract class active_record extends \sabretooth\base_object
   public function __get( $column_name )
   {
     // if we get here then $column_name isn't a column === BAD CODE
-    \sabretooth\util::var_dump_html( $column_name );
     assert( $this->has_column_name( $column_name ) );
-    
     return isset( $this->columns[ $column_name ] ) ? $this->columns[ $column_name ] : NULL;
   }
 
@@ -228,7 +231,7 @@ abstract class active_record extends \sabretooth\base_object
    *
    * Magic set method which sets the column value to a record's table.
    * For this change to be writen to the database see the {@link save} method
-   * @author Patrick Emond <patrickdemond@gmail.com>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name The name of the column
    * @param mixed $value The value to set the contents of a column to
    * @access protected
@@ -243,7 +246,7 @@ abstract class active_record extends \sabretooth\base_object
 
   /**
    * Returns whether the record's associated table has a specific column name.
-   * @author Patrick Emond <patrickdemond@gmail.com>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $name A column name
    * @return boolean
    * @access protected
@@ -255,21 +258,21 @@ abstract class active_record extends \sabretooth\base_object
 
   /**
    * Returns the name of the table associated with this active record.
-   * @author Patrick Emond <patrickdemond@gmail.com>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access protected
    */
   protected static function get_table_name()
   {
     // table and class names should always be identical
-    return substr( strrchr( get_called_class(), '\\' ), 1 );
+    return self::get_class_name();
   }
 
   /**
    * Get record using unique key.
    * 
    * This method returns an instance of the active record using the name and value of a unique key.
-   * @author Patrick Emond <patrickdemond@gmail.com>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column a column with the unique key property
    * @param string $value the value of the column to match
    * @return database\active_record
@@ -321,7 +324,7 @@ abstract class active_record extends \sabretooth\base_object
    * Returns the string formatted for database queries.
    * 
    * The returned value should be put in double quotes.
-   * @author Patrick Emond <patrickdemond@gmail.com>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $string The string to format for use in a query.
    * @return string
    * @static
@@ -340,7 +343,7 @@ abstract class active_record extends \sabretooth\base_object
    * record set is always returned on success, even if we are executing an insert or update
    * statement.
    * Note: This is a convenience wrapper for ADOdb::Execute()
-   * @author Patrick Emond <patrickdemond@gmail.com>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
    * @param array $input_array binding variables to parameters
    * @return ADORecordSet
@@ -352,10 +355,7 @@ abstract class active_record extends \sabretooth\base_object
   {
     $db = \sabretooth\session::singleton()->get_db();
     $result = $db->Execute( $sql, $input_array );
-    if( false === $result )
-    {
-      throw new \sabretooth\exception\database( $db->ErrorMsg() );
-    }
+    if( false === $result ) throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql );
     return $result;
   }
   
@@ -364,7 +364,7 @@ abstract class active_record extends \sabretooth\base_object
    * 
    * Executes the SQL and returns the first field of the first row.
    * Note: This is a convenience wrapper for ADOdb::GetOne()
-   * @author Patrick Emond <patrickdemond@gmail.com>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
    * @param array $input_array binding variables to parameters
    * @return native or NULL if no records were found.
@@ -376,10 +376,7 @@ abstract class active_record extends \sabretooth\base_object
   {
     $db = \sabretooth\session::singleton()->get_db();
     $result = $db->GetOne( $sql, $input_array );
-    if( false === $result )
-    {
-      throw new \sabretooth\exception\database( $db->ErrorMsg() );
-    }
+    if( false === $result ) throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql );
     return $result;
   }
   
@@ -388,7 +385,7 @@ abstract class active_record extends \sabretooth\base_object
    * 
    * Executes the SQL and returns the first row as an array.
    * Note: This is a convenience wrapper for ADOdb::GetRow()
-   * @author Patrick Emond <patrickdemond@gmail.com>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
    * @param array $input_array binding variables to parameters
    * @return array (empty if no records are found)
@@ -400,10 +397,7 @@ abstract class active_record extends \sabretooth\base_object
   {
     $db = \sabretooth\session::singleton()->get_db();
     $result = $db->GetRow( $sql, $input_array );
-    if( false === $result )
-    {
-      throw new \sabretooth\exception\database( $db->ErrorMsg() );
-    }
+    if( false === $result ) throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql );
     return $result;
   }
   
@@ -412,7 +406,7 @@ abstract class active_record extends \sabretooth\base_object
    * 
    * Executes the SQL and returns the all the rows as a 2-dimensional array.
    * Note: This is a convenience wrapper for ADOdb::GetAll()
-   * @author Patrick Emond <patrickdemond@gmail.com>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
    * @param array $input_array binding variables to parameters
    * @return array (empty if no records are found)
@@ -424,10 +418,7 @@ abstract class active_record extends \sabretooth\base_object
   {
     $db = \sabretooth\session::singleton()->get_db();
     $result = $db->GetAll( $sql, $input_array );
-    if( false === $result )
-    {
-      throw new \sabretooth\exception\database( $db->ErrorMsg() );
-    }
+    if( false === $result ) throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql );
     return $result;
   }
   
@@ -436,7 +427,7 @@ abstract class active_record extends \sabretooth\base_object
    * 
    * Executes the SQL and returns all elements of the first column as a 1-dimensional array.
    * Note: This is a convenience wrapper for ADOdb::GetCol()
-   * @author Patrick Emond <patrickdemond@gmail.com>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
    * @param array $input_array binding variables to parameters
    * @param boolean $trim determines whether to right trim CHAR fields
@@ -449,10 +440,7 @@ abstract class active_record extends \sabretooth\base_object
   {
     $db = \sabretooth\session::singleton()->get_db();
     $result = $db->GetCol( $sql, $input_array, $trim );
-    if( false === $result )
-    {
-      throw new \sabretooth\exception\database( $db->ErrorMsg() );
-    }
+    if( false === $result ) throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql );
     return $result;
   }
   
@@ -461,7 +449,7 @@ abstract class active_record extends \sabretooth\base_object
    * 
    * Returns the last autonumbering ID inserted.
    * Note: This is a convenience wrapper for ADOdb::Insert_ID()
-   * @author Patrick Emond <patrickdemond@gmail.com>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @static
    * @access public
@@ -476,7 +464,7 @@ abstract class active_record extends \sabretooth\base_object
    * 
    * Returns the number of rows affected by a update or delete statement.
    * Note: This is a convenience wrapper for ADOdb::Affected_Rows()
-   * @author Patrick Emond <patrickdemond@gmail.com>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @static
    * @access public

@@ -503,11 +503,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`user_has_role`
+-- Table `sabretooth`.`user_access`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`user_has_role` ;
+DROP TABLE IF EXISTS `sabretooth`.`user_access` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`user_has_role` (
+CREATE  TABLE IF NOT EXISTS `sabretooth`.`user_access` (
   `user_id` INT UNSIGNED NOT NULL ,
   `role_id` INT UNSIGNED NOT NULL ,
   `site_id` INT UNSIGNED NOT NULL ,

@@ -14,3 +14,6 @@ Call is picked up by relative or associate of participant, what then?
 Do we need to track appointments once they have been completed?
   -- no (hurray!)
   -- track which queue an interview comes from when assigning it
+
+Have a section on the CATI Interviewer page when a new assignment is provided by the system to
+display the current consent status of the participant they are about to call.
