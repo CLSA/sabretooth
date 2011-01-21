@@ -12,7 +12,7 @@ namespace sabretooth;
  * singleton: a class that only allows for a single, static object
  * 
  * This is an object factory that creates singletons.  Any class that extends this base class can
- * be instantiated by calling the {@link singleton} method.  That method will return one and only
+ * be instantiated by calling the {@link self} method.  That method will return one and only
  * one instance per class.
  * @package sabretooth
  */
@@ -34,7 +34,7 @@ abstract class singleton
    * @return object
    * @access public
    */
-  public static function singleton()
+  public static function self()
   {
     if( !self::exists() )
     {

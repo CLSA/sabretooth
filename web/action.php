@@ -46,14 +46,14 @@ try
   autoloader::register();
   
   // set up the session
-  $session = session::singleton( $SETTINGS );
+  $session = session::self( $SETTINGS );
   $session->initialize();
   
   // Try creating an operation and calling the action provided by the post.
   if( !isset( $_POST['operation'] ) ||
       !isset( $_POST['action'] ) )
   {
-    log::singleton()->err( 'invalid post variables' );
+    log::self()->err( 'invalid post variables' );
   }
   else
   {
@@ -66,14 +66,14 @@ try
     $operation = new $class_name();
     if( !is_subclass_of( $operation, 'sabretooth\\business\\operation' ) )
     {
-      log::singleton()->err( "invalid operation '$operation'" );
+      log::self()->err( "invalid operation '$operation'" );
     }
     else
     {
       // set the action and make sure that it is valid
       if( !method_exists( $operation, $action_name ) )
       {
-        log::singleton()->err( "invalid action '$action'" );
+        log::self()->err( "invalid action '$action'" );
       }
       else
       {
@@ -85,15 +85,15 @@ try
 }
 catch( exception\missing $e )
 {
-  log::singleton()->err( "Missing ".$e->__toString() );
+  log::self()->err( "Missing ".$e->__toString() );
 }
 catch( exception\permission $e )
 {
-  log::singleton()->err( "Permission ".$e->__toString() );
+  log::self()->err( "Permission ".$e->__toString() );
 }
 catch( \Exception $e )
 {
-  log::singleton()->err( "Last minute ".$e->__toString() );
+  log::self()->err( "Last minute ".$e->__toString() );
 }
 
 // output the result in JSON format

@@ -19,7 +19,7 @@ class autoloader
     if( file_exists( $file ) )
     {
       require $file;
-      //if( class_exists( 'sabretooth\log' ) ) log::singleton()->notice( 'autoloading: '.$class );
+      //if( class_exists( 'sabretooth\log' ) ) log::self()->notice( 'autoloading: '.$class );
     }
     else
     {

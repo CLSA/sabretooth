@@ -27,7 +27,7 @@ class user extends active_record
   {
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::singleton()->warning( 'Tried to determine access for record with no id' );
+      \sabretooth\log::self()->warning( 'Tried to determine access for record with no id' );
       return false;
     }
 
@@ -53,7 +53,7 @@ class user extends active_record
 
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::singleton()->warning( 'Tried to get sites for record with no id' );
+      \sabretooth\log::self()->warning( 'Tried to get sites for record with no id' );
       return $sites;
     }
     
@@ -85,13 +85,13 @@ class user extends active_record
 
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::singleton()->warning( 'Tried to get roles for record with no id' );
+      \sabretooth\log::self()->warning( 'Tried to get roles for record with no id' );
       return $roles;
     }
     
     if( is_null( $db_site ) )
     {
-      \sabretooth\log::singleton()->warning( 'Tried to get roles for null site' );
+      \sabretooth\log::self()->warning( 'Tried to get roles for null site' );
       return $roles;
     }
     

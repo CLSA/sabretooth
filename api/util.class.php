@@ -37,7 +37,7 @@ final class util
    */
   public static function devel_mode()
   {
-    return true == session::singleton()->get_setting( 'general', 'development_mode' );
+    return true == session::self()->get_setting( 'general', 'development_mode' );
   }
 
   /**

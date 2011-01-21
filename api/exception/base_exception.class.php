@@ -33,7 +33,7 @@ class base_exception extends \Exception
     }
     else if( class_exists( \sabretooth\session::exists() ) )
     {
-      $this->site = \sabretooth\session::singleton()->get_site();
+      $this->site = \sabretooth\session::self()->get_site();
     }
     
     if( !is_null( $user ) )
@@ -42,7 +42,7 @@ class base_exception extends \Exception
     }
     else if( class_exists( \sabretooth\session::exists() ) )
     {
-      $this->user = \sabretooth\session::singleton()->get_user();
+      $this->user = \sabretooth\session::self()->get_user();
     }
     
     parent::__construct( "\n".

@@ -54,7 +54,7 @@ try
   \Twig_Autoloader::register();
 
   // set up the session
-  $session = session::singleton( $SETTINGS );
+  $session = session::self( $SETTINGS );
   $session->initialize();
   
   assert_options( ASSERT_ACTIVE, util::devel_mode() ? 1 : 0 );
@@ -71,6 +71,9 @@ try
   // create and setup the called widget
   $widget_name = isset( $_GET['widget'] ) ? $_GET['widget'] : 'main';
   $widget_class = '\\sabretooth\\ui\\'.$widget_name;
+
+  // autoloader doesn't work on dynamic class names for PHP 5.3.2
+  include_file( API_PATH.'/ui/'.$widget_name.'.class.php' );
   $widget = new $widget_class;
   $twig_template = $twig->loadTemplate( $widget_name.'.html' );
 
@@ -80,14 +83,14 @@ try
 // TODO: need to handle exceptions properly when in development mode using error dialogs
 catch( exception\database $e )
 {
-  log::singleton()->err( "Database ".$e->__toString() );
+  log::self()->err( "Database ".$e->__toString() );
 }
 catch( \Twig_Error_Runtime $e )
 {
-  log::singleton()->err( "Template ".$e->__toString() );
+  log::self()->err( "Template ".$e->__toString() );
 }
 catch( \Exception $e )
 {
-  log::singleton()->err( "Last minute ".$e->__toString() );
+  log::self()->err( "Last minute ".$e->__toString() );
 }
 ?>

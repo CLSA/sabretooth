@@ -18,8 +18,8 @@ require_once 'Log.php';
  * There are several logging functions, each of which have their purpose.  Use this class as
  * follows:
  * <code>
- * log::singleton()->err( "There is an error here." );
- * log::singleton()->emerg( "The server is on fire!!" );
+ * log::self()->err( "There is an error here." );
+ * log::self()->emerg( "The server is on fire!!" );
  * </code>
  * @package sabretooth
  */
@@ -29,7 +29,7 @@ final class log extends singleton
    * Constructor.
    * 
    * Since this class uses the singleton pattern the constructor is never called directly.  Instead
-   * use the {@link singleton} method.
+   * use the {@link self} method.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
@@ -49,7 +49,7 @@ final class log extends singleton
    * @param string $message The message to log.
    * @access public
    */
-  public function emerg( $message ) { $this->log( $message, PEAR_LOG_EMERG ); }
+  public function emerg( $message ) { $this->send( $message, PEAR_LOG_EMERG ); }
 
   /**
    * Logging method
@@ -60,7 +60,7 @@ final class log extends singleton
    * @param string $message The message to log.
    * @access public
    */
-  public function alert( $message ) { $this->log( $message, PEAR_LOG_ALERT ); }
+  public function alert( $message ) { $this->send( $message, PEAR_LOG_ALERT ); }
 
   /**
    * Logging method
@@ -71,7 +71,7 @@ final class log extends singleton
    * @param string $message The message to log.
    * @access public
    */
-  public function crit( $message ) { $this->log( $message, PEAR_LOG_CRIT ); }
+  public function crit( $message ) { $this->send( $message, PEAR_LOG_CRIT ); }
 
   /**
    * Logging method
@@ -82,7 +82,7 @@ final class log extends singleton
    * @param string $message The message to log.
    * @access public
    */
-  public function err( $message ) { $this->log( $message, PEAR_LOG_ERR ); }
+  public function err( $message ) { $this->send( $message, PEAR_LOG_ERR ); }
 
   /**
    * Logging method
@@ -92,7 +92,7 @@ final class log extends singleton
    * @param string $message The message to log.
    * @access public
    */
-  public function warning( $message ) { $this->log( $message, PEAR_LOG_WARNING ); }
+  public function warning( $message ) { $this->send( $message, PEAR_LOG_WARNING ); }
 
   /**
    * Logging method
@@ -103,7 +103,7 @@ final class log extends singleton
    * @param string $message The message to log.
    * @access public
    */
-  public function notice( $message ) { $this->log( $message, PEAR_LOG_NOTICE ); }
+  public function notice( $message ) { $this->send( $message, PEAR_LOG_NOTICE ); }
 
   /**
    * Logging method
@@ -115,7 +115,7 @@ final class log extends singleton
    * @param string $message The message to log.
    * @access public
    */
-  public function debug( $message ) { $this->log( $message, PEAR_LOG_DEBUG ); }
+  public function debug( $message ) { $this->send( $message, PEAR_LOG_DEBUG ); }
   
   /**
    * Logging method
@@ -126,7 +126,7 @@ final class log extends singleton
    * @param string $message The message to log.
    * @access public
    */
-  public function info( $message ) { $this->log( $message, PEAR_LOG_INFO ); }
+  public function info( $message ) { $this->send( $message, PEAR_LOG_INFO ); }
 
   /**
    * Returns the backtrace as a log-friendly string.
@@ -158,7 +158,7 @@ final class log extends singleton
    * @param int $type The PEAR Log type (PEAR_LOG_ERR, PEAR_LOG_WARNING, etc)
    * @access private
    */
-  private function log( $message, $type )
+  private function send( $message, $type )
   {
     // make sure we have a session
     if( !class_exists( 'sabretooth\session' ) || !session::exists() ) return;
@@ -220,8 +220,8 @@ final class log extends singleton
       {
         // log info to the database (PEAR logger not used)
         $db_log = new database\log();
-        $db_log->user_id = session::singleton()->get_user()->get_id();
-        $db_log->site_id = session::singleton()->get_site()->get_id();
+        $db_log->user_id = session::self()->get_user()->get_id();
+        $db_log->site_id = session::self()->get_site()->get_id();
         $db_log->text = $message;
         $db_log->save();
       }
@@ -293,7 +293,7 @@ final class log extends singleton
     if( E_PARSE == $level ||
         E_COMPILE_ERROR == $level )
     {
-      log::singleton()->emerg( $message );
+      log::self()->emerg( $message );
       // fatal error, send JSON error or just quit with error code
       die( util::action_mode() ? json_encode( array( 'error' => true ) ) : 1 );
     }
@@ -301,7 +301,7 @@ final class log extends singleton
              E_CORE_ERROR == $level ||
              E_ERROR == $level )
     {
-      log::singleton()->err( $message );
+      log::self()->err( $message );
       // fatal error, send JSON error or just quit with error code
       die( util::action_mode() ? json_encode( array( 'error' => true ) ) : 1 );
     }
@@ -311,14 +311,14 @@ final class log extends singleton
              E_STRICT == $level ||
              E_RECOVERABLE_ERROR == $level )
     {
-      log::singleton()->warning( $message );
+      log::self()->warning( $message );
     }
     else if( E_NOTICE == $level ||
              E_USER_NOTICE == $level ||
              E_DEPRECATED == $level ||
              E_USER_DEPRECATED == $level )
     {
-      log::singleton()->notice( $message );
+      log::self()->notice( $message );
     }
   
     return false;
@@ -355,7 +355,7 @@ final class log extends singleton
 }
 
 // define a custom error handlers
-set_error_handler( array( '\sabretooth\Log', 'error_handler' ) );
-register_shutdown_function( array( '\sabretooth\Log', 'fatal_error_handler' ) );
-assert_options( ASSERT_CALLBACK, array( '\sabretooth\Log', 'assert_handler' ) );
+set_error_handler( array( '\sabretooth\log', 'error_handler' ) );
+register_shutdown_function( array( '\sabretooth\log', 'fatal_error_handler' ) );
+assert_options( ASSERT_CALLBACK, array( '\sabretooth\log', 'assert_handler' ) );
 ?>

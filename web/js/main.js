@@ -19,7 +19,7 @@ $( document ).ready( function() {
   } );
 } );
 
-function load_widget( widget ) { $( "#widget_" + widget ).load( 'ui.php?widget=' + widget ); }
+function load_widget( widget ) { $( "#widget_" + widget ).load( '?widget=' + widget ); }
 
 // load the settings widget
 $( document ).ready( function() { load_widget( "settings" ); } );

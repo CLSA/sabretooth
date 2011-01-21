@@ -31,11 +31,11 @@ abstract class active_record extends \sabretooth\base_object
    */
   public function __construct( $primary_keys = NULL )
   {
-    //\sabretooth\log::singleton()->debug( 'active_record: '.( is_null( $primary_keys )
+    //\sabretooth\log::self()->debug( 'active_record: '.( is_null( $primary_keys )
     //  ? 'creating new '.$this->get_table_name().' record'
     //  : 'creating '.$this->get_table_name().' with primary key(s) '.$primary_keys ) );
 
-    $db = \sabretooth\session::singleton()->get_db();
+    $db = \sabretooth\session::self()->get_db();
     
     // determine the columns for this table
     $columns = $db->MetaColumnNames( static::get_table_name() );
@@ -281,8 +281,8 @@ abstract class active_record extends \sabretooth\base_object
   public static function get_unique_record( $column, $value )
   {
     $record = NULL;
-    $database = \sabretooth\session::singleton()->get_setting( 'db', 'database' );
-    $db = \sabretooth\session::singleton()->get_db();
+    $database = \sabretooth\session::self()->get_setting( 'db', 'database' );
+    $db = \sabretooth\session::self()->get_db();
 
     // determine the unique key(s)
     $unique_keys = self::get_col( 
@@ -353,7 +353,7 @@ abstract class active_record extends \sabretooth\base_object
    */
   protected static function execute( $sql, $input_array = false )
   {
-    $db = \sabretooth\session::singleton()->get_db();
+    $db = \sabretooth\session::self()->get_db();
     $result = $db->Execute( $sql, $input_array );
     if( false === $result ) throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql );
     return $result;
@@ -374,7 +374,7 @@ abstract class active_record extends \sabretooth\base_object
    */
   protected static function get_one( $sql, $input_array = false )
   {
-    $db = \sabretooth\session::singleton()->get_db();
+    $db = \sabretooth\session::self()->get_db();
     $result = $db->GetOne( $sql, $input_array );
     if( false === $result ) throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql );
     return $result;
@@ -395,7 +395,7 @@ abstract class active_record extends \sabretooth\base_object
    */
   protected static function get_row( $sql, $input_array = false )
   {
-    $db = \sabretooth\session::singleton()->get_db();
+    $db = \sabretooth\session::self()->get_db();
     $result = $db->GetRow( $sql, $input_array );
     if( false === $result ) throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql );
     return $result;
@@ -416,7 +416,7 @@ abstract class active_record extends \sabretooth\base_object
    */
   protected static function get_all( $sql, $input_array = false )
   {
-    $db = \sabretooth\session::singleton()->get_db();
+    $db = \sabretooth\session::self()->get_db();
     $result = $db->GetAll( $sql, $input_array );
     if( false === $result ) throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql );
     return $result;
@@ -438,7 +438,7 @@ abstract class active_record extends \sabretooth\base_object
    */
   protected static function get_col( $sql, $input_array = false, $trim = false )
   {
-    $db = \sabretooth\session::singleton()->get_db();
+    $db = \sabretooth\session::self()->get_db();
     $result = $db->GetCol( $sql, $input_array, $trim );
     if( false === $result ) throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql );
     return $result;
@@ -456,7 +456,7 @@ abstract class active_record extends \sabretooth\base_object
    */
   protected static function insert_id()
   {
-    return \sabretooth\session::singleton()->get_db()->Insert_ID();
+    return \sabretooth\session::self()->get_db()->Insert_ID();
   }
   
   /**
@@ -471,7 +471,7 @@ abstract class active_record extends \sabretooth\base_object
    */
   protected static function affected_rows( $sql, $input_array = false, $trim = false )
   {
-    return \sabretooth\session::singleton()->get_db()->Affected_Rows();
+    return \sabretooth\session::self()->get_db()->Affected_Rows();
   }
   
   /**
