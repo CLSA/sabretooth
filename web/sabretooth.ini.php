@@ -35,6 +35,7 @@ $SETTINGS[ 'paths' ][ 'CSS_PATH' ] = 'css';
 $SETTINGS[ 'paths' ][ 'JQUERY_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.min.js';
 $SETTINGS[ 'paths' ][ 'JQUERY_UI_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery-ui.min.js';
 $SETTINGS[ 'paths' ][ 'JQUERY_LAYOUT_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.layout.min.js';
+$SETTINGS[ 'paths' ][ 'JQUERY_COOKIE_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.cookie.js';
 $SETTINGS[ 'paths' ][ 'JQUERY_HOVERINTENT_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.hoverIntent.min.js';
 $SETTINGS[ 'paths' ][ 'JQUERY_METADATA_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.metadata.js';
 $SETTINGS[ 'paths' ][ 'JQUERY_FLIPTEXT_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery-mb.flipText.js';

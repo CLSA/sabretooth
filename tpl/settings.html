@@ -11,10 +11,28 @@
  # @param array sites This is an associative array containing the names of all sites which the user
                       has access to.
  #}
+<script type="text/javascript">
+// set_site dropdown
+$( document ).ready( function() {
+  $( "#dropdown_set_site" ).change( function() {
+    var selected = $( "#dropdown_set_site option:selected" );
+    if( 0 != selected.val() )
+    {
+      jQuery.post(
+        'action.php',
+        { operation: 'user',
+          action: 'set_site',
+          args: [ selected.text() ] },
+        function() { load_widget( 'settings' ); },
+        'json' );
+    }
+  } );
+} );
+</script>
 <table width="100%" cellspacing="0" cellpadding="0">
   <tr>
     <td align="left">
-      Welcome {{ this.user_name }}
+      Welcome {{ settings.user_name }}
     </td>
     <td align="right">
       <button onclick="jQuery.post( 'index.php', { logout: 'logout' } );">logout</button>
@@ -23,31 +41,28 @@
   <tr><td colspan="2"><div style="padding-top: 6px;"></div></td></tr>
   <tr><td colspan="2"><div style="border-top: 2px solid #CCC; padding-top: 6px;"></div></td></tr>
   <tr>
-    <td align="left" >
+    <td align="left">
       Site: 
-      {% if 1 < this.sites|count %}
-      <select onchange="$.post( 'action.php',
-                                { operation: 'user.set_site' },
-                                function( data ) { console.log( data ); },
-                                'json' );">
-        {% for site in this.sites %}
-        <option{{ this.current_site_name == site ? ' selected' : '' }}>{{ site }}</option>
+      {% if 1 < settings.sites|count %}
+      <select id="dropdown_set_site">
+        {% for site in settings.sites %}
+        <option{{ settings.current_site_name == site ? ' selected' : '' }}>{{ site }}</option>
         {% endfor %}
       </select>
       {% else %}
-      {{ this.current_site_name }}
+      {{ settings.current_site_name }}
       {% endif %}
     </td>
     <td align="right">
       Role: 
-      {% if 1 < this.roles|count %}
-      <select>
-        {% for role in this.roles %}
-        <option{{ this.current_role_name == role ? ' selected' : '' }}>{{ role }}</option>
+      {% if 1 < settings.roles|count %}
+      <select id="dropdown_set_role">
+        {% for role in settings.roles %}
+        <option{{ settings.current_role_name == role ? ' selected' : '' }}>{{ role }}</option>
         {% endfor %}
       </select>
       {% else %}
-      {{ this.current_role_name }}
+      {{ settings.current_role_name }}
       {% endif %}
     </td>
   </tr>

@@ -13,5 +13,28 @@ namespace sabretooth\business;
  *
  * @package sabretooth\business
  */
-class user extends operation {}
+class user extends operation
+{
+  /**
+   * set_site: Set the current user's active site
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\runtime
+   * @access public
+   */
+  public function set_site( $site_name )
+  {
+    $db_site = \sabretooth\database\site::get_unique_record( 'name', $site_name );
+    if( NULL == $db_site )
+      \sabretooth\log::singleton()->error( "Invalid site name '$site_name'" );
+
+    // get the first role associated with the site
+    $session = \sabretooth\session::singleton();
+    $db_role_array = $session->get_user()->get_roles( $db_site );
+    if( 0 == count( $db_role_array ) )
+      \sabretooth\log::singleton()->error( "User has no access to site name '$site_name'" );
+
+    \sabretooth\session::singleton()->set_site_and_role( $db_site, $db_role_array[0] );
+  }
+}
 ?>

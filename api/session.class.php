@@ -66,7 +66,7 @@ final class session extends singleton
       log::singleton()->alert( 'Unable to connect to the database.' );
     }
     $this->db->SetFetchMode( ADODB_FETCH_ASSOC );
-
+    
     // determine the user (setting the user will also set the site and role)
     $user_name = util::devel_mode() && defined( 'STDIN' )
                ? $_SERVER[ 'USER' ]
@@ -113,7 +113,7 @@ final class session extends singleton
   }
 
   /**
-   * Get the current role
+   * Get the current role.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\role
@@ -122,37 +122,13 @@ final class session extends singleton
   public function get_role() { return $this->role; }
 
   /**
-   * Set the current role
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\role $role
-   * @access public
-   */
-  public function set_role( $role )
-  {
-    $this->role = $role;
-  }
-
-  /**
-   * Get the current site
+   * Get the current site.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\site
    * @access public
    */
   public function get_site() { return $this->site; }
-
-  /**
-   * Set the current site
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\site $site
-   * @access public
-   */
-  public function set_site( $site )
-  {
-    $this->site = $site;
-  }
 
   /**
    * Get the current user.
@@ -164,25 +140,77 @@ final class session extends singleton
   public function get_user() { return $this->user; }
 
   /**
+   * Set the current site and role.
+   * 
+   * If the user does not have the proper access then nothing is changed.  
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\site $db_site
+   * @param database\role $db_role
+   * @access public
+   */
+  public function set_site_and_role( $db_site, $db_role )
+  {
+    if( is_null( $db_site ) || is_null( $db_role ) )
+    {
+      $this->site = NULL;
+      $this->role = NULL;
+      unset( $_SESSION['current_site_id'] );
+      unset( $_SESSION['current_role_id'] );
+    }
+    else
+    {
+      // verify that the user has the right access
+      if( $this->user->has_access( $db_site, $db_role ) )
+      {
+        $this->site = $db_site;
+        $this->role = $db_role;
+        $_SESSION['current_site_id'] = $this->site->id;
+        $_SESSION['current_role_id'] = $this->role->id;
+      }
+    }
+  }
+
+  /**
    * Set the current user.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\user $user
+   * @param database\user $db_user
    * @access public
    */
-  public function set_user( $user )
+  public function set_user( $db_user )
   {
-    $this->user = $user;
+    $this->user = $db_user;
 
-    // Determine the site and role (use the first one found)
-    if( $this->user )
+    // Determine the site and role
+    if( is_null( $this->user ) )
     {
-      $db_site_array = $this->user->get_sites();
-      if( 0 == count( $db_site_array ) ) log::singleton()->err( "User does not have access to any site." );
-      $this->set_site( $db_site_array[0] );
+      $this->set_site_and_role( NULL, NULL );
+    }
+    else
+    {
+      // do not use set functions or we will loose cookies
+      $this->site = NULL;
+      $this->role = NULL;
+
+      // see if we already have the current site stored in the php session
+      if( isset( $_SESSION['current_site_id'] ) && isset( $_SESSION['current_role_id'] ) )
+      {
+        $this->set_site_and_role( new database\site( $_SESSION['current_site_id'] ),
+                                  new database\role( $_SESSION['current_role_id'] ) );
+      }
       
-      $db_role_array = $this->user->get_roles( $this->site );
-      $this->set_role( $db_role_array[0] );
+      // if we still don't have a site and role then pick the first one we can find
+      if( is_null( $this->site ) || is_null( $this->role ) )
+      {
+        $db_site_array = $this->user->get_sites();
+        if( 0 == count( $db_site_array ) )
+          log::singleton()->err( "User does not have access to any site." );
+        $db_site = $db_site_array[0];
+        $db_role_array = $this->user->get_roles( $db_site );
+        $db_role = $db_role_array[0];
+
+        $this->set_site_and_role( $db_site, $db_role );
+      }
     }
   }
 

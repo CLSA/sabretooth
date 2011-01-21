@@ -8,6 +8,8 @@
  * @vertion 0.1
  */
 namespace sabretooth;
+session_name( 'sabretooth' );
+session_start();
 define( 'ACTION_MODE', false );
 
 if( isset( $_POST ) && isset( $_POST['logout'] ) && 'logout' == $_POST['logout'] )
@@ -65,11 +67,12 @@ try
   $twig->addFilter( 'count', new \Twig_Filter_Function( 'count' ) );
   foreach( $SETTINGS[ 'paths' ] as $path_name => $path_value )
     $twig->addGlobal( $path_name, $path_value );
-  $twig_template = $twig->loadTemplate( 'index.html' );
   
-  // create and setup the index widget
-  $w_index = new ui\index();
-  $w_index->set_variable( 'survey_active', false );
+  // create and setup the called widget
+  $widget_name = isset( $_GET['widget'] ) ? $_GET['widget'] : 'main';
+  $widget_class = '\\sabretooth\\ui\\'.$widget_name;
+  $widget = new $widget_class;
+  $twig_template = $twig->loadTemplate( $widget_name.'.html' );
 
   $output = $twig_template->render( ui\widget::get_variables() );
   print $output;
@@ -85,6 +88,6 @@ catch( \Twig_Error_Runtime $e )
 }
 catch( \Exception $e )
 {
-  log::singleton()->err( "Uncaught ".$e->__toString() );
+  log::singleton()->err( "Last minute ".$e->__toString() );
 }
 ?>

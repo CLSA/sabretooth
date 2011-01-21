@@ -8,6 +8,8 @@
  * @vertion 0.1
  */
 namespace sabretooth;
+session_name( 'sabretooth' );
+session_start();
 define( 'ACTION_MODE', true );
 
 // set up error handling (error_reporting is also called in session's constructor)
@@ -38,9 +40,6 @@ foreach( $SETTINGS[ 'paths' ] as $path_name => $path_value ) define( $path_name,
 // include necessary files
 include_file( API_PATH.'/autoloader.class.php' );
 
-// used to communicate with the GUI
-$result_array = array( 'error' => false );
-
 try
 {
   // register autoloaders
@@ -50,52 +49,53 @@ try
   $session = session::singleton( $SETTINGS );
   $session->initialize();
   
-  // Create an operation manager and try executing the operation
-  // Operations are sent as strings in the form: operation.action
-  $op_array = explode( '.', $_POST[ 'operation' ] );
-
-  if( 2 != count( $op_array ) )
+  // Try creating an operation and calling the action provided by the post.
+  if( !isset( $_POST['operation'] ) ||
+      !isset( $_POST['action'] ) )
   {
-    $result_array['error'] = 'invalid1';
+    log::singleton()->err( 'invalid post variables' );
   }
   else
   {
+    $operation_name = $_POST['operation'];
+    $action_name = $_POST['action'];
+    $args = isset( $_POST['args'] ) ? $_POST['args'] : NULL;
+
     // create the operation (and verify that it is an operation)
-    $class_name = 'sabretooth\\business\\'.$op_array[0];
+    $class_name = 'sabretooth\\business\\'.$operation_name;
     $operation = new $class_name();
     if( !is_subclass_of( $operation, 'sabretooth\\business\\operation' ) )
     {
-      $result_array['error'] = 'invalid2';
+      log::singleton()->err( "invalid operation '$operation'" );
     }
     else
     {
       // set the action and make sure that it is valid
-      if( !$operation->set_action( $op_array[1] ) )
+      if( !method_exists( $operation, $action_name ) )
       {
-        $result_array['error'] = 'invalid3';
+        log::singleton()->err( "invalid action '$action'" );
       }
       else
       {
         // execute the action (may throw a permission error)
-        //$operation->execute();
-        $result_array['success'] = true;
+        call_user_func_array( array( $operation, $action_name ), $args );
       }
     }
   }
 }
 catch( exception\missing $e )
 {
-  $result_array['error'] = 'invalid4';
+  log::singleton()->err( "Missing ".$e->__toString() );
 }
 catch( exception\permission $e )
 {
-  $result_array['error'] = 'permission';
+  log::singleton()->err( "Permission ".$e->__toString() );
 }
 catch( \Exception $e )
 {
-  $result_array['error'] = 'unknown';
+  log::singleton()->err( "Last minute ".$e->__toString() );
 }
 
 // output the result in JSON format
-print json_encode( $result_array );
+print json_encode( array( 'success' => true ) );
 ?>

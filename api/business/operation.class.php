@@ -18,11 +18,6 @@ namespace sabretooth\business;
  */
 abstract class operation extends \sabretooth\base_object
 {
-  public function set_action( $action )
-  {
-    return true;
-  }
-
   /**
    * One of the 5 basic REVAL operations.
    * 

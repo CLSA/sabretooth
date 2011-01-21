@@ -15,6 +15,31 @@ namespace sabretooth\database;
  */
 class user extends active_record
 {
+  /**
+   * Returns whether the user has the role for the given site.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\site $db_site
+   * @param database\role $db_role
+   * @return array( database\site )
+   */
+  public function has_access( $db_site, $db_role )
+  {
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::singleton()->warning( 'Tried to determine access for record with no id' );
+      return false;
+    }
+
+    $rows = self::get_one(
+      'SELECT user_id '.
+      'FROM user_access '.
+      'WHERE user_id = '.$this->id.' '.
+      'AND site_id = '.$db_site->id.' '.
+      'AND role_id = '.$db_role->id );
+    
+    return count( $rows );
+  }
   
   /**
    * Returns an array of site objects the user has access to (empty array if none).
@@ -51,10 +76,10 @@ class user extends active_record
    * Returns an array of role objects the user has for the given site.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\site $site
+   * @param database\site $db_site
    * @return array( database\role )
    */
-  public function get_roles( $site )
+  public function get_roles( $db_site )
   {
     $roles = array();
 
@@ -64,7 +89,7 @@ class user extends active_record
       return $roles;
     }
     
-    if( is_null( $site ) )
+    if( is_null( $db_site ) )
     {
       \sabretooth\log::singleton()->warning( 'Tried to get roles for null site' );
       return $roles;
@@ -74,7 +99,7 @@ class user extends active_record
       'SELECT role_id '.
       'FROM user_access '.
       'WHERE user_id = '.$this->id.' '.
-      'AND site_id = '.$site->id.' '.
+      'AND site_id = '.$db_site->id.' '.
       'ORDER BY role_id' );
     
     foreach( $role_ids as $role_id )
