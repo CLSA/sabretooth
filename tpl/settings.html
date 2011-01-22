@@ -11,6 +11,8 @@
  # @param array sites This is an associative array containing the names of all sites which the user
                       has access to.
  #}
+{% extends "widget.html" %}
+{% block widget %}
 <script type="text/javascript">
 // set_site dropdown
 $( document ).ready( function() {
@@ -23,7 +25,7 @@ $( document ).ready( function() {
         { operation: 'user',
           action: 'set_site',
           args: [ selected.text() ] },
-        function() { load_widget( 'settings' ); },
+        function() { load_widget( 'settings', 'settings' ); },
         'json' );
     }
   } );
@@ -67,3 +69,4 @@ $( document ).ready( function() {
     </td>
   </tr>
 </table>
+{% endblock %}

@@ -10,6 +10,7 @@
 
 <head>
   <title>Sabretooth</title>
+  <script type="text/javascript"></script>
   <link href="{{ JQUERY_UI_CSS_FILE }}" rel="stylesheet" />
   <link href="css/main.css" rel="stylesheet" />
   <script type="text/javascript" src="{{ JQUERY_JS_FILE }}"></script>
@@ -20,6 +21,8 @@
   <script type="text/javascript" src="{{ JQUERY_METADATA_JS_FILE }}"></script>
   <script type="text/javascript" src="{{ JQUERY_FLIPTEXT_JS_FILE }}"></script>
   <script type="text/javascript" src="{{ JQUERY_EXTRUDER_JS_FILE }}"></script>
+  <script type="text/javascript" src="{{ JQUERY_LOADING_JS_FILE }}"></script>
+  <script type="text/javascript" src="{{ JQUERY_LOADING_OVERFLOW_JS_FILE }}"></script>
   <script type="text/javascript" src="js/main.js"></script>
   <script type="text/javascript">
   {% if main.survey_active %}
@@ -46,15 +49,10 @@
 
 <body>
   <div id="top_extruder" class="{title:'settings'}">
-    <div id="widget_settings"></div>
+    <div id="settings_slot"></div>
   </div>
   <div class="ui-layout-center" id="app_ui">
-    <p>So this is some text.</p>
-    <button>this is a test</button><br>
-    <a href="#" onclick="$.post( 'action.php',
-                                 { operation: 'user.list' },
-                                 function( data ) { console.log( data ); },
-                                 'json' );">get user list</a>
+    <div id="main_slot" style="margin-top:30px;"></div>
   </div>
   {% if main.survey_active %}
   <div class="ui-layout-south" id="survey_ui">

@@ -29,25 +29,25 @@ class settings extends widget
     $db_site = \sabretooth\session::self()->get_site();
     $db_role = \sabretooth\session::self()->get_role();
     
-    $sites = array();
-    $db_site_array = $db_user->get_sites();
-    foreach( $db_site_array as $db_site )
+    $site_names = array();
+    $sites = $db_user->get_sites();
+    foreach( $sites as $site )
     {
-      array_push( $sites, $db_site->name );
+      array_push( $site_names, $site->name );
     }
 
-    $roles = array();
-    $db_role_array = $db_user->get_roles( $db_site );
-    foreach( $db_role_array as $db_role )
+    $role_names = array();
+    $roles = $db_user->get_roles( $db_site );
+    foreach( $roles as $role )
     {
-      array_push( $roles, $db_role->name );
+      array_push( $role_names, $role->name );
     }
 
     $this->set_variable( 'user_name', $db_user->name );
     $this->set_variable( 'current_site_name', $db_site->name );
     $this->set_variable( 'current_role_name', $db_role->name );
-    $this->set_variable( 'roles', $roles );
-    $this->set_variable( 'sites', $sites );
+    $this->set_variable( 'roles', $role_names );
+    $this->set_variable( 'sites', $site_names );
   }
 }
 ?>

@@ -1,9 +1,3 @@
-// style all links, submits and buttons with jquery-ui
-$( document ).ready( function() {
-  $( "button, input:submit, a" ).button();
-  $( "a" ).click( function() { return false; } );
-} );
-
 // setup the top extruder
 $( document ).ready( function() {
   $( "#top_extruder" ).buildMbExtruder( {
@@ -19,7 +13,21 @@ $( document ).ready( function() {
   } );
 } );
 
-function load_widget( widget ) { $( "#widget_" + widget ).load( '?widget=' + widget ); }
+// load a widget from the server
+function load_widget( slot, widget )
+{
+  // add a loading indicator
+  $( "#" + slot + "_slot" ).loading( true, {
+    onAjax: true,
+    mask: true,
+    img: 'img/loading.gif',
+    delay: 500,
+    align: 'center'
+  } );
+  $( "#" + slot + "_slot" ).load( '?widget=' + widget );
+  $( "#" + slot + "_slot" ).loading( false );
+}
 
 // load the settings widget
-$( document ).ready( function() { load_widget( "settings" ); } );
+$( document ).ready( function() { load_widget( "settings", "settings" ); } );
+$( document ).ready( function() { load_widget( "main", "llist" ); } );

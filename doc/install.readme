@@ -6,7 +6,8 @@ The following software must be installed prior to installing sabretooth:
 - ADOdb 5.11+
 - jQuery 1.4.4+
 - jQuery-ui 1.8.8+
-- jQuery plugins: cookie, hoverIntent, layout, extruder, flipText, metadata
+- jQuery plugins: cookie, hoverIntent, layout, extruder, flipText, metadata,
+                  loading, loading.overflow
 - phpagi 2.20+
 - phpexcel 1.7.5+
 - twig

@@ -69,7 +69,8 @@ try
     $twig->addGlobal( $path_name, $path_value );
   
   // create and setup the called widget
-  $widget_name = isset( $_GET['widget'] ) ? $_GET['widget'] : 'main';
+  if( util::devel_mode() && defined( 'STDIN' ) ) $widget_name = $argv[1];
+  else $widget_name = isset( $_GET['widget'] ) ? $_GET['widget'] : 'main';
   $widget_class = '\\sabretooth\\ui\\'.$widget_name;
 
   // autoloader doesn't work on dynamic class names for PHP 5.3.2

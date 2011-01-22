@@ -40,6 +40,8 @@ $SETTINGS[ 'paths' ][ 'JQUERY_HOVERINTENT_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS
 $SETTINGS[ 'paths' ][ 'JQUERY_METADATA_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.metadata.js';
 $SETTINGS[ 'paths' ][ 'JQUERY_FLIPTEXT_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery-mb.flipText.js';
 $SETTINGS[ 'paths' ][ 'JQUERY_EXTRUDER_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery-mb.extruder.js';
+$SETTINGS[ 'paths' ][ 'JQUERY_LOADING_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.loading.min.js';
+$SETTINGS[ 'paths' ][ 'JQUERY_LOADING_OVERFLOW_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.loading.overflow.min.js';
 
 // css files
 $SETTINGS[ 'paths' ][ 'JQUERY_UI_CSS_FILE' ] = $SETTINGS[ 'paths' ][ 'CSS_PATH' ].'/ui/jquery-ui.css';

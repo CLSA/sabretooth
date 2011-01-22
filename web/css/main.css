@@ -17,7 +17,7 @@ body {
 /* Used by the top extruder UI component  */
 .extruder.top .flap {
   display:block;
-  color:white;
+  color:#1c94c4;
   font:16px/24px Arial, Helvetica, sans-serif;
   font-weight:bold;
   text-align:center;
@@ -25,7 +25,7 @@ body {
   padding:0 5px 5px 5px;
   height:20px;
   width:180px;
-  background:#668;
+  background:#f6f6f6;
   -moz-border-radius:0 0 10px 10px;
   -webkit-border-bottom-left-radius:10px;
   -webkit-border-bottom-right-radius:10px;
@@ -35,13 +35,13 @@ body {
 }
 
 .extruder.top:hover .flap:hover {
-  color:#668;
-  background-color:white;
+  color:#c77405;
+  background-color:#fdf5ce;
 }
 
 .extruder.top:active .flap:active {
-  color:black;
-  background-color:#CCC;
+  color:#eb8f00;
+  background-color:#ffffff;
 }
 
 .extruder.top .content {
