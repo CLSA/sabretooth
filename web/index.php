@@ -69,13 +69,18 @@ try
     $twig->addGlobal( $path_name, $path_value );
   
   // create and setup the called widget
-  if( util::devel_mode() && defined( 'STDIN' ) ) $widget_name = $argv[1];
+  if( util::devel_mode() && defined( 'STDIN' ) && 1 < $argc ) $widget_name = $argv[1];
   else $widget_name = isset( $_GET['widget'] ) ? $_GET['widget'] : 'main';
   $widget_class = '\\sabretooth\\ui\\'.$widget_name;
+  
+  // determine the widget arguments
+  if( util::devel_mode() && defined( 'STDIN' ) && 2 < $argc ) $widget_args = $argv[2];
+  else $widget_args = isset( $_GET['args'] ) ? json_decode( $_GET['args'], true ) : NULL;
 
   // autoloader doesn't work on dynamic class names for PHP 5.3.2
   include_file( API_PATH.'/ui/'.$widget_name.'.class.php' );
-  $widget = new $widget_class;
+  $widget = new $widget_class( $widget_args );
+  $widget->finish();
   $twig_template = $twig->loadTemplate( $widget_name.'.html' );
 
   $output = $twig_template->render( ui\widget::get_variables() );

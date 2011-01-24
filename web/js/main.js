@@ -30,4 +30,3 @@ function load_widget( slot, widget )
 
 // load the settings widget
 $( document ).ready( function() { load_widget( "settings", "settings" ); } );
-$( document ).ready( function() { load_widget( "main", "llist" ); } );

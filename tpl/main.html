@@ -25,12 +25,13 @@
   <script type="text/javascript" src="{{ JQUERY_LOADING_OVERFLOW_JS_FILE }}"></script>
   <script type="text/javascript" src="js/main.js"></script>
   <script type="text/javascript">
+  // set button styles
+  $( function() { $( "button, input:submit" ).button(); } );
+
   {% if main.survey_active %}
-  /**
-   * Defines the layout when showing the survey pane.
-   * Should only be visible when there is an active survey.
-   */
-  $(document).ready( function() {
+  // Defines the layout when showing the survey pane.
+  // Should only be visible when there is an active survey.
+  $( document ).ready( function() {
       var layout = $('body').layout( {
       defaults: {
         applyDefaultStyles: true,
@@ -44,6 +45,18 @@
     }
   );
   {% endif %}
+
+  // TODO: test code only, remove when done
+  $( document ).ready( function() {
+    $( "#test_button" ).click( function() {
+      jQuery.post(
+        'action.php',
+        { operation: 'user',
+          action: 'llist' },
+        function() { load_widget( 'main', 'user_llist' ); },
+        'json' );
+    } );
+  } );
   </script>
 </head>
 
@@ -52,7 +65,9 @@
     <div id="settings_slot"></div>
   </div>
   <div class="ui-layout-center" id="app_ui">
-    <div id="main_slot" style="margin-top:30px;"></div>
+    <div id="main_slot">
+      <button id="test_button">get user list</button>
+    </div>
   </div>
   {% if main.survey_active %}
   <div class="ui-layout-south" id="survey_ui">

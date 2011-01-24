@@ -31,7 +31,7 @@ $( document ).ready( function() {
   } );
 } );
 </script>
-<table width="100%" cellspacing="0" cellpadding="0">
+<table>
   <tr>
     <td align="left">
       Welcome {{ settings.user_name }}
@@ -40,13 +40,14 @@ $( document ).ready( function() {
       <button onclick="jQuery.post( 'index.php', { logout: 'logout' } );">logout</button>
     </td>
   </tr>
-  <tr><td colspan="2"><div style="padding-top: 6px;"></div></td></tr>
-  <tr><td colspan="2"><div style="border-top: 2px solid #CCC; padding-top: 6px;"></div></td></tr>
+</table>
+<hr>
+<table>
   <tr>
-    <td align="left">
-      Site: 
+    <td align="left" width="50%">
+      <b>Site:</b>
       {% if 1 < settings.sites|count %}
-      <select id="dropdown_set_site">
+      <select id="dropdown_set_site" style="width: 140px">
         {% for site in settings.sites %}
         <option{{ settings.current_site_name == site ? ' selected' : '' }}>{{ site }}</option>
         {% endfor %}
@@ -55,10 +56,10 @@ $( document ).ready( function() {
       {{ settings.current_site_name }}
       {% endif %}
     </td>
-    <td align="right">
-      Role: 
+    <td align="left" width="50%">
+      <b>Role:</b>
       {% if 1 < settings.roles|count %}
-      <select id="dropdown_set_role">
+      <select id="dropdown_set_role" style="width: 140px">
         {% for role in settings.roles %}
         <option{{ settings.current_role_name == role ? ' selected' : '' }}>{{ role }}</option>
         {% endfor %}

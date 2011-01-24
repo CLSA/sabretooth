@@ -36,5 +36,10 @@ class user extends operation
 
     \sabretooth\session::self()->set_site_and_role( $db_site, $db_role_array[0] );
   }
+
+  public function llist()
+  {
+    
+  }
 }
 ?>

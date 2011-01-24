@@ -44,7 +44,7 @@ $SETTINGS[ 'paths' ][ 'JQUERY_LOADING_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PAT
 $SETTINGS[ 'paths' ][ 'JQUERY_LOADING_OVERFLOW_JS_FILE' ] = $SETTINGS[ 'paths' ][ 'JS_PATH' ].'/jquery.loading.overflow.min.js';
 
 // css files
-$SETTINGS[ 'paths' ][ 'JQUERY_UI_CSS_FILE' ] = $SETTINGS[ 'paths' ][ 'CSS_PATH' ].'/ui/jquery-ui.css';
+$SETTINGS[ 'paths' ][ 'JQUERY_UI_CSS_FILE' ] = $SETTINGS[ 'paths' ][ 'CSS_PATH' ].'/jquery-ui.css';
 
 // the location of log files
 $SETTINGS[ 'paths' ][ 'LOG_FILE' ] = '/var/local/sabretooth/log';

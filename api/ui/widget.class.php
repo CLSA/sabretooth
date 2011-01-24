@@ -20,6 +20,30 @@ namespace sabretooth\ui;
 abstract class widget extends \sabretooth\base_object
 {
   /**
+   * Constructor
+   * 
+   * Defines all variables available in every widget
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function __construct( $args = NULL )
+  {
+    // define all template variables for this widget
+    self::$variables[ 'widget_name' ] = self::get_class_name();
+  }
+
+  /**
+   * Finish setting the variables in a widget.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function finish()
+  {
+    // set all variables which have been changed/set after the construction of the widget
+  }
+
+  /**
    * Set a widget variable.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

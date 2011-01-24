@@ -1,85 +1,148 @@
 {% extends "widget.html" %}
 {% block widget %}
-<table>
-  <thead>
+<style type="text/css">
+  .{{ widget_name }}_title {
+    margin-top: 0.5em;
+    margin-bottom: 0.1em;
+  }
+</style>
+<script type="text/javascript">
+// make button icons
+{% if llist.checkable %}
+$( function() {
+  $( ".{{ widget_name }}_check" ).button( {
+    text: false,
+    icons: {
+      primary: "ui-icon-check"
+    }
+  } )
+} );
+{% endif %}
+{% if llist.viewable %}
+$( function() {
+  $( ".{{ widget_name }}_view" ).button( {
+    text: false,
+    icons: {
+      primary: "ui-icon-document"
+    }
+  } )
+} );
+{% endif %}
+{% if llist.editable %}
+$( function() {
+  $( ".{{ widget_name }}_edit" ).button( {
+    text: false,
+    icons: {
+      primary: "ui-icon-pencil"
+    }
+  } )
+} );
+{% endif %}
+{% if llist.removable %}
+$( function() {
+  $( ".{{ widget_name }}_remove" ).button( {
+    text: false,
+    icons: {
+      primary: "ui-icon-closethick"
+    }
+  } )
+} );
+{% endif %}
+
+// stripe the table
+$( function() {
+  $(".striped tr").mouseover( function() { $(this).addClass( "over" ); } );
+  $(".striped tr").mouseout( function() { $(this).removeClass( "over" ); } );
+  $(".striped tr:even").addClass( "alt" );
+} );
+
+// create button sets
+$( function() { $( "#{{ widget_name }}_check_none" ).button().parent().buttonset() } );
+$( function() { $( "#{{ widget_name }}_page_next" ).button().parent().buttonset() } );
+
+// check button functions
+$( function() {
+  $( "#{{ widget_name }}_check_all" ).click( function() {
+    $( "input[id*={{ widget_name }}_check_]" ).attr( "checked", true );
+  } )
+} );
+$( function() {
+  $( "#{{ widget_name }}_check_none" ).click( function() {
+    $( "input[id*={{ widget_name }}_check_]" ).attr( "checked", false );
+  } )
+} );
+$( function() {
+  $( "#{{ widget_name }}_check_invert" ).click( function() {
+    $( "input[id*={{ widget_name }}_check_]" ).each( function() {
+      $( this ).attr( 'checked', this.checked ? false : true );
+    } )
+  } )
+} );
+</script>
+{% if llist.title %}<h2 class="{{ widget_name }}_title">{{ llist.title }}</h2>{% endif %}
+<table class="striped">
+  <thead class="ui-widget-header">
     <tr>
-      <th><span class="ui-icon ui-icon-check"></span></th>
-      <th>name</th>
+      {% if llist.checkable %}
+      <th><div class="ui-icon ui-icon-check" style="padding:2px"></div></th>
+      {% endif %}
+      {% for column in llist.columns %}
+      <th width="{{ 95 / loop.length }}%">{{ column }}</th>
+      {% endfor %}
+      {% if llist.viewable %}
       <th></th>
+      {% endif %}
+      {% if llist.editable %}
       <th></th>
+      {% endif %}
+      {% if llist.removable %}
       <th></th>
+      {% endif %}
   </thead>
   <tbody>
+    {% for row in llist.rows %}
     <tr>
-      <td><span class="ui-icon ui-icon-check"></span></td>
-      <td>this is the first item</td>
-      <th><button><span class="ui-icon ui-icon-document"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-pencil"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-closethick"></span></button></th>
+      {% if llist.checkable %}
+      <td><input type="checkbox" id="{{ widget_name }}_check_{{ row.id }}" /></td>
+      {% endif %}
+      {% for column in row.columns %}
+      <td>{{ column }}</td>
+      {% endfor %}
+      {% if llist.viewable %}
+      <td><button class="{{ widget_name }}_view">view</button></td>
+      {% endif %}
+      {% if llist.editable %}
+      <td><button class="{{ widget_name }}_edit">edit</button></td>
+      {% endif %}
+      {% if llist.removable %}
+      <td><button class="{{ widget_name }}_remove">remove</button></td>
+      {% endif %}
     </tr>
-    <tr>
-      <td><span class="ui-icon ui-icon-check"></span></td>
-      <td>this is the second item</td>
-      <th><button><span class="ui-icon ui-icon-document"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-pencil"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-closethick"></span></button></th>
-    </tr>
-    <tr>
-      <td><span class="ui-icon ui-icon-check"></span></td>
-      <td>this is the third item</td>
-      <th><button><span class="ui-icon ui-icon-document"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-pencil"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-closethick"></span></button></th>
-    </tr>
-    <tr>
-      <td><span class="ui-icon ui-icon-check"></span></td>
-      <td>this is the forth item</td>
-      <th><button><span class="ui-icon ui-icon-document"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-pencil"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-closethick"></span></button></th>
-    </tr>
-    <tr>
-      <td><span class="ui-icon ui-icon-check"></span></td>
-      <td>this is the fifth item</td>
-      <th><button><span class="ui-icon ui-icon-document"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-pencil"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-closethick"></span></button></th>
-    </tr>
-    <tr>
-      <td><span class="ui-icon ui-icon-check"></span></td>
-      <td>this is the first item</td>
-      <th><button><span class="ui-icon ui-icon-document"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-pencil"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-closethick"></span></button></th>
-    </tr>
-    <tr>
-      <td><span class="ui-icon ui-icon-check"></span></td>
-      <td>this is the second item</td>
-      <th><button><span class="ui-icon ui-icon-document"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-pencil"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-closethick"></span></button></th>
-    </tr>
-    <tr>
-      <td><span class="ui-icon ui-icon-check"></span></td>
-      <td>this is the third item</td>
-      <th><button><span class="ui-icon ui-icon-document"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-pencil"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-closethick"></span></button></th>
-    </tr>
-    <tr>
-      <td><span class="ui-icon ui-icon-check"></span></td>
-      <td>this is the forth item</td>
-      <th><button><span class="ui-icon ui-icon-document"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-pencil"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-closethick"></span></button></th>
-    </tr>
-    <tr>
-      <td><span class="ui-icon ui-icon-check"></span></td>
-      <td>this is the fifth item</td>
-      <th><button><span class="ui-icon ui-icon-document"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-pencil"></span></button></th>
-      <th><button><span class="ui-icon ui-icon-closethick"></span></button></th>
-    </tr>
+    {% endfor %}
   </tbody>
+  <tfoot class="ui-widget-header">
+    <tr>
+      <th colspan="0">
+        {% if llist.checkable %}
+        <span>
+          Check boxes:
+          <button style="width:70px" id="{{ widget_name }}_check_all">all</button>
+          <button style="width:70px" id="{{ widget_name }}_check_none">none</button>
+          <button style="width:70px" id="{{ widget_name }}_check_invert">invert</button>
+        </span>
+        <span style="margin-left:20px">
+        {% endif %}
+        Viewing: 1 to {{ llist.rows | count }} of {{ llist.rows | count }}
+        {% if llist.max_rows < llist.rows | count %}
+        <span style="margin-left:20px">
+        <span>
+          Page:
+          <button style="width:70px" id="{{ widget_name }}_page_prev">prev</button>
+          <button style="width:70px" id="{{ widget_name }}_page_next">next</button>
+        </span>
+        {% endif %}
+      </th>
+    </tr>
+  </tfoot>
 </table>
 {% endblock %}

@@ -6,7 +6,7 @@
 
 body {
   margin: 0px 0px 0px 0px;
-  font: 15px Arial, Helvetica, sans-serif;
+  font: 14px Arial, Helvetica, sans-serif;
 }
 
 /* needed to make jquery.layout margins 0 */
@@ -16,47 +16,76 @@ body {
 
 /* Used by the top extruder UI component  */
 .extruder.top .flap {
-  display:block;
-  color:#1c94c4;
-  font:16px/24px Arial, Helvetica, sans-serif;
-  font-weight:bold;
-  text-align:center;
-  margin:auto;
-  padding:0 5px 5px 5px;
-  height:20px;
-  width:180px;
-  background:#f6f6f6;
-  -moz-border-radius:0 0 10px 10px;
-  -webkit-border-bottom-left-radius:10px;
-  -webkit-border-bottom-right-radius:10px;
-  -moz-box-shadow:black 2px 2px 5px;
-  -webkit-box-shadow:black 2px 2px 5px;
-  cursor:pointer;
+  display: block;
+  color: #4c3000;
+  font: 16px/24px Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  text-align: center;
+  margin: auto;
+  padding: 0 5px 5px 5px;
+  height: 20px;
+  width: 180px;
+  background: #fece2f;
+  -moz-border-radius: 0 0 10px 10px;
+  -webkit-border-bottom-left-radius: 10px;
+  -webkit-border-bottom-right-radius: 10px;
+  -moz-box-shadow: black 2px 2px 5px;
+  -webkit-box-shadow: black 2px 2px 5px;
+  cursor: pointer;
 }
 
-.extruder.top:hover .flap:hover {
-  color:#c77405;
-  background-color:#fdf5ce;
+.extruder.top: hover .flap: hover {
+  color: #c77405;
+  background-color: #ffdd57;
 }
 
-.extruder.top:active .flap:active {
-  color:#eb8f00;
-  background-color:#ffffff;
+.extruder.top: active .flap: active {
+  color: #0074c7;
+  background-color: #ffffff;
 }
 
 .extruder.top .content {
-  display:none;
+  display: none;
   -moz-border-radius: 0 0 4px 4px;
-  -webkit-border-bottom-left-radius:4px;
-  -webkit-border-bottom-right-radius:4px;
-  -moz-box-shadow:black 2px 2px 5px;
-  -webkit-box-shadow:black 2px 2px 5px;
+  -webkit-border-bottom-left-radius: 4px;
+  -webkit-border-bottom-right-radius: 4px;
+  -moz-box-shadow: black 2px 2px 5px;
+  -webkit-box-shadow: black 2px 2px 5px;
 }
 
 .extruder.top .text {
-  background:#EEE;
-  font:14px Arial, Helvetica, sans-serif;
-  color:black;
-  padding:10px;
-  border-bottom:1px solid #333;
+  background: #feeebd;
+  font: 14px Arial, Helvetica, sans-serif;
+  color: black;
+  padding: 10px;
+  border-bottom: 1px solid #333;
+}
+
+#main_slot {
+  margin-top: 36px;
+  margin-bottom: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+/* Table stylings */
+table {
+  width: 100%;
+  border-spacing: 0px;
+  text-align: center;
+}
+
+/* stripped background */
+tr.alt td {
+  background: #ecf6fc;
+}
+
+/* row highlighting */
+tr.over td {
+  background: #bcd4ec;
+}
+
+select {
+  color: #4c3000;
+  background: #fece2f;
 }

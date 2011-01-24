@@ -70,7 +70,7 @@ final class session extends singleton
     // determine the user (setting the user will also set the site and role)
     $user_name = util::devel_mode() && defined( 'STDIN' )
                ? $_SERVER[ 'USER' ]
-               : $_SERVER[ 'REMOTE_USER' ];
+               : $_SERVER[ 'PHP_AUTH_USER' ];
     $this->set_user( database\user::get_unique_record( 'name', $user_name ) );
     if( NULL == $this->user ) log::self()->err( 'User "'.$user_name.'" not found.' );
   }

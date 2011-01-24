@@ -24,6 +24,8 @@ class settings extends widget
    */
   public function __construct()
   {
+    parent::__construct();
+
     // create and setup the settings widget
     $db_user = \sabretooth\session::self()->get_user();
     $db_site = \sabretooth\session::self()->get_site();
