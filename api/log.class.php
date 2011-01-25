@@ -10,6 +10,7 @@ namespace sabretooth;
 
 // PEAR
 require_once 'Log.php';
+require_once 'FirePHPCore/FirePHP.class.php';
 
 /**
  * log: handles all logging
@@ -166,11 +167,17 @@ final class log extends singleton
     // handle logs differently when we are in action or developer mode
     if( util::action_mode() )
     {
-      // log anything major to file, ignore the rest
-      if( PEAR_LOG_EMERG == $type ||
-          PEAR_LOG_ALERT == $type ||
-          PEAR_LOG_CRIT == $type ||
-          PEAR_LOG_ERR == $type )
+      // if in devel mode log everything to firephp
+      if( util::devel_mode() )
+      {
+        $firephp = FirePHP::getInstance( true );
+        $firephp->log( $message, $type );
+      }
+      // otherwise log anything major to file (ignoring minor logs)
+      else if( PEAR_LOG_EMERG == $type ||
+               PEAR_LOG_ALERT == $type ||
+               PEAR_LOG_CRIT == $type ||
+               PEAR_LOG_ERR == $type )
       {
         $this->initialize_logger( 'file' );
         $this->loggers[ 'file' ]->log( $this->backtrace()."\n".$message, $type );

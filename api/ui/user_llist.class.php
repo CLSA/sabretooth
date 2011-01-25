@@ -22,13 +22,13 @@ class user_llist extends llist
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function __construct()
+  public function __construct( $args = NULL )
   {
-    parent::__construct();
-
+    parent::__construct( $args );
+    
     // define all template variables for this llist
     $this->title =  "User list" ;
-    $this->checkable =  true ;
+    $this->checkable =  false ;
     $this->viewable =  true ;
     $this->editable =  true ;
     $this->removable =  true ;

@@ -1,0 +1,38 @@
+{% extends "widget.html" %}
+{% block widget %}
+<script type="text/javascript">
+// make button icons
+$( function() {
+  $( "#{{ widget_name }}_home" ).button( {
+    text: false,
+    icons: {
+      primary: "ui-icon-home"
+    }
+  } )
+} );
+$( function() {
+  $( "#{{ widget_name }}_help" ).button( {
+    text: false,
+    icons: {
+      primary: "ui-icon-help"
+    }
+  } )
+} );
+
+// page button functions
+$( function() {
+  $( "#{{ widget_name }}_home" ).click( function() {
+    load_widget( 'main', 'home' );
+  } )
+} );
+$( function() {
+  $( "#{{ widget_name }}_help" ).click( function() {
+    //load_widget( 'main', 'help' ); TODO
+  } )
+} );
+</script>
+<span>
+  <button id="{{ widget_name }}_home">home</button>
+  <button id="{{ widget_name }}_help">help</button>
+</span>
+{% endblock %}

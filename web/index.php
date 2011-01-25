@@ -59,7 +59,7 @@ try
   
   assert_options( ASSERT_ACTIVE, util::devel_mode() ? 1 : 0 );
   assert_options( ASSERT_WARNING, 0 );
-
+  
   // set up the template engine
   $loader = new \Twig_Loader_Filesystem( TPL_PATH );
   $twig = new \Twig_Environment( $loader, array( 'debug' => util::devel_mode(),
@@ -74,8 +74,8 @@ try
   $widget_class = '\\sabretooth\\ui\\'.$widget_name;
   
   // determine the widget arguments
-  if( util::devel_mode() && defined( 'STDIN' ) && 2 < $argc ) $widget_args = $argv[2];
-  else $widget_args = isset( $_GET['args'] ) ? json_decode( $_GET['args'], true ) : NULL;
+  if( util::devel_mode() && defined( 'STDIN' ) && 2 < $argc ) $widget_args = $argv;
+  else $widget_args = isset( $_GET ) ? $_GET : NULL;
 
   // autoloader doesn't work on dynamic class names for PHP 5.3.2
   include_file( API_PATH.'/ui/'.$widget_name.'.class.php' );

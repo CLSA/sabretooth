@@ -2,7 +2,7 @@
 {% block widget %}
 <style type="text/css">
   .{{ widget_name }}_title {
-    margin-top: 0.5em;
+    margin-top: 0px;
     margin-bottom: 0.1em;
   }
 </style>
@@ -78,9 +78,23 @@ $( function() {
     } )
   } )
 } );
+
+// page button functions
+$( function() {
+  $( "#{{ widget_name }}_page_prev" ).click( function() {
+    load_widget( 'main', 'user_llist', { "page": {{ llist.page - 1 }} } );
+  } )
+} );
+$( function() {
+  $( "#{{ widget_name }}_page_next" ).click( function() {
+    load_widget( 'main', 'user_llist', { "page": {{ llist.page + 1 }} } );
+  } )
+} );
+
 </script>
 {% if llist.title %}<h2 class="{{ widget_name }}_title">{{ llist.title }}</h2>{% endif %}
 <table class="striped">
+  {% if llist.rows | count %}
   <thead class="ui-widget-header">
     <tr>
       {% if llist.checkable %}
@@ -120,6 +134,7 @@ $( function() {
     </tr>
     {% endfor %}
   </tbody>
+  {% endif %}
   <tfoot class="ui-widget-header">
     <tr>
       <th colspan="0">
@@ -132,13 +147,19 @@ $( function() {
         </span>
         <span style="margin-left:20px">
         {% endif %}
-        Viewing: 1 to {{ llist.rows | count }} of {{ llist.rows | count }}
-        {% if llist.max_rows < llist.rows | count %}
+        {% if llist.rows | count %}
+        {% set item_from = ( llist.page - 1 ) * llist.items_per_page + 1 %}
+        {% set item_to = item_from + llist.rows | count - 1 %}
+        Viewing: {{ item_from }} to {{ item_to }} of {{ llist.number_of_items }}
+        {% else %}
+        No records found.
+        {% endif %}
+        {% if llist.items_per_page < llist.number_of_items %}
         <span style="margin-left:20px">
         <span>
           Page:
-          <button style="width:70px" id="{{ widget_name }}_page_prev">prev</button>
-          <button style="width:70px" id="{{ widget_name }}_page_next">next</button>
+          <button style="width:70px" id="{{ widget_name }}_page_prev"{{ 1 == llist.page ? ' disabled' : '' }}>prev</button>
+          <button style="width:70px" id="{{ widget_name }}_page_next"{{ llist.max_page == llist.page ? ' disabled' : '' }}>next</button>
         </span>
         {% endif %}
       </th>

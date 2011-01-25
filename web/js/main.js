@@ -13,20 +13,47 @@ $( document ).ready( function() {
   } );
 } );
 
-// load a widget from the server
-function load_widget( slot, widget )
+// loads a widget from the server
+function load_widget( slot, widget, args )
 {
   // add a loading indicator
-  $( "#" + slot + "_slot" ).loading( true, {
+  $( "#" + slot + "_slot" ).loading( {
     onAjax: true,
     mask: true,
-    img: 'img/loading.gif',
-    delay: 500,
-    align: 'center'
+    img: "img/loading.gif",
+    delay: 0,
+    align: "center"
   } );
-  $( "#" + slot + "_slot" ).load( '?widget=' + widget );
-  $( "#" + slot + "_slot" ).loading( false );
+
+  // build the url (args is an associative array)
+  var url = "?widget=" + widget;
+  if( args != undefined )
+  {
+    url += "&" + jQuery.param( args );
+  }
+  $( "#" + slot + "_slot" ).load( url );
+//  $( "#" + slot + "_slot" ).loading( false );
+}
+
+// request an operation be performed to the server
+function send_operation( operation, action, args )
+{
+  jQuery.ajax( {
+    url: "action.php",
+    async: false,
+    type: "POST",
+    data: { "operation": operation,
+            "action": action,
+            "args": args == undefined ? undefined : jQuery.param( args ) },
+    complete: function( request, result ) {
+                // TODO:
+                // make sure request.status is 200
+                // check responseText for error handling (see action.php catch blocks)
+              },
+    dataType: 'json'
+  } );
 }
 
 // load the settings widget
 $( document ).ready( function() { load_widget( "settings", "settings" ); } );
+$( document ).ready( function() { load_widget( "shortcuts", "shortcuts" ); } );

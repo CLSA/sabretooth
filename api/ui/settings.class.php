@@ -22,9 +22,9 @@ class settings extends widget
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function __construct()
+  public function finish()
   {
-    parent::__construct();
+    parent::finish();
 
     // create and setup the settings widget
     $db_user = \sabretooth\session::self()->get_user();

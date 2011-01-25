@@ -20,13 +20,16 @@ $( document ).ready( function() {
     var selected = $( "#dropdown_set_site option:selected" );
     if( 0 != selected.val() )
     {
-      jQuery.post(
-        'action.php',
-        { operation: 'user',
-          action: 'set_site',
-          args: [ selected.text() ] },
-        function() { load_widget( 'settings', 'settings' ); },
-        'json' );
+      send_operation( 'user', 'set_site', { "site": selected.text() } );
+      $( "#settings_slot" ).load( "?widget=settings" );
+
+//      jQuery.post(
+//        'action.php',
+//        { operation: 'user',
+//          action: 'set_site',
+//          args: [ selected.text() ] },
+//        function() { $( "#settings_slot" ).load( "?widget=settings" ); },
+//        'json' );
     }
   } );
 } );

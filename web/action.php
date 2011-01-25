@@ -10,8 +10,9 @@
 namespace sabretooth;
 session_name( 'sabretooth' );
 session_start();
-define( 'ACTION_MODE', true );
-
+define( 'ACTION_MODE', true ); 
+ob_start();
+ 
 // set up error handling (error_reporting is also called in session's constructor)
 ini_set( 'display_errors', '0' );
 error_reporting( E_ALL | E_STRICT );
@@ -59,6 +60,7 @@ try
   {
     $operation_name = $_POST['operation'];
     $action_name = $_POST['action'];
+    log::self()->debug( $_POST['args'] );
     $args = isset( $_POST['args'] ) ? $_POST['args'] : NULL;
 
     // create the operation (and verify that it is an operation)
@@ -83,6 +85,7 @@ try
     }
   }
 }
+// TODO: implement json encoded error response (and handle in web/js/main.js: send_operation() )
 catch( exception\missing $e )
 {
   log::self()->err( "Missing ".$e->__toString() );

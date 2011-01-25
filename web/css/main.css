@@ -61,8 +61,16 @@ body {
   border-bottom: 1px solid #333;
 }
 
+#shortcuts_slot {
+  text-align: right;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
 #main_slot {
-  margin-top: 36px;
+  margin-top: 0px;
   margin-bottom: 10px;
   margin-left: 10px;
   margin-right: 10px;

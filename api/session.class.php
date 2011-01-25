@@ -241,5 +241,12 @@ final class session extends singleton
    * @access private
    */
   private $site = NULL;
+
+  /**
+   * The last widget loaded into the main slot
+   * @var string
+   * @access private
+   */
+  private $main_slot = 'home';
 }
 ?>
