@@ -31,7 +31,7 @@ abstract class active_record extends \sabretooth\base_object
    */
   public function __construct( $primary_keys = NULL )
   {
-    //\sabretooth\log::self()->debug( 'active_record: '.( is_null( $primary_keys )
+    //\sabretooth\log::debug( 'active_record: '.( is_null( $primary_keys )
     //  ? 'creating new '.$this->get_table_name().' record'
     //  : 'creating '.$this->get_table_name().' with primary key(s) '.$primary_keys ) );
 
@@ -128,8 +128,8 @@ abstract class active_record extends \sabretooth\base_object
     {
       if( !is_null( $this->columns[ $primary_key_name ] ) )
       {
-        $where .= ( $first ? '' : ', ' ).
-                  $primary_key_name.' = '.$this->columns[ $primary_key_name ];
+        $where .= ( $first ? '' : ' AND ' ).
+                  $primary_key_name.' = "'.$this->columns[ $primary_key_name ].'"';
         $first = false;
       }
       else
@@ -291,7 +291,7 @@ abstract class active_record extends \sabretooth\base_object
       'WHERE TABLE_SCHEMA = "'.$database.'" '.
       'AND TABLE_NAME = "'.static::get_table_name().'" '.
       'AND COLUMN_KEY = "UNI"' );
-
+    
     // make sure the column is unique
     if( in_array( $column, $unique_keys ) )
     {

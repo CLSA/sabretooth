@@ -3,102 +3,85 @@
  * action.php
  * 
  * Web script which can be called to perform operations on the system.
+ * This script should only ever be called by an AJAX POST request.
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @vertion 0.1
  */
 namespace sabretooth;
-session_name( 'sabretooth' );
-session_start();
-define( 'ACTION_MODE', true ); 
 ob_start();
  
-// set up error handling (error_reporting is also called in session's constructor)
-ini_set( 'display_errors', '0' );
-error_reporting( E_ALL | E_STRICT );
-
-// Function to gracefully handle missing require_once files
-function include_file( $file, $no_error = false )
-{
-  if( !file_exists( $file ) )
-  {
-    if( !$no_error )
-    {
-      die( "<pre>\n".
-           "FATAL ERROR: Unable to find required file '$file'.\n".
-           "Please check that paths in the sabretooth ini are set correctly.\n".
-           "</pre>\n" );
-    }
-  }
-  include $file;
-}
-
-// load the default, then local settings, then define paths
-include_file( 'sabretooth.ini.php' );
-include_file( 'sabretooth.local.ini.php', true );
-foreach( $SETTINGS[ 'paths' ] as $path_name => $path_value ) define( $path_name, $path_value );
-
-// include necessary files
-include_file( API_PATH.'/autoloader.class.php' );
+// the array to return, encoded as JSON
+$result_array = array( 'success' => true );
 
 try
 {
-  // register autoloaders
-  autoloader::register();
+  // load web-script common code
+  require_once 'sabretooth.inc.php';
   
-  // set up the session
-  $session = session::self( $SETTINGS );
-  $session->initialize();
-  
-  // Try creating an operation and calling the action provided by the post.
-  if( !isset( $_POST['operation'] ) ||
-      !isset( $_POST['action'] ) )
+  // if in devel mode allow command line arguments in place of POST variables
+  if( util::in_devel_mode() && defined( 'STDIN' ) )
   {
-    log::self()->err( 'invalid post variables' );
+    $_POST['operation'] = isset( $argv[1] ) ? $argv[1] : NULL;
+    $_POST['action'] = isset( $argv[2] ) ? $argv[2] : NULL;
   }
-  else
-  {
-    $operation_name = $_POST['operation'];
-    $action_name = $_POST['action'];
-    log::self()->debug( $_POST['args'] );
-    $args = isset( $_POST['args'] ) ? $_POST['args'] : NULL;
 
-    // create the operation (and verify that it is an operation)
-    $class_name = 'sabretooth\\business\\'.$operation_name;
-    $operation = new $class_name();
-    if( !is_subclass_of( $operation, 'sabretooth\\business\\operation' ) )
-    {
-      log::self()->err( "invalid operation '$operation'" );
-    }
-    else
-    {
-      // set the action and make sure that it is valid
-      if( !method_exists( $operation, $action_name ) )
-      {
-        log::self()->err( "invalid action '$action'" );
-      }
-      else
-      {
-        // execute the action (may throw a permission error)
-        call_user_func_array( array( $operation, $action_name ), $args );
-      }
-    }
-  }
+  // Try creating an operation and calling the action provided by the post.
+  if( !isset( $_POST['operation'] ) || !isset( $_POST['action'] ) )
+    throw new exception\runtime( 'invalid script variables' );
+
+  $operation_name = $_POST['operation'];
+  $action_name = $_POST['action'];
+  $args = array();
+  if( isset( $_POST['args'] ) ) parse_str( $_POST['args'], $args );
+
+  // create the operation (and verify that it is an operation)
+  $class_name = 'sabretooth\\business\\'.$operation_name;
+  $operation = new $class_name();
+  if( !is_subclass_of( $operation, 'sabretooth\\business\\operation' ) )
+    throw new exception\runtime( "invalid operation '$operation'" );
+
+  // set the action and make sure that it is valid
+  if( !method_exists( $operation, $action_name ) )
+    throw new exception\runtime( "invalid action '$action'" );
+
+  // execute the action (may throw a permission error)
+  \sabretooth\log::notice( "executing action: $operation_name::$action_name" );
+  call_user_func_array( array( $operation, $action_name ), $args );
 }
-// TODO: implement json encoded error response (and handle in web/js/main.js: send_operation() )
+catch( exception\database $e )
+{
+  log::err( "Database exception ".$e );
+  $result_array['success'] = false;
+  $result_array['error'] = 'database';
+}
 catch( exception\missing $e )
 {
-  log::self()->err( "Missing ".$e->__toString() );
+  log::err( "Missing exception ".$e );
+  $result_array['success'] = false;
+  $result_array['error'] = 'missing';
 }
 catch( exception\permission $e )
 {
-  log::self()->err( "Permission ".$e->__toString() );
+  log::err( "Permission exception ".$e );
+  $result_array['success'] = false;
+  $result_array['error'] = 'permission';
+}
+catch( exception\runtime $e )
+{
+  log::err( "Runtime exception ".$e );
+  $result_array['success'] = false;
+  $result_array['error'] = 'runtime';
 }
 catch( \Exception $e )
 {
-  log::self()->err( "Last minute ".$e->__toString() );
+  log::err( "Last minute ".$e );
+  $result_array['success'] = false;
+  $result_array['error'] = 'unknown';
 }
 
+// flush any output
+ob_end_clean();
+
 // output the result in JSON format
-print json_encode( array( 'success' => true ) );
+print json_encode( $result_array );
 ?>

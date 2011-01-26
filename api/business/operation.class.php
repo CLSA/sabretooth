@@ -19,78 +19,38 @@ namespace sabretooth\business;
 abstract class operation extends \sabretooth\base_object
 {
   /**
-   * One of the 5 basic REVAL operations.
+   * Returns the associated database operation for the provided action.
    * 
-   * The method attempts to perform a remove operation on the object.
-   * Though all REVAL methods exist for all operations, not all are valid.  Calling this method
-   * when it is not marked in the `operation`.`reval` column for this operation will cause an
-   * exception to be thrown.
-   * @author TBD
-   * @throws exception\runtime
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $action
+   * @return database\operation
    * @access public
    */
-  public function remove()
+  public function get_db_operation( $action )
   {
+    // create the associated database operation
+    $primary_keys = array( 'name' => static::get_class_name(),
+                           'action' => $action );
+    return new \sabretooth\database\operation( $primary_keys );
   }
 
   /**
-   * One of the 5 basic REVAL operations.
+   * Determine whether the current user has access to an operation.
    * 
-   * The method attempts to perform a edit operation on the object.
-   * Though all REVAL methods exist for all operations, not all are valid.  Calling this method
-   * when it is not marked in the `operation`.`reval` column for this operation will cause an
-   * exception to be thrown.
-   * @author TBD
-   * @throws exception\runtime
+   * This method checks to see if the current user has access to the operation's
+   * action at the user's current role.  The current user and role are determined by the session
+   * singleton object.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $action
+   * @return bool
    * @access public
    */
-  public function edit()
+  public function has_access( $action )
   {
-  }
-
-  /**
-   * One of the 5 basic REVAL operations.
-   * 
-   * The method attempts to perform a view operation on the object.
-   * Though all REVAL methods exist for all operations, not all are valid.  Calling this method
-   * when it is not marked in the `operation`.`reval` column for this operation will cause an
-   * exception to be thrown.
-   * @author TBD
-   * @throws exception\runtime
-   * @access public
-   */
-  public function view()
-  {
-  }
-
-  /**
-   * One of the 5 basic REVAL operations.
-   * 
-   * The method attempts to perform a add operation on the object.
-   * Though all REVAL methods exist for all operations, not all are valid.  Calling this method
-   * when it is not marked in the `operation`.`reval` column for this operation will cause an
-   * exception to be thrown.
-   * @author TBD
-   * @throws exception\runtime
-   * @access public
-   */
-  public function add()
-  {
-  }
-
-  /**
-   * One of the 5 basic REVAL operations.
-   * 
-   * The method attempts to perform a list operation on the object.
-   * Though all REVAL methods exist for all operations, not all are valid.  Calling this method
-   * when it is not marked in the `operation`.`reval` column for this operation will cause an
-   * exception to be thrown.
-   * @author TBD
-   * @throws exception\runtime
-   * @access public
-   */
-  public function llist()
-  {
+    // get the current role and test to see if it has access to this operation 
+    return \sabretooth\session::self()->get_role()->has_operation(
+             $this->get_db_operation( $action ) );
   }
 }
 ?>

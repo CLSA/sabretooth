@@ -26,6 +26,10 @@ class user_llist extends llist
   {
     parent::__construct( $args );
     
+    $operation = new \sabretooth\business\user();
+    if( !$operation->has_access( 'llist' ) )
+      throw new \sabretooth\exception\permission( $operation->get_db_operation( 'llist' ) );
+
     // define all template variables for this llist
     $this->title =  "User list" ;
     $this->checkable =  false ;

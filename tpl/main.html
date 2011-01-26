@@ -49,22 +49,14 @@
   // TODO: test code only, remove when done
   $( document ).ready( function() {
     $( "#test_button" ).click( function() {
-      send_operation( 'user', 'llist' );
-      load_widget( 'main', 'user_llist' );
+      if( send_operation( 'user', 'llist' ) ) load_widget( 'main', 'user_llist' );
     } );
-//    $( "#test_button" ).click( function() {
-//      jQuery.post(
-//        'action.php',
-//        { operation: 'user',
-//          action: 'llist' },
-//        function() { load_widget( 'main', 'user_llist' ); },
-//        'json' );
-//    } );
   } );
   </script>
 </head>
 
 <body>
+  <div id="error_slot"></div>
   <div id="top_extruder" class="{title:'settings'}">
     <div id="settings_slot"></div>
   </div>

@@ -19,16 +19,15 @@ class permission extends base_exception
   /**
    * Constructor
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\operation $operation the associated operation
-   * @param database\site $site the associated site (if null then the session's site is used)
-   * @param database\user $user the associated user (if null then the session's site is used)
+   * @param database\operation $db_operation the associated operation
    * @param exception $previous the previous exception used for the exception chaining
    * @access public
    */
-  public function __construct( $operation, $site = NULL, $user = NULL, $previous = NULL )
+  public function __construct( $db_operation, $previous = NULL )
   {
-    $this->operation = $operation;
-    parent::__construct( 'operation "'.$operation->name.'" denied', $site, $user, $previous );
+    $this->operation = $db_operation;
+    parent::__construct(
+      'operation "'.$db_operation->name.'::'.$db_operation->action.'" denied', $previous );
   }
 
   /**

@@ -48,9 +48,10 @@ final class log extends singleton
    * to be brought to administrators' attention ASAP (ie: use it sparingly).
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message The message to log.
+   * @static
    * @access public
    */
-  public function emerg( $message ) { $this->send( $message, PEAR_LOG_EMERG ); }
+  public static function emerg( $message ) { self::self()->send( $message, PEAR_LOG_EMERG ); }
 
   /**
    * Logging method
@@ -59,9 +60,10 @@ final class log extends singleton
    * needs to be brought to administrators' attention in the near future (ie: use it sparingly).
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message The message to log.
+   * @static
    * @access public
    */
-  public function alert( $message ) { $this->send( $message, PEAR_LOG_ALERT ); }
+  public static function alert( $message ) { self::self()->send( $message, PEAR_LOG_ALERT ); }
 
   /**
    * Logging method
@@ -70,9 +72,10 @@ final class log extends singleton
    * severe enough to notify administrators.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message The message to log.
+   * @static
    * @access public
    */
-  public function crit( $message ) { $this->send( $message, PEAR_LOG_CRIT ); }
+  public static function crit( $message ) { self::self()->send( $message, PEAR_LOG_CRIT ); }
 
   /**
    * Logging method
@@ -81,9 +84,10 @@ final class log extends singleton
    * {@link alert} and {@link emerg}
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message The message to log.
+   * @static
    * @access public
    */
-  public function err( $message ) { $this->send( $message, PEAR_LOG_ERR ); }
+  public static function err( $message ) { self::self()->send( $message, PEAR_LOG_ERR ); }
 
   /**
    * Logging method
@@ -91,9 +95,10 @@ final class log extends singleton
    * Use this type of log for warnings.  Something that could be an error, but may not be.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message The message to log.
+   * @static
    * @access public
    */
-  public function warning( $message ) { $this->send( $message, PEAR_LOG_WARNING ); }
+  public static function warning( $message ) { self::self()->send( $message, PEAR_LOG_WARNING ); }
 
   /**
    * Logging method
@@ -102,9 +107,10 @@ final class log extends singleton
    * these should remain in the code after implementation is finished.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message The message to log.
+   * @static
    * @access public
    */
-  public function notice( $message ) { $this->send( $message, PEAR_LOG_NOTICE ); }
+  public static function notice( $message ) { self::self()->send( $message, PEAR_LOG_NOTICE ); }
 
   /**
    * Logging method
@@ -114,9 +120,10 @@ final class log extends singleton
    * use {@link notice} instead.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message The message to log.
+   * @static
    * @access public
    */
-  public function debug( $message ) { $this->send( $message, PEAR_LOG_DEBUG ); }
+  public static function debug( $message ) { self::self()->send( $message, PEAR_LOG_DEBUG ); }
   
   /**
    * Logging method
@@ -125,9 +132,10 @@ final class log extends singleton
    * it can be audited at a later date.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message The message to log.
+   * @static
    * @access public
    */
-  public function info( $message ) { $this->send( $message, PEAR_LOG_INFO ); }
+  public static function info( $message ) { self::self()->send( $message, PEAR_LOG_INFO ); }
 
   /**
    * Returns the backtrace as a log-friendly string.
@@ -165,13 +173,30 @@ final class log extends singleton
     if( !class_exists( 'sabretooth\session' ) || !session::exists() ) return;
 
     // handle logs differently when we are in action or developer mode
-    if( util::action_mode() )
+    if( util::in_action_mode() || util::in_widget_mode() )
     {
       // if in devel mode log everything to firephp
-      if( util::devel_mode() )
+      if( util::in_devel_mode() )
       {
-        $firephp = FirePHP::getInstance( true );
-        $firephp->log( $message, $type );
+        $type_string = self::log_level_to_string( $type );
+        $firephp = \FirePHP::getInstance( true );
+        if( PEAR_LOG_EMERG == $type ||
+            PEAR_LOG_ALERT == $type ||
+            PEAR_LOG_CRIT == $type ||
+            PEAR_LOG_ERR == $type )
+        {
+          $firephp->error( $message, $type_string );
+        }
+        else if( PEAR_LOG_WARNING == $type )
+        {
+          $firephp->warn( $message, $type_string );
+        }
+        else if( PEAR_LOG_INFO == $type ||
+                 PEAR_LOG_NOTICE == $type ||
+                 PEAR_LOG_DEBUG == $type )
+        {
+          $firephp->info( $message, $type_string );
+        }
       }
       // otherwise log anything major to file (ignoring minor logs)
       else if( PEAR_LOG_EMERG == $type ||
@@ -183,7 +208,7 @@ final class log extends singleton
         $this->loggers[ 'file' ]->log( $this->backtrace()."\n".$message, $type );
       }
     }
-    else if( util::devel_mode() )
+    else if( util::in_devel_mode() )
     {
       if( PEAR_LOG_EMERG == $type ||
           PEAR_LOG_ALERT == $type ||
@@ -201,9 +226,26 @@ final class log extends singleton
                PEAR_LOG_INFO == $type ||
                PEAR_LOG_DEBUG == $type )
       {
-        // log minor stuff in firebug
-        $this->initialize_logger( 'firebug' );
-        $this->loggers[ 'firebug' ]->log( $message, $type );
+        // log minor stuff in firephp
+        $type_string = self::log_level_to_string( $type );
+        $firephp = \FirePHP::getInstance( true );
+        if( PEAR_LOG_EMERG == $type ||
+            PEAR_LOG_ALERT == $type ||
+            PEAR_LOG_CRIT == $type ||
+            PEAR_LOG_ERR == $type )
+        {
+          $firephp->error( $message, $type_string );
+        }
+        else if( PEAR_LOG_WARNING == $type )
+        {
+          $firephp->warn( $message, $type_string );
+        }
+        else if( PEAR_LOG_INFO == $type ||
+                 PEAR_LOG_NOTICE == $type ||
+                 PEAR_LOG_DEBUG == $type )
+        {
+          $firephp->info( $message, $type_string );
+        }
       }
     }
     else // we are in production mode
@@ -291,7 +333,33 @@ final class log extends singleton
   }
 
   /**
+   * Returns a string representation of a pear log level constant
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param int $constant a PEAR_LOG_* constant
+   * @static
+   * @access private
+   */
+  static private function log_level_to_string( $constant )
+  {
+    $string = '';
+
+    if( PEAR_LOG_EMERG == $constant ) $string = 'emergency';
+    else if( PEAR_LOG_ALERT == $constant ) $string = 'alert';
+    else if( PEAR_LOG_CRIT == $constant ) $string = 'critical';
+    else if( PEAR_LOG_ERR == $constant ) $string = 'error';
+    else if( PEAR_LOG_WARNING == $constant ) $string = 'warning';
+    else if( PEAR_LOG_NOTICE == $constant ) $string = 'notice';
+    else if( PEAR_LOG_INFO == $constant ) $string = 'info';
+    else if( PEAR_LOG_DEBUG == $constant ) $string = 'debug';
+    else $string = 'unknown';
+
+    return $string;
+  }
+
+  /**
    * A error handling function that uses the log class as the error handler
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @ignore
    */
   static public function error_handler( $level, $message, $file, $line )
@@ -302,7 +370,7 @@ final class log extends singleton
     {
       log::self()->emerg( $message );
       // fatal error, send JSON error or just quit with error code
-      die( util::action_mode() ? json_encode( array( 'error' => true ) ) : 1 );
+      die( util::in_action_mode() ? json_encode( array( 'error' => true ) ) : 1 );
     }
     else if( E_USER_ERROR == $level ||
              E_CORE_ERROR == $level ||
@@ -310,7 +378,7 @@ final class log extends singleton
     {
       log::self()->err( $message );
       // fatal error, send JSON error or just quit with error code
-      die( util::action_mode() ? json_encode( array( 'error' => true ) ) : 1 );
+      die( util::in_action_mode() ? json_encode( array( 'error' => true ) ) : 1 );
     }
     else if( E_COMPILE_WARNING == $level ||
              E_CORE_WARNING == $level ||
@@ -333,6 +401,7 @@ final class log extends singleton
 
   /**
    * A error handling function that uses the log class as the error handler
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @ignore
    */
   static public function fatal_error_handler()
@@ -346,6 +415,7 @@ final class log extends singleton
 
   /**
    * A error handling function that uses the log class as the error handler
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @ignore
    */
   static public function assert_handler( $file, $line, $message )

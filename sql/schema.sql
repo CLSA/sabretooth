@@ -319,12 +319,10 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `sabretooth`.`operation` ;
 
 CREATE  TABLE IF NOT EXISTS `sabretooth`.`operation` (
-  `id` INT NOT NULL AUTO_INCREMENT ,
-  `name` VARCHAR(45) NULL ,
+  `name` VARCHAR(45) NOT NULL ,
   `action` VARCHAR(45) NOT NULL ,
   `description` TEXT NULL ,
-  PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_name_reval` (`name` ASC, `action` ASC) )
+  PRIMARY KEY (`name`, `action`) )
 ENGINE = InnoDB;
 
 
@@ -335,18 +333,19 @@ DROP TABLE IF EXISTS `sabretooth`.`role_has_operation` ;
 
 CREATE  TABLE IF NOT EXISTS `sabretooth`.`role_has_operation` (
   `role_id` INT UNSIGNED NOT NULL ,
-  `operation_id` INT NOT NULL ,
-  PRIMARY KEY (`role_id`, `operation_id`) ,
-  INDEX `fk_operation_id` (`operation_id` ASC) ,
+  `operation` VARCHAR(45) NOT NULL ,
+  `action` VARCHAR(45) NOT NULL ,
+  PRIMARY KEY (`role_id`, `operation`, `action`) ,
   INDEX `fk_role_id` (`role_id` ASC) ,
+  INDEX `fk_role_has_operation_operation1` (`operation` ASC, `action` ASC) ,
   CONSTRAINT `fk_role_has_operation_role1`
     FOREIGN KEY (`role_id` )
     REFERENCES `sabretooth`.`role` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_role_has_operation_operation1`
-    FOREIGN KEY (`operation_id` )
-    REFERENCES `sabretooth`.`operation` (`id` )
+    FOREIGN KEY (`operation` , `action` )
+    REFERENCES `sabretooth`.`operation` (`name` , `action` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

@@ -35,7 +35,7 @@ final class util
    * @return boolean
    * @access public
    */
-  public static function devel_mode()
+  public static function in_devel_mode()
   {
     return true == session::self()->get_setting( 'general', 'development_mode' );
   }
@@ -48,13 +48,54 @@ final class util
    * @return boolean
    * @access public
    */
-  public static function action_mode()
+  public static function in_action_mode()
   {
-    return ACTION_MODE;
+    if( is_null( self::$action_mode ) )
+    {
+      $script_name = false === strrchr( $_SERVER['SCRIPT_NAME'], '/' )
+                   ? $_SERVER['SCRIPT_NAME']
+                   : substr( strrchr( $_SERVER['SCRIPT_NAME'], '/' ), 1 );
+      self::$action_mode = 'action.php' == $script_name;
+    }
+    return self::$action_mode;
   }
+  
+  /**
+   * Cache for action_mode method.
+   * @var bool
+   * @access private
+   */
+  private static $action_mode = NULL;
 
   /**
-   * A replacement for print_r which is html-aware.
+   * Returns whether the system is in widget mode.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @static
+   * @return boolean
+   * @access public
+   */
+  public static function in_widget_mode()
+  {
+    if( is_null( self::$widget_mode ) )
+    {
+      $script_name = false === strrchr( $_SERVER['SCRIPT_NAME'], '/' )
+                   ? $_SERVER['SCRIPT_NAME']
+                   : substr( strrchr( $_SERVER['SCRIPT_NAME'], '/' ), 1 );
+      self::$widget_mode = 'widget.php' == $script_name;
+    }
+    return self::$widget_mode;
+  }
+  
+  /**
+   * Cache for widget_mode method.
+   * @var bool
+   * @access private
+   */
+  private static $widget_mode = NULL;
+
+  /**
+   * An html-enhanced var_dump
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param mixed $data The data to display.

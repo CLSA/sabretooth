@@ -20,14 +20,12 @@ class runtime extends base_exception
    * Constructor
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $message the error message.
-   * @param database\site $site the associated site (if null then the session's site is used)
-   * @param database\user $user the associated user (if null then the session's site is used)
    * @param exception $previous the previous exception used for the exception chaining
    * @access public
    */
-  public function __construct( $message, $site = NULL, $user = NULL, $previous = NULL )
+  public function __construct( $message, $previous = NULL )
   {
-    parent::__construct( 'runtime error: "'.$message, $site, $user, $previous );
+    parent::__construct( 'runtime error: "'.$message, $previous );
   }
 }
 ?>

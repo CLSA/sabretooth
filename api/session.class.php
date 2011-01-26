@@ -63,16 +63,16 @@ final class session extends singleton
       session::self()->get_setting( 'db', 'password' ),
       session::self()->get_setting( 'db', 'database' ) ) )
     {
-      log::self()->alert( 'Unable to connect to the database.' );
+      log::alert( 'Unable to connect to the database.' );
     }
     $this->db->SetFetchMode( ADODB_FETCH_ASSOC );
     
     // determine the user (setting the user will also set the site and role)
-    $user_name = util::devel_mode() && defined( 'STDIN' )
+    $user_name = util::in_devel_mode() && defined( 'STDIN' )
                ? $_SERVER[ 'USER' ]
                : $_SERVER[ 'PHP_AUTH_USER' ];
     $this->set_user( database\user::get_unique_record( 'name', $user_name ) );
-    if( NULL == $this->user ) log::self()->err( 'User "'.$user_name.'" not found.' );
+    if( NULL == $this->user ) log::err( 'User "'.$user_name.'" not found.' );
   }
   
   /**
@@ -89,7 +89,7 @@ final class session extends singleton
     if( !isset( $this->settings[ $category ] ) ||
         !isset( $this->settings[ $category ][ $name ] ) )
     {
-      log::self()->warning(
+      log::warning(
         "Tried getting value for setting [$category][$name] which doesn't exist." );
     }
     else
@@ -204,7 +204,7 @@ final class session extends singleton
       {
         $db_site_array = $this->user->get_sites();
         if( 0 == count( $db_site_array ) )
-          log::self()->err( "User does not have access to any site." );
+          log::err( "User does not have access to any site." );
         $db_site = $db_site_array[0];
         $db_role_array = $this->user->get_roles( $db_site );
         $db_role = $db_role_array[0];

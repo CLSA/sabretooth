@@ -21,13 +21,13 @@ class user extends active_record
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\site $db_site
    * @param database\role $db_role
-   * @return array( database\site )
+   * @return bool
    */
   public function has_access( $db_site, $db_role )
   {
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::self()->warning( 'Tried to determine access for record with no id' );
+      \sabretooth\log::warning( 'Tried to determine access for record with no id' );
       return false;
     }
 
@@ -53,7 +53,7 @@ class user extends active_record
 
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::self()->warning( 'Tried to get sites for record with no id' );
+      \sabretooth\log::warning( 'Tried to get sites for record with no id' );
       return $sites;
     }
     
@@ -85,13 +85,13 @@ class user extends active_record
 
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::self()->warning( 'Tried to get roles for record with no id' );
+      \sabretooth\log::warning( 'Tried to get roles for record with no id' );
       return $roles;
     }
     
     if( is_null( $db_site ) )
     {
-      \sabretooth\log::self()->warning( 'Tried to get roles for null site' );
+      \sabretooth\log::warning( 'Tried to get roles for null site' );
       return $roles;
     }
     
