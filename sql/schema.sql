@@ -321,10 +321,10 @@ DROP TABLE IF EXISTS `sabretooth`.`operation` ;
 CREATE  TABLE IF NOT EXISTS `sabretooth`.`operation` (
   `id` INT NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(45) NULL ,
-  `reval` ENUM('remove','edit','view','add','list') NULL ,
+  `action` VARCHAR(45) NOT NULL ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_name_reval` (`name` ASC, `reval` ASC) )
+  UNIQUE INDEX `uq_name_reval` (`name` ASC, `action` ASC) )
 ENGINE = InnoDB;
 
 
