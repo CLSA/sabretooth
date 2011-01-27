@@ -76,10 +76,10 @@ class user extends active_record
    * Returns an array of role objects the user has for the given site.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\site $db_site
+   * @param database\site $db_site Restrict to those roles for the given site, or if NULL then all.
    * @return array( database\role )
    */
-  public function get_roles( $db_site )
+  public function get_roles( $db_site = null )
   {
     $roles = array();
 
@@ -89,17 +89,11 @@ class user extends active_record
       return $roles;
     }
     
-    if( is_null( $db_site ) )
-    {
-      \sabretooth\log::warning( 'Tried to get roles for null site' );
-      return $roles;
-    }
-    
     $role_ids = self::get_col(
       'SELECT role_id '.
       'FROM user_access '.
       'WHERE user_id = '.$this->id.' '.
-      'AND site_id = '.$db_site->id.' '.
+      ( !is_null( $db_site ) ? 'AND site_id = '.$db_site->id.' ' : '' ).
       'ORDER BY role_id' );
     
     foreach( $role_ids as $role_id )

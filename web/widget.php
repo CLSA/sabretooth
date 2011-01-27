@@ -25,7 +25,14 @@ try
   // if in devel mode allow command line arguments in place of GET variables
   if( util::in_devel_mode() && defined( 'STDIN' ) )
   {
-    $_GET['widget'] = isset( $argv[1] ) ? $argv[1] : NULL;
+    if( isset( $argv[1] ) )
+    {
+      if( 'prev' == $argv[1] ) $_GET['back'] = 1;
+      else if( 'next' == $argv[1] ) $_GET['next'] = 1;
+      else if( 'refresh' == $argv[1] ) $_GET['refresh'] = 1;
+      else $_GET['widget'] = $argv[1];
+    }
+    $_GET['slot'] = isset( $argv[2] ) ? $argv[2] : NULL;
   }
 
   // set up the template engine
@@ -36,9 +43,30 @@ try
   foreach( $SETTINGS[ 'paths' ] as $path_name => $path_value )
     $twig->addGlobal( $path_name, $path_value );
   
-  // create and setup the called widget
+  // determine which widget to render based on the GET variables
+  if( !isset( $_GET['slot'] ) || !is_string( $_GET['slot'] ) )
+    throw new exception\runtime( 'invalid script variables' );
+  $slot_name = isset( $_GET['slot'] ) ? $_GET['slot'] : NULL;
   $widget_name = isset( $_GET['widget'] ) ? $_GET['widget'] : NULL;
-  if( is_null( $widget_name ) )
+  $go_prev = isset( $_GET['prev'] ) && 1 == $_GET['prev'];
+  $go_next = isset( $_GET['next'] ) && 1 == $_GET['next'];
+  $refresh = isset( $_GET['refresh'] ) && 1 == $_GET['refresh'];
+    
+  if( $go_prev )
+  {
+    $widget_name = session::self()->slot_prev( $slot_name );
+  }
+  else if( $go_next )
+  {
+    $widget_name = session::self()->slot_next( $slot_name );
+  }
+  else if( $refresh )
+  {
+    $current_widget = session::self()->slot_current( $slot_name );
+    if( !is_null( $current_widget ) ) $widget_name = $current_widget;
+  }
+
+  if( is_null( $widget_name ) || !is_string( $widget_name ) )
     throw new exception\runtime( 'invalid script variables' );
   
   $widget_class = '\\sabretooth\\ui\\'.$widget_name;
@@ -46,14 +74,20 @@ try
   // determine the widget arguments
   if( util::in_devel_mode() && defined( 'STDIN' ) && 2 < $argc ) $widget_args = $argv;
   else $widget_args = isset( $_GET ) ? $_GET : NULL;
-
-  // autoloader doesn't work on dynamic class names for PHP 5.3.2
-  include_file( API_PATH.'/ui/'.$widget_name.'.class.php' );
+  
+  // create the widget using the provided args then process it
   $widget = new $widget_class( $widget_args );
   $widget->finish();
   $twig_template = $twig->loadTemplate( $widget_name.'.html' );
-
+  
+  // render the widget and report to the session
+  log::notice( "rendering widget: $widget_name in slot $slot_name" );
   $result_array['output'] = $twig_template->render( ui\widget::get_variables() );
+  if( !( $go_prev || $go_next ) &&
+      $widget_name != session::self()->slot_current( $slot_name ) )
+  {
+    session::self()->slot_push( $slot_name, $widget_name );
+  }
 }
 // TODO: need to handle exceptions properly when in development mode using error dialogs
 catch( exception\database $e )
@@ -66,25 +100,25 @@ catch( exception\missing $e )
 {
   log::err( "Missing exception ".$e->get_message() );
   $result_array['success'] = false;
-  $result_array['error'] = 'database';
+  $result_array['error'] = 'missing';
 }
 catch( exception\permission $e )
 {
   log::err( "Permission exception ".$e->get_message() );
   $result_array['success'] = false;
-  $result_array['error'] = 'database';
+  $result_array['error'] = 'permission';
 }
 catch( \Twig_Error_Runtime $e )
 {
   log::err( "Template ".$e->__toString() );
   $result_array['success'] = false;
-  $result_array['error'] = 'database';
+  $result_array['error'] = 'template';
 }
 catch( \Exception $e )
 {
   log::err( "Last minute ".$e->__toString() );
   $result_array['success'] = false;
-  $result_array['error'] = 'database';
+  $result_array['error'] = 'unknown';
 }
 
 // flush any output
@@ -96,10 +130,9 @@ if( true == $result_array['success'] )
 }
 else
 {
-  header( json_encode( $result_array ), true, 400 );
-//  \HttpResponse::status( 400 );
-//  \HttpResponse::setContentType('application/json');
-//  \HttpResponse::setData( json_encode( $result_array ) );
-//  \HttpResponse::send();
+  \HttpResponse::status( 400 );
+  \HttpResponse::setContentType('application/json');
+  \HttpResponse::setData( json_encode( $result_array ) );
+  \HttpResponse::send();
 }
 ?>

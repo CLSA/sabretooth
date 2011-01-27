@@ -1,6 +1,7 @@
 The following software must be installed prior to installing sabretooth:
 
 - LAMP setup with PHP 5.3.2+
+- PECL Http
 - pear Log (pear install Log)
 - PhpDocumentor (pear install PhpDocumentor)
 - ADOdb 5.11+

@@ -1,0 +1,38 @@
+{% extends "widget.html" %}
+{% block widget %}
+
+<style type="text/css">
+  .{{ widget_name }}_heading {
+    margin-top: 0px;
+    margin-bottom: 0.1em;
+  }
+</style>
+
+<script type="text/javascript">
+$( document ).ready( function() {
+  $( "#{{ widget_name }}_site_list" ).click( function() {
+    if( send_operation( 'site', 'llist' ) ) slot_load( 'main', 'llist_site' );
+  } );
+} );
+$( document ).ready( function() {
+  $( "#{{ widget_name }}_user_list" ).click( function() {
+    if( send_operation( 'user', 'llist' ) ) slot_load( 'main', 'llist_user' );
+  } );
+} );
+$( document ).ready( function() {
+  $( "#{{ widget_name }}_role_list" ).click( function() {
+    if( send_operation( 'role', 'llist' ) ) slot_load( 'main', 'llist_role' );
+  } );
+} );
+
+$( function() { $( "#{{ widget_name }}_user_list" ).button().parent().buttonset() } );
+</script>
+
+<h2 class="{{ widget_name }}_heading">Home</h2>
+<div>
+  <span class="title">Lists:</span>
+  <button id="{{ widget_name }}_site_list">Sites</button>
+  <button id="{{ widget_name }}_user_list">Users</button>
+  <button id="{{ widget_name }}_role_list">Roles</button>
+</div
+{% endblock %}

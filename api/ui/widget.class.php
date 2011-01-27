@@ -24,6 +24,7 @@ abstract class widget extends \sabretooth\base_object
    * 
    * Defines all variables available in every widget
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args = NULL )

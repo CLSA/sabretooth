@@ -7,21 +7,21 @@
  # @param string current_site_name
  # @param string current_role_name
  # @param array roles This is an associative array containing the names of all roles which the user
-                      has access to at the current site.
+ #                    has access to at the current site.
  # @param array sites This is an associative array containing the names of all sites which the user
-                      has access to.
+ #                    has access to.
  #}
 {% extends "widget.html" %}
 {% block widget %}
 <script type="text/javascript">
-// set_site dropdown
 $( document ).ready( function() {
-  $( "#dropdown_set_site" ).change( function() {
-    var selected = $( "#dropdown_set_site option:selected" );
-    if( 0 != selected.val() )
-    {
-      if( send_operation( 'user', 'set_site', { "site": selected.text() } ) )
-        $( "#settings_slot" ).load( "widget.php?widget=settings" );
+  $( "#{{ widget_name }}_set_site" ).change( function() {
+    var selected = $( "#{{ widget_name }}_set_site option:selected" );
+    if( 0 != selected.val() ) {
+      if( send_operation( 'user', 'set_site', { "site": selected.text() } ) ) {
+        slot_refresh( 'settings' ); //$( "#settings_slot" ).load( "widget.php?widget=settings" );
+        slot_load( 'main', 'home' );
+      }
     }
   } );
 } );
@@ -40,9 +40,9 @@ $( document ).ready( function() {
 <table>
   <tr>
     <td align="left" width="50%">
-      <b>Site:</b>
+      <span class="title">Site:</span>
       {% if 1 < settings.sites|count %}
-      <select id="dropdown_set_site" style="width: 140px">
+      <select id="{{ widget_name }}_set_site" style="width: 140px">
         {% for site in settings.sites %}
         <option{{ settings.current_site_name == site ? ' selected' : '' }}>{{ site }}</option>
         {% endfor %}
@@ -52,9 +52,9 @@ $( document ).ready( function() {
       {% endif %}
     </td>
     <td align="left" width="50%">
-      <b>Role:</b>
+      <span class="title">Role:</span>
       {% if 1 < settings.roles|count %}
-      <select id="dropdown_set_role" style="width: 140px">
+      <select id="{{ widget_name }}_set_role" style="width: 140px">
         {% for role in settings.roles %}
         <option{{ settings.current_role_name == role ? ' selected' : '' }}>{{ role }}</option>
         {% endfor %}

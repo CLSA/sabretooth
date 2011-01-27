@@ -1,7 +1,26 @@
+{##
+ # llist.html
+ # 
+ # Generic list widget.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @param string heading The list's heading (can be an empty string).
+ # @param boolean checkable Whether the list should allow items to be selected.
+ # @param boolean viewable Whether the list should allow items to be viewed.
+ # @param boolean editable Whether the list should allow items to be edited.
+ # @param boolean removable Whether the list should allow items to be removed.
+ # @param int items_per_page The maximum number of items to show at once.
+ # @param array columns An array of names of the columns included in the list.
+ # @param array rows An array of items.  Every item in the array must have the following:
+                     'id' => a unique identifying id
+                     'columns' => an array of values for each column listed in the columns array
+ # @param int number_of_items The total number of items (not visible, total).
+ # @param int page The page to display.
+ # @param int max_page The maximum number of pages possible given the total number of items.
+ #}
 {% extends "widget.html" %}
 {% block widget %}
 <style type="text/css">
-  .{{ widget_name }}_title {
+  .{{ widget_name }}_heading {
     margin-top: 0px;
     margin-bottom: 0.1em;
   }
@@ -80,19 +99,20 @@ $( function() {
 } );
 
 // page button functions
+// TODO: llist_user should be replaced with variable
 $( function() {
   $( "#{{ widget_name }}_page_prev" ).click( function() {
-    load_widget( 'main', 'user_llist', { "page": {{ llist.page - 1 }} } );
+    slot_load( 'main', 'llist_user', { "page": {{ llist.page - 1 }} } );
   } )
 } );
 $( function() {
   $( "#{{ widget_name }}_page_next" ).click( function() {
-    load_widget( 'main', 'user_llist', { "page": {{ llist.page + 1 }} } );
+    slot_load( 'main', 'llist_user', { "page": {{ llist.page + 1 }} } );
   } )
 } );
 
 </script>
-{% if llist.title %}<h2 class="{{ widget_name }}_title">{{ llist.title }}</h2>{% endif %}
+{% if llist.heading %}<h2 class="{{ widget_name }}_heading">{{ llist.heading }}</h2>{% endif %}
 <table class="striped">
   {% if llist.rows | count %}
   <thead class="ui-widget-header">
@@ -158,8 +178,12 @@ $( function() {
         <span style="margin-left:20px">
         <span>
           Page:
-          <button style="width:70px" id="{{ widget_name }}_page_prev"{{ 1 == llist.page ? ' disabled' : '' }}>prev</button>
-          <button style="width:70px" id="{{ widget_name }}_page_next"{{ llist.max_page == llist.page ? ' disabled' : '' }}>next</button>
+          <button style="width:70px"
+                  id="{{ widget_name }}_page_prev"
+                  {{ 1 == llist.page ? 'disabled' : '' }}>prev</button>
+          <button style="width:70px"
+                  id="{{ widget_name }}_page_next"
+                  {{ llist.max_page == llist.page ? 'disabled' : '' }}>next</button>
         </span>
         {% endif %}
       </th>

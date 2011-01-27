@@ -47,7 +47,7 @@ SELECT role.id, operation.name, operation.action
 FROM role, operation
 WHERE role.name="administrator"
 AND operation.name="user"
-AND operation.action="list"
+AND operation.action="llist"
 LIMIT 1;
 
 -- TODO finish list

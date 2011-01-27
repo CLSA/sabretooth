@@ -34,40 +34,37 @@ abstract class active_record extends \sabretooth\base_object
     //\sabretooth\log::debug( 'active_record: '.( is_null( $primary_keys )
     //  ? 'creating new '.$this->get_table_name().' record'
     //  : 'creating '.$this->get_table_name().' with primary key(s) '.$primary_keys ) );
-
-    $db = \sabretooth\session::self()->get_db();
     
     // determine the columns for this table
+    $db = \sabretooth\session::self()->get_db();
     $columns = $db->MetaColumnNames( static::get_table_name() );
     assert( is_array( $columns ) );
     foreach( $columns as $name ) $this->columns[ $name ] = NULL;
     
-    // determine the primary key(s)
-    $this->primary_keys = $db->MetaPrimaryKeys( static::get_table_name() );
-    
     // validate the primary key (if there is one)
+    $primary_key_names = static::get_primary_key_names();
     if( NULL != $primary_keys )
     {
       if( is_numeric( $primary_keys ) )
       {
-        if( 1 != count( $this->primary_keys ) || 'id' != $this->primary_keys[0] )
+        if( 1 != count( $primary_key_names ) || 'id' != $primary_key_names[0] )
         {
           throw new \sabretooth\exception\database(
             'Unable to create record, primary key "id" does not exist.' );
         }
-        $this->columns[ $this->primary_keys[0] ] = intval( $primary_keys );
+        $this->columns[ $primary_key_names[0] ] = intval( $primary_keys );
       }
       else if( is_array( $primary_keys ) )
       {
-        if( count( $this->primary_keys ) != count( $primary_keys ) )
+        if( count( $primary_key_names ) != count( $primary_keys ) )
         {
           throw new \sabretooth\exception\database(
             'Unable to create record, wrong number of primary keys ('.count( $primary_keys ).
-            ' provided, '.count( $this->primary_keys ).' required.' );
+            ' provided, '.count( $primary_key_names ).' required.' );
         }
         else
         {
-          foreach( $this->primary_keys as $primary_key_name )
+          foreach( $primary_key_names as $primary_key_name )
           {
             if( !in_array( $primary_key_name, array_keys( $primary_keys ) ) )
             {
@@ -124,7 +121,8 @@ abstract class active_record extends \sabretooth\base_object
 
     $where = '';
     $first = true;
-    foreach( $this->primary_keys as $primary_key_name )
+    $primary_key_names = static::get_primary_key_names();
+    foreach( $primary_key_names as $primary_key_name )
     {
       if( !is_null( $this->columns[ $primary_key_name ] ) )
       {
@@ -161,12 +159,14 @@ abstract class active_record extends \sabretooth\base_object
    */
   public function save()
   {
+    $primary_key_names = static::get_primary_key_names();
+
     // building the SET list since it is identical for inserts and updates
     $sets = '';
     $first = true;
     foreach( $this->columns as $key => $val )
     {
-      if( !in_array( $key, $this->primary_keys ) )
+      if( !in_array( $key, $primary_key_names ) )
       {
         $sets .= ( $first ? "": ", " )."$key = '".self::format_string( $val )."'";
         $first = false;
@@ -175,18 +175,18 @@ abstract class active_record extends \sabretooth\base_object
     
     // determine if we have any missing primary keys
     $missing_primary_keys = false;
-    foreach( $this->primary_keys as $primary_key_name )
+    foreach( $primary_key_names as $primary_key_name )
     {
       if( NULL == $this->column[ $primary_key_name ] )
       {
-        $missing = true;
+        $missing_primary_keys = true;
         break;
       }
     }
 
     // make sure we either have all primary keys, or a single null primary key (new row)
     // (we cannot automatically add new rows for tables with multiple primary keys)
-    if( !$missing_primary_keys || ( 1 == count( $this->primary_keys ) ) )
+    if( !$missing_primary_keys || ( 1 == count( $primary_key_names ) ) )
     {
       $sql = is_null( $this->columns['id'] )
            // insert a new row
@@ -199,8 +199,8 @@ abstract class active_record extends \sabretooth\base_object
       self::execute( $sql );
 
       // if we have a single primary key and it was null before, then it must be an auto-increment
-      if( 1 == count( $this->primary_keys ) &&
-          'id' == $this->primary_keys[0] &&
+      if( 1 == count( $primary_key_names ) &&
+          'id' == $primary_key_names[0] &&
           is_null( $this->columns['id'] ) ) $this->columns['id'] = self::insert_id();
     }
     else
@@ -208,6 +208,21 @@ abstract class active_record extends \sabretooth\base_object
       throw new \sabretooth\exception\database(
         'Unable to save record, one or more primary keys are missing.' );
     }
+  }
+
+  /**
+   * Count the total number of rows in the table.
+   *
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @static
+   * @access public
+   */
+  public static function count()
+  {
+    return self::get_one(
+      'SELECT COUNT(*) '.
+      'FROM '.static::get_table_name() );
   }
 
   /**
@@ -257,15 +272,45 @@ abstract class active_record extends \sabretooth\base_object
   }
 
   /**
-   * Returns the name of the table associated with this active record.
+   * Select a number of records.
+   * 
+   * This method returns an array of records.
+   * Be careful when calling this method.  Based on the count and offset parameters an object is
+   * created for every row being selected, so selecting a very large number of rows (1000+) isn't
+   * a good idea.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access protected
+   * @param int $count The number of records to return
+   * @param int $offset The 0-based index of the first record to start selecting from
+   * @param string $sort_column Which column to sort by during the select.
+   * @return array( active_record )
+   * @static
+   * @access public
    */
-  protected static function get_table_name()
+  public static function select( $count, $offset = 0, $sort_column = NULL )
   {
-    // table and class names should always be identical
-    return self::get_class_name();
+    $records = array();
+    
+    $primary_key_names = static::get_primary_key_names();
+    $select = '';
+    $first = true;
+    foreach( $primary_key_names as $primary_key_name )
+    {
+      $select .= ( $first ? '' : ', ' ).$primary_key_name;
+      $first = false;
+    }
+
+    $primary_ids_list = self::get_all(
+      'SELECT '.$select.' '.
+      'FROM '.static::get_table_name().' '.
+      ( !is_null( $sort_column ) ? 'ORDER BY '.$sort_column.' ' : '' ).
+      'LIMIT '.$count.' OFFSET '.$offset );
+
+    foreach( $primary_ids_list as $primary_ids )
+    {
+      array_push( $records, new static( $primary_ids ) );
+    }
+
+    return $records;
   }
 
   /**
@@ -276,6 +321,7 @@ abstract class active_record extends \sabretooth\base_object
    * @param string $column a column with the unique key property
    * @param string $value the value of the column to match
    * @return database\active_record
+   * @static
    * @access public
    */
   public static function get_unique_record( $column, $value )
@@ -306,15 +352,15 @@ abstract class active_record extends \sabretooth\base_object
       }
       
       // this returns an empty array if no records are found
-      $row = self::get_row(
+      $primary_ids = self::get_row(
         'SELECT '.$select.' '.
         'FROM '.static::get_table_name().' '.
         'WHERE '.$column.' = "'.$value.'"' );
       
-      if( count( $row ) )
+      if( count( $primary_ids ) )
       {
         // create a record using the selected primary key(s)
-        $record = new static( $row );
+        $record = new static( $primary_ids );
       }
     }
     return $record;
@@ -334,6 +380,31 @@ abstract class active_record extends \sabretooth\base_object
   {
     // TODO: clean/escape the string before returning it
     return $string;
+  }
+
+  /**
+   * Returns the name of the table associated with this active record.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access protected
+   */
+  protected static function get_table_name()
+  {
+    // table and class names should always be identical
+    return self::get_class_name();
+  }
+
+  /**
+   * Returns a list of the names of all columns making up the primary key for this table.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array( string )
+   * @static
+   * @access protected
+   */
+  protected static function get_primary_key_names()
+  {
+    return \sabretooth\session::self()->get_db()->MetaPrimaryKeys( static::get_table_name() );
   }
 
   /**
@@ -481,13 +552,6 @@ abstract class active_record extends \sabretooth\base_object
    * @access private
    */
   private $columns = array();
-
-  /**
-   * Holds all column names which are part of the table's primary key
-   * @var array
-   * @access private
-   */
-  private $primary_keys = array();
 
   /**
    * Determines whether or not to write changes to the database on deletion.

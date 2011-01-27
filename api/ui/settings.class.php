@@ -16,7 +16,7 @@ namespace sabretooth\ui;
 class settings extends widget
 {
   /**
-   * Constructor
+   * Finish setting the variables in a widget.
    * 
    * Defines all variables which need to be set for the associated template.
    * @author Patrick Emond <emondpd@mcmaster.ca>

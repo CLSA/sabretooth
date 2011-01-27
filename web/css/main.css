@@ -97,3 +97,7 @@ select {
   color: #4c3000;
   background: #fece2f;
 }
+
+.title {
+  font-weight: bold;
+}

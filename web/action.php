@@ -45,7 +45,7 @@ try
     throw new exception\runtime( "invalid action '$action'" );
 
   // execute the action (may throw a permission error)
-  \sabretooth\log::notice( "executing action: $operation_name::$action_name" );
+  log::notice( "executing action: $operation_name::$action_name" );
   call_user_func_array( array( $operation, $action_name ), $args );
 }
 catch( exception\database $e )
@@ -82,6 +82,18 @@ catch( \Exception $e )
 // flush any output
 ob_end_clean();
 
-// output the result in JSON format
-print json_encode( $result_array );
+// flush any output
+ob_end_clean();
+
+if( true == $result_array['success'] )
+{
+  print json_encode( $result_array );
+}
+else
+{
+  \HttpResponse::status( 400 );
+  \HttpResponse::setContentType('application/json');
+  \HttpResponse::setData( json_encode( $result_array ) );
+  \HttpResponse::send();
+}
 ?>

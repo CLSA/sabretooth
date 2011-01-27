@@ -50,6 +50,9 @@ final class session extends singleton
     // set error reporting
     error_reporting(
       $this->settings[ 'general' ][ 'development_mode' ] ? E_ALL | E_STRICT : E_ALL );
+
+    // setup the session array
+    if( !isset( $_SESSION['slot'] ) ) $_SESSION['slot'] = array();
   }
 
   public function initialize()
@@ -150,7 +153,7 @@ final class session extends singleton
    */
   public function set_site_and_role( $db_site, $db_role )
   {
-    if( is_null( $db_site ) || is_null( $db_role ) )
+    if( is_NULL( $db_site ) || is_NULL( $db_role ) )
     {
       $this->site = NULL;
       $this->role = NULL;
@@ -182,7 +185,7 @@ final class session extends singleton
     $this->user = $db_user;
 
     // Determine the site and role
-    if( is_null( $this->user ) )
+    if( is_NULL( $this->user ) )
     {
       $this->set_site_and_role( NULL, NULL );
     }
@@ -200,7 +203,7 @@ final class session extends singleton
       }
       
       // if we still don't have a site and role then pick the first one we can find
-      if( is_null( $this->site ) || is_null( $this->role ) )
+      if( is_NULL( $this->site ) || is_NULL( $this->role ) )
       {
         $db_site_array = $this->user->get_sites();
         if( 0 == count( $db_site_array ) )
@@ -211,6 +214,149 @@ final class session extends singleton
 
         $this->set_site_and_role( $db_site, $db_role );
       }
+    }
+  }
+  
+  /**
+   * Add a new widget to the slot's stack.
+   * 
+   * This method will delete any items after the current pointer, add the new widget to the end of
+   * the stack then point to the new element.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $slot The name of the slot.
+   * @param string $widget The name of the widget.
+   * @access public
+   */
+  public function slot_push( $slot, $widget )
+  {
+    // make sure the slot's stack has been created
+    $this->validate_slot( $slot ); 
+    $test = print_r( $_SESSION['slot'][$slot]['stack'], true );
+    
+    // get the current index and hack off whatever comes after it
+    $index = $_SESSION['slot'][$slot]['stack']['index'];
+    if( 0 <= $index ) array_slice( $_SESSION['slot'][$slot]['stack']['items'], 0, $index + 1 ); // TODO: this doesn't seem to be working
+
+    // now add the widget onto the end and point to it (avoiding duplicates)
+    if( $widget != end( $_SESSION['slot'][$slot]['stack']['items'] ) )
+      $total = array_push( $_SESSION['slot'][$slot]['stack']['items'], $widget );
+
+    $_SESSION['slot'][$slot]['stack']['index'] = $total - 1;
+  }
+
+  /**
+   * Returns whether or not there is a previous widget available.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return bool
+   * @access public
+   */
+  public function slot_has_prev( $slot )
+  {
+    $index = $_SESSION['slot'][$slot]['stack']['index'];
+    return -1 != $index && 0 <= ( $index - 1 );
+  }
+
+  /**
+   * Returns whether or not there is a next widget available.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return bool
+   * @access public
+   */
+  public function slot_has_next( $slot )
+  {
+    $index = $_SESSION['slot'][$slot]['stack']['index'];
+    $total = count( $_SESSION['slot'][$slot]['stack']['items'] );
+    return -1 != $index && $total > ( $index + 1 );
+  }
+
+  /**
+   * Reverse the slot pointer by one.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $slot The name of the slot.
+   * @return string The name of the previous widget (or NULL if there is no next widget).
+   * @access public
+   */
+  public function slot_prev( $slot )
+  {
+    // make sure the slot's stack has been created
+    $this->validate_slot( $slot ); 
+
+    $value = NULL;
+    
+    // make sure to only decrement the index if we don't go out of bounds
+    if( $this->slot_has_prev( $slot ) )
+    {
+      $new_index = $_SESSION['slot'][$slot]['stack']['index'] - 1;
+      // update the stack index
+      $_SESSION['slot'][$slot]['stack']['index'] = $new_index;
+      // get the (now) previous item
+      $value = $this->slot_current( $slot );
+    }
+
+    return $value;
+  }
+  
+  /**
+   * Advance the slot pointer by one.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $slot The name of the slot.
+   * @return string The name of the next widget (or NULL if there is no next widget).
+   * @access public
+   */
+  public function slot_next( $slot )
+  {
+    // make sure the slot's stack has been created
+    $this->validate_slot( $slot ); 
+
+    $value = NULL;
+    
+    // make sure to only increment the index if we don't go out of bounds
+    if( $this->slot_has_next( $slot ) )
+    {
+      $new_index = $_SESSION['slot'][$slot]['stack']['index'] + 1;
+      // update the stack index
+      $_SESSION['slot'][$slot]['stack']['index'] = $new_index;
+      // get the (now) next item
+      $value = $this->slot_current( $slot );
+    }
+
+    return $value;
+  }
+
+  /**
+   * Returns the widget currently being pointed to by the slot stack.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $slot The name of the slot.
+   * @return string The name of the widget or NULL if the stack is empty.
+   * @access public
+   */
+  public function slot_current( $slot )
+  {
+    // make sure the slot's stack has been created
+    $this->validate_slot( $slot ); 
+
+    // return the item at the current index
+    $index = $_SESSION['slot'][$slot]['stack']['index'];
+    return 0 <= $index ? $_SESSION['slot'][$slot]['stack']['items'][$index] : NULL;
+  }
+
+  /**
+   * Makes sure that a stack exists for the given slot.
+   * 
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @access private
+   */
+  private function validate_slot( $slot )
+  {
+    if( !isset( $_SESSION['slot'][$slot] ) )
+    {
+      $_SESSION['slot'][$slot]['stack']['index'] = -1;
+      $_SESSION['slot'][$slot]['stack']['items'] = array();
     }
   }
 
@@ -241,12 +387,5 @@ final class session extends singleton
    * @access private
    */
   private $site = NULL;
-
-  /**
-   * The last widget loaded into the main slot
-   * @var string
-   * @access private
-   */
-  private $main_slot = 'home';
 }
 ?>
