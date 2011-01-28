@@ -35,7 +35,7 @@ class base_exception extends \Exception
       $who = "$user_name:$role_name@$site_name";
     }
     
-    parent::__construct( "\n$who", 0, $previous );
+    parent::__construct( "\n$who\n$message", 0, $previous );
   }
   
   /**

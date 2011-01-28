@@ -82,11 +82,7 @@ try
   // render the widget and report to the session
   log::notice( "rendering widget: $widget_name in slot $slot_name" );
   $result_array['output'] = $twig_template->render( ui\widget::get_variables() );
-  if( !( $go_prev || $go_next ) &&
-      $widget_name != session::self()->slot_current( $slot_name ) )
-  {
-    session::self()->slot_push( $slot_name, $widget_name );
-  }
+  if( !( $go_prev || $go_next ) ) session::self()->slot_push( $slot_name, $widget_name );
 }
 catch( exception\database $e )
 {

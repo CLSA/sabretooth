@@ -35,13 +35,12 @@ function update_shortcuts() {
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  */
-function show_loading_indicator( slot ) {
-  var id = undefined == slot ? '#app_ui' : '#' + slot + "_slot";
-  $( id ).loading( {
+function show_loading_indicator() {
+  $.loading( {
     onAjax: true,
     mask: true,
     img: "img/loading.gif",
-    delay: 0, // ms
+    delay: 400, // ms
     align: "center"
   } );
 }

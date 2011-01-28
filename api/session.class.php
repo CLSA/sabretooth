@@ -55,20 +55,6 @@ final class session extends singleton
     if( !isset( $_SESSION['slot'] ) ) $_SESSION['slot'] = array();
   }
   
-  public function __destruct()
-  {
-    // set a few cookies before exiting
-    setcookie( 'slot.main.widget', $this->slot_current( 'main' ) );
-    
-    $index = $_SESSION['slot']['main']['stack']['index'];
-    setcookie( 'slot.main.prev', $this->slot_has_prev( 'main' )
-                               ? $_SESSION['slot']['main']['stack']['items'][$index-1]
-                               : NULL );
-    setcookie( 'slot.main.next', $this->slot_has_next( 'main' )
-                               ? $_SESSION['slot']['main']['stack']['items'][$index+1]
-                               : NULL );
-  }
-
   public function initialize()
   {
     // set up the database
@@ -245,7 +231,6 @@ final class session extends singleton
   {
     // make sure the slot's stack has been created
     $this->validate_slot( $slot ); 
-    $test = print_r( $_SESSION['slot'][$slot]['stack'], true );
     
     // get the current index and hack off whatever comes after it
     $index = $_SESSION['slot'][$slot]['stack']['index'];
@@ -253,9 +238,12 @@ final class session extends singleton
 
     // now add the widget onto the end and point to it (avoiding duplicates)
     if( $widget != end( $_SESSION['slot'][$slot]['stack']['items'] ) )
-      $total = array_push( $_SESSION['slot'][$slot]['stack']['items'], $widget );
+      array_push( $_SESSION['slot'][$slot]['stack']['items'], $widget );
 
+    $total = count( $_SESSION['slot'][$slot]['stack']['items'] );
     $_SESSION['slot'][$slot]['stack']['index'] = $total - 1;
+    
+    $this->update_slot_cookies();
   }
 
   /**
@@ -310,6 +298,7 @@ final class session extends singleton
       $value = $this->slot_current( $slot );
     }
 
+    $this->update_slot_cookies();
     return $value;
   }
   
@@ -338,6 +327,7 @@ final class session extends singleton
       $value = $this->slot_current( $slot );
     }
 
+    $this->update_slot_cookies();
     return $value;
   }
 
@@ -382,6 +372,28 @@ final class session extends singleton
       }
     }
     
+  }
+
+  /**
+   * Writes all slot stack information as cookies.
+   * 
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @access private
+   */
+  private function update_slot_cookies()
+  {
+    foreach( array_keys( $_SESSION['slot'] ) as $slot )
+    {
+      setcookie( "slot.$slot.widget", $this->slot_current( $slot ) );
+      
+      $index = $_SESSION['slot'][$slot]['stack']['index'];
+      setcookie( "slot.$slot.prev", $this->slot_has_prev( $slot )
+                                 ? $_SESSION['slot'][$slot]['stack']['items'][$index-1]
+                                 : NULL );
+      setcookie( "slot.$slot.next", $this->slot_has_next( $slot )
+                                 ? $_SESSION['slot'][$slot]['stack']['items'][$index+1]
+                                 : NULL );
+    }
   }
 
   /**
