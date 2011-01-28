@@ -14,8 +14,8 @@ INSERT INTO site( id, name ) VALUES( NULL, 'Victoria' );
 
 DELETE FROM user;
 INSERT INTO user( id, name ) VALUES( NULL, 'patrick' );
-INSERT INTO user( id, name ) VALUES( NULL, 'ron' );
 INSERT INTO user( id, name ) VALUES( NULL, 'val' );
+INSERT INTO user( id, name ) VALUES( NULL, 'ron' );
 
 DELETE FROM user_access;
 INSERT INTO user_access

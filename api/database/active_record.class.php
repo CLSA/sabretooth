@@ -282,11 +282,12 @@ abstract class active_record extends \sabretooth\base_object
    * @param int $count The number of records to return
    * @param int $offset The 0-based index of the first record to start selecting from
    * @param string $sort_column Which column to sort by during the select.
+   * @param boolean $descending Whether to sort descending or ascending.
    * @return array( active_record )
    * @static
    * @access public
    */
-  public static function select( $count = 0, $offset = 0, $sort_column = NULL )
+  public static function select( $count = 0, $offset = 0, $sort_column = NULL, $descending = false )
   {
     $records = array();
     
@@ -302,7 +303,9 @@ abstract class active_record extends \sabretooth\base_object
     $primary_ids_list = self::get_all(
       'SELECT '.$select.' '.
       'FROM '.static::get_table_name().' '.
-      ( !is_null( $sort_column ) ? 'ORDER BY '.$sort_column.' ' : '' ).
+      ( !is_null( $sort_column )
+          ? 'ORDER BY '.$sort_column.' '.( $descending ? 'DESC ' : '' )
+          : '' ).
       ( 0 < $count ? 'LIMIT '.$count.' OFFSET '.$offset : '' ) );
 
     foreach( $primary_ids_list as $primary_ids )

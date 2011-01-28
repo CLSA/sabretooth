@@ -30,9 +30,11 @@ abstract class llist extends widget
 
     // make sure to validate the argument ($args could be anything)
     if( isset( $args['page'] ) && is_numeric( $args['page'] ) )
-    {
       $this->page = $args['page'];
-    }
+    if( isset( $args['sort_column'] ) && is_string( $args['sort_column'] ) )
+      $this->sort_column = $args['sort_column'];
+    if( isset( $args['sort_desc'] ) )
+      $this->sort_desc = 0 != $args['sort_desc'];
   }
   
   /**
@@ -62,6 +64,8 @@ abstract class llist extends widget
     $this->set_rows( 10, ( $this->page - 1 ) * $this->items_per_page );
 
     $this->set_variable( 'page', $this->page );
+    $this->set_variable( 'sort_column', $this->sort_column );
+    $this->set_variable( 'sort_desc', $this->sort_desc );
     $this->set_variable( 'max_page', $max_page );
     $this->set_variable( 'rows', $this->rows );
   }
@@ -74,13 +78,16 @@ abstract class llist extends widget
    * @access protected
    */
   abstract protected function set_rows( $limit_count, $limit_offset );
-
+  
+  // TODO: document these members
   protected $heading = "";
   protected $checkable = false;
   protected $viewable = false;
   protected $editable = false;
   protected $removable = false;
   protected $page = 1;
+  protected $sort_column = '';
+  protected $sort_desc = false;
   protected $items_per_page = 10;
   protected $number_of_items = 0;
   protected $columns = array();

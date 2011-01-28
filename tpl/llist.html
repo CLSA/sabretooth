@@ -9,12 +9,17 @@
  # @param boolean editable Whether the list should allow items to be edited.
  # @param boolean removable Whether the list should allow items to be removed.
  # @param int items_per_page The maximum number of items to show at once.
- # @param array columns An array of names of the columns included in the list.
+ # @param array columns An array of columns.  Every item in the array must have the following:
+                     'id' => a unique id identifying the column
+                     'name' => the name to display in in the column header
+                     'sortable' => whether or not the list can be sorted by the column
  # @param array rows An array of items.  Every item in the array must have the following:
                      'id' => a unique identifying id
                      'columns' => an array of values for each column listed in the columns array
  # @param int number_of_items The total number of items (not visible, total).
  # @param int page The page to display.
+ # @param string sort_column The column id to sort by (use an empty string for no sorting)
+ # @param int sort_desc Whether to sort descending or ascending
  # @param int max_page The maximum number of pages possible given the total number of items.
  #}
 {% extends "widget.html" %}
@@ -79,6 +84,19 @@ $( function() {
 $( function() { $( "#{{ widget_name }}_check_none" ).button().parent().buttonset() } );
 $( function() { $( "#{{ widget_name }}_page_next" ).button().parent().buttonset() } );
 
+// column sort functions
+$( function() {
+  $( "th.sortable" ).click( function() {
+    slot_refresh(
+      true,
+      get_slot( $(this) ),
+      '{{ widget_name }}',
+      { "page": {{ llist.page }},
+        "sort_column": $(this).attr("id"),
+        "sort_desc": {{ llist.sort_desc ? 0 : 1 }} } );
+  } )
+} );
+
 // check button functions
 $( function() {
   $( "#{{ widget_name }}_check_all" ).click( function() {
@@ -101,12 +119,24 @@ $( function() {
 // page button functions
 $( function() {
   $( "#{{ widget_name }}_page_prev" ).click( function() {
-    slot_refresh( true, get_slot( $(this) ), '{{ widget_name }}', { "page": {{ llist.page - 1 }} } );
+    slot_refresh(
+      true,
+      get_slot( $(this) ),
+      '{{ widget_name }}',
+      { "page": {{ llist.page - 1 }},
+        "sort_column": "{{ llist.sort_column }}",
+        "sort_desc": {{ llist.sort_desc ? 1 : 0 }} } );
   } )
 } );
 $( function() {
   $( "#{{ widget_name }}_page_next" ).click( function() {
-    slot_refresh( true, get_slot( $(this) ), '{{ widget_name }}', { "page": {{ llist.page + 1 }} } );
+    slot_refresh(
+      true,
+      get_slot( $(this) ),
+      '{{ widget_name }}',
+      { "page": {{ llist.page + 1 }},
+        "sort_column": "{{ llist.sort_column }}",
+        "sort_desc": {{ llist.sort_desc ? 1 : 0 }} } );
   } )
 } );
 
@@ -120,7 +150,14 @@ $( function() {
       <th><div class="ui-icon ui-icon-check" style="padding:2px"></div></th>
       {% endif %}
       {% for column in llist.columns %}
-      <th width="{{ 95 / loop.length }}%">{{ column }}</th>
+      {# TODO: text and up/down arrow not displaying well #}
+      <th{{ column.sortable ? ' class="sortable"' : '' }} id="{{ column.id }}"
+                                                          width="{{ 95 / loop.length }}%">
+        {{ column.name }}
+        {% if( column.sortable and column.id == llist.sort_column ) %}
+          <span class="ui-icon ui-icon-triangle-1-{{ llist.sort_desc ? 's' : 'n' }}"></span>
+        {% endif %}
+      </th>
       {% endfor %}
       {% if llist.viewable %}
       <th></th>

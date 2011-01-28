@@ -43,7 +43,16 @@ class llist_user extends llist
     $this->number_of_items = 'administrator' == $session->get_role()->name
                            ? \sabretooth\database\user::count()
                            : $session->get_site()->get_user_count();
-    $this->columns = array( "name", "role", "last activity" );
+    $this->columns = array(
+      array( "id" => "name",
+             "name" => "username",
+             "sortable" => true ),
+      array( "id" => "role",
+             "name" => "role",
+             "sortable" => true ),
+      array( "id" => "last",
+             "name" => "last activity",
+             "sortable" => false ) ); // TODO: allow sorting by last activity
   }
 
   protected function set_rows( $limit_count, $limit_offset )
@@ -53,27 +62,22 @@ class llist_user extends llist
     
     // get all users for admins, site users for anyone else
     $session = \sabretooth\session::self();
+    $sort = 'name' == $this->sort_column ? 'name' : NULL;
+    $desc = $this->sort_desc;
     $db_user_list = 'administrator' == $session->get_role()->name
-                  ? \sabretooth\database\user::select( $limit_count, $limit_offset )
-                  : $session->get_site()->get_users( $limit_count, $limit_offset );
+                  ? \sabretooth\database\user::select( $limit_count, $limit_offset, $sort, $desc )
+                  : $session->get_site()->get_users( $limit_count, $limit_offset, $sort, $desc );
     foreach( $db_user_list as $db_user )
     {
       // determine the role
       $role = 'none';
-      
       $db_roles = $db_user->get_roles();
-
-      if( 1 == count( $db_roles ) )
-      { // only one roll?
-        $role = $db_roles[0]->name;
-      }
-      else if( 1 < count( $db_roles ) )
-      { // multiple roles
-        $role = 'multiple';
-      }
+      if( 1 == count( $db_roles ) ) $role = $db_roles[0]->name; // only one roll?
+      else if( 1 < count( $db_roles ) ) $role = 'multiple'; // multiple roles?
 
       array_push( $this->rows, 
-        array( 'id' => $db_user->id, 'columns' => array( $db_user->name, $role, 'TODO' ) ) );
+        array( 'id' => $db_user->id,
+               'columns' => array( $db_user->name, $role, 'TODO' ) ) );
     }
   }
 

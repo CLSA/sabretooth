@@ -15,6 +15,7 @@ namespace sabretooth\database;
  */
 class site extends active_record
 {
+  // TODO: document
   public function get_user_count()
   {
     $count = 0;
@@ -31,8 +32,9 @@ class site extends active_record
 
     return $count;
   }
-
-  public function get_users( $count, $offset = 0, $sort_column = NULL )
+  
+  // TODO: document
+  public function get_users( $count, $offset = 0, $sort_column = NULL, $descending = false )
   {
     $users = array();
     if( is_null( $this->id ) )
@@ -46,7 +48,9 @@ class site extends active_record
       'FROM user_access '.
       'WHERE site_id = '.$this->id.' '.
       'GROUP BY user_id '.
-      ( !is_null( $sort_column ) ? 'ORDER BY '.$sort_column.' ' : '' ).
+      ( !is_null( $sort_column )
+          ? 'ORDER BY '.$sort_column.' '.( $descending ? 'DESC ' : '' )
+          : '' ).
       ( 0 < $count ? 'LIMIT '.$count.' OFFSET '.$offset : '' ) );
 
     foreach( $ids as $id )
