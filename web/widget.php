@@ -72,8 +72,7 @@ try
   $widget_class = '\\sabretooth\\ui\\'.$widget_name;
   
   // determine the widget arguments
-  if( util::in_devel_mode() && defined( 'STDIN' ) && 2 < $argc ) $widget_args = $argv;
-  else $widget_args = isset( $_GET ) ? $_GET : NULL;
+  $widget_args = isset( $_GET ) ? $_GET : NULL;
   
   // create the widget using the provided args then process it
   $widget = new $widget_class( $widget_args );
@@ -89,7 +88,6 @@ try
     session::self()->slot_push( $slot_name, $widget_name );
   }
 }
-// TODO: need to handle exceptions properly when in development mode using error dialogs
 catch( exception\database $e )
 {
   log::err( "Database exception ".$e->get_message() );

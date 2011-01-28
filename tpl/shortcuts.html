@@ -3,9 +3,6 @@
  # 
  # Creates a list of shortcuts which are meant to be used under any circumstance.
  # @author Patrick Emond <emondpd@mcmaster.ca>
- # @param boolean prev_enabled Whether to enable the previous button
- # @param boolean next_enabled Whether to enable the next button
- # @param boolean home_enabled Whether to enable the home button
  #}
 {% extends "widget.html" %}
 {% block widget %}
@@ -65,7 +62,7 @@ $( function() {
 } );
 $( function() {
   $( "#{{ widget_name }}_refresh" ).click( function() {
-    slot_refresh( 'main' );
+    slot_refresh( true, 'main' );
   } )
 } );
 $( function() {
@@ -80,10 +77,10 @@ $( function() {
 } );
 </script>
 <span>
-  <button id="{{ widget_name }}_prev"{{ shortcuts.prev_enabled ? '' : ' disabled' }}>back</button>
-  <button id="{{ widget_name }}_next"{{ shortcuts.next_enabled ? '' : ' disabled' }}>forward</button>
+  <button id="{{ widget_name }}_prev">back</button>
+  <button id="{{ widget_name }}_next">forward</button>
   <button id="{{ widget_name }}_refresh">refresh</button>
-  <button id="{{ widget_name }}_home"{{ shortcuts.home_enabled ? '' : ' disabled' }}>home</button>
+  <button id="{{ widget_name }}_home">home</button>
   <button id="{{ widget_name }}_help">help</button>
 </span>
 {% endblock %}

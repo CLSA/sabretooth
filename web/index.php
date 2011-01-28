@@ -38,7 +38,6 @@ try
 
   $output = $twig_template->render( ui\widget::get_variables() );
   print $output;
-  util::var_dump_html( $_SESSION['slot']['main']['stack'] );
 }
 // TODO: need to handle exceptions properly when in development mode using error dialogs
 catch( exception\database $e )

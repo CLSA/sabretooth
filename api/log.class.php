@@ -128,6 +128,22 @@ final class log extends singleton
   /**
    * Logging method
    * 
+   * This is a special convenience method that sends the results of a print_r call on the provided
+   * variable as a debug log.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param mixed $variable The variable to expand.
+   * @static
+   * @access public
+   */
+  public static function print_r( $variable )
+  {
+    $message = print_r( $variable, true );
+    self::debug( $message );
+  }
+  
+  /**
+   * Logging method
+   * 
    * This type of log is special.  It is used to track activity performed by the application so
    * it can be audited at a later date.
    * @author Patrick Emond <emondpd@mcmaster.ca>

@@ -19,7 +19,8 @@ $( document ).ready( function() {
     var selected = $( "#{{ widget_name }}_set_site option:selected" );
     if( 0 != selected.val() ) {
       if( send_operation( 'user', 'set_site', { "site": selected.text() } ) ) {
-        slot_refresh( 'settings' ); //$( "#settings_slot" ).load( "widget.php?widget=settings" );
+        slot_refresh( false, 'settings' );
+        // TODO: need to clear out slot stack
         slot_load( 'main', 'home' );
       }
     }

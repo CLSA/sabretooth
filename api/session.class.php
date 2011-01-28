@@ -54,6 +54,20 @@ final class session extends singleton
     // setup the session array
     if( !isset( $_SESSION['slot'] ) ) $_SESSION['slot'] = array();
   }
+  
+  public function __destruct()
+  {
+    // set a few cookies before exiting
+    setcookie( 'slot.main.widget', $this->slot_current( 'main' ) );
+    
+    $index = $_SESSION['slot']['main']['stack']['index'];
+    setcookie( 'slot.main.prev', $this->slot_has_prev( 'main' )
+                               ? $_SESSION['slot']['main']['stack']['items'][$index-1]
+                               : NULL );
+    setcookie( 'slot.main.next', $this->slot_has_next( 'main' )
+                               ? $_SESSION['slot']['main']['stack']['items'][$index+1]
+                               : NULL );
+  }
 
   public function initialize()
   {
@@ -235,7 +249,7 @@ final class session extends singleton
     
     // get the current index and hack off whatever comes after it
     $index = $_SESSION['slot'][$slot]['stack']['index'];
-    if( 0 <= $index ) array_slice( $_SESSION['slot'][$slot]['stack']['items'], 0, $index + 1 ); // TODO: this doesn't seem to be working
+    if( 0 <= $index ) array_slice( $_SESSION['slot'][$slot]['stack']['items'], 0, $index + 1 );
 
     // now add the widget onto the end and point to it (avoiding duplicates)
     if( $widget != end( $_SESSION['slot'][$slot]['stack']['items'] ) )
@@ -355,9 +369,19 @@ final class session extends singleton
   {
     if( !isset( $_SESSION['slot'][$slot] ) )
     {
-      $_SESSION['slot'][$slot]['stack']['index'] = -1;
-      $_SESSION['slot'][$slot]['stack']['items'] = array();
+      // by default, if there is no widget in the main slot then start with home
+      if( 'main' == $slot )
+      {
+        $_SESSION['slot'][$slot]['stack']['index'] = 0;
+        $_SESSION['slot'][$slot]['stack']['items'] = array( 'home' );
+      }
+      else
+      {
+        $_SESSION['slot'][$slot]['stack']['index'] = -1;
+        $_SESSION['slot'][$slot]['stack']['items'] = array();
+      }
     }
+    
   }
 
   /**

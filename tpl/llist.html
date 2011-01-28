@@ -99,15 +99,14 @@ $( function() {
 } );
 
 // page button functions
-// TODO: llist_user should be replaced with variable
 $( function() {
   $( "#{{ widget_name }}_page_prev" ).click( function() {
-    slot_load( 'main', 'llist_user', { "page": {{ llist.page - 1 }} } );
+    slot_refresh( true, get_slot( $(this) ), '{{ widget_name }}', { "page": {{ llist.page - 1 }} } );
   } )
 } );
 $( function() {
   $( "#{{ widget_name }}_page_next" ).click( function() {
-    slot_load( 'main', 'llist_user', { "page": {{ llist.page + 1 }} } );
+    slot_refresh( true, get_slot( $(this) ), '{{ widget_name }}', { "page": {{ llist.page + 1 }} } );
   } )
 } );
 
