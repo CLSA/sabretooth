@@ -225,6 +225,6 @@ function get_slot( element ) {
 }
 
 // load the settings widget
-$( document ).ready( function() { slot_refresh( false, "settings", "settings" ); } );
-$( document ).ready( function() { slot_refresh( false, "shortcuts", "shortcuts" ); } );
-$( document ).ready( function() { slot_refresh( true, "main", "home" ); } );
+$( document ).ready( function() { slot_refresh( false, "settings" ); } );
+$( document ).ready( function() { slot_refresh( false, "shortcuts" ); } );
+$( document ).ready( function() { slot_refresh( true, "main" ); } );

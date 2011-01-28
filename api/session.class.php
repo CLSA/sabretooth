@@ -167,8 +167,15 @@ final class session extends singleton
       {
         $this->site = $db_site;
         $this->role = $db_role;
-        $_SESSION['current_site_id'] = $this->site->id;
-        $_SESSION['current_role_id'] = $this->role->id;
+
+        if( $_SESSION['current_site_id'] != $this->site->id ||
+            $_SESSION['current_role_id'] != $this->role->id )
+        {
+          // clean out the slot stacks
+          foreach( array_keys( $_SESSION['slot'] ) as $slot ) $this->slot_reset( $slot );
+          $_SESSION['current_site_id'] = $this->site->id;
+          $_SESSION['current_role_id'] = $this->role->id;
+        }
       }
     }
   }
@@ -296,9 +303,9 @@ final class session extends singleton
       $_SESSION['slot'][$slot]['stack']['index'] = $new_index;
       // get the (now) previous item
       $value = $this->slot_current( $slot );
+      $this->update_slot_cookies();
     }
 
-    $this->update_slot_cookies();
     return $value;
   }
   
@@ -325,9 +332,9 @@ final class session extends singleton
       $_SESSION['slot'][$slot]['stack']['index'] = $new_index;
       // get the (now) next item
       $value = $this->slot_current( $slot );
+      $this->update_slot_cookies();
     }
 
-    $this->update_slot_cookies();
     return $value;
   }
 
@@ -350,6 +357,33 @@ final class session extends singleton
   }
 
   /**
+   * Resets the slot stacks to their initial state.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $slot The name of the slot.
+   * @return string The name of the widget or NULL if the stack is empty.
+   * @access public
+   */
+  public function slot_reset( $slot )
+  {
+    if( 'main' == $slot )
+    { // by default, if there is no widget in the main slot then start with home
+      $_SESSION['slot'][$slot]['stack']['index'] = 0;
+      $_SESSION['slot'][$slot]['stack']['items'] = array( 'home' );
+    }
+    else if( 'settings' == $slot || 'shortcuts' == $slot )
+    { // by default, the settings or shortcuts slots should be widgets by the same name
+      $_SESSION['slot'][$slot]['stack']['index'] = 0;
+      $_SESSION['slot'][$slot]['stack']['items'] = array( $slot );
+    }
+    else
+    {
+      $_SESSION['slot'][$slot]['stack']['index'] = -1;
+      $_SESSION['slot'][$slot]['stack']['items'] = array();
+    }
+  }
+
+  /**
    * Makes sure that a stack exists for the given slot.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
@@ -357,21 +391,7 @@ final class session extends singleton
    */
   private function validate_slot( $slot )
   {
-    if( !isset( $_SESSION['slot'][$slot] ) )
-    {
-      // by default, if there is no widget in the main slot then start with home
-      if( 'main' == $slot )
-      {
-        $_SESSION['slot'][$slot]['stack']['index'] = 0;
-        $_SESSION['slot'][$slot]['stack']['items'] = array( 'home' );
-      }
-      else
-      {
-        $_SESSION['slot'][$slot]['stack']['index'] = -1;
-        $_SESSION['slot'][$slot]['stack']['items'] = array();
-      }
-    }
-    
+    if( !isset( $_SESSION['slot'][$slot] ) ) $this->slot_reset( $slot );
   }
 
   /**
