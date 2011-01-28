@@ -24,7 +24,7 @@ SET user_id = ( SELECT id FROM user WHERE name = 'patrick' ),
     site_id = ( SELECT id FROM site WHERE name = 'McMaster' );
 INSERT INTO user_access
 SET user_id = ( SELECT id FROM user WHERE name = 'patrick' ),
-    role_id = ( SELECT id FROM role WHERE name = 'administrator' ),
+    role_id = ( SELECT id FROM role WHERE name = 'supervisor' ),
     site_id = ( SELECT id FROM site WHERE name = 'Manitoba' );
 INSERT INTO user_access
 SET user_id = ( SELECT id FROM user WHERE name = 'patrick' ),

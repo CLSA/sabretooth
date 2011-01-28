@@ -286,7 +286,7 @@ abstract class active_record extends \sabretooth\base_object
    * @static
    * @access public
    */
-  public static function select( $count, $offset = 0, $sort_column = NULL )
+  public static function select( $count = 0, $offset = 0, $sort_column = NULL )
   {
     $records = array();
     
@@ -303,7 +303,7 @@ abstract class active_record extends \sabretooth\base_object
       'SELECT '.$select.' '.
       'FROM '.static::get_table_name().' '.
       ( !is_null( $sort_column ) ? 'ORDER BY '.$sort_column.' ' : '' ).
-      'LIMIT '.$count.' OFFSET '.$offset );
+      ( 0 < $count ? 'LIMIT '.$count.' OFFSET '.$offset : '' ) );
 
     foreach( $primary_ids_list as $primary_ids )
     {

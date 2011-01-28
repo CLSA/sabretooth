@@ -45,10 +45,9 @@ DELETE FROM `role_has_operation`;
 INSERT INTO `role_has_operation` (`role_id`, `operation`, `action`)
 SELECT role.id, operation.name, operation.action
 FROM role, operation
-WHERE role.name="administrator"
+WHERE role.name in( "administrator", "supervisor" )
 AND operation.name="user"
-AND operation.action="llist"
-LIMIT 1;
+AND operation.action="llist";
 
 -- TODO finish list
 

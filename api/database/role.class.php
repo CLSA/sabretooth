@@ -24,10 +24,13 @@ class role extends active_record
    */
   public function has_operation( $db_operation )
   {
+    $result = false;
+
+    // TODO: protected function active_record::are_keys_set()
     if( is_null( $this->id ) )
     {
       \sabretooth\log::warning( 'Tried to determine operation for record with no id' );
-      return false;
+      return $result;
     }
 
     $rows = self::get_one(
@@ -36,8 +39,9 @@ class role extends active_record
       'WHERE role_id = '.$this->id.' '.
       'AND operation = "'.$db_operation->name.'" '.
       'AND action = "'.$db_operation->action.'"' );
-    
-    return count( $rows );
+    $result = 0 < count( $rows );
+
+    return $result;
   }
   
 }

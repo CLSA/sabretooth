@@ -30,14 +30,19 @@ class llist_user extends llist
     $operation = new \sabretooth\business\user();
     if( !$operation->has_access( 'llist' ) )
       throw new \sabretooth\exception\permission( $operation->get_db_operation( 'llist' ) );
+    
+    $session = \sabretooth\session::self();
+    $is_admin = 'administrator' == $session->get_role()->name;
 
     // define all template variables for this llist
-    $this->heading =  "User list for all sites" ;
-    $this->checkable =  false ;
-    $this->viewable =  true ;
-    $this->editable =  true ;
-    $this->removable =  true ;
-    $this->number_of_items = \sabretooth\database\user::count();
+    $this->heading =  "User list for ".( $is_admin ? 'all sites' : $session->get_site()->name );
+    $this->checkable =  false;
+    $this->viewable =  true;
+    $this->editable =  true;
+    $this->removable =  true;
+    $this->number_of_items = 'administrator' == $session->get_role()->name
+                           ? \sabretooth\database\user::count()
+                           : $session->get_site()->get_user_count();
     $this->columns = array( "name", "role", "last activity" );
   }
 
@@ -45,8 +50,12 @@ class llist_user extends llist
   {
     // reset the array
     $this->rows = array();
-
-    $db_user_list = \sabretooth\database\user::select( $limit_count, $limit_offset );
+    
+    // get all users for admins, site users for anyone else
+    $session = \sabretooth\session::self();
+    $db_user_list = 'administrator' == $session->get_role()->name
+                  ? \sabretooth\database\user::select( $limit_count, $limit_offset )
+                  : $session->get_site()->get_users( $limit_count, $limit_offset );
     foreach( $db_user_list as $db_user )
     {
       // determine the role
@@ -67,5 +76,7 @@ class llist_user extends llist
         array( 'id' => $db_user->id, 'columns' => array( $db_user->name, $role, 'TODO' ) ) );
     }
   }
+
+  protected $users;
 }
 ?>
