@@ -14,18 +14,33 @@
 {% extends "widget.html" %}
 {% block widget %}
 <script type="text/javascript">
+
+// changes the active site
 $( document ).ready( function() {
   $( "#{{ widget_name }}_set_site" ).change( function() {
     var selected = $( "#{{ widget_name }}_set_site option:selected" );
     if( 0 != selected.val() ) {
       if( send_operation( 'user', 'set_site', { "site": selected.text() } ) ) {
         slot_refresh( false, 'settings' );
-        // TODO: need to clear out slot stack
         slot_load( 'main', 'home' );
       }
     }
   } );
 } );
+
+// changes the active role
+$( document ).ready( function() {
+  $( "#{{ widget_name }}_set_role" ).change( function() {
+    var selected = $( "#{{ widget_name }}_set_role option:selected" );
+    if( 0 != selected.val() ) {
+      if( send_operation( 'user', 'set_role', { "role": selected.text() } ) ) {
+        slot_refresh( false, 'settings' );
+        slot_load( 'main', 'home' );
+      }
+    }
+  } );
+} );
+
 </script>
 <table>
   <tr>

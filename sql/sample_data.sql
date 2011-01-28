@@ -1,7 +1,6 @@
 -- ----------------------------------------------------------------------------------------------------
 -- This file has sample data for help with development.
--- Though primary IDs are set as numbers which are unlikely to overrite data in an active instance,
--- it is highly recommended to not run this script for anything other than development purposes.
+-- It is highly recommended to not run this script for anything other than development purposes.
 -- ----------------------------------------------------------------------------------------------------
 SET AUTOCOMMIT=0;
 
@@ -23,6 +22,10 @@ INSERT INTO user_access
 SET user_id = ( SELECT id FROM user WHERE name = 'patrick' ),
     role_id = ( SELECT id FROM role WHERE name = 'administrator' ),
     site_id = ( SELECT id FROM site WHERE name = 'McMaster' );
+INSERT INTO user_access
+SET user_id = ( SELECT id FROM user WHERE name = 'patrick' ),
+    role_id = ( SELECT id FROM role WHERE name = 'administrator' ),
+    site_id = ( SELECT id FROM site WHERE name = 'Manitoba' );
 INSERT INTO user_access
 SET user_id = ( SELECT id FROM user WHERE name = 'patrick' ),
     role_id = ( SELECT id FROM role WHERE name = 'operator' ),
