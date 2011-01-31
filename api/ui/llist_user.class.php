@@ -49,10 +49,10 @@ class llist_user extends llist
              "sortable" => true ),
       array( "id" => "role",
              "name" => "role",
-             "sortable" => true ),
+             "sortable" => false ),
       array( "id" => "last",
              "name" => "last activity",
-             "sortable" => false ) ); // TODO: allow sorting by last activity
+             "sortable" => true ) ); 
   }
 
   protected function set_rows( $limit_count, $limit_offset )

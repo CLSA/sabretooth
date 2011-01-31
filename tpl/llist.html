@@ -32,6 +32,30 @@
 </style>
 <script type="text/javascript">
 // make button icons
+$( function() {
+  $( ".{{ widget_name }}_sortable" ).button( {
+    text: true,
+    icons: {
+      primary: "ui-icon-triangle-2-n-s"
+    }
+  } )
+} );
+$( function() {
+  $( ".{{ widget_name }}_sort" ).button( {
+    text: true,
+    icons: {
+      primary: "ui-icon-triangle-1-s"
+    }
+  } )
+} );
+$( function() {
+  $( ".{{ widget_name }}_sort_desc" ).button( {
+    text: true,
+    icons: {
+      primary: "ui-icon-triangle-1-n"
+    }
+  } )
+} );
 {% if llist.checkable %}
 $( function() {
   $( ".{{ widget_name }}_check" ).button( {
@@ -153,9 +177,14 @@ $( function() {
       {# TODO: text and up/down arrow not displaying well #}
       <th{{ column.sortable ? ' class="sortable"' : '' }} id="{{ column.id }}"
                                                           width="{{ 95 / loop.length }}%">
+        {% if column.sortable %}
+        {% if column.id == llist.sort_column %}
+          <div class="{{ widget_name }}_sort{{ llist.sort_desc ? '_desc' : '' }}">{{ column.name }}</div>
+        {% else %}
+          <div class="{{ widget_name }}_sortable">{{ column.name }}</div>
+        {% endif %}
+        {% else %}
         {{ column.name }}
-        {% if( column.sortable and column.id == llist.sort_column ) %}
-          <span class="ui-icon ui-icon-triangle-1-{{ llist.sort_desc ? 's' : 'n' }}"></span>
         {% endif %}
       </th>
       {% endfor %}
