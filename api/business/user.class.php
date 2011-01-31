@@ -59,6 +59,19 @@ class user extends operation
   }
   
   /**
+   * Set the current user's theme
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function set_theme( $theme_name )
+  {
+    $session = \sabretooth\session::self();
+    $session->get_user()->theme = $theme_name;
+    $session->get_user()->save();
+  }
+  
+  /**
    * List system users.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

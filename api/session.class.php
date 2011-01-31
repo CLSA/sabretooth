@@ -46,6 +46,7 @@ final class session extends singleton
     // copy the setting one category at a time, ignore any unknown categories
     $this->settings[ 'general' ] = $settings[ 'general' ];
     $this->settings[ 'db' ] = $settings[ 'db' ];
+    $this->settings[ 'interface' ] = $settings[ 'interface' ];
 
     // set error reporting
     error_reporting(
@@ -224,6 +225,26 @@ final class session extends singleton
     }
   }
   
+  /**
+   * Get the name of the current jquery-ui theme.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_theme()
+  {
+    $theme = $this->settings[ 'interface' ][ 'default_theme' ];
+
+    if( !is_null( $this->user ) )
+    {
+      $user_theme = $this->user->theme;
+      if( !is_null( $user_theme ) ) $theme = $user_theme;
+    }
+
+    return $theme;
+  }
+
   /**
    * Add a new widget to the slot's stack.
    * 

@@ -6,10 +6,13 @@
  # @param string user_name
  # @param string current_site_name
  # @param string current_role_name
+ # @param string current_theme_name
  # @param array roles This is an associative array containing the names of all roles which the user
  #                    has access to at the current site.
  # @param array sites This is an associative array containing the names of all sites which the user
  #                    has access to.
+ # @param array themes This is an associative array containing the names of all themes which the
+                       user has access to.
  #}
 {% extends "widget.html" %}
 {% block widget %}
@@ -41,6 +44,18 @@ $( document ).ready( function() {
   } );
 } );
 
+// changes the active theme
+$( document ).ready( function() {
+  $( "#{{ widget_name }}_set_theme" ).change( function() {
+    var selected = $( "#{{ widget_name }}_set_theme option:selected" );
+    if( 0 != selected.val() ) {
+      if( send_operation( 'user', 'set_theme', { "theme": selected.text() } ) ) {
+        window.location.reload();
+      }
+    }
+  } );
+} );
+
 </script>
 <table>
   <tr>
@@ -58,7 +73,7 @@ $( document ).ready( function() {
     <td align="left" width="50%">
       <span class="title">Site:</span>
       {% if 1 < settings.sites|count %}
-      <select id="{{ widget_name }}_set_site" style="width: 140px">
+      <select id="{{ widget_name }}_set_site" style="width: 140px" class="ui-state-default">
         {% for site in settings.sites %}
         <option{{ settings.current_site_name == site ? ' selected' : '' }}>{{ site }}</option>
         {% endfor %}
@@ -70,7 +85,7 @@ $( document ).ready( function() {
     <td align="left" width="50%">
       <span class="title">Role:</span>
       {% if 1 < settings.roles|count %}
-      <select id="{{ widget_name }}_set_role" style="width: 140px">
+      <select id="{{ widget_name }}_set_role" style="width: 140px" class="ui-state-default">
         {% for role in settings.roles %}
         <option{{ settings.current_role_name == role ? ' selected' : '' }}>{{ role }}</option>
         {% endfor %}
@@ -78,6 +93,21 @@ $( document ).ready( function() {
       {% else %}
       {{ settings.current_role_name }}
       {% endif %}
+    </td>
+  </tr>
+</table>
+<hr>
+<table>
+  <tr>
+    <td align="left">
+      <span class="title">Theme:&nbsp;</span>
+    </td>
+    <td align="right" width="95%">
+      <select id="{{ widget_name }}_set_theme" style="width: 100%" class="ui-state-default">
+        {% for theme in settings.themes %}
+        <option{{ settings.current_theme_name == theme ? ' selected' : '' }}>{{ theme }}</option>
+        {% endfor %}
+      </select>
     </td>
   </tr>
 </table>

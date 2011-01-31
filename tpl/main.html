@@ -3,6 +3,7 @@
  # 
  # Base main file.
  # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @param string jquery-ui_css_path The relative path of a jquery theme css file.
  # @param boolean survey_active Define whether a survey is active.
  #}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -11,22 +12,26 @@
 <head>
   <title>Sabretooth</title>
   <script type="text/javascript"></script>
-  <link href="{{ JQUERY_UI_CSS_FILE }}" rel="stylesheet" />
+  <link href="{{ constant('JQUERY_UI_URL') }}/css{{ main.jquery_ui_css_path }}" rel="stylesheet" />
   <link href="css/main.css" rel="stylesheet" />
-  <script type="text/javascript" src="{{ JQUERY_JS_FILE }}"></script>
-  <script type="text/javascript" src="{{ JQUERY_UI_JS_FILE }}"></script>
-  <script type="text/javascript" src="{{ JQUERY_LAYOUT_JS_FILE }}"></script>
-  <script type="text/javascript" src="{{ JQUERY_COOKIE_JS_FILE }}"></script>
-  <script type="text/javascript" src="{{ JQUERY_HOVERINTENT_JS_FILE }}"></script>
-  <script type="text/javascript" src="{{ JQUERY_METADATA_JS_FILE }}"></script>
-  <script type="text/javascript" src="{{ JQUERY_FLIPTEXT_JS_FILE }}"></script>
-  <script type="text/javascript" src="{{ JQUERY_EXTRUDER_JS_FILE }}"></script>
-  <script type="text/javascript" src="{{ JQUERY_LOADING_JS_FILE }}"></script>
-  <script type="text/javascript" src="{{ JQUERY_LOADING_OVERFLOW_JS_FILE }}"></script>
+  <script type="text/javascript" src="{{ constant('JQUERY_JS_URL') }}"></script>
+  <script type="text/javascript" src="{{ constant('JQUERY_UI_JS_URL') }}"></script>
+  <script type="text/javascript" src="{{ constant('JQUERY_LAYOUT_JS_URL') }}"></script>
+  <script type="text/javascript" src="{{ constant('JQUERY_COOKIE_JS_URL') }}"></script>
+  <script type="text/javascript" src="{{ constant('JQUERY_HOVERINTENT_JS_URL') }}"></script>
+  <script type="text/javascript" src="{{ constant('JQUERY_METADATA_JS_URL') }}"></script>
+  <script type="text/javascript" src="{{ constant('JQUERY_FLIPTEXT_JS_URL') }}"></script>
+  <script type="text/javascript" src="{{ constant('JQUERY_EXTRUDER_JS_URL') }}"></script>
+  <script type="text/javascript" src="{{ constant('JQUERY_LOADING_JS_URL') }}"></script>
+  <script type="text/javascript" src="{{ constant('JQUERY_LOADING_OVERFLOW_JS_URL') }}"></script>
   <script type="text/javascript" src="js/main.js"></script>
   <script type="text/javascript">
   // set button styles
   $( function() { $( "button, input:submit" ).button(); } );
+
+  // apply jquery-ui theme to extruder
+  $( function() { $( "div.content" ).addClass( "ui-widget-content" ); } );
+  $( function() { $( ".flap" ).addClass( "ui-widget-header" ); } );
 
   {% if main.survey_active %}
   // Defines the layout when showing the survey pane.

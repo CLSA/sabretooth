@@ -30,10 +30,11 @@ function include_file( $file, $no_error = false )
   include $file;
 }
 
-// load the default, then local settings, then define paths
+// load the default, then local settings, then define paths and urls
 include_file( 'sabretooth.ini.php' );
 include_file( 'sabretooth.local.ini.php', true );
-foreach( $SETTINGS[ 'paths' ] as $path_name => $path_value ) define( $path_name, $path_value );
+foreach( $SETTINGS[ 'path' ] as $path_name => $path_value ) define( $path_name.'_PATH', $path_value );
+foreach( $SETTINGS[ 'url' ] as $path_name => $path_value ) define( $path_name.'_URL', $path_value );
 
 // include necessary files
 include_file( API_PATH.'/autoloader.class.php' );

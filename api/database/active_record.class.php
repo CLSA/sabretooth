@@ -168,7 +168,7 @@ abstract class active_record extends \sabretooth\base_object
     {
       if( !in_array( $key, $primary_key_names ) )
       {
-        $sets .= ( $first ? "": ", " )."$key = '".self::format_string( $val )."'";
+        $sets .= ( $first ? "": ", " )."$key = ".self::format_string( $val );
         $first = false;
       }
     }
@@ -177,7 +177,7 @@ abstract class active_record extends \sabretooth\base_object
     $missing_primary_keys = false;
     foreach( $primary_key_names as $primary_key_name )
     {
-      if( NULL == $this->column[ $primary_key_name ] )
+      if( NULL == $this->columns[ $primary_key_name ] )
       {
         $missing_primary_keys = true;
         break;
@@ -255,7 +255,6 @@ abstract class active_record extends \sabretooth\base_object
   {
     // if we get here then $column_name isn't a column === BAD CODE
     assert( $this->has_column_name( $column_name ) );
-
     $this->columns[ $column_name ] = $value;
   }
 
@@ -382,6 +381,8 @@ abstract class active_record extends \sabretooth\base_object
   public static function format_string( $string )
   {
     // TODO: clean/escape the string before returning it
+    if( is_null( $string ) ) $string = 'NULL';
+    else if( is_string( $string ) ) $string = '"'.$string.'"';
     return $string;
   }
 

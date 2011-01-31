@@ -40,8 +40,6 @@ try
   $twig = new \Twig_Environment( $loader, array( 'debug' => util::in_devel_mode(),
                                                  'strict_variables' => util::in_devel_mode() ) );
   $twig->addFilter( 'count', new \Twig_Filter_Function( 'count' ) );
-  foreach( $SETTINGS[ 'paths' ] as $path_name => $path_value )
-    $twig->addGlobal( $path_name, $path_value );
   
   // determine which widget to render based on the GET variables
   if( !isset( $_GET['slot'] ) || !is_string( $_GET['slot'] ) )

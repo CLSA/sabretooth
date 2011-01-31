@@ -17,7 +17,6 @@ body {
 /* Used by the top extruder UI component  */
 .extruder.top .flap {
   display: block;
-  color: #4c3000;
   font: 16px/24px Arial, Helvetica, sans-serif;
   font-weight: bold;
   text-align: center;
@@ -25,23 +24,12 @@ body {
   padding: 0 5px 5px 5px;
   height: 20px;
   width: 180px;
-  background: #fece2f;
   -moz-border-radius: 0 0 10px 10px;
   -webkit-border-bottom-left-radius: 10px;
   -webkit-border-bottom-right-radius: 10px;
   -moz-box-shadow: black 2px 2px 5px;
   -webkit-box-shadow: black 2px 2px 5px;
   cursor: pointer;
-}
-
-.extruder.top: hover .flap: hover {
-  color: #c77405;
-  background-color: #ffdd57;
-}
-
-.extruder.top: active .flap: active {
-  color: #0074c7;
-  background-color: #ffffff;
 }
 
 .extruder.top .content {
@@ -54,9 +42,7 @@ body {
 }
 
 .extruder.top .text {
-  background: #feeebd;
   font: 14px Arial, Helvetica, sans-serif;
-  color: black;
   padding: 10px;
   border-bottom: 1px solid #333;
 }
@@ -93,11 +79,13 @@ tr.over td {
   background: #bcd4ec;
 }
 
-select {
-  color: #4c3000;
-  background: #fece2f;
-}
-
 .title {
   font-weight: bold;
 }
+
+/* override a few things in the jquery ui theme */
+.ui-button-text-only .ui-button-text { padding: .1em 1em; }
+.ui-button-icon-only .ui-button-text, .ui-button-icons-only .ui-button-text { padding: .1em; text-indent: -9999999px; }
+.ui-button-text-icon-primary .ui-button-text, .ui-button-text-icons .ui-button-text { padding: .1em 1em .1em 2.1em; }
+.ui-button-text-icon-secondary .ui-button-text, .ui-button-text-icons .ui-button-text { padding: .1em 2.1em .1em 1em; }
+.ui-button-text-icons .ui-button-text { padding-left: 2.1em; padding-right: 2.1em; }

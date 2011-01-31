@@ -44,12 +44,19 @@ class settings extends widget
     {
       array_push( $role_names, $role->name );
     }
+    
+    // themes are found in the jquery-ui 
+    $themes = array();
+    foreach( new \DirectoryIterator( JQUERY_UI_THEMES_PATH ) as $file )
+      if( !$file->isDot() && $file->isDir() ) array_push( $themes, $file->getFilename() );
 
     $this->set_variable( 'user_name', $db_user->name );
     $this->set_variable( 'current_site_name', $db_site->name );
     $this->set_variable( 'current_role_name', $db_role->name );
+    $this->set_variable( 'current_theme_name', \sabretooth\session::self()->get_theme() );
     $this->set_variable( 'roles', $role_names );
     $this->set_variable( 'sites', $site_names );
+    $this->set_variable( 'themes', $themes );
   }
 }
 ?>
