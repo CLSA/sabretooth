@@ -1,4 +1,0 @@
-Investigate sabretooth\session variables with $_SESSION variables
-
-Warnings on dev server doesn't seem to work right
- - using an undefined variable should cause a warning, but doesn't
