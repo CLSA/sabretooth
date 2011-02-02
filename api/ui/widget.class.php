@@ -41,7 +41,11 @@ abstract class widget extends operation
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function finish() {}
+  public function finish()
+  {
+    $this->set_variable( 'widget_subject', $this->subject );
+    $this->set_variable( 'widget_name', $this->name );
+  }
 
   /**
    * Set a widget variable.
@@ -53,7 +57,7 @@ abstract class widget extends operation
    */
   public function set_variable( $name, $value )
   {
-    self::$variables[ self::get_class_name() ][ $name ] = $value;
+    self::$variables[ static::get_class_name() ][ $name ] = $value;
   }
 
   /**

@@ -104,10 +104,6 @@ $( function() {
   $(".striped tr:even").addClass( "alt" );
 } );
 
-// create button sets
-$( function() { $( "#{{ widget_name }}_check_none" ).button().parent().buttonset() } );
-$( function() { $( "#{{ widget_name }}_page_next" ).button().parent().buttonset() } );
-
 // column sort functions
 $( function() {
   $( "th.sortable" ).click( function() {
@@ -118,6 +114,34 @@ $( function() {
         "sort_desc": {{ base_list.sort_desc ? 0 : 1 }} } );
   } )
 } );
+
+// column button functions
+{% if base_list.viewable %}
+$( function() {
+  $( ".{{ widget_name }}_view" ).click( function() {
+    slot_load( get_slot( $(this) ), '{{ base_list.widget_subject }}_view' );
+  } )
+} );
+{% endif %}
+{% if base_list.editable %}
+$( function() {
+  $( ".{{ widget_name }}_edit" ).click( function() {
+    slot_load( get_slot( $(this) ), '{{ base_list.widget_subject }}_view' );
+  } )
+} );
+{% endif %}
+{% if base_list.removable %}
+$( function() {
+  $( ".{{ widget_name }}_remove" ).click( function() {
+    slot_load( get_slot( $(this) ), '{{ base_list.widget_subject }}_remove' );
+  } )
+} );
+{% endif %}
+
+
+// create button sets
+$( function() { $( "#{{ widget_name }}_check_none" ).button().parent().buttonset() } );
+$( function() { $( "#{{ widget_name }}_page_next" ).button().parent().buttonset() } );
 
 // check button functions
 $( function() {

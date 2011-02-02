@@ -32,6 +32,10 @@ abstract class operation extends \sabretooth\base_object
   {
     // type must either be an action or widget
     assert( 'action' == $type || 'widget' == $type );
+    
+    $this->type = $type;
+    $this->subject = $subject;
+    $this->name = $name;
 
     $primary_keys = array( 'type' => $type,
                            'subject' => $subject,
