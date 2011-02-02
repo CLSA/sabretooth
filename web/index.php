@@ -8,11 +8,16 @@
  */
 namespace sabretooth;
 
+// the array to return, encoded as JSON if there is an error
+$result_array = array( 'success' => true );
+
 // hack for logging out HTTP authentication
 if( isset( $_POST ) && isset( $_POST['logout'] ) && 'logout' == $_POST['logout'] )
 {
+  // force the user to log out by sending a header with invalid HTTP auth credentials
   $method = 'http'.( 'on' == $_SERVER['HTTPS'] ? 's' : '' );
   header( 'Location: '.$method.'://none:none@'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'] );
+  exit;
 }
 
 try
@@ -30,32 +35,42 @@ try
                                                  'strict_variables' => util::in_devel_mode() ) );
   $twig->addFilter( 'count', new \Twig_Filter_Function( 'count' ) );
   
-  $widget = new ui\main();
-  $widget->finish();
   $twig_template = $twig->loadTemplate( 'main.html' );
+  
+  // Since there is no main widget we need set up the template variables here
+  $theme = session::self()->get_theme();
+  $version = session::self()->get_setting( 'version', 'JQUERY_UI' );
+  $variables = array( 'jquery_ui_css_path' => '/'.$theme.'/jquery-ui-'.$version.'.custom.css',
+                      'survey_active' => false ); // TODO: change once survey code is implemented
 
-  $output = $twig_template->render( ui\widget::get_variables() );
-  print $output;
+  $result_array['output'] = $twig_template->render( $variables );
 }
-// TODO: need to handle exceptions properly when in development mode using error dialogs
-catch( exception\database $e )
+catch( exception\base_exception $e )
 {
-  log::err( "Database exception ".$e );
-}
-catch( exception\missing $e )
-{
-  log::err( "Missing exception ".$e );
-}
-catch( exception\permission $e )
-{
-  log::err( "Permission exception ".$e );
+  $type = $e->get_type();
+  log::err( ucwords( $type )." ".$e );
+  $result_array['success'] = false;
+  $result_array['error'] = $type;
 }
 catch( \Twig_Error_Runtime $e )
 {
   log::err( "Template ".$e );
+  $result_array['success'] = false;
+  $result_array['error'] = $type;
 }
 catch( \Exception $e )
 {
   log::err( "Last minute ".$e );
+  $result_array['success'] = false;
+  $result_array['error'] = $type;
+}
+
+if( true == $result_array['success'] )
+{
+  print $result_array['output'];
+}
+else
+{
+  // TODO: display a user-friendly error
 }
 ?>

@@ -15,9 +15,13 @@ global $SETTINGS;
 
 // always leave as false when running as production server
 $SETTINGS[ 'general' ][ 'development_mode' ] = false;
+$SETTINGS[ 'general' ][ 'script_name' ] = false === strrchr( $_SERVER['SCRIPT_NAME'], '/' )
+                                        ? $_SERVER['SCRIPT_NAME']
+                                        : substr( strrchr( $_SERVER['SCRIPT_NAME'], '/' ), 1 );
 
 // system URLs
 $SETTINGS[ 'url' ][ 'BASE' ] = ( $_SERVER["HTTPS"] ? 'https' : 'http' ).'://'.$_SERVER["HTTP_HOST"];
+$SETTINGS[ 'url' ][ 'FULL' ] = $SETTINGS[ 'url' ][ 'BASE' ].$_SERVER["REQUEST_URI"];
 
 // the location of sabretooth internal path
 $SETTINGS[ 'path' ][ 'SABRETOOTH' ] = '/usr/local/lib/sabretooth';

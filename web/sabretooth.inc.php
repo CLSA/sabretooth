@@ -42,9 +42,10 @@ include_file( API_PATH.'/autoloader.class.php' );
 // registers an autoloader so classes don't have to be included manually
 autoloader::register();
 
-// set up the session
+// set up the session and send a notice of what's happening
 $session = session::self( $SETTINGS );
 $session->initialize();
+log::notice( 'running script: "'.$SETTINGS[ 'url' ][ 'FULL' ].'"' );
 
 // set up asserts
 assert_options( ASSERT_ACTIVE, util::in_devel_mode() ? 1 : 0 );

@@ -25,7 +25,7 @@ class missing extends base_exception
    */
   public function __construct( $file, $previous = NULL )
   {
-    parent::__construct( 'missing file: "'.$file, $previous );
+    parent::__construct( 'missing file: "'.$file.'"', $previous );
   }
 }
 ?>

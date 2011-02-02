@@ -1,6 +1,6 @@
 <?php
 /**
- * llist.class.php
+ * base_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -9,12 +9,12 @@
 namespace sabretooth\ui;
 
 /**
- * llist widget
+ * base_list widget
  * 
  * @abstract
  * @package sabretooth\ui
  */
-abstract class llist extends widget
+abstract class base_list extends widget
 {
   /**
    * Constructor
@@ -24,9 +24,9 @@ abstract class llist extends widget
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
-  public function __construct( $args = NULL )
+  public function __construct( $subject, $args )
   {
-    parent::__construct( $args );
+    parent::__construct( $subject, 'list', $args );
 
     // make sure to validate the argument ($args could be anything)
     if( isset( $args['page'] ) && is_numeric( $args['page'] ) )
@@ -79,18 +79,94 @@ abstract class llist extends widget
    */
   abstract protected function set_rows( $limit_count, $limit_offset );
   
-  // TODO: document these members
+  /**
+   * The list's heading.
+   * @var string
+   * @access protected
+   */
   protected $heading = "";
+  
+  /**
+   * Whether items in the list can be checked/selected.
+   * @var boolean
+   * @access protected
+   */
   protected $checkable = false;
+  
+  /**
+   * Whether items in the list can be viewed.
+   * @var boolean
+   * @access protected
+   */
   protected $viewable = false;
+  
+  /**
+   * Whether items in the list can be edited.
+   * @var boolean
+   * @access protected
+   */
   protected $editable = false;
+  
+  /**
+   * Whether items in the list can be removed.
+   * @var boolean
+   * @access protected
+   */
   protected $removable = false;
+  
+  /**
+   * Which page to display.
+   * @var int
+   * @access protected
+   */
   protected $page = 1;
+  
+  /**
+   * Which column to sort by, or none if set to an empty string.
+   * @var string
+   * @access protected
+   */
   protected $sort_column = '';
+  
+  /**
+   * Whether to sort in descending order.
+   * @var boolean
+   * @access protected
+   */
   protected $sort_desc = false;
+  
+  /**
+   * How many items should appear per page.
+   * @var int
+   * @access protected
+   */
   protected $items_per_page = 10;
+  
+  /**
+   * The total number of items in the list.
+   * @var int
+   * @access protected
+   */
   protected $number_of_items = 0;
+  
+  /**
+   * An array of columns
+   * An array of columns.  Every item in the array must have the following:
+   *                      'id' => a unique id identifying the column
+   *                      'name' => the name to display in in the column header
+   *                      'sortable' => whether or not the list can be sorted by the column
+   * @var array
+   * @access protected
+   */
   protected $columns = array();
+  
+  /**
+   * An array of items.  Every item in the array must have the following:
+   *                     'id' => a unique identifying id
+   *                     'columns' => an array of values for each column listed in the columns array
+   * @var array
+   * @access protected
+   */
   protected $rows = array();
 }
 ?>

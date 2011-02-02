@@ -44,9 +44,14 @@ final class session extends singleton
             isset( $settings[ 'db' ] ) && is_array( $settings[ 'general' ] ) );
     
     // copy the setting one category at a time, ignore any unknown categories
-    $this->settings[ 'general' ] = $settings[ 'general' ];
-    $this->settings[ 'db' ] = $settings[ 'db' ];
-    $this->settings[ 'interface' ] = $settings[ 'interface' ];
+    $categories = array( 'db',
+                         'general',
+                         'interface',
+                         'version' );
+    foreach( $categories as $category )
+    {
+      $this->settings[ $category ] = $settings[ $category ];
+    }
 
     // set error reporting
     error_reporting(
@@ -72,9 +77,7 @@ final class session extends singleton
     $this->db->SetFetchMode( ADODB_FETCH_ASSOC );
     
     // determine the user (setting the user will also set the site and role)
-    $user_name = util::in_devel_mode() && defined( 'STDIN' )
-               ? $_SERVER[ 'USER' ]
-               : $_SERVER[ 'PHP_AUTH_USER' ];
+    $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
     $this->set_user( database\user::get_unique_record( 'name', $user_name ) );
     if( NULL == $this->user ) log::err( 'User "'.$user_name.'" not found.' );
   }
@@ -390,12 +393,17 @@ final class session extends singleton
     if( 'main' == $slot )
     { // by default, if there is no widget in the main slot then start with home
       $_SESSION['slot'][$slot]['stack']['index'] = 0;
-      $_SESSION['slot'][$slot]['stack']['items'] = array( 'home' );
+      $_SESSION['slot'][$slot]['stack']['items'] = array( 'self_home' );
     }
-    else if( 'settings' == $slot || 'shortcuts' == $slot )
-    { // by default, the settings or shortcuts slots should be widgets by the same name
+    else if( 'extruder' == $slot )
+    {
       $_SESSION['slot'][$slot]['stack']['index'] = 0;
-      $_SESSION['slot'][$slot]['stack']['items'] = array( $slot );
+      $_SESSION['slot'][$slot]['stack']['items'] = array( 'self_settings' );
+    }
+    else if( 'header' == $slot )
+    {
+      $_SESSION['slot'][$slot]['stack']['index'] = 0;
+      $_SESSION['slot'][$slot]['stack']['items'] = array( 'self_shortcuts' );
     }
     else
     {

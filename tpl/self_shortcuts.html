@@ -1,5 +1,5 @@
 {##
- # shortcuts.html
+ # self_shortcuts.html
  # 
  # Creates a list of shortcuts which are meant to be used under any circumstance.
  # @author Patrick Emond <emondpd@mcmaster.ca>
@@ -62,12 +62,12 @@ $( function() {
 } );
 $( function() {
   $( "#{{ widget_name }}_refresh" ).click( function() {
-    slot_refresh( true, 'main' );
+    slot_refresh( 'main' );
   } )
 } );
 $( function() {
   $( "#{{ widget_name }}_home" ).click( function() {
-    slot_load( 'main', 'home' );
+    slot_load( 'main', 'self_home' );
   } )
 } );
 $( function() {

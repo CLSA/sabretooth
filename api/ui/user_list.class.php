@@ -1,6 +1,6 @@
 <?php
 /**
- * llist_user.class.php
+ * user_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -9,11 +9,11 @@
 namespace sabretooth\ui;
 
 /**
- * llist_user llist
+ * 
  * 
  * @package sabretooth\ui
  */
-class llist_user extends llist
+class user_list extends base_list
 {
   /**
    * Constructor
@@ -25,16 +25,12 @@ class llist_user extends llist
    */
   public function __construct( $args = NULL )
   {
-    parent::__construct( $args );
-    
-    $operation = new \sabretooth\business\user();
-    if( !$operation->has_access( 'llist' ) )
-      throw new \sabretooth\exception\permission( $operation->get_db_operation( 'llist' ) );
+    parent::__construct( 'user', $args );
     
     $session = \sabretooth\session::self();
     $is_admin = 'administrator' == $session->get_role()->name;
 
-    // define all template variables for this llist
+    // define all template variables for this list
     $this->heading =  "User list for ".( $is_admin ? 'all sites' : $session->get_site()->name );
     $this->checkable =  false;
     $this->viewable =  true;
@@ -80,7 +76,12 @@ class llist_user extends llist
                'columns' => array( $db_user->name, $role, 'TODO' ) ) );
     }
   }
-
+  
+  /**
+   * The list of users to display.
+   * @var array
+   * @access protected
+   */
   protected $users;
 }
 ?>

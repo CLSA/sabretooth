@@ -31,14 +31,14 @@ abstract class active_record extends \sabretooth\base_object
    */
   public function __construct( $primary_keys = NULL )
   {
-    //\sabretooth\log::debug( 'active_record: '.( is_null( $primary_keys )
-    //  ? 'creating new '.$this->get_table_name().' record'
-    //  : 'creating '.$this->get_table_name().' with primary key(s) '.$primary_keys ) );
-    
     // determine the columns for this table
     $db = \sabretooth\session::self()->get_db();
     $columns = $db->MetaColumnNames( static::get_table_name() );
-    assert( is_array( $columns ) );
+
+    if( !is_array( $columns ) || 0 == count( $columns ) )
+      throw new \sabretooth\exception\database(
+        "Meta column names return no columns for table ".static::get_table_name() );
+
     foreach( $columns as $name ) $this->columns[ $name ] = NULL;
     
     // validate the primary key (if there is one)
@@ -101,7 +101,7 @@ abstract class active_record extends \sabretooth\base_object
   public function __destruct()
   {
     // save to the database if auto-saving is on
-    if( self::$auto_save && !is_null( $this->columns['id'] ) )
+    if( self::$auto_save && $this->are_primary_keys_set() )
     {
       $this->save();
     }
@@ -118,32 +118,26 @@ abstract class active_record extends \sabretooth\base_object
   public function load()
   {
     $missing_primary_keys = false;
-
-    $where = '';
-    $first = true;
-    $primary_key_names = static::get_primary_key_names();
-    foreach( $primary_key_names as $primary_key_name )
+    
+    if( $this->are_primary_keys_set() )
     {
-      if( !is_null( $this->columns[ $primary_key_name ] ) )
+      $where = '';
+      $first = true;
+      $primary_key_names = static::get_primary_key_names();
+      foreach( $primary_key_names as $primary_key_name )
       {
         $where .= ( $first ? '' : ' AND ' ).
                   $primary_key_name.' = "'.$this->columns[ $primary_key_name ].'"';
         $first = false;
       }
-      else
-      {
-        $missing_primary_keys = true;
-        break;
-      }
-    }
-    
-    // only select if the primary keys are set, otherwise this is a new record
-    if( !$missing_primary_keys )
-    {
+       
       $sql = 'SELECT * '.
              'FROM '.static::get_table_name().' '.
              'WHERE '.$where;
       $row = self::get_row( $sql );
+      if( 0 == count( $row ) )
+        throw new \sabretooth\exception\database( "Load failed to find record.", $sql );
+
       $this->columns = $row;
     }
   }
@@ -173,20 +167,10 @@ abstract class active_record extends \sabretooth\base_object
       }
     }
     
-    // determine if we have any missing primary keys
-    $missing_primary_keys = false;
-    foreach( $primary_key_names as $primary_key_name )
-    {
-      if( NULL == $this->columns[ $primary_key_name ] )
-      {
-        $missing_primary_keys = true;
-        break;
-      }
-    }
-
     // make sure we either have all primary keys, or a single null primary key (new row)
-    // (we cannot automatically add new rows for tables with multiple primary keys)
-    if( !$missing_primary_keys || ( 1 == count( $primary_key_names ) ) )
+    // (cannot automatically add new rows for tables with multiple primary keys)
+    if( $this->are_primary_keys_set() ||
+        ( 1 == count( $primary_key_names ) && 'id' == $primary_key_names[0] ) )
     {
       $sql = is_null( $this->columns['id'] )
            // insert a new row
@@ -237,7 +221,12 @@ abstract class active_record extends \sabretooth\base_object
   public function __get( $column_name )
   {
     // if we get here then $column_name isn't a column === BAD CODE
-    assert( $this->has_column_name( $column_name ) );
+    if( !$this->has_column_name( $column_name ) )
+    {
+      throw new \sabretooth\exception\database(
+        "Table ".static::get_table_name()." does not have a column named \"$column_name\"" );
+    }
+    
     return isset( $this->columns[ $column_name ] ) ? $this->columns[ $column_name ] : NULL;
   }
 
@@ -254,7 +243,10 @@ abstract class active_record extends \sabretooth\base_object
   public function __set( $column_name, $value )
   {
     // if we get here then $column_name isn't a column === BAD CODE
-    assert( $this->has_column_name( $column_name ) );
+    if( !$this->has_column_name( $column_name ) )
+      throw new \sabretooth\exception\database(
+        "Table ".static::get_table_name()." does not have a column named \"$column_name\"" );
+    
     $this->columns[ $column_name ] = $value;
   }
 
@@ -267,7 +259,22 @@ abstract class active_record extends \sabretooth\base_object
    */
   protected function has_column_name( $column_name )
   {
-    return isset( $this->columns[ $column_name ] );
+    return array_key_exists( $column_name, $this->columns );
+  }
+  
+  /**
+   * Returns whether or not all primary keys have been set.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access protected
+   */
+  protected function are_primary_keys_set()
+  {
+    $primary_key_names = static::get_primary_key_names();
+    foreach( $primary_key_names as $primary_key_name )
+      if( is_null( $this->columns[ $primary_key_name ] ) ) return false;
+
+    return true;
   }
 
   /**

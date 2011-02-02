@@ -1,5 +1,5 @@
 {##
- # settings.html
+ # self_settings.html
  # 
  # Allows the user to define configurable session-based settings.
  # @author Patrick Emond <emondpd@mcmaster.ca>
@@ -23,9 +23,9 @@ $( document ).ready( function() {
   $( "#{{ widget_name }}_set_site" ).change( function() {
     var selected = $( "#{{ widget_name }}_set_site option:selected" );
     if( 0 != selected.val() ) {
-      if( send_operation( 'user', 'set_site', { "site": selected.text() } ) ) {
-        slot_refresh( false, 'settings' );
-        slot_load( 'main', 'home' );
+      if( send_operation( 'self', 'set_site', { "site": selected.text() } ) ) {
+        slot_refresh( get_slot( $(this) ) );
+        slot_load( 'main', 'self_home' );
       }
     }
   } );
@@ -36,9 +36,9 @@ $( document ).ready( function() {
   $( "#{{ widget_name }}_set_role" ).change( function() {
     var selected = $( "#{{ widget_name }}_set_role option:selected" );
     if( 0 != selected.val() ) {
-      if( send_operation( 'user', 'set_role', { "role": selected.text() } ) ) {
-        slot_refresh( false, 'settings' );
-        slot_load( 'main', 'home' );
+      if( send_operation( 'self', 'set_role', { "role": selected.text() } ) ) {
+        slot_refresh( get_slot( $(this) ) );
+        slot_load( 'main', 'self_home' );
       }
     }
   } );
@@ -49,7 +49,7 @@ $( document ).ready( function() {
   $( "#{{ widget_name }}_set_theme" ).change( function() {
     var selected = $( "#{{ widget_name }}_set_theme option:selected" );
     if( 0 != selected.val() ) {
-      if( send_operation( 'user', 'set_theme', { "theme": selected.text() } ) ) {
+      if( send_operation( 'self', 'set_theme', { "theme": selected.text() } ) ) {
         window.location.reload();
       }
     }
@@ -60,7 +60,7 @@ $( document ).ready( function() {
 <table>
   <tr>
     <td align="left">
-      Welcome {{ settings.user_name }}
+      Welcome {{ self_settings.user_name }}
     </td>
     <td align="right">
       <button onclick="jQuery.post( 'index.php', { logout: 'logout' } );">logout</button>
@@ -72,26 +72,26 @@ $( document ).ready( function() {
   <tr>
     <td align="left" width="50%">
       <span class="title">Site:</span>
-      {% if 1 < settings.sites|count %}
+      {% if 1 < self_settings.sites|count %}
       <select id="{{ widget_name }}_set_site" style="width: 140px" class="ui-state-default">
-        {% for site in settings.sites %}
-        <option{{ settings.current_site_name == site ? ' selected' : '' }}>{{ site }}</option>
+        {% for site in self_settings.sites %}
+        <option{{ self_settings.current_site_name == site ? ' selected' : '' }}>{{ site }}</option>
         {% endfor %}
       </select>
       {% else %}
-      {{ settings.current_site_name }}
+      {{ self_settings.current_site_name }}
       {% endif %}
     </td>
     <td align="left" width="50%">
       <span class="title">Role:</span>
-      {% if 1 < settings.roles|count %}
+      {% if 1 < self_settings.roles|count %}
       <select id="{{ widget_name }}_set_role" style="width: 140px" class="ui-state-default">
-        {% for role in settings.roles %}
-        <option{{ settings.current_role_name == role ? ' selected' : '' }}>{{ role }}</option>
+        {% for role in self_settings.roles %}
+        <option{{ self_settings.current_role_name == role ? ' selected' : '' }}>{{ role }}</option>
         {% endfor %}
       </select>
       {% else %}
-      {{ settings.current_role_name }}
+      {{ self_settings.current_role_name }}
       {% endif %}
     </td>
   </tr>
@@ -104,8 +104,8 @@ $( document ).ready( function() {
     </td>
     <td align="right" width="95%">
       <select id="{{ widget_name }}_set_theme" style="width: 100%" class="ui-state-default">
-        {% for theme in settings.themes %}
-        <option{{ settings.current_theme_name == theme ? ' selected' : '' }}>{{ theme }}</option>
+        {% for theme in self_settings.themes %}
+        <option{{ self_settings.current_theme_name == theme ? ' selected' : '' }}>{{ theme }}</option>
         {% endfor %}
       </select>
     </td>

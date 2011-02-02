@@ -22,19 +22,6 @@ try
   include_file( TWIG_PATH.'/lib/Twig/Autoloader.php' );
   \Twig_Autoloader::register();
   
-  // if in devel mode allow command line arguments in place of GET variables
-  if( util::in_devel_mode() && defined( 'STDIN' ) )
-  {
-    if( isset( $argv[1] ) )
-    {
-      if( 'prev' == $argv[1] ) $_GET['back'] = 1;
-      else if( 'next' == $argv[1] ) $_GET['next'] = 1;
-      else if( 'refresh' == $argv[1] ) $_GET['refresh'] = 1;
-      else $_GET['widget'] = $argv[1];
-    }
-    $_GET['slot'] = isset( $argv[2] ) ? $argv[2] : NULL;
-  }
-
   // set up the template engine
   $loader = new \Twig_Loader_Filesystem( TPL_PATH );
   $twig = new \Twig_Environment( $loader, array( 'debug' => util::in_devel_mode(),
@@ -49,10 +36,12 @@ try
   $go_prev = isset( $_GET['prev'] ) && 1 == $_GET['prev'];
   $go_next = isset( $_GET['next'] ) && 1 == $_GET['next'];
   $refresh = isset( $_GET['refresh'] ) && 1 == $_GET['refresh'];
-    
+  
   if( $go_prev )
   {
     $widget_name = session::self()->slot_prev( $slot_name );
+    log::print_r( $slot_name );
+    log::print_r( $widget_name );
   }
   else if( $go_next )
   {
@@ -72,8 +61,11 @@ try
   // determine the widget arguments
   $widget_args = isset( $_GET ) ? $_GET : NULL;
   
-  // create the widget using the provided args then process it
+  // create the widget using the provided args then finish it
   $widget = new $widget_class( $widget_args );
+  if( !is_subclass_of( $widget, 'sabretooth\\ui\\widget' ) )
+    throw new exception\runtime( "invalid widget '$widget_class'" );
+
   $widget->finish();
   $twig_template = $twig->loadTemplate( $widget_name.'.html' );
   
@@ -82,33 +74,22 @@ try
   $result_array['output'] = $twig_template->render( ui\widget::get_variables() );
   if( !( $go_prev || $go_next || $refresh ) ) session::self()->slot_push( $slot_name, $widget_name );
 }
-catch( exception\database $e )
+catch( exception\base_exception $e )
 {
-  log::err( "Database exception ".$e->get_message() );
+  $type = $e->get_type();
+  log::err( ucwords( $type )." ".$e );
   $result_array['success'] = false;
-  $result_array['error'] = 'database';
-}
-catch( exception\missing $e )
-{
-  log::err( "Missing exception ".$e->get_message() );
-  $result_array['success'] = false;
-  $result_array['error'] = 'missing';
-}
-catch( exception\permission $e )
-{
-  log::err( "Permission exception ".$e->get_message() );
-  $result_array['success'] = false;
-  $result_array['error'] = 'permission';
+  $result_array['error'] = $type;
 }
 catch( \Twig_Error_Runtime $e )
 {
-  log::err( "Template ".$e->__toString() );
+  log::err( "Template ".$e );
   $result_array['success'] = false;
   $result_array['error'] = 'template';
 }
 catch( \Exception $e )
 {
-  log::err( "Last minute ".$e->__toString() );
+  log::err( "Last minute ".$e );
   $result_array['success'] = false;
   $result_array['error'] = 'unknown';
 }

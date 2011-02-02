@@ -1,6 +1,6 @@
 <?php
 /**
- * main.class.php
+ * self_home.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -9,11 +9,11 @@
 namespace sabretooth\ui;
 
 /**
- * main widget
+ * self.home widget
  * 
  * @package sabretooth\ui
  */
-class main extends widget
+class self_home extends widget
 {
   /**
    * Constructor
@@ -25,10 +25,7 @@ class main extends widget
    */
   public function __construct( $args = NULL )
   {
-    $theme = \sabretooth\session::self()->get_theme();
-    // define all template variables for this widget
-    $this->set_variable( 'jquery_ui_css_path', '/'.$theme.'/jquery-ui-1.8.9.custom.css' );
-    $this->set_variable( 'survey_active', false );
+    parent::__construct( 'self', 'home', $args );
   }
 }
 ?>

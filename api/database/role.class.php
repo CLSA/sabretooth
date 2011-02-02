@@ -26,20 +26,21 @@ class role extends active_record
   {
     $result = false;
 
-    // TODO: protected function active_record::are_keys_set()
-    if( is_null( $this->id ) )
+    if( !$this->are_primary_keys_set() )
     {
       \sabretooth\log::warning( 'Tried to determine operation for record with no id' );
-      return $result;
     }
-
-    $rows = self::get_one(
-      'SELECT * '.
-      'FROM role_has_operation '.
-      'WHERE role_id = '.$this->id.' '.
-      'AND operation = "'.$db_operation->name.'" '.
-      'AND action = "'.$db_operation->action.'"' );
-    $result = 0 < count( $rows );
+    else
+    {
+      $rows = self::get_one(
+        'SELECT * '.
+        'FROM role_has_operation '.
+        'WHERE role_id = '.$this->id.' '.
+        'AND type = "'.$db_operation->type.'" '.
+        'AND subject = "'.$db_operation->subject.'" '.
+        'AND name = "'.$db_operation->name.'"' );
+      $result = 0 < count( $rows );
+    }
 
     return $result;
   }

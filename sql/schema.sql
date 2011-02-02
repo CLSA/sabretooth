@@ -62,6 +62,7 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`user` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(45) NOT NULL ,
   `lime_uid` INT NULL DEFAULT NULL ,
+  `theme` VARCHAR(45) NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `name_UNIQUE` (`name` ASC) ,
   INDEX `fk_lime_users_uid` (`lime_uid` ASC) ,
@@ -319,10 +320,12 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `sabretooth`.`operation` ;
 
 CREATE  TABLE IF NOT EXISTS `sabretooth`.`operation` (
+  `type` ENUM('action','widget') NOT NULL ,
+  `subject` VARCHAR(45) NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
-  `action` VARCHAR(45) NOT NULL ,
+  `restricted` TINYINT(1)  NOT NULL DEFAULT true ,
   `description` TEXT NULL ,
-  PRIMARY KEY (`name`, `action`) )
+  PRIMARY KEY (`type`, `subject`, `name`) )
 ENGINE = InnoDB;
 
 
@@ -333,19 +336,20 @@ DROP TABLE IF EXISTS `sabretooth`.`role_has_operation` ;
 
 CREATE  TABLE IF NOT EXISTS `sabretooth`.`role_has_operation` (
   `role_id` INT UNSIGNED NOT NULL ,
-  `operation` VARCHAR(45) NOT NULL ,
-  `action` VARCHAR(45) NOT NULL ,
-  PRIMARY KEY (`role_id`, `operation`, `action`) ,
+  `type` ENUM('action','widget') NOT NULL ,
+  `subject` VARCHAR(45) NOT NULL ,
+  `name` VARCHAR(45) NOT NULL ,
+  PRIMARY KEY (`role_id`, `type`, `subject`, `name`) ,
   INDEX `fk_role_id` (`role_id` ASC) ,
-  INDEX `fk_role_has_operation_operation1` (`operation` ASC, `action` ASC) ,
+  INDEX `fk_role_has_operation_operation1` (`type` ASC, `subject` ASC, `name` ASC) ,
   CONSTRAINT `fk_role_has_operation_role1`
     FOREIGN KEY (`role_id` )
     REFERENCES `sabretooth`.`role` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_role_has_operation_operation1`
-    FOREIGN KEY (`operation` , `action` )
-    REFERENCES `sabretooth`.`operation` (`name` , `action` )
+    FOREIGN KEY (`type` , `subject` , `name` )
+    REFERENCES `sabretooth`.`operation` (`type` , `subject` , `name` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

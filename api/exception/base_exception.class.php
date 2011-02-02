@@ -39,6 +39,14 @@ class base_exception extends \Exception
   }
   
   /**
+   * Returns the type of exception as a string.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_type() { return substr( strrchr( get_called_class(), '\\' ), 1 ); }
+
+  /**
    * Get the exception as a string.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
@@ -53,5 +61,13 @@ class base_exception extends \Exception
    * @access public
    */
   public function get_message() { return $this->getMessage(); }
+
+  /**
+   * Get the exception backtrace.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_backtrace() { return $this->getTraceAsString(); }
 }
 ?>

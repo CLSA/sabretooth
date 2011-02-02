@@ -25,19 +25,20 @@ class user extends active_record
    */
   public function has_access( $db_site, $db_role )
   {
-    if( is_null( $this->id ) )
+    if( !$this->are_primary_keys_set() )
     {
-      \sabretooth\log::warning( 'Tried to determine access for record with no id' );
-      return false;
+      \sabretooth\log::warning( 'Tried to determine access for record without primary ids' );
+    }
+    else
+    {
+      $rows = self::get_one(
+        'SELECT user_id '.
+        'FROM user_access '.
+        'WHERE user_id = '.$this->id.' '.
+        'AND site_id = '.$db_site->id.' '.
+        'AND role_id = '.$db_role->id );
     }
 
-    $rows = self::get_one(
-      'SELECT user_id '.
-      'FROM user_access '.
-      'WHERE user_id = '.$this->id.' '.
-      'AND site_id = '.$db_site->id.' '.
-      'AND role_id = '.$db_role->id );
-    
     return count( $rows );
   }
   
@@ -51,24 +52,24 @@ class user extends active_record
   {
     $sites = array();
 
-    if( is_null( $this->id ) )
+    if( !$this->are_primary_keys_set() )
     {
-      \sabretooth\log::warning( 'Tried to get sites for record with no id' );
-      return $sites;
+      \sabretooth\log::warning( 'Tried to get sites for record without primary ids' );
     }
-    
-    $site_ids = self::get_col(
-      'SELECT site_id '.
-      'FROM user_access '.
-      'WHERE user_id = '.$this->id.' '.
-      'GROUP BY site_id '.
-      'ORDER BY site_id' );
-    
-    foreach( $site_ids as $site_id )
+    else
     {
-      array_push( $sites, new site( $site_id ) );
+      $site_ids = self::get_col(
+        'SELECT site_id '.
+        'FROM user_access '.
+        'WHERE user_id = '.$this->id.' '.
+        'GROUP BY site_id '.
+        'ORDER BY site_id' );
+      
+      foreach( $site_ids as $site_id )
+      {
+        array_push( $sites, new site( $site_id ) );
+      }
     }
-
     return $sites;
   }
 
@@ -83,22 +84,23 @@ class user extends active_record
   {
     $roles = array();
 
-    if( is_null( $this->id ) )
+    if( !$this->are_primary_keys_set() )
     {
-      \sabretooth\log::warning( 'Tried to get roles for record with no id' );
-      return $roles;
+      \sabretooth\log::warning( 'Tried to get roles for record without primary ids' );
     }
-    
-    $role_ids = self::get_col(
-      'SELECT role_id '.
-      'FROM user_access '.
-      'WHERE user_id = '.$this->id.' '.
-      ( !is_null( $db_site ) ? 'AND site_id = '.$db_site->id.' ' : '' ).
-      'ORDER BY role_id' );
-    
-    foreach( $role_ids as $role_id )
+    else
     {
-      array_push( $roles, new role( $role_id ) );
+      $role_ids = self::get_col(
+        'SELECT role_id '.
+        'FROM user_access '.
+        'WHERE user_id = '.$this->id.' '.
+        ( !is_null( $db_site ) ? 'AND site_id = '.$db_site->id.' ' : '' ).
+        'ORDER BY role_id' );
+      
+      foreach( $role_ids as $role_id )
+      {
+        array_push( $roles, new role( $role_id ) );
+      }
     }
 
     return $roles;
@@ -116,34 +118,38 @@ class user extends active_record
    */
   public function get_access_array()
   {
-    if( is_null( $this->id ) )
-      throw new \sabretooth\exception\database( 'Tried to get access array for record with no id' );
-    
     $access_array = array();
-
-    $rows = self::get_all(
-      'SELECT site_id, role_id '.
-      'FROM user_access '.
-      'WHERE user_id = '.$this->id.' '.
-      'ORDER BY site_id, role_id' );
     
-    $site = NULL;
-    foreach( $rows as $row )
+    if( !$this->are_primary_keys_set() )
     {
-      if( is_null( $site ) )
-      { // first row, create the site and add its first role
-        $site = new site( $row['site_id'] );
-        $roles = array( new role( $row['role_id'] ) );
-      }
-      else if( $site->id == $row['site_id'] )
-      { // same role as last time, add another role
-        array_push( $roles, new role( $row['role_id'] ) );
-      }
-      else
-      { // new site, add the current one to the access array and start a new one
-        array_push( $access_array, array( 'site' => $site, 'roles' => $roles ) );
-        $site = new site( $row['site_id'] );
-        $roles = array( new role( $row['role_id'] ) );
+      \sabretooth\log::warning( 'Tried to get access array for record without primary ids' );
+    }
+    else
+    {
+      $rows = self::get_all(
+        'SELECT site_id, role_id '.
+        'FROM user_access '.
+        'WHERE user_id = '.$this->id.' '.
+        'ORDER BY site_id, role_id' );
+      
+      $site = NULL;
+      foreach( $rows as $row )
+      {
+        if( is_null( $site ) )
+        { // first row, create the site and add its first role
+          $site = new site( $row['site_id'] );
+          $roles = array( new role( $row['role_id'] ) );
+        }
+        else if( $site->id == $row['site_id'] )
+        { // same role as last time, add another role
+          array_push( $roles, new role( $row['role_id'] ) );
+        }
+        else
+        { // new site, add the current one to the access array and start a new one
+          array_push( $access_array, array( 'site' => $site, 'roles' => $roles ) );
+          $site = new site( $row['site_id'] );
+          $roles = array( new role( $row['role_id'] ) );
+        }
       }
     }
 

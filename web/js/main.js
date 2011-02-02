@@ -20,29 +20,14 @@ $( document ).ready( function() {
  */
 function update_shortcuts() {
   // the home button should only be enabled if the main slot is NOT displaying the home widget
-  $( "#shortcuts_home" ).attr( "disabled", "home" == $.cookie( "slot.main.widget" ) )
-                        .button( "refresh" );
+  $( "#self_shortcuts_home" ).attr( "disabled", "self_home" == $.cookie( "slot.main.widget" ) )
+                             .button( "refresh" );
 
   // the prev and next buttons should only be enabled if there are prev and next widgets available
-  $( "#shortcuts_prev" ).attr( "disabled", undefined == $.cookie( "slot.main.prev" ) )
-                        .button( "refresh" );
-  $( "#shortcuts_next" ).attr( "disabled", undefined == $.cookie( "slot.main.next" ) )
-                        .button( "refresh" );
-}
-
-/**
- * Shows a loading indicator if ajax or ui operations take a long time.
- * 
- * @author Patrick Emond <emondpd@mcmaster.ca>
- */
-function show_loading_indicator() {
-  $.loading( {
-    onAjax: true,
-    mask: true,
-    img: "img/loading.gif",
-    delay: 400, // ms
-    align: "center"
-  } );
+  $( "#self_shortcuts_prev" ).attr( "disabled", undefined == $.cookie( "slot.main.prev" ) )
+                             .button( "refresh" );
+  $( "#self_shortcuts_next" ).attr( "disabled", undefined == $.cookie( "slot.main.next" ) )
+                             .button( "refresh" );
 }
 
 /**
@@ -75,19 +60,44 @@ function error_dialog( title, message ) {
  * @param JSON-array args The arguments to pass to the operation object
  * @return bool Whether or not the operation completed successfully
  */
-function send_operation( operation, action, args ) {
+function send_operation( subject, name, args ) {
+  if( undefined == args ) args = new Object();
+  args.subject = subject;
+  args.name = name;
   var request = jQuery.ajax( {
-    url: "action.php",
-    async: false,
-    type: "POST",
-    data: { "operation": operation,
-            "action": action,
-            "args": args == undefined ? undefined : jQuery.param( args ) },
-    complete: function( request, result ) { ajax_complete( request ) },
-    dataType: 'json'
+    "url": "action.php",
+    "async": false,
+    "type": "POST",
+    "data": jQuery.param( args ),
+    "complete": function( request, result ) { ajax_complete( request ) },
+    "dataType": "json"
   } );
   var response = jQuery.parseJSON( request.responseText );
   return response.success;
+}
+
+/**
+ * Loads a url into a slot.
+ * 
+ * This function is used by slot_load, slot_prev, slot_next and slot_refresh.
+ * It should not be used directly anywhere else.
+ * @author Patrick Emond <emondpd@mcmaster.ca>
+ * @param string slot The slot to place the widget into.
+ * @param string widget The widget's name (must be the name of a ui class)
+ * @param JSON-array $args The arguments to pass to the widget object
+ */
+function slot_url( slot, url ) {
+  $.loading( {
+    onAjax: true,
+    mask: true,
+    img: "img/loading.gif",
+    delay: 400, // ms
+    align: "center"
+  } );
+
+  $( "#" + slot + "_slot" ).load( url, null,
+    function( response, status, request ) { ajax_complete( request ) }
+  );
 }
 
 /**
@@ -99,16 +109,12 @@ function send_operation( operation, action, args ) {
  * @param JSON-array $args The arguments to pass to the widget object
  */
 function slot_load( slot, widget, args ) {
-  show_loading_indicator();
-
   // build the url (args is an associative array)
-  var url = "widget.php?widget=" + widget + "&slot=" + slot +
-            ( undefined == args ? "" : "&" + jQuery.param( args ) );
-  $( "#" + slot + "_slot" ).load(
-    url,
-    null,
-    function( response, status, request ) { ajax_complete( request ) }
-  );
+  if( undefined == args ) args = new Object();
+  args.slot = slot;
+  args.widget = widget;
+  var url = "widget.php?" + jQuery.param( args );
+  slot_url( slot, url );
 }
 
 /**
@@ -119,13 +125,8 @@ function slot_load( slot, widget, args ) {
  * @param string slot arguments to pass along to the widget.
  */
 function slot_prev( slot ) {
-  show_loading_indicator();
-
-  $( "#" + slot + "_slot" ).load(
-    "widget.php?prev=1&slot=" + slot,
-    null,
-    function( response, status, request ) { ajax_complete( request ) }
-  );
+  var url = "widget.php?prev=1&slot=" + slot;
+  slot_url( slot, url );
 }
 
 /**
@@ -136,34 +137,23 @@ function slot_prev( slot ) {
  * @param string slot arguments to pass along to the widget.
  */
 function slot_next( slot ) {
-  show_loading_indicator();
-
-  $( "#" + slot + "_slot" ).load(
-    "widget.php?next=1&slot=" + slot,
-    null,
-    function( response, status, request ) { ajax_complete( request ) }
-  );
+  var url = "widget.php?next=1&slot=" + slot;
+  slot_url( slot, url );
 }
 
 /**
  * Reload the slot's current widget.
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @param boolean indicator Whether to show a loading indicator.
  * @param string slot The slot to rewind.
  * @param string slot arguments to pass along to the widget.
  */
-function slot_refresh( indicator, slot, widget, args ) {
-  if( indicator ) show_loading_indicator();
-  var url = "widget.php?refresh=1" +
-            ( undefined == widget ? '' : '&widget=' + widget ) +
-            "&slot=" + slot +
-            ( undefined == args ? '' : "&" + jQuery.param( args ) );
-  $( "#" + slot + "_slot" ).load(
-    url,
-    null,
-    function( response, status, request ) { ajax_complete( request ) }
-  );
+function slot_refresh( slot, args ) {
+  if( undefined == args ) args = new Object();
+  args.refresh = 1;
+  args.slot = slot;
+  var url = "widget.php?" + jQuery.param( args );
+  slot_url( slot, url );
 }
 
 /**
@@ -186,7 +176,8 @@ function ajax_complete( request ) {
     }
     else { // any other error...
       var code = 'X';
-      if( 'database' == response.error ) code = 'D';
+      if( 'argument' == response.error ) code = 'A';
+      else if( 'database' == response.error ) code = 'D';
       else if( 'missing' == response.error ) code = 'M';
       else if( 'runtime' == response.error ) code = 'R';
       else if( 'template' == response.error ) code = 'T';
@@ -224,7 +215,7 @@ function get_slot( element ) {
   return slot_id.substring( 0, slot_id.lastIndexOf( "_" ) );
 }
 
-// load the settings widget
-$( document ).ready( function() { slot_refresh( false, "settings" ); } );
-$( document ).ready( function() { slot_refresh( false, "shortcuts" ); } );
-$( document ).ready( function() { slot_refresh( true, "main" ); } );
+// refresh all slots
+$( document ).ready( function() { slot_refresh( "extruder" ); } );
+$( document ).ready( function() { slot_refresh( "header" ); } );
+$( document ).ready( function() { slot_refresh( "main" ); } );

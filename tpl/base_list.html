@@ -1,5 +1,5 @@
 {##
- # llist.html
+ # base_list.html
  # 
  # Generic list widget.
  # @author Patrick Emond <emondpd@mcmaster.ca>
@@ -56,7 +56,7 @@ $( function() {
     }
   } )
 } );
-{% if llist.checkable %}
+{% if base_list.checkable %}
 $( function() {
   $( ".{{ widget_name }}_check" ).button( {
     text: false,
@@ -66,7 +66,7 @@ $( function() {
   } )
 } );
 {% endif %}
-{% if llist.viewable %}
+{% if base_list.viewable %}
 $( function() {
   $( ".{{ widget_name }}_view" ).button( {
     text: false,
@@ -76,7 +76,7 @@ $( function() {
   } )
 } );
 {% endif %}
-{% if llist.editable %}
+{% if base_list.editable %}
 $( function() {
   $( ".{{ widget_name }}_edit" ).button( {
     text: false,
@@ -86,7 +86,7 @@ $( function() {
   } )
 } );
 {% endif %}
-{% if llist.removable %}
+{% if base_list.removable %}
 $( function() {
   $( ".{{ widget_name }}_remove" ).button( {
     text: false,
@@ -112,12 +112,10 @@ $( function() { $( "#{{ widget_name }}_page_next" ).button().parent().buttonset(
 $( function() {
   $( "th.sortable" ).click( function() {
     slot_refresh(
-      true,
       get_slot( $(this) ),
-      '{{ widget_name }}',
-      { "page": {{ llist.page }},
+      { "page": {{ base_list.page }},
         "sort_column": $(this).attr("id"),
-        "sort_desc": {{ llist.sort_desc ? 0 : 1 }} } );
+        "sort_desc": {{ base_list.sort_desc ? 0 : 1 }} } );
   } )
 } );
 
@@ -144,42 +142,37 @@ $( function() {
 $( function() {
   $( "#{{ widget_name }}_page_prev" ).click( function() {
     slot_refresh(
-      true,
       get_slot( $(this) ),
-      '{{ widget_name }}',
-      { "page": {{ llist.page - 1 }},
-        "sort_column": "{{ llist.sort_column }}",
-        "sort_desc": {{ llist.sort_desc ? 1 : 0 }} } );
+      { "page": {{ base_list.page - 1 }},
+        "sort_column": "{{ base_list.sort_column }}",
+        "sort_desc": {{ base_list.sort_desc ? 1 : 0 }} } );
   } )
 } );
 $( function() {
   $( "#{{ widget_name }}_page_next" ).click( function() {
     slot_refresh(
-      true,
       get_slot( $(this) ),
-      '{{ widget_name }}',
-      { "page": {{ llist.page + 1 }},
-        "sort_column": "{{ llist.sort_column }}",
-        "sort_desc": {{ llist.sort_desc ? 1 : 0 }} } );
+      { "page": {{ base_list.page + 1 }},
+        "sort_column": "{{ base_list.sort_column }}",
+        "sort_desc": {{ base_list.sort_desc ? 1 : 0 }} } );
   } )
 } );
 
 </script>
-{% if llist.heading %}<h2 class="{{ widget_name }}_heading">{{ llist.heading }}</h2>{% endif %}
+{% if base_list.heading %}<h2 class="{{ widget_name }}_heading">{{ base_list.heading }}</h2>{% endif %}
 <table class="striped">
-  {% if llist.rows | count %}
+  {% if base_list.rows | count %}
   <thead class="ui-widget-header">
     <tr>
-      {% if llist.checkable %}
+      {% if base_list.checkable %}
       <th><div class="ui-icon ui-icon-check" style="padding:2px"></div></th>
       {% endif %}
-      {% for column in llist.columns %}
-      {# TODO: text and up/down arrow not displaying well #}
+      {% for column in base_list.columns %}
       <th{{ column.sortable ? ' class="sortable"' : '' }} id="{{ column.id }}"
                                                           width="{{ 95 / loop.length }}%">
         {% if column.sortable %}
-        {% if column.id == llist.sort_column %}
-          <div class="{{ widget_name }}_sort{{ llist.sort_desc ? '_desc' : '' }}">{{ column.name }}</div>
+        {% if column.id == base_list.sort_column %}
+          <div class="{{ widget_name }}_sort{{ base_list.sort_desc ? '_desc' : '' }}">{{ column.name }}</div>
         {% else %}
           <div class="{{ widget_name }}_sortable">{{ column.name }}</div>
         {% endif %}
@@ -188,32 +181,32 @@ $( function() {
         {% endif %}
       </th>
       {% endfor %}
-      {% if llist.viewable %}
+      {% if base_list.viewable %}
       <th></th>
       {% endif %}
-      {% if llist.editable %}
+      {% if base_list.editable %}
       <th></th>
       {% endif %}
-      {% if llist.removable %}
+      {% if base_list.removable %}
       <th></th>
       {% endif %}
   </thead>
   <tbody>
-    {% for row in llist.rows %}
+    {% for row in base_list.rows %}
     <tr>
-      {% if llist.checkable %}
+      {% if base_list.checkable %}
       <td><input type="checkbox" id="{{ widget_name }}_check_{{ row.id }}" /></td>
       {% endif %}
       {% for column in row.columns %}
       <td>{{ column }}</td>
       {% endfor %}
-      {% if llist.viewable %}
+      {% if base_list.viewable %}
       <td><button class="{{ widget_name }}_view">view</button></td>
       {% endif %}
-      {% if llist.editable %}
+      {% if base_list.editable %}
       <td><button class="{{ widget_name }}_edit">edit</button></td>
       {% endif %}
-      {% if llist.removable %}
+      {% if base_list.removable %}
       <td><button class="{{ widget_name }}_remove">remove</button></td>
       {% endif %}
     </tr>
@@ -223,7 +216,7 @@ $( function() {
   <tfoot class="ui-widget-header">
     <tr>
       <th colspan="0">
-        {% if llist.checkable %}
+        {% if base_list.checkable %}
         <span>
           Check boxes:
           <button style="width:70px" id="{{ widget_name }}_check_all">all</button>
@@ -232,23 +225,23 @@ $( function() {
         </span>
         <span style="margin-left:20px">
         {% endif %}
-        {% if llist.rows | count %}
-        {% set item_from = ( llist.page - 1 ) * llist.items_per_page + 1 %}
-        {% set item_to = item_from + llist.rows | count - 1 %}
-        Viewing: {{ item_from }} to {{ item_to }} of {{ llist.number_of_items }}
+        {% if base_list.rows | count %}
+        {% set item_from = ( base_list.page - 1 ) * base_list.items_per_page + 1 %}
+        {% set item_to = item_from + base_list.rows | count - 1 %}
+        Viewing: {{ item_from }} to {{ item_to }} of {{ base_list.number_of_items }}
         {% else %}
         No records found.
         {% endif %}
-        {% if llist.items_per_page < llist.number_of_items %}
+        {% if base_list.items_per_page < base_list.number_of_items %}
         <span style="margin-left:20px">
         <span>
           Page:
           <button style="width:70px"
                   id="{{ widget_name }}_page_prev"
-                  {{ 1 == llist.page ? 'disabled' : '' }}>prev</button>
+                  {{ 1 == base_list.page ? 'disabled' : '' }}>prev</button>
           <button style="width:70px"
                   id="{{ widget_name }}_page_next"
-                  {{ llist.max_page == llist.page ? 'disabled' : '' }}>next</button>
+                  {{ base_list.max_page == base_list.page ? 'disabled' : '' }}>next</button>
         </span>
         {% endif %}
       </th>

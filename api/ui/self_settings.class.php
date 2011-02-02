@@ -1,6 +1,6 @@
 <?php
 /**
- * settings.class.php
+ * self_settings.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -9,12 +9,23 @@
 namespace sabretooth\ui;
 
 /**
- * settings widget
+ * self.settings widget
  * 
  * @package sabretooth\ui
  */
-class settings extends widget
+class self_settings extends widget
 {
+  /**
+   * Constructor.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param array $args Action arguments
+   * @access public
+   */
+  public function __construct( $args = NULL )
+  {
+    parent::__construct( 'self', 'settings', $args );
+  }
+
   /**
    * Finish setting the variables in a widget.
    * 
@@ -26,7 +37,7 @@ class settings extends widget
   {
     parent::finish();
 
-    // create and setup the settings widget
+    // create and setup the widget
     $db_user = \sabretooth\session::self()->get_user();
     $db_site = \sabretooth\session::self()->get_site();
     $db_role = \sabretooth\session::self()->get_role();

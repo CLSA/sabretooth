@@ -17,7 +17,7 @@ namespace sabretooth\ui;
  * by in the template by calling {@link add_variable_names}
  * @package sabretooth\ui
  */
-abstract class widget extends \sabretooth\base_object
+abstract class widget extends operation
 {
   /**
    * Constructor
@@ -27,8 +27,10 @@ abstract class widget extends \sabretooth\base_object
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
-  public function __construct( $args = NULL )
+  public function __construct( $subject, $name, $args )
   {
+    parent::__construct( 'widget', $subject, $name, $args );
+
     // define all template variables for this widget
     self::$variables[ 'widget_name' ] = self::get_class_name();
   }
@@ -39,10 +41,7 @@ abstract class widget extends \sabretooth\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function finish()
-  {
-    // set all variables which have been changed/set after the construction of the widget
-  }
+  public function finish() {}
 
   /**
    * Set a widget variable.

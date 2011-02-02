@@ -11,17 +11,17 @@
 <script type="text/javascript">
 $( document ).ready( function() {
   $( "#{{ widget_name }}_site_list" ).click( function() {
-    if( send_operation( 'site', 'llist' ) ) slot_load( 'main', 'llist_site' );
+    slot_load( 'main', 'site_list' );
   } );
 } );
 $( document ).ready( function() {
   $( "#{{ widget_name }}_user_list" ).click( function() {
-    if( send_operation( 'user', 'llist' ) ) slot_load( 'main', 'llist_user' );
+    slot_load( 'main', 'user_list' );
   } );
 } );
 $( document ).ready( function() {
   $( "#{{ widget_name }}_role_list" ).click( function() {
-    if( send_operation( 'role', 'llist' ) ) slot_load( 'main', 'llist_role' );
+    slot_load( 'main', 'role_list' );
   } );
 } );
 

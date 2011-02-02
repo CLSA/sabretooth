@@ -52,10 +52,8 @@ final class util
   {
     if( is_null( self::$action_mode ) )
     {
-      $script_name = false === strrchr( $_SERVER['SCRIPT_NAME'], '/' )
-                   ? $_SERVER['SCRIPT_NAME']
-                   : substr( strrchr( $_SERVER['SCRIPT_NAME'], '/' ), 1 );
-      self::$action_mode = 'action.php' == $script_name;
+      self::$action_mode = 'action.php' == session::self()->get_setting( 'general', 'script_name' );
+      log::debug( "action mode: ".( self::$action_mode ? "true" : "false" ) );
     }
     return self::$action_mode;
   }
@@ -79,10 +77,8 @@ final class util
   {
     if( is_null( self::$widget_mode ) )
     {
-      $script_name = false === strrchr( $_SERVER['SCRIPT_NAME'], '/' )
-                   ? $_SERVER['SCRIPT_NAME']
-                   : substr( strrchr( $_SERVER['SCRIPT_NAME'], '/' ), 1 );
-      self::$widget_mode = 'widget.php' == $script_name;
+      self::$action_mode = 'widget.php' == session::self()->get_setting( 'general', 'script_name' );
+      log::debug( "widget mode: ".( self::$widget_mode ? "true" : "false" ) );
     }
     return self::$widget_mode;
   }

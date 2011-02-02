@@ -138,7 +138,7 @@ final class log extends singleton
   public static function print_r( $variable )
   {
     $message = print_r( $variable, true );
-    self::debug( $message );
+    self::debug( "print_r: $message" );
   }
   
   /**
@@ -188,80 +188,27 @@ final class log extends singleton
     // make sure we have a session
     if( !class_exists( 'sabretooth\session' ) || !session::exists() ) return;
 
-    // handle logs differently when we are in action or developer mode
-    if( util::in_action_mode() || util::in_widget_mode() )
+    // if in devel mode log everything to firephp
+    if( util::in_devel_mode() )
     {
-      // if in devel mode log everything to firephp
-      if( util::in_devel_mode() )
+      $type_string = self::log_level_to_string( $type );
+      $firephp = \FirePHP::getInstance( true );
+      if( PEAR_LOG_INFO == $type ||
+          PEAR_LOG_NOTICE == $type ||
+          PEAR_LOG_DEBUG == $type )
       {
-        $type_string = self::log_level_to_string( $type );
-        $firephp = \FirePHP::getInstance( true );
-        if( PEAR_LOG_EMERG == $type ||
-            PEAR_LOG_ALERT == $type ||
-            PEAR_LOG_CRIT == $type ||
-            PEAR_LOG_ERR == $type )
-        {
-          $firephp->error( $message, $type_string );
-        }
-        else if( PEAR_LOG_WARNING == $type )
-        {
-          $firephp->warn( $message, $type_string );
-        }
-        else if( PEAR_LOG_INFO == $type ||
-                 PEAR_LOG_NOTICE == $type ||
-                 PEAR_LOG_DEBUG == $type )
-        {
-          $firephp->info( $message, $type_string );
-        }
+        $firephp->info( $message, $type_string );
       }
-      // otherwise log anything major to file (ignoring minor logs)
       else if( PEAR_LOG_EMERG == $type ||
                PEAR_LOG_ALERT == $type ||
                PEAR_LOG_CRIT == $type ||
                PEAR_LOG_ERR == $type )
       {
-        $this->initialize_logger( 'file' );
-        $this->loggers[ 'file' ]->log( $this->backtrace()."\n".$message, $type );
+        $firephp->error( $message, $type_string );
       }
-    }
-    else if( util::in_devel_mode() )
-    {
-      if( PEAR_LOG_EMERG == $type ||
-          PEAR_LOG_ALERT == $type ||
-          PEAR_LOG_CRIT == $type ||
-          PEAR_LOG_ERR == $type )
+      else // PEAR_LOG_WARNING
       {
-        // display means html, so pretty up the message
-        $message = '<font color=magenta>"'.$message.'"</font>';
-        // log major stuff to display
-        $this->initialize_logger( 'display' );
-        $this->loggers[ 'display' ]->log( $message."\n".$this->backtrace(), $type );
-      }
-      else if( PEAR_LOG_WARNING == $type ||
-               PEAR_LOG_NOTICE == $type ||
-               PEAR_LOG_INFO == $type ||
-               PEAR_LOG_DEBUG == $type )
-      {
-        // log minor stuff in firephp
-        $type_string = self::log_level_to_string( $type );
-        $firephp = \FirePHP::getInstance( true );
-        if( PEAR_LOG_EMERG == $type ||
-            PEAR_LOG_ALERT == $type ||
-            PEAR_LOG_CRIT == $type ||
-            PEAR_LOG_ERR == $type )
-        {
-          $firephp->error( $message, $type_string );
-        }
-        else if( PEAR_LOG_WARNING == $type )
-        {
-          $firephp->warn( $message, $type_string );
-        }
-        else if( PEAR_LOG_INFO == $type ||
-                 PEAR_LOG_NOTICE == $type ||
-                 PEAR_LOG_DEBUG == $type )
-        {
-          $firephp->info( $message, $type_string );
-        }
+        $firephp->warn( $message." backtrace: ".$this->backtrace(), $type_string );
       }
     }
     else // we are in production mode
@@ -269,26 +216,16 @@ final class log extends singleton
       if( PEAR_LOG_EMERG == $type ||
           PEAR_LOG_ALERT == $type ||
           PEAR_LOG_CRIT == $type ||
-          PEAR_LOG_ERR == $type )
+          PEAR_LOG_ERR == $type ||
+          PEAR_LOG_INFO == $type )
       {
         // log major stuff to an error log
         $this->initialize_logger( 'file' );
         $this->loggers[ 'file' ]->log( $this->backtrace()."\n".$message, $type );
       }
-      else if( PEAR_LOG_WARNING == $type ||
-               PEAR_LOG_NOTICE == $type ||
-               PEAR_LOG_DEBUG == $type )
+      else // PEAR_LOG_WARNING, PEAR_LOG_NOTICE, PEAR_LOG_DEBUG
       {
         // ignore warnings, notices and debug logs
-      }
-      else if( PEAR_LOG_INFO == $type )
-      {
-        // log info to the database (PEAR logger not used)
-        $db_log = new database\log();
-        $db_log->user_id = session::self()->get_user()->get_id();
-        $db_log->site_id = session::self()->get_site()->get_id();
-        $db_log->text = $message;
-        $db_log->save();
       }
     }
   }
@@ -380,13 +317,22 @@ final class log extends singleton
    */
   static public function error_handler( $level, $message, $file, $line )
   {
-    $message .= "\n$file on line $line (errno: $level)";
+    $message .= "\n in $file on line $line (errno: $level)";
     if( E_PARSE == $level ||
         E_COMPILE_ERROR == $level )
     {
       log::self()->emerg( $message );
+
       // fatal error, send JSON error or just quit with error code
-      die( util::in_action_mode() ? json_encode( array( 'error' => true ) ) : 1 );
+      if( util::in_action_mode() || util::in_widget_mode() )
+      {
+        ob_end_clean();
+        die( json_encode( array( 'success' => false, 'error' => 'unknown' ) ) );
+      }
+      else
+      {
+        die();
+      }
     }
     else if( E_USER_ERROR == $level ||
              E_CORE_ERROR == $level ||
@@ -394,11 +340,21 @@ final class log extends singleton
     {
       log::self()->err( $message );
       // fatal error, send JSON error or just quit with error code
-      die( util::in_action_mode() ? json_encode( array( 'error' => true ) ) : 1 );
+      
+      if( util::in_action_mode() || util::in_widget_mode() )
+      {
+        ob_end_clean();
+        die( json_encode( array( 'success' => false, 'error' => 'unknown' ) ) );
+      }
+      else
+      {
+        die();
+      }
     }
     else if( E_COMPILE_WARNING == $level ||
              E_CORE_WARNING == $level ||
              E_WARNING == $level ||
+             E_USER_WARNING == $level ||
              E_STRICT == $level ||
              E_RECOVERABLE_ERROR == $level )
     {

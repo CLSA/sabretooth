@@ -12,7 +12,7 @@
 <head>
   <title>Sabretooth</title>
   <script type="text/javascript"></script>
-  <link href="{{ constant('JQUERY_UI_URL') }}/css{{ main.jquery_ui_css_path }}" rel="stylesheet" />
+  <link href="{{ constant('JQUERY_UI_URL') }}/css{{ jquery_ui_css_path }}" rel="stylesheet" />
   <link href="css/main.css" rel="stylesheet" />
   <script type="text/javascript" src="{{ constant('JQUERY_JS_URL') }}"></script>
   <script type="text/javascript" src="{{ constant('JQUERY_UI_JS_URL') }}"></script>
@@ -33,7 +33,7 @@
   $( function() { $( "div.content" ).addClass( "ui-widget-content" ); } );
   $( function() { $( ".flap" ).addClass( "ui-widget-header" ); } );
 
-  {% if main.survey_active %}
+  {% if survey_active %}
   // Defines the layout when showing the survey pane.
   // Should only be visible when there is an active survey.
   $( document ).ready( function() {
@@ -56,13 +56,13 @@
 <body>
   <div id="error_slot"></div>
   <div id="top_extruder" class="{title:'settings'}">
-    <div id="settings_slot"></div>
+    <div id="extruder_slot"></div>
   </div>
   <div class="ui-layout-center" id="app_ui">
-    <div id="shortcuts_slot"></div>
+    <div id="header_slot"></div>
     <div id="main_slot"></div>
   </div>
-  {% if main.survey_active %}
+  {% if survey_active %}
   <div class="ui-layout-south" id="survey_ui">
     <object style="width: 100%; height: 100%; position: absolute"
             id="survey_object"
