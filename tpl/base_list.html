@@ -56,7 +56,7 @@ $( function() {
     }
   } )
 } );
-{% if base_list.checkable %}
+{% if checkable %}
 $( function() {
   $( ".{{ widget_name }}_check" ).button( {
     text: false,
@@ -66,7 +66,7 @@ $( function() {
   } )
 } );
 {% endif %}
-{% if base_list.viewable %}
+{% if viewable %}
 $( function() {
   $( ".{{ widget_name }}_view" ).button( {
     text: false,
@@ -76,7 +76,7 @@ $( function() {
   } )
 } );
 {% endif %}
-{% if base_list.editable %}
+{% if editable %}
 $( function() {
   $( ".{{ widget_name }}_edit" ).button( {
     text: false,
@@ -86,7 +86,7 @@ $( function() {
   } )
 } );
 {% endif %}
-{% if base_list.removable %}
+{% if removable %}
 $( function() {
   $( ".{{ widget_name }}_remove" ).button( {
     text: false,
@@ -109,31 +109,31 @@ $( function() {
   $( "th.sortable" ).click( function() {
     slot_refresh(
       get_slot( $(this) ),
-      { "page": {{ base_list.page }},
+      { "page": {{ page }},
         "sort_column": $(this).attr("id"),
-        "sort_desc": {{ base_list.sort_desc ? 0 : 1 }} } );
+        "sort_desc": {{ sort_desc ? 0 : 1 }} } );
   } )
 } );
 
 // column button functions
-{% if base_list.viewable %}
+{% if viewable %}
 $( function() {
   $( ".{{ widget_name }}_view" ).click( function() {
-    slot_load( get_slot( $(this) ), '{{ base_list.widget_subject }}_view' );
+    slot_load( get_slot( $(this) ), '{{ widget_subject }}_view' );
   } )
 } );
 {% endif %}
-{% if base_list.editable %}
+{% if editable %}
 $( function() {
   $( ".{{ widget_name }}_edit" ).click( function() {
-    slot_load( get_slot( $(this) ), '{{ base_list.widget_subject }}_view' );
+    slot_load( get_slot( $(this) ), '{{ widget_subject }}_view' );
   } )
 } );
 {% endif %}
-{% if base_list.removable %}
+{% if removable %}
 $( function() {
   $( ".{{ widget_name }}_remove" ).click( function() {
-    slot_load( get_slot( $(this) ), '{{ base_list.widget_subject }}_remove' );
+    slot_load( get_slot( $(this) ), '{{ widget_subject }}_remove' );
   } )
 } );
 {% endif %}
@@ -167,36 +167,35 @@ $( function() {
   $( "#{{ widget_name }}_page_prev" ).click( function() {
     slot_refresh(
       get_slot( $(this) ),
-      { "page": {{ base_list.page - 1 }},
-        "sort_column": "{{ base_list.sort_column }}",
-        "sort_desc": {{ base_list.sort_desc ? 1 : 0 }} } );
+      { "page": {{ page - 1 }},
+        "sort_column": "{{ sort_column }}",
+        "sort_desc": {{ sort_desc ? 1 : 0 }} } );
   } )
 } );
 $( function() {
   $( "#{{ widget_name }}_page_next" ).click( function() {
     slot_refresh(
       get_slot( $(this) ),
-      { "page": {{ base_list.page + 1 }},
-        "sort_column": "{{ base_list.sort_column }}",
-        "sort_desc": {{ base_list.sort_desc ? 1 : 0 }} } );
+      { "page": {{ page + 1 }},
+        "sort_column": "{{ sort_column }}",
+        "sort_desc": {{ sort_desc ? 1 : 0 }} } );
   } )
 } );
 
 </script>
-{% if base_list.heading %}<h2 class="{{ widget_name }}_heading">{{ base_list.heading }}</h2>{% endif %}
 <table class="striped">
-  {% if base_list.rows | count %}
+  {% if rows | count %}
   <thead class="ui-widget-header">
     <tr>
-      {% if base_list.checkable %}
+      {% if checkable %}
       <th><div class="ui-icon ui-icon-check" style="padding:2px"></div></th>
       {% endif %}
-      {% for column in base_list.columns %}
+      {% for column in columns %}
       <th{{ column.sortable ? ' class="sortable"' : '' }} id="{{ column.id }}"
                                                           width="{{ 95 / loop.length }}%">
         {% if column.sortable %}
-        {% if column.id == base_list.sort_column %}
-          <div class="{{ widget_name }}_sort{{ base_list.sort_desc ? '_desc' : '' }}">{{ column.name }}</div>
+        {% if column.id == sort_column %}
+          <div class="{{ widget_name }}_sort{{ sort_desc ? '_desc' : '' }}">{{ column.name }}</div>
         {% else %}
           <div class="{{ widget_name }}_sortable">{{ column.name }}</div>
         {% endif %}
@@ -205,32 +204,32 @@ $( function() {
         {% endif %}
       </th>
       {% endfor %}
-      {% if base_list.viewable %}
+      {% if viewable %}
       <th></th>
       {% endif %}
-      {% if base_list.editable %}
+      {% if editable %}
       <th></th>
       {% endif %}
-      {% if base_list.removable %}
+      {% if removable %}
       <th></th>
       {% endif %}
   </thead>
   <tbody>
-    {% for row in base_list.rows %}
+    {% for row in rows %}
     <tr>
-      {% if base_list.checkable %}
+      {% if checkable %}
       <td><input type="checkbox" id="{{ widget_name }}_check_{{ row.id }}" /></td>
       {% endif %}
       {% for column in row.columns %}
       <td>{{ column }}</td>
       {% endfor %}
-      {% if base_list.viewable %}
+      {% if viewable %}
       <td><button class="{{ widget_name }}_view">view</button></td>
       {% endif %}
-      {% if base_list.editable %}
+      {% if editable %}
       <td><button class="{{ widget_name }}_edit">edit</button></td>
       {% endif %}
-      {% if base_list.removable %}
+      {% if removable %}
       <td><button class="{{ widget_name }}_remove">remove</button></td>
       {% endif %}
     </tr>
@@ -240,7 +239,7 @@ $( function() {
   <tfoot class="ui-widget-header">
     <tr>
       <th colspan="0">
-        {% if base_list.checkable %}
+        {% if checkable %}
         <span>
           Check boxes:
           <button style="width:70px" id="{{ widget_name }}_check_all">all</button>
@@ -249,23 +248,23 @@ $( function() {
         </span>
         <span style="margin-left:20px">
         {% endif %}
-        {% if base_list.rows | count %}
-        {% set item_from = ( base_list.page - 1 ) * base_list.items_per_page + 1 %}
-        {% set item_to = item_from + base_list.rows | count - 1 %}
-        Viewing: {{ item_from }} to {{ item_to }} of {{ base_list.number_of_items }}
+        {% if rows | count %}
+        {% set item_from = ( page - 1 ) * items_per_page + 1 %}
+        {% set item_to = item_from + rows | count - 1 %}
+        Viewing: {{ item_from }} to {{ item_to }} of {{ number_of_items }}
         {% else %}
         No records found.
         {% endif %}
-        {% if base_list.items_per_page < base_list.number_of_items %}
+        {% if items_per_page < number_of_items %}
         <span style="margin-left:20px">
         <span>
           Page:
           <button style="width:70px"
                   id="{{ widget_name }}_page_prev"
-                  {{ 1 == base_list.page ? 'disabled' : '' }}>prev</button>
+                  {{ 1 == page ? 'disabled' : '' }}>prev</button>
           <button style="width:70px"
                   id="{{ widget_name }}_page_next"
-                  {{ base_list.max_page == base_list.page ? 'disabled' : '' }}>next</button>
+                  {{ max_page == page ? 'disabled' : '' }}>next</button>
         </span>
         {% endif %}
       </th>

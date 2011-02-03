@@ -80,13 +80,6 @@ abstract class base_list extends widget
   abstract protected function set_rows( $limit_count, $limit_offset );
   
   /**
-   * The list's heading.
-   * @var string
-   * @access protected
-   */
-  protected $heading = "";
-  
-  /**
    * Whether items in the list can be checked/selected.
    * @var boolean
    * @access protected

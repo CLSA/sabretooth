@@ -1,6 +1,13 @@
+{##
+ # widget.html
+ # 
+ # Base template for all widgets.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ #}
 <script type="text/javascript">
 $( function() { update_shortcuts(); } );
 $( function() { $( "button, input:submit" ).button(); } );
 </script>
+{% if widget_heading %}<h2 class="{{ widget_name }}_heading">{{ widget_heading }}</h2>{% endif %}
 {% block widget %}
 {% endblock %}

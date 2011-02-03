@@ -60,7 +60,7 @@ $( document ).ready( function() {
 <table>
   <tr>
     <td align="left">
-      Welcome {{ self_settings.user_name }}
+      Welcome {{ user_name }}
     </td>
     <td align="right">
       <button onclick="jQuery.post( 'index.php', { logout: 'logout' } );">logout</button>
@@ -72,26 +72,26 @@ $( document ).ready( function() {
   <tr>
     <td align="left" width="50%">
       <span class="title">Site:</span>
-      {% if 1 < self_settings.sites|count %}
+      {% if 1 < sites|count %}
       <select id="{{ widget_name }}_set_site" style="width: 140px" class="ui-state-default">
-        {% for site in self_settings.sites %}
-        <option{{ self_settings.current_site_name == site ? ' selected' : '' }}>{{ site }}</option>
+        {% for site in sites %}
+        <option{{ current_site_name == site ? ' selected' : '' }}>{{ site }}</option>
         {% endfor %}
       </select>
       {% else %}
-      {{ self_settings.current_site_name }}
+      {{ current_site_name }}
       {% endif %}
     </td>
     <td align="left" width="50%">
       <span class="title">Role:</span>
-      {% if 1 < self_settings.roles|count %}
+      {% if 1 < roles|count %}
       <select id="{{ widget_name }}_set_role" style="width: 140px" class="ui-state-default">
-        {% for role in self_settings.roles %}
-        <option{{ self_settings.current_role_name == role ? ' selected' : '' }}>{{ role }}</option>
+        {% for role in roles %}
+        <option{{ current_role_name == role ? ' selected' : '' }}>{{ role }}</option>
         {% endfor %}
       </select>
       {% else %}
-      {{ self_settings.current_role_name }}
+      {{ current_role_name }}
       {% endif %}
     </td>
   </tr>
@@ -104,8 +104,8 @@ $( document ).ready( function() {
     </td>
     <td align="right" width="95%">
       <select id="{{ widget_name }}_set_theme" style="width: 100%" class="ui-state-default">
-        {% for theme in self_settings.themes %}
-        <option{{ self_settings.current_theme_name == theme ? ' selected' : '' }}>{{ theme }}</option>
+        {% for theme in themes %}
+        <option{{ current_theme_name == theme ? ' selected' : '' }}>{{ theme }}</option>
         {% endfor %}
       </select>
     </td>

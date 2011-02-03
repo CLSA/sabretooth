@@ -30,9 +30,6 @@ abstract class widget extends operation
   public function __construct( $subject, $name, $args )
   {
     parent::__construct( 'widget', $subject, $name, $args );
-
-    // define all template variables for this widget
-    self::$variables[ 'widget_name' ] = self::get_class_name();
   }
 
   /**
@@ -45,6 +42,7 @@ abstract class widget extends operation
   {
     $this->set_variable( 'widget_subject', $this->subject );
     $this->set_variable( 'widget_name', $this->name );
+    $this->set_variable( 'widget_heading', $this->heading );
   }
 
   /**
@@ -57,7 +55,12 @@ abstract class widget extends operation
    */
   public function set_variable( $name, $value )
   {
-    self::$variables[ static::get_class_name() ][ $name ] = $value;
+    // warn if overwriting a variable
+    if( array_key_exists( $name, self::$variables ) )
+      \sabretooth\log::warning(
+        'Overwriting existing template variable "'.$name.
+        '" which was "'.self::$variables[ $name ].'" and is now "'.$value.'"' );
+    self::$variables[ $name ] = $value;
   }
 
   /**
@@ -80,5 +83,12 @@ abstract class widget extends operation
    * @access private
    */
   private static $variables = array();
+
+  /**
+   * The widget's heading.
+   * @var string
+   * @access protected
+   */
+  protected $heading = "";
 }
 ?>
