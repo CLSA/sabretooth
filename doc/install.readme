@@ -2,8 +2,9 @@ The following software must be installed prior to installing sabretooth:
 
 - LAMP setup with PHP 5.3.2+
 - PECL Http
-- pear Log (pear install Log)
-- PhpDocumentor (pear install PhpDocumentor)
+- PEAR Log (pear install Log)
+- PEAR twig (pear channel-discover pear.twig-project.org && pear install twig
+- PEAR PhpDocumentor (pear install PhpDocumentor)
 - ADOdb 5.11+
 - jQuery 1.4.4+
 - jQuery-ui 1.8.8+
@@ -11,4 +12,3 @@ The following software must be installed prior to installing sabretooth:
                   loading, loading.overflow
 - phpagi 2.20+
 - phpexcel 1.7.5+
-- twig

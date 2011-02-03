@@ -26,7 +26,7 @@ try
   require_once 'sabretooth.inc.php';
 
   // setup Twig
-  include_file( TWIG_PATH.'/lib/Twig/Autoloader.php' );
+  require_once 'Twig/Autoloader.php';
   \Twig_Autoloader::register();
 
   // set up the template engine
