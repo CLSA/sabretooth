@@ -27,12 +27,13 @@ try
   $action_args = isset( $_POST ) ? $_POST : NULL;
 
   // create the operation using the provided args then execute it
-  $action = new $action_class( $action_args );
-  if( !is_subclass_of( $action, 'sabretooth\\ui\\action' ) )
+  $operation = new $action_class( $action_args );
+  if( !is_subclass_of( $operation, 'sabretooth\\ui\\action' ) )
     throw new exception\runtime( "invalid operation '$action_class'" );
   
-  $action->execute();
+  $operation->execute();
   log::notice( "executing action: $action_class" );
+  session::self()->log_activity( $operation, $_SERVER['QUERY_STRING'] );
 }
 catch( exception\base_exception $e )
 {

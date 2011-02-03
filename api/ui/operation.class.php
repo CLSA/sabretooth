@@ -48,6 +48,30 @@ abstract class operation extends \sabretooth\base_object
         !\sabretooth\session::self()->get_role()->has_operation( $this->record ) )
       throw new \sabretooth\exception\permission( $this->record );
   }
+
+  /**
+   * Get the type of operation.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_type() { return $this->type; }
+  
+  /**
+   * Get the subject of operation.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_subject() { return $this->subject; }
+  
+  /**
+   * Get the name of operation.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_name() { return $this->name; }
   
   /**
    * The type of operation (action or widget).

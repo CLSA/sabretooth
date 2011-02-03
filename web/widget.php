@@ -58,18 +58,23 @@ try
   $widget_class = '\\sabretooth\\ui\\'.$widget['name'];
   
   // create the widget using the provided args then finish it
-  $ui_widget = new $widget_class( $widget['args'] );
-  if( !is_subclass_of( $ui_widget, 'sabretooth\\ui\\widget' ) )
+  $operation = new $widget_class( $widget['args'] );
+  if( !is_subclass_of( $operation, 'sabretooth\\ui\\widget' ) )
     throw new exception\runtime( "invalid widget '$widget_class'" );
 
-  $ui_widget->finish();
+  $operation->finish();
   $twig_template = $twig->loadTemplate( $widget['name'].'.twig' );
   
   // render the widget and report to the session
   log::notice( 'rendering widget: '.$widget['name'].' in slot '.$slot_name );
   $result_array['output'] = $twig_template->render( ui\widget::get_variables() );
+
+  // don't push or log prev/next/refresh requests
   if( !( $go_prev || $go_next || $refresh ) )
+  {
     session::self()->slot_push( $slot_name, $widget['name'], $widget['args'] );
+    session::self()->log_activity( $operation, $_SERVER['QUERY_STRING'] );
+  }
 }
 catch( exception\base_exception $e )
 {

@@ -247,6 +247,28 @@ final class session extends singleton
 
     return $theme;
   }
+  
+  /**
+   * Add an operation to this user's activity log.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param ui\operation $operation The operation to log.
+   * @param string $query URL query string passed to the operation
+   * @access public
+   */
+  public function log_activity( $operation, $query )
+  {
+    // add the operation as activity
+    $activity = new \sabretooth\database\activity();
+    $activity->user_id = $this->user->id;
+    $activity->site_id = $this->site->id;
+    $activity->role_id = $this->role->id;
+    $activity->type = $operation->get_type();
+    $activity->subject = $operation->get_subject();
+    $activity->name = $operation->get_name();
+    $activity->query = $query;
+    $activity->save();
+  }
 
   /**
    * Add a new widget to the slot's stack.

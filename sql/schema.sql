@@ -676,6 +676,48 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `sabretooth`.`activity`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`activity` ;
+
+CREATE  TABLE IF NOT EXISTS `sabretooth`.`activity` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `user_id` INT UNSIGNED NOT NULL ,
+  `site_id` INT UNSIGNED NOT NULL ,
+  `role_id` INT UNSIGNED NOT NULL ,
+  `type` ENUM('action','widget') NOT NULL ,
+  `subject` VARCHAR(45) NOT NULL ,
+  `name` VARCHAR(45) NOT NULL ,
+  `query` VARCHAR(511) NOT NULL ,
+  `date` TIMESTAMP NOT NULL ,
+  INDEX `fk_operation_type1` (`type` ASC, `subject` ASC, `name` ASC) ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_role_id1` (`role_id` ASC) ,
+  INDEX `fk_site_id3` (`site_id` ASC) ,
+  CONSTRAINT `fk_user_id1`
+    FOREIGN KEY (`user_id` )
+    REFERENCES `sabretooth`.`user` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_operation_type1`
+    FOREIGN KEY (`type` , `subject` , `name` )
+    REFERENCES `sabretooth`.`operation` (`type` , `subject` , `name` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_role_id1`
+    FOREIGN KEY (`role_id` )
+    REFERENCES `sabretooth`.`role` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_site_id3`
+    FOREIGN KEY (`site_id` )
+    REFERENCES `sabretooth`.`site` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Placeholder table for view `sabretooth`.`participant_primary_location`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `sabretooth`.`participant_primary_location` (`participant_id` INT, `contact_id` INT, `province` INT);
