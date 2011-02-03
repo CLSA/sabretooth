@@ -6,11 +6,16 @@
  #}
 {% extends "widget.twig" %}
 {% block widget %}
-{% if heading %}<h2 class="{{ widget_name }}_heading">{{ base_view.heading }}</h2>{% endif %}
 <table>
+{% for key, value in item %}
   <tr>
-    <td><span class="title">Username:</span></td>
-    <td>Blah</td>
+    <td style="white-space: nowrap; padding: 4px;" align="left">
+      <span class="title">{{ key }}:</span>
+    </td>
+    <td style="padding: 4px" width="95%" align="left">
+      {{ value }}
+    </td>
   </tr>
+{% endfor %}
 </table>
 {% endblock %}

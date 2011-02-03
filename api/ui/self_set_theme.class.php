@@ -21,6 +21,7 @@ class self_set_theme extends action
    * Constructor.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args Action arguments
+   * @throws exception\argument
    * @access public
    */
   public function __construct( $args = NULL )

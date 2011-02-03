@@ -28,7 +28,7 @@ abstract class base_list extends widget
   {
     parent::__construct( $subject, 'list', $args );
 
-    // make sure to validate the argument ($args could be anything)
+    // make sure to validate the arguments ($args could be anything)
     if( isset( $args['page'] ) && is_numeric( $args['page'] ) )
       $this->page = $args['page'];
     if( isset( $args['sort_column'] ) && is_string( $args['sort_column'] ) )
@@ -54,8 +54,8 @@ abstract class base_list extends widget
     $this->set_variable( 'editable', $this->editable );
     $this->set_variable( 'removable', $this->removable );
     $this->set_variable( 'items_per_page', $this->items_per_page );
-    $this->set_variable( 'columns', $this->columns );
     $this->set_variable( 'number_of_items', $this->number_of_items );
+    $this->set_variable( 'columns', $this->columns );
 
     // make sure the page is valid, then set the rows array based on the page
     $max_page = ceil( $this->number_of_items / $this->items_per_page );
@@ -74,6 +74,8 @@ abstract class base_list extends widget
    * Set the rows array needed by this template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param int $limit_count The number of rows to include.
+   * @param int $limit_count The offset to start rows at.
    * @abstract
    * @access protected
    */
@@ -143,20 +145,25 @@ abstract class base_list extends widget
   protected $number_of_items = 0;
   
   /**
-   * An array of columns
-   * An array of columns.  Every item in the array must have the following:
-   *                      'id' => a unique id identifying the column
-   *                      'name' => the name to display in in the column header
-   *                      'sortable' => whether or not the list can be sorted by the column
+   * An array of columns.
+   * 
+   * Every item in the array must have the following:
+   *   'id'       => a unique id identifying the column
+   *   'name'     => the name to display in in the column header
+   *   'sortable' => whether or not the list can be sorted by the column
+   * This member should only be set in the {@link set_columns() function.
    * @var array
    * @access protected
    */
   protected $columns = array();
   
   /**
-   * An array of items.  Every item in the array must have the following:
-   *                     'id' => a unique identifying id
-   *                     'columns' => an array of values for each column listed in the columns array
+   * An array of items.
+   * 
+   * Every item in the array must have the following:
+   *   'id'      => a unique identifying id
+   *   'columns' => an array of values for each column listed in the columns array
+   * This member should only be set in the set_rows() function.
    * @var array
    * @access protected
    */

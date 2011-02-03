@@ -1,38 +1,30 @@
 {% extends "widget.twig" %}
 {% block widget %}
 
-<style type="text/css">
-  .{{ widget_name }}_heading {
-    margin-top: 0px;
-    margin-bottom: 0.1em;
-  }
-</style>
-
 <script type="text/javascript">
 $( document ).ready( function() {
-  $( "#{{ widget_name }}_site_list" ).click( function() {
+  $( "#{{ widget_full_name }}_site_list" ).click( function() {
     slot_load( 'main', 'site_list' );
   } );
 } );
 $( document ).ready( function() {
-  $( "#{{ widget_name }}_user_list" ).click( function() {
+  $( "#{{ widget_full_name }}_user_list" ).click( function() {
     slot_load( 'main', 'user_list' );
   } );
 } );
 $( document ).ready( function() {
-  $( "#{{ widget_name }}_role_list" ).click( function() {
+  $( "#{{ widget_full_name }}_role_list" ).click( function() {
     slot_load( 'main', 'role_list' );
   } );
 } );
 
-$( function() { $( "#{{ widget_name }}_user_list" ).button().parent().buttonset() } );
+$( function() { $( "#{{ widget_full_name }}_user_list" ).button().parent().buttonset() } );
 </script>
 
-<h2 class="{{ widget_name }}_heading">Home</h2>
 <div>
   <span class="title">Lists:</span>
-  <button id="{{ widget_name }}_site_list">Sites</button>
-  <button id="{{ widget_name }}_user_list">Users</button>
-  <button id="{{ widget_name }}_role_list">Roles</button>
+  <button id="{{ widget_full_name }}_site_list">Sites</button>
+  <button id="{{ widget_full_name }}_user_list">Users</button>
+  <button id="{{ widget_full_name }}_role_list">Roles</button>
 </div
 {% endblock %}

@@ -42,6 +42,7 @@ abstract class widget extends operation
   {
     $this->set_variable( 'widget_subject', $this->subject );
     $this->set_variable( 'widget_name', $this->name );
+    $this->set_variable( 'widget_full_name', $this->subject.'_'.$this->name );
     $this->set_variable( 'widget_heading', $this->heading );
   }
 

@@ -21,6 +21,7 @@ class self_set_role extends action
    * Constructor.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args Action arguments
+   * @throws exception\argument
    * @access public
    */
   public function __construct( $args = NULL )
@@ -39,6 +40,7 @@ class self_set_role extends action
   /**
    * Executes the action.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\runtime
    * @access public
    */
   public function execute()

@@ -83,5 +83,5 @@ $SETTINGS[ 'db' ][ 'password' ] = '';
 $SETTINGS[ 'db' ][ 'database' ] = 'sabretooth';
 
 // themes
-$SETTINGS[ 'interface' ][ 'default_theme' ] = 'ui-lightness';
+$SETTINGS[ 'interface' ][ 'default_theme' ] = 'humanity';
 ?>

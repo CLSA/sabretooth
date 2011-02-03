@@ -26,6 +26,7 @@ class self_home extends widget
   public function __construct( $args = NULL )
   {
     parent::__construct( 'self', 'home', $args );
+    $this->heading = 'Home';
   }
 }
 ?>

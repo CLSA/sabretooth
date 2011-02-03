@@ -20,8 +20,8 @@
 
 // changes the active site
 $( document ).ready( function() {
-  $( "#{{ widget_name }}_set_site" ).change( function() {
-    var selected = $( "#{{ widget_name }}_set_site option:selected" );
+  $( "#{{ widget_full_name }}_set_site" ).change( function() {
+    var selected = $( "#{{ widget_full_name }}_set_site option:selected" );
     if( 0 != selected.val() ) {
       if( send_operation( 'self', 'set_site', { "site": selected.text() } ) ) {
         slot_refresh( get_slot( $(this) ) );
@@ -33,8 +33,8 @@ $( document ).ready( function() {
 
 // changes the active role
 $( document ).ready( function() {
-  $( "#{{ widget_name }}_set_role" ).change( function() {
-    var selected = $( "#{{ widget_name }}_set_role option:selected" );
+  $( "#{{ widget_full_name }}_set_role" ).change( function() {
+    var selected = $( "#{{ widget_full_name }}_set_role option:selected" );
     if( 0 != selected.val() ) {
       if( send_operation( 'self', 'set_role', { "role": selected.text() } ) ) {
         slot_refresh( get_slot( $(this) ) );
@@ -46,8 +46,8 @@ $( document ).ready( function() {
 
 // changes the active theme
 $( document ).ready( function() {
-  $( "#{{ widget_name }}_set_theme" ).change( function() {
-    var selected = $( "#{{ widget_name }}_set_theme option:selected" );
+  $( "#{{ widget_full_name }}_set_theme" ).change( function() {
+    var selected = $( "#{{ widget_full_name }}_set_theme option:selected" );
     if( 0 != selected.val() ) {
       if( send_operation( 'self', 'set_theme', { "theme": selected.text() } ) ) {
         window.location.reload();
@@ -73,7 +73,7 @@ $( document ).ready( function() {
     <td align="left" width="50%">
       <span class="title">Site:</span>
       {% if 1 < sites|count %}
-      <select id="{{ widget_name }}_set_site" style="width: 140px" class="ui-state-default">
+      <select id="{{ widget_full_name }}_set_site" style="width: 140px" class="ui-state-default">
         {% for site in sites %}
         <option{{ current_site_name == site ? ' selected' : '' }}>{{ site }}</option>
         {% endfor %}
@@ -85,7 +85,7 @@ $( document ).ready( function() {
     <td align="left" width="50%">
       <span class="title">Role:</span>
       {% if 1 < roles|count %}
-      <select id="{{ widget_name }}_set_role" style="width: 140px" class="ui-state-default">
+      <select id="{{ widget_full_name }}_set_role" style="width: 140px" class="ui-state-default">
         {% for role in roles %}
         <option{{ current_role_name == role ? ' selected' : '' }}>{{ role }}</option>
         {% endfor %}
@@ -103,7 +103,7 @@ $( document ).ready( function() {
       <span class="title">Theme:&nbsp;</span>
     </td>
     <td align="right" width="95%">
-      <select id="{{ widget_name }}_set_theme" style="width: 100%" class="ui-state-default">
+      <select id="{{ widget_full_name }}_set_theme" style="width: 100%" class="ui-state-default">
         {% for theme in themes %}
         <option{{ current_theme_name == theme ? ' selected' : '' }}>{{ theme }}</option>
         {% endfor %}

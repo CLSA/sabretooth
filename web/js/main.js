@@ -20,7 +20,8 @@ $( document ).ready( function() {
  */
 function update_shortcuts() {
   // the home button should only be enabled if the main slot is NOT displaying the home widget
-  $( "#self_shortcuts_home" ).attr( "disabled", "self_home" == $.cookie( "slot.main.widget" ) )
+  $( "#self_shortcuts_home" ).attr( "disabled", undefined == $.cookie( "slot.main.widget" ) ||
+                                                "self_home" == $.cookie( "slot.main.widget" ) )
                              .button( "refresh" );
 
   // the prev and next buttons should only be enabled if there are prev and next widgets available

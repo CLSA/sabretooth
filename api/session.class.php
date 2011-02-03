@@ -256,22 +256,25 @@ final class session extends singleton
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $slot The name of the slot.
    * @param string $widget The name of the widget.
+   * @param array $args An associative array containing all widget arguments.
    * @access public
    */
-  public function slot_push( $slot, $widget )
+  public function slot_push( $slot, $widget, $args = NULL )
   {
     // make sure the slot's stack has been created
     $this->validate_slot( $slot ); 
     
     // get the current index and hack off whatever comes after it
     $index = $_SESSION['slot'][$slot]['stack']['index'];
-    if( 0 <= $index ) array_slice( $_SESSION['slot'][$slot]['stack']['items'], 0, $index + 1 );
+    if( 0 <= $index ) array_slice( $_SESSION['slot'][$slot]['stack']['widgets'], 0, $index + 1 );
 
     // now add the widget onto the end and point to it (avoiding duplicates)
-    if( $widget != end( $_SESSION['slot'][$slot]['stack']['items'] ) )
-      array_push( $_SESSION['slot'][$slot]['stack']['items'], $widget );
+    if( $widget != end( $_SESSION['slot'][$slot]['stack']['widgets'] ) )
+      array_push( $_SESSION['slot'][$slot]['stack']['widgets'],
+                  array( 'name' => $widget,
+                         'args' => $args ) );
 
-    $total = count( $_SESSION['slot'][$slot]['stack']['items'] );
+    $total = count( $_SESSION['slot'][$slot]['stack']['widgets'] );
     $_SESSION['slot'][$slot]['stack']['index'] = $total - 1;
     
     $this->update_slot_cookies();
@@ -300,7 +303,7 @@ final class session extends singleton
   public function slot_has_next( $slot )
   {
     $index = $_SESSION['slot'][$slot]['stack']['index'];
-    $total = count( $_SESSION['slot'][$slot]['stack']['items'] );
+    $total = count( $_SESSION['slot'][$slot]['stack']['widgets'] );
     return -1 != $index && $total > ( $index + 1 );
   }
 
@@ -367,17 +370,19 @@ final class session extends singleton
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $slot The name of the slot.
-   * @return string The name of the widget or NULL if the stack is empty.
+   * @return array The name and arguments of the widget or NULL if the stack is empty.
+   *               The associative array includes:
+                   "name" => string,
+                   "args" => associative array
    * @access public
    */
   public function slot_current( $slot )
   {
     // make sure the slot's stack has been created
     $this->validate_slot( $slot ); 
-
     // return the item at the current index
     $index = $_SESSION['slot'][$slot]['stack']['index'];
-    return 0 <= $index ? $_SESSION['slot'][$slot]['stack']['items'][$index] : NULL;
+    return 0 <= $index ? $_SESSION['slot'][$slot]['stack']['widgets'][$index] : NULL;
   }
 
   /**
@@ -393,22 +398,25 @@ final class session extends singleton
     if( 'main' == $slot )
     { // by default, if there is no widget in the main slot then start with home
       $_SESSION['slot'][$slot]['stack']['index'] = 0;
-      $_SESSION['slot'][$slot]['stack']['items'] = array( 'self_home' );
+      $_SESSION['slot'][$slot]['stack']['widgets'] =
+        array( array( 'name' => 'self_home', 'args' => NULL ) );
     }
     else if( 'extruder' == $slot )
     {
       $_SESSION['slot'][$slot]['stack']['index'] = 0;
-      $_SESSION['slot'][$slot]['stack']['items'] = array( 'self_settings' );
+      $_SESSION['slot'][$slot]['stack']['widgets'] =
+        array( array( 'name' => 'self_settings', 'args' => NULL ) );
     }
     else if( 'header' == $slot )
     {
       $_SESSION['slot'][$slot]['stack']['index'] = 0;
-      $_SESSION['slot'][$slot]['stack']['items'] = array( 'self_shortcuts' );
+      $_SESSION['slot'][$slot]['stack']['widgets'] =
+        array( array( 'name' => 'self_shortcuts', 'args' => NULL ) );
     }
     else
     {
       $_SESSION['slot'][$slot]['stack']['index'] = -1;
-      $_SESSION['slot'][$slot]['stack']['items'] = array();
+      $_SESSION['slot'][$slot]['stack']['widgets'] = array();
     }
   }
 
@@ -433,15 +441,16 @@ final class session extends singleton
   {
     foreach( array_keys( $_SESSION['slot'] ) as $slot )
     {
-      setcookie( "slot.$slot.widget", $this->slot_current( $slot ) );
+      $widget = $this->slot_current( $slot );
+      setcookie( "slot.$slot.widget", $widget['name'] );
       
       $index = $_SESSION['slot'][$slot]['stack']['index'];
-      setcookie( "slot.$slot.prev", $this->slot_has_prev( $slot )
-                                 ? $_SESSION['slot'][$slot]['stack']['items'][$index-1]
-                                 : NULL );
-      setcookie( "slot.$slot.next", $this->slot_has_next( $slot )
-                                 ? $_SESSION['slot'][$slot]['stack']['items'][$index+1]
-                                 : NULL );
+
+      setcookie( "slot.$slot.prev", $this->slot_has_prev( $slot ) ?
+        $_SESSION['slot'][$slot]['stack']['widgets'][$index-1]['name'] : NULL );
+
+      setcookie( "slot.$slot.next", $this->slot_has_next( $slot ) ?
+        $_SESSION['slot'][$slot]['stack']['widgets'][$index+1]['name'] : NULL );
     }
   }
 

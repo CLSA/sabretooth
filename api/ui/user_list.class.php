@@ -9,7 +9,7 @@
 namespace sabretooth\ui;
 
 /**
- * 
+ * user.list widget
  * 
  * @package sabretooth\ui
  */
@@ -33,12 +33,13 @@ class user_list extends base_list
     // define all template variables for this list
     $this->heading =  "User list for ".( $is_admin ? 'all sites' : $session->get_site()->name );
     $this->checkable =  false;
-    $this->viewable =  true;
-    $this->editable =  true;
-    $this->removable =  true;
+    $this->viewable =  true; // TODO: should be based on role
+    $this->editable =  true; // TODO: should be based on role
+    $this->removable =  true; // TODO: should be based on role
     $this->number_of_items = 'administrator' == $session->get_role()->name
                            ? \sabretooth\database\user::count()
                            : $session->get_site()->get_user_count();
+
     $this->columns = array(
       array( "id" => "name",
              "name" => "username",
@@ -51,6 +52,14 @@ class user_list extends base_list
              "sortable" => true ) ); 
   }
 
+  /**
+   * Set the rows array needed by this template.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param int $limit_count The number of rows to include.
+   * @param int $limit_count The offset to start rows at.
+   * @access protected
+   */
   protected function set_rows( $limit_count, $limit_offset )
   {
     // reset the array

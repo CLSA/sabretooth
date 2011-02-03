@@ -4,9 +4,10 @@
  * Main styles used throughout the application
  */
 
-body {
+html, body {
   margin: 0px 0px 0px 0px;
   font: 14px Arial, Helvetica, sans-serif;
+  height: 100%;
 }
 
 /* needed to make jquery.layout margins 0 */
@@ -47,6 +48,10 @@ body {
   border-bottom: 1px solid #333;
 }
 
+#app_ui {
+  min-height: 100%;
+}
+
 #header_slot {
   text-align: right;
   margin-top: 4px;
@@ -67,16 +72,6 @@ table {
   width: 100%;
   border-spacing: 0px;
   text-align: center;
-}
-
-/* stripped background */
-tr.alt td {
-  background: #ecf6fc;
-}
-
-/* row highlighting */
-tr.over td {
-  background: #bcd4ec;
 }
 
 .title {
