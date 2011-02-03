@@ -67,7 +67,7 @@ try
     throw new exception\runtime( "invalid widget '$widget_class'" );
 
   $widget->finish();
-  $twig_template = $twig->loadTemplate( $widget_name.'.html' );
+  $twig_template = $twig->loadTemplate( $widget_name.'.twig' );
   
   // render the widget and report to the session
   log::notice( "rendering widget: $widget_name in slot $slot_name" );

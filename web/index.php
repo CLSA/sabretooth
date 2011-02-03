@@ -35,7 +35,7 @@ try
                                                  'strict_variables' => util::in_devel_mode() ) );
   $twig->addFilter( 'count', new \Twig_Filter_Function( 'count' ) );
   
-  $twig_template = $twig->loadTemplate( 'main.html' );
+  $twig_template = $twig->loadTemplate( 'main.twig' );
   
   // Since there is no main widget we need set up the template variables here
   $theme = session::self()->get_theme();

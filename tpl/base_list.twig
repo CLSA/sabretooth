@@ -1,5 +1,5 @@
 {##
- # base_list.html
+ # base_list.twig
  # 
  # Generic list widget.
  # @author Patrick Emond <emondpd@mcmaster.ca>
@@ -22,7 +22,7 @@
  # @param int sort_desc Whether to sort descending or ascending
  # @param int max_page The maximum number of pages possible given the total number of items.
  #}
-{% extends "widget.html" %}
+{% extends "widget.twig" %}
 {% block widget %}
 <style type="text/css">
   .{{ widget_name }}_heading {

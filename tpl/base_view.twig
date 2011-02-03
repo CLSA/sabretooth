@@ -1,11 +1,12 @@
 {##
- # user_view.html
+ # base_view.twig
  # 
  # View user details.
  # @author Patrick Emond <emondpd@mcmaster.ca>
  #}
-{% extends "widget.html" %}
+{% extends "widget.twig" %}
 {% block widget %}
+{% if heading %}<h2 class="{{ widget_name }}_heading">{{ base_view.heading }}</h2>{% endif %}
 <table>
   <tr>
     <td><span class="title">Username:</span></td>
