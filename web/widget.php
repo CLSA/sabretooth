@@ -81,7 +81,7 @@ catch( exception\base_exception $e )
   $result_array['success'] = false;
   $result_array['error'] = $type;
 }
-catch( \Twig_Error_Runtime $e )
+catch( \Twig_Error $e )
 {
   log::err( "Template ".$e );
   $result_array['success'] = false;
