@@ -123,5 +123,60 @@ final class util
     // output as a pre
     echo '<pre style="font-weight: bold; color: #B0B0B0; background: black">'.$output.'</pre>';
   }
+
+  /**
+   * Returns a fuzzy-time description of how long ago a certain date occured.
+   * 
+   * @author Patrick EMond <emondpd@mcamster.ca>
+   * @param string|DateTime $date A DateTime object, or if a string is passed then it is converted
+                                  into a DateTime object.
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function get_fuzzy_time_ago( $date )
+  {
+    if( is_string( $date ) ) $date = new \DateTime( $date );
+    $interval = $date->diff( new \DateTime() );
+    
+    if( 0 != $interval->invert )
+    {
+      $result = 'in the future';
+    }
+    else if( 1 > $interval->i && 0 == $interval->h && 0 == $interval->days )
+    {
+      $result = 'seconds ago';
+    }
+    else if( 1 > $interval->h && 0 == $interval->days )
+    {
+      $result = 'minutes ago';
+    }
+    else if( 1 > $interval->d && 0 == $interval->days )
+    {
+      $result = 'hours ago';
+    }
+    else if( 1 == $interval->days )
+    {
+      $result = 'yesterday';
+    }
+    else if( 7 > $interval->days )
+    {
+      $result = 'last '.$date->format( 'l' );
+    }
+    else if( 1 > $interval->m && 0 == $interval->y )
+    {
+      $result = 'weeks ago';
+    }
+    else if( 1 > $interval->y )
+    {
+      $result = 'last '.$date->format( 'F' );
+    }
+    else
+    {
+      $result = 'years ago';
+    }
+
+    return $result;
+  }
 }
 ?>
