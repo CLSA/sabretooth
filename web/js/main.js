@@ -149,8 +149,8 @@ function slot_next( slot ) {
  * @param string slot The slot to rewind.
  * @param string slot arguments to pass along to the widget.
  */
-function slot_refresh( slot, args ) {
-  if( undefined == args ) args = new Object();
+function slot_refresh( slot ) {
+  args = new Object();
   args.refresh = 1;
   args.slot = slot;
   var url = "widget.php?" + jQuery.param( args );

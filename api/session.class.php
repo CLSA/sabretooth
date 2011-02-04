@@ -281,24 +281,37 @@ final class session extends singleton
    * the stack then point to the new element.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $slot The name of the slot.
-   * @param string $widget The name of the widget.
+   * @param string $name The name of the widget.
    * @param array $args An associative array containing all widget arguments.
    * @access public
    */
-  public function slot_push( $slot, $widget, $args = NULL )
+  public function slot_push( $slot, $name, $args = NULL )
   {
     // make sure the slot's stack has been created
     $this->validate_slot( $slot ); 
     
     // get the current index and hack off whatever comes after it
+    $last_widget = false;
     $index = $_SESSION['slot'][$slot]['stack']['index'];
-    if( 0 <= $index ) array_slice( $_SESSION['slot'][$slot]['stack']['widgets'], 0, $index + 1 );
+    if( 0 <= $index )
+    {
+      array_slice( $_SESSION['slot'][$slot]['stack']['widgets'], 0, $index + 1 );
+      $last_widget = end( $_SESSION['slot'][$slot]['stack']['widgets'] );
+    }
 
-    // now add the widget onto the end and point to it (avoiding duplicates)
-    if( $widget != end( $_SESSION['slot'][$slot]['stack']['widgets'] ) )
+    // now add this widget to the end, avoiding duplicates
+    if( $last_widget && $name == $last_widget['name'] )
+    {
+      // update the args only
+      $last_index = count( $_SESSION['slot'][$slot]['stack']['widgets'] ) - 1;
+      $_SESSION['slot'][$slot]['stack']['widgets'][$last_index]['args'] = $args;
+    }
+    else // no duplicate, add the widget to the end of the stack
+    {
       array_push( $_SESSION['slot'][$slot]['stack']['widgets'],
-                  array( 'name' => $widget,
+                  array( 'name' => $name,
                          'args' => $args ) );
+    }
 
     $total = count( $_SESSION['slot'][$slot]['stack']['widgets'] );
     $_SESSION['slot'][$slot]['stack']['index'] = $total - 1;
