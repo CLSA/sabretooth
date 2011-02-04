@@ -62,16 +62,36 @@ class site_list extends base_list
     // reset the array
     $this->rows = array();
     
+    // determine what we're sorting by
+    if( 'name' == $this->sort_column )
+    {
+      $sort = 'name';
+    }
+    else if( 'last' == $this->sort_column )
+    {
+      // column in activity, see site::select() for details
+      $sort = 'activity.date';
+    }
+    else
+    {
+      $sort = NULL;
+    }
+
     // get all sites
     $session = \sabretooth\session::self();
-    $sort = 'name' == $this->sort_column ? 'name' : NULL;
     $desc = $this->sort_desc;
     $db_site_list = \sabretooth\database\site::select( $limit_count, $limit_offset, $sort, $desc );
     foreach( $db_site_list as $db_site )
     {
+      // determine the last activity
+      $db_activity = $db_site->get_last_activity();
+
+      $last = is_null( $db_activity )
+            ? 'never'
+            : \sabretooth\util::get_fuzzy_time_ago( $db_activity->date );
       array_push( $this->rows, 
         array( 'id' => $db_site->id,
-               'columns' => array( $db_site->name, $db_site->get_user_count(), 'TODO' ) ) );
+               'columns' => array( $db_site->name, $db_site->get_user_count(), $last ) ) );
     }
   }
 }

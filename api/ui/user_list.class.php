@@ -68,10 +68,12 @@ class user_list extends base_list
     // determine what we're sorting by
     if( 'name' == $this->sort_column )
     {
+      // column in user table
       $sort = 'name';
     }
     else if( 'last' == $this->sort_column )
     {
+      // column in activity, see user::select() for details
       $sort = 'activity.date';
     }
     else
