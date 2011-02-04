@@ -194,6 +194,7 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`interview` (
   `participant_id` INT UNSIGNED NOT NULL ,
   `qnaire_id` INT UNSIGNED NOT NULL ,
   `qnaire_stage` SMALLINT UNSIGNED NOT NULL ,
+  `duplicate_stage` SMALLINT UNSIGNED NOT NULL ,
   `require_supervisor` TINYINT(1)  NOT NULL DEFAULT false ,
   `completed` TINYINT(1)  NOT NULL DEFAULT false ,
   `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'If not null then force all calls for this interview to the site.' ,
@@ -201,7 +202,8 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`interview` (
   PRIMARY KEY (`participant_id`, `qnaire_id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
-  INDEX `fk_qnaire_stage_qnaire_id1` (`qnaire_id` ASC, `qnaire_stage` ASC) ,
+  INDEX `fk_qnaire_stage` (`qnaire_id` ASC, `qnaire_stage` ASC) ,
+  INDEX `fk_qnaire_stage_duplicate` (`qnaire_id` ASC, `duplicate_stage` ASC) ,
   CONSTRAINT `fk_participant_id1`
     FOREIGN KEY (`participant_id` )
     REFERENCES `sabretooth`.`participant` (`id` )
@@ -212,8 +214,13 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`interview` (
     REFERENCES `sabretooth`.`site` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_qnaire_stage_qnaire_id1`
+  CONSTRAINT `fk_qnaire_stage`
     FOREIGN KEY (`qnaire_id` , `qnaire_stage` )
+    REFERENCES `sabretooth`.`qnaire_stage` (`qnaire_id` , `stage` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_qnaire_stage_duplicate`
+    FOREIGN KEY (`qnaire_id` , `duplicate_stage` )
     REFERENCES `sabretooth`.`qnaire_stage` (`qnaire_id` , `stage` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
