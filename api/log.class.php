@@ -135,13 +135,14 @@ final class log extends singleton
    * variable as a debug log.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param mixed $variable The variable to expand.
+   * @param string $label The variable's label (leave false for no label)
    * @static
    * @access public
    */
-  public static function print_r( $variable )
+  public static function print_r( $variable, $label = false )
   {
     $message = print_r( $variable, true );
-    self::debug( "print_r: $message" );
+    self::debug( 'print_r'.( $label ? "($label)" : '' ).": $message" );
   }
   
   /**
