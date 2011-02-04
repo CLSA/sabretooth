@@ -733,6 +733,16 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`participant_current_consent` (`particip
 CREATE TABLE IF NOT EXISTS `sabretooth`.`participant_last_phone_call_status` (`phone_call_id` INT, `participant_id` INT, `status` INT);
 
 -- -----------------------------------------------------
+-- Placeholder table for view `sabretooth`.`user_last_activity`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `sabretooth`.`user_last_activity` (`activity_id` INT, `user_id` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `sabretooth`.`site_last_activity`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `sabretooth`.`site_last_activity` (`activity_id` INT, `site_id` INT);
+
+-- -----------------------------------------------------
 -- View `sabretooth`.`participant_primary_location`
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `sabretooth`.`participant_primary_location` ;
@@ -781,6 +791,38 @@ AND phone_call_1.start_time = (
   WHERE contact_2.id = phone_call_2.contact_id
   AND contact_1.participant_id = contact_2.participant_id
   GROUP BY contact_2.participant_id );
+
+-- -----------------------------------------------------
+-- View `sabretooth`.`user_last_activity`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `sabretooth`.`user_last_activity` ;
+DROP TABLE IF EXISTS `sabretooth`.`user_last_activity`;
+USE `sabretooth`;
+CREATE  OR REPLACE VIEW `sabretooth`.`user_last_activity` AS
+SELECT activity_1.id AS activity_id, user_1.id as user_id
+FROM activity AS activity_1, user AS user_1
+WHERE user_1.id = activity_1.user_id
+AND activity_1.date = (
+  SELECT MAX( activity_2.date )
+  FROM activity AS activity_2, user AS user_2
+  WHERE user_2.id = activity_2.user_id
+  GROUP BY user_2.id );
+
+-- -----------------------------------------------------
+-- View `sabretooth`.`site_last_activity`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `sabretooth`.`site_last_activity` ;
+DROP TABLE IF EXISTS `sabretooth`.`site_last_activity`;
+USE `sabretooth`;
+CREATE  OR REPLACE VIEW `sabretooth`.`site_last_activity` AS
+SELECT activity_1.id AS activity_id, site_1.id as site_id
+FROM activity AS activity_1, site AS site_1
+WHERE site_1.id = activity_1.site_id
+AND activity_1.date = (
+  SELECT MAX( activity_2.date )
+  FROM activity AS activity_2, site AS site_2
+  WHERE site_2.id = activity_2.site_id
+  GROUP BY site_2.id );
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
