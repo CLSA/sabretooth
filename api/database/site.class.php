@@ -107,7 +107,7 @@ class site extends active_record
     else
     {
       $count = self::get_one(
-        'SELECT COUNT(*) '.
+        'SELECT COUNT( DISTINCT user_id) '.
         'FROM user_access '.
         'WHERE site_id = '.$this->id );
     }

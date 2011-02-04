@@ -28,6 +28,12 @@ VALUES ("action", "self", "set_role", false, "Change the current user's active r
 INSERT INTO `operation` (`type`, `subject`, `name`, `restricted`, `description`)
 VALUES ("action", "self", "set_theme", false, "Change the current user's web interface theme.");
 
+-- operation
+INSERT INTO `operation` (`type`, `subject`, `name`, `restricted`, `description`)
+VALUES ("widget", "operation", "view", true, "View an operation's details.");
+INSERT INTO `operation` (`type`, `subject`, `name`, `restricted`, `description`)
+VALUES ("widget", "operation", "list", true, "List operations in the system.");
+
 -- site
 INSERT INTO `operation` (`type`, `subject`, `name`, `restricted`, `description`)
 VALUES ("widget", "site", "view", true, "View a site's details.");
@@ -79,6 +85,6 @@ INSERT INTO `role_has_operation` (`role_id`, `type`, `subject`, `name`)
 SELECT role.id, operation.type, operation.subject, operation.name
 FROM role, operation
 WHERE role.name in( "administrator", "supervisor" )
-AND operation.subject in ("user", "site", "role");
+AND operation.subject in ("operation", "site", "role", "user");
 
 COMMIT;

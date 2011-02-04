@@ -17,6 +17,11 @@ $( document ).ready( function() {
     slot_load( 'main', 'role_list' );
   } );
 } );
+$( document ).ready( function() {
+  $( "#{{ widget_full_name }}_operation_list" ).click( function() {
+    slot_load( 'main', 'operation_list' );
+  } );
+} );
 
 $( function() { $( "#{{ widget_full_name }}_user_list" ).button().parent().buttonset() } );
 </script>
@@ -26,5 +31,6 @@ $( function() { $( "#{{ widget_full_name }}_user_list" ).button().parent().butto
   <button id="{{ widget_full_name }}_site_list">Sites</button>
   <button id="{{ widget_full_name }}_user_list">Users</button>
   <button id="{{ widget_full_name }}_role_list">Roles</button>
+  <button id="{{ widget_full_name }}_operation_list">Operations</button>
 </div
 {% endblock %}

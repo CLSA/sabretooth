@@ -14,6 +14,20 @@
 $( function() { update_shortcuts(); } );
 $( function() { $( "button, input:submit" ).button(); } );
 </script>
+{% block heading %}
 {% if widget_heading %}<h2 class="{{ widget_full_name }}_heading">{{ widget_heading }}</h2>{% endif %}
+{% endblock %}
 {% block widget %}
+{# force an error if this block isn't defined in child tempaltes #}
+<script type="text/javascript">
+$( function() {
+  error_dialog(
+    'Interface Error',
+    '<p>' +
+    '  The interface was unable to complete your request.<br>' +
+    '  Please notify a supervisor with the error code.' +
+    '</p>' +
+    '<p style="text-align:right"><em>Error code: T-{{ widget_subject }}.{{ widget_name }}</em></p>' );
+} );
+</script>
 {% endblock %}

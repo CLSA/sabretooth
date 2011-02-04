@@ -100,8 +100,9 @@ $( function() {
 // column sort functions
 $( function() {
   $( "th.sortable" ).click( function() {
-    slot_refresh(
+    slot_load(
       get_slot( $(this) ),
+      "{{ widget_full_name }}",
       { "page": {{ page }},
         "sort_column": $(this).attr("id"),
         "sort_desc": {{ sort_desc ? 0 : 1 }} } );
@@ -167,20 +168,22 @@ $( function() {
 // page button functions
 $( function() {
   $( "#{{ widget_full_name }}_page_prev" ).click( function() {
-    slot_refresh(
+    slot_load(
       get_slot( $(this) ),
+      "{{ widget_full_name }}",
       { "page": {{ page - 1 }},
         "sort_column": "{{ sort_column }}",
-        "sort_desc": {{ sort_desc ? 1 : 0 }} } );
+        "sort_desc": {{ sort_desc ? 0 : 1 }} } );
   } )
 } );
 $( function() {
   $( "#{{ widget_full_name }}_page_next" ).click( function() {
-    slot_refresh(
+    slot_load(
       get_slot( $(this) ),
+      "{{ widget_full_name }}",
       { "page": {{ page + 1 }},
         "sort_column": "{{ sort_column }}",
-        "sort_desc": {{ sort_desc ? 1 : 0 }} } );
+        "sort_desc": {{ sort_desc ? 0 : 1 }} } );
   } )
 } );
 
@@ -193,8 +196,7 @@ $( function() {
       <th><div class="ui-icon ui-icon-check" style="padding:2px"></div></th>
       {% endif %}
       {% for column in columns %}
-      <th{{ column.sortable ? ' class="sortable"' : '' }} id="{{ column.id }}"
-                                                          width="{{ 95 / loop.length }}%">
+      <th{{ column.sortable ? ' class="sortable"' : '' }} id="{{ column.id }}">
         {% if column.sortable %}
         {% if column.id == sort_column %}
           <div class="{{ widget_full_name }}_sort{{ sort_desc ? '_desc' : '' }}">{{ column.name }}</div>
@@ -207,13 +209,13 @@ $( function() {
       </th>
       {% endfor %}
       {% if viewable %}
-      <th></th>
+      <th width="1%"></th>
       {% endif %}
       {% if editable %}
-      <th></th>
+      <th width="1%"></th>
       {% endif %}
       {% if removable %}
-      <th></th>
+      <th width="1%"></th>
       {% endif %}
   </thead>
   <tbody>
@@ -223,7 +225,8 @@ $( function() {
       <td><input type="checkbox" id="{{ widget_full_name }}_check_{{ row.id }}" /></td>
       {% endif %}
       {% for column in row.columns %}
-      <td>{{ column }}</td>
+      <td {% if columns[loop.index0].align|default(false) %}align="{{ columns[loop.index0].align }}" {% endif %}
+          style="font-weight: normal">{{ column }}</td>
       {% endfor %}
       {% if viewable %}
       <td><button class="{{ widget_full_name }}_view"

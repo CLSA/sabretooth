@@ -30,6 +30,10 @@ INSERT INTO user_access
 SET user_id = ( SELECT id FROM user WHERE name = 'patrick' ),
     role_id = ( SELECT id FROM role WHERE name = 'operator' ),
     site_id = ( SELECT id FROM site WHERE name = 'Manitoba' );
+INSERT INTO user_access
+SET user_id = ( SELECT id FROM user WHERE name = 'val' ),
+    role_id = ( SELECT id FROM role WHERE name = 'technician' ),
+    site_id = ( SELECT id FROM site WHERE name = 'McMaster' );
 
 -- DELETE FROM participant;
 -- INSERT INTO participant SET id = 1, first_name = 'Jane', last_name = 'Doe', language = 'en';

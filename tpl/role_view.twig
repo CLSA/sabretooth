@@ -1,0 +1,25 @@
+{##
+ # role_view.twig
+ # 
+ # View role details.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @see base_view.twig for parameters
+ #}
+{% extends "base_view.twig" %}
+{% block item %}
+{{ parent() }}
+{# Add a list of operations belonging to this role #}
+{% include "operation_list.twig with {'widget_full_name': 'role_operation_list',
+                                      'checkable': true,
+                                      'viewable': false,
+                                      'editable': false,
+                                      'removable': false,
+                                      'items_per_page': 10,
+                                      'columns': operation_list.columns,
+                                      'rows': operation_list.rows,
+                                      'number_of_items': operation_list.number_of_items,
+                                      'page': ,
+                                      'sort_column': ,
+                                      'sort_desc': ,
+                                      'max_page': %}
+{% endblock %}

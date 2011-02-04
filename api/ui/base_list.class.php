@@ -126,10 +126,11 @@ abstract class base_list extends widget
   
   /**
    * Whether to sort in descending order.
+   * Starts as true so that when initial sorting is selected it will be ascending
    * @var boolean
    * @access protected
    */
-  protected $sort_desc = false;
+  protected $sort_desc = true;
   
   /**
    * How many items should appear per page.

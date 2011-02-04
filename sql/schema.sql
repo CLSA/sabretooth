@@ -813,7 +813,9 @@ AND activity_1.date = (
   SELECT MAX( activity_2.date )
   FROM activity AS activity_2, user AS user_2
   WHERE user_2.id = activity_2.user_id
-  GROUP BY user_2.id );
+  AND user_2.id = user_1.id
+  GROUP BY user_2.id )
+GROUP BY activity_1.date;
 
 -- -----------------------------------------------------
 -- View `sabretooth`.`site_last_activity`
@@ -829,7 +831,9 @@ AND activity_1.date = (
   SELECT MAX( activity_2.date )
   FROM activity AS activity_2, site AS site_2
   WHERE site_2.id = activity_2.site_id
-  GROUP BY site_2.id );
+  AND site_2.id = site_1.id
+  GROUP BY site_2.id )
+GROUP BY activity_1.date;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
