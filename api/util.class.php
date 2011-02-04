@@ -52,10 +52,8 @@ final class util
   public static function in_action_mode()
   {
     if( is_null( self::$action_mode ) )
-    {
       self::$action_mode = 'action.php' == session::self()->get_setting( 'general', 'script_name' );
-      log::debug( "action mode: ".( self::$action_mode ? "true" : "false" ) );
-    }
+    
     return self::$action_mode;
   }
   
@@ -77,10 +75,8 @@ final class util
   public static function in_widget_mode()
   {
     if( is_null( self::$widget_mode ) )
-    {
       self::$action_mode = 'widget.php' == session::self()->get_setting( 'general', 'script_name' );
-      log::debug( "widget mode: ".( self::$widget_mode ? "true" : "false" ) );
-    }
+    
     return self::$widget_mode;
   }
   
