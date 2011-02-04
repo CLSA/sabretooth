@@ -4,6 +4,7 @@
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
+ * @filesource
  */
 
 namespace sabretooth\ui;
@@ -151,7 +152,7 @@ abstract class base_list extends widget
    *   'id'       => a unique id identifying the column
    *   'name'     => the name to display in in the column header
    *   'sortable' => whether or not the list can be sorted by the column
-   * This member should only be set in the {@link set_columns() function.
+   * This member should only be set in the {@link set_columns} function.
    * @var array
    * @access protected
    */

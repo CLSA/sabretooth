@@ -4,6 +4,7 @@
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\business
+ * @filesource
  */
 
 namespace sabretooth\business;

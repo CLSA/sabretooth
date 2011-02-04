@@ -4,10 +4,14 @@
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth
+ * @filesource
  */
 
 namespace sabretooth;
 
+/**
+ * @category external
+ */
 require_once ADODB_PATH.'/adodb.inc.php';
 
 /**

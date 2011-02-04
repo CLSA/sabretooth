@@ -4,6 +4,7 @@
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\exception
+ * @filesource
  */
 
 namespace sabretooth\exception;

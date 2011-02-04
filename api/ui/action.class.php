@@ -4,6 +4,7 @@
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
+ * @filesource
  */
 
 namespace sabretooth\ui;

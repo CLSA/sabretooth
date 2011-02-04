@@ -4,6 +4,7 @@
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\database
+ * @filesource
  */
 
 namespace sabretooth\database;
