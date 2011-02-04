@@ -16,12 +16,70 @@ namespace sabretooth\database;
 class user extends active_record
 {
   /**
+   * Select a number of records.
+   * 
+   * This method overrides its parent method by adding functionality to sort the list by elements
+   * outside of the user's table columns.
+   * Currently users can be ordered by: activity.date
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param int $count The number of records to return
+   * @param int $offset The 0-based index of the first record to start selecting from
+   * @param string $sort_column Which column to sort by during the select.
+   * @param boolean $descending Whether to sort descending or ascending.
+   * @return array( active_record )
+   * @static
+   * @access public
+   */
+  public static function select( $count = 0, $offset = 0, $sort_column = NULL, $descending = false )
+  {
+    // no need to override the basic functionality
+    if( 'activity.date' != $sort_column )
+    {
+      return parent::select( $count, $offset, $sort_column, $descending );
+    }
+    
+    // create special sql that sorts by the foreign column association
+    $records = array();
+
+    $primary_key_names = static::get_primary_key_names();
+    $select = '';
+    $first = true;
+    foreach( $primary_key_names as $primary_key_name )
+    {
+      $select .= ( $first ? '' : ', ' ).'user.'.$primary_key_name;
+      $first = false;
+    }
+    
+    // sort by activity date
+    if( 'activity.date' == $sort_column )
+    {
+      $primary_ids_list = self::get_all(
+        'SELECT '.$select.' '.
+        'FROM user '.
+        'LEFT JOIN user_last_activity '.
+        'ON user.id = user_last_activity.user_id '.
+        'LEFT JOIN activity '.
+        'ON user_last_activity.activity_id = activity.id '.
+        'ORDER BY '.$sort_column.' '.( $descending ? 'DESC ' : '' ).
+        ( 0 < $count ? 'LIMIT '.$count.' OFFSET '.$offset : '' ) );
+    }
+
+    foreach( $primary_ids_list as $primary_ids )
+    {
+      array_push( $records, new static( $primary_ids ) );
+    }
+
+    return $records;
+  }
+      
+  /**
    * Returns whether the user has the role for the given site.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\site $db_site
    * @param database\role $db_role
    * @return bool
+   * @access public
    */
   public function has_access( $db_site, $db_role )
   {
@@ -47,6 +105,7 @@ class user extends active_record
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array( database\site )
+   * @access public
    */
   public function get_sites()
   {
@@ -79,6 +138,7 @@ class user extends active_record
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\site $db_site Restrict to those roles for the given site, or if NULL then all.
    * @return array( database\role )
+   * @access public
    */
   public function get_roles( $db_site = null )
   {
@@ -115,6 +175,7 @@ class user extends active_record
    * If the user has no roles at any sites then an empty array is returned.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array
+   * @access public
    */
   public function get_access_array()
   {
@@ -154,6 +215,23 @@ class user extends active_record
     }
 
     return $access_array;
+  }
+
+  /**
+   * Returns the most recent activity performed by this user.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\activity
+   * @access public
+   */
+  public function get_last_activity()
+  {
+    $activity_id = self::get_one(
+      'SELECT activity_id '.
+      'FROM user_last_activity '.
+      'WHERE user_id = '.$this->id.' ' );
+    
+    return is_null( $activity_id ) ? NULL : new activity( $activity_id );
   }
 }
 ?>

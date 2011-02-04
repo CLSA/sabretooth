@@ -6,6 +6,7 @@
  #}
 {% extends "widget.twig" %}
 {% block widget %}
+{% block item %}
 <table>
 {% for key, value in item %}
   <tr>
@@ -18,4 +19,5 @@
   </tr>
 {% endfor %}
 </table>
-{% endblock %}
+{% endblock item %}
+{% endblock widget %}

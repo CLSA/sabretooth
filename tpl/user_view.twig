@@ -6,3 +6,8 @@
  # @see base_view.twig for parameters
  #}
 {% extends "base_view.twig" %}
+{% block item %}
+{{ parent() }}
+{# Add a list of sites the user holds a role at #}
+TODO: site list here
+{% endblock %}

@@ -28,6 +28,24 @@ VALUES ("action", "self", "set_role", false, "Change the current user's active r
 INSERT INTO `operation` (`type`, `subject`, `name`, `restricted`, `description`)
 VALUES ("action", "self", "set_theme", false, "Change the current user's web interface theme.");
 
+-- site
+INSERT INTO `operation` (`type`, `subject`, `name`, `restricted`, `description`)
+VALUES ("widget", "site", "view", true, "View a site's details.");
+INSERT INTO `operation` (`type`, `subject`, `name`, `restricted`, `description`)
+VALUES ("widget", "site", "list", true, "List sites in the system.");
+
+-- role
+INSERT INTO `operation` (`type`, `subject`, `name`, `restricted`, `description`)
+VALUES ("action", "role", "remove", true, "Removes a role from the system.");
+INSERT INTO `operation` (`type`, `subject`, `name`, `restricted`, `description`)
+VALUES ("action", "role", "edit", true, "Edits a role's details.");
+INSERT INTO `operation` (`type`, `subject`, `name`, `restricted`, `description`)
+VALUES ("action", "role", "add", true, "Add a new role to the system.");
+INSERT INTO `operation` (`type`, `subject`, `name`, `restricted`, `description`)
+VALUES ("widget", "role", "view", true, "View a role's details.");
+INSERT INTO `operation` (`type`, `subject`, `name`, `restricted`, `description`)
+VALUES ("widget", "role", "list", true, "List roles in the system.");
+
 -- user
 INSERT INTO `operation` (`type`, `subject`, `name`, `restricted`, `description`)
 VALUES ("action", "user", "remove", true, "Removes a user from the system.");
@@ -61,6 +79,6 @@ INSERT INTO `role_has_operation` (`role_id`, `type`, `subject`, `name`)
 SELECT role.id, operation.type, operation.subject, operation.name
 FROM role, operation
 WHERE role.name in( "administrator", "supervisor" )
-AND operation.subject="user";
+AND operation.subject in ("user", "site", "role");
 
 COMMIT;
