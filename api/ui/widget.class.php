@@ -58,33 +58,25 @@ abstract class widget extends operation
   public function set_variable( $name, $value )
   {
     // warn if overwriting a variable
-    if( array_key_exists( $name, self::$variables ) )
+    if( array_key_exists( $name, $this->variables ) )
       \sabretooth\log::warning(
         'Overwriting existing template variable "'.$name.
-        '" which was "'.self::$variables[ $name ].'" and is now "'.$value.'"' );
-    self::$variables[ $name ] = $value;
+        '" which was "'.$this->variables[ $name ].'" and is now "'.$value.'"' );
+    $this->variables[ $name ] = $value;
   }
 
   /**
-   * Get the widget variables array.
+   * Get the widget's variables array.
    * 
    * This method is to be used by the widget engine to render display widgets.
    * Do not use this method to set variables, instead use {@link set_variable}.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public static function get_variables()
+  public function get_variables()
   {
-    return self::$variables;
+    return $this->variables;
   }
-
-  /**
-   * An array which holds .ini variables.
-   * @var array( array )
-   * @static
-   * @access private
-   */
-  private static $variables = array();
 
   /**
    * The widget's heading.
@@ -92,5 +84,13 @@ abstract class widget extends operation
    * @access protected
    */
   protected $heading = "";
+
+  /**
+   * An array which holds .ini variables.
+   * @var array( array )
+   * @static
+   * @access private
+   */
+  private $variables = array();
 }
 ?>

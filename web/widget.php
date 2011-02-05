@@ -67,7 +67,7 @@ try
   
   // render the widget and report to the session
   log::notice( 'rendering widget: '.$widget['name'].' in slot '.$slot_name );
-  $result_array['output'] = $twig_template->render( ui\widget::get_variables() );
+  $result_array['output'] = $twig_template->render( $operation->get_variables() );
 
   // don't push or log prev/next/refresh requests
   if( !( $go_prev || $go_next || $refresh ) )
