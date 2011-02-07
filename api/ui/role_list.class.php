@@ -36,7 +36,6 @@ class role_list extends base_list
     $this->viewable =  true; // TODO: should be based on role
     $this->editable =  false;
     $this->removable =  false;
-    $this->number_of_items = \sabretooth\database\role::count();
 
     $this->columns = array(
       array( "id" => "name",
@@ -48,37 +47,21 @@ class role_list extends base_list
   }
 
   /**
-   * Set the details of each role as a row.
+   * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param int $limit_count The number of rows to include.
-   * @param int $limit_count The offset to start rows at.
    * @access protected
    */
-  protected function set_rows( $limit_count, $limit_offset )
+  protected function set_rows()
   {
     // reset the array
     $this->rows = array();
     
-    // determine what we're sorting by
-    if( 'name' == $this->sort_column )
-    {
-      $sort = 'name';
-    }
-    else
-    {
-      $sort = NULL;
-    }
-
-    // get all roles
-    $session = \sabretooth\session::self();
-    $desc = $this->sort_desc;
-    $db_role_list = $this->get_db_list( $limist_count, $limit_offset, $sort, $desc );
-    foreach( $db_role_list as $db_role )
+    foreach( $this->get_record_list() as $record )
     {
       array_push( $this->rows, 
-        array( 'id' => $db_role->id,
-               'columns' => array( $db_role->name, $db_role->get_user_count() ) ) );
+        array( 'id' => $record->id,
+               'columns' => array( $record->name, $record->get_user_count() ) ) );
     }
   }
 }

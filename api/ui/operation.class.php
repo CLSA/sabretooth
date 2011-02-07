@@ -34,13 +34,13 @@ abstract class operation extends \sabretooth\base_object
     // type must either be an action or widget
     assert( 'action' == $type || 'widget' == $type );
     
-    $this->record = \sabretooth\database\operation::get_operation( $type, $subject, $name );
+    $this->operation_record = \sabretooth\database\operation::get_operation( $type, $subject, $name );
 
     // throw a permission exception if the record is restricted and the user's current role does
     // not have access to the operation
-    if( $this->record->restricted &&
-        !\sabretooth\session::self()->get_role()->has_operation( $this->record ) )
-      throw new \sabretooth\exception\permission( $this->record );
+    if( $this->operation_record->restricted &&
+        !\sabretooth\session::self()->get_role()->has_operation( $this->operation_record ) )
+      throw new \sabretooth\exception\permission( $this->operation_record );
   }
 
   /**
@@ -49,7 +49,7 @@ abstract class operation extends \sabretooth\base_object
    * @return int
    * @access public
    */
-  public function get_id() { return $this->record->id; }
+  public function get_id() { return $this->operation_record->id; }
   
   /**
    * Get the type of operation.
@@ -57,7 +57,7 @@ abstract class operation extends \sabretooth\base_object
    * @return string
    * @access public
    */
-  public function get_type() { return $this->record->type; }
+  public function get_type() { return $this->operation_record->type; }
   
   /**
    * Get the subject of operation.
@@ -65,7 +65,7 @@ abstract class operation extends \sabretooth\base_object
    * @return string
    * @access public
    */
-  public function get_subject() { return $this->record->subject; }
+  public function get_subject() { return $this->operation_record->subject; }
   
   /**
    * Get the name of operation.
@@ -73,7 +73,7 @@ abstract class operation extends \sabretooth\base_object
    * @return string
    * @access public
    */
-  public function get_name() { return $this->record->name; }
+  public function get_name() { return $this->operation_record->name; }
   
   /**
    * Get the full name of operation (subject_name)
@@ -81,13 +81,13 @@ abstract class operation extends \sabretooth\base_object
    * @return string
    * @access public
    */
-  public function get_full_name() { return $this->record->subject.'_'.$this->record->name; }
+  public function get_full_name() { return $this->operation_record->subject.'_'.$this->operation_record->name; }
   
   /**
    * The database record for this operation
    * @var database\active_record
-   * @access protected
+   * @access private
    */
-  protected $record = NULL;
+  private $operation_record = NULL;
 }
 ?>

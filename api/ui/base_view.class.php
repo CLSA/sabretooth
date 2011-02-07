@@ -61,12 +61,17 @@ abstract class base_view extends widget
   protected $removable = false;
 
   /**
-   * The item being displayed.
-   * 
    * An associative array of "name" => "value" pairs to include in the view.
    * @var array
    * @access protected
    */
-  protected $item; 
+  protected $item = array();
+
+  /**
+   * An active record of the item being viewed.
+   * @var active_record
+   * @access protected
+   */
+  protected $record = NULL;
 }
 ?>

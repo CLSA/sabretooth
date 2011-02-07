@@ -36,7 +36,6 @@ class operation_list extends base_list
     $this->viewable =  true; // TODO: should be based on role
     $this->editable =  false;
     $this->removable =  false;
-    $this->number_of_items = \sabretooth\database\operation::count();
 
     $this->columns = array(
       array( "id" => "type",
@@ -58,63 +57,26 @@ class operation_list extends base_list
   }
 
   /**
-   * Set the details of each operation as a row.
+   * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param int $limit_count The number of rows to include.
-   * @param int $limit_count The offset to start rows at.
    * @access protected
    */
-  protected function set_rows( $limit_count, $limit_offset )
+  protected function set_rows()
   {
     // reset the array
     $this->rows = array();
     
-    // determine what we're sorting by
-    if( 'type' == $this->sort_column ||
-        'subject' == $this->sort_column || 
-        'name' == $this->sort_column )
-    {
-      $sort = $this->sort_column;
-    }
-    else
-    {
-      $sort = NULL;
-    }
-
-    // get all operations
-    $session = \sabretooth\session::self();
-    $desc = $this->sort_desc;
-    
-    $db_operation_list = $this->get_db_list( $limist_count, $limit_offset, $sort, $desc );
-    foreach( $db_operation_list as $db_operation )
+    foreach( $this->get_record_list() as $record )
     {
       array_push( $this->rows, 
-        array( 'id' => $db_operation->type.'.'.$db_operation->subject.'.'.$db_operation->name,
-               'columns' => array( $db_operation->type,
-                                   $db_operation->subject,
-                                   $db_operation->name,
-                                   $db_operation->restricted ? 'y' : 'n',
-                                   $db_operation->description ) ) );
+        array( 'id' => $record->type.'.'.$record->subject.'.'.$record->name,
+               'columns' => array( $record->type,
+                                   $record->subject,
+                                   $record->name,
+                                   $record->restricted ? 'yes' : 'no',
+                                   $record->description ) ) );
     }
   }
-  
-  /**
-   * Restrict list to a specific role, or set to null for no restriction.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\role
-   * @access public
-   */
-  public function set_role_restriction( $role )
-  {
-    $this->role_restriction = $role;
-  }
-
-  /**
-   * The role to restrict the list to.
-   * @var database\role
-   * @access protected
-   */
-  protected $role_restriction = NULL;
 }
 ?>

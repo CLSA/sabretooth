@@ -36,7 +36,6 @@ class site_list extends base_list
     $this->viewable =  true; // TODO: should be based on role
     $this->editable =  false;
     $this->removable =  false;
-    $this->number_of_items = \sabretooth\database\site::count();
 
     $this->columns = array(
       array( "id" => "name",
@@ -51,48 +50,50 @@ class site_list extends base_list
   }
 
   /**
-   * Set the details of each site as a row.
+   * Overrides the parent class method since the list can be sorted by a column outside of the user
+   * table.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param int $limit_count The number of rows to include.
-   * @param int $limit_count The offset to start rows at.
+   * @return int
    * @access protected
    */
-  protected function set_rows( $limit_count, $limit_offset )
+  protected function determine_record_sort_column( $sort_name )
   {
-    // reset the array
-    $this->rows = array();
-    
-    // determine what we're sorting by
-    if( 'name' == $this->sort_column )
-    {
-      $sort = 'name';
-    }
-    else if( 'last' == $this->sort_column )
-    {
-      // column in activity, see site::select() for details
+    if( 'last' == $sort_name )
+    { // column in activity, see user::select() for details
       $sort = 'activity.date';
     }
     else
     {
-      $sort = NULL;
+      $sort = parent::determine_record_sort_column( $sort_name );
     }
 
+    return $sort;
+  }
+
+
+  /**
+   * Set the rows array needed by the template.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function set_rows()
+  {
+    // reset the array
+    $this->rows = array();
+    
     // get all sites
-    $session = \sabretooth\session::self();
-    $desc = $this->sort_desc;
-    $db_site_list = $this->get_db_list( $limist_count, $limit_offset, $sort, $desc );
-    foreach( $db_site_list as $db_site )
+    foreach( $this->get_record_list() as $record )
     {
       // determine the last activity
-      $db_activity = $db_site->get_last_activity();
-
+      $db_activity = $record->get_last_activity();
       $last = is_null( $db_activity )
             ? 'never'
             : \sabretooth\util::get_fuzzy_time_ago( $db_activity->date );
-      array_push( $this->rows, 
-        array( 'id' => $db_site->id,
-               'columns' => array( $db_site->name, $db_site->get_user_count(), $last ) ) );
+
+      array_push( $this->rows, array( 'id' => $record->id,
+               'columns' => array( $record->name, $record->get_user_count(), $last ) ) );
     }
   }
 }

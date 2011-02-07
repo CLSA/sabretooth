@@ -30,21 +30,20 @@ class role_view extends base_view
 
     // make sure to validate the arguments ($args could be anything)
     if( isset( $args['id'] ) && is_numeric( $args['id'] ) )
-      $this->id = $args['id'];
+      $this->record = new \sabretooth\database\role( $args['id'] );
 
     // make sure we have all the arguments necessary
-    if( !isset( $this->id ) )
+    if( !isset( $this->record ) )
       throw new \sabretooth\exception\argument( 'id' );
 
-    $db_role = new \sabretooth\database\role( $this->id );
-
     // define all template variables for this list
-    $this->heading = 'Viewing role "'.$db_role->name.'"';
+    $this->heading = 'Viewing role "'.$this->record->name.'"';
     $this->editable = true; // TODO: should be based on role
     $this->removable = false;
     
     // create an associative array with everything we want to display about the role
-    $this->item = array( 'Name' => $db_role->name );
+    $this->item = array( 'Name' => $this->record->name,
+                         'Operations' => $this->record->get_operation_count() );
 
     // create the operation sub-list widget
     $this->operation_list = new operation_list( $args );
@@ -54,7 +53,6 @@ class role_view extends base_view
     $this->operation_list->set_viewable( false );
     $this->operation_list->set_editable( false );
     $this->operation_list->set_removable( false );
-    $this->operation_list->set_role_restriction( $db_role );
   }
 
   /**
@@ -69,16 +67,37 @@ class role_view extends base_view
     $this->operation_list->finish();
     
     // define all template variables for this widget
-    $this->set_variable( 'id', $this->id );
-    $this->operation_list->set_variable( 'id', $this->id );
+    $this->set_variable( 'id', $this->record->id );
+    $this->operation_list->set_variable( 'parent_id', $this->record->id );
     $this->set_variable( 'operation_list', $this->operation_list->get_variables() );
   }
 
-  // TODO: document
-  public function get_operation_list( $count = 0, $offset = 0, $column = NULL, $descending = false )
+  /**
+   * Overrides the operation list widget's method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access protected
+   */
+  public function determine_operation_count()
   {
-    $db_role = new \sabretooth\database\role( $this->id );
-    return $db_role->get_operation_list( $count, $offset, $column, $descending );
+    return $this->record->get_operation_count();
+  }
+
+  /**
+   * Overrides the operation list widget's method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param int $count The number of rows to include.
+   * @param int $offset The offset to start rows at.
+   * @param string $sort The column to sort the list by.
+   * @param boolean $desc Whether to sort in descending or ascending order.
+   * @return array( active_record )
+   * @access protected
+   */
+  public function determine_operation_list( $count, $offset, $column, $desc )
+  {
+    return $this->record->get_operation_list( $count, $offset, $column, $desc );
   }
 
   /**

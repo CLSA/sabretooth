@@ -37,9 +37,6 @@ class user_list extends base_list
     $this->viewable =  true; // TODO: should be based on role
     $this->editable =  true; // TODO: should be based on role
     $this->removable =  true; // TODO: should be based on role
-    $this->number_of_items = 'administrator' == $session->get_role()->name
-                           ? \sabretooth\database\user::count()
-                           : $session->get_site()->get_user_count();
 
     $this->columns = array(
       array( "id" => "name",
@@ -52,57 +49,94 @@ class user_list extends base_list
              "name" => "last activity",
              "sortable" => true ) ); 
   }
-
+  
   /**
-   * Set the details of each user as a row.
+   * Overrides the parent class method since the list can be sorted by a column outside of the user
+   * table.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param int $limit_count The number of rows to include.
-   * @param int $limit_count The offset to start rows at.
+   * @return int
    * @access protected
    */
-  protected function set_rows( $limit_count, $limit_offset )
+  protected function determine_record_sort_column( $sort_name )
   {
-    // reset the array
-    $this->rows = array();
-    
-    // determine what we're sorting by
-    if( 'name' == $this->sort_column )
-    {
-      // column in user table
-      $sort = 'name';
-    }
-    else if( 'last' == $this->sort_column )
-    {
-      // column in activity, see user::select() for details
+    if( 'last' == $sort_name )
+    { // column in activity, see user::select() for details
       $sort = 'activity.date';
     }
     else
     {
-      $sort = NULL;
+      $sort = parent::determine_record_sort_column( $sort_name );
     }
 
-    // get all users for admins, site users for anyone else
+    return $sort;
+  }
+
+  /**
+   * Overrides the parent class method since the record count depends on the active role.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access protected
+   */
+  protected function determine_record_count()
+  {
+    // only show users for current site if user is not an administrator
     $session = \sabretooth\session::self();
-    $desc = $this->sort_desc;
-    $db_user_list = $this->get_db_list( $limist_count, $limit_offset, $sort, $desc );
-    foreach( $db_user_list as $db_user )
+    return 'administrator' == $session->get_role()->name
+           ? \sabretooth\database\user::count()
+           : $session->get_site()->get_user_count();
+  }
+  
+  /**
+   * Overrides the parent class method since the record list depends on the active role.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param int $count The number of rows to include.
+   * @param int $offset The offset to start rows at.
+   * @param string $sort The column to sort the list by.
+   * @param boolean $desc Whether to sort in descending or ascending order.
+   * @return array( active_record )
+   * @access protected
+   */
+  protected function determine_record_list( $count, $offset, $sort, $desc )
+  {
+    // only show users for current site if user is not an administrator
+    $session = \sabretooth\session::self();
+    return 'administrator' == $session->get_role()->name
+           ? parent::determine_record_list( $count, $offset, $sort, $desc )
+           : $session->get_site()->get_user_list( $count, $offset, $sort, $desc );
+  }
+
+  /**
+   * Set the rows array needed by the template.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function set_rows()
+  {
+    // reset the array
+    $this->rows = array();
+    
+    foreach( $this->get_record_list() as $record )
     {
       // determine the role
       $role = 'none';
-      $db_roles = $db_user->get_role_list();
+      $db_roles = $record->get_role_list();
       if( 1 == count( $db_roles ) ) $role = $db_roles[0]->name; // only one roll?
       else if( 1 < count( $db_roles ) ) $role = 'multiple'; // multiple roles?
       
       // determine the last activity
-      $db_activity = $db_user->get_last_activity();
-
+      $db_activity = $record->get_last_activity();
       $last = is_null( $db_activity )
             ? 'never'
             : \sabretooth\util::get_fuzzy_time_ago( $db_activity->date );
+      
+      // assemble the row for this record
       array_push( $this->rows, 
-        array( 'id' => $db_user->id,
-               'columns' => array( $db_user->name, $role, $last ) ) );
+        array( 'id' => $record->id,
+               'columns' => array( $record->name, $role, $last ) ) );
     }
   }
 }

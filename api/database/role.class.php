@@ -27,13 +27,36 @@ class role extends active_record
   {
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to determine operation for role record with no id' );
+      \sabretooth\log::warning( 'Tried to query role record with no id' );
       return 0;
     }
 
     $count = self::get_one(
-      'SELECT COUNT( DISTINCT user_id) '.
+      'SELECT COUNT( DISTINCT user_id ) '.
       'FROM user_access '.
+      'WHERE role_id = '.$this->id );
+
+    return $count;
+  }
+
+  /**
+   * Get the number of operations this role has access to.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access public
+   */
+  public function get_operation_count()
+  {
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to query role record with no id' );
+      return 0;
+    }
+
+    $count = self::get_one(
+      'SELECT COUNT( DISTINCT operation_id ) '.
+      'FROM role_has_operation '.
       'WHERE role_id = '.$this->id );
 
     return $count;

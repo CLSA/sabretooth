@@ -3,6 +3,7 @@
  # 
  # Generic list widget.
  # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @param int parent_id When embedded, the parent widget's id
  # @param string heading The list's heading (can be an empty string).
  # @param boolean checkable Whether the list should allow items to be selected.
  # @param boolean viewable Whether the list should allow items to be viewed.
@@ -101,7 +102,7 @@ $( function() {
 $( function() {
   $( "th.sortable" ).click( function() {
     var args = new Object();
-    {% if id|default(false) %}args.id = {{ id }};{% endif %}
+    {% if parent_id|default(false) %}args.id = {{ parent_id }};{% endif %}
     args.page = {{ page }};
     args.sort_column = $(this).attr("id");
     args.sort_desc = {{ sort_desc ? 0 : 1 }};
@@ -169,20 +170,20 @@ $( function() {
 $( function() {
   $( "#{{ widget_full_name }}_page_prev" ).click( function() {
     var args = new Object();
-    {% if id|default(false) %}args.id = {{ id }};{% endif %}
+    {% if parent_id|default(false) %}args.id = {{ parent_id }};{% endif %}
     args.page = {{ page - 1 }};
     args.sort_column = "{{ sort_column }}";
-    args.sort_desc = {{ sort_desc ? 0 : 1 }};
+    args.sort_desc = {{ sort_desc ? 1 : 0 }};
     slot_load( get_slot( $(this) ), "{{ widget_full_name }}", args );
   } )
 } );
 $( function() {
   $( "#{{ widget_full_name }}_page_next" ).click( function() {
     var args = new Object();
-    {% if id|default(false) %}args.id = {{ id }};{% endif %}
+    {% if parent_id|default(false) %}args.id = {{ parent_id }};{% endif %}
     args.page = {{ page + 1 }};
     args.sort_column = "{{ sort_column }}";
-    args.sort_desc = {{ sort_desc ? 0 : 1 }};
+    args.sort_desc = {{ sort_desc ? 1 : 0 }};
     slot_load( get_slot( $(this) ), "{{ widget_full_name }}", args );
   } )
 } );
