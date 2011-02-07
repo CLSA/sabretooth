@@ -30,20 +30,18 @@ abstract class base_list extends widget
    * 
    * Defines all variables which need to be set for the associated template.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $subject The subject being listed.
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $subject, $args )
   {
     parent::__construct( $subject, 'list', $args );
-
+    
     // make sure to validate the arguments ($args could be anything)
-    if( isset( $args['page'] ) && is_numeric( $args['page'] ) )
-      $this->page = $args['page'];
-    if( isset( $args['sort_column'] ) && is_string( $args['sort_column'] ) )
-      $this->sort_column = $args['sort_column'];
-    if( isset( $args['sort_desc'] ) )
-      $this->sort_desc = 0 != $args['sort_desc'];
+    $this->page = $this->get_argument( 'page', $this->page );
+    $this->sort_column = $this->get_argument( 'sort_column', $this->sort_column );
+    $this->sort_desc = 0 != $this->get_argument( 'sort_desc', $this->sort_desc );
   }
   
   /**
@@ -97,6 +95,8 @@ abstract class base_list extends widget
    * 
    * When implementing this method, child classes should fill the $rows member with column values
    * for each record in the record list returned by calling {@link get_record_list}.
+   * TODO: We need some way for parents to affect the columns/rows included in embedded list
+   *       widgets.  For instance, site_view should not have a site column in it's activity list.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @abstract
    * @access protected
@@ -112,7 +112,7 @@ abstract class base_list extends widget
    * by defining a determine_<record>_sort_column() method, where <record> is the name of the
    * database record/table of the embedded widget.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return int
+   * @return string
    * @access protected
    */
   protected function determine_record_sort_column( $sort_name )

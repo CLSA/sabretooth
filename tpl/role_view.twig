@@ -8,7 +8,7 @@
 {% extends "base_view.twig" %}
 {% block item %}
 {{ parent() }}
-<br>
+<div class="spacer"></div>
 {# Add a list of operations belonging to this role #}
 {% include "operation_list.twig" with operation_list %}
 {% endblock %}

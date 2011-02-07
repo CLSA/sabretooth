@@ -25,11 +25,13 @@ abstract class operation extends \sabretooth\base_object
    * user's current role's access.  If the operation is not permitted a permission exception is
    * thrown.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $action
+   * @param string $type The type of operation (either 'action' or 'widget')
+   * @param string $subject The subject of the operation.
+   * @param string $name The name of the operation.
    * @throws exception\permission
    * @access public
    */
-  public function __construct( $type, $subject, $name, $args )
+  public function __construct( $type, $subject, $name )
   {
     // type must either be an action or widget
     assert( 'action' == $type || 'widget' == $type );
@@ -38,8 +40,9 @@ abstract class operation extends \sabretooth\base_object
 
     // throw a permission exception if the record is restricted and the user's current role does
     // not have access to the operation
-    if( $this->operation_record->restricted &&
-        !\sabretooth\session::self()->get_role()->has_operation( $this->operation_record ) )
+    if( is_null( $this->operation_record ) ||
+        (  $this->operation_record->restricted &&
+           !\sabretooth\session::self()->get_role()->has_operation( $this->operation_record ) ) )
       throw new \sabretooth\exception\permission( $this->operation_record );
   }
 

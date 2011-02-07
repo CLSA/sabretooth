@@ -268,12 +268,12 @@ abstract class active_record extends \sabretooth\base_object
     // make sure the column is unique
     if( in_array( $column, $unique_keys ) )
     {
-      // this returns false if no records are found
+      // this returns null if no records are found
       $id = self::get_one(
         'SELECT id '.
         'FROM '.static::get_table_name().' '.
         'WHERE '.$column.' = "'.$value.'"' );
-      if( false !== $id ) $record = new static( $id );
+      if( !is_null( $id ) ) $record = new static( $id );
     }
     return $record;
   }

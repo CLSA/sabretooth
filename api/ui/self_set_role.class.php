@@ -25,17 +25,10 @@ class self_set_role extends action
    * @throws exception\argument
    * @access public
    */
-  public function __construct( $args = NULL )
+  public function __construct( $args )
   {
     parent::__construct( 'self', 'set_role', $args );
-    
-    // grab expected arguments
-    if( is_array( $args ) && array_key_exists( 'role', $args ) )
-      $this->role_name = $args['role'];
-    
-    // make sure we have all the arguments necessary
-    if( !isset( $this->role_name ) )
-      throw new \sabretooth\exception\argument( 'role' );
+    $this->role_name = $this->get_argument( 'role' ); // must exist
   }
   
   /**

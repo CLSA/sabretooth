@@ -25,12 +25,15 @@ abstract class widget extends operation
    * 
    * Defines all variables available in every widget
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $subject The widget's subject.
+   * @param string $name The name of the operation.
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $subject, $name, $args )
   {
-    parent::__construct( 'widget', $subject, $name, $args );
+    parent::__construct( 'widget', $subject, $name );
+    $this->arguments = $args;
   }
 
   /**
@@ -43,9 +46,40 @@ abstract class widget extends operation
   {
     $this->set_variable( 'widget_subject', $this->get_subject() );
     $this->set_variable( 'widget_name', $this->get_name() );
-    $this->set_variable( 'widget_full_name',
+    $this->set_variable( 'active_widget',
       $this->parent ? $this->parent->get_full_name() : $this->get_full_name() );
+    $this->set_variable( 'current_widget', $this->get_full_name() );
     $this->set_variable( 'widget_heading', $this->heading );
+  }
+
+  /**
+   * Get a query argument passed to the widget.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $name The name of the argument.
+   * @param mixed $default The value to return if no argument exists.  If the default is null then
+   *                       it is assumed that the argument must exist, throwing an argument
+                           exception if it is not set.
+   * @return mixed
+   * @access public
+   */
+  public function get_argument( $name, $default = NULL )
+  {
+    $argument = NULL;
+    $widget_name = $this->get_full_name();
+
+    if( !array_key_exists( $widget_name, $this->arguments ) ||
+        !array_key_exists( $name, $this->arguments[$widget_name] ) )
+    { // the argument is missing
+      if( is_null( $default ) ) throw new \sabretooth\exception\argument( $name );
+      $argument = $default;
+    }
+    else
+    { // the argument exists
+      $argument = $this->arguments[$widget_name][$name];
+    }
+
+    return $argument;
   }
 
   /**
@@ -117,6 +151,13 @@ abstract class widget extends operation
    * @access protected
    */
   protected $parent = NULL;
+
+  /**
+   * The url query arguments.
+   * @var array( array )
+   * @access private
+   */
+  private $arguments = array();
 
   /**
    * An array which holds .ini variables.

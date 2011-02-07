@@ -32,7 +32,7 @@ class operation extends active_record
       'AND subject = "'.$subject.'" '.
       'AND name = "'.$name.'"' );
 
-    return false === $id ? NULL : new static( $id );
+    return is_null( $id ) ? NULL : new static( $id );
   }
 }
 ?>

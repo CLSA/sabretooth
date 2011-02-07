@@ -92,7 +92,7 @@ function slot_url( slot, url ) {
     onAjax: true,
     mask: true,
     img: "img/loading.gif",
-    delay: 400, // ms
+    delay: 500, // ms
     align: "center"
   } );
 
@@ -107,14 +107,16 @@ function slot_url( slot, url ) {
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @param string slot The slot to place the widget into.
  * @param string widget The widget's name (must be the name of a ui class)
+ * @param string namespace The namespace to pass the args under.
  * @param JSON-array $args The arguments to pass to the widget object
  */
-function slot_load( slot, widget, args ) {
+function slot_load( slot, widget, namespace, args ) {
   // build the url (args is an associative array)
-  if( undefined == args ) args = new Object();
-  args.slot = slot;
-  args.widget = widget;
-  var url = "widget.php?" + jQuery.param( args );
+  var query_object = new Object();
+  if( undefined != args ) query_object[namespace] = args;
+  query_object.slot = slot;
+  query_object.widget = widget;
+  var url = "widget.php?" + jQuery.param( query_object );
   slot_url( slot, url );
 }
 

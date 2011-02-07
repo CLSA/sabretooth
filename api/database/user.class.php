@@ -113,7 +113,7 @@ class user extends active_record
 
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to get sites for user record with no id' );
+      \sabretooth\log::warning( 'Tried to get sites for user record with no id.' );
       return $sites;
     }
 
@@ -142,7 +142,7 @@ class user extends active_record
 
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to get roles for user record with no id' );
+      \sabretooth\log::warning( 'Tried to get roles for user record with no id.' );
       return $roles;
     }
 

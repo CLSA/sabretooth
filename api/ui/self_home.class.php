@@ -24,7 +24,7 @@ class self_home extends widget
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
-  public function __construct( $args = NULL )
+  public function __construct( $args )
   {
     parent::__construct( 'self', 'home', $args );
     $this->heading = 'Home';

@@ -25,17 +25,10 @@ class self_set_site extends action
    * @throws exception\argument
    * @access public
    */
-  public function __construct( $args = NULL )
+  public function __construct( $args )
   {
     parent::__construct( 'self', 'set_site', $args );
-    
-    // grab expected arguments
-    if( is_array( $args ) && array_key_exists( 'site', $args ) )
-      $this->site_name = $args['site'];
-    
-    // make sure we have all the arguments necessary
-    if( !isset( $this->site_name ) )
-      throw new \sabretooth\exception\argument( 'site' );
+    $this->site_name = $this->get_argument( 'site' ); // must exist
   }
   
   /**

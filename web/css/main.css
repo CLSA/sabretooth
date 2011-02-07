@@ -78,6 +78,10 @@ table {
   font-weight: bold;
 }
 
+.spacer {
+  margin: 16px;
+}
+
 /* override a few things in the jquery ui theme */
 .ui-button-text-only .ui-button-text { padding: .1em 1em; }
 .ui-button-icon-only .ui-button-text, .ui-button-icons-only .ui-button-text { padding: .1em; text-indent: -9999999px; }

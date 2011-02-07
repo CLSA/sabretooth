@@ -22,7 +22,7 @@ class self_settings extends widget
    * @param array $args Action arguments
    * @access public
    */
-  public function __construct( $args = NULL )
+  public function __construct( $args )
   {
     parent::__construct( 'self', 'settings', $args );
   }

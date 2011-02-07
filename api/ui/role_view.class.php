@@ -28,14 +28,6 @@ class role_view extends base_view
   {
     parent::__construct( 'role', $args );
 
-    // make sure to validate the arguments ($args could be anything)
-    if( isset( $args['id'] ) && is_numeric( $args['id'] ) )
-      $this->record = new \sabretooth\database\role( $args['id'] );
-
-    // make sure we have all the arguments necessary
-    if( !isset( $this->record ) )
-      throw new \sabretooth\exception\argument( 'id' );
-
     // define all template variables for this list
     $this->heading = 'Viewing role "'.$this->record->name.'"';
     $this->editable = true; // TODO: should be based on role
@@ -48,7 +40,7 @@ class role_view extends base_view
     // create the operation sub-list widget
     $this->operation_list = new operation_list( $args );
     $this->operation_list->set_parent( $this );
-    $this->operation_list->set_heading( "Operations belonging to this role" );
+    $this->operation_list->set_heading( 'Operations belonging to this role' );
     $this->operation_list->set_checkable( false );
     $this->operation_list->set_viewable( false );
     $this->operation_list->set_editable( false );
@@ -68,7 +60,6 @@ class role_view extends base_view
     
     // define all template variables for this widget
     $this->set_variable( 'id', $this->record->id );
-    $this->operation_list->set_variable( 'parent_id', $this->record->id );
     $this->set_variable( 'operation_list', $this->operation_list->get_variables() );
   }
 
@@ -106,12 +97,5 @@ class role_view extends base_view
    * @access protected
    */
   protected $operation_list = NULL;
-
-  /**
-   * The primary key for the role being viewed.
-   * @var int
-   * @access protected
-   */
-  protected $id = NULL;
 }
 ?>

@@ -24,7 +24,7 @@ class site_list extends base_list
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
-  public function __construct( $args = NULL )
+  public function __construct( $args )
   {
     parent::__construct( 'site', $args );
     
@@ -54,7 +54,7 @@ class site_list extends base_list
    * table.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return int
+   * @return string
    * @access protected
    */
   protected function determine_record_sort_column( $sort_name )
@@ -70,7 +70,6 @@ class site_list extends base_list
 
     return $sort;
   }
-
 
   /**
    * Set the rows array needed by the template.

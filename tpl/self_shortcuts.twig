@@ -9,7 +9,7 @@
 <script type="text/javascript">
 // make button icons
 $( function() {
-  $( "#{{ widget_full_name }}_prev" ).button( {
+  $( "#{{ active_widget }}_prev" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-arrowthick-1-w"
@@ -17,7 +17,7 @@ $( function() {
   } )
 } );
 $( function() {
-  $( "#{{ widget_full_name }}_next" ).button( {
+  $( "#{{ active_widget }}_next" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-arrowthick-1-e"
@@ -25,7 +25,7 @@ $( function() {
   } )
 } );
 $( function() {
-  $( "#{{ widget_full_name }}_refresh" ).button( {
+  $( "#{{ active_widget }}_refresh" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-arrowrefresh-1-e"
@@ -33,7 +33,7 @@ $( function() {
   } )
 } );
 $( function() {
-  $( "#{{ widget_full_name }}_home" ).button( {
+  $( "#{{ active_widget }}_home" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-home"
@@ -41,7 +41,7 @@ $( function() {
   } )
 } );
 $( function() {
-  $( "#{{ widget_full_name }}_help" ).button( {
+  $( "#{{ active_widget }}_help" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-help"
@@ -51,36 +51,36 @@ $( function() {
 
 // page button functions
 $( function() {
-  $( "#{{ widget_full_name }}_prev" ).click( function() {
+  $( "#{{ active_widget }}_prev" ).click( function() {
     slot_prev( 'main' );
   } )
 } );
 $( function() {
-  $( "#{{ widget_full_name }}_next" ).click( function() {
+  $( "#{{ active_widget }}_next" ).click( function() {
     slot_next( 'main' );
   } )
 } );
 $( function() {
-  $( "#{{ widget_full_name }}_refresh" ).click( function() {
+  $( "#{{ active_widget }}_refresh" ).click( function() {
     slot_refresh( 'main' );
   } )
 } );
 $( function() {
-  $( "#{{ widget_full_name }}_home" ).click( function() {
+  $( "#{{ active_widget }}_home" ).click( function() {
     slot_load( 'main', 'self_home' );
   } )
 } );
 $( function() {
-  $( "#{{ widget_full_name }}_help" ).click( function() {
+  $( "#{{ active_widget }}_help" ).click( function() {
     //slot_load( 'main', 'help' ); TODO
   } )
 } );
 </script>
 <span>
-  <button id="{{ widget_full_name }}_prev">back</button>
-  <button id="{{ widget_full_name }}_next">forward</button>
-  <button id="{{ widget_full_name }}_refresh">refresh</button>
-  <button id="{{ widget_full_name }}_home">home</button>
-  <button id="{{ widget_full_name }}_help">help</button>
+  <button id="{{ active_widget }}_prev">back</button>
+  <button id="{{ active_widget }}_next">forward</button>
+  <button id="{{ active_widget }}_refresh">refresh</button>
+  <button id="{{ active_widget }}_home">home</button>
+  <button id="{{ active_widget }}_help">help</button>
 </span>
 {% endblock %}

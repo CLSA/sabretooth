@@ -22,22 +22,22 @@ abstract class action extends operation
    * 
    * Defines all variables available in every action
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param array $args An associative array of arguments to be processed by the action
+   * @param string $subject The subject of the operation.
+   * @param string $name The name of the operation.
    * @access public
    */
-  public function __construct( $subject, $name, $args )
+  public function __construct( $subject, $name )
   {
-    parent::__construct( 'action', $subject, $name, $args );
+    parent::__construct( 'action', $subject, $name );
   }
 
   /**
    * Perform the action.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @abstract
    * @access public
    */
-  public function execute()
-  {
-  }
+  abstract public function execute();
 }
 ?>

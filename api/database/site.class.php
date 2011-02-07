@@ -62,7 +62,7 @@ class site extends active_record
     {
       $id_list = self::get_col(
         'SELECT site.id '.
-        'FROM site '.
+        'FROM '.static::get_table_name().' '.
         'LEFT JOIN site_last_activity '.
         'ON site.id = site_last_activity.site_id '.
         'LEFT JOIN activity '.
@@ -98,6 +98,64 @@ class site extends active_record
   }
 
   /**
+   * Get the number of activity entries for this site.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access public
+   */
+  public function get_activity_count()
+  {
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to query site record with no id.' );
+      return 0;
+    }
+
+    return self::get_one(
+      'SELECT COUNT( DISTINCT id ) '.
+      'FROM activity '.
+      'WHERE site_id = '.$this->id );
+  }
+
+  /**
+   * Get an activity list for this site.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param int $count The number of activities to return
+   * @param int $offset The number of activities to offset the selection by.
+   * @param string $sort_column The name of a column to sort by.
+   * @param boolean $descending Whether to sort in descending order.
+   * @return array( database\activity )
+   * @access public
+   */
+  public function get_activity_list( $count = 0, $offset = 0, $sort_column = NULL, $descending = false )
+  {
+    $activity_list = array();
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to query site record with no id.' );
+      return $activity_list;
+    }
+
+    $ids = self::get_col(
+      'SELECT activity.id '.
+      'FROM activity, user, site, role, operation '.
+      'WHERE activity.user_id = user.id '.
+      'AND activity.site_id = site.id '.
+      'AND activity.role_id = role.id '.
+      'AND activity.operation_id = operation.id '.
+      'AND activity.site_id = '.$this->id.' '.
+      ( !is_null( $sort_column )
+          ? 'ORDER BY '.$sort_column.' '.( $descending ? 'DESC ' : '' )
+          : '' ).
+      ( 0 < $count ? 'LIMIT '.$count.' OFFSET '.$offset : '' ) );
+
+    foreach( $ids as $id ) array_push( $activity_list, new activity( $id ) );
+    return $activity_list;
+  }
+
+  /**
    * Get the number of users that have access to this site.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -108,7 +166,7 @@ class site extends active_record
   {
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to determine operation for site record with no id' );
+      \sabretooth\log::warning( 'Tried to query site record with no id.' );
       return 0;
     }
 
@@ -134,15 +192,20 @@ class site extends active_record
     $users = array();
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to determine operation for site record with no id' );
+      \sabretooth\log::warning( 'Tried to query site record with no id.' );
       return $users;
     }
 
     $ids = self::get_col(
-      'SELECT user_id '.
-      'FROM user_access '.
-      'WHERE site_id = '.$this->id.' '.
-      'GROUP BY user_id '.
+      'SELECT user_access.user_id '.
+      'FROM user_access, user '.
+      'LEFT JOIN user_last_activity '.
+      'ON user.id = user_last_activity.user_id '.
+      'LEFT JOIN activity '.
+      'ON user_last_activity.activity_id = activity.id '.
+      'WHERE user_access.user_id = user.id '.
+      'AND user_access.site_id = '.$this->id.' '.
+      'GROUP BY user_access.user_id '.
       ( !is_null( $sort_column )
           ? 'ORDER BY '.$sort_column.' '.( $descending ? 'DESC ' : '' )
           : '' ).

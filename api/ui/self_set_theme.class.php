@@ -25,17 +25,10 @@ class self_set_theme extends action
    * @throws exception\argument
    * @access public
    */
-  public function __construct( $args = NULL )
+  public function __construct( $args )
   {
     parent::__construct( 'self', 'set_theme', $args );
-    
-    // grab expected arguments
-    if( is_array( $args ) && array_key_exists( 'theme', $args ) )
-      $this->theme_name = $args['theme'];
-    
-    // make sure we have all the arguments necessary
-    if( !isset( $this->theme_name ) )
-      throw new \sabretooth\exception\argument( 'theme_name' );
+    $this->theme_name = $this->get_argument( 'theme' ); // must exist
   }
   
   /**

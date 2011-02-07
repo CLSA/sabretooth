@@ -8,6 +8,10 @@
 {% extends "base_view.twig" %}
 {% block item %}
 {{ parent() }}
+<div class="spacer"></div>
 {# Add a list of users who hold a role at this site #}
-TODO: user list here
+{% include "user_list.twig" with user_list %}
+<div class="spacer"></div>
+{# Add a list of the activity at this site #}
+{% include "activity_list.twig" with activity_list %}
 {% endblock %}

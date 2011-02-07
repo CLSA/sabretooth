@@ -1,6 +1,6 @@
 <?php
 /**
- * operation_list.class.php
+ * activity_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,50 +10,55 @@
 namespace sabretooth\ui;
 
 /**
- * operation.list widget
+ * activity.list widget
  * 
  * @package sabretooth\ui
  */
-class operation_list extends base_list
+class activity_list extends base_list
 {
   /**
    * Constructor
    * 
-   * Defines all variables required by the operation list.
+   * Defines all variables required by the activity list.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'operation', $args );
+    parent::__construct( 'activity', $args );
     
     $session = \sabretooth\session::self();
 
     // define all template variables for this list
-    $this->heading = 'Operation list';
+    $this->heading = 'Activity list';
     $this->checkable = false;
     $this->viewable = false;
     $this->editable = false;
     $this->removable = false;
 
     $this->columns = array(
-      array( 'id' => 'type',
+      array( 'id' => 'user.name',
+             'name' => 'user',
+             'sortable' => true ),
+      array( 'id' => 'site.name',
+             'name' => 'site',
+             'sortable' => true ),
+      array( 'id' => 'role.name',
+             'name' => 'role',
+             'sortable' => true ),
+      array( 'id' => 'operation.type',
              'name' => 'type',
              'sortable' => true ),
-      array( 'id' => 'subject',
+      array( 'id' => 'operation.subject',
              'name' => 'subject',
              'sortable' => true ),
-      array( 'id' => 'name',
+      array( 'id' => 'operation.name',
              'name' => 'name',
              'sortable' => true ),
-      array( 'id' => 'restricted',
-             'name' => 'restricted',
-             'sortable' => false ),
-      array( 'id' => 'description',
-             'name' => 'description',
-             'sortable' => false,
-             'align' => 'left' ) );
+      array( 'id' => 'date',
+             'name' => 'date',
+             'sortable' => true ) );
   }
 
   /**
@@ -71,11 +76,13 @@ class operation_list extends base_list
     {
       array_push( $this->rows, 
         array( 'id' => $record->id,
-               'columns' => array( $record->type,
-                                   $record->subject,
-                                   $record->name,
-                                   $record->restricted ? 'yes' : 'no',
-                                   $record->description ) ) );
+               'columns' => array( $record->get_user()->name,
+                                   $record->get_site()->name,
+                                   $record->get_role()->name,
+                                   $record->get_operation()->type,
+                                   $record->get_operation()->subject,
+                                   $record->get_operation()->name,
+                                   $record->date ) ) );
     }
   }
 }

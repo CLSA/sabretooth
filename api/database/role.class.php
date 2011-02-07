@@ -27,7 +27,7 @@ class role extends active_record
   {
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to query role record with no id' );
+      \sabretooth\log::warning( 'Tried to query role record with no id.' );
       return 0;
     }
 
@@ -50,7 +50,7 @@ class role extends active_record
   {
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to query role record with no id' );
+      \sabretooth\log::warning( 'Tried to query role record with no id.' );
       return 0;
     }
 
@@ -83,14 +83,13 @@ class role extends active_record
       return false;
     }
 
-    $rows = self::get_one(
-      'SELECT * '.
+    $count = self::get_one(
+      'SELECT COUNT( DISTINCT operation_id ) '.
       'FROM role_has_operation '.
       'WHERE role_id = '.$this->id.' '.
       'AND operation_id = '.$db_operation->id );
-    $result = 0 < count( $rows );
 
-    return $result;
+    return 0 < $count;
   }
   
   /**
@@ -109,7 +108,7 @@ class role extends active_record
     $operations = array();
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to determine operation for role record with no id' );
+      \sabretooth\log::warning( 'Tried to determine operation for role record with no id.' );
       return $operations;
     }
 

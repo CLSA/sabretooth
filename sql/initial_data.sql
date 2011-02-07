@@ -14,6 +14,26 @@ VALUES( "action", "voip", "halt", true, "Disconnects all VOIP sessions." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "voip", "suspend", true, "Prevents any new VOIP sessions from connecting." );
 
+-- activity
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "activity", "list", true, "List system activity." );
+
+-- operation
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "operation", "list", true, "List operations in the system." );
+
+-- role
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "role", "remove", true, "Removes a role from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "role", "edit", true, "Edits a role's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "role", "add", true, "Add a new role to the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "role", "view", true, "View a role's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "role", "list", true, "List roles in the system." );
+
 -- self
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "home", false, "The current user's home screen." );
@@ -28,29 +48,11 @@ VALUES( "action", "self", "set_role", false, "Change the current user's active r
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "self", "set_theme", false, "Change the current user's web interface theme." );
 
--- operation
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "operation", "view", true, "View an operation's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "operation", "list", true, "List operations in the system." );
-
 -- site
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "site", "view", true, "View a site's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "site", "list", true, "List sites in the system." );
-
--- role
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "role", "remove", true, "Removes a role from the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "role", "edit", true, "Edits a role's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "role", "add", true, "Add a new role to the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "role", "view", true, "View a role's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "role", "list", true, "List roles in the system." );
 
 -- user
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -67,25 +69,19 @@ VALUES( "widget", "user", "list", true, "List users in the system." );
 
 -- build role permissions
 DELETE FROM role;
-INSERT INTO role( name )
-VALUES( "administrator" );
-INSERT INTO role( name )
-VALUES( "clerk" );
-INSERT INTO role( name )
-VALUES( "operator" );
-INSERT INTO role( name )
-VALUES( "supervisor" );
-INSERT INTO role( name )
-VALUES( "technician" );
-INSERT INTO role( name )
-VALUES( "viewer" );
+INSERT INTO role( name ) VALUES( "administrator" );
+INSERT INTO role( name ) VALUES( "clerk" );
+INSERT INTO role( name ) VALUES( "operator" );
+INSERT INTO role( name ) VALUES( "supervisor" );
+INSERT INTO role( name ) VALUES( "technician" );
+INSERT INTO role( name ) VALUES( "viewer" );
 
 DELETE FROM role_has_operation;
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id
 FROM role, operation
 WHERE role.name in( "administrator", "supervisor" )
-AND operation.subject in( "operation", "site", "role", "user" );
+AND operation.subject in( "activity", "operation", "site", "role", "user" );
 
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id

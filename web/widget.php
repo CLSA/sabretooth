@@ -33,11 +33,16 @@ try
     throw new exception\runtime( 'invalid script variables' );
   $slot_name = isset( $_GET['slot'] ) ? $_GET['slot'] : NULL;
   $widget['name'] = isset( $_GET['widget'] ) ? $_GET['widget'] : NULL;
-  $widget['args'] = isset( $_GET ) ? $_GET : NULL;
+  $current_widget = session::self()->slot_current( $slot_name );
+  $widget['args'] = !is_null( $current_widget ) &&
+                    is_array( $current_widget['args'] ) &&
+                    $widget['name'] == $current_widget['name']
+                  ? array_merge( $current_widget['args'], $_GET ) : $_GET;
   $go_prev = isset( $_GET['prev'] ) && 1 == $_GET['prev'];
   $go_next = isset( $_GET['next'] ) && 1 == $_GET['next'];
   $refresh = isset( $_GET['refresh'] ) && 1 == $_GET['refresh'];
-  
+    
+  // if the prev, next or refresh buttons were invoked, adjust the widget appropriately
   if( $go_prev )
   {
     $widget = session::self()->slot_prev( $slot_name );
@@ -48,7 +53,6 @@ try
   }
   else if( $refresh )
   {
-    $current_widget = session::self()->slot_current( $slot_name );
     if( !is_null( $current_widget ) ) $widget = $current_widget;
   }
 

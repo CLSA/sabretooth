@@ -10,7 +10,7 @@
 namespace sabretooth\ui;
 
 /**
- * user.view widget
+ * base.view widget
  * 
  * @abstract
  * @package sabretooth\ui
@@ -22,12 +22,18 @@ abstract class base_view extends widget
    * 
    * Defines all variables which need to be set for the associated template.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $subject The subject being viewed.
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $subject, $args )
   {
     parent::__construct( $subject, 'view', $args );
+    
+    // build the associated record
+    $class_name = '\\sabretooth\\database\\'.$subject;
+    $this->record = new $class_name( $this->get_argument( 'id' ) );
+    if( is_null( $this->record ) ) throw new \sabretooth\exception\argument( 'id' );
   }
   
   /**
