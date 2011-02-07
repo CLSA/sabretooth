@@ -100,12 +100,12 @@ $( function() {
 // column sort functions
 $( function() {
   $( "th.sortable" ).click( function() {
-    slot_load(
-      get_slot( $(this) ),
-      "{{ widget_full_name }}",
-      { "page": {{ page }},
-        "sort_column": $(this).attr("id"),
-        "sort_desc": {{ sort_desc ? 0 : 1 }} } );
+    var args = new Object();
+    {% if id|default(false) %}args.id = {{ id }};{% endif %}
+    args.page = {{ page }};
+    args.sort_column = $(this).attr("id");
+    args.sort_desc = {{ sort_desc ? 0 : 1 }};
+    slot_load( get_slot( $(this) ), "{{ widget_full_name }}", args );
   } )
 } );
 
@@ -168,22 +168,22 @@ $( function() {
 // page button functions
 $( function() {
   $( "#{{ widget_full_name }}_page_prev" ).click( function() {
-    slot_load(
-      get_slot( $(this) ),
-      "{{ widget_full_name }}",
-      { "page": {{ page - 1 }},
-        "sort_column": "{{ sort_column }}",
-        "sort_desc": {{ sort_desc ? 0 : 1 }} } );
+    var args = new Object();
+    {% if id|default(false) %}args.id = {{ id }};{% endif %}
+    args.page = {{ page - 1 }};
+    args.sort_column = "{{ sort_column }}";
+    args.sort_desc = {{ sort_desc ? 0 : 1 }};
+    slot_load( get_slot( $(this) ), "{{ widget_full_name }}", args );
   } )
 } );
 $( function() {
   $( "#{{ widget_full_name }}_page_next" ).click( function() {
-    slot_load(
-      get_slot( $(this) ),
-      "{{ widget_full_name }}",
-      { "page": {{ page + 1 }},
-        "sort_column": "{{ sort_column }}",
-        "sort_desc": {{ sort_desc ? 0 : 1 }} } );
+    var args = new Object();
+    {% if id|default(false) %}args.id = {{ id }};{% endif %}
+    args.page = {{ page + 1 }};
+    args.sort_column = "{{ sort_column }}";
+    args.sort_desc = {{ sort_desc ? 0 : 1 }};
+    slot_load( get_slot( $(this) ), "{{ widget_full_name }}", args );
   } )
 } );
 

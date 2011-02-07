@@ -44,14 +44,14 @@ class self_settings extends widget
     $db_role = \sabretooth\session::self()->get_role();
     
     $site_names = array();
-    $sites = $db_user->get_sites();
+    $sites = $db_user->get_site_list();
     foreach( $sites as $site )
     {
       array_push( $site_names, $site->name );
     }
 
     $role_names = array();
-    $roles = $db_user->get_roles( $db_site );
+    $roles = $db_user->get_role_list( $db_site );
     foreach( $roles as $role )
     {
       array_push( $role_names, $role->name );

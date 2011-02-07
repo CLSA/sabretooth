@@ -85,8 +85,8 @@ class operation_list extends base_list
     // get all operations
     $session = \sabretooth\session::self();
     $desc = $this->sort_desc;
-    // TODO: restrict to role
-    $db_operation_list = \sabretooth\database\operation::select( $limit_count, $limit_offset, $sort, $desc );
+    
+    $db_operation_list = $this->get_db_list( $limist_count, $limit_offset, $sort, $desc );
     foreach( $db_operation_list as $db_operation )
     {
       array_push( $this->rows, 

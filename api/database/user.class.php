@@ -27,48 +27,48 @@ class user extends active_record
    * @param int $offset The 0-based index of the first record to start selecting from
    * @param string $sort_column Which column to sort by during the select.
    * @param boolean $descending Whether to sort descending or ascending.
+   * @param array $restrictions And array of restrictions to add to the were clause of the select.
    * @return array( active_record )
    * @static
    * @access public
    */
-  public static function select( $count = 0, $offset = 0, $sort_column = NULL, $descending = false )
+  public static function select(
+    $count = 0, $offset = 0, $sort_column = NULL, $descending = false, $restrictions = NULL )
   {
     // no need to override the basic functionality
     if( 'activity.date' != $sort_column )
     {
-      return parent::select( $count, $offset, $sort_column, $descending );
+      return parent::select( $count, $offset, $sort_column, $descending, $restrictions );
     }
     
     // create special sql that sorts by the foreign column association
     $records = array();
 
-    $primary_key_names = static::get_primary_key_names();
-    $select = '';
-    $first = true;
-    foreach( $primary_key_names as $primary_key_name )
+    // build the restriction list
+    $where = '';
+    if( is_array( $restrictions ) && 0 < count( $restrictions ) )
     {
-      $select .= ( $first ? '' : ', ' ).'user.'.$primary_key_name;
-      $first = false;
-    }
-    
-    // sort by activity date
-    if( 'activity.date' == $sort_column )
-    {
-      $primary_ids_list = self::get_all(
-        'SELECT '.$select.' '.
-        'FROM user '.
-        'LEFT JOIN user_last_activity '.
-        'ON user.id = user_last_activity.user_id '.
-        'LEFT JOIN activity '.
-        'ON user_last_activity.activity_id = activity.id '.
-        'ORDER BY '.$sort_column.' '.( $descending ? 'DESC ' : '' ).
-        ( 0 < $count ? 'LIMIT '.$count.' OFFSET '.$offset : '' ) );
+      $first = true;
+      $where = 'WHERE ';
+      foreach( $restrictions as $column => $value )
+      {
+        $where .= ( $first ? '' : 'AND ' )."$column = $value ";
+        $first = false;
+      }
     }
 
-    foreach( $primary_ids_list as $primary_ids )
-    {
-      array_push( $records, new static( $primary_ids ) );
-    }
+    $id_list = self::get_col(
+      'SELECT user.id '.
+      'FROM user '.
+      'LEFT JOIN user_last_activity '.
+      'ON user.id = user_last_activity.user_id '.
+      'LEFT JOIN activity '.
+      'ON user_last_activity.activity_id = activity.id '.
+      $where.
+      'ORDER BY '.$sort_column.' '.( $descending ? 'DESC ' : '' ).
+      ( 0 < $count ? 'LIMIT '.$count.' OFFSET '.$offset : '' ) );
+
+    foreach( $id_list as $id ) array_push( $records, new static( $id ) );
 
     return $records;
   }
@@ -84,19 +84,18 @@ class user extends active_record
    */
   public function has_access( $db_site, $db_role )
   {
-    if( !$this->are_primary_keys_set() )
+    if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to determine access for record without primary ids' );
+      \sabretooth\log::warning( 'Tried to determine access for user record with no id.' );
+      return 0;
     }
-    else
-    {
-      $rows = self::get_one(
-        'SELECT user_id '.
-        'FROM user_access '.
-        'WHERE user_id = '.$this->id.' '.
-        'AND site_id = '.$db_site->id.' '.
-        'AND role_id = '.$db_role->id );
-    }
+
+    $rows = self::get_one(
+      'SELECT user_id '.
+      'FROM user_access '.
+      'WHERE user_id = '.$this->id.' '.
+      'AND site_id = '.$db_site->id.' '.
+      'AND role_id = '.$db_role->id );
 
     return count( $rows );
   }
@@ -108,28 +107,24 @@ class user extends active_record
    * @return array( database\site )
    * @access public
    */
-  public function get_sites()
+  public function get_site_list()
   {
     $sites = array();
 
-    if( !$this->are_primary_keys_set() )
+    if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to get sites for record without primary ids' );
+      \sabretooth\log::warning( 'Tried to get sites for user record with no id' );
+      return $sites;
     }
-    else
-    {
-      $site_ids = self::get_col(
-        'SELECT site_id '.
-        'FROM user_access '.
-        'WHERE user_id = '.$this->id.' '.
-        'GROUP BY site_id '.
-        'ORDER BY site_id' );
+
+    $site_ids = self::get_col(
+      'SELECT site_id '.
+      'FROM user_access '.
+      'WHERE user_id = '.$this->id.' '.
+      'GROUP BY site_id '.
+      'ORDER BY site_id' );
       
-      foreach( $site_ids as $site_id )
-      {
-        array_push( $sites, new site( $site_id ) );
-      }
-    }
+    foreach( $site_ids as $site_id ) array_push( $sites, new site( $site_id ) );
     return $sites;
   }
 
@@ -141,81 +136,25 @@ class user extends active_record
    * @return array( database\role )
    * @access public
    */
-  public function get_roles( $db_site = null )
+  public function get_role_list( $db_site = null )
   {
     $roles = array();
 
-    if( !$this->are_primary_keys_set() )
+    if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to get roles for record without primary ids' );
-    }
-    else
-    {
-      $role_ids = self::get_col(
-        'SELECT role_id '.
-        'FROM user_access '.
-        'WHERE user_id = '.$this->id.' '.
-        ( !is_null( $db_site ) ? 'AND site_id = '.$db_site->id.' ' : '' ).
-        'ORDER BY role_id' );
-      
-      foreach( $role_ids as $role_id )
-      {
-        array_push( $roles, new role( $role_id ) );
-      }
+      \sabretooth\log::warning( 'Tried to get roles for user record with no id' );
+      return $roles;
     }
 
+    $role_ids = self::get_col(
+      'SELECT role_id '.
+      'FROM user_access '.
+      'WHERE user_id = '.$this->id.' '.
+      ( !is_null( $db_site ) ? 'AND site_id = '.$db_site->id.' ' : '' ).
+      'ORDER BY role_id' );
+     
+    foreach( $role_ids as $role_id ) array_push( $roles, new role( $role_id ) );
     return $roles;
-  }
-
-  /**
-   * Returns an associative array of all sites the user has access to.
-   * 
-   * The access array is an array where every element has two elements: 'site' and 'roles'.
-   * The 'site' element is an active record of the site which the user has access to, and 'roles'
-   * is an array of active records of all roles the user has at that site.
-   * If the user has no roles at any sites then an empty array is returned.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return array
-   * @access public
-   */
-  public function get_access_array()
-  {
-    $access_array = array();
-    
-    if( !$this->are_primary_keys_set() )
-    {
-      \sabretooth\log::warning( 'Tried to get access array for record without primary ids' );
-    }
-    else
-    {
-      $rows = self::get_all(
-        'SELECT site_id, role_id '.
-        'FROM user_access '.
-        'WHERE user_id = '.$this->id.' '.
-        'ORDER BY site_id, role_id' );
-      
-      $site = NULL;
-      foreach( $rows as $row )
-      {
-        if( is_null( $site ) )
-        { // first row, create the site and add its first role
-          $site = new site( $row['site_id'] );
-          $roles = array( new role( $row['role_id'] ) );
-        }
-        else if( $site->id == $row['site_id'] )
-        { // same role as last time, add another role
-          array_push( $roles, new role( $row['role_id'] ) );
-        }
-        else
-        { // new site, add the current one to the access array and start a new one
-          array_push( $access_array, array( 'site' => $site, 'roles' => $roles ) );
-          $site = new site( $row['site_id'] );
-          $roles = array( new role( $row['role_id'] ) );
-        }
-      }
-    }
-
-    return $access_array;
   }
 
   /**
@@ -230,7 +169,7 @@ class user extends active_record
     $activity_id = self::get_one(
       'SELECT activity_id '.
       'FROM user_last_activity '.
-      'WHERE user_id = '.$this->id.' ' );
+      'WHERE user_id = '.$this->id );
     
     return is_null( $activity_id ) ? NULL : new activity( $activity_id );
   }

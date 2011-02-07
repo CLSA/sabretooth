@@ -41,9 +41,10 @@ abstract class widget extends operation
    */
   public function finish()
   {
-    $this->set_variable( 'widget_subject', $this->subject );
-    $this->set_variable( 'widget_name', $this->name );
-    $this->set_variable( 'widget_full_name', $this->subject.'_'.$this->name );
+    $this->set_variable( 'widget_subject', $this->get_subject() );
+    $this->set_variable( 'widget_name', $this->get_name() );
+    $this->set_variable( 'widget_full_name',
+      $this->parent ? $this->parent->get_full_name() : $this->get_full_name() );
     $this->set_variable( 'widget_heading', $this->heading );
   }
 
@@ -66,6 +67,20 @@ abstract class widget extends operation
   }
 
   /**
+   * Set the widget's parent.
+   * 
+   * Embed this widget into a parent widget, or unparent the widget by setting the parent to NULL.
+   * This should be done before the widget is finished (before {@link finish} is called).
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @var widget $parent
+   * @access public
+   */
+  public function set_parent( $parent = NULL )
+  {
+    $this->parent = $parent;
+  }
+
+  /**
    * Get the widget's variables array.
    * 
    * This method is to be used by the widget engine to render display widgets.
@@ -77,6 +92,17 @@ abstract class widget extends operation
   {
     return $this->variables;
   }
+  
+  /**
+   * Set the widget's heading.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $heading
+   * @access public
+   */
+  public function set_heading( $heading )
+  {
+    $this->heading = $heading;
+  }
 
   /**
    * The widget's heading.
@@ -86,9 +112,15 @@ abstract class widget extends operation
   protected $heading = "";
 
   /**
+   * The parent widget if this widget is embedded in another widget.
+   * @var widget
+   * @access protected
+   */
+  protected $parent = NULL;
+
+  /**
    * An array which holds .ini variables.
    * @var array( array )
-   * @static
    * @access private
    */
   private $variables = array();

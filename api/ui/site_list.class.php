@@ -81,7 +81,7 @@ class site_list extends base_list
     // get all sites
     $session = \sabretooth\session::self();
     $desc = $this->sort_desc;
-    $db_site_list = \sabretooth\database\site::select( $limit_count, $limit_offset, $sort, $desc );
+    $db_site_list = $this->get_db_list( $limist_count, $limit_offset, $sort, $desc );
     foreach( $db_site_list as $db_site )
     {
       // determine the last activity

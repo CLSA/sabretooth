@@ -27,47 +27,54 @@ class site extends active_record
    * @param int $offset The 0-based index of the first record to start selecting from
    * @param string $sort_column Which column to sort by during the select.
    * @param boolean $descending Whether to sort descending or ascending.
+   * @param array $restrictions And array of restrictions to add to the were clause of the select.
    * @return array( active_record )
    * @static
    * @access public
    */
-  public static function select( $count = 0, $offset = 0, $sort_column = NULL, $descending = false )
+  public static function select(
+    $count = 0, $offset = 0, $sort_column = NULL, $descending = false, $restrictions = NULL )
   {
     // no need to override the basic functionality
     if( 'activity.date' != $sort_column )
     {
-      return parent::select( $count, $offset, $sort_column, $descending );
+      return parent::select( $count, $offset, $sort_column, $descending, $restrictions );
     }
 
     // create special sql that sorts by the foreign column association
     $records = array();
 
-    $primary_key_names = static::get_primary_key_names();
-    $select = '';
-    $first = true;
-    foreach( $primary_key_names as $primary_key_name )
+    // build the restriction list
+    $where = '';
+    if( is_array( $restrictions ) && 0 < count( $restrictions ) )
     {
-      $select .= ( $first ? '' : ', ' ).'site.'.$primary_key_name;
-      $first = false;
+      $first = true;
+      $where = 'WHERE ';
+      foreach( $restrictions as $column => $value )
+      {
+        $where .= ( $first ? '' : 'AND ' )."$column = $value ";
+        $first = false;
+      }
     }
 
     // sort by activity date
     if( 'activity.date' == $sort_column )
     {
-      $primary_ids_list = self::get_all(
-        'SELECT '.$select.' '.
+      $id_list = self::get_col(
+        'SELECT site.id '.
         'FROM site '.
         'LEFT JOIN site_last_activity '.
         'ON site.id = site_last_activity.site_id '.
         'LEFT JOIN activity '.
         'ON site_last_activity.activity_id = activity.id '.
+        $where.
         'ORDER BY '.$sort_column.' '.( $descending ? 'DESC ' : '' ).
         ( 0 < $count ? 'LIMIT '.$count.' OFFSET '.$offset : '' ) );
     }
 
-    foreach( $primary_ids_list as $primary_ids )
+    foreach( $id_list as $id )
     {
-      array_push( $records, new static( $primary_ids ) );
+      array_push( $records, new static( $id ) );
     }
 
     return $records;
@@ -99,20 +106,16 @@ class site extends active_record
    */
   public function get_user_count()
   {
-    $count = 0;
-    if( !$this->are_primary_keys_set() )
+    if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to determine operation for record with no id' );
-    }
-    else
-    {
-      $count = self::get_one(
-        'SELECT COUNT( DISTINCT user_id) '.
-        'FROM user_access '.
-        'WHERE site_id = '.$this->id );
+      \sabretooth\log::warning( 'Tried to determine operation for site record with no id' );
+      return 0;
     }
 
-    return $count;
+    return self::get_one(
+      'SELECT COUNT( DISTINCT user_id ) '.
+      'FROM user_access '.
+      'WHERE site_id = '.$this->id );
   }
 
   /**
@@ -126,31 +129,26 @@ class site extends active_record
    * @return array( database\user )
    * @access public
    */
-  public function get_users( $count, $offset = 0, $sort_column = NULL, $descending = false )
+  public function get_user_list( $count = 0, $offset = 0, $sort_column = NULL, $descending = false )
   {
     $users = array();
-    if( !$this->are_primary_keys_set() )
+    if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to determine operation for record with no id' );
-    }
-    else
-    {
-      $ids = self::get_col(
-        'SELECT user_id '.
-        'FROM user_access '.
-        'WHERE site_id = '.$this->id.' '.
-        'GROUP BY user_id '.
-        ( !is_null( $sort_column )
-            ? 'ORDER BY '.$sort_column.' '.( $descending ? 'DESC ' : '' )
-            : '' ).
-        ( 0 < $count ? 'LIMIT '.$count.' OFFSET '.$offset : '' ) );
-  
-      foreach( $ids as $id )
-      {
-        array_push( $users, new user( $id ) );
-      }
+      \sabretooth\log::warning( 'Tried to determine operation for site record with no id' );
+      return $users;
     }
 
+    $ids = self::get_col(
+      'SELECT user_id '.
+      'FROM user_access '.
+      'WHERE site_id = '.$this->id.' '.
+      'GROUP BY user_id '.
+      ( !is_null( $sort_column )
+          ? 'ORDER BY '.$sort_column.' '.( $descending ? 'DESC ' : '' )
+          : '' ).
+      ( 0 < $count ? 'LIMIT '.$count.' OFFSET '.$offset : '' ) );
+
+    foreach( $ids as $id ) array_push( $users, new user( $id ) );
     return $users;
   }
 }

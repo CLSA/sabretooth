@@ -82,6 +82,60 @@ abstract class base_list extends widget
    */
   abstract protected function set_rows( $limit_count, $limit_offset );
   
+  // TODO: document
+  protected function get_db_list( $limit_count, $limit_offset, $sort, $desc )
+  {
+    $class_name = '\\sabretooth\\database\\'.$this->get_subject();
+    $method_name = 'get_'.$this->get_subject().'_list';
+    return $this->parent && method_exists( $this->parent, $method_name )
+           ? $this->parent->$method_name( $limit_count, $limit_offset, $sort, $desc )
+           : $class_name::select( $limit_count, $limit_offset, $sort, $desc );
+  }
+
+  /**
+   * Set whether itmes in the list can be checked/selected.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $enable
+   * @access public
+   */
+  public function set_checkable( $enable )
+  {
+    $this->checkable = $enable;
+  }
+
+  /**
+   * Set whether itmes in the list can be viewed.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $enable
+   * @access public
+   */
+  public function set_viewable( $enable )
+  {
+    $this->viewable = $enable;
+  }
+
+  /**
+   * Set whether itmes in the list can be edited.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $enable
+   * @access public
+   */
+  public function set_editable( $enable )
+  {
+    $this->editable = $enable;
+  }
+
+  /**
+   * Set whether itmes in the list can be removed.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $enable
+   * @access public
+   */
+  public function set_removable( $enable )
+  {
+    $this->removable = $enable;
+  }
+
   /**
    * Whether items in the list can be checked/selected.
    * @var boolean

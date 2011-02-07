@@ -85,14 +85,12 @@ class user_list extends base_list
     // get all users for admins, site users for anyone else
     $session = \sabretooth\session::self();
     $desc = $this->sort_desc;
-    $db_user_list = 'administrator' == $session->get_role()->name
-                  ? \sabretooth\database\user::select( $limit_count, $limit_offset, $sort, $desc )
-                  : $session->get_site()->get_users( $limit_count, $limit_offset, $sort, $desc );
+    $db_user_list = $this->get_db_list( $limist_count, $limit_offset, $sort, $desc );
     foreach( $db_user_list as $db_user )
     {
       // determine the role
       $role = 'none';
-      $db_roles = $db_user->get_roles();
+      $db_roles = $db_user->get_role_list();
       if( 1 == count( $db_roles ) ) $role = $db_roles[0]->name; // only one roll?
       else if( 1 < count( $db_roles ) ) $role = 'multiple'; // multiple roles?
       

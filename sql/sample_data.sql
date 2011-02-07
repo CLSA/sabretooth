@@ -5,17 +5,17 @@
 SET AUTOCOMMIT=0;
 
 DELETE FROM site;
-INSERT INTO site( id, name ) VALUES( NULL, 'Dalhousie' );
-INSERT INTO site( id, name ) VALUES( NULL, 'McMaster' );
-INSERT INTO site( id, name ) VALUES( NULL, 'Manitoba' );
-INSERT INTO site( id, name ) VALUES( NULL, 'Sherbrooke' );
-INSERT INTO site( id, name ) VALUES( NULL, 'Usher' );
-INSERT INTO site( id, name ) VALUES( NULL, 'Victoria' );
+INSERT INTO site( name ) VALUES( 'Dalhousie' );
+INSERT INTO site( name ) VALUES( 'McMaster' );
+INSERT INTO site( name ) VALUES( 'Manitoba' );
+INSERT INTO site( name ) VALUES( 'Sherbrooke' );
+INSERT INTO site( name ) VALUES( 'Usher' );
+INSERT INTO site( name ) VALUES( 'Victoria' );
 
 DELETE FROM user;
-INSERT INTO user( id, name ) VALUES( NULL, 'patrick' );
-INSERT INTO user( id, name ) VALUES( NULL, 'val' );
-INSERT INTO user( id, name ) VALUES( NULL, 'ron' );
+INSERT INTO user( name ) VALUES( 'patrick' );
+INSERT INTO user( name ) VALUES( 'val' );
+INSERT INTO user( name ) VALUES( 'ron' );
 
 DELETE FROM user_access;
 INSERT INTO user_access
@@ -34,27 +34,5 @@ INSERT INTO user_access
 SET user_id = ( SELECT id FROM user WHERE name = 'val' ),
     role_id = ( SELECT id FROM role WHERE name = 'technician' ),
     site_id = ( SELECT id FROM site WHERE name = 'McMaster' );
-
--- DELETE FROM participant;
--- INSERT INTO participant SET id = 1, first_name = 'Jane', last_name = 'Doe', language = 'en';
--- INSERT INTO participant SET id = 2, first_name = 'John', last_name = 'Doe', language = 'en';
--- INSERT INTO participant SET id = 3, first_name = 'Guy', last_name = 'Lafleur', language = 'fr';
-
--- INSERT INTO contact SET id = 1, participant_id = 1, active = 1, rank = 1, phone = '123-456-7890', type = 'home', province = 'ON';
--- INSERT INTO contact SET id = 2, participant_id = 1, active = 1, rank = 2, phone = '223-456-7890', type = 'home2', province = 'ON';
--- INSERT INTO contact SET id = 3, participant_id = 2, active = 0, rank = 1, phone = '323-456-7890', type = 'work';
--- INSERT INTO contact SET id = 4, participant_id = 2, active = 1, rank = 2, phone = '423-456-7890', type = 'home', province = 'BC';
--- INSERT INTO contact SET id = 5, participant_id = 3, active = 1, rank = 1, phone = '523-456-7890', type = 'cell', province = 'QC';
-
--- The following won't work because of schema changes
-
--- INSERT INTO assignment SET user_id = 1000001, participant_id = 1000001, qnaire_id = 1000001, start_time = now();
--- INSERT INTO assignment SET user_id = 1000001, participant_id = 1000001, qnaire_id = 1000001, start_time = now();
-
--- INSERT INTO phone_call SET user_id = 1000001, contact_id = 1000001, status = 'contacted', start_time = '2011-01-01';
--- INSERT INTO phone_call SET user_id = 1000001, contact_id = 1000001, status = 'busy', start_time = '2011-01-02';
--- INSERT INTO phone_call SET user_id = 1000001, contact_id = 1000002, status = 'fax', start_time = '2011-01-03';
--- INSERT INTO phone_call SET user_id = 1000001, contact_id = 1000002, status = 'no answer', start_time = '2011-01-04';
--- INSERT INTO phone_call SET user_id = 1000001, contact_id = 1000004, status = 'contacted', start_time = '2011-01-05';
 
 COMMIT;

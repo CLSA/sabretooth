@@ -73,7 +73,7 @@ class role_list extends base_list
     // get all roles
     $session = \sabretooth\session::self();
     $desc = $this->sort_desc;
-    $db_role_list = \sabretooth\database\role::select( $limit_count, $limit_offset, $sort, $desc );
+    $db_role_list = $this->get_db_list( $limist_count, $limit_offset, $sort, $desc );
     foreach( $db_role_list as $db_role )
     {
       array_push( $this->rows, 

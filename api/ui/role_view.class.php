@@ -47,9 +47,14 @@ class role_view extends base_view
     $this->item = array( 'Name' => $db_role->name );
 
     // create the operation sub-list widget
-    $ui_operation_list = new operation_list( $args );
-    $ui_operation_list->set_role_restriction( $db_role );
-    $ui_operation_list->finish();
+    $this->operation_list = new operation_list( $args );
+    $this->operation_list->set_parent( $this );
+    $this->operation_list->set_heading( "Operations belonging to this role" );
+    $this->operation_list->set_checkable( false );
+    $this->operation_list->set_viewable( false );
+    $this->operation_list->set_editable( false );
+    $this->operation_list->set_removable( false );
+    $this->operation_list->set_role_restriction( $db_role );
   }
 
   /**
@@ -61,10 +66,27 @@ class role_view extends base_view
   public function finish()
   {
     parent::finish();
-
+    $this->operation_list->finish();
+    
     // define all template variables for this widget
     $this->set_variable( 'id', $this->id );
+    $this->operation_list->set_variable( 'id', $this->id );
+    $this->set_variable( 'operation_list', $this->operation_list->get_variables() );
   }
+
+  // TODO: document
+  public function get_operation_list( $count = 0, $offset = 0, $column = NULL, $descending = false )
+  {
+    $db_role = new \sabretooth\database\role( $this->id );
+    return $db_role->get_operation_list( $count, $offset, $column, $descending );
+  }
+
+  /**
+   * The operation list widget.
+   * @var operation_list
+   * @access protected
+   */
+  protected $operation_list = NULL;
 
   /**
    * The primary key for the role being viewed.

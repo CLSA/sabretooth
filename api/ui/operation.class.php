@@ -34,14 +34,7 @@ abstract class operation extends \sabretooth\base_object
     // type must either be an action or widget
     assert( 'action' == $type || 'widget' == $type );
     
-    $this->type = $type;
-    $this->subject = $subject;
-    $this->name = $name;
-
-    $primary_keys = array( 'type' => $type,
-                           'subject' => $subject,
-                           'name' => $name );
-    $this->record = new \sabretooth\database\operation( $primary_keys );
+    $this->record = \sabretooth\database\operation::get_operation( $type, $subject, $name );
 
     // throw a permission exception if the record is restricted and the user's current role does
     // not have access to the operation
@@ -51,12 +44,20 @@ abstract class operation extends \sabretooth\base_object
   }
 
   /**
+   * Get the database id of the operation.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access public
+   */
+  public function get_id() { return $this->record->id; }
+  
+  /**
    * Get the type of operation.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
-  public function get_type() { return $this->type; }
+  public function get_type() { return $this->record->type; }
   
   /**
    * Get the subject of operation.
@@ -64,7 +65,7 @@ abstract class operation extends \sabretooth\base_object
    * @return string
    * @access public
    */
-  public function get_subject() { return $this->subject; }
+  public function get_subject() { return $this->record->subject; }
   
   /**
    * Get the name of operation.
@@ -72,29 +73,16 @@ abstract class operation extends \sabretooth\base_object
    * @return string
    * @access public
    */
-  public function get_name() { return $this->name; }
+  public function get_name() { return $this->record->name; }
   
   /**
-   * The type of operation (action or widget).
-   * @var string
-   * @access protected
+   * Get the full name of operation (subject_name)
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
    */
-  protected $type;
+  public function get_full_name() { return $this->record->subject.'_'.$this->record->name; }
   
-  /**
-   * The operation's subject.
-   * @var string
-   * @access protected
-   */
-  protected $subject;
-  
-  /**
-   * The operation's name.
-   * @var string
-   * @access protected
-   */
-  protected $name;
-
   /**
    * The database record for this operation
    * @var database\active_record

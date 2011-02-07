@@ -220,12 +220,12 @@ final class session extends singleton
       // if we still don't have a site and role then pick the first one we can find
       if( is_NULL( $this->site ) || is_NULL( $this->role ) )
       {
-        $db_site_array = $this->user->get_sites();
-        if( 0 == count( $db_site_array ) )
+        $db_site_list = $this->user->get_site_list();
+        if( 0 == count( $db_site_list ) )
           log::err( "User does not have access to any site." );
-        $db_site = $db_site_array[0];
-        $db_role_array = $this->user->get_roles( $db_site );
-        $db_role = $db_role_array[0];
+        $db_site = $db_site_list[0];
+        $db_role_list = $this->user->get_role_list( $db_site );
+        $db_role = $db_role_list[0];
 
         $this->set_site_and_role( $db_site, $db_role );
       }
@@ -267,9 +267,7 @@ final class session extends singleton
     $activity->user_id = $this->user->id;
     $activity->site_id = $this->site->id;
     $activity->role_id = $this->role->id;
-    $activity->type = $operation->get_type();
-    $activity->subject = $operation->get_subject();
-    $activity->name = $operation->get_name();
+    $activity->operation_id = $operation->get_id();
     $activity->query = $query;
     $activity->save();
   }
