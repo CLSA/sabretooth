@@ -85,12 +85,13 @@ abstract class active_record extends \sabretooth\base_object
   {
     if( isset( $this->columns['id'] ) )
     {
-      $sql = 'SELECT * '.
-             'FROM '.static::get_table_name().' '.
-             'WHERE id = '.$this->id;
-      $row = self::get_row( $sql );
+      $row = self::get_row(
+        sprintf( 'SELECT * FROM %s WHERE id = %d',
+                 static::get_table_name(),
+                 $this->id ) );
+
       if( 0 == count( $row ) )
-        throw new \sabretooth\exception\database( "Load failed to find record.", $sql );
+        throw new \sabretooth\exception\database( 'Load failed to find record.', $sql );
 
       $this->columns = $row;
     }
@@ -114,19 +115,22 @@ abstract class active_record extends \sabretooth\base_object
     {
       if( 'id' != $key )
       {
-        $sets .= ( $first ? "": ", " )."$key = ".self::format_string( $val );
+        $sets .= sprintf( '%s %s = %d',
+                          $first ? '', ',',
+                          $key,
+                          self::format_string( $val ) );
         $first = false;
       }
     }
     
     // either insert or update the row based on whether the primary key is set
-    $sql = is_null( $this->columns['id'] )
-         ? 'INSERT INTO '.static::get_table_name().' '.
-           'SET '.$sets
-         : 'UPDATE '.static::get_table_name().' '.
-           'SET '.$sets.' '.
-           'WHERE id = '.$this->columns['id'];
-    self::execute( $sql );
+    self::execute(
+      sprintf( is_null( $this->columns['id'] )
+        ? 'INSERT INTO %s SET %s'
+        : 'UPDATE %s SET %s WHERE id = %d',
+        static::get_table_name(),
+        $sets,
+        $this->columns['id'] )  );
 
     // get the new new primary key
     if( is_null( $this->columns['id'] ) ) $this->columns['id'] = self::insert_id();
@@ -143,8 +147,8 @@ abstract class active_record extends \sabretooth\base_object
   public static function count()
   {
     return self::get_one(
-      'SELECT COUNT(*) '.
-      'FROM '.static::get_table_name() );
+      sprintf( 'SELECT COUNT(*) FROM %s',
+               static::get_table_name() ) );
   }
 
   /**
@@ -160,10 +164,10 @@ abstract class active_record extends \sabretooth\base_object
   {
     // if we get here then $column_name isn't a column === BAD CODE
     if( !$this->has_column_name( $column_name ) )
-    {
       throw new \sabretooth\exception\database(
-        "Table ".static::get_table_name()." does not have a column named \"$column_name\"" );
-    }
+        sprintf( 'Table %s does not have a column named "%s%".',
+                 static::get_table_name(),
+                 $column_name ) );
     
     return isset( $this->columns[ $column_name ] ) ? $this->columns[ $column_name ] : NULL;
   }
@@ -183,7 +187,9 @@ abstract class active_record extends \sabretooth\base_object
     // if we get here then $column_name isn't a column === BAD CODE
     if( !$this->has_column_name( $column_name ) )
       throw new \sabretooth\exception\database(
-        "Table ".static::get_table_name()." does not have a column named \"$column_name\"" );
+        sprintf( 'Table %s does not have a column named "%s%".',
+                 static::get_table_name(),
+                 $column_name ) );
     
     $this->columns[ $column_name ] = $value;
   }
@@ -262,9 +268,11 @@ abstract class active_record extends \sabretooth\base_object
         }
 
         $ids = self::get_col(
-          'SELECT '.$foreign_key_name.' '.
-          'FROM '.$joining_table_name.' '.
-          'WHERE '.$primary_key_name.' = '.$this->id );
+          sprintf( 'SELECT %s FROM %s WHERE %s = %d',
+                   $foreign_key_name,
+                   $joining_table_name,
+                   $primary_key_name,
+                   $this->id ) );
 
         $return_value = array();
         foreach( $ids as $id ) array_push( $return_value, new $foreign_table_name( $id ) );
@@ -317,24 +325,40 @@ abstract class active_record extends \sabretooth\base_object
       $where = 'WHERE ';
       foreach( $restrictions as $column => $value )
       {
-        $where .= ( $first ? '' : 'AND ' )."$column = $value ";
+        $where .= sprintf( '%s %s = %d',
+                           $first ? '', 'AND',
+                           $column,
+                           self::format_string( $value ) );
         $first = false;
       }
     }
-
-    $id_list = self::get_col(
-      'SELECT id '.
-      'FROM '.static::get_table_name().' '.
-      $where.
-      ( !is_null( $sort_column )
-          ? 'ORDER BY '.$sort_column.' '.( $descending ? 'DESC ' : '' )
-          : '' ).
-      ( 0 < $count ? 'LIMIT '.$count.' OFFSET '.$offset : '' ) );
-
-    foreach( $id_list as $id )
+    
+    // build the order
+    $order = '';
+    if( !is_null( $sort_column ) )
     {
-      array_push( $records, new static( $id ) );
+      $order = sprintf( 'ORDER BY %s %s',
+                        $sort_column,
+                        $descending ? 'DESC' : '' );
     }
+
+    // build the limit
+    $limit = '';
+    if( 0 < $count )
+    {
+      $limit = sprintf( 'LIMIT %d OFFSET %d',
+                        $count,
+                        $offset );
+    }
+    
+    $id_list = self::get_col(
+      sprintf( 'SELECT id FROM %s %s %s %s',
+               static::get_table_name(),
+               $where,
+               $order,
+               $limit ) );
+
+    foreach( $id_list as $id ) array_push( $records, new static( $id ) );
 
     return $records;
   }
@@ -357,20 +381,24 @@ abstract class active_record extends \sabretooth\base_object
 
     // determine the unique key(s)
     $unique_keys = self::get_col( 
-      'SELECT COLUMN_NAME '.
-      'FROM information_schema.COLUMNS '.
-      'WHERE TABLE_SCHEMA = "'.$database.'" '.
-      'AND TABLE_NAME = "'.static::get_table_name().'" '.
-      'AND COLUMN_KEY = "UNI"' );
+      sprintf( 'SELECT COLUMN_NAME '.
+               'FROM information_schema.COLUMNS '.
+               'WHERE TABLE_SCHEMA = %s '.
+               'AND TABLE_NAME = %s '.
+               'AND COLUMN_KEY = "UNI"',
+               self::format_string( $database ),
+               self::format_string( static::get_table_name ) ) );
     
     // make sure the column is unique
     if( in_array( $column, $unique_keys ) )
     {
       // this returns null if no records are found
       $id = self::get_one(
-        'SELECT id '.
-        'FROM '.static::get_table_name().' '.
-        'WHERE '.$column.' = "'.$value.'"' );
+        sprintf( 'SELECT id FROM %s WHERE %s = %s',
+                 static::get_table_name(),
+                 $column,
+                 self::format_string( $value ) ) );
+
       if( !is_null( $id ) ) $record = new static( $id );
     }
     return $record;
@@ -379,7 +407,8 @@ abstract class active_record extends \sabretooth\base_object
   /**
    * Returns the string formatted for database queries.
    * 
-   * The returned value should be put in double quotes.
+   * The returned value will be put in double quotes unless the input is null in which case NULL
+   * is returned.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $string The string to format for use in a query.
    * @return string
@@ -388,10 +417,7 @@ abstract class active_record extends \sabretooth\base_object
    */
   public static function format_string( $string )
   {
-    // TODO: clean/escape the string before returning it
-    if( is_null( $string ) ) $string = 'NULL';
-    else if( is_string( $string ) ) $string = '"'.$string.'"';
-    return $string;
+    return is_null( $string ) ? 'NULL' : '"'.mysql_real_escape_string( $string ).'"';
   }
 
   /**
@@ -417,10 +443,13 @@ abstract class active_record extends \sabretooth\base_object
   {
     $database = \sabretooth\session::self()->get_setting( 'db', 'database' );
     $count = self::get_one(
-      'SELECT COUNT(*) '.
-      'FROM information_schema.TABLES '.
-      'WHERE Table_Name="'.$name.'" '.
-      'AND TABLE_SCHEMA="'.$database.'"' );
+      sprintf( 'SELECT COUNT(*) '.
+               'FROM information_schema.TABLES '.
+               'WHERE Table_Name = %s '.
+               'AND TABLE_SCHEMA = %s',
+               self::format_string( $name ),
+               self::format_string( $database ) ) );
+
     return 0 < $count;
   }
 

@@ -44,7 +44,7 @@ class user extends active_record
     // create special sql that sorts by the foreign column association
     $records = array();
 
-    // build the restriction list
+    // build the where
     $where = '';
     if( is_array( $restrictions ) && 0 < count( $restrictions ) )
     {
@@ -57,19 +57,37 @@ class user extends active_record
       }
     }
 
+    // build the order
+    $order = '';
+    if( !is_null( $sort_column ) )
+    {
+      $order = sprintf( 'ORDER BY %s %s',
+                        $sort_column,
+                        $descending ? 'DESC' : '' );
+    }
+   
+    // build the limit
+    $limit = '';
+    if( 0 < $count )
+    {
+      $limit = sprintf( 'LIMIT %d OFFSET %d',
+                        $count,
+                        $offset );
+    }
+
     $id_list = self::get_col(
-      'SELECT user.id '.
-      'FROM user '.
-      'LEFT JOIN user_last_activity '.
-      'ON user.id = user_last_activity.user_id '.
-      'LEFT JOIN activity '.
-      'ON user_last_activity.activity_id = activity.id '.
-      $where.
-      'ORDER BY '.$sort_column.' '.( $descending ? 'DESC ' : '' ).
-      ( 0 < $count ? 'LIMIT '.$count.' OFFSET '.$offset : '' ) );
+      sprintf( 'SELECT user.id '.
+               'FROM user '.
+               'LEFT JOIN user_last_activity '.
+               'ON user.id = user_last_activity.user_id '.
+               'LEFT JOIN activity '.
+               'ON user_last_activity.activity_id = activity.id '.
+               '%s %s %s',
+               $where,
+               $order,
+               $limit ) );
 
     foreach( $id_list as $id ) array_push( $records, new static( $id ) );
-
     return $records;
   }
       
@@ -91,11 +109,14 @@ class user extends active_record
     }
 
     $rows = self::get_one(
-      'SELECT user_id '.
-      'FROM user_access '.
-      'WHERE user_id = '.$this->id.' '.
-      'AND site_id = '.$db_site->id.' '.
-      'AND role_id = '.$db_role->id );
+      sprintf( 'SELECT user_id '.
+               'FROM user_access '.
+               'WHERE user_id = %s '.
+               'AND site_id = %s '.
+               'AND role_id = %s ',
+               self::format_string( $this->id ),
+               self::format_string( $db_site->id ),
+               self::format_string( $db_role->id ) ) );
 
     return count( $rows );
   }
@@ -118,11 +139,12 @@ class user extends active_record
     }
 
     $site_ids = self::get_col(
-      'SELECT site_id '.
-      'FROM user_access '.
-      'WHERE user_id = '.$this->id.' '.
-      'GROUP BY site_id '.
-      'ORDER BY site_id' );
+      sprintf( 'SELECT site_id '.
+               'FROM user_access '.
+               'WHERE user_id = '.$this->id.' '.
+               'GROUP BY site_id '.
+               'ORDER BY site_id',
+               self::format_string( $this->id ) ) );
       
     foreach( $site_ids as $site_id ) array_push( $sites, new site( $site_id ) );
     return $sites;
@@ -147,12 +169,14 @@ class user extends active_record
     }
 
     $role_ids = self::get_col(
-      'SELECT role_id '.
-      'FROM user_access '.
-      'WHERE user_id = '.$this->id.' '.
-      ( !is_null( $db_site ) ? 'AND site_id = '.$db_site->id.' ' : '' ).
-      'ORDER BY role_id' );
-     
+      sprintf( 'SELECT role_id '.
+               'FROM user_access '.
+               'WHERE user_id = %s '.
+               ( !is_null( $db_site ) ? 'AND site_id = %s ' : '' ).
+               'ORDER BY role_id',
+               self::format_string( $this->id ),
+               self::format_string( $db_site->id ) ) );
+
     foreach( $role_ids as $role_id ) array_push( $roles, new role( $role_id ) );
     return $roles;
   }
@@ -167,9 +191,8 @@ class user extends active_record
   public function get_last_activity()
   {
     $activity_id = self::get_one(
-      'SELECT activity_id '.
-      'FROM user_last_activity '.
-      'WHERE user_id = '.$this->id );
+      sprintf( 'SELECT activity_id FROM user_last_activity WHERE user_id = %s',
+               self::format_string( $this->id ) ) );
     
     return is_null( $activity_id ) ? NULL : new activity( $activity_id );
   }

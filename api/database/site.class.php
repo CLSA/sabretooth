@@ -44,7 +44,7 @@ class site extends active_record
     // create special sql that sorts by the foreign column association
     $records = array();
 
-    // build the restriction list
+    // build the where
     $where = '';
     if( is_array( $restrictions ) && 0 < count( $restrictions ) )
     {
@@ -52,24 +52,47 @@ class site extends active_record
       $where = 'WHERE ';
       foreach( $restrictions as $column => $value )
       {
-        $where .= ( $first ? '' : 'AND ' )."$column = $value ";
+        $where .= sprintf( '%s %s = %d',
+                           $first ? '' : 'AND',
+                           $column,
+                           self::format_string( $value ) );
         $first = false;
       }
+    }
+    
+    // build the order
+    $order = '';
+    if( !is_null( $sort_column ) )
+    {
+      $order = sprintf( 'ORDER BY %s %s',
+                        $sort_column,
+                        $descending ? 'DESC' : '' );
+    }
+   
+    // build the limit
+    $limit = '';
+    if( 0 < $count )
+    {
+      $limit = sprintf( 'LIMIT %d OFFSET %d',
+                        $count,
+                        $offset );
     }
 
     // sort by activity date
     if( 'activity.date' == $sort_column )
     {
       $id_list = self::get_col(
-        'SELECT site.id '.
-        'FROM '.static::get_table_name().' '.
-        'LEFT JOIN site_last_activity '.
-        'ON site.id = site_last_activity.site_id '.
-        'LEFT JOIN activity '.
-        'ON site_last_activity.activity_id = activity.id '.
-        $where.
-        'ORDER BY '.$sort_column.' '.( $descending ? 'DESC ' : '' ).
-        ( 0 < $count ? 'LIMIT '.$count.' OFFSET '.$offset : '' ) );
+        sprintf( 'SELECT site.id '.
+                 'FROM %s '.
+                 'LEFT JOIN site_last_activity '.
+                 'ON site.id = site_last_activity.site_id '.
+                 'LEFT JOIN activity '.
+                 'ON site_last_activity.activity_id = activity.id '.
+                 '%s %s %s',
+                 self::get_table_name(),
+                 $where,
+                 $order,
+                 $limit ) );
     }
 
     foreach( $id_list as $id )
@@ -90,9 +113,8 @@ class site extends active_record
   public function get_last_activity()
   {
     $activity_id = self::get_one(
-      'SELECT activity_id '.
-      'FROM site_last_activity '.
-      'WHERE site_id = '.$this->id.' ' );
+      sprintf( 'SELECT activity_id FROM site_last_activity WHERE site_id = %s',
+               self::format_string( $this->id ) ) );
 
     return is_null( $activity_id ) ? NULL : new activity( $activity_id );
   }
@@ -113,9 +135,8 @@ class site extends active_record
     }
 
     return self::get_one(
-      'SELECT COUNT( DISTINCT id ) '.
-      'FROM activity '.
-      'WHERE site_id = '.$this->id );
+      sprintf( 'SELECT COUNT( DISTINCT id ) FROM activity WHERE site_id = %s',
+               self::format_string( $this->id ) ) );
   }
 
   /**
@@ -138,18 +159,36 @@ class site extends active_record
       return $activity_list;
     }
 
+    // build the order
+    $order = '';
+    if( !is_null( $sort_column ) )
+    {
+      $order = sprintf( 'ORDER BY %s %s',
+                        $sort_column,
+                        $descending ? 'DESC' : '' );
+    }
+   
+    // build the limit
+    $limit = '';
+    if( 0 < $count )
+    {
+      $limit = sprintf( 'LIMIT %d OFFSET %d',
+                        $count,
+                        $offset );
+    }
+
     $ids = self::get_col(
-      'SELECT activity.id '.
-      'FROM activity, user, site, role, operation '.
-      'WHERE activity.user_id = user.id '.
-      'AND activity.site_id = site.id '.
-      'AND activity.role_id = role.id '.
-      'AND activity.operation_id = operation.id '.
-      'AND activity.site_id = '.$this->id.' '.
-      ( !is_null( $sort_column )
-          ? 'ORDER BY '.$sort_column.' '.( $descending ? 'DESC ' : '' )
-          : '' ).
-      ( 0 < $count ? 'LIMIT '.$count.' OFFSET '.$offset : '' ) );
+      sprintf( 'SELECT activity.id '.
+               'FROM activity, user, site, role, operation '.
+               'WHERE activity.user_id = user.id '.
+               'AND activity.site_id = site.id '.
+               'AND activity.role_id = role.id '.
+               'AND activity.operation_id = operation.id '.
+               'AND activity.site_id = %s '.
+               '%s %s',
+               self::format_string( $this->id ),
+               $order,
+               $limit ) );
 
     foreach( $ids as $id ) array_push( $activity_list, new activity( $id ) );
     return $activity_list;
@@ -171,9 +210,8 @@ class site extends active_record
     }
 
     return self::get_one(
-      'SELECT COUNT( DISTINCT user_id ) '.
-      'FROM user_access '.
-      'WHERE site_id = '.$this->id );
+      sprintf( 'SELECT COUNT( DISTINCT user_id ) FROM user_access WHERE site_id = %s',
+               self::format_string( $this->id ) ) );
   }
 
   /**
@@ -196,20 +234,38 @@ class site extends active_record
       return $users;
     }
 
+    // build the order
+    $order = '';
+    if( !is_null( $sort_column ) )
+    {
+      $order = sprintf( 'ORDER BY %s %s',
+                        $sort_column,
+                        $descending ? 'DESC' : '' );
+    }
+   
+    // build the limit
+    $limit = '';
+    if( 0 < $count )
+    {
+      $limit = sprintf( 'LIMIT %d OFFSET %d',
+                        $count,
+                        $offset );
+    }
+
     $ids = self::get_col(
-      'SELECT user_access.user_id '.
-      'FROM user_access, user '.
-      'LEFT JOIN user_last_activity '.
-      'ON user.id = user_last_activity.user_id '.
-      'LEFT JOIN activity '.
-      'ON user_last_activity.activity_id = activity.id '.
-      'WHERE user_access.user_id = user.id '.
-      'AND user_access.site_id = '.$this->id.' '.
-      'GROUP BY user_access.user_id '.
-      ( !is_null( $sort_column )
-          ? 'ORDER BY '.$sort_column.' '.( $descending ? 'DESC ' : '' )
-          : '' ).
-      ( 0 < $count ? 'LIMIT '.$count.' OFFSET '.$offset : '' ) );
+      sprintf( 'SELECT user_access.user_id '.
+               'FROM user_access, user '.
+               'LEFT JOIN user_last_activity '.
+               'ON user.id = user_last_activity.user_id '.
+               'LEFT JOIN activity '.
+               'ON user_last_activity.activity_id = activity.id '.
+               'WHERE user_access.user_id = user.id '.
+               'AND user_access.site_id = %s '.
+               'GROUP BY user_access.user_id '.
+               '%s %s',
+               self::format_string( $this->id ),
+               $order,
+               $limit ) );
 
     foreach( $ids as $id ) array_push( $users, new user( $id ) );
     return $users;

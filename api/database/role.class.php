@@ -32,9 +32,8 @@ class role extends active_record
     }
 
     $count = self::get_one(
-      'SELECT COUNT( DISTINCT user_id ) '.
-      'FROM user_access '.
-      'WHERE role_id = '.$this->id );
+      sprintf( 'SELECT COUNT( DISTINCT user_id ) FROM user_access WHERE role_id = %s',
+               self::format_string( $this->id ) ) );
 
     return $count;
   }
@@ -55,9 +54,8 @@ class role extends active_record
     }
 
     $count = self::get_one(
-      'SELECT COUNT( DISTINCT operation_id ) '.
-      'FROM role_has_operation '.
-      'WHERE role_id = '.$this->id );
+      sprintf( 'SELECT COUNT( DISTINCT operation_id ) FROM role_has_operation WHERE role_id = %s',
+               self::format_string( $this->id ) ) );
 
     return $count;
   }
@@ -84,10 +82,12 @@ class role extends active_record
     }
 
     $count = self::get_one(
-      'SELECT COUNT( DISTINCT operation_id ) '.
-      'FROM role_has_operation '.
-      'WHERE role_id = '.$this->id.' '.
-      'AND operation_id = '.$db_operation->id );
+      sprintf( 'SELECT COUNT( DISTINCT operation_id ) '.
+               'FROM role_has_operation '.
+               'WHERE role_id = %s '.
+               'AND operation_id = %s',
+               self::format_string( $this->id ),
+               self::format_string( $db_operation->id ) ) );
 
     return 0 < $count;
   }
@@ -111,17 +111,35 @@ class role extends active_record
       \sabretooth\log::warning( 'Tried to determine operation for role record with no id.' );
       return $operations;
     }
+    
+    // build the order
+    $order = '';
+    if( !is_null( $sort_column ) )
+    {
+      $order = sprintf( 'ORDER BY %s %s',
+                        $sort_column,
+                        $descending ? 'DESC' : '' );
+    }
+    
+    // build the limit
+    $limit = '';
+    if( 0 < $count )
+    {
+      $limit = sprintf( 'LIMIT %d OFFSET %d',
+                        $count,
+                        $offset );
+    }
 
     $ids = self::get_col(
-      'SELECT operation.id '.
-      'FROM role_has_operation rho, operation '.
-      'WHERE rho.operation_id = operation.id '.
-      'AND role_id = '.$this->id.' '.
-      'GROUP BY operation.id '.
-      ( !is_null( $sort_column )
-          ? 'ORDER BY '.$sort_column.' '.( $descending ? 'DESC ' : '' )
-          : '' ).
-      ( 0 < $count ? 'LIMIT '.$count.' OFFSET '.$offset : '' ) );
+      sprintf( 'SELECT operation.id '.
+               'FROM role_has_operation rho, operation '.
+               'WHERE rho.operation_id = operation.id '.
+               'AND role_id = %s '.
+               'GROUP BY operation.id '.
+               '%s %s',
+               self::format_string( $this->id ),
+               $order,
+               $limit ) );
 
     foreach( $ids as $id ) array_push( $operations, new operation( $id ) );
     return $operations;
