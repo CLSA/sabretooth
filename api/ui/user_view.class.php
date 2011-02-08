@@ -35,7 +35,7 @@ class user_view extends base_view
     
     // create an associative array with everything we want to display about the user
     $this->item = array( 'Username' => $this->record->name,
-                         'Limesurvey username' => "TODO" );
+                         'Limesurvey username' => 'TODO' );
   }
 
   /**

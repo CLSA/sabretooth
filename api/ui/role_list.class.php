@@ -31,19 +31,19 @@ class role_list extends base_list
     $session = \sabretooth\session::self();
 
     // define all template variables for this list
-    $this->heading =  "Role list";
+    $this->heading =  'Role list';
     $this->checkable =  false;
     $this->viewable =  true; // TODO: should be based on role
     $this->editable =  false;
     $this->removable =  false;
 
     $this->columns = array(
-      array( "id" => "name",
-             "name" => "name",
-             "sortable" => true ),
-      array( "id" => "users",
-             "name" => "users",
-             "sortable" => false ) );
+      array( 'id' => 'name',
+             'name' => 'name',
+             'sortable' => true ),
+      array( 'id' => 'users',
+             'name' => 'users',
+             'sortable' => false ) );
   }
 
   /**
