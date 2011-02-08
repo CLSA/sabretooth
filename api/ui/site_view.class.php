@@ -91,16 +91,13 @@ class site_view extends base_view
    * Overrides the user list widget's method.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param int $count The number of rows to include.
-   * @param int $offset The offset to start rows at.
-   * @param string $sort The column to sort the list by.
-   * @param boolean $desc Whether to sort in descending or ascending order.
+   * @param database\modifier $modifier Modifications to the list.
    * @return array( active_record )
    * @access protected
    */
-  public function determine_user_list( $count, $offset, $column, $desc )
+  public function determine_user_list( $modifier )
   {
-    return $this->record->get_user_list( $count, $offset, $column, $desc );
+    return $this->record->get_user_list( $modifier );
   }
 
   /**
@@ -119,16 +116,13 @@ class site_view extends base_view
    * Overrides the activity list widget's method.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param int $count The number of rows to include.
-   * @param int $offset The offset to start rows at.
-   * @param string $sort The column to sort the list by.
-   * @param boolean $desc Whether to sort in descending or ascending order.
+   * @param database\modifier $modifier Modifications to the list.
    * @return array( active_record )
    * @access protected
    */
-  public function determine_activity_list( $count, $offset, $column, $desc )
+  public function determine_activity_list( $modifier )
   {
-    return $this->record->get_activity_list( $count, $offset, $column, $desc );
+    return $this->record->get_activity_list( $modifier );
   }
 
   /**

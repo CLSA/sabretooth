@@ -24,6 +24,7 @@ abstract class base_view extends widget
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $subject The subject being viewed.
    * @param array $args An associative array of arguments to be processed by the widget
+   * @throws exception\argument
    * @access public
    */
   public function __construct( $subject, $args )

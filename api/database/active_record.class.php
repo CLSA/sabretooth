@@ -33,18 +33,18 @@ abstract class active_record extends \sabretooth\base_object
   {
     // determine the columns for this table
     $db = \sabretooth\session::self()->get_db();
-    $columns = $db->MetaColumnNames( static::get_table_name() );
+    $columns = $db->MetaColumnNames( self::get_table_name() );
 
     if( !is_array( $columns ) || 0 == count( $columns ) )
       throw new \sabretooth\exception\database(
-        "Meta column names return no columns for table ".static::get_table_name() );
+        "Meta column names return no columns for table ".self::get_table_name() );
 
     foreach( $columns as $name ) $this->columns[ $name ] = NULL;
     
     if( NULL != $id )
     {
       // make sure this table has an id column as the primary key
-      $primary_key_names = $db->MetaPrimaryKeys( static::get_table_name() );
+      $primary_key_names = $db->MetaPrimaryKeys( self::get_table_name() );
       if( 1 != count( $primary_key_names ) || 'id' != $primary_key_names[0] )
       {
         throw new \sabretooth\exception\database(
@@ -87,7 +87,7 @@ abstract class active_record extends \sabretooth\base_object
     {
       $row = self::get_row(
         sprintf( 'SELECT * FROM %s WHERE id = %d',
-                 static::get_table_name(),
+                 self::get_table_name(),
                  $this->id ) );
 
       if( 0 == count( $row ) )
@@ -115,7 +115,7 @@ abstract class active_record extends \sabretooth\base_object
     {
       if( 'id' != $key )
       {
-        $sets .= sprintf( '%s %s = %d',
+        $sets .= sprintf( '%s %s = %s',
                           $first ? '' : ',',
                           $key,
                           self::format_string( $val ) );
@@ -128,7 +128,7 @@ abstract class active_record extends \sabretooth\base_object
       sprintf( is_null( $this->columns['id'] )
         ? 'INSERT INTO %s SET %s'
         : 'UPDATE %s SET %s WHERE id = %d',
-        static::get_table_name(),
+        self::get_table_name(),
         $sets,
         $this->columns['id'] )  );
 
@@ -148,7 +148,7 @@ abstract class active_record extends \sabretooth\base_object
   {
     return self::get_one(
       sprintf( 'SELECT COUNT(*) FROM %s',
-               static::get_table_name() ) );
+               self::get_table_name() ) );
   }
 
   /**
@@ -166,7 +166,7 @@ abstract class active_record extends \sabretooth\base_object
     if( !$this->has_column_name( $column_name ) )
       throw new \sabretooth\exception\database(
         sprintf( 'Table %s does not have a column named "%s%".',
-                 static::get_table_name(),
+                 self::get_table_name(),
                  $column_name ) );
     
     return isset( $this->columns[ $column_name ] ) ? $this->columns[ $column_name ] : NULL;
@@ -188,7 +188,7 @@ abstract class active_record extends \sabretooth\base_object
     if( !$this->has_column_name( $column_name ) )
       throw new \sabretooth\exception\database(
         sprintf( 'Table %s does not have a column named "%s%".',
-                 static::get_table_name(),
+                 self::get_table_name(),
                  $column_name ) );
     
     $this->columns[ $column_name ] = $value;
@@ -229,7 +229,7 @@ abstract class active_record extends \sabretooth\base_object
       // make sure the refering table exists
       $name_parts = explode( '_', $name );
       $foreign_table_name = $name_parts[1];
-      $primary_key_name = static::get_table_name().'_id';
+      $primary_key_name = self::get_table_name().'_id';
       $foreign_key_name = $foreign_table_name.'_id';
       if( !self::table_exists( $name_parts[1] ) )
       {
@@ -260,7 +260,7 @@ abstract class active_record extends \sabretooth\base_object
       else if( 3 == count( $name_parts ) )
       { // we're linking a joining table
         // make sure joining table exists
-        $joining_table_name = static::get_table_name().'_has_'.$foreign_table_name;
+        $joining_table_name = self::get_table_name().'_has_'.$foreign_table_name;
         if( !$this->table_exists( $joining_table_name ) )
         {
           trigger_error(
@@ -322,64 +322,23 @@ abstract class active_record extends \sabretooth\base_object
    * Select a number of records.
    * 
    * This method returns an array of records.
-   * Be careful when calling this method.  Based on the count and offset parameters an object is
-   * created for every row being selected, so selecting a very large number of rows (1000+) isn't
-   * a good idea.
+   * Be careful when calling this method.  Based on the modifier object a record is created for
+   * every row being selected, so selecting a very large number of rows (100+) isn't a good idea.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param int $count The number of records to return
-   * @param int $offset The 0-based index of the first record to start selecting from
-   * @param string $sort_column Which column to sort by during the select.
-   * @param boolean $descending Whether to sort descending or ascending.
+   * @param database\modifier $modifier Modifications to the selection.
    * @param array $restrictions And array of restrictions to add to the were clause of the select.
    * @return array( active_record )
    * @static
    * @access public
    */
-  public static function select(
-    $count = 0, $offset = 0, $sort_column = NULL, $descending = false, $restrictions = NULL )
+  public static function select( $modifier = NULL )
   {
     $records = array();
     
-    // build the where
-    $where = '';
-    if( is_array( $restrictions ) && 0 < count( $restrictions ) )
-    {
-      $first = true;
-      $where = 'WHERE ';
-      foreach( $restrictions as $column => $value )
-      {
-        $where .= sprintf( '%s %s = %d',
-                           $first ? '', 'AND',
-                           $column,
-                           self::format_string( $value ) );
-        $first = false;
-      }
-    }
-    
-    // build the order
-    $order = '';
-    if( !is_null( $sort_column ) )
-    {
-      $order = sprintf( 'ORDER BY %s %s',
-                        $sort_column,
-                        $descending ? 'DESC' : '' );
-    }
-
-    // build the limit
-    $limit = '';
-    if( 0 < $count )
-    {
-      $limit = sprintf( 'LIMIT %d OFFSET %d',
-                        $count,
-                        $offset );
-    }
-    
     $id_list = self::get_col(
-      sprintf( 'SELECT id FROM %s %s %s %s',
-               static::get_table_name(),
-               $where,
-               $order,
-               $limit ) );
+      sprintf( 'SELECT id FROM %s %s',
+               self::get_table_name(),
+               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
 
     foreach( $id_list as $id ) array_push( $records, new static( $id ) );
 
@@ -410,7 +369,7 @@ abstract class active_record extends \sabretooth\base_object
                'AND TABLE_NAME = %s '.
                'AND COLUMN_KEY = "UNI"',
                self::format_string( $database ),
-               self::format_string( static::get_table_name ) ) );
+               self::format_string( self::get_table_name() ) ) );
     
     // make sure the column is unique
     if( in_array( $column, $unique_keys ) )
@@ -418,7 +377,7 @@ abstract class active_record extends \sabretooth\base_object
       // this returns null if no records are found
       $id = self::get_one(
         sprintf( 'SELECT id FROM %s WHERE %s = %s',
-                 static::get_table_name(),
+                 self::get_table_name(),
                  $column,
                  self::format_string( $value ) ) );
 

@@ -23,57 +23,22 @@ class user extends active_record
    * outside of the user's table columns.
    * Currently users can be ordered by: activity.date
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param int $count The number of records to return
-   * @param int $offset The 0-based index of the first record to start selecting from
-   * @param string $sort_column Which column to sort by during the select.
-   * @param boolean $descending Whether to sort descending or ascending.
+   * @param database\modifier $modifier Modifications to the selection.
    * @param array $restrictions And array of restrictions to add to the were clause of the select.
    * @return array( active_record )
    * @static
    * @access public
    */
-  public static function select(
-    $count = 0, $offset = 0, $sort_column = NULL, $descending = false, $restrictions = NULL )
+  public static function select( $modifier = NULL )
   {
     // no need to override the basic functionality
     if( 'activity.date' != $sort_column )
     {
-      return parent::select( $count, $offset, $sort_column, $descending, $restrictions );
+      return parent::select( $modifier );
     }
     
     // create special sql that sorts by the foreign column association
     $records = array();
-
-    // build the where
-    $where = '';
-    if( is_array( $restrictions ) && 0 < count( $restrictions ) )
-    {
-      $first = true;
-      $where = 'WHERE ';
-      foreach( $restrictions as $column => $value )
-      {
-        $where .= ( $first ? '' : 'AND ' )."$column = $value ";
-        $first = false;
-      }
-    }
-
-    // build the order
-    $order = '';
-    if( !is_null( $sort_column ) )
-    {
-      $order = sprintf( 'ORDER BY %s %s',
-                        $sort_column,
-                        $descending ? 'DESC' : '' );
-    }
-   
-    // build the limit
-    $limit = '';
-    if( 0 < $count )
-    {
-      $limit = sprintf( 'LIMIT %d OFFSET %d',
-                        $count,
-                        $offset );
-    }
 
     $id_list = self::get_col(
       sprintf( 'SELECT user.id '.
@@ -82,10 +47,8 @@ class user extends active_record
                'ON user.id = user_last_activity.user_id '.
                'LEFT JOIN activity '.
                'ON user_last_activity.activity_id = activity.id '.
-               '%s %s %s',
-               $where,
-               $order,
-               $limit ) );
+               '%s',
+               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
 
     foreach( $id_list as $id ) array_push( $records, new static( $id ) );
     return $records;

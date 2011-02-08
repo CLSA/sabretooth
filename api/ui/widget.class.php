@@ -61,6 +61,7 @@ abstract class widget extends operation
    *                       it is assumed that the argument must exist, throwing an argument
                            exception if it is not set.
    * @return mixed
+   * @throws exception\argument
    * @access public
    */
   public function get_argument( $name, $default = NULL )

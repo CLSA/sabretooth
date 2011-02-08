@@ -62,16 +62,20 @@ abstract class base_list extends widget
 
     // make sure the page is valid, then set the rows array based on the page
     $max_page = ceil( $this->record_count / $this->items_per_page );
-    $limit_offset = ( $this->page - 1 ) * $this->items_per_page;
     if( 1 > $this->page ) $this->page = 1; // lower limit
     if( $this->page > $max_page ) $this->page = $max_page; // upper limit
+    
+    // build the sql modifier
+    $modifier = new \sabretooth\database\modifier();
+    if( strlen( $this->sort_column ) )
+      $modifier->order( $this->determine_record_sort_column( $this->sort_column ), $this->sort_desc );
+    $modifier->limit( $this->items_per_page, ( $this->page - 1 ) * $this->items_per_page );
 
     $method_name = 'determine_'.$this->get_subject().'_list';
-    $sort = $this->determine_record_sort_column( $this->sort_column );
     $this->record_list =
       $this->parent && method_exists( $this->parent, $method_name )
-      ? $this->parent->$method_name( $this->items_per_page, $limit_offset, $sort, $this->sort_desc )
-      : $this->determine_record_list( $this->items_per_page, $limit_offset, $sort, $this->sort_desc );
+      ? $this->parent->$method_name( $modifier )
+      : $this->determine_record_list( $modifier );
     $this->set_rows();
 
     // define all template variables for this widget
@@ -148,17 +152,14 @@ abstract class base_list extends widget
    * by defining a determine_<record>_list() method, where <record> is the name of the database
    * record/table of the embedded widget.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param int $count The number of rows to include.
-   * @param int $offset The offset to start rows at.
-   * @param string $sort The column to sort the list by.
-   * @param boolean $desc Whether to sort in descending or ascending order.
+   * @param database\modifier $modifier Modifications to the list.
    * @return array( active_record )
    * @access protected
    */
-  protected function determine_record_list( $count, $offset, $sort, $desc )
+  protected function determine_record_list( $modifier )
   {
     $class_name = '\\sabretooth\\database\\'.$this->get_subject();
-    return $class_name::select( $count, $offset, $sort, $desc );
+    return $class_name::select( $modifier );
   }
   
   /**

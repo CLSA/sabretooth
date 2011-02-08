@@ -96,14 +96,11 @@ class role extends active_record
    * Get a list of operations this role has access to.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param int $count The number of operations to return
-   * @param int $offset The number of operations to offset the selection by.
-   * @param string $sort_column The name of a column to sort by.
-   * @param boolean $descending Whether to sort in descending order.
+   * @param database\modifier $modifier Modifications to the selection.
    * @return array( database\operation )
    * @access public
    */
-  public function get_operation_list( $count = 0, $offset = 0, $sort_column = NULL, $descending = false )
+  public function get_operation_list( $modifier = NULL )
   {
     $operations = array();
     if( is_null( $this->id ) )
@@ -112,34 +109,15 @@ class role extends active_record
       return $operations;
     }
     
-    // build the order
-    $order = '';
-    if( !is_null( $sort_column ) )
-    {
-      $order = sprintf( 'ORDER BY %s %s',
-                        $sort_column,
-                        $descending ? 'DESC' : '' );
-    }
-    
-    // build the limit
-    $limit = '';
-    if( 0 < $count )
-    {
-      $limit = sprintf( 'LIMIT %d OFFSET %d',
-                        $count,
-                        $offset );
-    }
-
     $ids = self::get_col(
       sprintf( 'SELECT operation.id '.
                'FROM role_has_operation rho, operation '.
                'WHERE rho.operation_id = operation.id '.
                'AND role_id = %s '.
                'GROUP BY operation.id '.
-               '%s %s',
+               '%s',
                self::format_string( $this->id ),
-               $order,
-               $limit ) );
+               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
 
     foreach( $ids as $id ) array_push( $operations, new operation( $id ) );
     return $operations;

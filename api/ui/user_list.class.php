@@ -92,20 +92,17 @@ class user_list extends base_list
    * Overrides the parent class method since the record list depends on the active role.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param int $count The number of rows to include.
-   * @param int $offset The offset to start rows at.
-   * @param string $sort The column to sort the list by.
-   * @param boolean $desc Whether to sort in descending or ascending order.
+   * @param database\modifier $modifier Modifications to the list.
    * @return array( active_record )
    * @access protected
    */
-  protected function determine_record_list( $count, $offset, $sort, $desc )
+  protected function determine_record_list( $modifier )
   {
     // only show users for current site if user is not an administrator
     $session = \sabretooth\session::self();
     return 'administrator' == $session->get_role()->name
-           ? parent::determine_record_list( $count, $offset, $sort, $desc )
-           : $session->get_site()->get_user_list( $count, $offset, $sort, $desc );
+           ? parent::determine_record_list( $modifier )
+           : $session->get_site()->get_user_list( $modifier );
   }
 
   /**

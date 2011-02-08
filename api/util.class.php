@@ -86,6 +86,22 @@ final class util
    * @access private
    */
   private static $widget_mode = NULL;
+  
+  /**
+   * Returns the result of var_dump()
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param mixed $data The data to dump.
+   * @static
+   * @access public
+   */
+  public static function var_dump( $data )
+  {
+    // get the var_dump string by buffering the output
+    ob_start();
+    var_dump( $data );
+    return ob_get_clean();
+  }
 
   /**
    * An html-enhanced var_dump
@@ -97,13 +113,8 @@ final class util
    */
   public static function var_dump_html( $data )
   {
-    // get the var_dump string
-    ob_start();
-    var_dump( $data );
-    $output = ob_get_clean();
-
     // make strings magenta
-    $output = preg_replace( '/("[^"]*")/', '<font color="magenta">${1}</font>', $output );
+    $output = preg_replace( '/("[^"]*")/', '<font color="magenta">${1}</font>', self::var_dump( $data ) );
 
     // make types yellow and type braces red
     $output = preg_replace(

@@ -23,12 +23,14 @@ class argument extends base_exception
    * @author TBD
    * @access public
    */
-  public function __construct( $argument_name, $previous = NULL )
+  public function __construct( $argument_name, $value, $previous = NULL )
   {
+    // get the 
     $this->argument_name = $argument_name;
     parent::__construct(
-      sprintf( 'Invalid or missing argument "%s".',
-               $this->argument_name ),
+      sprintf( 'Invalid argument "%s" with value "%s".',
+               $this->argument_name,
+               \sabretooth\util::var_dump( $value ) ),
       $previous );
   }
   
