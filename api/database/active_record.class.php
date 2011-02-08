@@ -187,6 +187,105 @@ abstract class active_record extends \sabretooth\base_object
     
     $this->columns[ $column_name ] = $value;
   }
+  
+  /**
+   * Magic call method.
+   * 
+   * Magic call method which allows for get_<record>() and get_<record>_list() to be called on
+   * objects where a foreign key or joining "has" table exist, respectively.
+   * For instance, if a table has a foreign key other_id, then get_other() will return the
+   * "other" record for the primary key other_id.
+   * If a table has a joining "has", table this_has_that, then calling get_that_list() from a
+   * "this" record will return a list (array) of "that" recrods.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $name The name of the called function (should be get_<record> or
+   *                     get_<record>_list(), where <record> is the name of an active record class
+   * @param array $args The arguments passed to the called function.
+   * @return active_record|array(active_record)
+   * @access public
+   */
+  public function __call( $name, $args )
+  {
+    $invalid_method = false;
+    $return_value = NULL;
+
+    // check to make sure the function name is appropriate
+    if( 'get_' != substr( $name, 0, 4 ) )
+    {
+      $invalid_method = true;
+    }
+    else
+    {
+      // make sure the refering table exists
+      $name_parts = explode( '_', $name );
+      $foreign_table_name = $name_parts[1];
+      $primary_key_name = static::get_table_name().'_id';
+      $foreign_key_name = $foreign_table_name.'_id';
+      if( !self::table_exists( $name_parts[1] ) )
+      {
+        trigger_error(
+          sprintf( 'Call to %s::%s() references invalid table "%s".',
+                   static::get_class_name(),
+                   $name,
+                   $foreign_table_name ),
+          E_USER_ERROR );
+      }
+      
+      if( 2 == count( $name_parts ) )
+      { // we're linking a foreign key
+        // make sure this table has the correct foreign key
+        if( !$this->has_column_name( $foreign_key_name ) )
+        {
+          trigger_error(
+            sprintf( 'Call to %s::%s() references missing foreign key "%s".',
+                     static::get_class_name(),
+                     $name,
+                     $foreign_key_name ),
+            E_USER_ERROR );
+        }
+
+        // create the record using the foreign key
+        $return_value = new $foreign_table_name( $this->$foreign_key_name );
+      }
+      else if( 3 == count( $name_parts ) && 'list' == $name_parts[2] )
+      { // we're linking a joining table
+        // make sure joining table exists
+        $joining_table_name = static::get_table_name().'_has_'.$foreign_table_name;
+        if( !$this->table_exists( $joining_table_name ) )
+        {
+          trigger_error(
+            sprintf( 'Call to %s::%s() references missing joining table "%s".',
+                     static::get_class_name(),
+                     $name,
+                     $joining_table_name ),
+            E_USER_ERROR );
+        }
+
+        $ids = self::get_col(
+          'SELECT '.$foreign_key_name.' '.
+          'FROM '.$joining_table_name.' '.
+          'WHERE '.$primary_key_name.' = '.$this->id );
+
+        $return_value = array();
+        foreach( $ids as $id ) array_push( $return_value, new $foreign_table_name( $id ) );
+      }
+      else
+      {
+        $invalid_method = true;
+      }
+    }
+
+    if( $invalid_method )
+    {
+      trigger_error(
+        sprintf( 'Call to undefined function: %s::%s().',
+                 static::get_class_name(),
+                 $name ),
+        E_USER_ERROR );
+    }
+
+    return $return_value;
+  }
 
   /**
    * Select a number of records.
@@ -255,7 +354,6 @@ abstract class active_record extends \sabretooth\base_object
   {
     $record = NULL;
     $database = \sabretooth\session::self()->get_setting( 'db', 'database' );
-    $db = \sabretooth\session::self()->get_db();
 
     // determine the unique key(s)
     $unique_keys = self::get_col( 
@@ -306,6 +404,24 @@ abstract class active_record extends \sabretooth\base_object
   {
     // table and class names should always be identical
     return self::get_class_name();
+  }
+  
+  /**
+   * Determines whether a particular table exists.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $name The name of the table to check for.
+   * @return boolean
+   * @access protected
+   */
+  protected static function table_exists( $name )
+  {
+    $database = \sabretooth\session::self()->get_setting( 'db', 'database' );
+    $count = self::get_one(
+      'SELECT COUNT(*) '.
+      'FROM information_schema.TABLES '.
+      'WHERE Table_Name="'.$name.'" '.
+      'AND TABLE_SCHEMA="'.$database.'"' );
+    return 0 < $count;
   }
 
   /**
