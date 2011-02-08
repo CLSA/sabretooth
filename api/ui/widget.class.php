@@ -147,7 +147,7 @@ abstract class widget extends operation
    * @var string
    * @access protected
    */
-  protected $heading = '';
+  private $heading = '';
 
   /**
    * The parent widget if this widget is embedded in another widget.

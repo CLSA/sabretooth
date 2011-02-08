@@ -32,11 +32,12 @@ class user_list extends base_list
     $is_admin = 'administrator' == $session->get_role()->name;
 
     // define all template variables for this list
-    $this->heading =  'User list for '.( $is_admin ? 'all sites' : $session->get_site()->name );
-    $this->checkable =  false;
-    $this->viewable =  true; // TODO: should be based on role
-    $this->editable =  true; // TODO: should be based on role
-    $this->removable =  true; // TODO: should be based on role
+    $this->set_heading( sprintf( 'User list for %s',
+                        $is_admin ? 'all sites' : $session->get_site()->name ) );
+    $this->checkable = false;
+    $this->viewable = true; // TODO: should be based on role
+    $this->editable = true; // TODO: should be based on role
+    $this->removable = true; // TODO: should be based on role
 
     $this->columns = array(
       array( 'id' => 'name',

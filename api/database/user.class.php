@@ -32,23 +32,26 @@ class user extends active_record
   public static function select( $modifier = NULL )
   {
     // no need to override the basic functionality
-    if( 'activity.date' != $sort_column )
+    if( !$modifier->has_order( 'activity.date' ) )
     {
       return parent::select( $modifier );
     }
     
     // create special sql that sorts by the foreign column association
     $records = array();
-
-    $id_list = self::get_col(
-      sprintf( 'SELECT user.id '.
-               'FROM user '.
-               'LEFT JOIN user_last_activity '.
-               'ON user.id = user_last_activity.user_id '.
-               'LEFT JOIN activity '.
-               'ON user_last_activity.activity_id = activity.id '.
-               '%s',
-               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
+    
+    if( $modifier->has_order( 'activity.date' ) )
+    { // sort by activity date
+      $id_list = self::get_col(
+        sprintf( 'SELECT user.id '.
+                 'FROM user '.
+                 'LEFT JOIN user_last_activity '.
+                 'ON user.id = user_last_activity.user_id '.
+                 'LEFT JOIN activity '.
+                 'ON user_last_activity.activity_id = activity.id '.
+                 '%s',
+                 is_null( $modifier ) ? '' : $modifier->get_sql() ) );
+    }
 
     foreach( $id_list as $id ) array_push( $records, new static( $id ) );
     return $records;

@@ -31,7 +31,7 @@ class operation_list extends base_list
     $session = \sabretooth\session::self();
 
     // define all template variables for this list
-    $this->heading = 'Operation list';
+    $this->set_heading( 'Operation list' );
     $this->checkable = false;
     $this->viewable = false;
     $this->editable = false;

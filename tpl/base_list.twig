@@ -3,7 +3,6 @@
  # 
  # Generic list widget.
  # @author Patrick Emond <emondpd@mcmaster.ca>
- # @param string heading The list's heading (can be an empty string).
  # @param boolean checkable Whether the list should allow items to be selected.
  # @param boolean viewable Whether the list should allow items to be viewed.
  # @param boolean editable Whether the list should allow items to be edited.
@@ -73,7 +72,7 @@ $( function() {
 {% endif %}
 {% if editable %}
 $( function() {
-  $( "button .{{ current_widget }}_edit" ).button( {
+  $( "button.{{ current_widget }}_edit" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-pencil"
@@ -83,7 +82,7 @@ $( function() {
 {% endif %}
 {% if removable %}
 $( function() {
-  $( "button .{{ current_widget }}_remove" ).button( {
+  $( "button.{{ current_widget }}_remove" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-closethick"

@@ -31,7 +31,7 @@ class site extends active_record
   public static function select( $modifier = NULL )
   {
     // no need to override the basic functionality
-    if( 'activity.date' != $sort_column )
+    if( !$modifier->has_order( 'activity.date' ) )
     {
       return parent::select( $modifier );
     }
@@ -39,9 +39,8 @@ class site extends active_record
     // create special sql that sorts by the foreign column association
     $records = array();
 
-    // sort by activity date
-    if( 'activity.date' == $sort_column )
-    {
+    if( $modifier->has_order( 'activity.date' ) )
+    { // sort by activity date
       $id_list = self::get_col(
         sprintf( 'SELECT site.id '.
                  'FROM %s '.

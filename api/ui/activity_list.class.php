@@ -31,7 +31,7 @@ class activity_list extends base_list
     $session = \sabretooth\session::self();
 
     // define all template variables for this list
-    $this->heading = 'Activity list';
+    $this->set_heading( 'Activity list' );
     $this->checkable = false;
     $this->viewable = false;
     $this->editable = false;

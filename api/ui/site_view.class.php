@@ -29,7 +29,7 @@ class site_view extends base_view
     parent::__construct( 'site', $args );
 
     // define all template variables for this list
-    $this->heading = 'Viewing site "'.$this->record->name.'"';
+    $this->set_heading( sprintf( 'Viewing site "%s"', $this->record->name ) );
     $this->editable = true; // TODO: should be based on role
     $this->removable = false;
     

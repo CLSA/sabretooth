@@ -29,7 +29,7 @@ class role_view extends base_view
     parent::__construct( 'role', $args );
 
     // define all template variables for this list
-    $this->heading = 'Viewing role "'.$this->record->name.'"';
+    $this->set_heading( sprintf( 'Viewing role "%s"', $this->record->name ) );
     $this->editable = true; // TODO: should be based on role
     $this->removable = false;
     

@@ -89,6 +89,42 @@ class modifier extends \sabretooth\base_object
     $this->limit_count = $count;
     $this->limit_offset = $offset;
   }
+  
+  /**
+   * Returns whether the modifier has a certain column in it's where clauses.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The column to search for.
+   * @return boolean
+   * @access public
+   */
+  public function has_where( $column )
+  {
+    return array_key_exists( $column, $this->where_list );
+  }
+
+  /**
+   * Returns whether the modifier has a certain column in it's group clauses.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The column to search for.
+   * @return boolean
+   * @access public
+   */
+  public function has_group( $column )
+  {
+    return array_key_exists( $column, $this->group_list );
+  }
+
+  /**
+   * Returns whether the modifier has a certain column in it's order clauses.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The column to search for.
+   * @return boolean
+   * @access public
+   */
+  public function has_order( $column )
+  {
+    return array_key_exists( $column, $this->order_list );
+  }
 
   /**
    * Returns the modifier as an SQL statement (same as calling each individual get_*() method.

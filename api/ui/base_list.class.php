@@ -79,7 +79,6 @@ abstract class base_list extends widget
     $this->set_rows();
 
     // define all template variables for this widget
-    $this->set_variable( 'heading', $this->heading );
     $this->set_variable( 'checkable', $this->checkable );
     $this->set_variable( 'viewable', $this->viewable );
     $this->set_variable( 'editable', $this->editable );

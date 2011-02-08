@@ -31,11 +31,11 @@ class site_list extends base_list
     $session = \sabretooth\session::self();
 
     // define all template variables for this list
-    $this->heading =  'Site list';
-    $this->checkable =  false;
-    $this->viewable =  true; // TODO: should be based on role
-    $this->editable =  false;
-    $this->removable =  false;
+    $this->set_heading( 'Site list' );
+    $this->checkable = false;
+    $this->viewable = true; // TODO: should be based on role
+    $this->editable = false;
+    $this->removable = false;
 
     $this->columns = array(
       array( 'id' => 'name',

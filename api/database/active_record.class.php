@@ -25,8 +25,8 @@ abstract class active_record extends \sabretooth\base_object
    * calling the {@link save} method, or, if an primary key is provided then the row with the
    * requested primary id will be loaded.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\database
    * @param integer $id The primary key for this object.
+   * @throws exception\database
    * @access public
    */
   public function __construct( $id = NULL )
@@ -255,7 +255,8 @@ abstract class active_record extends \sabretooth\base_object
         }
 
         // create the record using the foreign key
-        $return_value = new $foreign_table_name( $this->$foreign_key_name );
+        $class_name = '\\sabretooth\\database\\'.$foreign_table_name;
+        $return_value = new $class_name( $this->$foreign_key_name );
       }
       else if( 3 == count( $name_parts ) )
       { // we're linking a joining table
@@ -282,7 +283,8 @@ abstract class active_record extends \sabretooth\base_object
                      $this->id ) );
   
           $return_value = array();
-          foreach( $ids as $id ) array_push( $return_value, new $foreign_table_name( $id ) );
+          $class_name = '\\sabreooth\\database\\'.$foreign_table_name;
+          foreach( $ids as $id ) array_push( $return_value, new $class_name( $id ) );
         }
         else if( 'count' == $action )
         {
