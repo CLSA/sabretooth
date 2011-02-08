@@ -95,8 +95,11 @@ abstract class widget extends operation
     // warn if overwriting a variable
     if( array_key_exists( $name, $this->variables ) )
       \sabretooth\log::warning(
-        'Overwriting existing template variable "'.$name.
-        '" which was "'.$this->variables[ $name ].'" and is now "'.$value.'"' );
+        sprintf( 'Overwriting existing template variable "%s" which was "%s" and is now "%s"',
+                 $name,
+                 $this->variables[$name],
+                 $value ) );
+
     $this->variables[ $name ] = $value;
   }
 
@@ -143,7 +146,7 @@ abstract class widget extends operation
    * @var string
    * @access protected
    */
-  protected $heading = "";
+  protected $heading = '';
 
   /**
    * The parent widget if this widget is embedded in another widget.

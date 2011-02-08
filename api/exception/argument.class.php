@@ -26,7 +26,10 @@ class argument extends base_exception
   public function __construct( $argument_name, $previous = NULL )
   {
     $this->argument_name = $argument_name;
-    parent::__construct( "Invalid or missing argument \"$this->argument_name\"", $previous );
+    parent::__construct(
+      sprintf( 'Invalid or missing argument "%s".',
+               $this->argument_name ),
+      $previous );
   }
   
   /**

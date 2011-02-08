@@ -28,7 +28,10 @@ class permission extends base_exception
   {
     $this->operation = $db_operation;
     parent::__construct(
-      'operation "'.$db_operation->subject.'.'.$db_operation->name.'" denied', $previous );
+      sprintf( 'operation "%s".%s" denied.',
+               $db_operation->subject,
+               $db_operation->name ),
+      $previous );
   }
 
   /**
