@@ -33,6 +33,7 @@ class autoloader
    * If the class is in the sabretooth\ namespace it attemps to load it from the api/ directory.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @static
+   * @throws exception\missing
    * @access public
    */
   static public function autoload( $class )

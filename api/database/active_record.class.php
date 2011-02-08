@@ -79,6 +79,7 @@ abstract class active_record extends \sabretooth\base_object
    * If this is a new record then this method does nothing, if the record's primary key is set then
    * the data from the corresponding row is loaded.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\database
    * @access public
    */
   public function load()
@@ -124,16 +125,23 @@ abstract class active_record extends \sabretooth\base_object
     }
     
     // either insert or update the row based on whether the primary key is set
-    self::execute(
-      sprintf( is_null( $this->columns['id'] )
-        ? 'INSERT INTO %s SET %s'
-        : 'UPDATE %s SET %s WHERE id = %d',
-        self::get_table_name(),
-        $sets,
-        $this->columns['id'] )  );
-
-    // get the new new primary key
-    if( is_null( $this->columns['id'] ) ) $this->columns['id'] = self::insert_id();
+    try
+    {
+      self::execute(
+        sprintf( is_null( $this->columns['id'] )
+          ? 'INSERT INTO %s SET %s'
+          : 'UPDATE %s SET %s WHERE id = %d',
+          self::get_table_name(),
+          $sets,
+          $this->columns['id'] )  );
+    
+      // get the new new primary key
+      if( is_null( $this->columns['id'] ) ) $this->columns['id'] = self::insert_id();
+    }
+    catch( exception\database $e )
+    {
+      throw new exception\database( $e->getMessage(), NULL, $e );
+    }
   }
 
   /**
@@ -158,6 +166,7 @@ abstract class active_record extends \sabretooth\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name The name of the column or table being fetched from the database
    * @return mixed
+   * @throws exception\database
    * @access public
    */
   public function __get( $column_name )
@@ -180,6 +189,7 @@ abstract class active_record extends \sabretooth\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name The name of the column
    * @param mixed $value The value to set the contents of a column to
+   * @throws exception\database
    * @access public
    */
   public function __set( $column_name, $value )

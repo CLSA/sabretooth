@@ -25,7 +25,7 @@ abstract class base_object
    * @static
    * @access protected
    */
-  protected static function get_class_name()
+  public static function get_class_name()
   {
     return substr( strrchr( get_called_class(), '\\' ), 1 );
   }
