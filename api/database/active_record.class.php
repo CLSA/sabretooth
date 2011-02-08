@@ -116,7 +116,7 @@ abstract class active_record extends \sabretooth\base_object
       if( 'id' != $key )
       {
         $sets .= sprintf( '%s %s = %d',
-                          $first ? '', ',',
+                          $first ? '' : ',',
                           $key,
                           self::format_string( $val ) );
         $first = false;
@@ -197,17 +197,20 @@ abstract class active_record extends \sabretooth\base_object
   /**
    * Magic call method.
    * 
-   * Magic call method which allows for get_<record>() and get_<record>_list() to be called on
-   * objects where a foreign key or joining "has" table exist, respectively.
-   * For instance, if a table has a foreign key other_id, then get_other() will return the
-   * "other" record for the primary key other_id.
-   * If a table has a joining "has", table this_has_that, then calling get_that_list() from a
-   * "this" record will return a list (array) of "that" recrods.
+   * Magic call method which allows for get_<record>() for records with foreign keys referencing
+   * the <record> table and, get_<record>_list() and get_<record>_count() for recrods with joining
+   * "has" tables with another table.
+   * For instance, if a record has a foreign key "other_id", then get_other() will return the
+   * "other" record with the id equal to other_id.
+   * If a record has a joining "has" table then calling get_other_list() will return an array of
+   * "other" records which are linked in the joining table, and get_other_count() will return the
+   * number of "other" recrods found in the joining table.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $name The name of the called function (should be get_<record> or
-   *                     get_<record>_list(), where <record> is the name of an active record class
+   * @param string $name The name of the called function (should be get_<record>,
+                         get_<record>_count() or get_<record>_list(), where <record> is the name
+                         of an active record class related to this record.
    * @param array $args The arguments passed to the called function.
-   * @return active_record|array(active_record)
+   * @return mixed
    * @access public
    */
   public function __call( $name, $args )
@@ -218,6 +221,7 @@ abstract class active_record extends \sabretooth\base_object
     // check to make sure the function name is appropriate
     if( 'get_' != substr( $name, 0, 4 ) )
     {
+      // does not start with "get_"
       $invalid_method = true;
     }
     else
@@ -253,7 +257,7 @@ abstract class active_record extends \sabretooth\base_object
         // create the record using the foreign key
         $return_value = new $foreign_table_name( $this->$foreign_key_name );
       }
-      else if( 3 == count( $name_parts ) && 'list' == $name_parts[2] )
+      else if( 3 == count( $name_parts ) )
       { // we're linking a joining table
         // make sure joining table exists
         $joining_table_name = static::get_table_name().'_has_'.$foreign_table_name;
@@ -266,19 +270,38 @@ abstract class active_record extends \sabretooth\base_object
                      $joining_table_name ),
             E_USER_ERROR );
         }
-
-        $ids = self::get_col(
-          sprintf( 'SELECT %s FROM %s WHERE %s = %d',
-                   $foreign_key_name,
-                   $joining_table_name,
-                   $primary_key_name,
-                   $this->id ) );
-
-        $return_value = array();
-        foreach( $ids as $id ) array_push( $return_value, new $foreign_table_name( $id ) );
+        
+        $action = $name_parts[2];
+        if( 'list' == $action )
+        { // we want a list of records
+          $ids = self::get_col(
+            sprintf( 'SELECT %s FROM %s WHERE %s = %d',
+                     $foreign_key_name,
+                     $joining_table_name,
+                     $primary_key_name,
+                     $this->id ) );
+  
+          $return_value = array();
+          foreach( $ids as $id ) array_push( $return_value, new $foreign_table_name( $id ) );
+        }
+        else if( 'count' == $action )
+        {
+          $return_value = self::get_one(
+            sprintf( 'SELECT COUNT(*) FROM %s WHERE %s = %d',
+                     $foreign_key_name,
+                     $joining_table_name,
+                     $primary_key_name,
+                     $this->id ) );
+        }
+        else
+        {
+          // function is not get_<record>_list or get_<record>_count
+          $invalid_method = true;
+        }
       }
       else
       {
+        // function has more than 3 parts (this_is_too_many)
         $invalid_method = true;
       }
     }
@@ -317,7 +340,7 @@ abstract class active_record extends \sabretooth\base_object
   {
     $records = array();
     
-    // build the restriction list
+    // build the where
     $where = '';
     if( is_array( $restrictions ) && 0 < count( $restrictions ) )
     {
