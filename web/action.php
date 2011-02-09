@@ -32,8 +32,11 @@ try
     throw new exception\runtime( "invalid operation '$action_class'" );
   
   $operation->execute();
-  log::notice( "executing action: $action_class" );
   session::self()->log_activity( $operation, $_SERVER['QUERY_STRING'] );
+  log::notice(
+    sprintf( 'finished script: executed action "%s", processing time %0.2f seconds',
+             $action_class,
+             util::get_elapsed_time() ) );
 }
 catch( exception\base_exception $e )
 {

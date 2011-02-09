@@ -9,6 +9,7 @@
 namespace sabretooth;
 session_name( 'sabretooth' );
 session_start();
+$_SESSION['time']['script_start_time'] = microtime( true );
 
 // set up error handling (error_reporting is also called in session's constructor)
 ini_set( 'display_errors', '0' );

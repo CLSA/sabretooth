@@ -84,7 +84,6 @@ try
   $twig_template = $twig->loadTemplate( $widget['name'].'.twig' );
   
   // render the widget and report to the session
-  log::notice( 'rendering widget: '.$widget['name'].' in slot '.$slot_name );
   $result_array['output'] = $twig_template->render( $operation->get_variables() );
 
   // don't push or log prev/next/refresh requests
@@ -93,6 +92,12 @@ try
     session::self()->slot_push( $slot_name, $widget['name'], $widget['args'] );
     session::self()->log_activity( $operation, $_SERVER['QUERY_STRING'] );
   }
+
+  log::notice(
+    sprintf( 'finished script: rendered "%s" in slot "%s", processing time %0.2f seconds',
+             $widget['name'],
+             $slot_name,
+             util::get_elapsed_time() ) );
 }
 catch( exception\base_exception $e )
 {

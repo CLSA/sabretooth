@@ -281,6 +281,7 @@ final class session extends singleton
     $activity->role_id = $this->role->id;
     $activity->operation_id = $operation->get_id();
     $activity->query = $query;
+    $activity->elapsed_time = util::get_elapsed_time();
     $activity->save();
   }
 

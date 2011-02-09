@@ -56,6 +56,9 @@ class activity_list extends base_list
       array( 'id' => 'operation.name',
              'heading' => 'name',
              'sortable' => true ),
+      array( 'id' => 'elapsed_time',
+             'heading' => 'elapsed',
+             'sortable' => true ),
       array( 'id' => 'date',
              'heading' => 'date',
              'sortable' => true ) );
@@ -82,6 +85,7 @@ class activity_list extends base_list
                                    'operation.type' => $record->get_operation()->type,
                                    'operation.subject' => $record->get_operation()->subject,
                                    'operation.name' =>$record->get_operation()->name,
+                                   'elapsed_time' => sprintf( '%0.2fs', $record->elapsed_time ),
                                    'date' => $record->date ) ) );
     }
   }

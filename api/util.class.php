@@ -58,13 +58,6 @@ final class util
   }
   
   /**
-   * Cache for action_mode method.
-   * @var bool
-   * @access private
-   */
-  private static $action_mode = NULL;
-
-  /**
    * Returns whether the system is in widget mode.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -81,12 +74,18 @@ final class util
   }
   
   /**
-   * Cache for widget_mode method.
-   * @var bool
-   * @access private
+   * Returns the elapsed time in seconds since the script began.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return float
+   * @static
+   * @access public
    */
-  private static $widget_mode = NULL;
-  
+  public static function get_elapsed_time()
+  {
+    return microtime( true ) - $_SESSION['time']['script_start_time'];
+  }
+
   /**
    * Returns the result of var_dump()
    * 
@@ -186,5 +185,19 @@ final class util
 
     return $result;
   }
+
+  /**
+   * Cache for action_mode method.
+   * @var bool
+   * @access private
+   */
+  private static $action_mode = NULL;
+
+  /**
+   * Cache for widget_mode method.
+   * @var bool
+   * @access private
+   */
+  private static $widget_mode = NULL;
 }
 ?>

@@ -630,6 +630,7 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`activity` (
   `role_id` INT UNSIGNED NOT NULL ,
   `operation_id` INT UNSIGNED NOT NULL ,
   `query` VARCHAR(511) NOT NULL ,
+  `elapsed_time` FLOAT NOT NULL DEFAULT 0 ,
   `date` TIMESTAMP NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_role_id` (`role_id` ASC) ,
