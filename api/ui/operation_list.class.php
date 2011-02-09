@@ -39,19 +39,19 @@ class operation_list extends base_list
 
     $this->columns = array(
       array( 'id' => 'type',
-             'name' => 'type',
+             'heading' => 'type',
              'sortable' => true ),
       array( 'id' => 'subject',
-             'name' => 'subject',
+             'heading' => 'subject',
              'sortable' => true ),
       array( 'id' => 'name',
-             'name' => 'name',
+             'heading' => 'name',
              'sortable' => true ),
       array( 'id' => 'restricted',
-             'name' => 'restricted',
+             'heading' => 'restricted',
              'sortable' => false ),
       array( 'id' => 'description',
-             'name' => 'description',
+             'heading' => 'description',
              'sortable' => false,
              'align' => 'left' ) );
   }
@@ -71,11 +71,11 @@ class operation_list extends base_list
     {
       array_push( $this->rows, 
         array( 'id' => $record->id,
-               'columns' => array( $record->type,
-                                   $record->subject,
-                                   $record->name,
-                                   $record->restricted ? 'yes' : 'no',
-                                   $record->description ) ) );
+               'columns' => array( 'type' => $record->type,
+                                   'subject' => $record->subject,
+                                   'name' => $record->name,
+                                   'restricted' => $record->restricted ? 'yes' : 'no',
+                                   'description' => $record->description ) ) );
     }
   }
 }

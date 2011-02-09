@@ -245,7 +245,7 @@ abstract class active_record extends \sabretooth\base_object
       {
         trigger_error(
           sprintf( 'Call to %s::%s() references invalid table "%s".',
-                   static::get_class_name(),
+                   get_called_class(),
                    $name,
                    $foreign_table_name ),
           E_USER_ERROR );
@@ -258,7 +258,7 @@ abstract class active_record extends \sabretooth\base_object
         {
           trigger_error(
             sprintf( 'Call to %s::%s() references missing foreign key "%s".',
-                     static::get_class_name(),
+                     get_called_class(),
                      $name,
                      $foreign_key_name ),
             E_USER_ERROR );
@@ -276,7 +276,7 @@ abstract class active_record extends \sabretooth\base_object
         {
           trigger_error(
             sprintf( 'Call to %s::%s() references missing joining table "%s".',
-                     static::get_class_name(),
+                     get_called_class(),
                      $name,
                      $joining_table_name ),
             E_USER_ERROR );
@@ -322,7 +322,7 @@ abstract class active_record extends \sabretooth\base_object
     {
       trigger_error(
         sprintf( 'Call to undefined function: %s::%s().',
-                 static::get_class_name(),
+                 get_called_class(),
                  $name ),
         E_USER_ERROR );
     }
@@ -422,8 +422,8 @@ abstract class active_record extends \sabretooth\base_object
    */
   protected static function get_table_name()
   {
-    // table and class names should always be identical
-    return self::get_class_name();
+    // table and class names (without namespaces) should always be identical
+    return substr( strrchr( get_called_class(), '\\' ), 1 );
   }
   
   /**

@@ -94,6 +94,29 @@ abstract class base_list extends widget
   }
   
   /**
+   * Set the widget's parent.
+   * 
+   * Embed this widget into a parent widget, or unparent the widget by setting the parent to NULL.
+   * This should be done before the widget is finished (before {@link finish} is called).
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @var widget $parent
+   * @access public
+   */
+  public function set_parent( $parent = NULL )
+  {
+    parent::set_parent( $parent );
+
+    // remove any columns which belong to the parent's record
+    $new_column_array = array();
+    foreach( $this->columns as $column )
+    {
+      $type = strstr( $column['id'], '.', true );
+      if( $type != $this->parent->get_subject() ) array_push( $new_column_array, $column );
+    }
+    $this->columns = $new_column_array;
+  }
+
+  /**
    * Set the rows array needed by the template.
    * 
    * When implementing this method, child classes should fill the $rows member with column values
@@ -278,7 +301,7 @@ abstract class base_list extends widget
    * 
    * Every item in the array must have the following:
    *   'id'       => a unique id identifying the column
-   *   'name'     => the name to display in in the column header
+   *   'heading'  => the name to display in in the column header
    *   'sortable' => whether or not the list can be sorted by the column
    * This member should only be set in the {@link set_columns} function.
    * @var array

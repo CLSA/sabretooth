@@ -39,10 +39,10 @@ class role_list extends base_list
 
     $this->columns = array(
       array( 'id' => 'name',
-             'name' => 'name',
+             'heading' => 'name',
              'sortable' => true ),
       array( 'id' => 'users',
-             'name' => 'users',
+             'heading' => 'users',
              'sortable' => false ) );
   }
 
@@ -61,7 +61,8 @@ class role_list extends base_list
     {
       array_push( $this->rows, 
         array( 'id' => $record->id,
-               'columns' => array( $record->name, $record->get_user_count() ) ) );
+               'columns' => array( 'name' => $record->name,
+                                   'users' => $record->get_user_count() ) ) );
     }
   }
 }

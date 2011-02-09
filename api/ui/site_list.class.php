@@ -39,13 +39,13 @@ class site_list extends base_list
 
     $this->columns = array(
       array( 'id' => 'name',
-             'name' => 'name',
+             'heading' => 'name',
              'sortable' => true ),
       array( 'id' => 'users',
-             'name' => 'users',
+             'heading' => 'users',
              'sortable' => false ),
       array( 'id' => 'last',
-             'name' => 'last activity',
+             'heading' => 'last activity',
              'sortable' => true ) ); 
   }
 
@@ -92,7 +92,9 @@ class site_list extends base_list
             : \sabretooth\util::get_fuzzy_time_ago( $db_activity->date );
 
       array_push( $this->rows, array( 'id' => $record->id,
-               'columns' => array( $record->name, $record->get_user_count(), $last ) ) );
+               'columns' => array( 'name' => $record->name,
+                                   'users' => $record->get_user_count(),
+                                   'last' => $last ) ) );
     }
   }
 }

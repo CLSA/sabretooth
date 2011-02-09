@@ -219,16 +219,16 @@ $( function() {
       {% for column in columns %}
         {% if column.sortable %}
           <th id="{{ column.id }}" class="{{ current_widget }}_sortable">
-          {% if column.id == sort_column %}
+            {% if column.id == sort_column %}
             <button class="{{ current_widget }}_sort{{ sort_desc ? '_desc' : '' }}">
-              {{ column.name }}
+            {% else %}
+            <button class="{{ current_widget }}_sortable">
+            {% endif %}
+              {{ column.heading }}
             </button>
-          {% else %}
-            <button class="{{ current_widget }}_sortable">{{ column.name }}</button>
-          {% endif %}
           </th>
         {% else %}
-          <th>{{ column.name }}</th>
+          <th>{{ column.heading }}</th>
         {% endif %}
       {% endfor %}
       {% if viewable %}
@@ -247,11 +247,11 @@ $( function() {
       {% if checkable %}
       <td><input type="checkbox" id="{{ current_widget }}_check_{{ row.id }}" /></td>
       {% endif %}
-      {% for column in row.columns %}
-      <td {% if columns[loop.index0].align|default(false) %}
-            align="{{ columns[loop.index0].align }}"
+      {% for column in columns %}
+      <td {% if column.align|default(false) %}
+            align="{{ column.align }}"
           {% endif %}
-          style="font-weight: normal">{{ column }}</td>
+          style="font-weight: normal">{{ row.columns[column.id] }}</td>
       {% endfor %}
       {% if viewable %}
       <td><button class="{{ current_widget }}_view"

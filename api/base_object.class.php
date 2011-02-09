@@ -22,10 +22,9 @@ abstract class base_object
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
-   * @static
-   * @access protected
+   * @access public
    */
-  public static function get_class_name()
+  public function get_class_name()
   {
     return substr( strrchr( get_called_class(), '\\' ), 1 );
   }

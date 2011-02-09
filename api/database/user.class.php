@@ -141,7 +141,7 @@ class user extends active_record
                ( !is_null( $db_site ) ? 'AND site_id = %s ' : '' ).
                'ORDER BY role_id',
                self::format_string( $this->id ),
-               self::format_string( $db_site->id ) ) );
+               !is_null( $db_site ) ? self::format_string( $db_site->id ) : '' ) );
 
     foreach( $role_ids as $role_id ) array_push( $roles, new role( $role_id ) );
     return $roles;

@@ -41,13 +41,13 @@ class user_list extends base_list
 
     $this->columns = array(
       array( 'id' => 'name',
-             'name' => 'username',
+             'heading' => 'username',
              'sortable' => true ),
       array( 'id' => 'role',
-             'name' => 'role',
+             'heading' => 'role',
              'sortable' => false ),
       array( 'id' => 'last',
-             'name' => 'last activity',
+             'heading' => 'last activity',
              'sortable' => true ) ); 
   }
   
@@ -134,7 +134,9 @@ class user_list extends base_list
       // assemble the row for this record
       array_push( $this->rows, 
         array( 'id' => $record->id,
-               'columns' => array( $record->name, $role, $last ) ) );
+               'columns' => array( 'name' => $record->name,
+                                   'role' => $role,
+                                   'last' => $last ) ) );
     }
   }
 }

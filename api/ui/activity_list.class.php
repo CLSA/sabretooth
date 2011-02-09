@@ -36,28 +36,28 @@ class activity_list extends base_list
     $this->viewable = false;
     $this->editable = false;
     $this->removable = false;
-
+    
     $this->columns = array(
       array( 'id' => 'user.name',
-             'name' => 'user',
+             'heading' => 'user',
              'sortable' => true ),
       array( 'id' => 'site.name',
-             'name' => 'site',
+             'heading' => 'site',
              'sortable' => true ),
       array( 'id' => 'role.name',
-             'name' => 'role',
+             'heading' => 'role',
              'sortable' => true ),
       array( 'id' => 'operation.type',
-             'name' => 'type',
+             'heading' => 'type',
              'sortable' => true ),
       array( 'id' => 'operation.subject',
-             'name' => 'subject',
+             'heading' => 'subject',
              'sortable' => true ),
       array( 'id' => 'operation.name',
-             'name' => 'name',
+             'heading' => 'name',
              'sortable' => true ),
       array( 'id' => 'date',
-             'name' => 'date',
+             'heading' => 'date',
              'sortable' => true ) );
   }
 
@@ -76,13 +76,13 @@ class activity_list extends base_list
     {
       array_push( $this->rows, 
         array( 'id' => $record->id,
-               'columns' => array( $record->get_user()->name,
-                                   $record->get_site()->name,
-                                   $record->get_role()->name,
-                                   $record->get_operation()->type,
-                                   $record->get_operation()->subject,
-                                   $record->get_operation()->name,
-                                   $record->date ) ) );
+               'columns' => array( 'user.name' => $record->get_user()->name,
+                                   'site.name' => $record->get_site()->name,
+                                   'role.name' => $record->get_role()->name,
+                                   'operation.type' => $record->get_operation()->type,
+                                   'operation.subject' => $record->get_operation()->subject,
+                                   'operation.name' =>$record->get_operation()->name,
+                                   'date' => $record->date ) ) );
     }
   }
 }
