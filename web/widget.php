@@ -52,9 +52,6 @@ try
     }
   }
 
-  log::print_r( $current_widget['args']['activity_list'], 'current' );
-  log::print_r( $_GET['activity_list'], 'GET' );
-  log::print_r( $widget['args']['activity_list'], 'new' );
   $go_prev = isset( $_GET['prev'] ) && 1 == $_GET['prev'];
   $go_next = isset( $_GET['next'] ) && 1 == $_GET['next'];
   $refresh = isset( $_GET['refresh'] ) && 1 == $_GET['refresh'];
