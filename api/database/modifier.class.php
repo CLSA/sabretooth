@@ -25,15 +25,18 @@ class modifier extends \sabretooth\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to restrict.
    * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).
+   * @param boolean $format Set whether to format the $value argument.
+   *                         This should only be set to false when $value is the name of a column
+   *                         or a pre-formatted function, etc.
    * @throws exception\argument
    * @access public
    */
-  public function where( $column, $value )
+  public function where( $column, $value, $format = true )
   {
     if( !is_string( $column ) || 0 == strlen( $column ) )
       throw new \sabretooth\exception\argument( 'column', $column );
 
-    $this->where_list[$column] = $value;
+    $this->where_list[$column] = array( 'value' => $value, 'format' => $format );
   }
 
   /**
@@ -125,6 +128,24 @@ class modifier extends \sabretooth\base_object
   {
     return array_key_exists( $column, $this->order_list );
   }
+  
+  // TODO: document
+  public function get_where_columns()
+  {
+    return array_keys( $this->where_list );
+  }
+
+  // TODO: document
+  public function get_group_columns()
+  {
+    return array_keys( $this->group_list );
+  }
+
+  // TODO: document
+  public function get_order_columns()
+  {
+    return array_keys( $this->order_list );
+  }
 
   /**
    * Returns the modifier as an SQL statement (same as calling each individual get_*() method.
@@ -155,12 +176,14 @@ class modifier extends \sabretooth\base_object
   {
     $where = '';
     $first = true;
-    foreach( $this->where_list as $column => $value )
+    foreach( $this->where_list as $column => $item )
     {
       $where .= sprintf( '%s %s = %s',
                          $first ? 'WHERE' : ' AND',
                          $column,
-                         active_record::format_string( $value ) );
+                         $item['format']
+                         ? active_record::format_string( $item['value'] )
+                         : $item['value'] );
       $first = false;
     }
 
@@ -237,10 +260,12 @@ class modifier extends \sabretooth\base_object
 
     return $limit;
   }
-  
+
   /**
-   * Holds all where clauses.
-   * @var array( column => value )
+   * Holds all where clauses in an associative array named after the column.
+   * Each element contains an associative array where the indeces 'value' and 'format' contain
+   * the column's value and whether to format the value, respectively.
+   * @var array
    * @access private
    */
   private $where_list = array();

@@ -60,7 +60,7 @@ class site_list extends base_list
   protected function determine_record_sort_column( $sort_name )
   {
     if( 'last' == $sort_name )
-    { // column in activity, see user::select() for details
+    { // special select column, see site::select() for details
       $sort = 'activity.date';
     }
     else

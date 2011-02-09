@@ -68,7 +68,8 @@ abstract class base_list extends widget
     // build the sql modifier
     $modifier = new \sabretooth\database\modifier();
     if( strlen( $this->sort_column ) )
-      $modifier->order( $this->determine_record_sort_column( $this->sort_column ), $this->sort_desc );
+      $modifier->order( $this->determine_record_sort_column( $this->sort_column ),
+                        $this->sort_desc );
     $modifier->limit( $this->items_per_page, ( $this->page - 1 ) * $this->items_per_page );
 
     $method_name = 'determine_'.$this->get_subject().'_list';

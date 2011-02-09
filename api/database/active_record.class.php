@@ -334,6 +334,9 @@ abstract class active_record extends \sabretooth\base_object
    * Select a number of records.
    * 
    * This method returns an array of records.
+   * The modifier may include any columns from tables which this record has a foreign key
+   * relationship with.  To sort by such columns make sure to include the table name along with
+   * the column name (for instance 'table.column') as the sort column value.
    * Be careful when calling this method.  Based on the modifier object a record is created for
    * every row being selected, so selecting a very large number of rows (100+) isn't a good idea.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -346,10 +349,42 @@ abstract class active_record extends \sabretooth\base_object
   public static function select( $modifier = NULL )
   {
     $records = array();
+    $this_table = self::get_table_name();
     
+    // check to see if the modifier is sorting a value in a foreign table
+    $table_list = array( $this_table );
+    foreach( $modifier->get_order_columns() as $order )
+    {
+      $table = strstr( $order, '.', true );
+      if( $table && 0 < strlen( $table ) && $table != $this_table )
+      {
+        // check to see if we have a foreign key for this table
+        $temp_record = new static();
+        $foreign_key_name = $table.'_id';
+        if( $temp_record->has_column_name( $foreign_key_name ) )
+        {
+          // add the table to the list to select and join it in the modifier
+          array_push( $table_list, $table );
+          $modifier->where( $this_table.'.'.$foreign_key_name, $table.'.id', false );
+        }
+      }
+    }
+    
+    // build the table list
+    $select_tables = '';
+    $first = true;
+    foreach( $table_list as $table )
+    {
+      $select_tables .= sprintf( '%s %s',
+                                 $first ? '' : ',',
+                                 $table );
+      $first = false;
+    }
+
     $id_list = self::get_col(
-      sprintf( 'SELECT id FROM %s %s',
-               self::get_table_name(),
+      sprintf( 'SELECT %s.id FROM %s %s',
+               $this_table,
+               $select_tables,
                is_null( $modifier ) ? '' : $modifier->get_sql() ) );
 
     foreach( $id_list as $id ) array_push( $records, new static( $id ) );
