@@ -26,9 +26,9 @@ abstract class action extends operation
    * @param string $name The name of the operation.
    * @access public
    */
-  public function __construct( $subject, $name )
+  public function __construct( $subject, $name, $args )
   {
-    parent::__construct( 'action', $subject, $name );
+    parent::__construct( 'action', $subject, $name, $args );
   }
 
   /**

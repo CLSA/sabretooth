@@ -27,13 +27,12 @@ abstract class widget extends operation
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $subject The widget's subject.
    * @param string $name The name of the operation.
-   * @param array $args An associative array of arguments to be processed by the widget
+   * @param array $args An associative array of arguments to be processed by the widget.
    * @access public
    */
   public function __construct( $subject, $name, $args )
   {
-    parent::__construct( 'widget', $subject, $name );
-    $this->arguments = $args;
+    parent::__construct( 'widget', $subject, $name, $args );
   }
 
   /**
@@ -55,6 +54,8 @@ abstract class widget extends operation
   /**
    * Get a query argument passed to the widget.
    * 
+   * This method overrides the behaviour in the parent class' method since widget arguments are
+   * passed in associative arrays named after the widget.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $name The name of the argument.
    * @param mixed $default The value to return if no argument exists.  If the default is null then
@@ -155,13 +156,6 @@ abstract class widget extends operation
    * @access protected
    */
   protected $parent = NULL;
-
-  /**
-   * The url query arguments.
-   * @var array( array )
-   * @access private
-   */
-  private $arguments = array();
 
   /**
    * An array which holds .ini variables.

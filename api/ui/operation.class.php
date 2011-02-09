@@ -28,15 +28,19 @@ abstract class operation extends \sabretooth\base_object
    * @param string $type The type of operation (either 'action' or 'widget')
    * @param string $subject The subject of the operation.
    * @param string $name The name of the operation.
-   * @throws exception\permission
+   * @param array $args An associative array of arguments to be processed by the widgel
+   y @throws exception\permission
    * @access public
    */
-  public function __construct( $type, $subject, $name )
+  public function __construct( $type, $subject, $name, $args )
   {
     // type must either be an action or widget
     assert( 'action' == $type || 'widget' == $type );
     
-    $this->operation_record = \sabretooth\database\operation::get_operation( $type, $subject, $name );
+    $this->operation_record =
+      \sabretooth\database\operation::get_operation( $type, $subject, $name );
+    
+    if( is_array( $args ) ) $this->arguments = $args;
 
     // throw a permission exception if the record is restricted and the user's current role does
     // not have access to the operation
@@ -85,12 +89,47 @@ abstract class operation extends \sabretooth\base_object
    * @access public
    */
   public function get_full_name() { return $this->operation_record->subject.'_'.$this->operation_record->name; }
-  
+ 
+  /**
+   * Get a query argument passed to the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $name The name of the argument.
+   * @param mixed $default The value to return if no argument exists.  If the default is null then
+   *                       it is assumed that the argument must exist, throwing an argument
+                           exception if it is not set.
+   * @return mixed
+   * @throws exception\argument
+   * @access public
+   */
+  public function get_argument( $name, $default = NULL )
+  {
+    $argument = NULL;
+    if( !array_key_exists( $name, $this->arguments ) )
+    {
+      if( is_null( $default ) ) throw new \sabretooth\exception\argument( $name );
+      $argument = $default;
+    }
+    else
+    { // the argument exists
+      $argument = $this->arguments[$name];
+    }
+
+    return $argument;
+  }
+
   /**
    * The database record for this operation
    * @var database\active_record
-   * @access private
+   * @access protected
    */
-  private $operation_record = NULL;
+  protected $operation_record = NULL;
+
+  /**
+   * The url query arguments.
+   * @var array( array )
+   * @access protected
+   */
+  protected $arguments = array();
 }
 ?>
