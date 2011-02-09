@@ -34,10 +34,27 @@ try
   $slot_name = isset( $_GET['slot'] ) ? $_GET['slot'] : NULL;
   $widget['name'] = isset( $_GET['widget'] ) ? $_GET['widget'] : NULL;
   $current_widget = session::self()->slot_current( $slot_name );
-  $widget['args'] = !is_null( $current_widget ) &&
-                    is_array( $current_widget['args'] ) &&
-                    $widget['name'] == $current_widget['name']
-                  ? array_merge( $current_widget['args'], $_GET ) : $_GET;
+
+  // if we are loading the same widget as last time then merge the arguments
+  $widget['args'] = $_GET;
+  if( !is_null( $current_widget ) &&
+      is_array( $current_widget['args'] ) &&
+      $widget['name'] == $current_widget['name'] )
+  {
+    // A simple array_merge call will not work since we may have a multi-dimensional array
+    // so we have to go through each argument, add them if it isn't an array and merge it
+    // if it is
+    foreach( $current_widget['args'] as $key => $arg )
+    {
+      $widget['args'][$key] = is_array( $arg ) && array_key_exists( $key, $widget['args'] )
+                            ? array_merge( $arg, $widget['args'][$key] )
+                            : $arg;
+    }
+  }
+
+  log::print_r( $current_widget['args']['activity_list'], 'current' );
+  log::print_r( $_GET['activity_list'], 'GET' );
+  log::print_r( $widget['args']['activity_list'], 'new' );
   $go_prev = isset( $_GET['prev'] ) && 1 == $_GET['prev'];
   $go_next = isset( $_GET['next'] ) && 1 == $_GET['next'];
   $refresh = isset( $_GET['refresh'] ) && 1 == $_GET['refresh'];

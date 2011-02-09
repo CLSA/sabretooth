@@ -91,6 +91,10 @@ $( function() {
 } );
 {% endif %}
 
+// create button sets
+$( function() { $( "#{{ current_widget }}_check_none" ).button().parent().buttonset() } );
+$( function() { $( "#{{ current_widget }}_page_next" ).button().parent().buttonset() } );
+
 // stripe the table
 $( function() {
   $(".{{ current_widget }}_table tbody tr").mouseover( function() {
@@ -99,20 +103,6 @@ $( function() {
   $(".{{ current_widget }}_table tbody tr").mouseout( function() {
     $(this).removeClass( "ui-widget-header" );
   } );
-} );
-
-// column sort functions
-$( function() {
-  $( "th.{{ current_widget }}_sortable" ).click( function() {
-    var args = new Object();
-    args.page = {{ page }}; // TODO: this shouldn't be necessary, investigate why it is
-    args.sort_column = $(this).attr("id");
-    args.sort_desc = {{ sort_desc ? 0 : 1 }};
-    slot_load( get_slot( $(this) ),
-               "{{ active_widget }}",
-               "{{ current_widget }}",
-               args );
-  } )
 } );
 
 // column button functions
@@ -158,11 +148,6 @@ $( function() {
 } );
 {% endif %}
 
-
-// create button sets
-$( function() { $( "#{{ current_widget }}_check_none" ).button().parent().buttonset() } );
-$( function() { $( "#{{ current_widget }}_page_next" ).button().parent().buttonset() } );
-
 // check button functions
 $( function() {
   $( "#{{ current_widget }}_check_all" ).click( function() {
@@ -182,13 +167,24 @@ $( function() {
   } )
 } );
 
+// column sort functions
+$( function() {
+  $( "th.{{ current_widget }}_sortable" ).click( function() {
+    var args = new Object();
+    args.sort_column = $(this).attr("id");
+    args.sort_desc = "{{ sort_column }}" == $(this).attr("id") ? {{ sort_desc ? 0 : 1 }} : 0;
+    slot_load( get_slot( $(this) ),
+               "{{ active_widget }}",
+               "{{ current_widget }}",
+               args );
+  } )
+} );
+
 // page button functions
 $( function() {
   $( "#{{ current_widget }}_page_prev" ).click( function() {
     var args = new Object();
     args.page = {{ page - 1 }};
-    args.sort_column = "{{ sort_column }}";
-    args.sort_desc = {{ sort_desc ? 1 : 0 }};
     slot_load( get_slot( $(this) ),
                "{{ active_widget }}",
                "{{ current_widget }}",
@@ -199,8 +195,6 @@ $( function() {
   $( "#{{ current_widget }}_page_next" ).click( function() {
     var args = new Object();
     args.page = {{ page + 1 }};
-    args.sort_column = "{{ sort_column }}";
-    args.sort_desc = {{ sort_desc ? 1 : 0 }};
     slot_load( get_slot( $(this) ),
                "{{ active_widget }}",
                "{{ current_widget }}",
