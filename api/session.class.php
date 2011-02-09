@@ -65,8 +65,18 @@ final class session extends singleton
     if( !isset( $_SESSION['slot'] ) ) $_SESSION['slot'] = array();
   }
   
+  /**
+   * Initializes the session.
+   * 
+   * This method should be called immediately after constructing the session.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
   public function initialize()
   {
+    // don't initialize more than once
+    if( $this->initialized ) return;
+
     // set up the database
     $this->db = ADONewConnection( session::self()->get_setting( 'db', 'driver' ) );
     
@@ -83,7 +93,9 @@ final class session extends singleton
     // determine the user (setting the user will also set the site and role)
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
     $this->set_user( database\user::get_unique_record( 'name', $user_name ) );
-    if( NULL == $this->user ) log::err( 'User "'.$user_name.'" not found.' );
+    if( NULL == $this->user ) throw new exception\runtime( 'User "'.$user_name.'" not found.' );
+
+    $this->initialized = true;
   }
   
   /**
@@ -490,6 +502,13 @@ final class session extends singleton
         $_SESSION['slot'][$slot]['stack']['widgets'][$index+1]['name'] : NULL );
     }
   }
+
+  /**
+   * Whether the session has been initialized
+   * @var boolean
+   * @access private
+   */
+  private $initialized = false;
 
   /**
    * An array which holds .ini settings.
