@@ -86,33 +86,108 @@ class user extends active_record
 
     return count( $rows );
   }
-  
+
+  /**
+   * Get the number of activity entries for this user.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access public
+   */
+  public function get_activity_count()
+  {
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to query user record with no id.' );
+      return 0;
+    }
+
+    return self::get_one(
+      sprintf( 'SELECT COUNT( DISTINCT id ) FROM activity WHERE user_id = %s',
+               self::format_string( $this->id ) ) );
+  }
+
+  /**
+   * Get an activity list for this user.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the selection.
+   * @return array( database\activity )
+   * @access public
+   */
+  public function get_activity_list( $modifier = NULL )
+  {
+    $activity_list = array();
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to query user record with no id.' );
+      return $activity_list;
+    }
+
+    $ids = self::get_col(
+      sprintf( 'SELECT activity.id '.
+               'FROM activity, user, site, role, operation '.
+               'WHERE activity.user_id = user.id '.
+               'AND activity.site_id = site.id '.
+               'AND activity.role_id = role.id '.
+               'AND activity.operation_id = operation.id '.
+               'AND activity.user_id = %s '.
+               '%s',
+               self::format_string( $this->id ),
+               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
+
+    foreach( $ids as $id ) array_push( $activity_list, new activity( $id ) );
+    return $activity_list;
+  }
+
+  /**
+   * Get the number of sites that this user has access to.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access public
+   */
+  public function get_site_count()
+  {
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to query user record with no id.' );
+      return 0;
+    }
+
+    return self::get_one(
+      sprintf( 'SELECT COUNT( DISTINCT site_id ) FROM user_access WHERE user_id = %s',
+               self::format_string( $this->id ) ) );
+  }
+
   /**
    * Returns an array of site objects the user has access to (empty array if none).
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the selection.
    * @return array( database\site )
    * @access public
    */
-  public function get_site_list()
+  public function get_site_list( $modifier = NULL )
   {
     $sites = array();
-
     if( is_null( $this->id ) )
     {
       \sabretooth\log::warning( 'Tried to get sites for user record with no id.' );
       return $sites;
     }
 
-    $site_ids = self::get_col(
+    $ids = self::get_col(
       sprintf( 'SELECT site_id '.
                'FROM user_access '.
-               'WHERE user_id = '.$this->id.' '.
+               'WHERE user_id = %s '.
                'GROUP BY site_id '.
-               'ORDER BY site_id',
-               self::format_string( $this->id ) ) );
+               'ORDER BY site_id'.
+               '%s',
+               self::format_string( $this->id ),
+               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
       
-    foreach( $site_ids as $site_id ) array_push( $sites, new site( $site_id ) );
+    foreach( $ids as $id ) array_push( $sites, new site( $id ) );
     return $sites;
   }
 
