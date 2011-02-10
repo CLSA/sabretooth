@@ -62,6 +62,7 @@ abstract class base_list extends widget
 
     // make sure the page is valid, then set the rows array based on the page
     $max_page = ceil( $this->record_count / $this->items_per_page );
+    if( 1 > $max_page ) $max_page = 1; // lower limit
     if( 1 > $this->page ) $this->page = 1; // lower limit
     if( $this->page > $max_page ) $this->page = $max_page; // upper limit
     
