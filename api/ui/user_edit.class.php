@@ -1,6 +1,6 @@
 <?php
 /**
- * role_edit.class.php
+ * user_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,12 +10,12 @@
 namespace sabretooth\ui;
 
 /**
- * action role edit
+ * action user edit
  *
- * Edit a role.
+ * Edit a user.
  * @package sabretooth\ui
  */
-class role_edit extends base_edit
+class user_edit extends base_edit
 {
   /**
    * Constructor.
@@ -25,7 +25,7 @@ class role_edit extends base_edit
    */
   public function __construct( $args )
   {
-    parent::__construct( 'role', $args );
+    parent::__construct( 'user', $args );
   }
 }
 ?>

@@ -37,11 +37,14 @@ class site_view extends base_record
       array( 'heading' => 'Number of users',
              'type' => 'constant',
              'value' => $this->record->get_user_count() );
+
+    $db_activity = $this->record->get_last_activity();
+    $last = \sabretooth\util::get_fuzzy_time_ago(
+              is_null( $db_activity ) ? null : $db_activity->date );
     $this->item['last_activity'] =
       array( 'heading' => 'Last activity',
              'type' => 'constant',
-             'value' => \sabretooth\util::get_fuzzy_time_ago(
-                          $this->record->get_last_activity()->date ) );
+             'value' => $last );
 
     // create the user sub-list widget
     $this->user_list = new user_list( $args );

@@ -36,16 +36,19 @@ class user_view extends base_record
     $this->item['active'] =
       array( 'heading' => 'Active',
              'type' => 'boolean',
-             'value' => $this->record->active );
+             'value' => $this->record->active ? 'Yes' : 'No' );
     $this->item['limesurvey_username'] =
       array( 'heading' => 'Limesurvey username',
              'type' => 'constant',
              'value' => 'TODO' );
+    
+    $db_activity = $this->record->get_last_activity();
+    $last = \sabretooth\util::get_fuzzy_time_ago(
+              is_null( $db_activity ) ? null : $db_activity->date );
     $this->item['last_activity'] =
       array( 'heading' => 'Last activity',
              'type' => 'constant',
-             'value' => \sabretooth\util::get_fuzzy_time_ago(
-                          $this->record->get_last_activity()->date ) );
+             'value' => $last );
 
     // create the site sub-list widget
     $this->site_list = new site_list( $args );

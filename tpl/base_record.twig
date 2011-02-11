@@ -10,53 +10,84 @@
 <script type="text/javascript">
 
 {% if editable %}
-// we need a variable to communicate between jeditable functions
-window.{{ current_widget }}_old_values = new Object();
-
-// make mutable elements editable
+// make mutable elements
 $( function () {
+  // identify a mutable element by changing classes on mouse over/out
   $( "div.mutable" ).mouseover( function() {
     $(this).removeClass( "padded" );
     $(this).addClass( "ui-widget-content" );
-  } );
+  } )
   $( "div.mutable" ).mouseout( function() {
     $(this).removeClass( "ui-widget-content" );
     $(this).addClass( "padded" );
-  } );
-  $( "div.mutable" ).click( function() {
-    // store the current value before jeditable changes it
-    window.{{ current_widget }}_old_values[ $(this).attr( 'id' ) ] = $(this).html();
-  } );
-  $( "div.mutable" ).editable( function( value, settings ) {
-    // no mouseout event when this method has been called
-    $(this).removeClass( "ui-widget-content" );
+  } )
 
-    // don't do anything if there hasn't been any change to the value
-    if( value == window.{{ current_widget }}_old_values[ $(this).attr( 'id' ) ] ) return value;
+  // common jeditable parameters
+  var jeditable_params = Object();
+  jeditable_params.tooltop = "click to edit";
+  jeditable_params.cssclass = "ui-state-default";
+  jeditable_params.event = "click";
+  jeditable_params.onblur = "cancel";
 
-    // build the args object
-    var id_string = $(this).attr( 'id' );
-    var column_name = id_string.substring( id_string.lastIndexOf('_') + 1 );
-    var args = new Object();
-    args.id = {{ id }};
-    var columns = new Object();
-    columns[column_name] = value;
-    args.columns = columns;
+  // jeditable string
+  jeditable_params.type = "text";
+  jeditable_params.placeholder = "(empty)";
+  $( "div.jeditable_string" ).editable( function( value, settings ) {
+    return process_jeditable( $(this), value, "text" );
+  }, jeditable_params );
 
-    // send the change to the server and record whether it succeeds or not
-    var success = send_action( "{{ widget_subject }}", "edit", args );
-    return success ? value : window.{{ current_widget }}_old_values[ $(this).attr( 'id' ) ];
-  }, {
-    "tooltip": "click to edit",
-    "event": "click",
-    "placeholder": "(empty)",
-    "onblur": "cancel"
-  } );
+  // jeditable text
+  jeditable_params.type = "textarea";
+  $( "div.jeditable_text" ).editable( function( value, settings ) {
+    return process_jeditable( $(this), value, "textarea" );
+  }, jeditable_params );
+  
+  // jeditable boolean
+  jeditable_params.type = "select";
+  jeditable_params.data = "{'Yes':'Yes','No':'No','selected':'Yes'}";
+  jeditable_params.submit = 'ok';
+  $( "div.jeditable_boolean" ).editable( function( value, settings ) {
+    return process_jeditable( $(this), value, "boolean" );
+  }, jeditable_params );
+  
 } );
+
+/**
+ * Processes jeditable value changes.
+ * @author Patrick Emond <emondpd@mcmaster.ca>
+ * @param string new_value The elements new value.
+ * @param string type The type of element being edited.
+ */
+function process_jeditable( element, new_value, type )
+{
+  // don't do anything if there hasn't been any change to the value
+  var old_value = $( "#old_" + element.attr( 'id' ) ).val();
+  if( new_value == old_value ) return old_value;
+
+  // build the args object
+  var id_string = element.attr( 'id' );
+  var column_name = id_string.substring( id_string.lastIndexOf('_') + 1 );
+  var args = new Object();
+  args.id = {{ id|default(0) }};
+  var columns = new Object();
+  columns[column_name] = 'boolean' == type
+                       ? ( 'Yes' == new_value ? 1 : 0 )
+                       : new_value;
+  args.columns = columns;
+
+  // send the action, updating the hidden "old" input upon success
+  if( send_action( "{{ widget_subject }}", "edit", args ) )
+  {
+    $( "#old_" + element.attr( 'id' ) ).val( new_value );
+    return new_value;
+  }
+
+  return old_value;
+}
 {% endif %}
 
 {% if addable %}
-// add/cancel buttons
+// add buttons function
 $( function () {
   $( "button.{{ current_widget }}_add" ).click( function() {
     // submit the form information as an add action
@@ -72,6 +103,8 @@ $( function () {
     if( send_action( "{{ widget_subject }}", "new", args ) ) slot_prev( get_slot( $(this) ) );
   } );
 } );
+
+// cancel button function
 $( function () {
   $( "button.{{ current_widget }}_cancel" ).click( function() {
     slot_prev( get_slot( $(this) ) );
@@ -94,11 +127,27 @@ $( function () {
     <td style="padding: 4px" width="95%" align="left">
       {% block value %}
       {% if addable %}
-      <input id="{{ current_widget }}_{{ id }}" type="text" style="width:100%"></input>
+        {% if 'boolean' == entry.type %}
+          <select id="{{ current_widget }}_{{ id }}" style="width: 100%" class="ui-state-default">
+            <option{{ entry.value ? ' selected' : '' }} value="1">Yes</option>
+            <option{{ entry.value ? '' : ' selected' }} value="0">No</option>
+          </select>
+        {% elseif 'date' == entry.type %}
+          TODO
+        {% elseif 'string' == entry.type %}
+          <input id="{{ current_widget }}_{{ id }}" type="text" style="width:100%" />
+        {% elseif 'text' == entry.type %}
+          <textarea id="{{ current_widget }}_{{ id }}" style="width:100%" /></textarea>
+        {% endif %}
       {% elseif editable and 'constant' != entry.type %}
-      <div id="{{ current_widget }}_{{ id }}" class="mutable padded">{{ entry.value }}</div>
+        {% set value = 'boolean' == entry.type ? ( entry.value ? 'Yes' : 'No' ) : entry.value %}
+        <input id="old_{{ current_widget }}_{{ id }}"
+               value="{{ entry.value }}"
+               type="hidden" />
+        <div id="{{ current_widget }}_{{ id }}"
+             class="mutable jeditable_{{ entry.type }} padded">{{ entry.value }}</div>
       {% else %}
-      {{ entry.value }}
+      <div id="{{ current_widget }}_{{ id }}" class="padded">{{ entry.value }}</div>
       {% endif %}
       {% endblock %}
     </td>

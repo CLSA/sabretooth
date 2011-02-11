@@ -1,6 +1,6 @@
 <?php
 /**
- * base_new.class.php
+ * base_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,12 +10,12 @@
 namespace sabretooth\ui;
 
 /**
- * Base class for all "new" actions.
+ * Base class for all "edit" actions.
  * 
- * Abstract class which defines base functionality for all "new" actions.
+ * Abstract class which defines base functionality for all "edit" actions.
  * @package sabretooth\ui
  */
-class base_new extends action
+class base_edit extends action
 {
   /**
    * Constructor.
@@ -26,9 +26,10 @@ class base_new extends action
    */
   public function __construct( $subject, $args )
   {
-    parent::__construct( $subject, 'new', $args );
+    parent::__construct( $subject, 'edit', $args );
     $class_name = '\\sabretooth\\database\\'.$this->get_subject();
-    $this->record = new $class_name();
+    $this->record = new $class_name( $this->get_argument( 'id' ) );
+    if( is_null( $this->record ) ) throw new \sabretooth\exception\argument( 'id' );
   }
   
   /**
@@ -47,7 +48,7 @@ class base_new extends action
   }
   
   /**
-   * The active record of the item being created.
+   * An active record of the item being edited.
    * @var active_record
    * @access protected
    */
