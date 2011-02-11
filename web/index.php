@@ -32,7 +32,8 @@ try
   // set up the template engine
   $loader = new \Twig_Loader_Filesystem( TPL_PATH );
   $twig = new \Twig_Environment( $loader, array( 'debug' => util::in_devel_mode(),
-                                                 'strict_variables' => util::in_devel_mode() ) );
+                                                 'strict_variables' => util::in_devel_mode(),
+                                                 'cache' => TEMPLATE_CACHE_PATH ) );
   $twig->addFilter( 'count', new \Twig_Filter_Function( 'count' ) );
   
   $twig_template = $twig->loadTemplate( 'main.twig' );
