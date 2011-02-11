@@ -82,18 +82,20 @@ class user extends active_record
       \sabretooth\log::warning( 'Tried to query user record with no id.' );
       return $activity_list;
     }
+    
+    // need to further set up the modifier
+    if( is_null( $modifier ) ) $modifier = new modifier();
+    $modifier->where( 'activity.user_id', 'user.id', false );
+    $modifier->where( 'activity.site_id', 'site.id', false );
+    $modifier->where( 'activity.role_id', 'role.id', false );
+    $modifier->where( 'activity.operation_id', 'operation.id', false );
+    $modifier->where( 'activity.user_id', $this->id );
 
     $ids = self::get_col(
       sprintf( 'SELECT activity.id '.
                'FROM activity, user, site, role, operation '.
-               'WHERE activity.user_id = user.id '.
-               'AND activity.site_id = site.id '.
-               'AND activity.role_id = role.id '.
-               'AND activity.operation_id = operation.id '.
-               'AND activity.user_id = %s '.
                '%s',
-               self::format_string( $this->id ),
-               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
+               $modifier->get_sql() ) );
 
     foreach( $ids as $id ) array_push( $activity_list, new activity( $id ) );
     return $activity_list;
@@ -135,16 +137,18 @@ class user extends active_record
       \sabretooth\log::warning( 'Tried to get sites for user record with no id.' );
       return $sites;
     }
+    
+    // need to further set up the modifier
+    if( is_null( $modifier ) ) $modifier = new modifier();
+    $modifier->where( 'user_access.site_id', 'site.id', false );
+    $modifier->where( 'user_id', $this->id );
+    $modifier->group( 'site_id' );
 
     $ids = self::get_col(
       sprintf( 'SELECT site_id '.
-               'FROM user_access '.
-               'WHERE user_id = %s '.
-               'GROUP BY site_id '.
-               'ORDER BY site_id'.
+               'FROM user_access, site '.
                '%s',
-               self::format_string( $this->id ),
-               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
+               $modifier->get_sql() ) );
       
     foreach( $ids as $id ) array_push( $sites, new site( $id ) );
     return $sites;
@@ -167,15 +171,17 @@ class user extends active_record
       \sabretooth\log::warning( 'Tried to get roles for user record with no id.' );
       return $roles;
     }
+    
+    $modifier = new modifier();
+    $modifier->where( 'user_id', $this->id );
+    if( !is_null( $db_site ) ) $modifier->where( 'site_id', $db_site->id );
+    $modifier->order( 'role_id' );
 
     $role_ids = self::get_col(
       sprintf( 'SELECT role_id '.
                'FROM user_access '.
-               'WHERE user_id = %s '.
-               ( !is_null( $db_site ) ? 'AND site_id = %s ' : '' ).
-               'ORDER BY role_id',
-               self::format_string( $this->id ),
-               !is_null( $db_site ) ? self::format_string( $db_site->id ) : '' ) );
+               '%s',
+               $modifier->get_sql() ) );
 
     foreach( $role_ids as $role_id ) array_push( $roles, new role( $role_id ) );
     return $roles;
