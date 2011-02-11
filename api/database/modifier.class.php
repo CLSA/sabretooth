@@ -129,19 +129,41 @@ class modifier extends \sabretooth\base_object
     return array_key_exists( $column, $this->order_list );
   }
   
-  // TODO: document
+  /**
+   * Get an array of where clauses.
+   * 
+   * Each element contains an associative array where the indeces 'value' and 'format' contain
+   * the column's value and whether to format the value, respectively.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array
+   * @access public
+   */
   public function get_where_columns()
   {
     return array_keys( $this->where_list );
   }
 
-  // TODO: document
+  /**
+   * Get an array of group clauses.
+   * 
+   * The returned array is an array of table names.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array
+   * @access public
+   */
   public function get_group_columns()
   {
     return array_keys( $this->group_list );
   }
 
-  // TODO: document
+  /**
+   * Get an array of order clauses.
+   * 
+   * The returned array is an associative array of "column name" => "descending" values.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array
+   * @access public
+   */
   public function get_order_columns()
   {
     return array_keys( $this->order_list );
@@ -263,8 +285,6 @@ class modifier extends \sabretooth\base_object
 
   /**
    * Holds all where clauses in an associative array named after the column.
-   * Each element contains an associative array where the indeces 'value' and 'format' contain
-   * the column's value and whether to format the value, respectively.
    * @var array
    * @access private
    */

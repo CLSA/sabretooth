@@ -61,7 +61,7 @@ function error_dialog( title, message ) {
  * @param JSON-array args The arguments to pass to the operation object
  * @return bool Whether or not the operation completed successfully
  */
-function send_operation( subject, name, args ) {
+function send_action( subject, name, args ) {
   if( undefined == args ) args = new Object();
   args.subject = subject;
   args.name = name;

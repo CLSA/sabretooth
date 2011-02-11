@@ -24,11 +24,13 @@ VALUES( "widget", "operation", "list", true, "List operations in the system." );
 
 -- role
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "role", "remove", true, "Removes a role from the system." );
+VALUES( "action", "role", "delete", true, "Removes a role from the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "role", "edit", true, "Edits a role's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "role", "add", true, "Add a new role to the system." );
+VALUES( "action", "role", "new", true, "Add a new role to the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "role", "add", true, "View a form for creating a new role." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "role", "view", true, "View a role's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -56,11 +58,13 @@ VALUES( "widget", "site", "list", true, "List sites in the system." );
 
 -- user
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "user", "remove", true, "Removes a user from the system." );
+VALUES( "action", "user", "delete", true, "Removes a user from the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "user", "edit", true, "Edits a user's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "user", "add", true, "Add a new user to the system." );
+VALUES( "action", "user", "new", true, "Add a new user to the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "user", "add", true, "View a form for creating a new user." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "user", "view", true, "View a user's details." );
 INSERT INTO operation( type, subject, name, restricted, description )

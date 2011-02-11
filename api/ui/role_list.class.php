@@ -10,7 +10,7 @@
 namespace sabretooth\ui;
 
 /**
- * role.list widget
+ * widget role list
  * 
  * @package sabretooth\ui
  */
@@ -32,10 +32,6 @@ class role_list extends base_list
 
     // define all template variables for this list
     $this->set_heading( 'Role list' );
-    $this->checkable = false;
-    $this->viewable = true; // TODO: should be based on role
-    $this->editable = false;
-    $this->removable = false;
 
     $this->columns = array(
       array( 'id' => 'name',

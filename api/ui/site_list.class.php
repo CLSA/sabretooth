@@ -10,7 +10,7 @@
 namespace sabretooth\ui;
 
 /**
- * site.list widget
+ * widget site list
  * 
  * @package sabretooth\ui
  */
@@ -32,43 +32,17 @@ class site_list extends base_list
 
     // define all template variables for this list
     $this->set_heading( 'Site list' );
-    $this->checkable = false;
-    $this->viewable = true; // TODO: should be based on role
-    $this->editable = false;
-    $this->removable = false;
 
     $this->columns = array(
       array( 'id' => 'name',
-             'heading' => 'name',
+             'heading' => 'Name',
              'sortable' => true ),
       array( 'id' => 'users',
-             'heading' => 'users',
+             'heading' => 'Users',
              'sortable' => false ),
       array( 'id' => 'last',
-             'heading' => 'last activity',
-             'sortable' => true ) ); 
-  }
-
-  /**
-   * Overrides the parent class method since the list can be sorted by a column outside of the user
-   * table.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access protected
-   */
-  protected function determine_record_sort_column( $sort_name )
-  {
-    if( 'last' == $sort_name )
-    { // special select column, see site::select() for details
-      $sort = 'activity.date';
-    }
-    else
-    {
-      $sort = parent::determine_record_sort_column( $sort_name );
-    }
-
-    return $sort;
+             'heading' => 'Last activity',
+             'sortable' => false ) ); 
   }
 
   /**
@@ -90,11 +64,19 @@ class site_list extends base_list
       $last = is_null( $db_activity )
             ? 'never'
             : \sabretooth\util::get_fuzzy_time_ago( $db_activity->date );
+      
+      // determine the last activity
+      $db_activity = $record->get_last_activity();
+      $last = \sabretooth\util::get_fuzzy_time_ago(
+                is_null( $db_activity ) ? null : $db_activity->date );
 
-      array_push( $this->rows, array( 'id' => $record->id,
-               'columns' => array( 'name' => $record->name,
-                                   'users' => $record->get_user_count(),
-                                   'last' => $last ) ) );
+      array_push(
+        $this->rows,
+        array( 'id' => $record->id,
+               'columns' =>
+                 array( 'name' => $record->name,
+                        'users' => $record->get_user_count(),
+                        'last' => $last ) ) );
     }
   }
 }

@@ -10,7 +10,7 @@
 namespace sabretooth\ui;
 
 /**
- * self.set_site action
+ * action self set_site
  *
  * Changes the current user's site.
  * Arguments must include 'site'.

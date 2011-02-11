@@ -10,7 +10,7 @@
 namespace sabretooth\ui;
 
 /**
- * self.set_role action
+ * action self set_role
  * 
  * Changes the current user's role.
  * Arguments must include 'role'.

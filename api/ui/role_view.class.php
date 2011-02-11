@@ -10,41 +10,42 @@
 namespace sabretooth\ui;
 
 /**
- * role.view widget
+ * Base class for all 'view' and 'add' widgets.
  * 
  * @package sabretooth\ui
  */
-class role_view extends base_view
+class role_view extends base_record
 {
   /**
    * Constructor
    * 
    * Defines all variables which need to be set for the associated template.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $name The name of the operation.
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'role', $args );
+    parent::__construct( 'role', 'view', $args );
 
-    // define all template variables for this list
-    $this->set_heading( sprintf( 'Viewing role "%s"', $this->record->name ) );
-    $this->editable = true; // TODO: should be based on role
-    $this->removable = false;
-    
     // create an associative array with everything we want to display about the role
-    $this->item = array( 'Name' => $this->record->name,
-                         'Operations' => $this->record->get_operation_count() );
+    $this->item['name'] =
+      array( 'heading' => 'Name',
+             'type' => 'string',
+             'value' => $this->record->name );
+    $this->item['operation_count'] =
+      array( 'heading' => 'Operations',
+             'type' => 'constant',
+             'value' => $this->record->get_operation_count() );
 
     // create the operation sub-list widget
     $this->operation_list = new operation_list( $args );
     $this->operation_list->set_parent( $this );
     $this->operation_list->set_heading( 'Operations belonging to this role' );
-    $this->operation_list->set_checkable( false );
+    $this->operation_list->set_checkable( true );
     $this->operation_list->set_viewable( false );
-    $this->operation_list->set_editable( false );
-    $this->operation_list->set_removable( false );
+    $this->operation_list->set_removable( true );
   }
 
   /**
@@ -56,10 +57,8 @@ class role_view extends base_view
   public function finish()
   {
     parent::finish();
+
     $this->operation_list->finish();
-    
-    // define all template variables for this widget
-    $this->set_variable( 'id', $this->record->id );
     $this->set_variable( 'operation_list', $this->operation_list->get_variables() );
   }
 

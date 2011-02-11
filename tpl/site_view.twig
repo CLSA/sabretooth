@@ -5,8 +5,8 @@
  # @author Patrick Emond <emondpd@mcmaster.ca>
  # @see base_view.twig for parameters
  #}
-{% extends "base_view.twig" %}
-{% block item %}
+{% extends "base_record.twig" %}
+{% block record %}
 {{ parent() }}
 <div class="spacer"></div>
 {# Add a list of users who hold a role at this site #}

@@ -5,7 +5,7 @@
  # @author Patrick Emond <emondpd@mcmaster.ca>
  # @param boolean checkable Whether the list should allow items to be selected.
  # @param boolean viewable Whether the list should allow items to be viewed.
- # @param boolean editable Whether the list should allow items to be edited.
+ # @param boolean addable Whether the list should allow items to be added.
  # @param boolean removable Whether the list should allow items to be removed.
  # @param int items_per_page The maximum number of items to show at once.
  # @param array columns An array of columns.  Every item in the array must have the following:
@@ -25,6 +25,7 @@
 {% extends "widget.twig" %}
 {% block widget %}
 <script type="text/javascript">
+
 // make button icons
 $( function() {
   $( "button.{{ current_widget }}_sortable" ).button( {
@@ -70,22 +71,22 @@ $( function() {
   } )
 } );
 {% endif %}
-{% if editable %}
-$( function() {
-  $( "button.{{ current_widget }}_edit" ).button( {
-    text: false,
-    icons: {
-      primary: "ui-icon-pencil"
-    }
-  } )
-} );
-{% endif %}
 {% if removable %}
 $( function() {
   $( "button.{{ current_widget }}_remove" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-closethick"
+    }
+  } )
+} );
+{% endif %}
+{% if addable %}
+$( function() {
+  $( "#{{ current_widget }}_add" ).button( {
+    text: false,
+    icons: {
+      primary: "ui-icon-plusthick"
     }
   } )
 } );
@@ -105,26 +106,12 @@ $( function() {
   } );
 } );
 
-// column button functions
 {% if viewable %}
+// view button function
 $( function() {
   $( ".{{ current_widget }}_view" ).click( function() {
     var id_string = $(this).attr( 'id' );
-    id_string = id_string.substring( id_string.lastIndexOf('_') + 1 );
-    id = parseInt( id_string );
-    slot_load( get_slot( $(this) ),
-               "{{ widget_subject }}_view",
-               "{{ widget_subject }}_view",
-               { "id": id } );
-  } )
-} );
-{% endif %}
-{% if editable %}
-$( function() {
-  $( ".{{ current_widget }}_edit" ).click( function() {
-    var id_string = $(this).attr( 'id' );
-    id_string = id_string.substring( id_string.lastIndexOf('_') + 1 );
-    id = parseInt( id_string );
+    var id = parseInt( id_string.substring( id_string.lastIndexOf('_') + 1 ) );
     slot_load( get_slot( $(this) ),
                "{{ widget_subject }}_view",
                "{{ widget_subject }}_view",
@@ -133,17 +120,23 @@ $( function() {
 } );
 {% endif %}
 {% if removable %}
+// remove button function
 $( function() {
   $( ".{{ current_widget }}_remove" ).click( function() {
     var id_string = $(this).attr( 'id' );
-    id_string = id_string.substring( id_string.lastIndexOf('_') + 1 );
-    id = parseInt( id_string );
-    // TODO: this should be an action, not a widget
-    //       also, a confirmation dialog should be added in
+    var id = parseInt( id_string.substring( id_string.lastIndexOf('_') + 1 ) );
+    send_action( "{{ widget_subject }}", "delete", { "id": id } );
+    slot_refresh( get_slot( $(this) ) );
+  } )
+} );
+{% endif %}
+{% if addable %}
+// add button function
+$( function() {
+  $( "#{{ current_widget }}_add" ).click( function() {
     slot_load( get_slot( $(this) ),
-               "{{ widget_subject }}_remove",
-               "{{ widget_subject }}_remove",
-               { "id": id } );
+               "{{ widget_subject }}_add",
+               "{{ widget_subject }}_add" );
   } )
 } );
 {% endif %}
@@ -205,10 +198,12 @@ $( function() {
 </script>
 <table class="{{ current_widget }}_table">
   {% if rows | count %}
+  {% set number_of_columns = 0 %}
   <thead class="ui-widget-header">
     <tr>
       {% if checkable %}
-      <th><div class="ui-icon ui-icon-check" style="padding:2px"></div></th>
+      <th align="center"><div class="ui-icon ui-icon-check" style="padding:2px"></div></th>
+      {% set number_of_columns = number_of_columns + 1 %}
       {% endif %}
       {% for column in columns %}
         {% if column.sortable %}
@@ -221,18 +216,19 @@ $( function() {
               {{ column.heading }}
             </button>
           </th>
+          {% set number_of_columns = number_of_columns + 1 %}
         {% else %}
           <th>{{ column.heading }}</th>
+          {% set number_of_columns = number_of_columns + 1 %}
         {% endif %}
       {% endfor %}
       {% if viewable %}
       <th width="1%"></th>
-      {% endif %}
-      {% if editable %}
-      <th width="1%"></th>
+      {% set number_of_columns = number_of_columns + 1 %}
       {% endif %}
       {% if removable %}
       <th width="1%"></th>
+      {% set number_of_columns = number_of_columns + 1 %}
       {% endif %}
   </thead>
   <tbody>
@@ -251,10 +247,6 @@ $( function() {
       <td><button class="{{ current_widget }}_view"
                   id="{{ current_widget }}_view_{{ row.id }}">view</button></td>
       {% endif %}
-      {% if editable %}
-      <td><button class="{{ current_widget }}_edit"
-                  id="{{ current_widget }}_view_{{ row.id }}">edit</button></td>
-      {% endif %}
       {% if removable %}
       <td><button class="{{ current_widget }}_remove"
                   id="{{ current_widget }}_remove_{{ row.id }}">remove</button></td>
@@ -265,7 +257,7 @@ $( function() {
   {% endif %}
   <tfoot class="ui-widget-header">
     <tr>
-      <th colspan="0">
+      <th colspan="{{ addable ? number_of_columns - 1 : 0 }}">
         {% if checkable %}
         <span>
           Check boxes:
@@ -273,7 +265,7 @@ $( function() {
           <button style="width:70px" id="{{ current_widget }}_check_none">none</button>
           <button style="width:70px" id="{{ current_widget }}_check_invert">invert</button>
         </span>
-        <span style="margin-left:20px">
+        <span style="margin-left:20px"></span>
         {% endif %}
         {% if rows | count %}
         {% set item_from = ( page - 1 ) * items_per_page + 1 %}
@@ -283,7 +275,7 @@ $( function() {
         No records found.
         {% endif %}
         {% if items_per_page < number_of_items %}
-        <span style="margin-left:20px">
+        <span style="margin-left:20px"></span>
         <span>
           Page:
           <button style="width:70px"
@@ -295,6 +287,9 @@ $( function() {
         </span>
         {% endif %}
       </th>
+      {% if addable %}
+      <th><button id="{{ current_widget }}_add">add {{ widget_subject }}</button></th>
+      {% endif %}
     </tr>
   </tfoot>
 </table>

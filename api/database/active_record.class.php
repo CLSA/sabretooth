@@ -143,10 +143,31 @@ abstract class active_record extends \sabretooth\base_object
       throw new exception\database( $e->getMessage(), NULL, $e );
     }
   }
+  
+  /**
+   * Deletes the record.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\database
+   * @access public
+   */
+  public function delete()
+  {
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to delete record with no id.' );
+      return;
+    }
+
+    self::execute(
+      sprintf( 'DELETE FROM %s WHERE id = %s',
+               self::get_table_name(),
+               $this->columns['id'] ) );
+  }
 
   /**
    * Count the total number of rows in the table.
-   *
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @static
@@ -487,9 +508,9 @@ abstract class active_record extends \sabretooth\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $name A column name
    * @return boolean
-   * @access protected
+   * @access public
    */
-  protected function has_column_name( $column_name )
+  public function has_column_name( $column_name )
   {
     return array_key_exists( $column_name, $this->columns );
   }

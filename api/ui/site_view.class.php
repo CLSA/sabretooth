@@ -10,11 +10,11 @@
 namespace sabretooth\ui;
 
 /**
- * site.view widget
+ * widget site view
  * 
  * @package sabretooth\ui
  */
-class site_view extends base_view
+class site_view extends base_record
 {
   /**
    * Constructor
@@ -26,17 +26,22 @@ class site_view extends base_view
    */
   public function __construct( $args )
   {
-    parent::__construct( 'site', $args );
+    parent::__construct( 'site', 'view', $args );
 
-    // define all template variables for this list
-    $this->set_heading( sprintf( 'Viewing site "%s"', $this->record->name ) );
-    $this->editable = true; // TODO: should be based on role
-    $this->removable = false;
-    
     // create an associative array with everything we want to display about the site
-    $this->item = array( 'Name' => $this->record->name,
-                         'Users' => $this->record->get_user_count(),
-                         'Last activity' => $this->record->get_last_activity()->date );
+    $this->item['name'] =
+      array( 'heading' => 'Name',
+             'type' => 'string',
+             'value' => $this->record->name );
+    $this->item['users'] =
+      array( 'heading' => 'Number of users',
+             'type' => 'constant',
+             'value' => $this->record->get_user_count() );
+    $this->item['last_activity'] =
+      array( 'heading' => 'Last activity',
+             'type' => 'constant',
+             'value' => \sabretooth\util::get_fuzzy_time_ago(
+                          $this->record->get_last_activity()->date ) );
 
     // create the user sub-list widget
     $this->user_list = new user_list( $args );
@@ -44,7 +49,6 @@ class site_view extends base_view
     $this->user_list->set_heading( 'Users belonging to this site' );
     $this->user_list->set_checkable( false );
     $this->user_list->set_viewable( true );
-    $this->user_list->set_editable( false );
     $this->user_list->set_removable( false );
 
     // create the activity sub-list widget
@@ -53,7 +57,6 @@ class site_view extends base_view
     $this->activity_list->set_heading( 'Site activity' );
     $this->activity_list->set_checkable( false );
     $this->activity_list->set_viewable( false );
-    $this->activity_list->set_editable( false );
     $this->activity_list->set_removable( false );
   }
 
@@ -66,12 +69,11 @@ class site_view extends base_view
   public function finish()
   {
     parent::finish();
-    $this->user_list->finish();
-    $this->activity_list->finish();
 
-    // define all template variables for this widget
-    $this->set_variable( 'id', $this->record->id );
+    $this->user_list->finish();
     $this->set_variable( 'user_list', $this->user_list->get_variables() );
+
+    $this->activity_list->finish();
     $this->set_variable( 'activity_list', $this->activity_list->get_variables() );
   }
 

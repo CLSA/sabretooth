@@ -50,6 +50,7 @@ DROP TABLE IF EXISTS `sabretooth`.`user` ;
 CREATE  TABLE IF NOT EXISTS `sabretooth`.`user` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(45) NOT NULL ,
+  `active` TINYINT(1)  NOT NULL DEFAULT true ,
   `lime_uid` INT NULL DEFAULT NULL COMMENT 'Refers to a limesurvey user id.' ,
   `theme` VARCHAR(45) NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
@@ -65,7 +66,7 @@ DROP TABLE IF EXISTS `sabretooth`.`role` ;
 
 CREATE  TABLE IF NOT EXISTS `sabretooth`.`role` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `name` VARCHAR(45) NULL ,
+  `name` VARCHAR(45) NOT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) )
 ENGINE = InnoDB;

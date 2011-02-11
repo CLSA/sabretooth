@@ -1,6 +1,6 @@
 <?php
 /**
- * self_shortcuts.class.php
+ * role_add.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,11 +10,11 @@
 namespace sabretooth\ui;
 
 /**
- * widget self shortcuts
+ * widget role add
  * 
  * @package sabretooth\ui
  */
-class self_shortcuts extends widget
+class role_add extends base_record
 {
   /**
    * Constructor
@@ -26,7 +26,13 @@ class self_shortcuts extends widget
    */
   public function __construct( $args )
   {
-    parent::__construct( 'self', 'shortcuts', $args );
+    parent::__construct( 'role', 'add', $args );
+
+    // define all columns defining this record
+    $this->item['name'] =
+      array( 'heading' => 'Name',
+             'type' => 'string',
+             'value' => '' );
   }
 }
 ?>

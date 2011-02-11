@@ -10,8 +10,7 @@
 namespace sabretooth\ui;
 
 /**
- * action: The base class of all actions
- * 
+ * The base class of all actions
  * 
  * @package sabretooth\ui
  */

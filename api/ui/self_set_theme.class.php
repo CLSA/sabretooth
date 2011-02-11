@@ -10,7 +10,7 @@
 namespace sabretooth\ui;
 
 /**
- * self.set_theme action
+ * action self set_theme
  *
  * Changes the current user's theme.
  * Arguments must include 'theme'.

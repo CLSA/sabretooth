@@ -10,7 +10,7 @@
 namespace sabretooth\ui;
 
 /**
- * operation: abstract class for all operations
+ * Base class for all operation.
  *
  * All operation classes extend this base operation class.  All classes that extend this class are
  * used to fulfill some purpose executed by the user-interface.
@@ -41,12 +41,9 @@ abstract class operation extends \sabretooth\base_object
       \sabretooth\database\operation::get_operation( $type, $subject, $name );
     
     if( is_array( $args ) ) $this->arguments = $args;
-
-    // throw a permission exception if the record is restricted and the user's current role does
-    // not have access to the operation
-    if( is_null( $this->operation_record ) ||
-        (  $this->operation_record->restricted &&
-           !\sabretooth\session::self()->get_role()->has_operation( $this->operation_record ) ) )
+    
+    // throw a permission exception if the user is not allowed to perform this operation
+    if( !\sabretooth\session::self()->is_allowed( $this->operation_record ) )
       throw new \sabretooth\exception\permission( $this->operation_record );
   }
 

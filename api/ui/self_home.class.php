@@ -10,7 +10,7 @@
 namespace sabretooth\ui;
 
 /**
- * self.home widget
+ * widget self home
  * 
  * @package sabretooth\ui
  */

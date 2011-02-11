@@ -10,9 +10,9 @@
 namespace sabretooth\ui;
 
 /**
- * base_list widget
+ * Base class for all widgets.
  * 
- * This class abstracts all common functionality from all lists of records.
+ * This class abstracts all common functionality for lists of records.
  * Concrete child classes represent a particular type of record in the database.
  * If child classes list something other than all records for its particular type then it must
  * override the determine_record_list(), determine_record_count() and
@@ -42,6 +42,15 @@ abstract class base_list extends widget
     $this->page = $this->get_argument( 'page', $this->page );
     $this->sort_column = $this->get_argument( 'sort_column', $this->sort_column );
     $this->sort_desc = 0 != $this->get_argument( 'sort_desc', $this->sort_desc );
+
+    // determine properties based on the current user's permissions
+    $session = \sabretooth\session::self();
+    $this->viewable = $session->is_allowed(
+      \sabretooth\database\operation::get_operation( 'widget', $subject, 'view' ) );
+    $this->addable = $session->is_allowed(
+      \sabretooth\database\operation::get_operation( 'widget', $subject, 'add' ) );
+    $this->removable = $session->is_allowed(
+      \sabretooth\database\operation::get_operation( 'action', $subject, 'delete' ) );
   }
   
   /**
@@ -83,7 +92,7 @@ abstract class base_list extends widget
     // define all template variables for this widget
     $this->set_variable( 'checkable', $this->checkable );
     $this->set_variable( 'viewable', $this->viewable );
-    $this->set_variable( 'editable', $this->editable );
+    $this->set_variable( 'addable', $this->addable );
     $this->set_variable( 'removable', $this->removable );
     $this->set_variable( 'items_per_page', $this->items_per_page );
     $this->set_variable( 'number_of_items', $this->record_count );
@@ -123,8 +132,6 @@ abstract class base_list extends widget
    * 
    * When implementing this method, child classes should fill the $rows member with column values
    * for each record in the record list returned by calling {@link get_record_list}.
-   * TODO: We need some way for parents to affect the columns/rows included in embedded list
-   *       widgets.  For instance, site_view should not have a site column in it's activity list.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @abstract
    * @access protected
@@ -220,14 +227,14 @@ abstract class base_list extends widget
   }
 
   /**
-   * Set whether itmes in the list can be edited.
+   * Set whether itmes in the list can be added.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $enable
    * @access public
    */
-  public function set_editable( $enable )
+  public function set_addable( $enable )
   {
-    $this->editable = $enable;
+    $this->addable = $enable;
   }
 
   /**
@@ -285,11 +292,11 @@ abstract class base_list extends widget
   protected $viewable = false;
   
   /**
-   * Whether items in the list can be edited.
+   * Whether new items can be added to the list.
    * @var boolean
    * @access protected
    */
-  protected $editable = false;
+  protected $addable = false;
   
   /**
    * Whether items in the list can be removed.

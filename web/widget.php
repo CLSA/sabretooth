@@ -90,7 +90,7 @@ try
   if( !( $go_prev || $go_next || $refresh ) )
   {
     session::self()->slot_push( $slot_name, $widget['name'], $widget['args'] );
-    session::self()->log_activity( $operation, $_SERVER['QUERY_STRING'] );
+    session::self()->log_activity( $operation, $widget['args'] );
   }
 
   log::notice(

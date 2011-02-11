@@ -10,7 +10,7 @@
 namespace sabretooth\ui;
 
 /**
- * activity.list widget
+ * widget activity list
  * 
  * @package sabretooth\ui
  */
@@ -32,10 +32,6 @@ class activity_list extends base_list
 
     // define all template variables for this list
     $this->set_heading( 'Activity list' );
-    $this->checkable = false;
-    $this->viewable = false;
-    $this->editable = false;
-    $this->removable = false;
     
     $this->columns = array(
       array( 'id' => 'user.name',

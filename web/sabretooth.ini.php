@@ -68,6 +68,8 @@ $SETTINGS[ 'url' ][ 'JQUERY_LOADING_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/jquery.loading.min.js';
 $SETTINGS[ 'url' ][ 'JQUERY_LOADING_OVERFLOW_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/jquery.loading.overflow.min.js';
+$SETTINGS[ 'url' ][ 'JQUERY_JEDITABLE_JS' ] =
+  $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/jquery.jeditable.min.js';
 
 // css files
 $SETTINGS[ 'url' ][ 'JQUERY_UI_THEMES' ] = $SETTINGS[ 'url' ][ 'JQUERY_UI' ].'/css';

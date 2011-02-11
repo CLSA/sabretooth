@@ -10,7 +10,7 @@
 namespace sabretooth\ui;
 
 /**
- * self.settings widget
+ * widget self settings
  * 
  * @package sabretooth\ui
  */

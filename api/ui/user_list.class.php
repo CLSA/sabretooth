@@ -10,7 +10,7 @@
 namespace sabretooth\ui;
 
 /**
- * user.list widget
+ * widget user list
  * 
  * @package sabretooth\ui
  */
@@ -34,45 +34,22 @@ class user_list extends base_list
     // define all template variables for this list
     $this->set_heading( sprintf( 'User list for %s',
                         $is_admin ? 'all sites' : $session->get_site()->name ) );
-    $this->checkable = false;
-    $this->viewable = true; // TODO: should be based on role
-    $this->editable = true; // TODO: should be based on role
-    $this->removable = true; // TODO: should be based on role
 
     $this->columns = array(
       array( 'id' => 'name',
-             'heading' => 'username',
+             'heading' => 'Username',
+             'sortable' => true ),
+      array( 'id' => 'active',
+             'heading' => 'Active',
              'sortable' => true ),
       array( 'id' => 'role',
-             'heading' => 'role',
+             'heading' => 'Role',
              'sortable' => false ),
-      array( 'id' => 'last',
-             'heading' => 'last activity',
-             'sortable' => true ) ); 
+      array( 'id' => 'last_activity',
+             'heading' => 'Last activity',
+             'sortable' => false ) );
   }
   
-  /**
-   * Overrides the parent class method since the list can be sorted by a column outside of the user
-   * table.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access protected
-   */
-  protected function determine_record_sort_column( $sort_name )
-  {
-    if( 'last' == $sort_name )
-    { // special select column, see user::select() for details
-      $sort = 'activity.date';
-    }
-    else
-    {
-      $sort = parent::determine_record_sort_column( $sort_name );
-    }
-
-    return $sort;
-  }
-
   /**
    * Overrides the parent class method since the record count depends on the active role.
    * 
@@ -127,16 +104,18 @@ class user_list extends base_list
       
       // determine the last activity
       $db_activity = $record->get_last_activity();
-      $last = is_null( $db_activity )
-            ? 'never'
-            : \sabretooth\util::get_fuzzy_time_ago( $db_activity->date );
-      
+      $last = \sabretooth\util::get_fuzzy_time_ago(
+                is_null( $db_activity ) ? null : $db_activity->date );
+
       // assemble the row for this record
-      array_push( $this->rows, 
+      array_push(
+        $this->rows, 
         array( 'id' => $record->id,
-               'columns' => array( 'name' => $record->name,
-                                   'role' => $role,
-                                   'last' => $last ) ) );
+               'columns' =>
+                 array( 'name' => $record->name,
+                        'active' => $record->active ? 'Yes' : 'No',
+                        'role' => $role,
+                        'last_activity' => $last ) ) );
     }
   }
 }

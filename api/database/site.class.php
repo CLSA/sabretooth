@@ -17,51 +17,6 @@ namespace sabretooth\database;
 class site extends active_record
 {
   /**
-   * Select a number of records.
-   * 
-   * This method overrides its parent method by adding functionality to sort the list by elements
-   * outside of the site's table columns.
-   * Currently sites can be ordered by: activity.date
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the selection.
-   * @return array( active_record )
-   * @static
-   * @access public
-   */
-  public static function select( $modifier = NULL )
-  {
-    // no need to override the basic functionality
-    if( !$modifier->has_order( 'activity.date' ) )
-    {
-      return parent::select( $modifier );
-    }
-
-    // create special sql that sorts by the foreign column association
-    $records = array();
-
-    if( $modifier->has_order( 'activity.date' ) )
-    { // sort by activity date
-      $id_list = self::get_col(
-        sprintf( 'SELECT site.id '.
-                 'FROM %s '.
-                 'LEFT JOIN site_last_activity '.
-                 'ON site.id = site_last_activity.site_id '.
-                 'LEFT JOIN activity '.
-                 'ON site_last_activity.activity_id = activity.id '.
-                 '%s',
-                 self::get_table_name(),
-                 is_null( $modifier ) ? '' : $modifier->get_sql() ) );
-    }
-
-    foreach( $id_list as $id )
-    {
-      array_push( $records, new static( $id ) );
-    }
-
-    return $records;
-  }
-
-  /**
    * Returns the most recent activity performed to this site.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

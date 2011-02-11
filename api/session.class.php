@@ -245,6 +245,20 @@ final class session extends singleton
   }
   
   /**
+   * Return whether the session has permission to perform the given operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\operation $operation If null this method returns false.
+   * @return boolean
+   * @access public
+   */
+  public function is_allowed( $operation )
+  {
+    return !is_null( $operation ) && !is_null( $this->role ) &&
+           ( !$operation->restricted || $this->role->has_operation( $operation ) );
+  }
+
+  /**
    * Get the name of the current jquery-ui theme.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -269,10 +283,10 @@ final class session extends singleton
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param ui\operation $operation The operation to log.
-   * @param string $query URL query string passed to the operation
+   * @param array $args The arguments passed to the operation.
    * @access public
    */
-  public function log_activity( $operation, $query )
+  public function log_activity( $operation, $args )
   {
     // add the operation as activity
     $activity = new \sabretooth\database\activity();
@@ -280,7 +294,7 @@ final class session extends singleton
     $activity->site_id = $this->site->id;
     $activity->role_id = $this->role->id;
     $activity->operation_id = $operation->get_id();
-    $activity->query = $query;
+    $activity->query = serialize( $args );
     $activity->elapsed_time = util::get_elapsed_time();
     $activity->save();
   }
@@ -531,6 +545,13 @@ final class session extends singleton
    * @access private
    */
   private $user = NULL;
+
+  /**
+   * The active record of the current role.
+   * @var database\role
+   * @access private
+   */
+  private $role = NULL;
 
   /**
    * The active record of the current site.

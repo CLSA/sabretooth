@@ -10,7 +10,7 @@
 namespace sabretooth\ui;
 
 /**
- * operation.list widget
+ * widget operation list
  * 
  * @package sabretooth\ui
  */
@@ -32,10 +32,6 @@ class operation_list extends base_list
 
     // define all template variables for this list
     $this->set_heading( 'Operation list' );
-    $this->checkable = false;
-    $this->viewable = false;
-    $this->editable = false;
-    $this->removable = false;
 
     $this->columns = array(
       array( 'id' => 'type',

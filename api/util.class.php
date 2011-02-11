@@ -143,7 +143,9 @@ final class util
    */
   public static function get_fuzzy_time_ago( $date )
   {
-    if( is_string( $date ) ) $date = new \DateTime( $date );
+    if( is_null( $date ) || !is_string( $date ) ) return 'never';
+
+    $date = new \DateTime( $date );
     $interval = $date->diff( new \DateTime() );
     
     if( 0 != $interval->invert )

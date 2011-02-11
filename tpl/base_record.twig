@@ -1,0 +1,118 @@
+{##
+ # base_record.twig
+ # 
+ # Base template for viewing, editing and adding records.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ #}
+{% extends "widget.twig" %}
+{% block widget %}
+{% block record %}
+<script type="text/javascript">
+
+{% if editable %}
+// we need a variable to communicate between jeditable functions
+window.{{ current_widget }}_old_values = new Object();
+
+// make mutable elements editable
+$( function () {
+  $( "div.mutable" ).mouseover( function() {
+    $(this).removeClass( "padded" );
+    $(this).addClass( "ui-widget-content" );
+  } );
+  $( "div.mutable" ).mouseout( function() {
+    $(this).removeClass( "ui-widget-content" );
+    $(this).addClass( "padded" );
+  } );
+  $( "div.mutable" ).click( function() {
+    // store the current value before jeditable changes it
+    window.{{ current_widget }}_old_values[ $(this).attr( 'id' ) ] = $(this).html();
+  } );
+  $( "div.mutable" ).editable( function( value, settings ) {
+    // no mouseout event when this method has been called
+    $(this).removeClass( "ui-widget-content" );
+
+    // don't do anything if there hasn't been any change to the value
+    if( value == window.{{ current_widget }}_old_values[ $(this).attr( 'id' ) ] ) return value;
+
+    // build the args object
+    var id_string = $(this).attr( 'id' );
+    var column_name = id_string.substring( id_string.lastIndexOf('_') + 1 );
+    var args = new Object();
+    args.id = {{ id }};
+    var columns = new Object();
+    columns[column_name] = value;
+    args.columns = columns;
+
+    // send the change to the server and record whether it succeeds or not
+    var success = send_action( "{{ widget_subject }}", "edit", args );
+    return success ? value : window.{{ current_widget }}_old_values[ $(this).attr( 'id' ) ];
+  }, {
+    "tooltip": "click to edit",
+    "event": "click",
+    "placeholder": "(empty)",
+    "onblur": "cancel"
+  } );
+} );
+{% endif %}
+
+{% if addable %}
+// add/cancel buttons
+$( function () {
+  $( "button.{{ current_widget }}_add" ).click( function() {
+    // submit the form information as an add action
+    var args = new Object();
+    var columns = new Object();
+    $( "#{{ current_widget }}_add_form :input" ).each( function() {
+      var id_string = $(this).attr( 'id' );
+      var column_name = id_string.substring( id_string.lastIndexOf('_') + 1 );
+      columns[column_name] = $(this).val();
+    } );
+    args.columns = columns;
+
+    if( send_action( "{{ widget_subject }}", "new", args ) ) slot_prev( get_slot( $(this) ) );
+  } );
+} );
+$( function () {
+  $( "button.{{ current_widget }}_cancel" ).click( function() {
+    slot_prev( get_slot( $(this) ) );
+  } );
+} );
+{% endif %}
+
+</script>
+
+{% if addable %}
+<form id="{{ current_widget }}_add_form">
+{% endif %}
+<fieldset class="ui-widget ui-widget-content">
+<table>
+{% for id, entry in item %}
+  <tr>
+    <td style="white-space: nowrap; padding: 4px;" align="left">
+      <span class="title">{{ entry.heading }}:</span>
+    </td>
+    <td style="padding: 4px" width="95%" align="left">
+      {% block value %}
+      {% if addable %}
+      <input id="{{ current_widget }}_{{ id }}" type="text" style="width:100%"></input>
+      {% elseif editable and 'constant' != entry.type %}
+      <div id="{{ current_widget }}_{{ id }}" class="mutable padded">{{ entry.value }}</div>
+      {% else %}
+      {{ entry.value }}
+      {% endif %}
+      {% endblock %}
+    </td>
+  </tr>
+{% endfor %}
+</table>
+</fieldset>
+{% if addable %}</form>{% endif %}
+
+{% if addable %}
+<div class="spacer"></div>
+<button class="{{ current_widget }}_add" style="width:100px">Add</button>
+<button class="{{ current_widget }}_cancel" style="width:100px">Cancel</button>
+{% endif %}
+
+{% endblock record %}
+{% endblock widget %}

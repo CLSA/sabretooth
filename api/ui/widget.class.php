@@ -10,7 +10,7 @@
 namespace sabretooth\ui;
 
 /**
- * widget: The base class of all widgets
+ * The base class of all widgets.
  * 
  * All templates have a corresponding widget class by the same name.  The widget's job is to set
  * the variables needed by the template in order to be rendered.

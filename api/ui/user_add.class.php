@@ -1,6 +1,6 @@
 <?php
 /**
- * self_shortcuts.class.php
+ * user_add.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,11 +10,11 @@
 namespace sabretooth\ui;
 
 /**
- * widget self shortcuts
+ * widget user add
  * 
  * @package sabretooth\ui
  */
-class self_shortcuts extends widget
+class user_add extends base_record
 {
   /**
    * Constructor
@@ -26,7 +26,17 @@ class self_shortcuts extends widget
    */
   public function __construct( $args )
   {
-    parent::__construct( 'self', 'shortcuts', $args );
+    parent::__construct( 'user', 'add', $args );
+    
+    // define all columns defining this record
+    $this->item['name'] =
+      array( 'heading' => 'Username',
+             'type' => 'string',
+             'value' => '' );
+    $this->item['active'] =
+      array( 'heading' => 'Active',
+             'type' => 'boolean',
+             'value' => true );
   }
 }
 ?>
