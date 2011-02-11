@@ -1,6 +1,6 @@
 <?php
 /**
- * role_delete.class.php
+ * user_delete.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,11 +10,11 @@
 namespace sabretooth\ui;
 
 /**
- * action role delete
+ * action user delete
  * 
  * @package sabretooth\ui
  */
-class role_delete extends base_delete
+class user_delete extends base_delete
 {
   /**
    * Constructor.
@@ -24,7 +24,7 @@ class role_delete extends base_delete
    */
   public function __construct( $args )
   {
-    parent::__construct( 'role', $args );
+    parent::__construct( 'user', $args );
   }
 }
 ?>
