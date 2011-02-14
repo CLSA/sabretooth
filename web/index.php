@@ -51,19 +51,20 @@ catch( exception\base_exception $e )
   $type = $e->get_type();
   log::err( ucwords( $type )." ".$e );
   $result_array['success'] = false;
-  $result_array['error'] = $type;
+  $result_array['error_type'] = $type;
+  $result_array['error_code'] = $e->get_code();
 }
 catch( \Twig_Error $e )
 {
   log::err( "Template ".$e );
   $result_array['success'] = false;
-  $result_array['error'] = $type;
+  $result_array['error_type'] = $type;
 }
 catch( \Exception $e )
 {
   log::err( "Last minute ".$e );
   $result_array['success'] = false;
-  $result_array['error'] = $type;
+  $result_array['error_type'] = $type;
 }
 
 if( true == $result_array['success'] )

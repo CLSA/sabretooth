@@ -108,7 +108,7 @@ catch( exception\base_exception $e )
   log::err( ucwords( $type )." ".$e );
   $result_array['success'] = false;
   $result_array['error_type'] = $type;
-  $result_array['error_number'] = $e->get_code();
+  $result_array['error_code'] = $e->get_code();
 }
 catch( \Twig_Error $e )
 {

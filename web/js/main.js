@@ -202,8 +202,8 @@ function ajax_complete( request, code ) {
     var error_code = code + '.' +
                      ( undefined == response.error_type ?
                        '?' : response.error_type.substr( 0, 1 ) ) + '.' +
-                     ( undefined == response.error_number ?
-                       '?' : response.error_number );
+                     ( undefined == response.error_code ?
+                       '?' : response.error_code );
     error_code = error_code.toUpperCase();
 
     if( 'permission' == response.error_type ) {
