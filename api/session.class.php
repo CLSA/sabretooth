@@ -320,7 +320,8 @@ final class session extends singleton
     $index = $_SESSION['slot'][$slot]['stack']['index'];
     if( 0 <= $index )
     {
-      array_slice( $_SESSION['slot'][$slot]['stack']['widgets'], 0, $index + 1 );
+      $_SESSION['slot'][$slot]['stack']['widgets'] =
+        array_slice( $_SESSION['slot'][$slot]['stack']['widgets'], 0, $index + 1 );
       $last_widget = end( $_SESSION['slot'][$slot]['stack']['widgets'] );
     }
 
