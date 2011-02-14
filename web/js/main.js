@@ -32,6 +32,35 @@ function update_shortcuts() {
 }
 
 /**
+ * Creates a modal confirm dialog.
+ * 
+ * @author Patrick Emond <emondpd@mcmaster.ca>
+ * @param string title The title of the dialog
+ * @param string message The message to put in the dialog
+ */
+function confirm_dialog( title, message, on_confirm ) {
+  $( "#confirm_slot" ).attr( "title", title );
+  $( "#confirm_slot" ).html( message );
+  $( "#confirm_slot" ).dialog( {
+    modal: true,
+    dialogClass: 'alert',
+    width: 450,
+    open: function () {
+      $( this ).parents( ".ui-dialog:first" ).find( ".ui-dialog-titlebar" ).addClass( "ui-state-highlight" );
+    },
+    buttons: {
+      Ok: function() {
+        on_confirm();
+        $( this ).dialog( "close" );
+      },
+      Cancel: function() {
+        $( this ).dialog( "close" );
+      }
+    }
+  } );
+}
+
+/**
  * Creates a modal error dialog.
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>

@@ -125,8 +125,15 @@ $( function() {
   $( ".{{ current_widget }}_remove" ).click( function() {
     var id_string = $(this).attr( 'id' );
     var id = parseInt( id_string.substring( id_string.lastIndexOf('_') + 1 ) );
-    send_action( "{{ widget_subject }}", "delete", { "id": id } );
-    slot_refresh( get_slot( $(this) ) );
+    var slot = get_slot( $(this) );
+
+    confirm_dialog(
+      "Delete {{ widget_subject }}?",
+      "Are you sure you want to remove the selected {{ widget_subject }}?",
+      function() {
+        send_action( "{{ widget_subject }}", "delete", { "id": id } );
+        slot_refresh( slot );
+      } );
   } )
 } );
 {% endif %}

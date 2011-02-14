@@ -112,6 +112,23 @@ $( function () {
 } );
 {% endif %}
 
+{% if removable %}
+// cancel button function
+$( function () {
+  $( "button.{{ current_widget }}_remove" ).click( function() {
+  var slot = get_slot( $(this) );
+  confirm_dialog(
+    "Delete {{ widget_subject }}?",
+    "Are you sure you want to remove the selected {{ widget_subject }}?",
+    function() {
+      send_action( "{{ widget_subject }}", "delete", { "id": {{ id|default(0) }} } );
+      slot_prev( slot );
+    } );
+
+  } );
+} );
+{% endif %}
+
 </script>
 
 {% if addable %}
@@ -119,7 +136,7 @@ $( function () {
 {% endif %}
 <fieldset class="ui-widget ui-widget-content">
 <table>
-{% for id, entry in item %}
+{% for item_id, entry in item %}
   <tr>
     <td style="white-space: nowrap; padding: 4px;" align="left">
       <span class="title">{{ entry.heading }}:</span>
@@ -128,32 +145,37 @@ $( function () {
       {% block value %}
       {% if addable %}
         {% if 'boolean' == entry.type %}
-          <select id="{{ current_widget }}_{{ id }}" style="width: 100%" class="ui-state-default">
+          <select id="{{ current_widget }}_{{ item_id }}"
+                  style="width: 100%"
+                  class="ui-state-default">
             <option{{ entry.value ? ' selected' : '' }} value="1">Yes</option>
             <option{{ entry.value ? '' : ' selected' }} value="0">No</option>
           </select>
         {% elseif 'date' == entry.type %}
           TODO
         {% elseif 'string' == entry.type %}
-          <input id="{{ current_widget }}_{{ id }}" type="text" style="width:100%" />
+          <input id="{{ current_widget }}_{{ item_id }}" type="text" style="width:100%" />
         {% elseif 'text' == entry.type %}
-          <textarea id="{{ current_widget }}_{{ id }}" style="width:100%" /></textarea>
+          <textarea id="{{ current_widget }}_{{ item_id }}" style="width:100%" /></textarea>
         {% endif %}
       {% elseif editable and 'constant' != entry.type %}
         {% set value = 'boolean' == entry.type ? ( entry.value ? 'Yes' : 'No' ) : entry.value %}
-        <input id="old_{{ current_widget }}_{{ id }}"
+        <input id="old_{{ current_widget }}_{{ item_id }}"
                value="{{ entry.value }}"
                type="hidden" />
-        <div id="{{ current_widget }}_{{ id }}"
+        <div id="{{ current_widget }}_{{ item_id }}"
              class="mutable jeditable_{{ entry.type }} padded">{{ entry.value }}</div>
       {% else %}
-      <div id="{{ current_widget }}_{{ id }}" class="padded">{{ entry.value }}</div>
+      <div id="{{ current_widget }}_{{ item_id }}" class="padded">{{ entry.value }}</div>
       {% endif %}
       {% endblock %}
     </td>
   </tr>
 {% endfor %}
 </table>
+{% if removable %}
+<button class="{{ current_widget }}_remove" style="float: right;">remove</button>
+{% endif %}
 </fieldset>
 {% if addable %}</form>{% endif %}
 
