@@ -199,11 +199,10 @@ function ajax_complete( request, code ) {
   if( 400 == request.status ) {
     // application is reporting an error, details are in responseText
     var response = jQuery.parseJSON( request.responseText );
-    var error_code = code + '.' +
-                     ( undefined == response.error_type ?
-                       '?' : response.error_type.substr( 0, 1 ) ) + '.' +
-                     ( undefined == response.error_code ?
-                       '?' : response.error_code );
+    var error_code =
+      code + '.' +
+      ( undefined == response.error_type ? 'X' : response.error_type.substr( 0, 1 ) ) + '.' +
+      ( undefined == response.error_code ? 'X' : response.error_code );
 
     if( 'Permission' == response.error_type ) {
       error_dialog(
