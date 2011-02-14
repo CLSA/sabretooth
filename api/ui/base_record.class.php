@@ -32,7 +32,6 @@ abstract class base_record extends widget
   public function __construct( $subject, $name, $args )
   {
     parent::__construct( $subject, $name, $args );
-    $this->set_mode( $name );
     
     // determine properties based on the current user's permissions
     $session = \sabretooth\session::self();
@@ -40,6 +39,8 @@ abstract class base_record extends widget
       \sabretooth\database\operation::get_operation( 'action', $subject, 'edit' ) );
     $this->removable = $session->is_allowed( 
       \sabretooth\database\operation::get_operation( 'action', $subject, 'delete' ) );
+
+    $this->set_mode( $name );
   }
   
   /**
@@ -92,6 +93,7 @@ abstract class base_record extends widget
       
       $this->addable = true;
       $this->editable = false;
+      $this->removable = false;
       $this->set_heading( 'Creating a new '.$this->get_subject() );
     }
   }
