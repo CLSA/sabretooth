@@ -32,7 +32,7 @@ class argument extends base_exception
     $this->argument_name = $argument_name;
     $message = sprintf( 'Invalid argument "%s" with value "%s".',
                         $this->argument_name,
-                        \sabretooth\util::var_dump( $value ) ),
+                        \sabretooth\util::var_dump( $value ) );
     parent::__construct( $message, $context, $previous );
   }
   
