@@ -21,12 +21,13 @@ class missing extends base_exception
    * Constructor
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $file the missing file.
-   * @param exception $previous the previous exception used for the exception chaining
+   * @param string|int $context The exceptions context, either a function name or error code.
+   * @param exception $previous The previous exception used for the exception chaining.
    * @access public
    */
-  public function __construct( $file, $previous = NULL )
+  public function __construct( $file, $context, $previous = NULL )
   {
-    parent::__construct( 'missing file: "'.$file.'"', $previous );
+    parent::__construct( 'missing file: "'.$file.'"', $context, $previous );
   }
 }
 ?>

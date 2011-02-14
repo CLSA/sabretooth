@@ -41,14 +41,14 @@ class self_set_site extends action
     $db_site = \sabretooth\database\site::get_unique_record( 'name', $this->site_name );
     if( NULL == $db_site )
       throw new \sabretooth\exception\runtime(
-        'Invalid site name "'.$this->site_name.'"' );
+        'Invalid site name "'.$this->site_name.'"', __METHOD__ );
 
     // get the first role associated with the site
     $session = \sabretooth\session::self();
     $db_role_list = $session->get_user()->get_role_list( $db_site );
     if( 0 == count( $db_role_list ) )
       throw new \sabretooth\exception\runtime(
-        'User has no access to site name "'.$this->site_name.'"' );
+        'User has no access to site name "'.$this->site_name.'"', __METHOD__ );
 
     $session::self()->set_site_and_role( $db_site, $db_role_list[0] );
   }

@@ -44,7 +44,7 @@ abstract class operation extends \sabretooth\base_object
     
     // throw a permission exception if the user is not allowed to perform this operation
     if( !\sabretooth\session::self()->is_allowed( $this->operation_record ) )
-      throw new \sabretooth\exception\permission( $this->operation_record );
+      throw new \sabretooth\exception\permission( $this->operation_record, __METHOD__ );
   }
 
   /**
@@ -85,7 +85,8 @@ abstract class operation extends \sabretooth\base_object
    * @return string
    * @access public
    */
-  public function get_full_name() { return $this->operation_record->subject.'_'.$this->operation_record->name; }
+  public function get_full_name()
+  { return $this->operation_record->subject.'_'.$this->operation_record->name; }
  
   /**
    * Get a query argument passed to the operation.
@@ -104,7 +105,7 @@ abstract class operation extends \sabretooth\base_object
     $argument = NULL;
     if( !array_key_exists( $name, $this->arguments ) )
     {
-      if( is_null( $default ) ) throw new \sabretooth\exception\argument( $name );
+      if( is_null( $default ) ) throw new \sabretooth\exception\argument( $name, NULL, __METHOD__ );
       $argument = $default;
     }
     else

@@ -20,18 +20,20 @@ class argument extends base_exception
 {
   /**
    * Constructor
-   * @author TBD
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $argument_name The name of the argument which is invalid.
+   * @param mixed $value The value of the argument which is invalid.
+   * @param string|int $context The exceptions context, either a function name or error code.
+   * @param exception $previous The previous exception used for the exception chaining.
    * @access public
    */
-  public function __construct( $argument_name, $value, $previous = NULL )
+  public function __construct( $argument_name, $value, $context, $previous = NULL )
   {
-    // get the 
     $this->argument_name = $argument_name;
-    parent::__construct(
-      sprintf( 'Invalid argument "%s" with value "%s".',
-               $this->argument_name,
-               \sabretooth\util::var_dump( $value ) ),
-      $previous );
+    $message = sprintf( 'Invalid argument "%s" with value "%s".',
+                        $this->argument_name,
+                        \sabretooth\util::var_dump( $value ) ),
+    parent::__construct( $message, $context, $previous );
   }
   
   /**

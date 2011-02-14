@@ -70,6 +70,7 @@ final class session extends singleton
    * 
    * This method should be called immediately after constructing the session.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\runtime
    * @access public
    */
   public function initialize()
@@ -93,7 +94,8 @@ final class session extends singleton
     // determine the user (setting the user will also set the site and role)
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
     $this->set_user( database\user::get_unique_record( 'name', $user_name ) );
-    if( NULL == $this->user ) throw new exception\runtime( 'User "'.$user_name.'" not found.' );
+    if( NULL == $this->user )
+      throw new exception\runtime( 'User "'.$user_name.'" not found.', __METHOD__ );
 
     $this->initialized = true;
   }

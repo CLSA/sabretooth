@@ -20,11 +20,12 @@ class base_exception extends \Exception
   /**
    * Constructor
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $message the error message.
-   * @param exception $previous the previous exception used for the exception chaining
+   * @param string $message A message describing the exception.
+   * @param string|int $context The exceptions context, either a function name or error code.
+   * @param exception $previous The previous exception used for the exception chaining.
    * @access public
    */
-  public function __construct( $message, $previous = NULL )
+  public function __construct( $message, $context, $previous = NULL )
   {
     $who = 'unknown';
 
@@ -36,7 +37,8 @@ class base_exception extends \Exception
       $who = "$user_name:$role_name@$site_name";
     }
     
-    parent::__construct( "\n$who\n$message", 0, $previous );
+    $code = \sabretooth\util::get_error_number( $this->get_type(), $context );
+    parent::__construct( "\n$who\n$message", $code, $previous );
   }
   
   /**
@@ -54,6 +56,23 @@ class base_exception extends \Exception
    * @access public
    */
   public function to_string() { return $this->__toString(); }
+
+  /**
+   * Returns the exception's error number.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access public
+   */
+  public function get_number() { return $this->getCode(); }
+
+  /**
+   * Returns the exception's error code (the error number as an encoded string)
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_code()
+  { return preg_replace( '/^([0-9]+)([0-9]{3})/', '$1.$2', $this->get_number() ); }
 
   /**
    * Get the exception message.

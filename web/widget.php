@@ -6,6 +6,7 @@
  * This script should only ever be called by an AJAX GET request.
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
+ * @throws exception\argument, exception\runtime
  */
 namespace sabretooth;
 ob_start();
@@ -31,7 +32,7 @@ try
   
   // determine which widget to render based on the GET variables
   if( !isset( $_GET['slot'] ) || !is_string( $_GET['slot'] ) )
-    throw new exception\runtime( 'invalid script variables' );
+    throw new exception\argument( 'slot', NULL, 'WIDGET_SCRIPT' );
   $slot_name = isset( $_GET['slot'] ) ? $_GET['slot'] : NULL;
   $widget['name'] = isset( $_GET['widget'] ) ? $_GET['widget'] : NULL;
   $current_widget = session::self()->slot_current( $slot_name );
@@ -72,14 +73,15 @@ try
   }
 
   if( is_null( $widget['name'] ) )
-    throw new exception\runtime( 'invalid script variables' );
+    throw new exception\runtime( 'Unable to determine widget name.', 'WIDGET_SCRIPT' );
   
   $widget_class = '\\sabretooth\\ui\\'.$widget['name'];
   
   // create the widget using the provided args then finish it
   $operation = new $widget_class( $widget['args'] );
   if( !is_subclass_of( $operation, 'sabretooth\\ui\\widget' ) )
-    throw new exception\runtime( "invalid widget '$widget_class'" );
+    throw new exception\runtime(
+      'Invoked widget "'.$widget_class.'" is invalid.', 'WIDGET_SCRIPT' );
 
   $operation->finish();
   $twig_template = $twig->loadTemplate( $widget['name'].'.twig' );
@@ -105,19 +107,20 @@ catch( exception\base_exception $e )
   $type = $e->get_type();
   log::err( ucwords( $type )." ".$e );
   $result_array['success'] = false;
-  $result_array['error'] = $type;
+  $result_array['error_type'] = $type;
+  $result_array['error_number'] = $e->get_code();
 }
 catch( \Twig_Error $e )
 {
   log::err( "Template ".$e );
   $result_array['success'] = false;
-  $result_array['error'] = 'template';
+  $result_array['error_type'] = 'template';
 }
 catch( \Exception $e )
 {
   log::err( "Last minute ".$e );
   $result_array['success'] = false;
-  $result_array['error'] = 'unknown';
+  $result_array['error_type'] = 'unknown';
 }
 
 // flush any output

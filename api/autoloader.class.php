@@ -47,11 +47,12 @@ class autoloader
     if( file_exists( $file ) )
     {
       require $file;
-      //if( class_exists( 'sabretooth\log' ) ) log::notice( 'autoloading: '.$class );
     }
     else
     {
-      throw new exception\missing( $class );
+      throw new exception\missing(
+        $class,
+        util::get_error_constant( 'database', __CLASS__, __METHOD__ ) );
     }
   }
 }

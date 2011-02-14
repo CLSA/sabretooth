@@ -6,6 +6,7 @@
  * This script should only ever be called by an AJAX POST request.
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
+ * @throws exception\argument, exception\runtime
  */
 namespace sabretooth;
 ob_start();
@@ -19,8 +20,8 @@ try
   require_once 'sabretooth.inc.php';
   
   // Try creating an operation and calling the action provided by the post.
-  if( !isset( $_POST['subject'] ) || !isset( $_POST['name'] ) )
-    throw new exception\runtime( 'invalid script variables' );
+  if( !isset( $_POST['subject'] ) ) throw new exception\runtime( 'subject', NULL, 'ACTION_SCRIPT' );
+  if( !isset( $_POST['name'] ) ) throw new exception\runtime( 'name', NULL, 'ACTION_SCRIPT' );
 
   $action_name = $_POST['subject'].'_'.$_POST['name'];
   $action_class = 'sabretooth\\ui\\'.$action_name;
@@ -29,7 +30,8 @@ try
   // create the operation using the provided args then execute it
   $operation = new $action_class( $action_args );
   if( !is_subclass_of( $operation, 'sabretooth\\ui\\action' ) )
-    throw new exception\runtime( "invalid operation '$action_class'" );
+    throw new exception\runtime(
+      'Invoked operation "'.$action_class.'" is invalid.', 'ACTION_SCRIPT' );
   
   $operation->execute();
   session::self()->log_activity( $operation, $action_args );
@@ -43,13 +45,14 @@ catch( exception\base_exception $e )
   $type = $e->get_type();
   log::err( ucwords( $type )." ".$e );
   $result_array['success'] = false;
-  $result_array['error'] = $type;
+  $result_array['error_type'] = $type;
+  $result_array['error_number'] = $e->get_code();
 }
 catch( \Exception $e )
 {
   log::err( "Last minute ".$e );
   $result_array['success'] = false;
-  $result_array['error'] = 'unknown';
+  $result_array['error_type'] = 'unknown';
 }
 
 // flush any output

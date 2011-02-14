@@ -34,7 +34,7 @@ class modifier extends \sabretooth\base_object
   public function where( $column, $value, $format = true )
   {
     if( !is_string( $column ) || 0 == strlen( $column ) )
-      throw new \sabretooth\exception\argument( 'column', $column );
+      throw new \sabretooth\exception\argument( 'column', $column, __METHOD__ );
 
     $this->where_list[$column] = array( 'value' => $value, 'format' => $format );
   }
@@ -51,7 +51,7 @@ class modifier extends \sabretooth\base_object
   public function group( $column )
   {
     if( !is_string( $column ) || 0 == strlen( $column ) )
-      throw new \sabretooth\exception\argument( 'column', $column );
+      throw new \sabretooth\exception\argument( 'column', $column, __METHOD__ );
 
     array_push( $this->group_list, $column );
   }
@@ -69,7 +69,7 @@ class modifier extends \sabretooth\base_object
   public function order( $column, $desc = false )
   {
     if( !is_string( $column ) || 0 == strlen( $column ) )
-      throw new \sabretooth\exception\argument( 'column', $column );
+      throw new \sabretooth\exception\argument( 'column', $column, __METHOD__ );
 
     $this->order_list[$column] = $desc;
   }
@@ -86,8 +86,11 @@ class modifier extends \sabretooth\base_object
    */
   public function limit( $count, $offset = 0 )
   {
-    if( 0 > $count ) throw new \sabretooth\exception\argument( 'count', $count );
-    if( 0 > $offset ) throw new \sabretooth\exception\argument( 'offset', $offset );
+    if( 0 > $count )
+      throw new \sabretooth\exception\argument( 'count', $count, __METHOD__ );
+
+    if( 0 > $offset )
+      throw new \sabretooth\exception\argument( 'offset', $offset, __METHOD__ );
 
     $this->limit_count = $count;
     $this->limit_offset = $offset;

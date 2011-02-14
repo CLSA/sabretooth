@@ -26,7 +26,7 @@ abstract class active_record extends \sabretooth\base_object
    * requested primary id will be loaded.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param integer $id The primary key for this object.
-   * @throws exception\database
+   * @throws exception\runtime
    * @access public
    */
   public function __construct( $id = NULL )
@@ -36,8 +36,8 @@ abstract class active_record extends \sabretooth\base_object
     $columns = $db->MetaColumnNames( self::get_table_name() );
 
     if( !is_array( $columns ) || 0 == count( $columns ) )
-      throw new \sabretooth\exception\database(
-        "Meta column names return no columns for table ".self::get_table_name() );
+      throw new \sabretooth\exception\runtime(
+        "Meta column names return no columns for table ".self::get_table_name(), __METHOD__ );
 
     foreach( $columns as $name ) $this->columns[ $name ] = NULL;
     
@@ -47,8 +47,8 @@ abstract class active_record extends \sabretooth\base_object
       $primary_key_names = $db->MetaPrimaryKeys( self::get_table_name() );
       if( 1 != count( $primary_key_names ) || 'id' != $primary_key_names[0] )
       {
-        throw new \sabretooth\exception\database(
-          'Unable to create record, single-column primary key "id" does not exist.' );
+        throw new \sabretooth\exception\runtime(
+          'Unable to create record, single-column primary key "id" does not exist.', __METHOD__ );
       }
       $this->columns['id'] = intval( $id );
     }
@@ -79,20 +79,21 @@ abstract class active_record extends \sabretooth\base_object
    * If this is a new record then this method does nothing, if the record's primary key is set then
    * the data from the corresponding row is loaded.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\database
+   * @throws exception\runtime
    * @access public
    */
   public function load()
   {
     if( isset( $this->columns['id'] ) )
     {
-      $row = self::get_row(
-        sprintf( 'SELECT * FROM %s WHERE id = %d',
-                 self::get_table_name(),
-                 $this->id ) );
+      $sql = sprintf( 'SELECT * FROM %s WHERE id = %d',
+                      self::get_table_name(),
+                      $this->id );
+
+      $row = self::get_row( $sql );
 
       if( 0 == count( $row ) )
-        throw new \sabretooth\exception\database( 'Load failed to find record.', $sql );
+        throw new \sabretooth\exception\runtime( 'Load failed to find record.', $sql, __METHOD__ );
 
       $this->columns = $row;
     }
@@ -104,7 +105,6 @@ abstract class active_record extends \sabretooth\base_object
    * If this is a new record then a new row will be inserted, if not then the row with the
    * corresponding id will be updated.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\database
    * @access public
    */
   public function save()
@@ -125,30 +125,22 @@ abstract class active_record extends \sabretooth\base_object
     }
     
     // either insert or update the row based on whether the primary key is set
-    try
-    {
-      self::execute(
-        sprintf( is_null( $this->columns['id'] )
-          ? 'INSERT INTO %s SET %s'
-          : 'UPDATE %s SET %s WHERE id = %d',
-          self::get_table_name(),
-          $sets,
-          $this->columns['id'] )  );
+    $sql = sprintf( is_null( $this->columns['id'] )
+                    ? 'INSERT INTO %s SET %s'
+                    : 'UPDATE %s SET %s WHERE id = %d',
+                    self::get_table_name(),
+                    $sets,
+                    $this->columns['id'] );
+    self::execute( $sql );
     
-      // get the new new primary key
-      if( is_null( $this->columns['id'] ) ) $this->columns['id'] = self::insert_id();
-    }
-    catch( exception\database $e )
-    {
-      throw new exception\database( $e->getMessage(), NULL, $e );
-    }
+    // get the new new primary key
+    if( is_null( $this->columns['id'] ) ) $this->columns['id'] = self::insert_id();
   }
   
   /**
    * Deletes the record.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\database
    * @access public
    */
   public function delete()
@@ -158,11 +150,11 @@ abstract class active_record extends \sabretooth\base_object
       \sabretooth\log::warning( 'Tried to delete record with no id.' );
       return;
     }
-
-    self::execute(
-      sprintf( 'DELETE FROM %s WHERE id = %s',
-               self::get_table_name(),
-               $this->columns['id'] ) );
+    
+    $sql = sprintf( 'DELETE FROM %s WHERE id = %s',
+                    self::get_table_name(),
+                    $this->columns['id'] );
+    self::execute( $sql );
   }
 
   /**
@@ -187,17 +179,14 @@ abstract class active_record extends \sabretooth\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name The name of the column or table being fetched from the database
    * @return mixed
-   * @throws exception\database
+   * @throws exception\argument
    * @access public
    */
   public function __get( $column_name )
   {
-    // if we get here then $column_name isn't a column === BAD CODE
+    // make sure the column exists
     if( !$this->has_column_name( $column_name ) )
-      throw new \sabretooth\exception\database(
-        sprintf( 'Table %s does not have a column named "%s%".',
-                 self::get_table_name(),
-                 $column_name ) );
+      throw new \sabretooth\exception\argument( 'column_name', $column_name, __METHOD__ );
     
     return isset( $this->columns[ $column_name ] ) ? $this->columns[ $column_name ] : NULL;
   }
@@ -210,17 +199,14 @@ abstract class active_record extends \sabretooth\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name The name of the column
    * @param mixed $value The value to set the contents of a column to
-   * @throws exception\database
+   * @throws exception\argument
    * @access public
    */
   public function __set( $column_name, $value )
   {
-    // if we get here then $column_name isn't a column === BAD CODE
+    // make sure the column exists
     if( !$this->has_column_name( $column_name ) )
-      throw new \sabretooth\exception\database(
-        sprintf( 'Table %s does not have a column named "%s%".',
-                 self::get_table_name(),
-                 $column_name ) );
+      throw new \sabretooth\exception\argument( 'column_name', $column_name, __METHOD__ );
     
     $this->columns[ $column_name ] = $value;
   }
@@ -534,7 +520,12 @@ abstract class active_record extends \sabretooth\base_object
   {
     $db = \sabretooth\session::self()->get_db();
     $result = $db->Execute( $sql, $input_array );
-    if( false === $result ) throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql );
+    if( false === $result )
+    {
+      // pass the db error code instead of a class error code
+      throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql, $db->ErrorNo() );
+    }
+
     return $result;
   }
   
@@ -555,7 +546,12 @@ abstract class active_record extends \sabretooth\base_object
   {
     $db = \sabretooth\session::self()->get_db();
     $result = $db->GetOne( $sql, $input_array );
-    if( false === $result ) throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql );
+    if( false === $result )
+    {
+      // pass the db error code instead of a class error code
+      throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql, $db->ErrorNo() );
+    }
+
     return $result;
   }
   
@@ -576,7 +572,12 @@ abstract class active_record extends \sabretooth\base_object
   {
     $db = \sabretooth\session::self()->get_db();
     $result = $db->GetRow( $sql, $input_array );
-    if( false === $result ) throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql );
+    if( false === $result )
+    {
+      // pass the db error code instead of a class error code
+      throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql, $db->ErrorNo() );
+    }
+
     return $result;
   }
   
@@ -597,7 +598,12 @@ abstract class active_record extends \sabretooth\base_object
   {
     $db = \sabretooth\session::self()->get_db();
     $result = $db->GetAll( $sql, $input_array );
-    if( false === $result ) throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql );
+    if( false === $result )
+    {
+      // pass the db error code instead of a class error code
+      throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql, $db->ErrorNo() );
+    }
+
     return $result;
   }
   
@@ -619,7 +625,12 @@ abstract class active_record extends \sabretooth\base_object
   {
     $db = \sabretooth\session::self()->get_db();
     $result = $db->GetCol( $sql, $input_array, $trim );
-    if( false === $result ) throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql );
+    if( false === $result )
+    {
+      // pass the db error code instead of a class error code
+      throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql, $db->ErrorNo() );
+    }
+
     return $result;
   }
   

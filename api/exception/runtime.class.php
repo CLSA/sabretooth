@@ -20,13 +20,14 @@ class runtime extends base_exception
   /**
    * Constructor
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $message the error message.
-   * @param exception $previous the previous exception used for the exception chaining
+   * @param string $message A message describing the exception.
+   * @param string|int $context The exceptions context, either a function name or error code.
+   * @param exception $previous The previous exception used for the exception chaining.
    * @access public
    */
-  public function __construct( $message, $previous = NULL )
+  public function __construct( $message, $context, $previous = NULL )
   {
-    parent::__construct( "runtime error: \"$message\"", $previous );
+    parent::__construct( 'runtime error: "'.$message.'"', $context, $previous );
   }
 }
 ?>

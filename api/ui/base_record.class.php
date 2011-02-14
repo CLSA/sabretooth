@@ -69,6 +69,7 @@ abstract class base_record extends widget
    * by the constructor to differentiate between the two.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $mode Should be either 'view' or 'add'
+   * @throws exception\argument
    * @access private
    */
   private function set_mode( $mode )
@@ -80,7 +81,8 @@ abstract class base_record extends widget
       // build the associated record
       $class_name = '\\sabretooth\\database\\'.$this->get_subject();
       $this->record = new $class_name( $this->get_argument( 'id' ) );
-      if( is_null( $this->record ) ) throw new \sabretooth\exception\argument( 'id' );
+      if( is_null( $this->record ) )
+        throw new \sabretooth\exception\argument( 'id', NULL, __METHOD__ );
       
       $this->set_heading( sprintf( 'Viewing %s details',
                                    $this->get_subject() ) );

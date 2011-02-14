@@ -73,7 +73,7 @@ abstract class widget extends operation
     if( !array_key_exists( $widget_name, $this->arguments ) ||
         !array_key_exists( $name, $this->arguments[$widget_name] ) )
     { // the argument is missing
-      if( is_null( $default ) ) throw new \sabretooth\exception\argument( $name );
+      if( is_null( $default ) ) throw new \sabretooth\exception\argument( $name, NULL, __METHOD__ );
       $argument = $default;
     }
     else

@@ -41,7 +41,7 @@ class self_set_role extends action
     $db_role = \sabretooth\database\role::get_unique_record( 'name', $this->role_name );
     if( NULL == $db_role )
       throw new \sabretooth\exception\runtime(
-        'Invalid role name "'.$this->role_name.'"' );
+        'Invalid role name "'.$this->role_name.'"', __METHOD__ );
 
     // get the first role associated with the role
     $session = \sabretooth\session::self();

@@ -99,7 +99,7 @@ function send_action( subject, name, args ) {
     "async": false,
     "type": "POST",
     "data": jQuery.param( args ),
-    "complete": function( request, result ) { ajax_complete( request ) },
+    "complete": function( request, result ) { ajax_complete( request, 'A' ) },
     "dataType": "json"
   } );
   var response = jQuery.parseJSON( request.responseText );
@@ -126,7 +126,7 @@ function slot_url( slot, url ) {
   } );
 
   $( "#" + slot + "_slot" ).load( url, null,
-    function( response, status, request ) { ajax_complete( request ) }
+    function( response, status, request ) { ajax_complete( request, 'W' ) }
   );
 }
 
@@ -193,35 +193,35 @@ function slot_refresh( slot ) {
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @param XMLHttpRequest request The request send back from the server.
+ * @param string code A code describing the type of ajax request (A for action, W for widget)
  */
-function ajax_complete( request ) {
+function ajax_complete( request, code ) {
   if( 400 == request.status ) {
     // application is reporting an error, details are in responseText
     var response = jQuery.parseJSON( request.responseText );
-    if( 'permission' == response.error ) {
+    var error_code = code + '.' +
+                     ( undefined == response.error_type ?
+                       '?' : response.error_type.substr( 0, 1 ) ) + '.' +
+                     ( undefined == response.error_number ?
+                       '?' : response.error_number );
+    error_code = error_code.toUpperCase();
+
+    if( 'permission' == response.error_type ) {
       error_dialog(
         'Access Denied',
         '<p>' +
         '  You do not have permission to perform the selected action.' +
         '</p>' +
-        '<p style="text-align:right"><em>Error code: A-P</em></p>' );
+        '<p style="text-align:right"><em>Error code: ' + error_code + '</em></p>' );
     }
     else { // any other error...
-      var code = 'X';
-      if( 'argument' == response.error ) code = 'A';
-      else if( 'database' == response.error ) code = 'D';
-      else if( 'missing' == response.error ) code = 'M';
-      else if( 'runtime' == response.error ) code = 'R';
-      else if( 'template' == response.error ) code = 'T';
-      else if( 'unknown' == response.error ) code = 'U';
-      
       error_dialog(
         'Server Error',
         '<p>' +
         '  The server was unable to complete your request.<br>' +
         '  Please notify a supervisor with the error code.' +
         '</p>' +
-        '<p style="text-align:right"><em>Error code: A-' + code + '</em></p>' );
+        '<p style="text-align:right"><em>Error code: ' + error_code + '</em></p>' );
     }
   }
   else if( 200 != request.status ) {
@@ -232,7 +232,7 @@ function ajax_complete( request ) {
       '  There was an error while trying to communicate with the server.<br>' +
       '  Please notify a supervisor with the error code.' +
       '</p>' +
-      '<p style="text-align:right"><em>Error code: A-200</em></p>' );
+      '<p style="text-align:right"><em>Error code: ' + code + '.200</em></p>' );
   }
 }
 

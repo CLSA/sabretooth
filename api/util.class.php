@@ -87,6 +87,53 @@ final class util
   }
 
   /**
+   * Gets the name of an error constant given the type and context.
+   * 
+   * There are three types of error codes.  Those that occur inside of method, those that occur
+   * inside of a function and those which have pre-defined error codes.
+   * For methods, the $context argument should be the pre-defined __METHOD__ constant.
+   * For functions, the $context argument should be the pre-defined __FUNCTION__ constant.
+   * For pre-defined error codes the $context argument should be the code as an integer.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $type The exception related to this error (ie: argument, database, missing, etc)
+   * @param string|int $class The class or function code where the error occurs.
+   * @param string $method The method or function name where the error occurs.
+   * @return int
+   * @static
+   * @access public
+   */
+  public static function get_error_number( $type, $context )
+  {
+    $code = 0;
+    
+    // try and determine the error type base code
+    $name = strtoupper( $type ).'_BASE_ERROR_NUMBER';
+    $base_code = defined( $name ) ? constant( $name ) : 0;
+
+    if( is_numeric( $context ) )
+    { // pre-defined error code, add the type code to it
+      $code = $base_code + $context;
+    }
+    else if( is_string( $context ) )
+    {
+      // in case this is a method name then we need to replace :: with _
+      $context = str_replace( '::', '_', $context );
+
+      // remove namespaces
+      $index = strrchr( $context, '\\' );
+      if( false !== $index ) $context = substr( $index, 1 );
+
+      $name = strtoupper( sprintf( '%s_%s_ERROR_NUMBER',
+                                   $type,
+                                   $context ) );
+    \sabretooth\log::print_r( $name );
+      $code = defined( $name ) ? constant( $name ) : $base_code;
+    }
+
+    return $code;
+  }
+
+  /**
    * Returns the result of var_dump()
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

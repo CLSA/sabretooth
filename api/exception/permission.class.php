@@ -20,11 +20,12 @@ class permission extends base_exception
   /**
    * Constructor
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\operation $db_operation the associated operation
-   * @param exception $previous the previous exception used for the exception chaining
+   * @param database\operation $db_operation The associated operation.
+   * @param string|int $context The exceptions context, either a function name or error code.
+   * @param exception $previous The previous exception used for the exception chaining.
    * @access public
    */
-  public function __construct( $db_operation, $previous = NULL )
+  public function __construct( $db_operation, $context, $previous = NULL )
   {
     $this->operation = $db_operation;
     $message = is_null( $db_operation ) ||
@@ -34,7 +35,7 @@ class permission extends base_exception
              : sprintf( 'operation "%s".%s" denied.',
                         $db_operation->subject,
                         $db_operation->name );
-    parent::__construct( $message, $previous );
+    parent::__construct( $message, $context, $previous );
   }
 
   /**
