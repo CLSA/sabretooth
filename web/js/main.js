@@ -204,24 +204,27 @@ function ajax_complete( request, code ) {
                        '?' : response.error_type.substr( 0, 1 ) ) + '.' +
                      ( undefined == response.error_code ?
                        '?' : response.error_code );
-    error_code = error_code.toUpperCase();
 
-    if( 'permission' == response.error_type ) {
+    if( 'Permission' == response.error_type ) {
       error_dialog(
         'Access Denied',
-        '<p>' +
-        '  You do not have permission to perform the selected action.' +
-        '</p>' +
-        '<p style="text-align:right"><em>Error code: ' + error_code + '</em></p>' );
+        '<p>You do not have permission to perform the selected action.</p>' +
+        '<p class="error_code">Error code: ' + error_code + '</p>' );
+    }
+    else if( 'Notice' == response.error_type ) {
+      error_dialog(
+        'Notice',
+        '<p>' + response.error_message + '</p>' +
+        '<p class="error_code">Error code: ' + error_code + '</p>' );
     }
     else { // any other error...
       error_dialog(
-        'Server Error',
+        response.error_type + ' Error',
         '<p>' +
         '  The server was unable to complete your request.<br>' +
         '  Please notify a supervisor with the error code.' +
         '</p>' +
-        '<p style="text-align:right"><em>Error code: ' + error_code + '</em></p>' );
+        '<p class="error_code">Error code: ' + error_code + '</p>' );
     }
   }
   else if( 200 != request.status ) {
@@ -232,7 +235,7 @@ function ajax_complete( request, code ) {
       '  There was an error while trying to communicate with the server.<br>' +
       '  Please notify a supervisor with the error code.' +
       '</p>' +
-      '<p style="text-align:right"><em>Error code: ' + code + '.200</em></p>' );
+      '<p class="error_code">Error code: ' + code + '.200</p>' );
   }
 }
 

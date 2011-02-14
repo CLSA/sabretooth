@@ -41,8 +41,21 @@ class base_delete extends action
    */
   public function execute()
   {
-    // TODO: error handling
-    $this->record->delete();
+    try
+    {
+      $this->record->delete();
+    }
+    catch( \sabretooth\exception\database $e )
+    { // help describe exceptions to the user
+      if( $e->is_constrained() )
+      {
+        throw new \sabretooth\exception\notice(
+          'Unable to delete the '.$this->get_subject().
+          ' because it is being referenced by the database.', $e );
+      }
+
+      throw $e;
+    }
   }
   
   /**

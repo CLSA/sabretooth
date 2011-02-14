@@ -42,8 +42,21 @@ class base_new extends action
     {
       $this->record->$column = $value;
     }
-    // TODO: need to catch db exceptions
-    $this->record->save();
+       
+    try
+    {
+      $this->record->save();
+    }
+    catch( \sabretooth\exception\database $e )
+    { // help describe exceptions to the user
+      if( $e->is_duplicate_entry() )
+      {
+        throw new \sabretooth\exception\notice(
+          'Unable to create the new '.$this->get_subject().' because it is not unique.', $e );
+      }
+
+      throw $e;
+    }
   }
   
   /**

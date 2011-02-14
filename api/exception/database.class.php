@@ -33,7 +33,31 @@ class database extends base_exception
     $message .= is_null( $this->sql ) ? '' : "\n$sql";
     parent::__construct( $message, $context, $previous );
   }
-    
+  
+  /**
+   * Returns whether the exception was thrown because of a duplicate entry error.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function is_duplicate_entry()
+  {
+    return DATABASE_BASE_ERROR_NUMBER + 1062 == $this->get_number();
+  }
+
+  /**
+   * Returns whether the exception was thrown because of a failed constrained key.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function is_constrained()
+  {
+    return DATABASE_BASE_ERROR_NUMBER + 1451 == $this->get_number();
+  }
+
   /**
    * The sql which caused the exception.
    * @var string

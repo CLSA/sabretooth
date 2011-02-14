@@ -51,20 +51,21 @@ catch( exception\base_exception $e )
   $type = $e->get_type();
   log::err( ucwords( $type )." ".$e );
   $result_array['success'] = false;
-  $result_array['error_type'] = $type;
+  $result_array['error_type'] = ucfirst( $type );
   $result_array['error_code'] = $e->get_code();
+  $result_array['error_message'] = 'notice' == $type ? $e->get_notice() : '';
 }
 catch( \Twig_Error $e )
 {
   log::err( "Template ".$e );
   $result_array['success'] = false;
-  $result_array['error_type'] = $type;
+  $result_array['error_type'] = 'Template';
 }
 catch( \Exception $e )
 {
   log::err( "Last minute ".$e );
   $result_array['success'] = false;
-  $result_array['error_type'] = $type;
+  $result_array['error_type'] = 'Unknown';
 }
 
 if( true == $result_array['success'] )

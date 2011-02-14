@@ -41,12 +41,32 @@ class base_edit extends action
    */
   public function execute()
   {
-    foreach( $this->get_argument( 'columns', array() ) as $column => $value )
+    $columns = $this->get_argument( 'columns', array() );
+    foreach( $columns as $column => $value )
     {
       $this->record->$column = $value;
     }
-    // TODO: need to catch db exceptions
-    $this->record->save();
+    
+    try
+    {
+      $this->record->save();
+    }
+    catch( \sabretooth\exception\database $e )
+    { // help describe exceptions to the user
+      if( $e->is_duplicate_entry() )
+      {
+        reset( $columns );
+        throw new \sabretooth\exception\notice(
+          1 == count( $columns )
+          ? sprintf( 'Unable to set %s to "%s" because that value is already being used.',
+                     key( $columns ),
+                     current( $columns ) )
+          : 'Unable to modify the '.$this->get_subject().' because it is no longer unique.',
+          $e );
+      }
+
+      throw $e;
+    }
   }
   
   /**

@@ -5,15 +5,24 @@
  * This file is where all error codes are defined.
  * All error code are named after the class and function they occur in.
  * @see util::get_error_number() for more details.
+ * @package sabretooth\exception
+ * @filesource
  */
 
+namespace sabretooth\exception;
+
+/**
+ * Error number category defines.
+ */
 define( 'ARGUMENT_BASE_ERROR_NUMBER', 100000 );
 define( 'DATABASE_BASE_ERROR_NUMBER', 200000 );
 define( 'MISSING_BASE_ERROR_NUMBER', 300000 );
 define( 'PERMISSION_BASE_ERROR_NUMBER', 400000 );
 define( 'RUNTIME_BASE_ERROR_NUMBER', 500000 );
 
-// "argument" error codes
+/**
+ * "argument" error codes
+ */
 define( 'ARGUMENT_MODIFIER_WHERE_ERROR_NUMBER',          ARGUMENT_BASE_ERROR_NUMBER + 1 );
 define( 'ARGUMENT_MODIFIER_GROUP_ERROR_NUMBER',          ARGUMENT_BASE_ERROR_NUMBER + 2 );
 define( 'ARGUMENT_MODIFIER_ORDER_ERROR_NUMBER',          ARGUMENT_BASE_ERROR_NUMBER + 3 );
@@ -30,16 +39,25 @@ define( 'ARGUMENT_ACTION_SCRIPT_ERROR_NUMBER',           ARGUMENT_BASE_ERROR_NUM
 define( 'ARGUMENT_SESSION___CONSTRUCT_ERROR_NUMBER',     ARGUMENT_BASE_ERROR_NUMBER + 14 );
 define( 'ARGUMENT_OPERATION___CONSTRUCT_ERROR_NUMBER',   ARGUMENT_BASE_ERROR_NUMBER + 15 );
 
-// "database" error codes
-// (since database errors already have codes this list is likely to stay empty)
+/**
+ * "database" error codes
+ * 
+ * Since database errors already have codes this list is likely to stay empty.
+ */
 
-// "missing" error codes
+/**
+ * "missing" error codes
+ */
 define( 'MISSING_AUTOLOADER_AUTOLOAD_ERROR_NUMBER', MISSING_BASE_ERROR_NUMBER + 1 );
 
-// "permission" error codes
+/**
+ * "permission" error codes
+ */
 define( 'PERMISSION_OPERATION___CONSTRUCT_ERROR_NUMBER', PERMISSION_BASE_ERROR_NUMBER + 1 );
 
-// "runtime" error codes
+/**
+ * "runtime" error codes
+ */
 define( 'RUNTIME_ACTIVE_RECORD___CONSTRUCT_ERROR_NUMBER', RUNTIME_BASE_ERROR_NUMBER + 1 );
 define( 'RUNTIME_ACTIVE_RECORD_LOAD_ERROR_NUMBER',        RUNTIME_BASE_ERROR_NUMBER + 2 );
 define( 'RUNTIME_SESSION_INITIALIZE_ERROR_NUMBER',        RUNTIME_BASE_ERROR_NUMBER + 3 );

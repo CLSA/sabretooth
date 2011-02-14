@@ -67,11 +67,16 @@ html, body {
   margin-right: 10px;
 }
 
-/* Table stylings */
 table {
   width: 100%;
   border-spacing: 0px;
   text-align: center;
+}
+
+.error_code {
+  text-align: right;
+  font-style: italic;
+  font-size: 0.8em;
 }
 
 .title {

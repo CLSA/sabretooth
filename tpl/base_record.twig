@@ -121,8 +121,8 @@ $( function () {
     "Delete {{ widget_subject }}?",
     "Are you sure you want to remove the selected {{ widget_subject }}?",
     function() {
-      send_action( "{{ widget_subject }}", "delete", { "id": {{ id|default(0) }} } );
-      slot_prev( slot );
+      if( send_action( "{{ widget_subject }}", "delete", { "id": {{ id|default(0) }} } ) )
+        slot_prev( slot );
     } );
 
   } );
