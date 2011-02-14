@@ -239,6 +239,7 @@ final class log extends singleton
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $type The type of log ('err', 'warning', etc)
+   * @throws exception\runtime
    * @access private
    */
   private function initialize_logger( $type )
@@ -285,7 +286,8 @@ final class log extends singleton
     }
     else
     {
-      assert( false ); // invalid logger
+      throw new exception\runtime(
+        'Unable to create invalid logger type "'.$type.'"', __METHOD__ );
     }
   }
 
@@ -390,16 +392,6 @@ final class log extends singleton
   }
 
   /**
-   * A error handling function that uses the log class as the error handler
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @ignore
-   */
-  static public function assert_handler( $file, $line, $message )
-  {
-    log::error_handler( E_ERROR, 'Assert failed!'.$message, $file, $line );
-  }
-
-  /**
    * An array containing all the PEAR Log objects used by the class.
    * @var array( Log )
    * @access private
@@ -410,5 +402,4 @@ final class log extends singleton
 // define a custom error handlers
 set_error_handler( array( '\sabretooth\log', 'error_handler' ) );
 register_shutdown_function( array( '\sabretooth\log', 'fatal_error_handler' ) );
-assert_options( ASSERT_CALLBACK, array( '\sabretooth\log', 'assert_handler' ) );
 ?>

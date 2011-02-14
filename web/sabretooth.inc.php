@@ -48,8 +48,4 @@ autoloader::register();
 $session = session::self( $SETTINGS );
 $session->initialize();
 log::notice( 'running script: "'.$SETTINGS[ 'url' ][ 'FULL' ].'"' );
-
-// set up asserts
-assert_options( ASSERT_ACTIVE, util::in_devel_mode() ? 1 : 0 );
-assert_options( ASSERT_WARNING, 0 );
 ?>

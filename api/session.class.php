@@ -30,6 +30,7 @@ final class session extends singleton
    * Since this class uses the singleton pattern the constructor is never called directly.  Instead
    * use the {@link singleton} method.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\argument
    * @access protected
    */
   protected function __construct( $arguments )
@@ -38,14 +39,11 @@ final class session extends singleton
     // don't use the log class in this method!
     
     // one and only one argument should be past to the constructor
-    assert( isset( $arguments ) && 1 == count( $arguments ) );
-    
+    if( is_null( $arguments ) || !is_array( $arguments ) || 1 != count( $arguments ) )
+      throw new exception\argument( 'arguments', $arguments, __METHOD__ );
+
     // the first argument is the settings array from an .ini file
     $settings = $arguments[0];
-    
-    // make sure we have all necessary categories
-    assert( isset( $settings[ 'general' ] ) && is_array( $settings[ 'general' ] ) &&
-            isset( $settings[ 'db' ] ) && is_array( $settings[ 'general' ] ) );
     
     // copy the setting one category at a time, ignore any unknown categories
     $categories = array( 'db',
@@ -54,6 +52,10 @@ final class session extends singleton
                          'version' );
     foreach( $categories as $category )
     {
+      // make sure the category exists
+      if( !array_key_exists( $category, $settings ) )
+        throw new exception\argument( 'arguments['.$category.']', NULL, __METHOD__ );
+
       $this->settings[ $category ] = $settings[ $category ];
     }
 

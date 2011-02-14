@@ -29,13 +29,14 @@ abstract class operation extends \sabretooth\base_object
    * @param string $subject The subject of the operation.
    * @param string $name The name of the operation.
    * @param array $args An associative array of arguments to be processed by the widgel
-   y @throws exception\permission
+   * @throws excpetion\argument, exception\permission
    * @access public
    */
   public function __construct( $type, $subject, $name, $args )
   {
     // type must either be an action or widget
-    assert( 'action' == $type || 'widget' == $type );
+    if( 'action' != $type && 'widget' != $type )
+      throw new \sabretooth\exception\argument( 'type', $type, __METHOD__ );
     
     $this->operation_record =
       \sabretooth\database\operation::get_operation( $type, $subject, $name );
