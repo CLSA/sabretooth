@@ -83,7 +83,7 @@ final class session extends singleton
     // set up the database
     $this->db = ADONewConnection( session::self()->get_setting( 'db', 'driver' ) );
     
-    if( false == $this->db->Connect(
+    if( false == $this->db->PConnect(
       session::self()->get_setting( 'db', 'server' ),
       session::self()->get_setting( 'db', 'username' ),
       session::self()->get_setting( 'db', 'password' ),
