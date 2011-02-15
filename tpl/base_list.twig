@@ -28,7 +28,7 @@
 
 // make button icons
 $( function() {
-  $( "button.{{ current_widget }}_sortable" ).button( {
+  $( "button.{{ widget.full }}_sortable" ).button( {
     text: true,
     icons: {
       primary: "ui-icon-triangle-2-n-s"
@@ -36,7 +36,7 @@ $( function() {
   } );
 } );
 $( function() {
-  $( "button.{{ current_widget }}_sort" ).button( {
+  $( "button.{{ widget.full }}_sort" ).button( {
     text: true,
     icons: {
       primary: "ui-icon-triangle-1-s"
@@ -44,7 +44,7 @@ $( function() {
   } )
 } );
 $( function() {
-  $( "button.{{ current_widget }}_sort_desc" ).button( {
+  $( "button.{{ widget.full }}_sort_desc" ).button( {
     text: true,
     icons: {
       primary: "ui-icon-triangle-1-n"
@@ -53,7 +53,7 @@ $( function() {
 } );
 {% if checkable %}
 $( function() {
-  $( "button.{{ current_widget }}_check" ).button( {
+  $( "button.{{ widget.full }}_check" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-check"
@@ -63,7 +63,7 @@ $( function() {
 {% endif %}
 {% if viewable %}
 $( function() {
-  $( "button.{{ current_widget }}_view" ).button( {
+  $( "button.{{ widget.full }}_view" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-document"
@@ -73,7 +73,7 @@ $( function() {
 {% endif %}
 {% if removable %}
 $( function() {
-  $( "button.{{ current_widget }}_remove" ).button( {
+  $( "button.{{ widget.full }}_remove" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-closethick"
@@ -83,8 +83,8 @@ $( function() {
 {% endif %}
 {% if addable %}
 $( function() {
-  $( "#{{ current_widget }}_add" ).button( {
-    text: false,
+  $( "#{{ widget.full }}_add" ).button( {
+    text: {{ rows|count ? 'false' : 'true' }},
     icons: {
       primary: "ui-icon-plusthick"
     }
@@ -93,15 +93,15 @@ $( function() {
 {% endif %}
 
 // create button sets
-$( function() { $( "#{{ current_widget }}_check_none" ).button().parent().buttonset() } );
-$( function() { $( "#{{ current_widget }}_page_next" ).button().parent().buttonset() } );
+$( function() { $( "#{{ widget.full }}_check_none" ).button().parent().buttonset() } );
+$( function() { $( "#{{ widget.full }}_page_next" ).button().parent().buttonset() } );
 
 // stripe the table
 $( function() {
-  $(".{{ current_widget }}_table tbody tr").mouseover( function() {
+  $(".{{ widget.full }}_table tbody tr").mouseover( function() {
     $(this).addClass( "ui-widget-header" );
   } );
-  $(".{{ current_widget }}_table tbody tr").mouseout( function() {
+  $(".{{ widget.full }}_table tbody tr").mouseout( function() {
     $(this).removeClass( "ui-widget-header" );
   } );
 } );
@@ -109,12 +109,12 @@ $( function() {
 {% if viewable %}
 // view button function
 $( function() {
-  $( ".{{ current_widget }}_view" ).click( function() {
+  $( ".{{ widget.full }}_view" ).click( function() {
     var id_string = $(this).attr( 'id' );
     var id = parseInt( id_string.substring( id_string.lastIndexOf('_') + 1 ) );
     slot_load( get_slot( $(this) ),
-               "{{ widget_subject }}_view",
-               "{{ widget_subject }}_view",
+               "{{ widget.subject }}_view",
+               "{{ widget.subject }}_view",
                { "id": id } );
   } )
 } );
@@ -122,46 +122,61 @@ $( function() {
 {% if removable %}
 // remove button function
 $( function() {
-  $( ".{{ current_widget }}_remove" ).click( function() {
+  $( ".{{ widget.full }}_remove" ).click( function() {
     var id_string = $(this).attr( 'id' );
     var id = parseInt( id_string.substring( id_string.lastIndexOf('_') + 1 ) );
     var slot = get_slot( $(this) );
-
-    confirm_dialog(
-      "Delete {{ widget_subject }}?",
-      "Are you sure you want to remove the selected {{ widget_subject }}?",
-      function() {
-        send_action( "{{ widget_subject }}", "delete", { "id": id } );
-        slot_refresh( slot );
-      } );
+    
+    {% if parent.exists %}
+      confirm_dialog(
+        "Remove {{ widget.subject }}?",
+        "Are you sure you want to remove the {{ widget.subject }} from the {{ parent.subject }}?",
+        function() {
+          send_action( "{{ parent.subject }}", "delete_{{ widget.subject }}", { "id": id } );
+          slot_refresh( slot );
+        } );
+    {% else %}
+      confirm_dialog(
+        "Delete {{ widget.subject }}?",
+        "Are you sure you want to delete the {{ widget.subject }}?",
+        function() {
+          send_action( "{{ widget.subject }}", "delete", { "id": id } );
+          slot_refresh( slot );
+        } );
+    {% endif %}
   } )
 } );
 {% endif %}
 {% if addable %}
 // add button function
 $( function() {
-  $( "#{{ current_widget }}_add" ).click( function() {
-    slot_load( get_slot( $(this) ),
-               "{{ widget_subject }}_add",
-               "{{ widget_subject }}_add" );
+  $( "#{{ widget.full }}_add" ).click( function() {
+    {% if parent.exists %}
+      slot_load( get_slot( $(this) ),
+                 "{{ parent.subject }}_add_{{ widget.subject }}",
+                 "{{ parent.subject }}_add_{{ widget.subject }}",
+                 { "id": {{ parent.id }} } );
+    {% else %}
+      slot_load( get_slot( $(this) ), "{{ widget.subject }}_add" );
+    {% endif %}
   } )
 } );
 {% endif %}
 
 // check button functions
 $( function() {
-  $( "#{{ current_widget }}_check_all" ).click( function() {
-    $( "input[id*={{ current_widget }}_check_]" ).attr( "checked", true );
+  $( "#{{ widget.full }}_check_all" ).click( function() {
+    $( "input[id*={{ widget.full }}_check_]" ).attr( "checked", true );
   } )
 } );
 $( function() {
-  $( "#{{ current_widget }}_check_none" ).click( function() {
-    $( "input[id*={{ current_widget }}_check_]" ).attr( "checked", false );
+  $( "#{{ widget.full }}_check_none" ).click( function() {
+    $( "input[id*={{ widget.full }}_check_]" ).attr( "checked", false );
   } )
 } );
 $( function() {
-  $( "#{{ current_widget }}_check_invert" ).click( function() {
-    $( "input[id*={{ current_widget }}_check_]" ).each( function() {
+  $( "#{{ widget.full }}_check_invert" ).click( function() {
+    $( "input[id*={{ widget.full }}_check_]" ).each( function() {
       $( this ).attr( 'checked', this.checked ? false : true );
     } )
   } )
@@ -169,43 +184,43 @@ $( function() {
 
 // column sort functions
 $( function() {
-  $( "th.{{ current_widget }}_sortable" ).click( function() {
+  $( "th.{{ widget.full }}_sortable" ).click( function() {
     var args = new Object();
     args.sort_column = $(this).attr("id");
     args.sort_desc = "{{ sort_column }}" == $(this).attr("id") ? {{ sort_desc ? 0 : 1 }} : 0;
     slot_load( get_slot( $(this) ),
-               "{{ active_widget }}",
-               "{{ current_widget }}",
+               "{{ parent.exists ? parent.full : widget.full }}",
+               "{{ widget.full }}",
                args );
   } )
 } );
 
 // page button functions
 $( function() {
-  $( "#{{ current_widget }}_page_prev" ).click( function() {
+  $( "#{{ widget.full }}_page_prev" ).click( function() {
     var args = new Object();
     args.page = {{ page - 1 }};
     slot_load( get_slot( $(this) ),
-               "{{ active_widget }}",
-               "{{ current_widget }}",
+               "{{ parent.exists ? parent.full : widget.full }}",
+               "{{ widget.full }}",
                args );
   } )
 } );
 $( function() {
-  $( "#{{ current_widget }}_page_next" ).click( function() {
+  $( "#{{ widget.full }}_page_next" ).click( function() {
     var args = new Object();
     args.page = {{ page + 1 }};
     slot_load( get_slot( $(this) ),
-               "{{ active_widget }}",
-               "{{ current_widget }}",
+               "{{ parent.exists ? parent.full : widget.full }}",
+               "{{ widget.full }}",
                args );
   } )
 } );
 
 </script>
-<table class="{{ current_widget }}_table">
-  {% if rows | count %}
+<table class="{{ widget.full }}_table">
   {% set number_of_columns = 0 %}
+  {% if rows|count %}
   <thead class="ui-widget-header">
     <tr>
       {% if checkable %}
@@ -214,11 +229,11 @@ $( function() {
       {% endif %}
       {% for column in columns %}
         {% if column.sortable %}
-          <th id="{{ column.id }}" class="{{ current_widget }}_sortable">
+          <th id="{{ column.id }}" class="{{ widget.full }}_sortable">
             {% if column.id == sort_column %}
-            <button class="{{ current_widget }}_sort{{ sort_desc ? '_desc' : '' }}">
+            <button class="{{ widget.full }}_sort{{ sort_desc ? '_desc' : '' }}">
             {% else %}
-            <button class="{{ current_widget }}_sortable">
+            <button class="{{ widget.full }}_sortable">
             {% endif %}
               {{ column.heading }}
             </button>
@@ -242,7 +257,7 @@ $( function() {
     {% for row in rows %}
     <tr>
       {% if checkable %}
-      <td><input type="checkbox" id="{{ current_widget }}_check_{{ row.id }}" /></td>
+      <td><input type="checkbox" id="{{ widget.full }}_check_{{ row.id }}" /></td>
       {% endif %}
       {% for column in columns %}
       <td {% if column.align|default(false) %}
@@ -251,12 +266,12 @@ $( function() {
           style="font-weight: normal">{{ row.columns[column.id] }}</td>
       {% endfor %}
       {% if viewable %}
-      <td><button class="{{ current_widget }}_view"
-                  id="{{ current_widget }}_view_{{ row.id }}">view</button></td>
+      <td><button class="{{ widget.full }}_view"
+                  id="{{ widget.full }}_view_{{ row.id }}">view</button></td>
       {% endif %}
       {% if removable %}
-      <td><button class="{{ current_widget }}_remove"
-                  id="{{ current_widget }}_remove_{{ row.id }}">remove</button></td>
+      <td><button class="{{ widget.full }}_remove"
+                  id="{{ widget.full }}_remove_{{ row.id }}">remove</button></td>
       {% endif %}
     </tr>
     {% endfor %}
@@ -268,15 +283,15 @@ $( function() {
         {% if checkable %}
         <span>
           Check boxes:
-          <button style="width:70px" id="{{ current_widget }}_check_all">all</button>
-          <button style="width:70px" id="{{ current_widget }}_check_none">none</button>
-          <button style="width:70px" id="{{ current_widget }}_check_invert">invert</button>
+          <button style="width:70px" id="{{ widget.full }}_check_all">all</button>
+          <button style="width:70px" id="{{ widget.full }}_check_none">none</button>
+          <button style="width:70px" id="{{ widget.full }}_check_invert">invert</button>
         </span>
         <span style="margin-left:20px"></span>
         {% endif %}
-        {% if rows | count %}
+        {% if rows|count %}
         {% set item_from = ( page - 1 ) * items_per_page + 1 %}
-        {% set item_to = item_from + rows | count - 1 %}
+        {% set item_to = item_from + rows|count - 1 %}
         Viewing: {{ item_from }} to {{ item_to }} of {{ number_of_items }}
         {% else %}
         No records found.
@@ -286,16 +301,18 @@ $( function() {
         <span>
           Page:
           <button style="width:70px"
-                  id="{{ current_widget }}_page_prev"
+                  id="{{ widget.full }}_page_prev"
                   {{ 1 == page ? 'disabled' : '' }}>prev</button>
           <button style="width:70px"
-                  id="{{ current_widget }}_page_next"
+                  id="{{ widget.full }}_page_next"
                   {{ max_page == page ? 'disabled' : '' }}>next</button>
         </span>
         {% endif %}
       </th>
       {% if addable %}
-      <th><button id="{{ current_widget }}_add">add {{ widget_subject }}</button></th>
+      <th><button id="{{ widget.full }}_add">
+        add {{ widget.subject }}{% if parent.exists %} to {{ parent.subject }}{% endif %}
+      </button></th>
       {% endif %}
     </tr>
   </tfoot>

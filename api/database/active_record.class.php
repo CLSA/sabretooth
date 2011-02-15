@@ -14,6 +14,8 @@ namespace sabretooth\database;
  *
  * The active_record class represents tables in the database.  Each table has its own class which
  * extends this class.  Furthermore, each table must have a single 'id' column as its primary key.
+ * TODO: Maybe a modifier should be added as a member to the active_record class so there is less
+ *       passing around going on.
  * @package sabretooth\database
  */
 abstract class active_record extends \sabretooth\base_object
@@ -161,15 +163,17 @@ abstract class active_record extends \sabretooth\base_object
    * Count the total number of rows in the table.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the count.
    * @return int
    * @static
    * @access public
    */
-  public static function count()
+  public static function count( $modifier )
   {
     return self::get_one(
-      sprintf( 'SELECT COUNT(*) FROM %s',
-               self::get_table_name() ) );
+      sprintf( 'SELECT COUNT(*) FROM %s %s',
+               self::get_table_name(),
+               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
   }
 
   /**
@@ -214,21 +218,30 @@ abstract class active_record extends \sabretooth\base_object
   /**
    * Magic call method.
    * 
-   * Magic call method which allows for get_<record>() for records with foreign keys referencing
-   * the <record> table and, get_<record>_list() and get_<record>_count() for recrods with joining
-   * "has" tables with another table.
-   * For instance, if a record has a foreign key "other_id", then get_other() will return the
-   * "other" record with the id equal to other_id.
-   * If a record has a joining "has" table then calling get_other_list() will return an array of
-   * "other" records which are linked in the joining table, and get_other_count() will return the
-   * number of "other" recrods found in the joining table.
+   * Magic call method which allows for several methods which get information about records in
+   * tables linked to by this table by either a foreign key or joining table.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $name The name of the called function (should be get_<record>,
                          get_<record>_count() or get_<record>_list(), where <record> is the name
                          of an active record class related to this record.
-   * @param array $args The arguments passed to the called function.
+   * @param array $args The arguments passed to the called function.  This can either be null or
+                        a modifier to be applied to the magic methods.
    * @return mixed
    * @access public
+   * @method array get_<record>() Returns the record with foreign keys referencing the <record>
+                   table.  For instance, if a record has a foreign key "other_id", then
+                   get_other() will return the "other" record with the id equal to other_id.
+   * @method array get_record_list() Returns an array of records from the joining <record> table
+                   given the provided modifier.  If a record has a joining "has" table then
+                   calling get_other_list() will return an array of "other" records which are
+                   linked in the joining table, and get_other_count() will return the number of
+                   "other" recrods found in the joining table.
+   * @method array get_record_list_inverted() This is the same as the non-inverted method but it
+                   returns all items which are NOT linked to joining table.
+   * @method int get_<record>_count() Returns the number of records in the joining <record> table
+                 given the provided modifier.
+   * @method int get_<record>_count_inverted() This is the same as the non-inverted method but it
+                 returns the number of records NOT in the joining table.
    */
   public function __call( $name, $args )
   {
@@ -275,7 +288,8 @@ abstract class active_record extends \sabretooth\base_object
         $class_name = '\\sabretooth\\database\\'.$foreign_table_name;
         $return_value = new $class_name( $this->$foreign_key_name );
       }
-      else if( 3 == count( $name_parts ) )
+      else if( 3 == count( $name_parts ) ||
+               ( 4 == count( $name_parts ) && 'inverted' == $name_parts[3] ) )
       { // we're linking a joining table
         // make sure joining table exists
         $joining_table_name = self::get_table_name().'_has_'.$foreign_table_name;
@@ -289,28 +303,56 @@ abstract class active_record extends \sabretooth\base_object
             E_USER_ERROR );
         }
         
+        // Determine the action (list or count), whether to invert the result and if
+        // there is a modifier argument
         $action = $name_parts[2];
-        if( 'list' == $action )
+        $inverted = 4 == count( $name_parts );
+        $modifier = 1 == count( $args ) &&
+                    'sabretooth\\database\\modifier' == get_class( $args[0] )
+                  ? $args[0]
+                  : new modifier();
+
+        if( 'list' == $action || 'count' == $action )
         { // we want a list of records
-          $ids = self::get_col(
-            sprintf( 'SELECT %s FROM %s WHERE %s = %d',
-                     $foreign_key_name,
-                     $joining_table_name,
-                     $primary_key_name,
-                     $this->id ) );
-  
-          $return_value = array();
-          $class_name = '\\sabreooth\\database\\'.$foreign_table_name;
-          foreach( $ids as $id ) array_push( $return_value, new $class_name( $id ) );
-        }
-        else if( 'count' == $action )
-        {
-          $return_value = self::get_one(
-            sprintf( 'SELECT COUNT(*) FROM %s WHERE %s = %d',
-                     $foreign_key_name,
-                     $joining_table_name,
-                     $primary_key_name,
-                     $this->id ) );
+          if( $inverted )
+          { // we need to invert the list
+            // first create SQL to match all records in the joining table
+            $sub_modifier = new modifier();
+            $sub_modifier->where( $primary_key_name, $this->id );
+            $sub_select_sql =
+              sprintf( 'SELECT %s FROM %s %s',
+                       $foreign_key_name,
+                       $joining_table_name,
+                       $sub_modifier->get_sql() );
+            // now create SQL that gets all IDs that is NOT in that list
+            $modifier->where_not_in( 'id', $sub_select_sql, false );
+            $sql = sprintf( 'SELECT %s FROM %s %s',
+                            'list' == $action ? 'id' : 'COUNT( id )',
+                            $foreign_table_name,
+                            $modifier->get_sql() );
+          }
+          else
+          { // no inversion, just select the records from the joining table
+            $modifier->where( $primary_key_name, $this->id );
+            $sql = sprintf( 'SELECT %s FROM %s',
+                            'list' == $action
+                              ? $foreign_key_name
+                              : 'COUNT( '.$foreign_key_name.' )',
+                            $joining_table_name,
+                            $modifier->get_sql() );
+          }
+          
+          if( 'list' == $action )
+          {
+            $ids = self::get_col( $sql );
+            $return_value = array();
+            $class_name = '\\sabretooth\\database\\'.$foreign_table_name;
+            foreach( $ids as $id ) array_push( $return_value, new $class_name( $id ) );
+          }
+          else // 'count' == $action
+          {
+            $return_value = self::get_one( $sql );
+          }
         }
         else
         {
@@ -348,7 +390,6 @@ abstract class active_record extends \sabretooth\base_object
    * every row being selected, so selecting a very large number of rows (100+) isn't a good idea.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
-   * @param array $restrictions And array of restrictions to add to the were clause of the select.
    * @return array( active_record )
    * @static
    * @access public
@@ -360,19 +401,22 @@ abstract class active_record extends \sabretooth\base_object
     
     // check to see if the modifier is sorting a value in a foreign table
     $table_list = array( $this_table );
-    foreach( $modifier->get_order_columns() as $order )
+    if( !is_null( $modifier ) )
     {
-      $table = strstr( $order, '.', true );
-      if( $table && 0 < strlen( $table ) && $table != $this_table )
+      foreach( $modifier->get_order_columns() as $order )
       {
-        // check to see if we have a foreign key for this table
-        $temp_record = new static();
-        $foreign_key_name = $table.'_id';
-        if( $temp_record->has_column_name( $foreign_key_name ) )
+        $table = strstr( $order, '.', true );
+        if( $table && 0 < strlen( $table ) && $table != $this_table )
         {
-          // add the table to the list to select and join it in the modifier
-          array_push( $table_list, $table );
-          $modifier->where( $this_table.'.'.$foreign_key_name, $table.'.id', false );
+          // check to see if we have a foreign key for this table
+          $temp_record = new static();
+          $foreign_key_name = $table.'_id';
+          if( $temp_record->has_column_name( $foreign_key_name ) )
+          {
+            // add the table to the list to select and join it in the modifier
+            array_push( $table_list, $table );
+            $modifier->where( $this_table.'.'.$foreign_key_name, $table.'.id', false );
+          }
         }
       }
     }

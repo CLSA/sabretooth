@@ -9,7 +9,7 @@
 <script type="text/javascript">
 // make button icons
 $( function() {
-  $( "#{{ active_widget }}_prev" ).button( {
+  $( "#{{ widget.full }}_prev" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-arrowthick-1-w"
@@ -17,7 +17,7 @@ $( function() {
   } )
 } );
 $( function() {
-  $( "#{{ active_widget }}_next" ).button( {
+  $( "#{{ widget.full }}_next" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-arrowthick-1-e"
@@ -25,7 +25,7 @@ $( function() {
   } )
 } );
 $( function() {
-  $( "#{{ active_widget }}_refresh" ).button( {
+  $( "#{{ widget.full }}_refresh" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-arrowrefresh-1-e"
@@ -33,7 +33,7 @@ $( function() {
   } )
 } );
 $( function() {
-  $( "#{{ active_widget }}_home" ).button( {
+  $( "#{{ widget.full }}_home" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-home"
@@ -41,7 +41,7 @@ $( function() {
   } )
 } );
 $( function() {
-  $( "#{{ active_widget }}_help" ).button( {
+  $( "#{{ widget.full }}_help" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-help"
@@ -51,36 +51,36 @@ $( function() {
 
 // page button functions
 $( function() {
-  $( "#{{ active_widget }}_prev" ).click( function() {
+  $( "#{{ widget.full }}_prev" ).click( function() {
     slot_prev( 'main' );
   } )
 } );
 $( function() {
-  $( "#{{ active_widget }}_next" ).click( function() {
+  $( "#{{ widget.full }}_next" ).click( function() {
     slot_next( 'main' );
   } )
 } );
 $( function() {
-  $( "#{{ active_widget }}_refresh" ).click( function() {
+  $( "#{{ widget.full }}_refresh" ).click( function() {
     slot_refresh( 'main' );
   } )
 } );
 $( function() {
-  $( "#{{ active_widget }}_home" ).click( function() {
+  $( "#{{ widget.full }}_home" ).click( function() {
     slot_load( 'main', 'self_home' );
   } )
 } );
 $( function() {
-  $( "#{{ active_widget }}_help" ).click( function() {
+  $( "#{{ widget.full }}_help" ).click( function() {
     //slot_load( 'main', 'help' ); TODO
   } )
 } );
 </script>
 <span>
-  <button id="{{ active_widget }}_prev">back</button>
-  <button id="{{ active_widget }}_next">forward</button>
-  <button id="{{ active_widget }}_refresh">refresh</button>
-  <button id="{{ active_widget }}_home">home</button>
-  <button id="{{ active_widget }}_help">help</button>
+  <button id="{{ widget.full }}_prev">back</button>
+  <button id="{{ widget.full }}_next">forward</button>
+  <button id="{{ widget.full }}_refresh">refresh</button>
+  <button id="{{ widget.full }}_home">home</button>
+  <button id="{{ widget.full }}_help">help</button>
 </span>
 {% endblock %}

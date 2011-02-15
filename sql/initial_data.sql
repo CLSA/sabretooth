@@ -35,6 +35,12 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "role", "view", true, "View a role's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "role", "list", true, "List roles in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "role", "add_operation", true, "View operations to add to a role." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "role", "new_operation", true, "Add new operations to a role." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "role", "delete_operation", true, "Remove operations from a role." );
 
 -- self
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -55,6 +61,10 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "site", "view", true, "View a site's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "site", "list", true, "List sites in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "site", "new_user", true, "Add new users to a site." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "site", "delete_user", true, "Remove users from a site." );
 
 -- user
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -69,6 +79,10 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "user", "view", true, "View a user's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "user", "list", true, "List users in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "user", "new_site", true, "Add new site-roles to a user." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "user", "delete_site", true, "Remove site-roles from a user." );
 
 
 -- build role permissions

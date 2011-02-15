@@ -1,6 +1,6 @@
 <?php
 /**
- * role_view.class.php
+ * role_add_operation.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,11 +10,11 @@
 namespace sabretooth\ui;
 
 /**
- * widget role view
+ * widget role add_operation
  * 
  * @package sabretooth\ui
  */
-class role_view extends base_record
+class role_add_operation extends base_add_list
 {
   /**
    * Constructor
@@ -27,22 +27,7 @@ class role_view extends base_record
    */
   public function __construct( $args )
   {
-    parent::__construct( 'role', 'view', $args );
-
-    // create an associative array with everything we want to display about the role
-    $this->item['name'] =
-      array( 'heading' => 'Name',
-             'type' => 'string',
-             'value' => $this->get_record()->name );
-    $this->item['operation_count'] =
-      array( 'heading' => 'Operations',
-             'type' => 'constant',
-             'value' => $this->get_record()->get_operation_count() );
-
-    // create the operation sub-list widget
-    $this->operation_list = new operation_list( $args );
-    $this->operation_list->set_parent( $this );
-    $this->operation_list->set_heading( 'Operations belonging to this role' );
+    parent::__construct( 'role', 'operation', $args );
   }
 
   /**
@@ -54,9 +39,6 @@ class role_view extends base_record
   public function finish()
   {
     parent::finish();
-
-    $this->operation_list->finish();
-    $this->set_variable( 'operation_list', $this->operation_list->get_variables() );
   }
 
   /**
@@ -69,8 +51,8 @@ class role_view extends base_record
    */
   public function determine_operation_count( $modifier )
   {
-    $modifier->where( 'restricted', 1 );
-    return $this->get_record()->get_operation_count();
+    $modifier->where( 'restricted', true );
+    return $this->get_record()->get_operation_count_inverted( $modifier );
   }
 
   /**
@@ -83,8 +65,8 @@ class role_view extends base_record
    */
   public function determine_operation_list( $modifier )
   {
-    $modifier->where( 'restricted', 1 );
-    return $this->get_record()->get_operation_list( $modifier );
+    $modifier->where( 'restricted', true );
+    return $this->get_record()->get_operation_list_inverted( $modifier );
   }
 
   /**

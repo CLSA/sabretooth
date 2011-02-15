@@ -16,7 +16,7 @@ namespace sabretooth\ui;
  * @abstract
  * @package sabretooth\ui
  */
-abstract class base_record extends widget
+abstract class base_record extends widget implements contains_record
 {
   /**
    * Constructor
@@ -58,7 +58,7 @@ abstract class base_record extends widget
     $this->set_variable( 'removable', $this->removable );
     $this->set_variable( 'addable', $this->addable );
     if( 'view' == $this->mode || 'edit' == $this->mode )
-      $this->set_variable( 'id', $this->record->id );
+      $this->set_variable( 'id', $this->get_record()->id );
     $this->set_variable( 'item', $this->item );
   }
   
@@ -80,8 +80,8 @@ abstract class base_record extends widget
     {
       // build the associated record
       $class_name = '\\sabretooth\\database\\'.$this->get_subject();
-      $this->record = new $class_name( $this->get_argument( 'id' ) );
-      if( is_null( $this->record ) )
+      $this->set_record( new $class_name( $this->get_argument( 'id' ) ) );
+      if( is_null( $this->get_record() ) )
         throw new \sabretooth\exception\argument( 'id', NULL, __METHOD__ );
       
       $this->set_heading( sprintf( 'Viewing %s details',
@@ -91,13 +91,35 @@ abstract class base_record extends widget
     {
       // build the associated record
       $class_name = '\\sabretooth\\database\\'.$this->get_subject();
-      $this->record = new $class_name();
+      $this->set_record( new $class_name() );
       
       $this->addable = true;
       $this->editable = false;
       $this->removable = false;
       $this->set_heading( 'Creating a new '.$this->get_subject() );
     }
+  }
+  
+  /**
+   * Method required by the contains_record interface.
+   * @author Patrick Emond
+   * @return database\active_record
+   * @access public
+   */
+  public function get_record()
+  {
+    return $this->record;
+  }
+
+  /**
+   * Method required by the contains_record interface.
+   * @author Patrick Emond
+   * @param database\active_record $record
+   * @access public
+   */
+  public function set_record( $record )
+  {
+    $this->record = $record;
   }
 
   /**
@@ -144,8 +166,8 @@ abstract class base_record extends widget
   /**
    * An active record of the item being viewed.
    * @var active_record
-   * @access protected
+   * @access private
    */
-  protected $record = NULL;
+  private $record = NULL;
 }
 ?>

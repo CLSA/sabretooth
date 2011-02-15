@@ -50,10 +50,11 @@ class user extends active_record
    * Get the number of activity entries for this user.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the count.
    * @return int
    * @access public
    */
-  public function get_activity_count()
+  public function get_activity_count( $modifier = NULL)
   {
     if( is_null( $this->id ) )
     {
@@ -62,15 +63,16 @@ class user extends active_record
     }
 
     return self::get_one(
-      sprintf( 'SELECT COUNT( DISTINCT id ) FROM activity WHERE user_id = %s',
-               self::format_string( $this->id ) ) );
+      sprintf( 'SELECT COUNT( DISTINCT id ) FROM activity WHERE user_id = %s %s',
+               self::format_string( $this->id ),
+               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
   }
 
   /**
    * Get an activity list for this user.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the selection.
+   * @param database\modifier $modifier Modifications to the list.
    * @return array( database\activity )
    * @access public
    */
@@ -105,10 +107,11 @@ class user extends active_record
    * Get the number of sites that this user has access to.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the count.
    * @return int
    * @access public
    */
-  public function get_site_count()
+  public function get_site_count( $modifier = NULL )
   {
     if( is_null( $this->id ) )
     {
@@ -117,15 +120,16 @@ class user extends active_record
     }
 
     return self::get_one(
-      sprintf( 'SELECT COUNT( DISTINCT site_id ) FROM user_access WHERE user_id = %s',
-               self::format_string( $this->id ) ) );
+      sprintf( 'SELECT COUNT( DISTINCT site_id ) FROM user_access WHERE user_id = %s %s',
+               self::format_string( $this->id ),
+               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
   }
 
   /**
    * Returns an array of site objects the user has access to (empty array if none).
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the selection.
+   * @param database\modifier $modifier Modifications to the list.
    * @return array( database\site )
    * @access public
    */
@@ -156,6 +160,7 @@ class user extends active_record
 
   /**
    * Returns an array of role objects the user has for the given site.
+   * TODO: Should we use a modifier instead of $db_site argument for this method?
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\site $db_site Restrict to those roles for the given site, or if NULL then all.

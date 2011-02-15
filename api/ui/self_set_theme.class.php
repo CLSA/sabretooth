@@ -37,7 +37,6 @@ class self_set_theme extends action
    */
   public function execute()
   {
-    \sabretooth\log::print_r( $this->theme_name );
     $session = \sabretooth\session::self();
     $session->get_user()->theme = $this->theme_name;
     $session->get_user()->save();

@@ -54,16 +54,17 @@ class user_list extends base_list
    * Overrides the parent class method since the record count depends on the active role.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
    * @return int
    * @access protected
    */
-  protected function determine_record_count()
+  protected function determine_record_count( $modifier )
   {
     // only show users for current site if user is not an administrator
     $session = \sabretooth\session::self();
     return 'administrator' == $session->get_role()->name
-           ? \sabretooth\database\user::count()
-           : $session->get_site()->get_user_count();
+           ? \sabretooth\database\user::count( $modifier )
+           : $session->get_site()->get_user_count( $modifier );
   }
   
   /**

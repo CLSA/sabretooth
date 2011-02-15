@@ -36,10 +36,11 @@ class site extends active_record
    * Get the number of activity entries for this site.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the count.
    * @return int
    * @access public
    */
-  public function get_activity_count()
+  public function get_activity_count( $modifier = NULL )
   {
     if( is_null( $this->id ) )
     {
@@ -48,8 +49,9 @@ class site extends active_record
     }
 
     return self::get_one(
-      sprintf( 'SELECT COUNT( DISTINCT id ) FROM activity WHERE site_id = %s',
-               self::format_string( $this->id ) ) );
+      sprintf( 'SELECT COUNT( DISTINCT id ) FROM activity WHERE site_id = %s %s',
+               self::format_string( $this->id ),
+               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
   }
 
   /**
@@ -89,10 +91,11 @@ class site extends active_record
    * Get the number of users that have access to this site.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the selection.
    * @return int
    * @access public
    */
-  public function get_user_count()
+  public function get_user_count( $modifier = NULL )
   {
     if( is_null( $this->id ) )
     {
@@ -101,8 +104,9 @@ class site extends active_record
     }
 
     return self::get_one(
-      sprintf( 'SELECT COUNT( DISTINCT user_id ) FROM user_access WHERE site_id = %s',
-               self::format_string( $this->id ) ) );
+      sprintf( 'SELECT COUNT( DISTINCT user_id ) FROM user_access WHERE site_id = %s %s',
+               self::format_string( $this->id ),
+               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
   }
 
   /**

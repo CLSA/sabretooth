@@ -46,11 +46,11 @@ abstract class base_list extends widget
     // determine properties based on the current user's permissions
     $session = \sabretooth\session::self();
     $this->viewable = $session->is_allowed(
-      \sabretooth\database\operation::get_operation( 'widget', $subject, 'view' ) );
+      \sabretooth\database\operation::get_operation( 'widget', $this->get_subject(), 'view' ) );
     $this->addable = $session->is_allowed(
-      \sabretooth\database\operation::get_operation( 'widget', $subject, 'add' ) );
+      \sabretooth\database\operation::get_operation( 'widget', $this->get_subject(), 'add' ) );
     $this->removable = $session->is_allowed(
-      \sabretooth\database\operation::get_operation( 'action', $subject, 'delete' ) );
+      \sabretooth\database\operation::get_operation( 'action', $this->get_subject(), 'delete' ) );
   }
   
   /**
@@ -64,10 +64,11 @@ abstract class base_list extends widget
     parent::finish();
     
     // determine the record count and list
+    $modifier = new \sabretooth\database\modifier();
     $method_name = 'determine_'.$this->get_subject().'_count';
     $this->record_count = $this->parent && method_exists( $this->parent, $method_name )
-                        ? $this->parent->$method_name()
-                        : $this->determine_record_count();
+                        ? $this->parent->$method_name( $modifier )
+                        : $this->determine_record_count( $modifier );
 
     // make sure the page is valid, then set the rows array based on the page
     $max_page = ceil( $this->record_count / $this->items_per_page );
@@ -110,10 +111,12 @@ abstract class base_list extends widget
    * Embed this widget into a parent widget, or unparent the widget by setting the parent to NULL.
    * This should be done before the widget is finished (before {@link finish} is called).
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @var widget $parent
+   * @param widget $parent
+   * @param string $mode Whether the parent is viewing records or adding new records to itself.
+                         Must be one of 'view' or 'edit'.
    * @access public
    */
-  public function set_parent( $parent = NULL )
+  public function set_parent( $parent = NULL, $mode = 'view' )
   {
     parent::set_parent( $parent );
 
@@ -125,6 +128,22 @@ abstract class base_list extends widget
       if( $type != $this->parent->get_subject() ) array_push( $new_column_array, $column );
     }
     $this->columns = $new_column_array;
+    
+    if( 'edit' == $mode )
+    {
+      $this->checkable = true;
+    }
+    else // 'view' == $mode
+    {
+      // add/remove operations are relative to the parent
+      $session = \sabretooth\session::self();
+      $this->addable = $session->is_allowed( 
+        \sabretooth\database\operation::get_operation(
+          'widget', $this->parent->get_subject(), 'add_'.$this->get_subject() ) );
+      $this->removable = $session->is_allowed(
+        \sabretooth\database\operation::get_operation(
+          'action', $this->parent->get_subject(), 'delete_'.$this->get_subject() ) );
+    }
   }
 
   /**
@@ -165,13 +184,14 @@ abstract class base_list extends widget
    * of items by defining a determine_<record>_count() method, where <record> is the name of the
    * database record/table of the embedded widget.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
    * @return int
    * @access protected
    */
-  protected function determine_record_count()
+  protected function determine_record_count( $modifier )
   {
     $class_name = '\\sabretooth\\database\\'.$this->get_subject();
-    return $class_name::count();
+    return $class_name::count( $modifier );
   }
 
   /**

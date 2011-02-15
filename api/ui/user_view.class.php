@@ -32,17 +32,17 @@ class user_view extends base_record
     $this->item['name'] =
       array( 'heading' => 'Username',
              'type' => 'string',
-             'value' => $this->record->name );
+             'value' => $this->get_record()->name );
     $this->item['active'] =
       array( 'heading' => 'Active',
              'type' => 'boolean',
-             'value' => $this->record->active ? 'Yes' : 'No' );
+             'value' => $this->get_record()->active ? 'Yes' : 'No' );
     $this->item['limesurvey_username'] =
       array( 'heading' => 'Limesurvey username',
              'type' => 'constant',
              'value' => 'TODO' );
     
-    $db_activity = $this->record->get_last_activity();
+    $db_activity = $this->get_record()->get_last_activity();
     $last = \sabretooth\util::get_fuzzy_time_ago(
               is_null( $db_activity ) ? null : $db_activity->date );
     $this->item['last_activity'] =
@@ -54,17 +54,11 @@ class user_view extends base_record
     $this->site_list = new site_list( $args );
     $this->site_list->set_parent( $this );
     $this->site_list->set_heading( 'User\'s site access list' );
-    $this->site_list->set_checkable( false );
-    $this->site_list->set_viewable( true );
-    $this->site_list->set_removable( false );
 
     // create the activity sub-list widget
     $this->activity_list = new activity_list( $args );
     $this->activity_list->set_parent( $this );
     $this->activity_list->set_heading( 'User activity' );
-    $this->activity_list->set_checkable( false );
-    $this->activity_list->set_viewable( false );
-    $this->activity_list->set_removable( false );
   }
 
   /**
@@ -88,12 +82,13 @@ class user_view extends base_record
    * Overrides the site list widget's method.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
    * @return int
    * @access protected
    */
-  public function determine_site_count()
+  public function determine_site_count( $modifier )
   {
-    return $this->record->get_site_count();
+    return $this->get_record()->get_site_count( $modifier );
   }
 
   /**
@@ -106,7 +101,7 @@ class user_view extends base_record
    */
   public function determine_site_list( $modifier )
   {
-    return $this->record->get_site_list( $modifier );
+    return $this->get_record()->get_site_list( $modifier );
   }
 
   /**
@@ -116,9 +111,9 @@ class user_view extends base_record
    * @return int
    * @access protected
    */
-  public function determine_activity_count()
+  public function determine_activity_count( $modifier )
   {
-    return $this->record->get_activity_count();
+    return $this->get_record()->get_activity_count( $modifier );
   }
 
   /**
@@ -131,7 +126,7 @@ class user_view extends base_record
    */
   public function determine_activity_list( $modifier )
   {
-    return $this->record->get_activity_list( $modifier );
+    return $this->get_record()->get_activity_list( $modifier );
   }
   /**
    * The user list widget.

@@ -1,0 +1,15 @@
+{##
+ # base_add_list.twig
+ # 
+ # Base template for adding items of one record to another.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ #}
+{% extends "widget.twig" %}
+{% block widget %}
+<script type="text/javascript">
+</script>
+
+{# Add the list using the list's widget name to determine which template to use #}
+{% set list_template = [ list_widget_name, 'twig' ]|join('.') %}
+{% include list_template with list %}
+{% endblock widget %}

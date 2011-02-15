@@ -15,7 +15,7 @@ namespace sabretooth\ui;
  * Abstract class which defines base functionality for all "edit" actions.
  * @package sabretooth\ui
  */
-class base_edit extends action
+class base_edit extends action implements contains_record
 {
   /**
    * Constructor.
@@ -29,8 +29,8 @@ class base_edit extends action
   {
     parent::__construct( $subject, 'edit', $args );
     $class_name = '\\sabretooth\\database\\'.$this->get_subject();
-    $this->record = new $class_name( $this->get_argument( 'id' ) );
-    if( is_null( $this->record ) )
+    $this->set_record = new $class_name( $this->get_argument( 'id' ) );
+    if( is_null( $this->get_record() ) )
       throw new \sabretooth\exception\argument( 'id', NULL, __METHOD__ );
   }
   
@@ -44,12 +44,12 @@ class base_edit extends action
     $columns = $this->get_argument( 'columns', array() );
     foreach( $columns as $column => $value )
     {
-      $this->record->$column = $value;
+      $this->get_record()->$column = $value;
     }
     
     try
     {
-      $this->record->save();
+      $this->get_record()->save();
     }
     catch( \sabretooth\exception\database $e )
     { // help describe exceptions to the user
@@ -70,10 +70,32 @@ class base_edit extends action
   }
   
   /**
+   * Method required by the contains_record interface.
+   * @author Patrick Emond
+   * @return database\active_record
+   * @access public
+   */
+  public function get_record()
+  {
+    return $this->record;
+  }
+
+  /**
+   * Method required by the contains_record interface.
+   * @author Patrick Emond
+   * @param database\active_record $record
+   * @access public
+   */
+  public function set_record( $record )
+  {
+    $this->record = $record;
+  }
+
+  /**
    * An active record of the item being edited.
    * @var active_record
-   * @access protected
+   * @access private
    */
-  protected $record = NULL;
+  private $record = NULL;
 }
 ?>

@@ -3,40 +3,40 @@
 
 <script type="text/javascript">
 $( document ).ready( function() {
-  $( "#{{ active_widget }}_site_list" ).click( function() {
+  $( "#{{ widget.full }}_site_list" ).click( function() {
     slot_load( 'main', 'site_list' );
   } );
 } );
 $( document ).ready( function() {
-  $( "#{{ active_widget }}_user_list" ).click( function() {
+  $( "#{{ widget.full }}_user_list" ).click( function() {
     slot_load( 'main', 'user_list' );
   } );
 } );
 $( document ).ready( function() {
-  $( "#{{ active_widget }}_role_list" ).click( function() {
+  $( "#{{ widget.full }}_role_list" ).click( function() {
     slot_load( 'main', 'role_list' );
   } );
 } );
 $( document ).ready( function() {
-  $( "#{{ active_widget }}_operation_list" ).click( function() {
+  $( "#{{ widget.full }}_operation_list" ).click( function() {
     slot_load( 'main', 'operation_list' );
   } );
 } );
 $( document ).ready( function() {
-  $( "#{{ active_widget }}_activity_list" ).click( function() {
+  $( "#{{ widget.full }}_activity_list" ).click( function() {
     slot_load( 'main', 'activity_list' );
   } );
 } );
 
-$( function() { $( "#{{ active_widget }}_user_list" ).button().parent().buttonset() } );
+$( function() { $( "#{{ widget.full }}_user_list" ).button().parent().buttonset() } );
 </script>
 
 <div class="ui-widget ui-widget-content" style="padding:0.5em">
   <span class="title">Lists:</span>
-  <button id="{{ active_widget }}_site_list">Sites</button>
-  <button id="{{ active_widget }}_user_list">Users</button>
-  <button id="{{ active_widget }}_role_list">Roles</button>
-  <button id="{{ active_widget }}_operation_list">Operations</button>
-  <button id="{{ active_widget }}_activity_list">Activity</button>
+  <button id="{{ widget.full }}_site_list">Sites</button>
+  <button id="{{ widget.full }}_user_list">Users</button>
+  <button id="{{ widget.full }}_role_list">Roles</button>
+  <button id="{{ widget.full }}_operation_list">Operations</button>
+  <button id="{{ widget.full }}_activity_list">Activity</button>
 </div
 {% endblock %}

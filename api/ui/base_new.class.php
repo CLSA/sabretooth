@@ -15,7 +15,7 @@ namespace sabretooth\ui;
  * Abstract class which defines base functionality for all "new" actions.
  * @package sabretooth\ui
  */
-class base_new extends action
+class base_new extends action implements contains_record
 {
   /**
    * Constructor.
@@ -28,7 +28,7 @@ class base_new extends action
   {
     parent::__construct( $subject, 'new', $args );
     $class_name = '\\sabretooth\\database\\'.$this->get_subject();
-    $this->record = new $class_name();
+    $this->set_record( new $class_name() );
   }
   
   /**
@@ -40,12 +40,12 @@ class base_new extends action
   {
     foreach( $this->get_argument( 'columns', array() ) as $column => $value )
     {
-      $this->record->$column = $value;
+      $this->get_record()->$column = $value;
     }
        
     try
     {
-      $this->record->save();
+      $this->get_record()->save();
     }
     catch( \sabretooth\exception\database $e )
     { // help describe exceptions to the user
@@ -60,10 +60,32 @@ class base_new extends action
   }
   
   /**
+   * Method required by the contains_record interface.
+   * @author Patrick Emond
+   * @return database\active_record
+   * @access public
+   */
+  public function get_record()
+  {
+    return $this->record;
+  }
+
+  /**
+   * Method required by the contains_record interface.
+   * @author Patrick Emond
+   * @param database\active_record $record
+   * @access public
+   */
+  public function set_record( $record )
+  {
+    $this->record = $record;
+  }
+
+  /**
    * The active record of the item being created.
    * @var active_record
-   * @access protected
+   * @access private
    */
-  protected $record = NULL;
+  private $record = NULL;
 }
 ?>

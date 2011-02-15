@@ -28,15 +28,142 @@ class modifier extends \sabretooth\base_object
    * @param boolean $format Set whether to format the $value argument.
    *                         This should only be set to false when $value is the name of a column
    *                         or a pre-formatted function, etc.
+   * @param boolean $in Whether to use the SQL IN() function instead of an equation.
+                        When this is set to true $value may be an array of values.
+   * @param boolean $not Whether to logically "not" the clause (default is false)
+   * @param boolean $or Whether to logically "or" the clause (default is false, which means "and")
    * @throws exception\argument
    * @access public
    */
-  public function where( $column, $value, $format = true )
+  public function where( $column, $value, $format = true, $in = false, $not = false, $or = false )
   {
     if( !is_string( $column ) || 0 == strlen( $column ) )
       throw new \sabretooth\exception\argument( 'column', $column, __METHOD__ );
 
-    $this->where_list[$column] = array( 'value' => $value, 'format' => $format );
+    $this->where_list[$column] = array( 'value' => $value,
+                                        'format' => $format,
+                                        'in' => $in,
+                                        'not' => $not,
+                                        'or' => $or );
+  }
+  
+  /**
+   * Add a where-in statement to the modifier.
+   * 
+   * This is a convenience method which makes where() calls more readable.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The column to restrict.
+   * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).
+   * @param boolean $format Set whether to format the $value argument.
+   *                         This should only be set to false when $value is the name of a column
+   *                         or a pre-formatted function, etc.
+   * @access public
+   */
+  public function where_in( $column, $value, $format = true )
+  {
+    $this->where( $column, $value, $format, true );
+  }
+
+  /**
+   * Add a logical "not" where statement to the modifier.
+   * 
+   * This is a convenience method which makes where() calls more readable.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The column to restrict.
+   * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).
+   * @param boolean $format Set whether to format the $value argument.
+   *                         This should only be set to false when $value is the name of a column
+   *                         or a pre-formatted function, etc.
+   * @access public
+   */
+  public function where_not( $column, $value, $format = true )
+  {
+    $this->where( $column, $value, $format, false, true );
+  }
+
+  /**
+   * Add a logical "not" where-in statement to the modifier.
+   * 
+   * This is a convenience method which makes where() calls more readable.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The column to restrict.
+   * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).
+   * @param boolean $format Set whether to format the $value argument.
+   *                         This should only be set to false when $value is the name of a column
+   *                         or a pre-formatted function, etc.
+   * @access public
+   */
+  public function where_not_in( $column, $value, $format = true )
+  {
+    $this->where( $column, $value, $format, true, true );
+  }
+
+  /**
+   * Add where statement which will be "or" combined to the modifier.
+   * 
+   * This is a convenience method which makes where() calls more readable.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The column to restrict.
+   * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).
+   * @param boolean $format Set whether to format the $value argument.
+   *                         This should only be set to false when $value is the name of a column
+   *                         or a pre-formatted function, etc.
+   * @access public
+   */
+  public function or_where( $column, $value, $format = true )
+  {
+    $this->where( $column, $value, $format, false, false, true );
+  }
+
+  /**
+   * Add where-in statement which will be "or" combined to the modifier.
+   * 
+   * This is a convenience method which makes where() calls more readable.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The column to restrict.
+   * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).
+   * @param boolean $format Set whether to format the $value argument.
+   *                         This should only be set to false when $value is the name of a column
+   *                         or a pre-formatted function, etc.
+   * @access public
+   */
+  public function or_where_in( $column, $value, $format = true )
+  {
+    $this->where( $column, $value, $format, true, false, true );
+  }
+
+  /**
+   * Add a logical "not" where statement which will be "or" combined to the modifier.
+   * 
+   * This is a convenience method which makes where() calls more readable.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The column to restrict.
+   * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).
+   * @param boolean $format Set whether to format the $value argument.
+   *                         This should only be set to false when $value is the name of a column
+   *                         or a pre-formatted function, etc.
+   * @access public
+   */
+  public function or_where_not( $column, $value, $format = true )
+  {
+    $this->where( $column, $value, $format, false, true, true );
+  }
+
+  /**
+   * Add a logical "not" where-in statement which will be "or" combined to the modifier.
+   * 
+   * This is a convenience method which makes where() calls more readable.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The column to restrict.
+   * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).
+   * @param boolean $format Set whether to format the $value argument.
+   *                         This should only be set to false when $value is the name of a column
+   *                         or a pre-formatted function, etc.
+   * @access public
+   */
+  public function or_where_not_in( $column, $value, $format = true )
+  {
+    $this->where( $column, $value, $format, true, true, true );
   }
 
   /**
@@ -200,16 +327,47 @@ class modifier extends \sabretooth\base_object
   public function get_where()
   {
     $where = '';
-    $first = true;
+    $first_item = true;
     foreach( $this->where_list as $column => $item )
     {
-      $where .= sprintf( '%s %s = %s',
-                         $first ? 'WHERE' : ' AND',
-                         $column,
-                         $item['format']
-                         ? active_record::format_string( $item['value'] )
-                         : $item['value'] );
-      $first = false;
+      if( $item['in'] )
+      {
+        if( is_array( $item['value'] ) )
+        {
+          $first_value = true;
+          foreach( $item['value'] as $value )
+          {
+            $compare .= $first_value
+                      ? sprintf( '%s%s IN( ', $column, $item['not'] ? ' NOT' : '' )
+                      : ', ';
+            $compare .= $item['format']
+                      ? active_record::format_string( $item['value'] )
+                      : $item['value'];
+            $first_value = false;
+          }
+          $compare .= ' )';
+        }
+        else
+        {
+          $compare = sprintf( '%s%s IN( %s )',
+                              $column,
+                              $item['not'] ? ' NOT' : '',
+                              $item['format'] ?
+                                active_record::format_string( $item['value'] ) : $item['value'] );
+        }
+      }
+      else
+      {
+        $compare = sprintf( '%s =%s %s',
+                            $column,
+                            $item['not'] ? '!' : '',
+                            $item['format'] ?
+                              active_record::format_string( $item['value'] ) : $item['value'] );
+      }
+      
+      $logic_type = $item['or'] ? ' OR' : ' AND';
+      $where .= ( $first_item ? 'WHERE' : $logic_type ).' '.$compare;
+      $first_item = false;
     }
 
     return $where;

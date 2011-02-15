@@ -43,11 +43,29 @@ abstract class widget extends operation
    */
   public function finish()
   {
-    $this->set_variable( 'widget_subject', $this->get_subject() );
-    $this->set_variable( 'widget_name', $this->get_name() );
-    $this->set_variable( 'active_widget',
-      $this->parent ? $this->parent->get_full_name() : $this->get_full_name() );
-    $this->set_variable( 'current_widget', $this->get_full_name() );
+    $this->set_variable( 'widget',
+      array( 'subject' => $this->get_subject(),
+             'name' => $this->get_name(),
+             'full' => $this->get_full_name() ) );
+
+    if( $this->parent )
+    {
+      $this->set_variable( 'parent',
+        array( 'exists' => true,
+               'id' => $this->parent->get_record()->id,
+               'subject' => $this->parent->get_subject(),
+               'name' => $this->parent->get_name(),
+               'full' => $this->parent->get_full_name() ) );
+    }
+    else
+    {
+      $this->set_variable( 'parent',
+        array( 'exists' => false,
+               'subject' => '',
+               'name' => '',
+               'full' => '' ) );
+    }
+
     $this->set_variable( 'widget_heading', $this->heading );
   }
 

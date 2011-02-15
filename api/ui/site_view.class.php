@@ -32,13 +32,13 @@ class site_view extends base_record
     $this->item['name'] =
       array( 'heading' => 'Name',
              'type' => 'string',
-             'value' => $this->record->name );
+             'value' => $this->get_record()->name );
     $this->item['users'] =
       array( 'heading' => 'Number of users',
              'type' => 'constant',
-             'value' => $this->record->get_user_count() );
+             'value' => $this->get_record()->get_user_count() );
 
-    $db_activity = $this->record->get_last_activity();
+    $db_activity = $this->get_record()->get_last_activity();
     $last = \sabretooth\util::get_fuzzy_time_ago(
               is_null( $db_activity ) ? null : $db_activity->date );
     $this->item['last_activity'] =
@@ -50,17 +50,11 @@ class site_view extends base_record
     $this->user_list = new user_list( $args );
     $this->user_list->set_parent( $this );
     $this->user_list->set_heading( 'Users belonging to this site' );
-    $this->user_list->set_checkable( false );
-    $this->user_list->set_viewable( true );
-    $this->user_list->set_removable( false );
 
     // create the activity sub-list widget
     $this->activity_list = new activity_list( $args );
     $this->activity_list->set_parent( $this );
     $this->activity_list->set_heading( 'Site activity' );
-    $this->activity_list->set_checkable( false );
-    $this->activity_list->set_viewable( false );
-    $this->activity_list->set_removable( false );
   }
 
   /**
@@ -84,12 +78,13 @@ class site_view extends base_record
    * Overrides the user list widget's method.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
    * @return int
    * @access protected
    */
-  public function determine_user_count()
+  public function determine_user_count( $modifier )
   {
-    return $this->record->get_user_count();
+    return $this->get_record()->get_user_count( $modifier );
   }
 
   /**
@@ -102,7 +97,7 @@ class site_view extends base_record
    */
   public function determine_user_list( $modifier )
   {
-    return $this->record->get_user_list( $modifier );
+    return $this->get_record()->get_user_list( $modifier );
   }
 
   /**
@@ -114,7 +109,7 @@ class site_view extends base_record
    */
   public function determine_activity_count()
   {
-    return $this->record->get_activity_count();
+    return $this->get_record()->get_activity_count();
   }
 
   /**
@@ -127,7 +122,7 @@ class site_view extends base_record
    */
   public function determine_activity_list( $modifier )
   {
-    return $this->record->get_activity_list( $modifier );
+    return $this->get_record()->get_activity_list( $modifier );
   }
 
   /**

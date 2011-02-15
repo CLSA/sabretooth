@@ -76,7 +76,7 @@ function process_jeditable( element, new_value, type )
   args.columns = columns;
 
   // send the action, updating the hidden "old" input upon success
-  if( send_action( "{{ widget_subject }}", "edit", args ) )
+  if( send_action( "{{ widget.subject }}", "edit", args ) )
   {
     $( "#old_" + element.attr( 'id' ) ).val( new_value );
     return new_value;
@@ -89,39 +89,39 @@ function process_jeditable( element, new_value, type )
 {% if addable %}
 // add buttons function
 $( function () {
-  $( "button.{{ current_widget }}_add" ).click( function() {
+  $( "button.{{ widget.full }}_add" ).click( function() {
     // submit the form information as an add action
     var args = new Object();
     var columns = new Object();
-    $( "#{{ current_widget }}_add_form :input" ).each( function() {
+    $( "#{{ widget.full }}_add_form :input" ).each( function() {
       var id_string = $(this).attr( 'id' );
       var column_name = id_string.substring( id_string.lastIndexOf('_') + 1 );
       columns[column_name] = $(this).val();
     } );
     args.columns = columns;
 
-    if( send_action( "{{ widget_subject }}", "new", args ) ) slot_prev( get_slot( $(this) ) );
+    if( send_action( "{{ widget.subject }}", "new", args ) ) slot_prev( get_slot( $(this) ) );
   } );
 } );
 
 // cancel button function
 $( function () {
-  $( "button.{{ current_widget }}_cancel" ).click( function() {
+  $( "button.{{ widget.full }}_cancel" ).click( function() {
     slot_prev( get_slot( $(this) ) );
   } );
 } );
 {% endif %}
 
 {% if removable %}
-// cancel button function
+// delete button function
 $( function () {
-  $( "button.{{ current_widget }}_remove" ).click( function() {
+  $( "button.{{ widget.full }}_remove" ).click( function() {
   var slot = get_slot( $(this) );
   confirm_dialog(
-    "Delete {{ widget_subject }}?",
-    "Are you sure you want to remove the selected {{ widget_subject }}?",
+    "Delete {{ widget.subject }}?",
+    "Are you sure you want to remove this {{ widget.subject }}?",
     function() {
-      if( send_action( "{{ widget_subject }}", "delete", { "id": {{ id|default(0) }} } ) )
+      if( send_action( "{{ widget.subject }}", "delete", { "id": {{ id|default(0) }} } ) )
         slot_prev( slot );
     } );
 
@@ -132,7 +132,7 @@ $( function () {
 </script>
 
 {% if addable %}
-<form id="{{ current_widget }}_add_form">
+<form id="{{ widget.full }}_add_form">
 {% endif %}
 <fieldset class="ui-widget ui-widget-content">
 <table>
@@ -145,7 +145,7 @@ $( function () {
       {% block value %}
       {% if addable %}
         {% if 'boolean' == entry.type %}
-          <select id="{{ current_widget }}_{{ item_id }}"
+          <select id="{{ widget.full }}_{{ item_id }}"
                   style="width: 100%"
                   class="ui-state-default">
             <option{{ entry.value ? ' selected' : '' }} value="1">Yes</option>
@@ -154,19 +154,19 @@ $( function () {
         {% elseif 'date' == entry.type %}
           TODO
         {% elseif 'string' == entry.type %}
-          <input id="{{ current_widget }}_{{ item_id }}" type="text" style="width:100%" />
+          <input id="{{ widget.full }}_{{ item_id }}" type="text" style="width:100%" />
         {% elseif 'text' == entry.type %}
-          <textarea id="{{ current_widget }}_{{ item_id }}" style="width:100%" /></textarea>
+          <textarea id="{{ widget.full }}_{{ item_id }}" style="width:100%" /></textarea>
         {% endif %}
       {% elseif editable and 'constant' != entry.type %}
         {% set value = 'boolean' == entry.type ? ( entry.value ? 'Yes' : 'No' ) : entry.value %}
-        <input id="old_{{ current_widget }}_{{ item_id }}"
+        <input id="old_{{ widget.full }}_{{ item_id }}"
                value="{{ entry.value }}"
                type="hidden" />
-        <div id="{{ current_widget }}_{{ item_id }}"
+        <div id="{{ widget.full }}_{{ item_id }}"
              class="mutable jeditable_{{ entry.type }} padded">{{ entry.value }}</div>
       {% else %}
-      <div id="{{ current_widget }}_{{ item_id }}" class="padded">{{ entry.value }}</div>
+      <div id="{{ widget.full }}_{{ item_id }}" class="padded">{{ entry.value }}</div>
       {% endif %}
       {% endblock %}
     </td>
@@ -174,15 +174,15 @@ $( function () {
 {% endfor %}
 </table>
 {% if removable %}
-<button class="{{ current_widget }}_remove" style="float: right;">remove</button>
+<button class="{{ widget.full }}_remove" style="float: right;">remove</button>
 {% endif %}
 </fieldset>
 {% if addable %}</form>{% endif %}
 
 {% if addable %}
 <div class="spacer"></div>
-<button class="{{ current_widget }}_add" style="width:100px">Add</button>
-<button class="{{ current_widget }}_cancel" style="width:100px">Cancel</button>
+<button class="{{ widget.full }}_add" style="width:100px">Add</button>
+<button class="{{ widget.full }}_cancel" style="width:100px">Cancel</button>
 {% endif %}
 
 {% endblock record %}
