@@ -68,7 +68,7 @@ final class util
   public static function in_widget_mode()
   {
     if( is_null( self::$widget_mode ) )
-      self::$action_mode = 'widget.php' == session::self()->get_setting( 'general', 'script_name' );
+      self::$widget_mode = 'widget.php' == session::self()->get_setting( 'general', 'script_name' );
     
     return self::$widget_mode;
   }
@@ -126,7 +126,6 @@ final class util
       $name = strtoupper( sprintf( '%s_%s_ERROR_NUMBER',
                                    $type,
                                    $context ) );
-    \sabretooth\log::print_r( $name );
       $code = defined( $name ) ? constant( $name ) : $base_code;
     }
 
@@ -233,6 +232,35 @@ final class util
     }
 
     return $result;
+  }
+ 
+  /**
+   * Converts an error number into an easier-to-read error code.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param int $number The error number.
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function convert_number_to_code( $number )
+  {
+    return preg_replace( '/^([0-9]+)([0-9]{3})/', '$1.$2', $number );
+  }
+
+  /**
+   * Sends an HTTP error status along with the specified data.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $data The data to send along with the error.
+   * @static
+   * @access public
+   */
+  public static function send_http_error( $data )
+  {
+    \HttpResponse::status( 400 );
+    \HttpResponse::setContentType( 'application/json' ); 
+    \HttpResponse::setData( $data );
+    \HttpResponse::send();
   }
 
   /**

@@ -72,7 +72,7 @@ class base_exception extends \Exception
    * @access public
    */
   public function get_code()
-  { return preg_replace( '/^([0-9]+)([0-9]{3})/', '$1.$2', $this->get_number() ); }
+  { return \sabretooth\util::convert_number_to_code( $this->get_number() ); }
 
   /**
    * Get the exception message.

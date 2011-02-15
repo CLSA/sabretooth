@@ -14,11 +14,14 @@ namespace sabretooth\exception;
 /**
  * Error number category defines.
  */
-define( 'ARGUMENT_BASE_ERROR_NUMBER', 100000 );
-define( 'DATABASE_BASE_ERROR_NUMBER', 200000 );
-define( 'MISSING_BASE_ERROR_NUMBER', 300000 );
+define( 'ARGUMENT_BASE_ERROR_NUMBER',   100000 );
+define( 'DATABASE_BASE_ERROR_NUMBER',   200000 );
+define( 'MISSING_BASE_ERROR_NUMBER',    300000 );
 define( 'PERMISSION_BASE_ERROR_NUMBER', 400000 );
-define( 'RUNTIME_BASE_ERROR_NUMBER', 500000 );
+define( 'RUNTIME_BASE_ERROR_NUMBER',    500000 );
+define( 'TEMPLATE_BASE_ERROR_NUMBER',   600000 );
+define( 'FATAL_BASE_ERROR_NUMBER',      700000 );
+define( 'UNKNOWN_BASE_ERROR_NUMBER',    800000 );
 
 /**
  * "argument" error codes
@@ -66,4 +69,8 @@ define( 'RUNTIME_SELF_SET_SITE_EXECUTE_ERROR_NUMBER',     RUNTIME_BASE_ERROR_NUM
 define( 'RUNTIME_WIDGET_SCRIPT_ERROR_NUMBER',             RUNTIME_BASE_ERROR_NUMBER + 6 );
 define( 'RUNTIME_ACTION_SCRIPT_ERROR_NUMBER',             RUNTIME_BASE_ERROR_NUMBER + 7 );
 define( 'RUNTIME_LOG_INITIALIZE_LOGGER_ERROR_NUMBER',     RUNTIME_BASE_ERROR_NUMBER + 8 );
+
+/**
+ * "template", "fatal" and "unknown" error codes do not have specific codes
+ */
 ?>

@@ -22,8 +22,8 @@ require_once 'FirePHPCore/FirePHP.class.php';
  * There are several logging functions, each of which have their purpose.  Use this class as
  * follows:
  * <code>
- * log::self()->err( "There is an error here." );
- * log::self()->emerg( "The server is on fire!!" );
+ * log::err( "There is an error here." );
+ * log::emerg( "The server is on fire!!" );
  * </code>
  * @package sabretooth
  */
@@ -319,42 +319,36 @@ final class log extends singleton
   /**
    * A error handling function that uses the log class as the error handler
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\fatal
    * @ignore
    */
   static public function error_handler( $level, $message, $file, $line )
   {
     $message .= "\n in $file on line $line (errno: $level)";
     if( E_PARSE == $level ||
-        E_COMPILE_ERROR == $level )
+        E_COMPILE_ERROR == $level ||
+        E_USER_ERROR == $level ||
+        E_CORE_ERROR == $level ||
+        E_ERROR == $level )
     {
-      log::self()->emerg( $message );
+      log::emerg( $message );
+      // When this function is called due to a fatal error it will die afterwards so we cannot
+      // throw an exception.  Instead we can build the exception and emulate what is done in
+      // the index/widget/action scripts.
+      // just as is done in the widget and action scripts.
+      $e = new \sabretooth\exception\fatal( $message, $level );
+      $result_array = array(
+        'error_type' => ucfirst( $e->get_type() ),
+        'error_code' => $e->get_code(),
+        'error_message' => '' );
 
-      // fatal error, send JSON error or just quit with error code
       if( util::in_action_mode() || util::in_widget_mode() )
-      {
-        ob_end_clean();
-        die( json_encode( array( 'success' => false, 'error' => 'unknown' ) ) );
+      { // send the error in json format in an http error header
+        util::send_http_error( json_encode( $result_array ) );
       }
       else
-      {
-        die();
-      }
-    }
-    else if( E_USER_ERROR == $level ||
-             E_CORE_ERROR == $level ||
-             E_ERROR == $level )
-    {
-      log::self()->err( $message );
-      // fatal error, send JSON error or just quit with error code
-      
-      if( util::in_action_mode() || util::in_widget_mode() )
-      {
-        ob_end_clean();
-        die( json_encode( array( 'success' => false, 'error' => 'unknown' ) ) );
-      }
-      else
-      {
-        die();
+      { // output the error using the basic php template
+        include TPL_PATH.'/index_error.php';
       }
     }
     else if( E_COMPILE_WARNING == $level ||
@@ -364,14 +358,14 @@ final class log extends singleton
              E_STRICT == $level ||
              E_RECOVERABLE_ERROR == $level )
     {
-      log::self()->warning( $message );
+      log::warning( $message );
     }
     else if( E_NOTICE == $level ||
              E_USER_NOTICE == $level ||
              E_DEPRECATED == $level ||
              E_USER_DEPRECATED == $level )
     {
-      log::self()->notice( $message );
+      log::notice( $message );
     }
   
     return false;
@@ -385,6 +379,7 @@ final class log extends singleton
   static public function fatal_error_handler()
   {
     $error = error_get_last();
+
     if( $error )
     {
       log::error_handler( $error['type'], $error['message'], $error['file'], $error['line'] );

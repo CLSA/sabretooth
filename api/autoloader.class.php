@@ -42,17 +42,25 @@ class autoloader
     if( 0 !== strpos( $class, 'sabretooth\\' ) ) return;
 
     // build the path based on the class' name and namespace
-    $file = API_PATH.
-      str_replace( '\\', '/', substr( $class, strpos( $class, '\\' ) ) ).'.class.php';
+    $file_base = API_PATH.str_replace( '\\', '/', substr( $class, strpos( $class, '\\' ) ) );
+    
+    // check for a class by this name
+    $file = $file_base.'.class.php';
     if( file_exists( $file ) )
     {
       require $file;
+      return;
     }
-    else
+
+    // check for an interface by this name
+    $file = $file_base.'.interface.php';
+    if( file_exists( $file ) )
     {
-      throw new exception\missing(
-        $class,
-        util::get_error_constant( 'database', __CLASS__, __METHOD__ ) );
+      require $file;
+      return;
     }
+    
+    // if we get here then the file is missing
+    throw new exception\missing( $class, __METHOD__ );
   }
 }

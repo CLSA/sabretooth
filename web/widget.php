@@ -113,15 +113,22 @@ catch( exception\base_exception $e )
 }
 catch( \Twig_Error $e )
 {
+  // TODO: add twig error code
+  $code = \sabretooth\util::convert_number_to_code( TEMPLATE_ERROR_BASE_NUMBER );
   log::err( "Template ".$e );
   $result_array['success'] = false;
   $result_array['error_type'] = 'Template';
+  $result_array['error_code'] = $code;
+  $result_array['error_message'] = '';
 }
 catch( \Exception $e )
 {
+  $code = \sabretooth\util::convert_number_to_code( UNKNOWN_ERROR_BASE_NUMBER );
   log::err( "Last minute ".$e );
   $result_array['success'] = false;
   $result_array['error_type'] = 'Unknown';
+  $result_array['error_code'] = $code;
+  $result_array['error_message'] = '';
 }
 
 // flush any output
@@ -133,9 +140,6 @@ if( true == $result_array['success'] )
 }
 else
 {
-  \HttpResponse::status( 400 );
-  \HttpResponse::setContentType('application/json');
-  \HttpResponse::setData( json_encode( $result_array ) );
-  \HttpResponse::send();
+  util::send_http_error( json_encode( $result_array ) );
 }
 ?>
