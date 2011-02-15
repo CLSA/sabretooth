@@ -51,7 +51,7 @@ catch( exception\base_exception $e )
 }
 catch( \Exception $e )
 {
-  $code = \sabretooth\util::convert_number_to_code( UNKNOWN_ERROR_BASE_NUMBER );
+  $code = \sabretooth\util::convert_number_to_code( UNKNOWN_BASE_ERROR_NUMBER );
   log::err( "Last minute ".$e );
   $result_array['success'] = false;
   $result_array['error_type'] = 'Unknown';
