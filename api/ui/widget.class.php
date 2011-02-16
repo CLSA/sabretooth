@@ -50,7 +50,7 @@ abstract class widget extends operation
 
     if( $this->parent )
     {
-      $widget_variable['compound'] = $this->parent->get_full_name.'_'.$this->get_full_name();
+      $widget_variable['compound'] = $this->parent->get_full_name().'_'.$this->get_full_name();
       $this->set_variable( 'parent',
         array( 'exists' => true,
                'id' => $this->parent->get_record()->id,
