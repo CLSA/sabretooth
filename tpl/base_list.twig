@@ -30,73 +30,43 @@
 $( function() {
   $( "button.{{ widget.full }}_sortable" ).button( {
     text: true,
-    icons: {
-      primary: "ui-icon-triangle-2-n-s"
-    }
+    icons: { primary: "ui-icon-triangle-2-n-s" }
   } );
-} );
-$( function() {
   $( "button.{{ widget.full }}_sort" ).button( {
     text: true,
-    icons: {
-      primary: "ui-icon-triangle-1-s"
-    }
-  } )
-} );
-$( function() {
+    icons: { primary: "ui-icon-triangle-1-s" }
+  } );
   $( "button.{{ widget.full }}_sort_desc" ).button( {
     text: true,
-    icons: {
-      primary: "ui-icon-triangle-1-n"
-    }
-  } )
-} );
+    icons: { primary: "ui-icon-triangle-1-n" }
+  } );
 {% if checkable %}
-$( function() {
   $( "button.{{ widget.full }}_check" ).button( {
     text: false,
-    icons: {
-      primary: "ui-icon-check"
-    }
-  } )
-} );
+    icons: { primary: "ui-icon-check" }
+  } );
 {% endif %}
 {% if viewable %}
-$( function() {
   $( "button.{{ widget.full }}_view" ).button( {
     text: false,
-    icons: {
-      primary: "ui-icon-document"
-    }
-  } )
-} );
+    icons: { primary: "ui-icon-document" }
+  } );
 {% endif %}
 {% if removable %}
-$( function() {
   $( "button.{{ widget.full }}_remove" ).button( {
     text: false,
-    icons: {
-      primary: "ui-icon-closethick"
-    }
-  } )
-} );
+    icons: { primary: "ui-icon-closethick" }
+  } );
 {% endif %}
 {% if addable %}
-$( function() {
   $( "#{{ widget.full }}_add" ).button( {
     text: {{ rows|count ? 'false' : 'true' }},
-    icons: {
-      primary: "ui-icon-plusthick"
-    }
-  } )
-} );
+    icons: { primary: "ui-icon-plusthick" }
+  } );
 {% endif %}
+} );
 
-// create button sets
-$( function() { $( "#{{ widget.full }}_check_none" ).button().parent().buttonset() } );
-$( function() { $( "#{{ widget.full }}_page_next" ).button().parent().buttonset() } );
-
-// stripe the table
+// highlight the row the mouse is over
 $( function() {
   $(".{{ widget.full }}_table tbody tr").mouseover( function() {
     $(this).addClass( "ui-widget-header" );
@@ -107,7 +77,7 @@ $( function() {
 } );
 
 {% if viewable %}
-// view button function
+// view buttons
 $( function() {
   $( ".{{ widget.full }}_view" ).click( function() {
     var id_string = $(this).attr( 'id' );
@@ -119,8 +89,9 @@ $( function() {
   } )
 } );
 {% endif %}
+
 {% if removable %}
-// remove button function
+// remove buttons
 $( function() {
   $( ".{{ widget.full }}_remove" ).click( function() {
     var id_string = $(this).attr( 'id' );
@@ -147,8 +118,9 @@ $( function() {
   } )
 } );
 {% endif %}
+
 {% if addable %}
-// add button function
+// add button
 $( function() {
   $( "#{{ widget.full }}_add" ).click( function() {
     {% if parent.exists %}
@@ -163,26 +135,49 @@ $( function() {
 } );
 {% endif %}
 
-// check button functions
+{% if checkable %}
 $( function() {
-  $( "#{{ widget.full }}_check_all" ).click( function() {
-    $( "input[id*={{ widget.full }}_check_]" ).attr( "checked", true );
-  } )
-} );
-$( function() {
-  $( "#{{ widget.full }}_check_none" ).click( function() {
-    $( "input[id*={{ widget.full }}_check_]" ).attr( "checked", false );
-  } )
-} );
-$( function() {
-  $( "#{{ widget.full }}_check_invert" ).click( function() {
-    $( "input[id*={{ widget.full }}_check_]" ).each( function() {
-      $( this ).attr( 'checked', this.checked ? false : true );
-    } )
-  } )
-} );
+  // set check button states based on its cookie
+  $( ".{{ widget.full }}_check" ).each( function() {
+    if( undefined != $.cookie( $(this).attr( "id" ) ) ) $(this).attr( "checked", "checked" );
+  } );
 
-// column sort functions
+  // set check button cookie when there is a change
+  $( ".{{ widget.full }}_check" ).change( function() {
+    $.cookie( $(this).attr( "id" ), $(this).attr( "checked" ) ? true : null );
+  } );
+
+  // check all (visible) checkboxes and set their cookies as well
+  $( "#{{ widget.full }}_check_all" ).click( function() {
+    $( ".{{ widget.full }}_check" ).each( function() {
+      $(this).attr( "checked", true );
+      $.cookie( $(this).attr( "id" ), true );
+    } )
+  } );
+
+  // uncheck all (visible) checkboxes and set their cookies as well
+  $( "#{{ widget.full }}_check_none" ).click( function() {
+    $( ".{{ widget.full }}_check" ).each( function() {
+      $(this).attr( "checked", false );
+      $.cookie( $(this).attr( "id" ), null );
+    } )
+  } );
+
+  // uncheck all (visible) checkboxes and set their cookies as well
+  $( "#{{ widget.full }}_check_invert" ).click( function() {
+    $( ".{{ widget.full }}_check" ).each( function() {
+      var old = $(this).attr( "checked" );
+      $(this).attr( "checked", !old );
+      $.cookie( $(this).attr( "id" ), old ? null : true );
+    } )
+  } );
+
+  // create button set
+  $( "#{{ widget.full }}_check_none" ).button().parent().buttonset();
+} );
+{% endif %}
+
+// column sorting
 $( function() {
   $( "th.{{ widget.full }}_sortable" ).click( function() {
     var args = new Object();
@@ -195,8 +190,9 @@ $( function() {
   } )
 } );
 
-// page button functions
+{% if items_per_page < number_of_items %}
 $( function() {
+  // previous page button
   $( "#{{ widget.full }}_page_prev" ).click( function() {
     var args = new Object();
     args.page = {{ page - 1 }};
@@ -204,9 +200,9 @@ $( function() {
                "{{ parent.exists ? parent.full : widget.full }}",
                "{{ widget.full }}",
                args );
-  } )
-} );
-$( function() {
+  } );
+
+  // next page button
   $( "#{{ widget.full }}_page_next" ).click( function() {
     var args = new Object();
     args.page = {{ page + 1 }};
@@ -215,7 +211,10 @@ $( function() {
                "{{ widget.full }}",
                args );
   } )
-} );
+
+  // create a button set
+  $( "#{{ widget.full }}_page_next" ).button().parent().buttonset();
+{% endif %}
 
 </script>
 <table class="{{ widget.full }}_table">
@@ -257,7 +256,11 @@ $( function() {
     {% for row in rows %}
     <tr>
       {% if checkable %}
-      <td><input type="checkbox" id="{{ widget.full }}_check_{{ row.id }}" /></td>
+      <td>
+        <input type="checkbox"
+               class="{{ widget.full }}_check"
+               id="{{ widget.full }}_check_{{ row.id }}" />
+      </td>
       {% endif %}
       {% for column in columns %}
       <td {% if column.align|default(false) %}
@@ -283,9 +286,9 @@ $( function() {
         {% if checkable %}
         <span>
           Check boxes:
-          <button style="width:70px" id="{{ widget.full }}_check_all">all</button>
-          <button style="width:70px" id="{{ widget.full }}_check_none">none</button>
-          <button style="width:70px" id="{{ widget.full }}_check_invert">invert</button>
+          <button style="width:80px" id="{{ widget.full }}_check_all">all</button>
+          <button style="width:80px" id="{{ widget.full }}_check_none">none</button>
+          <button style="width:80px" id="{{ widget.full }}_check_invert">invert</button>
         </span>
         <span style="margin-left:20px"></span>
         {% endif %}
@@ -300,10 +303,10 @@ $( function() {
         <span style="margin-left:20px"></span>
         <span>
           Page:
-          <button style="width:70px"
+          <button style="width:80px"
                   id="{{ widget.full }}_page_prev"
                   {{ 1 == page ? 'disabled' : '' }}>prev</button>
-          <button style="width:70px"
+          <button style="width:80px"
                   id="{{ widget.full }}_page_next"
                   {{ max_page == page ? 'disabled' : '' }}>next</button>
         </span>

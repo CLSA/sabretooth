@@ -3,6 +3,16 @@
  # 
  # Base template for all widgets.
  # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @param string widget.subject The widget's subject.
+ # @param string widget.name The widget's name (action performed on the subject)
+ # @param string widget.full The widget's full name: <subject>_<name>
+ # @param string widget.compound The fully qualified name.  If the widget has a parent then this
+                                 value is <parent_full>_<widget_full>, if not then it is simply
+                                 the widget's full name.
+ # @param string parent.exists Whether the widget has a parent.
+ # @param string parent.subject The parent's subject.
+ # @param string parent.name The parent's name (action performed on the parent's subject)
+ # @param string parent.full The parent's full name: <parent_subject>_<parent_name>
  # @param string widget_heading The widget's heading (can be an empty string).
  #}
 <script type="text/javascript">
