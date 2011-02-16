@@ -34,7 +34,6 @@ $SETTINGS[ 'path' ][ 'TPL' ] = $SETTINGS[ 'path' ][ 'SABRETOOTH' ].'/tpl';
 $SETTINGS[ 'path' ][ 'ADODB' ] = '/usr/local/lib/adodb';
 $SETTINGS[ 'path' ][ 'PHPAGI' ] = '/usr/local/lib/phpagi';
 $SETTINGS[ 'path' ][ 'PHPEXCEL' ] = '/usr/local/lib/phpexcel';
-$SETTINGS[ 'path' ][ 'TWIG' ] = '/usr/local/lib/twig';
 $SETTINGS[ 'path' ][ 'JS' ] = 'js';
 $SETTINGS[ 'path' ][ 'CSS' ] = 'css';
 
