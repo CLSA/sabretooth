@@ -14,7 +14,7 @@ namespace sabretooth\ui;
  * 
  * @package sabretooth\ui
  */
-class operation_list extends base_list
+class operation_list extends base_list_widget
 {
   /**
    * Constructor

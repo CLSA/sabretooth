@@ -14,7 +14,7 @@ namespace sabretooth\ui;
  * 
  * @package sabretooth\ui
  */
-class role_add extends base_record
+class role_add extends base_view
 {
   /**
    * Constructor

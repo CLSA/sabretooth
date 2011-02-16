@@ -14,7 +14,7 @@ namespace sabretooth\ui;
  * 
  * @package sabretooth\ui
  */
-class site_view extends base_record
+class site_view extends base_view
 {
   /**
    * Constructor

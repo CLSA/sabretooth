@@ -31,17 +31,6 @@ class role_add_operation extends base_add_list
   }
 
   /**
-   * Finish setting the variables in a widget.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function finish()
-  {
-    parent::finish();
-  }
-
-  /**
    * Overrides the operation list widget's method.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -68,12 +57,5 @@ class role_add_operation extends base_add_list
     $modifier->where( 'restricted', true );
     return $this->get_record()->get_operation_list_inverted( $modifier );
   }
-
-  /**
-   * The operation list widget.
-   * @var operation_list
-   * @access protected
-   */
-  protected $operation_list = NULL;
 }
 ?>

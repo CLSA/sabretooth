@@ -1,5 +1,5 @@
 {##
- # base_record.twig
+ # base_view.twig
  # 
  # Base template for viewing, editing and adding records.
  # @author Patrick Emond <emondpd@mcmaster.ca>
@@ -87,10 +87,10 @@ function process_jeditable( element, new_value, type )
 {% endif %}
 
 {% if addable %}
-// add buttons function
 $( function () {
-  $( "button.{{ widget.full }}_add" ).click( function() {
-    // submit the form information as an add action
+  // add button {# added by the confirm buttons template below #}
+  $( "#{{ widget.compound }}_add" ).click( function() {
+    // submit the form information as a new action
     var args = new Object();
     var columns = new Object();
     $( "#{{ widget.full }}_add_form :input" ).each( function() {
@@ -103,17 +103,10 @@ $( function () {
     if( send_action( "{{ widget.subject }}", "new", args ) ) slot_prev( get_slot( $(this) ) );
   } );
 } );
-
-// cancel button function
-$( function () {
-  $( "button.{{ widget.full }}_cancel" ).click( function() {
-    slot_prev( get_slot( $(this) ) );
-  } );
-} );
 {% endif %}
 
 {% if removable %}
-// delete button function
+// delete button
 $( function () {
   $( "button.{{ widget.full }}_remove" ).click( function() {
   var slot = get_slot( $(this) );
@@ -181,8 +174,7 @@ $( function () {
 
 {% if addable %}
 <div class="spacer"></div>
-<button class="{{ widget.full }}_add" style="width:100px">Add</button>
-<button class="{{ widget.full }}_cancel" style="width:100px">Cancel</button>
+{% include "confirm_buttons.twig" with { 'align': 'right', 'buttons': ['add'] } %}
 {% endif %}
 
 {% endblock record %}

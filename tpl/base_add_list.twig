@@ -7,9 +7,53 @@
 {% extends "widget.twig" %}
 {% block widget %}
 <script type="text/javascript">
+
+$( function () {
+  $( "#{{ widget.compound }}_add" ).click( function() {
+    var ids = new Array();
+    if( document.cookie && document.cookie != '' )
+    {
+      var cookies = document.cookie.split( ';' );
+      for( i = 0; i < cookies.length; i++ )
+      {
+        if( 1 == cookies[i].search(
+                   "{{ parent.exists ? parent.full : widget.full }}_check_[0-9]+" ) )
+        {
+          ids.push( parseInt( cookies[i].substring( cookies[i].lastIndexOf('_') + 1 ) ) );
+        }
+      }
+    }
+    
+    if( 0 == ids.length )
+    {
+      error_dialog(
+        'Error: Nothing selected',
+        '<p>You must select at least one {{ list_subject }}.<br>' +
+        'Please select items to add to the {{ widget.subject }}, or click cancel.</p>' );
+    }
+    else
+    {
+      var slot = get_slot( $(this) );
+      var args = new Object();
+      args.id = {{ id }};
+      args.id_list = ids;
+      confirm_dialog(
+        'Add items to {{ widget.subject }}?',
+        '<p>You have selected ' + ids.length +
+        ' items to be added to the {{ widget.subject }}.<br>' +
+        'Are you sure you want to continue?</p>',
+        function() {
+          if( send_action( "{{ widget.subject }}", "new_{{ list_subject }}", args ) )
+            slot_prev( slot );
+        } );
+    }
+  } );
+} );
 </script>
 
 {# Add the list using the list's widget name to determine which template to use #}
 {% set list_template = [ list_widget_name, 'twig' ]|join('.') %}
 {% include list_template with list %}
+<div class="spacer"></div>
+{% include "confirm_buttons.twig" with { 'align': 'right', 'buttons': ['add'] } %}
 {% endblock widget %}

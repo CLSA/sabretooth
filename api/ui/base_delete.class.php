@@ -10,12 +10,11 @@
 namespace sabretooth\ui;
 
 /**
- * Base class for all "delete" actions.
+ * Base class for all record "delete" actions.
  * 
- * Abstract class which defines base functionality for all "delete" actions.
  * @package sabretooth\ui
  */
-class base_delete extends action implements contains_record
+abstract class base_delete extends base_record_action
 {
   /**
    * Constructor.
@@ -28,10 +27,9 @@ class base_delete extends action implements contains_record
   public function __construct( $subject, $args )
   {
     parent::__construct( $subject, 'delete', $args );
-    $class_name = '\\sabretooth\\database\\'.$this->get_subject();
-    $this->set_record( new $class_name( $this->get_argument( 'id' ) ) );
-    if( is_null( $this->get_record() ) )
-      throw new \sabretooth\exception\argument( 'id', NULL, __METHOD__ );
+
+    // make sure we have an id (we don't actually need to use it since the parent does)
+    $this->get_argument( 'id' );
   }
   
   /**
@@ -57,34 +55,5 @@ class base_delete extends action implements contains_record
       throw $e;
     }
   }
-  
-  /**
-   * Method required by the contains_record interface.
-   * @author Patrick Emond
-   * @return database\active_record
-   * @access public
-   */
-  public function get_record()
-  {
-    return $this->record;
-  }
-
-  /**
-   * Method required by the contains_record interface.
-   * @author Patrick Emond
-   * @param database\active_record $record
-   * @access public
-   */
-  public function set_record( $record )
-  {
-    $this->record = $record;
-  }
-
-  /**
-   * The active record of the item being deleted.
-   * @var active_record
-   * @access private
-   */
-  private $record = NULL;
 }
 ?>

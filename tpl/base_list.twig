@@ -255,7 +255,7 @@ $( function() {
       <td>
         <input type="checkbox"
                class="{{ widget.full }}_check"
-               id="{{ widget.compound }}_check_{{ row.id }}" />
+               id="{{ parent.exists ? parent.full : widget.full }}_check_{{ row.id }}" />
       </td>
       {% endif %}
       {% for column in columns %}

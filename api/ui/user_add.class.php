@@ -14,7 +14,7 @@ namespace sabretooth\ui;
  * 
  * @package sabretooth\ui
  */
-class user_add extends base_record
+class user_add extends base_view
 {
   /**
    * Constructor

@@ -1,6 +1,6 @@
 <?php
 /**
- * base_list.class.php
+ * base_list_widget.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,7 +10,7 @@
 namespace sabretooth\ui;
 
 /**
- * Base class for all widgets.
+ * Base class for all listing widgets.
  * 
  * This class abstracts all common functionality for lists of records.
  * Concrete child classes represent a particular type of record in the database.
@@ -23,7 +23,7 @@ namespace sabretooth\ui;
  * @abstract
  * @package sabretooth\ui
  */
-abstract class base_list extends widget
+abstract class base_list_widget extends widget
 {
   /**
    * Constructor
