@@ -57,8 +57,13 @@ catch( exception\base_exception $e )
 }
 catch( \Twig_Error $e )
 {
-  // TODO: add twig error code
-  $code = \sabretooth\util::convert_number_to_code( TEMPLATE_BASE_ERROR_NUMBER );
+  $class_name = get_class( $e );
+  if( 'Twig_Error_Syntax' == $class_name ) $code = 1;
+  else if( 'Twig_Error_Runtime' == $class_name ) $code = 2;
+  else if( 'Twig_Error_Loader' == $class_name ) $code = 3;
+  else $code = 0;
+  
+  $code = util::convert_number_to_code( TEMPLATE_BASE_ERROR_NUMBER + $code );
   log::err( "Template ".$e );
   $result_array['success'] = false;
   $result_array['error_type'] = 'Template';
@@ -67,7 +72,7 @@ catch( \Twig_Error $e )
 }
 catch( \Exception $e )
 {
-  $code = \sabretooth\util::convert_number_to_code( UNKNOWN_BASE_ERROR_NUMBER );
+  $code = util::convert_number_to_code( UNKNOWN_BASE_ERROR_NUMBER );
   log::err( "Last minute ".$e );
   $result_array['success'] = false;
   $result_array['error_type'] = 'Unknown';
