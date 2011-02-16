@@ -24,6 +24,7 @@
  #}
 {% extends "widget.twig" %}
 {% block widget %}
+
 <script type="text/javascript">
 
 // make button icons
@@ -40,12 +41,6 @@ $( function() {
     text: true,
     icons: { primary: "ui-icon-triangle-1-n" }
   } );
-{% if checkable %}
-  $( "button.{{ widget.full }}_check" ).button( {
-    text: false,
-    icons: { primary: "ui-icon-check" }
-  } );
-{% endif %}
 {% if viewable %}
   $( "button.{{ widget.full }}_view" ).button( {
     text: false,
@@ -86,7 +81,7 @@ $( function() {
                "{{ widget.subject }}_view",
                "{{ widget.subject }}_view",
                { "id": id } );
-  } )
+  } );
 } );
 {% endif %}
 
@@ -115,7 +110,7 @@ $( function() {
           slot_refresh( slot );
         } );
     {% endif %}
-  } )
+  } );
 } );
 {% endif %}
 
@@ -131,7 +126,7 @@ $( function() {
     {% else %}
       slot_load( get_slot( $(this) ), "{{ widget.subject }}_add" );
     {% endif %}
-  } )
+  } );
 } );
 {% endif %}
 
@@ -152,7 +147,7 @@ $( function() {
     $( ".{{ widget.full }}_check" ).each( function() {
       $(this).attr( "checked", true );
       $.cookie( $(this).attr( "id" ), true );
-    } )
+    } );
   } );
 
   // uncheck all (visible) checkboxes and set their cookies as well
@@ -160,7 +155,7 @@ $( function() {
     $( ".{{ widget.full }}_check" ).each( function() {
       $(this).attr( "checked", false );
       $.cookie( $(this).attr( "id" ), null );
-    } )
+    } );
   } );
 
   // uncheck all (visible) checkboxes and set their cookies as well
@@ -169,7 +164,7 @@ $( function() {
       var old = $(this).attr( "checked" );
       $(this).attr( "checked", !old );
       $.cookie( $(this).attr( "id" ), old ? null : true );
-    } )
+    } );
   } );
 
   // create button set
@@ -187,7 +182,7 @@ $( function() {
                "{{ parent.exists ? parent.full : widget.full }}",
                "{{ widget.full }}",
                args );
-  } )
+  } );
 } );
 
 {% if items_per_page < number_of_items %}
@@ -210,10 +205,11 @@ $( function() {
                "{{ parent.exists ? parent.full : widget.full }}",
                "{{ widget.full }}",
                args );
-  } )
+  } );
 
   // create a button set
   $( "#{{ widget.full }}_page_next" ).button().parent().buttonset();
+} );
 {% endif %}
 
 </script>
@@ -259,7 +255,7 @@ $( function() {
       <td>
         <input type="checkbox"
                class="{{ widget.full }}_check"
-               id="{{ widget.full }}_check_{{ row.id }}" />
+               id="{{ widget.compound }}_check_{{ row.id }}" />
       </td>
       {% endif %}
       {% for column in columns %}

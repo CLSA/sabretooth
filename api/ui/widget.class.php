@@ -43,13 +43,14 @@ abstract class widget extends operation
    */
   public function finish()
   {
-    $this->set_variable( 'widget',
-      array( 'subject' => $this->get_subject(),
-             'name' => $this->get_name(),
-             'full' => $this->get_full_name() ) );
+    $widget_variable = array( 'subject' => $this->get_subject(),
+                              'name' => $this->get_name(),
+                              'full' => $this->get_full_name(),
+                              'compound' => $this->get_full_name() );
 
     if( $this->parent )
     {
+      $widget_variable['compound'] = $this->parent->get_full_name.'_'.$this->get_full_name();
       $this->set_variable( 'parent',
         array( 'exists' => true,
                'id' => $this->parent->get_record()->id,
@@ -66,6 +67,7 @@ abstract class widget extends operation
                'full' => '' ) );
     }
 
+    $this->set_variable( 'widget', $widget_variable );
     $this->set_variable( 'widget_heading', $this->heading );
   }
 
