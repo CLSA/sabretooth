@@ -222,158 +222,199 @@ abstract class active_record extends \sabretooth\base_object
    * tables linked to by this table by either a foreign key or joining table.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $name The name of the called function (should be get_<record>,
-                         get_<record>_count() or get_<record>_list(), where <record> is the name
-                         of an active record class related to this record.
+   *                     get_<record>_count() or get_<record>_list(), where <record> is the name
+   *                     of an active record class related to this record.
    * @param array $args The arguments passed to the called function.  This can either be null or
-                        a modifier to be applied to the magic methods.
+   *                    a modifier to be applied to the magic methods.
+   * @throws exception\runtime, exception\argument
    * @return mixed
    * @access public
    * @method array get_<record>() Returns the record with foreign keys referencing the <record>
-                   table.  For instance, if a record has a foreign key "other_id", then
-                   get_other() will return the "other" record with the id equal to other_id.
+   *               table.  For instance, if a record has a foreign key "other_id", then
+   *               get_other() will return the "other" record with the id equal to other_id.
    * @method array get_record_list() Returns an array of records from the joining <record> table
-                   given the provided modifier.  If a record has a joining "has" table then
-                   calling get_other_list() will return an array of "other" records which are
-                   linked in the joining table, and get_other_count() will return the number of
-                   "other" recrods found in the joining table.
+   *               given the provided modifier.  If a record has a joining "has" table then
+   *               calling get_other_list() will return an array of "other" records which are
+   *               linked in the joining table, and get_other_count() will return the number of
+   *               "other" recrods found in the joining table.
    * @method array get_record_list_inverted() This is the same as the non-inverted method but it
-                   returns all items which are NOT linked to joining table.
+   *               returns all items which are NOT linked to joining table.
    * @method int get_<record>_count() Returns the number of records in the joining <record> table
-                 given the provided modifier.
+   *             given the provided modifier.
    * @method int get_<record>_count_inverted() This is the same as the non-inverted method but it
-                 returns the number of records NOT in the joining table.
+   *             returns the number of records NOT in the joining table.
+   * @method null add_<record>() Given an array of ids, this method adds associations between the
+   *              current and foreign <record> by adding rows into the joining "has" table.
+   * @method null remove_<record>() Given an array of ids, this method removes associations between
+   *              the current and foreign <record> by removing rows from the joining "has" table.
    */
   public function __call( $name, $args )
   {
-    $invalid_method = false;
+    // create an exception which will be thrown if anything bad happens
+    $exception = new \sabretooth\exception\runtime(
+      sprintf( 'Call to undefined function: %s::%s().',
+               get_called_class(),
+               $name ), __METHOD__ );
+
     $return_value = NULL;
 
-    // check to make sure the function name is appropriate
-    if( 'get_' != substr( $name, 0, 4 ) )
+    // parse the function call name
+    $name_parts = explode( '_', $name );
+    
+    // must have between 2 and 4 parts
+    if( 2 > count( $name_parts ) || 4 < count( $name_parts ) ) throw $exception;
+    
+    // first part is the action, second is the foreign table name
+    if( 2 <= count( $name_parts ) )
     {
-      // does not start with "get_"
-      $invalid_method = true;
-    }
-    else
-    {
-      // make sure the refering table exists
-      $name_parts = explode( '_', $name );
+      // make sure action is valid
+      $action = $name_parts[0];
+      if( 'get' != $action && 'add' != $action && 'remove' != $action ) throw $exception;
+
+      // make sure the foreign table exists
       $foreign_table_name = $name_parts[1];
+      if( !self::table_exists( $foreign_table_name ) ) throw $exception;
+
+      // add and remove require a joining table
+      $joining_table_name = 'add' == $action || 'remove' == $action
+                          ? self::get_table_name().'_has_'.$foreign_table_name
+                          : NULL;
+
       $primary_key_name = self::get_table_name().'_id';
       $foreign_key_name = $foreign_table_name.'_id';
-      if( !self::table_exists( $name_parts[1] ) )
-      {
-        trigger_error(
-          sprintf( 'Call to %s::%s() references invalid table "%s".',
-                   get_called_class(),
-                   $name,
-                   $foreign_table_name ),
-          E_USER_ERROR );
-      }
+      $sub_action = NULL;
+    }
+    
+    if( 3 <= count( $name_parts ) )
+    {
+      // make sure sub action is valid
+      $sub_action = $name_parts[2];
+      if( 'list' != $sub_action && 'count' != $sub_action ) throw $exception;
       
-      if( 2 == count( $name_parts ) )
-      { // we're linking a foreign key
-        // make sure this table has the correct foreign key
-        if( !$this->has_column_name( $foreign_key_name ) )
-        {
-          trigger_error(
-            sprintf( 'Call to %s::%s() references missing foreign key "%s".',
-                     get_called_class(),
-                     $name,
-                     $foreign_key_name ),
-            E_USER_ERROR );
-        }
+      $joining_table_name = self::get_table_name().'_has_'.$foreign_table_name;
+      
+      // define the modifier
+      $modifier = 1 == count( $args ) &&
+                  'sabretooth\\database\\modifier' == get_class( $args[0] )
+                ? $args[0]
+                : new modifier();
 
-        // create the record using the foreign key
-        $class_name = '\\sabretooth\\database\\'.$foreign_table_name;
-        $return_value = new $class_name( $this->$foreign_key_name );
-      }
-      else if( 3 == count( $name_parts ) ||
-               ( 4 == count( $name_parts ) && 'inverted' == $name_parts[3] ) )
-      { // we're linking a joining table
-        // make sure joining table exists
-        $joining_table_name = self::get_table_name().'_has_'.$foreign_table_name;
-        if( !$this->table_exists( $joining_table_name ) )
-        {
-          trigger_error(
-            sprintf( 'Call to %s::%s() references missing joining table "%s".',
-                     get_called_class(),
-                     $name,
-                     $joining_table_name ),
-            E_USER_ERROR );
-        }
-        
-        // Determine the action (list or count), whether to invert the result and if
-        // there is a modifier argument
-        $action = $name_parts[2];
-        $inverted = 4 == count( $name_parts );
-        $modifier = 1 == count( $args ) &&
-                    'sabretooth\\database\\modifier' == get_class( $args[0] )
-                  ? $args[0]
-                  : new modifier();
+      $inverted = false;
+    }
+     
+    // if we're using one, make sure the joining table exists
+    if( !is_null( $joining_table_name ) )
+      if( !$this->table_exists( $joining_table_name ) ) throw $exception;
 
-        if( 'list' == $action || 'count' == $action )
-        { // we want a list of records
-          if( $inverted )
-          { // we need to invert the list
-            // first create SQL to match all records in the joining table
-            $sub_modifier = new modifier();
-            $sub_modifier->where( $primary_key_name, $this->id );
-            $sub_select_sql =
-              sprintf( 'SELECT %s FROM %s %s',
-                       $foreign_key_name,
-                       $joining_table_name,
-                       $sub_modifier->get_sql() );
-            // now create SQL that gets all IDs that is NOT in that list
-            $modifier->where_not_in( 'id', $sub_select_sql, false );
-            $sql = sprintf( 'SELECT %s FROM %s %s',
-                            'list' == $action ? 'id' : 'COUNT( id )',
-                            $foreign_table_name,
-                            $modifier->get_sql() );
-          }
-          else
-          { // no inversion, just select the records from the joining table
-            $modifier->where( $primary_key_name, $this->id );
-            $sql = sprintf( 'SELECT %s FROM %s',
-                            'list' == $action
-                              ? $foreign_key_name
-                              : 'COUNT( '.$foreign_key_name.' )',
-                            $joining_table_name,
-                            $modifier->get_sql() );
-          }
-          
-          if( 'list' == $action )
-          {
-            $ids = self::get_col( $sql );
-            $return_value = array();
-            $class_name = '\\sabretooth\\database\\'.$foreign_table_name;
-            foreach( $ids as $id ) array_push( $return_value, new $class_name( $id ) );
-          }
-          else // 'count' == $action
-          {
-            $return_value = self::get_one( $sql );
-          }
-        }
-        else
-        {
-          // function is not get_<record>_list or get_<record>_count
-          $invalid_method = true;
-        }
-      }
-      else
-      {
-        // function has more than 3 parts (this_is_too_many)
-        $invalid_method = true;
-      }
+    if( 4 == count( $name_parts ) )
+    {
+      if( 'inverted' == $name_parts[3] ) $inverted = true;
+      else throw $exception;
     }
 
-    if( $invalid_method )
-    {
-      trigger_error(
-        sprintf( 'Call to undefined function: %s::%s().',
-                 get_called_class(),
-                 $name ),
-        E_USER_ERROR );
+    // once we get here we know for sure that the function name is valid
+    if( 'add' == $action )
+    { // calling: add_<record>( $ids )
+      // make sure the first argument is a non-empty array of ids
+      if( 1 != count( $args ) || !is_array( $args[0] ) || 0 == count( $args[0] ) )
+        throw new \sabretooth\exception\argument( 'args', $args, __METHOD__ );
+      $id_list = $args[0];
+      
+      $values = '';
+      $first = true;
+      foreach( $id_list as $id )
+      {
+        if( !$first ) $values .= ', ';
+        $values .= sprintf( '(%s, %s)',
+                         active_record::format_string( $this->id ),
+                         active_record::format_string( $id ) );
+        $first = false;
+      }
+
+      self::execute(
+        sprintf( 'INSERT INTO %s (%s, %s) VALUES %s',
+                 $joining_table_name,
+                 $primary_key_name,
+                 $foreign_key_name,
+                 $values ) );
+    }
+    else if( 'remove' == $action )
+    { // calling: remove_<record>( $ids )
+      // make sure the first argument is a non-empty array of ids
+      if( 1 != count( $args ) || !is_array( $args ) || 0 == count( $args ) )
+        throw new \sabretooth\exception\argument( 'args', $args, __METHOD__ );
+      $id_list = $args[0];
+      
+      $in = '';
+      $first = true;
+      foreach( $id_list as $id )
+      {
+        if( !$first ) $in .= ', ';
+        $in .= active_record::format_string( $id );
+        $first = false;
+      }
+
+      self::execute(
+        sprintf( 'DELETE FROM %s WHERE %s = %s AND %s IN( %s )',
+                 $joining_table_name,
+                 $primary_key_name,
+                 $this->id,
+                 $foreign_key_name,
+                 $in ) );
+    }
+    else if( 'get' == $action && is_null( $sub_action ) )
+    { // calling: get_<record>()
+      // make sure this table has the correct foreign key
+      if( !$this->has_column_name( $foreign_key_name ) ) throw $exception;
+
+      // create the record using the foreign key
+      $class_name = '\\sabretooth\\database\\'.$foreign_table_name;
+      $return_value = new $class_name( $this->$foreign_key_name );
+    }
+    else if( 'get' == $action && !is_null( $sub_action ) )
+    { // calling one of: get_<record>_list( $modifier = NULL )
+      //                 get_<record>_list_inverted( $modifier = NULL )
+      //                 get_<record>_count( $modifier = NULL )
+      //                 get_<record>_count_inverted( $modifier = NULL )
+      if( $inverted )
+      { // we need to invert the list
+        // first create SQL to match all records in the joining table
+        $sub_modifier = new modifier();
+        $sub_modifier->where( $primary_key_name, $this->id );
+        $sub_select_sql =
+          sprintf( 'SELECT %s FROM %s %s',
+                   $foreign_key_name,
+                   $joining_table_name,
+                   $sub_modifier->get_sql() );
+        // now create SQL that gets all IDs that is NOT in that list
+        $modifier->where_not_in( 'id', $sub_select_sql, false );
+        $sql = sprintf( 'SELECT %s FROM %s %s',
+                        'list' == $sub_action ? 'id' : 'COUNT( id )',
+                        $foreign_table_name,
+                        $modifier->get_sql() );
+      }
+      else
+      { // no inversion, just select the records from the joining table
+        $modifier->where( $primary_key_name, $this->id );
+        $sql = sprintf( 'SELECT %s FROM %s',
+                        'list' == $sub_action
+                          ? $foreign_key_name
+                          : 'COUNT( '.$foreign_key_name.' )',
+                        $joining_table_name,
+                        $modifier->get_sql() );
+      }
+      
+      if( 'list' == $sub_action )
+      {
+        $ids = self::get_col( $sql );
+        $return_value = array();
+        $class_name = '\\sabretooth\\database\\'.$foreign_table_name;
+        foreach( $ids as $id ) array_push( $return_value, new $class_name( $id ) );
+      }
+      else // 'count' == $sub_action
+      {
+        $return_value = self::get_one( $sql );
+      }
     }
 
     return $return_value;
