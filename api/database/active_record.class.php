@@ -265,25 +265,20 @@ abstract class active_record extends \sabretooth\base_object
     if( 2 > count( $name_parts ) || 4 < count( $name_parts ) ) throw $exception;
     
     // first part is the action, second is the foreign table name
-    if( 2 <= count( $name_parts ) )
-    {
-      // make sure action is valid
-      $action = $name_parts[0];
-      if( 'get' != $action && 'add' != $action && 'remove' != $action ) throw $exception;
+    // make sure action is valid
+    $action = $name_parts[0];
+    if( 'get' != $action && 'add' != $action && 'remove' != $action ) throw $exception;
 
-      // make sure the foreign table exists
-      $foreign_table_name = $name_parts[1];
-      if( !self::table_exists( $foreign_table_name ) ) throw $exception;
+    // make sure the foreign table exists
+    $foreign_table_name = $name_parts[1];
+    if( !self::table_exists( $foreign_table_name ) ) throw $exception;
 
-      // add and remove require a joining table
-      $joining_table_name = 'add' == $action || 'remove' == $action
-                          ? self::get_table_name().'_has_'.$foreign_table_name
-                          : NULL;
+    // add and remove require a joining table
+    $search_for_joining_table = 'add' == $action || 'remove' == $action;
 
-      $primary_key_name = self::get_table_name().'_id';
-      $foreign_key_name = $foreign_table_name.'_id';
-      $sub_action = NULL;
-    }
+    $primary_key_name = self::get_table_name().'_id';
+    $foreign_key_name = $foreign_table_name.'_id';
+    $sub_action = NULL;
     
     if( 3 <= count( $name_parts ) )
     {
@@ -291,7 +286,7 @@ abstract class active_record extends \sabretooth\base_object
       $sub_action = $name_parts[2];
       if( 'list' != $sub_action && 'count' != $sub_action ) throw $exception;
       
-      $joining_table_name = self::get_table_name().'_has_'.$foreign_table_name;
+      $search_for_joining_table = true;
       
       // define the modifier
       $modifier = 1 == count( $args ) &&
@@ -302,9 +297,26 @@ abstract class active_record extends \sabretooth\base_object
       $inverted = false;
     }
      
-    // if we're using one, make sure the joining table exists
-    if( !is_null( $joining_table_name ) )
-      if( !$this->table_exists( $joining_table_name ) ) throw $exception;
+    // determine the joining table, if necessary
+    if( $search_for_joining_table )
+    {
+      // the joining table may be <table>_has_<foreign_table> or <foreign>_has_<table>
+      $forward_joining_table_name = self::get_table_name().'_has_'.$foreign_table_name;
+      $reverse_joining_table_name = $foreign_table_name.'_has_'.self::get_table_name();
+      
+      if( $this->table_exists( $forward_joining_table ) )
+      {
+        $joining_table_name = $forward_joining_table;
+      }
+      else if( $this->table_exists( $reverse_joining_table ) )
+      {
+        $joining_table_name = $reverse_joining_table;
+      }
+      else
+      { // joining table not found
+        throw $exception;
+      }
+    }
 
     if( 4 == count( $name_parts ) )
     {
