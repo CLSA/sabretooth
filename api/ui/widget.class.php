@@ -44,6 +44,7 @@ abstract class widget extends operation
   public function finish()
   {
     $widget_variable = array( 'subject' => $this->get_subject(),
+                              'subjects' => \sabretooth\util::pluralize( $this->get_subject() ),
                               'name' => $this->get_name(),
                               'full' => $this->get_full_name(),
                               'compound' => $this->get_full_name() );
@@ -55,6 +56,7 @@ abstract class widget extends operation
         array( 'exists' => true,
                'id' => $this->parent->get_record()->id,
                'subject' => $this->parent->get_subject(),
+               'subjects' => \sabretooth\util::pluralize( $this->parent->get_subject() ),
                'name' => $this->parent->get_name(),
                'full' => $this->parent->get_full_name() ) );
     }
@@ -63,6 +65,7 @@ abstract class widget extends operation
       $this->set_variable( 'parent',
         array( 'exists' => false,
                'subject' => '',
+               'subjects' => '',
                'name' => '',
                'full' => '' ) );
     }

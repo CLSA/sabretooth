@@ -29,7 +29,8 @@ $( function () {
       error_dialog(
         'Error: Nothing selected',
         '<p>You must select at least one {{ list_subject }}.<br>' +
-        'Please select items to add to the {{ widget.subject }}, or click cancel.</p>' );
+        'Please select {{ list_subjects }} to add to the ' +
+        '{{ widget.subject }}, or click cancel.</p>' );
     }
     else
     {
@@ -38,9 +39,9 @@ $( function () {
       args.id = {{ id }};
       args.id_list = ids;
       confirm_dialog(
-        'Add items to {{ widget.subject }}?',
+        'Add {{ list_subjects }} to the {{ widget.subject }}?',
         '<p>You have selected ' + ids.length +
-        ' items to be added to the {{ widget.subject }}.<br>' +
+        ' {{ list_subjects }} to be added to the {{ widget.subject }}.<br>' +
         'Are you sure you want to continue?</p>',
         function() {
           if( send_action( "{{ widget.subject }}", "new_{{ list_subject }}", args ) )

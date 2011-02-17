@@ -29,33 +29,5 @@ class site_add_user extends base_add_list
   {
     parent::__construct( 'site', 'user', $args );
   }
-
-  /**
-   * Overrides the user list widget's method.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the list.
-   * @return int
-   * @access protected
-   */
-  public function determine_user_count( $modifier )
-  {
-    $modifier->where( 'restricted', true );
-    return $this->get_record()->get_user_count_inverted( $modifier );
-  }
-
-  /**
-   * Overrides the user list widget's method.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the list.
-   * @return array( active_record )
-   * @access protected
-   */
-  public function determine_user_list( $modifier )
-  {
-    $modifier->where( 'restricted', true );
-    return $this->get_record()->get_user_list_inverted( $modifier );
-  }
 }
 ?>

@@ -233,7 +233,32 @@ final class util
 
     return $result;
   }
- 
+  
+  /**
+   * Attempts to convert a word into its plural form.
+   * 
+   * Warning: this method by no means returns the correct answer in every case.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $word
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function pluralize( $word )
+  {
+    if( 'y' == substr( $word, -1 ) )
+    { // likely, any word ending in 'y' has 'ies' at the end of the plural word
+      return substr( $word, 0, -1 ).'ies';
+    }
+    else if( 's' == substr( $word, -1 ) )
+    { // likely, any word ending in an 's' has 'es' at the end of the plural word
+      return $word.'es';
+    }
+    
+    // if there is no rule for this word then we hope that adding an 's' at the end is sufficient
+    return $word.'s';
+  }
+
   /**
    * Converts an error number into an easier-to-read error code.
    * @author Patrick Emond <emondpd@mcmaster.ca>

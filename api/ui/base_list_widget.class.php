@@ -132,6 +132,10 @@ abstract class base_list_widget extends widget
     
     if( 'edit' == $mode )
     {
+      // If we're adding/remove items of this list to another record we want to dissable
+      // the removing and adding of widgets, and enable checking
+      $this->removable = false;
+      $this->addable = false;
       $this->checkable = true;
     }
     else // 'view' == $mode

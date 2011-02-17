@@ -41,8 +41,8 @@ abstract class base_add_list extends base_record_widget
     $this->list_widget->set_parent( $this, 'edit' );
 
     $this->list_widget->set_heading(
-      sprintf( 'Choose items from the %s list to add the %s',
-               $child,
+      sprintf( 'Choose %s to add to the %s',
+               \sabretooth\util::pluralize( $child ),
                $subject ) );
   }
   
@@ -58,6 +58,8 @@ abstract class base_add_list extends base_record_widget
 
     // define all template variables for this widget
     $this->set_variable( 'list_subject', $this->list_widget->get_subject() );
+    $this->set_variable( 'list_subjects',
+                         \sabretooth\util::pluralize( $this->list_widget->get_subject() ) );
     $this->set_variable( 'list_widget_name', $this->list_widget->get_class_name() );
 
     $this->list_widget->finish();
