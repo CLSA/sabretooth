@@ -42,6 +42,7 @@ class role_view extends base_view
     // create the operation sub-list widget
     $this->operation_list = new operation_list( $args );
     $this->operation_list->set_parent( $this );
+    $this->operation_list->remove_column( 'restricted' );
     $this->operation_list->set_heading( 'Operations belonging to this role' );
   }
 

@@ -112,8 +112,9 @@ abstract class base_list_widget extends widget
    * This should be done before the widget is finished (before {@link finish} is called).
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param widget $parent
-   * @param string $mode Whether the parent is viewing records or adding new records to itself.
-                         Must be one of 'view' or 'edit'.
+   * @param string $mode Whether the parent is viewing records or adding new records to itself,
+                         which is defined by setting this parameter to 'view' or 'edit',
+                         respectively.
    * @access public
    */
   public function set_parent( $parent = NULL, $mode = 'view' )
@@ -145,7 +146,7 @@ abstract class base_list_widget extends widget
           'action', $this->parent->get_subject(), 'delete_'.$this->get_subject() ) );
     }
   }
-
+  
   /**
    * Set the rows array needed by the template.
    * 
@@ -266,6 +267,24 @@ abstract class base_list_widget extends widget
   public function set_removable( $enable )
   {
     $this->removable = $enable;
+  }
+  
+  /**
+   * Remove a column from the list based on its unique id.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column_id The column's id, as defined by in the list's constructor.
+   * @access public
+   */
+  public function remove_column( $column_id )
+  {
+    if( array_key_exists( $column_id, $this->columns ) ) unset( $this->columns[$column_id] );
+    // find and remove the column who's id is equal to the column name
+    $new_column_array = array();
+    foreach( $this->columns as $column )
+    {
+      if( $column_id != $column['id'] ) array_push( $new_column_array, $column );
+    }
+    $this->columns = $new_column_array;
   }
 
   /**

@@ -62,6 +62,8 @@ VALUES( "widget", "site", "view", true, "View a site's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "site", "list", true, "List sites in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "site", "add_user", true, "View users to add roles with access to the site." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "site", "new_user", true, "Add new users to a site." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "site", "delete_user", true, "Remove users from a site." );
@@ -79,6 +81,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "user", "view", true, "View a user's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "user", "list", true, "List users in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "user", "add_site", true, "View sites to add roles to for the user." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "user", "new_site", true, "Add new site-roles to a user." );
 INSERT INTO operation( type, subject, name, restricted, description )

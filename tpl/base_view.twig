@@ -127,7 +127,7 @@ $( function () {
 {% if addable %}
 <form id="{{ widget.full }}_add_form">
 {% endif %}
-<fieldset class="ui-widget ui-widget-content">
+<div class="ui-widget ui-widget-content">
 <table>
 {% for item_id, entry in item %}
   <tr>
@@ -169,7 +169,7 @@ $( function () {
 {% if removable %}
 <button class="{{ widget.full }}_remove" style="float: right;">remove</button>
 {% endif %}
-</fieldset>
+</div>
 {% if addable %}</form>{% endif %}
 
 {% if addable %}

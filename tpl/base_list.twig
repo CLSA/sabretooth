@@ -290,15 +290,21 @@ $( function() {
       <td {% if column.align|default(false) %}
             align="{{ column.align }}"
           {% endif %}
-          style="font-weight: normal">{{ row.columns[column.id] }}</td>
+          style="font-weight: normal">
+        {{ row.columns[column.id] }}
+      </td>
       {% endfor %}
       {% if viewable %}
-      <td><button class="{{ widget.full }}_view"
-                  id="{{ widget.full }}_view_{{ row.id }}">view</button></td>
+      <td>
+        <button class="{{ widget.full }}_view"
+                id="{{ widget.full }}_view_{{ row.id }}">view</button>
+      </td>
       {% endif %}
       {% if removable %}
-      <td><button class="{{ widget.full }}_remove"
-                  id="{{ widget.full }}_remove_{{ row.id }}">remove</button></td>
+      <td>
+        <button class="{{ widget.full }}_remove"
+                id="{{ widget.full }}_remove_{{ row.id }}">remove</button>
+      </td>
       {% endif %}
     </tr>
     {% endfor %}
