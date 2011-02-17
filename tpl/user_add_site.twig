@@ -6,3 +6,92 @@
  # @see base_add_list.twig for parameters
  #}
 {% extends "base_add_list.twig" %}
+
+{% block js %}
+<script type="text/javascript">
+
+$( function () {
+  // add button
+  $( "#{{ widget.compound }}_add" ).click( function() {
+    // get the list of checked sites from the cookies
+    var json_checked_site_ids =
+      $.cookie( "{{ widget.full }}_site_list_checked_ids" );
+    var checked_site_ids = undefined == json_checked_site_ids
+                         ? new Object()
+                         : jQuery.parseJSON( json_checked_site_ids );
+    
+    var site_ids = new Array();
+    for( id_string in checked_site_ids )
+    {
+      site_ids.push( parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) ) );
+    }
+    
+    // get the list of checked roles from the cookies
+    var json_checked_role_ids =
+      $.cookie( "{{ widget.full }}_role_list_checked_ids" );
+    var checked_role_ids = undefined == json_checked_role_ids
+                         ? new Object()
+                         : jQuery.parseJSON( json_checked_role_ids );
+
+    var role_ids = new Array();
+    for( id_string in checked_role_ids )
+    {
+      role_ids.push( parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) ) );
+    }
+    
+    if( 0 == site_ids.length )
+    {
+      error_dialog(
+        "Error: No sites selected",
+        "<p>You must select at least one site.<br>" +
+        "Please select sites to add the user to, or click cancel.</p>" );
+    }
+    else if( 0 == role_ids.length )
+    {
+      error_dialog(
+        "Error: No roles selected",
+        "<p>You must select at least one role.<br>" +
+        "Please select which roles the user will have at the sites, or click cancel.</p>" );
+    }
+    else
+    {
+      var slot = get_slot( $(this) );
+      var args = new Object();
+      args.id = {{ id }};
+      args.site_id_list = site_ids;
+      args.role_id_list = role_ids;
+      confirm_dialog(
+        "Add the user to sites?",
+        "<p>You have selected " +
+        ( 1 == site_ids.length ? "one site" : site_ids.length + " sites" ) +
+        " to add the user to as " +
+        ( 1 == role_ids.length ? "one role" : role_ids.length + " roles" ) + ".<br>" +
+        "Are you sure you want to continue?</p>",
+        function() {
+          if( send_action( "{{ widget.subject }}", "new_{{ list_subject }}", args ) )
+          {
+            // clear the checked ids cookies
+            $.cookie( "{{ widget.full }}_site_list_checked_ids", null );
+            $.cookie( "{{ widget.full }}_role_list_checked_ids", null );
+            slot_prev( slot );
+          }
+        } );
+    }
+  } );
+
+  // cancel button
+  $( "#{{ widget.compound }}_cancel" ).click( function() {
+    // clear the checked ids cookies
+    $.cookie( "{{ widget.full }}_site_list_checked_ids", null );
+    $.cookie( "{{ widget.full }}_role_list_checked_ids", null );
+  } );
+} );
+
+</script>
+{% endblock %}
+
+{% block listing %}
+{{ parent() }}
+<div class="spacer"></div>
+{% include "role_list.twig" with role_list %}
+{% endblock %}

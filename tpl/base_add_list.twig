@@ -6,14 +6,16 @@
  #}
 {% extends "widget.twig" %}
 {% block widget %}
+
+{% block js %}
 <script type="text/javascript">
 
 $( function () {
   // add button
   $( "#{{ widget.compound }}_add" ).click( function() {
-    // get the child list checked id object from the cookies
+    // get the object of checked ids from the cookies
     var json_checked_ids =
-      $.cookie( "{{ widget.full }}_checked_ids" );
+      $.cookie( "{{ widget.full }}_{{ list_widget_name }}_checked_ids" );
     var checked_ids = undefined == json_checked_ids
                     ? new Object()
                     : jQuery.parseJSON( json_checked_ids );
@@ -21,16 +23,16 @@ $( function () {
     var ids = new Array();
     for( id_string in checked_ids )
     {
-      ids.push( parseInt( id_string.substring( id_string.lastIndexOf('_') + 1 ) ) );
+      ids.push( parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) ) );
     }
     
     if( 0 == ids.length )
     {
       error_dialog(
-        'Error: Nothing selected',
-        '<p>You must select at least one {{ list_subject }}.<br>' +
-        'Please select {{ list_subjects }} to add to the ' +
-        '{{ widget.subject }}, or click cancel.</p>' );
+        "Error: Nothing selected",
+        "<p>You must select at least one {{ list_subject }}.<br>" +
+        "Please select {{ list_subjects }} to add to the " +
+        "{{ widget.subject }}, or click cancel.</p>" );
     }
     else
     {
@@ -39,15 +41,16 @@ $( function () {
       args.id = {{ id }};
       args.id_list = ids;
       confirm_dialog(
-        'Add {{ list_subjects }} to the {{ widget.subject }}?',
-        '<p>You have selected ' + ids.length +
-        ' {{ list_subjects }} to be added to the {{ widget.subject }}.<br>' +
-        'Are you sure you want to continue?</p>',
+        "Add {{ list_subjects }} to the {{ widget.subject }}?",
+        "<p>You have selected " + 
+        ( 1 == ids.length ? "one {{ list_subject }}" : ids.length + " {{ list_subjects }}" ) +
+        " to be added to the {{ widget.subject }}.<br>" +
+        "Are you sure you want to continue?</p>",
         function() {
           if( send_action( "{{ widget.subject }}", "new_{{ list_subject }}", args ) )
           {
-            // clear the checked ids cookie and return to the previous page
-            $.cookie( "{{ widget.full }}_checked_ids", null );
+            // clear the checked ids object cookie and return to the previous page
+            $.cookie( "{{ widget.full }}_{{ list_widget_name }}_checked_ids", null );
             slot_prev( slot );
           }
         } );
@@ -57,14 +60,19 @@ $( function () {
   // cancel button
   $( "#{{ widget.compound }}_cancel" ).click( function() {
     // clear the checked ids cookie
-    $.cookie( "{{ widget.full }}_checked_ids", null );
+    $.cookie( "{{ widget.full }}_{{ list_widget_name }}_checked_ids", null );
   } );
 } );
-</script>
 
-{# Add the list using the list's widget name to determine which template to use #}
-{% set list_template = [ list_widget_name, 'twig' ]|join('.') %}
+</script>
+{% endblock %}
+
+{% block listing %}
+{# Add the list using the list"s widget name to determine which template to use #}
+{% set list_template = [ list_widget_name, "twig" ]|join(".") %}
 {% include list_template with list %}
+{% endblock %}
+
 <div class="spacer"></div>
-{% include "confirm_buttons.twig" with { 'align': 'right', 'buttons': ['add'] } %}
+{% include "confirm_buttons.twig" with { "align": "right", "buttons": ["add"] } %}
 {% endblock widget %}

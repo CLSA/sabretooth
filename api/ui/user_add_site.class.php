@@ -28,34 +28,22 @@ class user_add_site extends base_add_list
   public function __construct( $args )
   {
     parent::__construct( 'user', 'site', $args );
+
+    // build the role list widget
+    $this->role_list = new role_list( $args );
+    $this->role_list->set_parent( $this, 'edit' );
+    $this->role_list->set_heading( 'Select which roles to grant access to at the selected sites' );
+
+    // wording for the site list should be slightly different
+    $this->list_widget->set_heading( 'Choose which sites to add the user to.' );
   }
 
-  /**
-   * Overrides the site list widget's method.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the list.
-   * @return int
-   * @access protected
-   */
-  public function determine_site_count( $modifier )
+  public function finish()
   {
-    $modifier->where( 'restricted', true );
-    return $this->get_record()->get_site_count_inverted( $modifier );
-  }
+    parent::finish();
 
-  /**
-   * Overrides the site list widget's method.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the list.
-   * @return array( active_record )
-   * @access protected
-   */
-  public function determine_site_list( $modifier )
-  {
-    $modifier->where( 'restricted', true );
-    return $this->get_record()->get_site_list_inverted( $modifier );
+    $this->role_list->finish();
+    $this->set_variable( 'role_list', $this->role_list->get_variables() );
   }
 }
 ?>

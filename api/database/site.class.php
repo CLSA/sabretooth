@@ -47,11 +47,13 @@ class site extends active_record
       \sabretooth\log::warning( 'Tried to query site record with no id.' );
       return 0;
     }
+    
+    if( is_null( $modifier ) ) $modifier = new modifier();
+    $modifier->where( 'site_id', $this->id );
 
     return self::get_one(
-      sprintf( 'SELECT COUNT( DISTINCT id ) FROM activity WHERE site_id = %s %s',
-               self::format_string( $this->id ),
-               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
+      sprintf( 'SELECT COUNT( DISTINCT id ) FROM activity %s',
+               $modifier->get_sql() ) );
   }
 
   /**
@@ -71,17 +73,16 @@ class site extends active_record
       return $activity_list;
     }
 
+    if( is_null( $modifier ) ) $modifier = new modifier();
+    $modifier->where( 'activity.user_id', 'user.id', false );
+    $modifier->where( 'activity.site_id', 'site.id', false );
+    $modifier->where( 'activity.role_id', 'role.id', false );
+    $modifier->where( 'activity.operation_id', 'operation.id', false );
+    $modifier->where( 'activity.site_id', $this->id );
+
     $ids = self::get_col(
-      sprintf( 'SELECT activity.id '.
-               'FROM activity, user, site, role, operation '.
-               'WHERE activity.user_id = user.id '.
-               'AND activity.site_id = site.id '.
-               'AND activity.role_id = role.id '.
-               'AND activity.operation_id = operation.id '.
-               'AND activity.site_id = %s '.
-               '%s',
-               self::format_string( $this->id ),
-               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
+      sprintf( 'SELECT activity.id FROM activity, user, site, role, operation %s',
+               $modifier->get_sql() ) );
 
     foreach( $ids as $id ) array_push( $activity_list, new activity( $id ) );
     return $activity_list;
@@ -103,10 +104,12 @@ class site extends active_record
       return 0;
     }
 
+    if( is_null( $modifier ) ) $modifier = new modifier();
+    $modifier->where( 'site_id', $this->id );
+
     return self::get_one(
-      sprintf( 'SELECT COUNT( DISTINCT user_id ) FROM user_access WHERE site_id = %s %s',
-               self::format_string( $this->id ),
-               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
+      sprintf( 'SELECT COUNT( DISTINCT user_id ) FROM user_access %s',
+               $modifier->get_sql() ) );
   }
 
   /**
@@ -126,6 +129,11 @@ class site extends active_record
       return $users;
     }
 
+    if( is_null( $modifier ) ) $modifier = new modifier();
+    $modifier->where( 'user_access.user_id', 'user.id', false );
+    $modifier->where( 'user_access.site_id', $this->id );
+    $modifier->group( 'user_access.user_id' );
+
     $ids = self::get_col(
       sprintf( 'SELECT user_access.user_id '.
                'FROM user_access, user '.
@@ -133,15 +141,14 @@ class site extends active_record
                'ON user.id = user_last_activity.user_id '.
                'LEFT JOIN activity '.
                'ON user_last_activity.activity_id = activity.id '.
-               'WHERE user_access.user_id = user.id '.
-               'AND user_access.site_id = %s '.
-               'GROUP BY user_access.user_id '.
                '%s',
-               self::format_string( $this->id ),
-               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
+               $modifier->get_sql() ) );
 
     foreach( $ids as $id ) array_push( $users, new user( $id ) );
     return $users;
   }
+
+  // TODO: implement add_user( $user_id_list, $role_id )
+  // TODO: implement remove_user( $user_id_list, $role_id )
 }
 ?>

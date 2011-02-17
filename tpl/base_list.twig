@@ -138,7 +138,7 @@ $( function() {
 $( function() {
   // get the checked id object from the cookies
   var json_checked_ids =
-    $.cookie( "{{ parent.exists ? parent.full : widget.full }}_checked_ids" );
+    $.cookie( "{{ widget.compound }}_checked_ids" );
   var checked_ids = undefined == json_checked_ids
                   ? new Object()
                   : jQuery.parseJSON( json_checked_ids );
@@ -153,7 +153,7 @@ $( function() {
     // add or remove the checkbox id to the object and replace the old cookie
     if( $(this).attr( "checked" ) ) checked_ids[ $(this).attr( "id" ) ] = true;
     else delete checked_ids[ $(this).attr( "id" ) ];
-    $.cookie( "{{ parent.exists ? parent.full : widget.full }}_checked_ids",
+    $.cookie( "{{ widget.compound }}_checked_ids",
               JSON.stringify( checked_ids ) );
   } );
 
@@ -165,7 +165,7 @@ $( function() {
     } );
 
     // replace the old cookie
-    $.cookie( "{{ parent.exists ? parent.full : widget.full }}_checked_ids",
+    $.cookie( "{{ widget.compound }}_checked_ids",
               JSON.stringify( checked_ids ) );
   } );
 
@@ -177,7 +177,7 @@ $( function() {
     } );
     
     // replace the old cookie
-    $.cookie( "{{ parent.exists ? parent.full : widget.full }}_checked_ids",
+    $.cookie( "{{ widget.compound }}_checked_ids",
               JSON.stringify( checked_ids ) );
   } );
 
@@ -191,7 +191,7 @@ $( function() {
     } );
 
     // replace the old cookie
-    $.cookie( "{{ parent.exists ? parent.full : widget.full }}_checked_ids",
+    $.cookie( "{{ widget.compound }}_checked_ids",
               JSON.stringify( checked_ids ) );
   } );
 
@@ -283,7 +283,7 @@ $( function() {
       <td>
         <input type="checkbox"
                class="{{ widget.full }}_check"
-               id="{{ parent.exists ? parent.full : widget.full }}_check_{{ row.id }}" />
+               id="{{ widget.compound }}_check_{{ row.id }}" />
       </td>
       {% endif %}
       {% for column in columns %}
@@ -303,7 +303,9 @@ $( function() {
       {% if removable %}
       <td>
         <button class="{{ widget.full }}_remove"
-                id="{{ widget.full }}_remove_{{ row.id }}">remove</button>
+                id="{{ widget.full }}_remove_{{ row.id }}">
+          remove{% if parent.exists %} from {{ parent.subject }}{% endif %}
+        </button>
       </td>
       {% endif %}
     </tr>
