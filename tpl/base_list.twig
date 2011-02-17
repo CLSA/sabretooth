@@ -94,11 +94,14 @@ $( function() {
     var slot = get_slot( $(this) );
     
     {% if parent.exists %}
+      var args = new Object();
+      args.id = {{ parent.id }};
+      args.id_list = [ id ];
       confirm_dialog(
         "Remove {{ widget.subject }}?",
         "Are you sure you want to remove the {{ widget.subject }} from the {{ parent.subject }}?",
         function() {
-          send_action( "{{ parent.subject }}", "delete_{{ widget.subject }}", { "id": id } );
+          send_action( "{{ parent.subject }}", "delete_{{ widget.subject }}", args );
           slot_refresh( slot );
         } );
     {% else %}
@@ -131,31 +134,51 @@ $( function() {
 {% endif %}
 
 {% if checkable %}
+{# TODO: need to create a library for these kinds of cookie operations #}
 $( function() {
-  // set check button states based on its cookie
+  // get the checked id object from the cookies
+  var json_checked_ids =
+    $.cookie( "{{ parent.exists ? parent.full : widget.full }}_checked_ids" );
+  var checked_ids = undefined == json_checked_ids
+                  ? new Object()
+                  : jQuery.parseJSON( json_checked_ids );
+    
+  // on page load, set check button states based on its cookie
   $( ".{{ widget.full }}_check" ).each( function() {
-    if( undefined != $.cookie( $(this).attr( "id" ) ) ) $(this).attr( "checked", "checked" );
+    if( checked_ids[ $(this).attr( "id" ) ] ) $(this).attr( "checked", "checked" );
   } );
 
-  // set check button cookie when there is a change
+  // on change to a checkbox, set check button cookie
   $( ".{{ widget.full }}_check" ).change( function() {
-    $.cookie( $(this).attr( "id" ), $(this).attr( "checked" ) ? true : null );
+    // add or remove the checkbox id to the object and replace the old cookie
+    if( $(this).attr( "checked" ) ) checked_ids[ $(this).attr( "id" ) ] = true;
+    else delete checked_ids[ $(this).attr( "id" ) ];
+    $.cookie( "{{ parent.exists ? parent.full : widget.full }}_checked_ids",
+              JSON.stringify( checked_ids ) );
   } );
 
-  // check all (visible) checkboxes and set their cookies as well
+  // on clicking the "check all" button, check all (visible) checkboxes and set their cookies
   $( "#{{ widget.full }}_check_all" ).click( function() {
     $( ".{{ widget.full }}_check" ).each( function() {
       $(this).attr( "checked", true );
-      $.cookie( $(this).attr( "id" ), true );
+      checked_ids[ $(this).attr( "id" ) ] = true;
     } );
+
+    // replace the old cookie
+    $.cookie( "{{ parent.exists ? parent.full : widget.full }}_checked_ids",
+              JSON.stringify( checked_ids ) );
   } );
 
   // uncheck all (visible) checkboxes and set their cookies as well
   $( "#{{ widget.full }}_check_none" ).click( function() {
     $( ".{{ widget.full }}_check" ).each( function() {
       $(this).attr( "checked", false );
-      $.cookie( $(this).attr( "id" ), null );
+      delete checked_ids[ $(this).attr( "id" ) ];
     } );
+    
+    // replace the old cookie
+    $.cookie( "{{ parent.exists ? parent.full : widget.full }}_checked_ids",
+              JSON.stringify( checked_ids ) );
   } );
 
   // uncheck all (visible) checkboxes and set their cookies as well
@@ -163,8 +186,13 @@ $( function() {
     $( ".{{ widget.full }}_check" ).each( function() {
       var old = $(this).attr( "checked" );
       $(this).attr( "checked", !old );
-      $.cookie( $(this).attr( "id" ), old ? null : true );
+      if( !old ) checked_ids[ $(this).attr( "id" ) ] = true;
+      else delete checked_ids[ $(this).attr( "id" ) ];
     } );
+
+    // replace the old cookie
+    $.cookie( "{{ parent.exists ? parent.full : widget.full }}_checked_ids",
+              JSON.stringify( checked_ids ) );
   } );
 
   // create button set

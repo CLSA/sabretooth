@@ -9,19 +9,19 @@
 <script type="text/javascript">
 
 $( function () {
+  // add button
   $( "#{{ widget.compound }}_add" ).click( function() {
+    // get the child list checked id object from the cookies
+    var json_checked_ids =
+      $.cookie( "{{ widget.full }}_checked_ids" );
+    var checked_ids = undefined == json_checked_ids
+                    ? new Object()
+                    : jQuery.parseJSON( json_checked_ids );
+    
     var ids = new Array();
-    if( document.cookie && document.cookie != '' )
+    for( id_string in checked_ids )
     {
-      var cookies = document.cookie.split( ';' );
-      for( i = 0; i < cookies.length; i++ )
-      {
-        if( 1 == cookies[i].search(
-                   "{{ parent.exists ? parent.full : widget.full }}_check_[0-9]+" ) )
-        {
-          ids.push( parseInt( cookies[i].substring( cookies[i].lastIndexOf('_') + 1 ) ) );
-        }
-      }
+      ids.push( parseInt( id_string.substring( id_string.lastIndexOf('_') + 1 ) ) );
     }
     
     if( 0 == ids.length )
@@ -44,9 +44,19 @@ $( function () {
         'Are you sure you want to continue?</p>',
         function() {
           if( send_action( "{{ widget.subject }}", "new_{{ list_subject }}", args ) )
+          {
+            // clear the checked ids cookie and return to the previous page
+            $.cookie( "{{ widget.full }}_checked_ids", null );
             slot_prev( slot );
+          }
         } );
     }
+  } );
+
+  // cancel button
+  $( "#{{ widget.compound }}_cancel" ).click( function() {
+    // clear the checked ids cookie
+    $.cookie( "{{ widget.full }}_checked_ids", null );
   } );
 } );
 </script>
