@@ -141,7 +141,9 @@ final class log extends singleton
    */
   public static function print_r( $variable, $label = false )
   {
-    $message = print_r( $variable, true );
+    $message = !is_bool( $variable )
+             ? print_r( $variable, true )
+             : ( $variable ? 'true' : 'false' ); // print_r doesn't display booleans
     self::debug( 'print_r'.( $label ? "($label)" : '' ).": $message" );
   }
   

@@ -127,7 +127,7 @@ $( function () {
 {% if addable %}
 <form id="{{ widget.full }}_add_form">
 {% endif %}
-<div class="ui-widget ui-widget-content">
+<div class="ui-widget ui-widget-content" style="position: relative;">
 <table>
 {% for item_id, entry in item %}
   <tr>
@@ -167,7 +167,7 @@ $( function () {
 {% endfor %}
 </table>
 {% if removable %}
-<button class="{{ widget.full }}_remove" style="float: right;">remove</button>
+<button class="{{ widget.full }}_remove" style="position: absolute; bottom: 0.2em; right: 0.1em;">remove</button>
 {% endif %}
 </div>
 {% if addable %}</form>{% endif %}

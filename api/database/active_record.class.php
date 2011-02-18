@@ -170,6 +170,10 @@ abstract class active_record extends \sabretooth\base_object
    */
   public static function count( $modifier )
   {
+    \sabretooth\log::print_r( 
+      sprintf( 'SELECT COUNT(*) FROM %s %s',
+               self::get_table_name(),
+               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
     return self::get_one(
       sprintf( 'SELECT COUNT(*) FROM %s %s',
                self::get_table_name(),
@@ -245,8 +249,9 @@ abstract class active_record extends \sabretooth\base_object
    *             returns the number of records NOT in the joining table.
    * @method null add_<record>() Given an array of ids, this method adds associations between the
    *              current and foreign <record> by adding rows into the joining "has" table.
-   * @method null remove_<record>() Given an array of ids, this method removes associations between
-   *              the current and foreign <record> by removing rows from the joining "has" table.
+   * @method null remove_<record>() Given an id, this method removes the association between the
+                  current and foreign <record> by removing the corresponding row from the joining
+                  "has" table.
    */
   public function __call( $name, $args )
   {
@@ -304,13 +309,13 @@ abstract class active_record extends \sabretooth\base_object
       $forward_joining_table_name = self::get_table_name().'_has_'.$foreign_table_name;
       $reverse_joining_table_name = $foreign_table_name.'_has_'.self::get_table_name();
       
-      if( $this->table_exists( $forward_joining_table ) )
+      if( $this->table_exists( $forward_joining_table_name ) )
       {
-        $joining_table_name = $forward_joining_table;
+        $joining_table_name = $forward_joining_table_name;
       }
-      else if( $this->table_exists( $reverse_joining_table ) )
+      else if( $this->table_exists( $reverse_joining_table_name ) )
       {
-        $joining_table_name = $reverse_joining_table;
+        $joining_table_name = $reverse_joining_table_name;
       }
       else
       { // joining table not found
@@ -322,6 +327,13 @@ abstract class active_record extends \sabretooth\base_object
     {
       if( 'inverted' == $name_parts[3] ) $inverted = true;
       else throw $exception;
+    }
+
+    // now that we're relatively sure the method name is valid, make sure we have a valid record
+    if( is_null( $this->id ) )
+    { 
+      \sabretooth\log::warning( 'Tried to query record with no id.' );
+      return 0;
     }
 
     // once we get here we know for sure that the function name is valid
@@ -353,26 +365,18 @@ abstract class active_record extends \sabretooth\base_object
     else if( 'remove' == $action )
     { // calling: remove_<record>( $ids )
       // make sure the first argument is a non-empty array of ids
-      if( 1 != count( $args ) || !is_array( $args ) || 0 == count( $args ) )
+      if( 1 != count( $args ) || 0 >= $args[0] )
         throw new \sabretooth\exception\argument( 'args', $args, __METHOD__ );
-      $id_list = $args[0];
+      $id = $args[0];
       
-      $in = '';
-      $first = true;
-      foreach( $id_list as $id )
-      {
-        if( !$first ) $in .= ', ';
-        $in .= active_record::format_string( $id );
-        $first = false;
-      }
+      $modifier = new modifier();
+      $modifier->where( $primary_key_name, $this->id );
+      $modifier->where( $foreign_key_name, $id );
 
       self::execute(
-        sprintf( 'DELETE FROM %s WHERE %s = %s AND %s IN( %s )',
+        sprintf( 'DELETE FROM %s %s',
                  $joining_table_name,
-                 $primary_key_name,
-                 $this->id,
-                 $foreign_key_name,
-                 $in ) );
+                 $modifier->get_sql() ) );
     }
     else if( 'get' == $action && is_null( $sub_action ) )
     { // calling: get_<record>()
@@ -408,7 +412,7 @@ abstract class active_record extends \sabretooth\base_object
       else
       { // no inversion, just select the records from the joining table
         $modifier->where( $primary_key_name, $this->id );
-        $sql = sprintf( 'SELECT %s FROM %s',
+        $sql = sprintf( 'SELECT %s FROM %s %s',
                         'list' == $sub_action
                           ? $foreign_key_name
                           : 'COUNT( '.$foreign_key_name.' )',

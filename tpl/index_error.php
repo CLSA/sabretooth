@@ -25,7 +25,12 @@ $code = substr( $result_array['error_type'], 0, 1 ).'.'.$result_array['error_cod
   <style type="text/css">
     body { margin: 10px; }
     div { padding: 10px; }
-    div.error { width: 500px; border: 2px solid red; }
+    div.error {
+      width: 500px;
+      border: 2px solid red;
+      -moz-box-shadow: black 2px 2px 5px;
+      -webkit-box-shadow: black 2px 2px 5px;
+    }
     h2 { margin: 0px; color: red; }
   </style>
 </head>

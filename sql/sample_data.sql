@@ -17,20 +17,20 @@ INSERT INTO user( name ) VALUES( 'patrick' );
 INSERT INTO user( name ) VALUES( 'val' );
 INSERT INTO user( name ) VALUES( 'ron' );
 
-DELETE FROM user_access;
-INSERT INTO user_access
+DELETE FROM access;
+INSERT INTO access
 SET user_id = ( SELECT id FROM user WHERE name = 'patrick' ),
     role_id = ( SELECT id FROM role WHERE name = 'administrator' ),
     site_id = ( SELECT id FROM site WHERE name = 'McMaster' );
-INSERT INTO user_access
+INSERT INTO access
 SET user_id = ( SELECT id FROM user WHERE name = 'patrick' ),
     role_id = ( SELECT id FROM role WHERE name = 'supervisor' ),
     site_id = ( SELECT id FROM site WHERE name = 'Manitoba' );
-INSERT INTO user_access
+INSERT INTO access
 SET user_id = ( SELECT id FROM user WHERE name = 'patrick' ),
     role_id = ( SELECT id FROM role WHERE name = 'operator' ),
     site_id = ( SELECT id FROM site WHERE name = 'Manitoba' );
-INSERT INTO user_access
+INSERT INTO access
 SET user_id = ( SELECT id FROM user WHERE name = 'val' ),
     role_id = ( SELECT id FROM role WHERE name = 'technician' ),
     site_id = ( SELECT id FROM site WHERE name = 'McMaster' );

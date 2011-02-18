@@ -1,6 +1,6 @@
 <?php
 /**
- * site_list.class.php
+ * access_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,36 +10,39 @@
 namespace sabretooth\ui;
 
 /**
- * widget site list
+ * widget access list
  * 
  * @package sabretooth\ui
  */
-class site_list extends base_list_widget
+class access_list extends base_list_widget
 {
   /**
    * Constructor
    * 
-   * Defines all variables required by the site list.
+   * Defines all variables required by the access list.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'site', $args );
+    parent::__construct( 'access', $args );
     
     $session = \sabretooth\session::self();
 
     $this->columns = array(
-      array( 'id' => 'name',
-             'heading' => 'Name',
+      array( 'id' => 'user.name',
+             'heading' => 'User',
              'sortable' => true ),
-      array( 'id' => 'users',
-             'heading' => 'Users',
-             'sortable' => false ),
-      array( 'id' => 'last',
-             'heading' => 'Last activity',
-             'sortable' => false ) ); 
+      array( 'id' => 'role.name',
+             'heading' => 'Role',
+             'sortable' => true ),
+      array( 'id' => 'site.name',
+             'heading' => 'Site',
+             'sortable' => true ),
+      array( 'id' => 'date',
+             'heading' => 'Granted',
+             'sortable' => true ) ); 
   }
 
   /**
@@ -56,18 +59,14 @@ class site_list extends base_list_widget
     // get all sites
     foreach( $this->get_record_list() as $record )
     {
-      // determine the last activity
-      $db_activity = $record->get_last_activity();
-      $last = \sabretooth\util::get_fuzzy_time_ago(
-                is_null( $db_activity ) ? null : $db_activity->date );
-
       array_push(
         $this->rows,
         array( 'id' => $record->id,
                'columns' =>
-                 array( 'name' => $record->name,
-                        'users' => $record->get_user_count(),
-                        'last' => $last ) ) );
+                 array( 'user.name' => $record->get_user()->name,
+                        'role.name' => $record->get_role()->name,
+                        'site.name' => $record->get_site()->name,
+                        'date' => \sabretooth\util::get_fuzzy_time_ago( $record->date ) ) ) );
     }
   }
 }

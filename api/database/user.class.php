@@ -14,198 +14,61 @@ namespace sabretooth\database;
  *
  * @package sabretooth\database
  */
-class user extends active_record
+class user extends base_access
 {
   /**
-   * Returns whether the user has the role for the given site.
+   * Adds a list of sites to the user with the given role.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\site $db_site
-   * @param database\role $db_role
-   * @return bool
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @param int $site_id_list The sites to add.
+   * @param int $role_id The role to add them under.
+   * @throws exeception\argument
    * @access public
    */
-  public function has_access( $db_site, $db_role )
+  public function add_access( $site_id_list, $role_id )
   {
-    if( is_null( $this->id ) )
+    // make sure the site id list argument is a non-empty array of ids
+    if( !is_array( $site_id_list ) || 0 == count( $site_id_list ) )
+      throw new \sabretooth\exception\argument( 'site_id_list', $site_id_list, __METHOD__ );
+
+    // make sure the role id argument is valid
+    if( 0 >= $role_id )
+      throw new \sabretooth\exception\argument( 'role_id', $role_id, __METHOD__ );
+
+    $values = '';
+    $first = true;
+    foreach( $site_id_list as $id )
     {
-      \sabretooth\log::warning( 'Tried to determine access for user record with no id.' );
-      return 0;
+      if( !$first ) $values .= ', ';
+      $values .= sprintf( '(%s, %s, %s)',
+                       active_record::format_string( $id ),
+                       active_record::format_string( $role_id ),
+                       active_record::format_string( $this->id ) );
+      $first = false;
     }
-    
+
+    self::execute(
+      sprintf( 'INSERT IGNORE INTO access (site_id, role_id, user_id) VALUES %s',
+               $values ) );
+  }
+
+  /**
+   * Removes a list of sites to the user who have the given role.
+   * 
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @param int $access_id The access record to remove.
+   * @access public
+   */
+  public function remove_access( $access_id )
+  {
     $modifier = new modifier();
-    $modifier->where( 'user_id', $this->id );
-    $modifier->where( 'site_id', $db_site->id );
-    $modifier->where( 'role_id', $db_role->id );
-
-    $rows = self::get_one(
-      sprintf( 'SELECT user_id FROM user_access %s',
-               $modifier->get_sql() ) );
-
-    return count( $rows );
-  }
-
-  /**
-   * Returns the most recent activity performed by this user.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return database\activity
-   * @access public
-   */
-  public function get_last_activity()
-  {
-    $activity_id = self::get_one(
-      sprintf( 'SELECT activity_id FROM user_last_activity WHERE user_id = %s',
-               self::format_string( $this->id ) ) );
-    
-    return is_null( $activity_id ) ? NULL : new activity( $activity_id );
-  }
-
-  /**
-   * Get the number of activity entries for this user.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the count.
-   * @return int
-   * @access public
-   */
-  public function get_activity_count( $modifier = NULL)
-  {
-    if( is_null( $this->id ) )
-    {
-      \sabretooth\log::warning( 'Tried to query user record with no id.' );
-      return 0;
-    }
-    
-    if( is_null( $modifier ) ) $modifier = new modifier(); 
+    $modifier->where( 'id', $access_id );
+    // this just to make sure the access belongs to this user
     $modifier->where( 'user_id', $this->id );
 
-    return self::get_one(
-      sprintf( 'SELECT COUNT( DISTINCT id ) FROM activity %s',
+    self::execute(
+      sprintf( 'DELETE FROM access %s',
                $modifier->get_sql() ) );
   }
-
-  /**
-   * Get an activity list for this user.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the list.
-   * @return array( database\activity )
-   * @access public
-   */
-  public function get_activity_list( $modifier = NULL )
-  {
-    $activity_list = array();
-    if( is_null( $this->id ) )
-    {
-      \sabretooth\log::warning( 'Tried to query user record with no id.' );
-      return $activity_list;
-    }
-    
-    // need to further set up the modifier
-    if( is_null( $modifier ) ) $modifier = new modifier();
-    $modifier->where( 'activity.user_id', 'user.id', false );
-    $modifier->where( 'activity.site_id', 'site.id', false );
-    $modifier->where( 'activity.role_id', 'role.id', false );
-    $modifier->where( 'activity.operation_id', 'operation.id', false );
-    $modifier->where( 'activity.user_id', $this->id );
-
-    $ids = self::get_col(
-      sprintf( 'SELECT activity.id FROM activity, user, site, role, operation %s',
-               $modifier->get_sql() ) );
-
-    foreach( $ids as $id ) array_push( $activity_list, new activity( $id ) );
-    return $activity_list;
-  }
-
-  /**
-   * Get the number of sites that this user has access to.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the count.
-   * @return int
-   * @access public
-   */
-  public function get_site_count( $modifier = NULL )
-  {
-    if( is_null( $this->id ) )
-    {
-      \sabretooth\log::warning( 'Tried to query user record with no id.' );
-      return 0;
-    }
-
-    if( is_null( $modifier ) ) $modifier = new modifier(); 
-    $modifier->where( 'user_id', $this->id );
-
-    return self::get_one(
-      sprintf( 'SELECT COUNT( DISTINCT site_id ) FROM user_access %s',
-               $modifier->get_sql() ) );
-  }
-
-  /**
-   * Returns an array of site objects the user has access to (empty array if none).
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the list.
-   * @return array( database\site )
-   * @access public
-   */
-  public function get_site_list( $modifier = NULL )
-  {
-    $sites = array();
-    if( is_null( $this->id ) )
-    {
-      \sabretooth\log::warning( 'Tried to get sites for user record with no id.' );
-      return $sites;
-    }
-    
-    // need to further set up the modifier
-    if( is_null( $modifier ) ) $modifier = new modifier();
-    $modifier->where( 'user_access.site_id', 'site.id', false );
-    $modifier->where( 'user_id', $this->id );
-    $modifier->group( 'site_id' );
-
-    $ids = self::get_col(
-      sprintf( 'SELECT site_id FROM user_access, site %s',
-               $modifier->get_sql() ) );
-      
-    foreach( $ids as $id ) array_push( $sites, new site( $id ) );
-    return $sites;
-  }
-
-  /**
-   * Returns an array of role objects the user has for the given site.
-   * TODO: Should we use a modifier instead of $db_site argument for this method?
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\site $db_site Restrict to those roles for the given site, or if NULL then all.
-   * @return array( database\role )
-   * @access public
-   */
-  public function get_role_list( $db_site = null )
-  {
-    $roles = array();
-
-    if( is_null( $this->id ) )
-    {
-      \sabretooth\log::warning( 'Tried to get roles for user record with no id.' );
-      return $roles;
-    }
-    
-    $modifier = new modifier();
-    $modifier->where( 'user_id', $this->id );
-    if( !is_null( $db_site ) ) $modifier->where( 'site_id', $db_site->id );
-    $modifier->order( 'role_id' );
-
-    $role_ids = self::get_col(
-      sprintf( 'SELECT role_id FROM user_access %s',
-               $modifier->get_sql() ) );
-
-    foreach( $role_ids as $role_id ) array_push( $roles, new role( $role_id ) );
-    return $roles;
-  }
-
-  // TODO: implement add_site( $site_id_list, $role_id )
-  // TODO: implement remove_site( $site_id_list, $role_id )
 }
 ?>

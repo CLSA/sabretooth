@@ -38,7 +38,7 @@ abstract class base_delete_record extends base_record_action
   public function execute()
   {
     $method_name = 'remove_'.$this->child_subject;
-    $this->get_record()->$method_name( $this->get_argument( 'id_list' ) );
+    $this->get_record()->$method_name( $this->get_argument( 'remove_id' ) );
   }
 
   /**

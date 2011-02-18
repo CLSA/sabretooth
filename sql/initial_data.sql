@@ -14,6 +14,12 @@ VALUES( "action", "voip", "halt", true, "Disconnects all VOIP sessions." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "voip", "suspend", true, "Prevents any new VOIP sessions from connecting." );
 
+-- access
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "access", "delete", true, "Removes access from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "access", "list", true, "List system access entries." );
+
 -- activity
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "activity", "list", true, "List system activity." );
@@ -62,13 +68,13 @@ VALUES( "widget", "site", "view", true, "View a site's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "site", "list", true, "List sites in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "site", "add_user", true, "View users to add roles with access to the site." );
+VALUES( "widget", "site", "add_access", true, "View users to grant access to the site." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "site", "new_user", true, "Add new users to a site." );
+VALUES( "action", "site", "new_access", true, "Grant access to a site." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "site", "delete_user", true, "Remove users from a site." );
+VALUES( "action", "site", "delete_access", true, "Remove accesss from a site." );
 
--- user
+-- access
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "user", "delete", true, "Removes a user from the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -82,11 +88,11 @@ VALUES( "widget", "user", "view", true, "View a user's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "user", "list", true, "List users in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "user", "add_site", true, "View sites to add roles to for the user." );
+VALUES( "widget", "user", "add_access", true, "View sites to grant the user access to." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "user", "new_site", true, "Add new site-roles to a user." );
+VALUES( "action", "user", "new_access", true, "Grant this user access to sites." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "user", "delete_site", true, "Remove site-roles from a user." );
+VALUES( "action", "user", "delete_access", true, "Removes this user's access to a site." );
 
 
 -- build role permissions
@@ -103,7 +109,7 @@ INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id
 FROM role, operation
 WHERE role.name in( "administrator", "supervisor" )
-AND operation.subject in( "activity", "operation", "site", "role", "user" );
+AND operation.subject in( "access", "activity", "operation", "site", "role", "user" );
 
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id

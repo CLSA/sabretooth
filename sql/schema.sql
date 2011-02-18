@@ -478,29 +478,32 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`user_access`
+-- Table `sabretooth`.`access`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`user_access` ;
+DROP TABLE IF EXISTS `sabretooth`.`access` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`user_access` (
+CREATE  TABLE IF NOT EXISTS `sabretooth`.`access` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `user_id` INT UNSIGNED NOT NULL ,
   `role_id` INT UNSIGNED NOT NULL ,
   `site_id` INT UNSIGNED NOT NULL ,
-  PRIMARY KEY (`user_id`, `role_id`, `site_id`) ,
+  `date` TIMESTAMP NOT NULL ,
+  PRIMARY KEY (`id`) ,
   INDEX `fk_role_id` (`role_id` ASC) ,
   INDEX `fk_user_id` (`user_id` ASC) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
-  CONSTRAINT `fk_user_access_user`
+  UNIQUE INDEX `uq_user_role_site` (`user_id` ASC, `role_id` ASC, `site_id` ASC) ,
+  CONSTRAINT `fk_access_user`
     FOREIGN KEY (`user_id` )
     REFERENCES `sabretooth`.`user` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_user_access_role`
+  CONSTRAINT `fk_access_role`
     FOREIGN KEY (`role_id` )
     REFERENCES `sabretooth`.`role` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_user_access_site`
+  CONSTRAINT `fk_access_site`
     FOREIGN KEY (`site_id` )
     REFERENCES `sabretooth`.`site` (`id` )
     ON DELETE NO ACTION
@@ -686,6 +689,11 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`user_last_activity` (`activity_id` INT,
 CREATE TABLE IF NOT EXISTS `sabretooth`.`site_last_activity` (`activity_id` INT, `site_id` INT);
 
 -- -----------------------------------------------------
+-- Placeholder table for view `sabretooth`.`role_last_activity`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `sabretooth`.`role_last_activity` (`activity_id` INT, `role_id` INT);
+
+-- -----------------------------------------------------
 -- View `sabretooth`.`participant_primary_location`
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `sabretooth`.`participant_primary_location` ;
@@ -769,6 +777,24 @@ AND activity_1.date = (
   WHERE site_2.id = activity_2.site_id
   AND site_2.id = site_1.id
   GROUP BY site_2.id )
+GROUP BY activity_1.date;
+
+-- -----------------------------------------------------
+-- View `sabretooth`.`role_last_activity`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `sabretooth`.`role_last_activity` ;
+DROP TABLE IF EXISTS `sabretooth`.`role_last_activity`;
+USE `sabretooth`;
+CREATE  OR REPLACE VIEW `sabretooth`.`role_last_activity` AS
+SELECT activity_1.id AS activity_id, role_1.id as role_id
+FROM activity AS activity_1, role AS role_1
+WHERE role_1.id = activity_1.role_id
+AND activity_1.date = (
+  SELECT MAX( activity_2.date )
+  FROM activity AS activity_2, role AS role_2
+  WHERE role_2.id = activity_2.role_id
+  AND role_2.id = role_1.id
+  GROUP BY role_2.id )
 GROUP BY activity_1.date;
 
 

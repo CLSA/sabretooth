@@ -30,9 +30,9 @@ class permission extends base_exception
     $this->operation = $db_operation;
     $message = is_null( $db_operation ) ||
                !is_object( $db_operation ) ||
-               !is_subclass_of( $db_operation, '\\sabretooth\\database\\operation' )
+               !is_a( $db_operation, 'sabretooth\\database\\operation' )
              ? 'operation (unknown) denied'
-             : sprintf( 'operation "%s".%s" denied.',
+             : sprintf( 'operation "%s %s" denied.',
                         $db_operation->subject,
                         $db_operation->name );
     parent::__construct( $message, $context, $previous );

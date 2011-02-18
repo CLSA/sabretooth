@@ -42,6 +42,7 @@ abstract class base_list_widget extends widget
     $this->page = $this->get_argument( 'page', $this->page );
     $this->sort_column = $this->get_argument( 'sort_column', $this->sort_column );
     $this->sort_desc = 0 != $this->get_argument( 'sort_desc', $this->sort_desc );
+    $this->set_heading( ucfirst( $subject ).' list' );
 
     // determine properties based on the current user's permissions
     $session = \sabretooth\session::self();

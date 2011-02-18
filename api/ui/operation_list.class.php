@@ -30,9 +30,6 @@ class operation_list extends base_list_widget
     
     $session = \sabretooth\session::self();
 
-    // define all template variables for this list
-    $this->set_heading( 'Operation list' );
-
     $this->columns = array(
       array( 'id' => 'type',
              'heading' => 'type',

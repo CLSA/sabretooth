@@ -46,7 +46,9 @@ class self_set_role extends action
     // get the first role associated with the role
     $session = \sabretooth\session::self();
     $db_site = $session->get_site();
-    $db_role_list = $session->get_user()->get_role_list( $db_site );
+    $modifier = new \sabretooth\database\modifier();
+    $modifier->where( 'site_id', $db_site->id );
+    $db_role_list = $session->get_user()->get_role_list( $modifier );
     if( !in_array( $db_role, $db_role_list ) )
       \sabretooth\log::error( 'User has no access to role name "'.$this->role_name. '"' );
 

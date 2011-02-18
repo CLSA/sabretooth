@@ -50,10 +50,10 @@ class user_view extends base_view
              'type' => 'constant',
              'value' => $last );
 
-    // create the site sub-list widget
-    $this->site_list = new site_list( $args );
-    $this->site_list->set_parent( $this );
-    $this->site_list->set_heading( 'User\'s site access list' );
+    // create the access sub-list widget
+    $this->access_list = new access_list( $args );
+    $this->access_list->set_parent( $this );
+    $this->access_list->set_heading( 'User\'s site access list' );
 
     // create the activity sub-list widget
     $this->activity_list = new activity_list( $args );
@@ -71,37 +71,40 @@ class user_view extends base_view
   {
     parent::finish();
 
-    $this->site_list->finish();
-    $this->set_variable( 'site_list', $this->site_list->get_variables() );
+    $this->access_list->finish();
+    $this->set_variable( 'access_list', $this->access_list->get_variables() );
 
     $this->activity_list->finish();
     $this->set_variable( 'activity_list', $this->activity_list->get_variables() );
   }
   
   /**
-   * Overrides the site list widget's method.
+   * Overrides the access list widget's method.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
    * @return int
    * @access protected
    */
-  public function determine_site_count( $modifier )
+  public function determine_access_count( $modifier )
   {
-    return $this->get_record()->get_site_count( $modifier );
+    $modifier->where( 'user_id', $this->get_record()->id );
+    return \sabretooth\database\access::count( $modifier );
+
   }
 
   /**
-   * Overrides the site list widget's method.
+   * Overrides the access list widget's method.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
    * @return array( active_record )
    * @access protected
    */
-  public function determine_site_list( $modifier )
+  public function determine_access_list( $modifier )
   {
-    return $this->get_record()->get_site_list( $modifier );
+    $modifier->where( 'user_id', $this->get_record()->id );
+    return \sabretooth\database\access::select( $modifier );
   }
 
   /**
@@ -130,10 +133,10 @@ class user_view extends base_view
   }
   /**
    * The user list widget.
-   * @var user_list
+   * @var access_list
    * @access protected
    */
-  protected $user_list = NULL;
+  protected $access_list = NULL;
 
   /**
    * The activity list widget.

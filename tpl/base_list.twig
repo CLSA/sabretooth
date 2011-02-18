@@ -1,5 +1,6 @@
 {##
  # base_list.twig
+ # TODO: double-click a header to limit list by value for taht column
  # 
  # Generic list widget.
  # @author Patrick Emond <emondpd@mcmaster.ca>
@@ -96,7 +97,7 @@ $( function() {
     {% if parent.exists %}
       var args = new Object();
       args.id = {{ parent.id }};
-      args.id_list = [ id ];
+      args.remove_id = id;
       confirm_dialog(
         "Remove {{ widget.subject }}?",
         "Are you sure you want to remove the {{ widget.subject }} from the {{ parent.subject }}?",
@@ -329,7 +330,7 @@ $( function() {
         {% set item_to = item_from + rows|count - 1 %}
         Viewing: {{ item_from }} to {{ item_to }} of {{ number_of_items }}
         {% else %}
-        No records found.
+        No {{ widget.subjects }} found.
         {% endif %}
         {% if items_per_page < number_of_items %}
         <span style="margin-left:20px"></span>

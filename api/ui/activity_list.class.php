@@ -30,9 +30,6 @@ class activity_list extends base_list_widget
     
     $session = \sabretooth\session::self();
 
-    // define all template variables for this list
-    $this->set_heading( 'Activity list' );
-    
     $this->columns = array(
       array( 'id' => 'user.name',
              'heading' => 'user',

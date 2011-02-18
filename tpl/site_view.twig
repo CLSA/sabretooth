@@ -9,8 +9,8 @@
 {% block record %}
 {{ parent() }}
 <div class="spacer"></div>
-{# Add a list of users who hold a role at this site #}
-{% include "user_list.twig" with user_list %}
+{# Add an access list pertaining to this site #}
+{% include "access_list.twig" with access_list %}
 <div class="spacer"></div>
 {# Add a list of the activity at this site #}
 {% include "activity_list.twig" with activity_list %}

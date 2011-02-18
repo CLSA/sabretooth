@@ -1,7 +1,7 @@
 {##
  # user_view.twig
  # 
- # Display user details.
+ # View user details.
  # @author Patrick Emond <emondpd@mcmaster.ca>
  # @see base_view.twig for parameters
  #}
@@ -9,9 +9,9 @@
 {% block record %}
 {{ parent() }}
 <div class="spacer"></div>
-{# Add a list of sites the user holds a role at #}
-{% include "site_list.twig" with site_list %}
+{# Add an access list pertaining to this user #}
+{% include "access_list.twig" with access_list %}
 <div class="spacer"></div>
-{# Add a list of the user's activity #}
+{# Add a list of the activity at this user #}
 {% include "activity_list.twig" with activity_list %}
 {% endblock %}

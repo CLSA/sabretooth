@@ -1,0 +1,12 @@
+{##
+ # site_add_access.twig
+ # 
+ # Grant users access to a site.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @see base_add_list.twig for parameters
+ #}
+
+{# set the access_parent and access_child used by the base_add_access template #}
+{% set access_parent = 'site' %}
+{% set access_child = 'user' %}
+{% extends "base_add_access.twig" %}

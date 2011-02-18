@@ -70,8 +70,7 @@ class role_view extends base_view
    */
   public function determine_operation_count( $modifier )
   {
-    $modifier->where( 'restricted', 1 );
-    return $this->get_record()->get_operation_count();
+    return $this->get_record()->get_operation_count( $modifier );
   }
 
   /**
@@ -84,7 +83,6 @@ class role_view extends base_view
    */
   public function determine_operation_list( $modifier )
   {
-    $modifier->where( 'restricted', 1 );
     return $this->get_record()->get_operation_list( $modifier );
   }
 

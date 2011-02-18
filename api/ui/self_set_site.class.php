@@ -44,8 +44,10 @@ class self_set_site extends action
         'Invalid site name "'.$this->site_name.'"', __METHOD__ );
 
     // get the first role associated with the site
+    $modifier = new \sabretooth\database\modifier();
+    $modifier->where( 'site_id', $db_site->id );
     $session = \sabretooth\session::self();
-    $db_role_list = $session->get_user()->get_role_list( $db_site );
+    $db_role_list = $session->get_user()->get_role_list( $modifier );
     if( 0 == count( $db_role_list ) )
       throw new \sabretooth\exception\runtime(
         'User has no access to site name "'.$this->site_name.'"', __METHOD__ );

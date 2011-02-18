@@ -177,7 +177,7 @@ final class session extends singleton
    */
   public function set_site_and_role( $db_site, $db_role )
   {
-    if( is_NULL( $db_site ) || is_NULL( $db_role ) )
+    if( is_null( $db_site ) || is_null( $db_role ) )
     {
       $this->site = NULL;
       $this->role = NULL;
@@ -187,7 +187,7 @@ final class session extends singleton
     else
     {
       // verify that the user has the right access
-      if( $this->user->has_access( $db_site, $db_role ) )
+      if( \sabretooth\database\access::exists( $this->user, $db_site, $db_role ) )
       {
         $this->site = $db_site;
         $this->role = $db_role;
@@ -216,9 +216,15 @@ final class session extends singleton
     $this->user = $db_user;
 
     // Determine the site and role
-    if( is_NULL( $this->user ) )
+    if( is_null( $this->user ) )
     {
       $this->set_site_and_role( NULL, NULL );
+    }
+    else if( !$this->user->active )
+    {
+      throw new \sabretooth\exception\notice(
+        'Your account has been deactivated.<br>'.
+        'Please contact a supervisor to regain access to the system.' );
     }
     else
     {
@@ -234,13 +240,15 @@ final class session extends singleton
       }
       
       // if we still don't have a site and role then pick the first one we can find
-      if( is_NULL( $this->site ) || is_NULL( $this->role ) )
+      if( is_null( $this->site ) || is_null( $this->role ) )
       {
         $db_site_list = $this->user->get_site_list();
         if( 0 == count( $db_site_list ) )
           log::err( "User does not have access to any site." );
         $db_site = $db_site_list[0];
-        $db_role_list = $this->user->get_role_list( $db_site );
+        $modifier = new database\modifier();
+        $modifier->where( 'site_id', $db_site->id );
+        $db_role_list = $this->user->get_role_list( $modifier );
         $db_role = $db_role_list[0];
 
         $this->set_site_and_role( $db_site, $db_role );

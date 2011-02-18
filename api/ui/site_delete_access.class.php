@@ -1,6 +1,6 @@
 <?php
 /**
- * user_delete_site.class.php
+ * site_delete_access.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,11 +10,11 @@
 namespace sabretooth\ui;
 
 /**
- * action user delete_site
+ * action site delete_access
  * 
  * @package sabretooth\ui
  */
-class user_delete_site extends base_delete_record
+class site_delete_access extends base_delete_record
 {
   /**
    * Constructor.
@@ -24,7 +24,7 @@ class user_delete_site extends base_delete_record
    */
   public function __construct( $args )
   {
-    parent::__construct( 'user', 'site', $args );
+    parent::__construct( 'site', 'access', $args );
   }
 }
 ?>

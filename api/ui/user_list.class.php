@@ -62,9 +62,10 @@ class user_list extends base_list_widget
   {
     // only show users for current site if user is not an administrator
     $session = \sabretooth\session::self();
-    return 'administrator' == $session->get_role()->name
-           ? \sabretooth\database\user::count( $modifier )
-           : $session->get_site()->get_user_count( $modifier );
+    if( 'administrator' != $session->get_role()->name )
+      $modifier->where( 'site_id', $session->get_site()->id );
+
+    return \sabretooth\database\user::count( $modifier );
   }
   
   /**
@@ -79,9 +80,10 @@ class user_list extends base_list_widget
   {
     // only show users for current site if user is not an administrator
     $session = \sabretooth\session::self();
-    return 'administrator' == $session->get_role()->name
-           ? parent::determine_record_list( $modifier )
-           : $session->get_site()->get_user_list( $modifier );
+    if( 'administrator' != $session->get_role()->name )
+      $modifier->where( 'site_id', $session->get_site()->id );
+
+    return \sabretooth\database\user::select( $modifier );
   }
 
   /**

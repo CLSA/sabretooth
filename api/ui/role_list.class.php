@@ -30,9 +30,6 @@ class role_list extends base_list_widget
     
     $session = \sabretooth\session::self();
 
-    // define all template variables for this list
-    $this->set_heading( 'Role list' );
-
     $this->columns = array(
       array( 'id' => 'name',
              'heading' => 'name',

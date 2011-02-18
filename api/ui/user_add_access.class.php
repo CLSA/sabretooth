@@ -1,6 +1,6 @@
 <?php
 /**
- * site_add_user.class.php
+ * user_add_access.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,11 +10,11 @@
 namespace sabretooth\ui;
 
 /**
- * widget site add_user
+ * widget user add_access
  * 
  * @package sabretooth\ui
  */
-class site_add_user extends base_add_list
+class user_add_access extends base_add_access
 {
   /**
    * Constructor
@@ -27,20 +27,13 @@ class site_add_user extends base_add_list
    */
   public function __construct( $args )
   {
-    parent::__construct( 'site', 'user', $args );
-
-    // build the role list widget
-    $this->role_list = new role_list( $args );
-    $this->role_list->set_parent( $this, 'edit' );
-    $this->role_list->set_heading( 'Select roles to grant to the selected users' );
-  }
-
-  public function finish()
-  {
-    parent::finish();
-
-    $this->role_list->finish();
-    $this->set_variable( 'role_list', $this->role_list->get_variables() );
+    parent::__construct( 'user', $args );
+    
+    // This widget is special.  We need a list of sites and roles, not an access list, so we
+    // override the construction of the list_widget performed by base_add_list's constructor.
+    $this->list_widget = new site_list( $args );
+    $this->list_widget->set_parent( $this, 'edit' );
+    $this->list_widget->set_heading( 'Choose sites to grant access to the user' );
   }
 }
 ?>
