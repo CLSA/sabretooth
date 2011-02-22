@@ -106,7 +106,7 @@ abstract class operation extends \sabretooth\base_object
     $argument = NULL;
     if( !array_key_exists( $name, $this->arguments ) )
     {
-      if( is_null( $default ) ) throw new \sabretooth\exception\argument( $name, NULL, __METHOD__ );
+      if( 1 == func_num_args() ) throw new \sabretooth\exception\argument( $name, NULL, __METHOD__ );
       $argument = $default;
     }
     else

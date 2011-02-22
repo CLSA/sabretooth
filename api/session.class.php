@@ -187,7 +187,7 @@ final class session extends singleton
     else
     {
       // verify that the user has the right access
-      if( \sabretooth\database\access::exists( $this->user, $db_site, $db_role ) )
+      if( \sabretooth\database\access::exists( $this->user, $db_role, $db_site ) )
       {
         $this->site = $db_site;
         $this->role = $db_role;
@@ -224,7 +224,7 @@ final class session extends singleton
     {
       throw new \sabretooth\exception\notice(
         'Your account has been deactivated.<br>'.
-        'Please contact a supervisor to regain access to the system.' );
+        'Please contact a supervisor to regain access to the system.', __METHOD__ );
     }
     else
     {
@@ -244,7 +244,10 @@ final class session extends singleton
       {
         $db_site_list = $this->user->get_site_list();
         if( 0 == count( $db_site_list ) )
-          log::err( "User does not have access to any site." );
+          throw new \sabretooth\exception\notice(
+            'Your account does not have access to any site.<br>'.
+            'Please contact a supervisor to be granted access to a site.', __METHOD__ );
+
         $db_site = $db_site_list[0];
         $modifier = new database\modifier();
         $modifier->where( 'site_id', $db_site->id );

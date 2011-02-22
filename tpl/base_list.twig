@@ -1,6 +1,5 @@
 {##
  # base_list.twig
- # TODO: double-click a header to limit list by value for taht column
  # 
  # Generic list widget.
  # @author Patrick Emond <emondpd@mcmaster.ca>
@@ -201,16 +200,73 @@ $( function() {
 } );
 {% endif %}
 
-// column sorting
+/**
+ * Creates a modal dialog for contraining a column
+ * 
+ * @author Patrick Emond <emondpd@mcmaster.ca>
+ * @param string column The name of the column to constrain.
+ * TODO: constrain column not working, implement if needed
+function constrain_dialog( column, on_confirm )
+{
+  $( "#constrain_dialog" ).dialog( {
+    title: "Constraining " + column + " column",
+    height: 200,
+    width: 400,
+    modal: true,
+    buttons: {
+      Ok: function() {
+        var vars = new Object();
+        vars.value = $( "#constrain_dialog_value" ).val();
+        vars.compare = $( "#constrain_dialog_compare" ).val();
+        on_confirm( vars );
+        $(this).dialog( "close" );
+      },
+      Cancel: function() {
+        $(this).dialog( "close" );
+      }
+    }
+  } );
+  
+  // Hack to make sure the context menu doesn't show up
+  $(this).bind( "contextmenu", function() { return false; }, false );
+}
+ */
+
+// column sorting and contraining
 $( function() {
-  $( "th.{{ widget.full }}_sortable" ).click( function() {
-    var args = new Object();
-    args.sort_column = $(this).attr("id");
-    args.sort_desc = "{{ sort_column }}" == $(this).attr("id") ? {{ sort_desc ? 0 : 1 }} : 0;
-    slot_load( get_slot( $(this) ),
-               "{{ parent.exists ? parent.full : widget.full }}",
-               "{{ widget.full }}",
-               args );
+  // handle left and right clicks on sortable headers
+  $( "th.{{ widget.full }}_sortable" ).mousedown( function( event ) {
+    if( 1 == event.which )
+    { // left mouse button
+      var args = new Object();
+      args.sort_column = $(this).attr("id");
+      args.sort_desc = "{{ sort_column }}" == $(this).attr("id") ? {{ sort_desc ? 0 : 1 }} : 0;
+      slot_load( get_slot( $(this) ),
+                 "{{ parent.exists ? parent.full : widget.full }}",
+                 "{{ widget.full }}",
+                 args );
+    }
+    /* TODO: constrain column not working, implement if needed
+    else if( 3 == event.which )
+    { // right mouse button
+      var slot = get_slot( $(this) );
+      var column = $(this).attr( "id" );
+      constrain_dialog(
+        $(this).attr( "id" ),
+        function( vars ) {
+          alert( $( "#constrain_dialog_value" ).val() );
+          var args = new Object();
+          var constrain_columns = new Object();
+          constrain_columns[column] = vars.value.length ? vars : null;
+          args.constrain_columns = constrain_columns;
+          slot_load( slot,
+                     "{{ parent.exists ? parent.full : widget.full }}",
+                     "{{ widget.full }}",
+                     args );
+        }
+      );
+    }
+    */
   } );
 } );
 
@@ -242,6 +298,22 @@ $( function() {
 {% endif %}
 
 </script>
+
+{# TODO: constrain column not working, implement if needed
+<div id="constrain_dialog">
+  <p>Select how to constrain the column:</p>
+  <form>
+    <label for="constrain_dialog_value">Value</label>
+    <select id="constrain_dialog_compare">
+      <option selected>is</option>
+      <option>is not</option>
+    </select>
+    <input type="text" name="constrain_dialog_value" id="constrain_dialog_value"
+           class="text ui-widget-content ui-corner-all" />
+  </form>
+</div>
+#}
+
 <table class="{{ widget.full }}_table">
   {% set number_of_columns = 0 %}
   {% if rows|count %}

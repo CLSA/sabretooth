@@ -1,8 +1,8 @@
 <?php
 if( !isset( $result_array ) || !is_array( $result_array ) )
 {
-  $code = \sabretooth\util::convert_number_to_code( UNKNOWN_BASE_ERROR_NUMBER );
-  $result_array = array( 'error_type' => 'Unknown',
+  $code = \sabretooth\util::convert_number_to_code( SYSTEM_BASE_ERROR_NUMBER );
+  $result_array = array( 'error_type' => 'System',
                          'error_code' => $code,
                          'error_message' => '' );
 }

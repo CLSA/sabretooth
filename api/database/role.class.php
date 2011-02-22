@@ -18,7 +18,6 @@ class role extends base_access
 {
   /**
    * Returns whether the user has the role for the given site.
-   * TODO: may want to add this as a general method in active_record::__call()
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\operation $db_operation
@@ -33,14 +32,8 @@ class role extends base_access
     }
 
     $modifier = new modifier();
-    $modifier->where( 'role_id', $this->id );
     $modifier->where( 'operation_id', $db_operation->id );
-
-    $count = self::get_one(
-      sprintf( 'SELECT COUNT( DISTINCT operation_id ) FROM role_has_operation %s',
-               $modifier->get_sql() ) );
-
-    return 0 < $count;
+    return 0 < $this->get_operation_count( $modifier );
   }
 }
 ?>

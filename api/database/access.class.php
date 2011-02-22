@@ -33,7 +33,7 @@ class access extends active_record
 
     $id = self::get_one(
       sprintf( 'SELECT id FROM access %s',
-               $modifier->get_sql ) );
+               $modifier->get_sql() ) );
 
     return !is_null( $id );
   }

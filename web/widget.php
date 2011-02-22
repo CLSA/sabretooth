@@ -128,10 +128,10 @@ catch( \Twig_Error $e )
 }
 catch( \Exception $e )
 {
-  $code = util::convert_number_to_code( UNKNOWN_BASE_ERROR_NUMBER );
+  $code = util::convert_number_to_code( SYSTEM_BASE_ERROR_NUMBER );
   log::err( "Last minute ".$e );
   $result_array['success'] = false;
-  $result_array['error_type'] = 'Unknown';
+  $result_array['error_type'] = 'System';
   $result_array['error_code'] = $code;
   $result_array['error_message'] = '';
 }

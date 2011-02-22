@@ -49,7 +49,7 @@ abstract class base_delete extends base_record_action
       {
         throw new \sabretooth\exception\notice(
           'Unable to delete the '.$this->get_subject().
-          ' because it is being referenced by the database.', $e );
+          ' because it is being referenced by the database.', __METHOD__, $e );
       }
 
       throw $e;

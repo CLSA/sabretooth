@@ -358,7 +358,7 @@ class modifier extends \sabretooth\base_object
       }
       else
       {
-        $compare = sprintf( '%s =%s %s',
+        $compare = sprintf( '%s %s= %s',
                             $column,
                             $item['not'] ? '!' : '',
                             $item['format'] ?

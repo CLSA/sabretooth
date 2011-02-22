@@ -246,11 +246,17 @@ final class util
    */
   public static function pluralize( $word )
   {
+    if( 'access' == $word )
+    { // special case
+      return $word;
+    }
+    
     if( 'y' == substr( $word, -1 ) )
     { // likely, any word ending in 'y' has 'ies' at the end of the plural word
       return substr( $word, 0, -1 ).'ies';
     }
-    else if( 's' == substr( $word, -1 ) )
+    
+    if( 's' == substr( $word, -1 ) )
     { // likely, any word ending in an 's' has 'es' at the end of the plural word
       return $word.'es';
     }

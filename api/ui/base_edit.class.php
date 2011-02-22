@@ -60,7 +60,7 @@ abstract class base_edit extends base_record_action
                      key( $columns ),
                      current( $columns ) )
           : 'Unable to modify the '.$this->get_subject().' because it is no longer unique.',
-          $e );
+          __METHOD__, $e );
       }
 
       throw $e;

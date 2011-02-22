@@ -96,7 +96,12 @@ abstract class widget extends operation
     if( !array_key_exists( $widget_name, $this->arguments ) ||
         !array_key_exists( $name, $this->arguments[$widget_name] ) )
     { // the argument is missing
-      if( is_null( $default ) ) throw new \sabretooth\exception\argument( $name, NULL, __METHOD__ );
+      if( 1 == func_num_args() )
+      { // if only one argument was passed to this method then the argument is required
+        throw new \sabretooth\exception\argument( $name, NULL, __METHOD__ );
+      }
+
+      // if the argument was not required, then use the default instead
       $argument = $default;
     }
     else

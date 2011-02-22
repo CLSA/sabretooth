@@ -148,11 +148,12 @@ abstract class base_access extends active_record
       return NULL;
     }
     
+    $modifier = new modifier();
+    $modifier->where( $subject_name.'_id', $this->id );
     $activity_id = self::get_one(
-      sprintf( 'SELECT activity_id FROM %s_last_activity WHERE %s_id = %s',
+      sprintf( 'SELECT activity_id FROM %s_last_activity %s',
                $subject_name,
-               $subject_name,
-               self::format_string( $this->id ) ) );
+               $modifier->get_sql() ) );
     
     return is_null( $activity_id ) ? NULL : new activity( $activity_id );
   }

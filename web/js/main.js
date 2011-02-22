@@ -38,23 +38,24 @@ function update_shortcuts() {
  * @param string title The title of the dialog
  * @param string message The message to put in the dialog
  */
+
 function confirm_dialog( title, message, on_confirm ) {
-  $( "#confirm_slot" ).attr( "title", title );
   $( "#confirm_slot" ).html( message );
   $( "#confirm_slot" ).dialog( {
+    title: title,
     modal: true,
-    dialogClass: 'alert',
+    dialogClass: "alert",
     width: 450,
     open: function () {
-      $( this ).parents( ".ui-dialog:first" ).find( ".ui-dialog-titlebar" ).addClass( "ui-state-highlight" );
+      $(this).parents( ".ui-dialog:first" ).find( ".ui-dialog-titlebar" ).addClass( "ui-state-highlight" );
     },
     buttons: {
       Ok: function() {
         on_confirm();
-        $( this ).dialog( "close" );
+        $(this).dialog( "close" );
       },
       Cancel: function() {
-        $( this ).dialog( "close" );
+        $(this).dialog( "close" );
       }
     }
   } );
@@ -68,16 +69,16 @@ function confirm_dialog( title, message, on_confirm ) {
  * @param string message The message to put in the dialog
  */
 function error_dialog( title, message ) {
-  $( "#error_slot" ).attr( "title", title );
   $( "#error_slot" ).html( message );
   $( "#error_slot" ).dialog( {
+    title: title,
     modal: true,
-    dialogClass: 'error',
+    dialogClass: "error",
     width: 450,
     open: function () {
-      $( this ).parents( ".ui-dialog:first" ).find( ".ui-dialog-titlebar" ).addClass( "ui-state-error" );
+      $(this).parents( ".ui-dialog:first" ).find( ".ui-dialog-titlebar" ).addClass( "ui-state-error" );
     },
-    buttons: { Ok: function() { $( this ).dialog( "close" ); } }
+    buttons: { Ok: function() { $(this).dialog( "close" ); } }
   } );
 }
 

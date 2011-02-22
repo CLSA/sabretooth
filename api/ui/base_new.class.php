@@ -49,7 +49,8 @@ abstract class base_new extends base_record_action
       if( $e->is_duplicate_entry() )
       {
         throw new \sabretooth\exception\notice(
-          'Unable to create the new '.$this->get_subject().' because it is not unique.', $e );
+          'Unable to create the new '.$this->get_subject().' because it is not unique.',
+          __METHOD__, $e );
       }
 
       throw $e;

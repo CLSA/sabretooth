@@ -25,12 +25,15 @@ class operation extends active_record
    */
   public static function get_operation( $type, $subject, $name )
   {
+    $modifier = new modifier();
+    $modifier->where( 'type', $type );
+    $modifier->where( 'subject', $subject );
+    $modifier->where( 'name', $name );
+
     $id = self::get_one(
-      'SELECT id '.
-      'FROM '.static::get_table_name().' '.
-      'WHERE type = "'.$type.'" '.
-      'AND subject = "'.$subject.'" '.
-      'AND name = "'.$name.'"' );
+      sprintf( 'SELECT id FROM %s %s',
+               static::get_table_name(),
+               $modifier->get_sql() ) );
 
     return is_null( $id ) ? NULL : new static( $id );
   }

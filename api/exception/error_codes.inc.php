@@ -17,11 +17,11 @@ namespace sabretooth\exception;
 define( 'ARGUMENT_BASE_ERROR_NUMBER',   100000 );
 define( 'DATABASE_BASE_ERROR_NUMBER',   200000 );
 define( 'MISSING_BASE_ERROR_NUMBER',    300000 );
-define( 'PERMISSION_BASE_ERROR_NUMBER', 400000 );
-define( 'RUNTIME_BASE_ERROR_NUMBER',    500000 );
-define( 'TEMPLATE_BASE_ERROR_NUMBER',   600000 );
-define( 'FATAL_BASE_ERROR_NUMBER',      700000 );
-define( 'UNKNOWN_BASE_ERROR_NUMBER',    800000 );
+define( 'NOTICE_BASE_ERROR_NUMBER',     400000 );
+define( 'PERMISSION_BASE_ERROR_NUMBER', 500000 );
+define( 'RUNTIME_BASE_ERROR_NUMBER',    600000 );
+define( 'SYSTEM_BASE_ERROR_NUMBER',     700000 );
+define( 'TEMPLATE_BASE_ERROR_NUMBER',   800000 );
 
 /**
  * "argument" error codes
@@ -56,6 +56,15 @@ define( 'ARGUMENT_SITE_ADD_ACCESS_ERROR_NUMBER',         ARGUMENT_BASE_ERROR_NUM
 define( 'MISSING_AUTOLOADER_AUTOLOAD_ERROR_NUMBER', MISSING_BASE_ERROR_NUMBER + 1 );
 
 /**
+ * "notice" error codes
+ */
+define( 'NOTICE_SESSION_SET_USER_ERROR_NUMBER',    NOTICE_BASE_ERROR_NUMBER + 1 );
+define( 'NOTICE_BASE_DELETE_EXECUTE_ERROR_NUMBER', NOTICE_BASE_ERROR_NUMBER + 2 );
+define( 'NOTICE_BASE_NEW_EXECUTE_ERROR_NUMBER',    NOTICE_BASE_ERROR_NUMBER + 3 );
+define( 'NOTICE_BASE_EDIT_EXECUTE_ERROR_NUMBER',   NOTICE_BASE_ERROR_NUMBER + 4 );
+define( 'NOTICE_USER_NEW_EXECUTE_ERROR_NUMBER',    NOTICE_BASE_ERROR_NUMBER + 5 );
+
+/**
  * "permission" error codes
  */
 define( 'PERMISSION_OPERATION___CONSTRUCT_ERROR_NUMBER', PERMISSION_BASE_ERROR_NUMBER + 1 );
@@ -74,6 +83,14 @@ define( 'RUNTIME_ACTION_SCRIPT_ERROR_NUMBER',             RUNTIME_BASE_ERROR_NUM
 define( 'RUNTIME_LOG_INITIALIZE_LOGGER_ERROR_NUMBER',     RUNTIME_BASE_ERROR_NUMBER + 9 );
 
 /**
- * "template", "fatal" and "unknown" error codes do not have specific codes
+ * "system" error codes
+ * 
+ * Since system errors already have codes this list is likely to stay empty.
+ */
+
+/**
+ * "template" error codes
+ * 
+ * Since template errors already have codes this list is likely to stay empty.
  */
 ?>

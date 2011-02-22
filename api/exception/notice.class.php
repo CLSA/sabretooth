@@ -27,10 +27,10 @@ class notice extends base_exception
    * @param exception $previous The previous exception used for the exception chaining.
    * @access public
    */
-  public function __construct( $message, $previous = NULL )
+  public function __construct( $message, $context, $previous = NULL )
   {
     $this->notice = $message;
-    parent::__construct( $message, is_null( $previous ) ? 0 : $previous->get_number(), $previous );
+    parent::__construct( $message, $context, $previous );
   }
 
   /**

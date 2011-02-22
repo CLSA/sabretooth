@@ -14,8 +14,6 @@ namespace sabretooth\database;
  *
  * The active_record class represents tables in the database.  Each table has its own class which
  * extends this class.  Furthermore, each table must have a single 'id' column as its primary key.
- * TODO: Maybe a modifier should be added as a member to the active_record class so there is less
- *       passing around going on.
  * @package sabretooth\database
  */
 abstract class active_record extends \sabretooth\base_object
@@ -88,9 +86,10 @@ abstract class active_record extends \sabretooth\base_object
   {
     if( isset( $this->columns['id'] ) )
     {
+      // not using a modifier here is ok since we're forcing id to be an integer
       $sql = sprintf( 'SELECT * FROM %s WHERE id = %d',
                       self::get_table_name(),
-                      $this->id );
+                      $this->columns['id'] );
 
       $row = self::get_row( $sql );
 
@@ -147,13 +146,14 @@ abstract class active_record extends \sabretooth\base_object
    */
   public function delete()
   {
-    if( is_null( $this->id ) )
+    if( is_null( $this->columns['id'] ) )
     {
       \sabretooth\log::warning( 'Tried to delete record with no id.' );
       return;
     }
     
-    $sql = sprintf( 'DELETE FROM %s WHERE id = %s',
+    // not using a modifier here is ok since we're forcing id to be an integer
+    $sql = sprintf( 'DELETE FROM %s WHERE id = %d',
                     self::get_table_name(),
                     $this->columns['id'] );
     self::execute( $sql );
@@ -170,10 +170,6 @@ abstract class active_record extends \sabretooth\base_object
    */
   public static function count( $modifier )
   {
-    \sabretooth\log::print_r( 
-      sprintf( 'SELECT COUNT(*) FROM %s %s',
-               self::get_table_name(),
-               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
     return self::get_one(
       sprintf( 'SELECT COUNT(*) FROM %s %s',
                self::get_table_name(),
@@ -330,7 +326,7 @@ abstract class active_record extends \sabretooth\base_object
     }
 
     // now that we're relatively sure the method name is valid, make sure we have a valid record
-    if( is_null( $this->id ) )
+    if( is_null( $this->columns['id'] ) )
     { 
       \sabretooth\log::warning( 'Tried to query record with no id.' );
       return 0;
@@ -350,7 +346,7 @@ abstract class active_record extends \sabretooth\base_object
       {
         if( !$first ) $values .= ', ';
         $values .= sprintf( '(%s, %s)',
-                         active_record::format_string( $this->id ),
+                         active_record::format_string( $this->columns['id'] ),
                          active_record::format_string( $id ) );
         $first = false;
       }
@@ -370,7 +366,7 @@ abstract class active_record extends \sabretooth\base_object
       $id = $args[0];
       
       $modifier = new modifier();
-      $modifier->where( $primary_key_name, $this->id );
+      $modifier->where( $primary_key_name, $this->columns['id'] );
       $modifier->where( $foreign_key_name, $id );
 
       self::execute(
@@ -396,7 +392,7 @@ abstract class active_record extends \sabretooth\base_object
       { // we need to invert the list
         // first create SQL to match all records in the joining table
         $sub_modifier = new modifier();
-        $sub_modifier->where( $primary_key_name, $this->id );
+        $sub_modifier->where( $primary_key_name, $this->columns['id'] );
         $sub_select_sql =
           sprintf( 'SELECT %s FROM %s %s',
                    $foreign_key_name,
@@ -411,7 +407,7 @@ abstract class active_record extends \sabretooth\base_object
       }
       else
       { // no inversion, just select the records from the joining table
-        $modifier->where( $primary_key_name, $this->id );
+        $modifier->where( $primary_key_name, $this->columns['id'] );
         $sql = sprintf( 'SELECT %s FROM %s %s',
                         'list' == $sub_action
                           ? $foreign_key_name
@@ -517,24 +513,26 @@ abstract class active_record extends \sabretooth\base_object
     $database = \sabretooth\session::self()->get_setting( 'db', 'database' );
 
     // determine the unique key(s)
+    $modifier = new modifier();
+    $modifier->where( 'TABLE_SCHEMA', $database );
+    $modifier->where( 'TABLE_NAME', self::get_table_name() );
+    $modifier->where( 'COLUMN_KEY', 'UNI' );
+
     $unique_keys = self::get_col( 
-      sprintf( 'SELECT COLUMN_NAME '.
-               'FROM information_schema.COLUMNS '.
-               'WHERE TABLE_SCHEMA = %s '.
-               'AND TABLE_NAME = %s '.
-               'AND COLUMN_KEY = "UNI"',
-               self::format_string( $database ),
-               self::format_string( self::get_table_name() ) ) );
+      sprintf( 'SELECT COLUMN_NAME FROM information_schema.COLUMNS %s',
+               $modifier->get_sql() ) );
     
     // make sure the column is unique
     if( in_array( $column, $unique_keys ) )
     {
       // this returns null if no records are found
+      $modifier = new modifier();
+      $modifier->where( $column, $value );
+
       $id = self::get_one(
-        sprintf( 'SELECT id FROM %s WHERE %s = %s',
+        sprintf( 'SELECT id FROM %s %s',
                  self::get_table_name(),
-                 $column,
-                 self::format_string( $value ) ) );
+                 $modifier->get_sql() ) );
 
       if( !is_null( $id ) ) $record = new static( $id );
     }
@@ -579,13 +577,13 @@ abstract class active_record extends \sabretooth\base_object
   protected static function table_exists( $name )
   {
     $database = \sabretooth\session::self()->get_setting( 'db', 'database' );
+    $modifier = new modifier();
+    $modifier->where( 'TABLE_SCHEMA', $database );
+    $modifier->where( 'Table_Name', $name );
+
     $count = self::get_one(
-      sprintf( 'SELECT COUNT(*) '.
-               'FROM information_schema.TABLES '.
-               'WHERE Table_Name = %s '.
-               'AND TABLE_SCHEMA = %s',
-               self::format_string( $name ),
-               self::format_string( $database ) ) );
+      sprintf( 'SELECT COUNT(*) FROM information_schema.TABLES %s',
+               $modifier->get_sql() ) );
 
     return 0 < $count;
   }

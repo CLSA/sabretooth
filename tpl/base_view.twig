@@ -88,8 +88,8 @@ function process_jeditable( element, new_value, type )
 
 {% if addable %}
 $( function () {
-  // add button {# added by the confirm buttons template below #}
-  $( "#{{ widget.compound }}_add" ).click( function() {
+  // add button
+  $( "#{{ widget.compound }}_add" ).click( function () {
     // submit the form information as a new action
     var args = new Object();
     var columns = new Object();
@@ -127,7 +127,7 @@ $( function () {
 {% if addable %}
 <form id="{{ widget.full }}_add_form">
 {% endif %}
-<div class="ui-widget ui-widget-content" style="position: relative;">
+<div class="ui-widget ui-widget-content" style="padding: 4px; position: relative;">
 <table>
 {% for item_id, entry in item %}
   <tr>
@@ -147,9 +147,9 @@ $( function () {
         {% elseif 'date' == entry.type %}
           TODO
         {% elseif 'string' == entry.type %}
-          <input id="{{ widget.full }}_{{ item_id }}" type="text" style="width:100%" />
+          <input id="{{ widget.full }}_{{ item_id }}" type="text" style="width:99%" />
         {% elseif 'text' == entry.type %}
-          <textarea id="{{ widget.full }}_{{ item_id }}" style="width:100%" /></textarea>
+          <textarea id="{{ widget.full }}_{{ item_id }}" style="width:99%" /></textarea>
         {% endif %}
       {% elseif editable and 'constant' != entry.type %}
         {% set value = 'boolean' == entry.type ? ( entry.value ? 'Yes' : 'No' ) : entry.value %}

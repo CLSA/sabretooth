@@ -14,12 +14,9 @@ namespace sabretooth\ui;
  * 
  * This class abstracts all common functionality for lists of records.
  * Concrete child classes represent a particular type of record in the database.
- * If child classes list something other than all records for its particular type then it must
- * override the determine_record_list(), determine_record_count() and
- * determine_record_sort_column() methods.
  * If a list is embedded into another widget, then the parent widget must implement similar
- * methods: determine_<subject>_list(), determine_<subject>_count() and
- * determine_<subject>_sort_column() where <subject> is the record type being listed.
+ * methods: determine_<subject>_list() and determine_<subject>_count() where <subject> is
+ * the record type being listed.
  * @abstract
  * @package sabretooth\ui
  */
@@ -79,9 +76,7 @@ abstract class base_list_widget extends widget
     
     // build the sql modifier
     $modifier = new \sabretooth\database\modifier();
-    if( strlen( $this->sort_column ) )
-      $modifier->order( $this->determine_record_sort_column( $this->sort_column ),
-                        $this->sort_desc );
+    if( strlen( $this->sort_column ) ) $modifier->order( $this->sort_column, $this->sort_desc );
     $modifier->limit( $this->items_per_page, ( $this->page - 1 ) * $this->items_per_page );
 
     $method_name = 'determine_'.$this->get_subject().'_list';
@@ -163,24 +158,6 @@ abstract class base_list_widget extends widget
    */
   abstract protected function set_rows();
   
-  /**
-   * Returns the sql column name to use when building the record list.
-   * 
-   * This method needs to be overriden by child classes when the sort column is outside of the
-   * record's table columns.
-   * Furthermore, when embedding this widget into another, the parent widget can set the sort column
-   * by defining a determine_<record>_sort_column() method, where <record> is the name of the
-   * database record/table of the embedded widget.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access protected
-   */
-  protected function determine_record_sort_column( $sort_name )
-  {
-    // by default, the sort name IS the column name
-    return $sort_name ? $sort_name : NULL;
-  }
-
   /**
    * Returns the total number of items in the list.
    * 
