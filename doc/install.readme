@@ -1,3 +1,5 @@
+A) DEPENDENCIES
+===============
 The following software must be installed prior to installing sabretooth:
 
 - LAMP setup with PHP 5.3.2+
@@ -8,7 +10,44 @@ The following software must be installed prior to installing sabretooth:
 - ADOdb 5.11+
 - jQuery 1.4.4+
 - jQuery-ui 1.8.8+
-- jQuery plugins: cookie, hoverIntent, layout, extruder, flipText, metadata,
-                  loading, loading.overflow
+- jQuery plugins:
+    cookie, hoverIntent, layout, extruder, flipText, metadata, loading, loading.overflow
 - phpagi 2.20+
 - phpexcel 1.7.5+
+
+The client-side software was developed to be used by firefox version 3.6.13.  This application has
+not been developed to be cross-browser compatible so use any other browser at your own risk.
+
+Though they are not required, the firebug and firephp extensions to firefox are strongly
+recommended for development.
+
+
+B) SETUP DATABASE
+=================
+To create your Sabretooth database run the schema, initial_data and sample_data sql scripts found
+in the web/ directory:
+
+cat schema.sql initial_data.sql sample_data.sql | mysql -u <username> -p <database>
+(where <username> is your username and <database> is your database name)
+
+You should edit sample_data.sql so that it has at least one user with the administrator role.
+
+
+C) SETUP INI FILE
+=================
+Sabretooth needs to know where to find things, passwords, etc.  This is all done in a local ini
+file.  To set yours up go into Sabretooth's web/ directory and copy the sample local ini file to
+your working local ini file:
+
+cp sabretooth.local.ini.php.sample sabretooth.local.ini.php
+
+Then edit sabretooth.local.ini.php with whatever values you need.  Make sure the database name,
+username and password are set according to what was mentioned in the previous step.
+
+
+D) SETUP WEBROOT
+================
+Create a symbolic link to Sabretooth's web/ directory in a web-accessible place:
+
+cd /var/www/<username>
+ln -s /path/to/sabretooth/web sabretooth

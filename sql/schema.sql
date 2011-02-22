@@ -2,16 +2,12 @@ SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
 
-DROP SCHEMA IF EXISTS `sabretooth` ;
-CREATE SCHEMA IF NOT EXISTS `sabretooth` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci ;
-USE `sabretooth` ;
-
 -- -----------------------------------------------------
--- Table `sabretooth`.`site`
+-- Table `site`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`site` ;
+DROP TABLE IF EXISTS `site` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`site` (
+CREATE  TABLE IF NOT EXISTS `site` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(45) NOT NULL ,
   PRIMARY KEY (`id`) ,
@@ -20,11 +16,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`participant`
+-- Table `participant`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`participant` ;
+DROP TABLE IF EXISTS `participant` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`participant` (
+CREATE  TABLE IF NOT EXISTS `participant` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `first_name` VARCHAR(45) NOT NULL ,
   `last_name` VARCHAR(45) NOT NULL ,
@@ -36,18 +32,18 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`participant` (
   INDEX `fk_site_id` (`site_id` ASC) ,
   CONSTRAINT `fk_participant_site`
     FOREIGN KEY (`site_id` )
-    REFERENCES `sabretooth`.`site` (`id` )
+    REFERENCES `site` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`user`
+-- Table `user`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`user` ;
+DROP TABLE IF EXISTS `user` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`user` (
+CREATE  TABLE IF NOT EXISTS `user` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(45) NOT NULL ,
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
@@ -60,11 +56,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`role`
+-- Table `role`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`role` ;
+DROP TABLE IF EXISTS `role` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`role` (
+CREATE  TABLE IF NOT EXISTS `role` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(45) NOT NULL ,
   PRIMARY KEY (`id`) ,
@@ -73,22 +69,22 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`qnaire`
+-- Table `qnaire`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`qnaire` ;
+DROP TABLE IF EXISTS `qnaire` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`qnaire` (
+CREATE  TABLE IF NOT EXISTS `qnaire` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   PRIMARY KEY (`id`) )
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`script`
+-- Table `script`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`script` ;
+DROP TABLE IF EXISTS `script` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`script` (
+CREATE  TABLE IF NOT EXISTS `script` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `lime_sid` INT UNSIGNED NOT NULL COMMENT 'Refers to a limesurvey survey id' ,
   PRIMARY KEY (`id`) ,
@@ -97,11 +93,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`qnaire_stage`
+-- Table `qnaire_stage`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`qnaire_stage` ;
+DROP TABLE IF EXISTS `qnaire_stage` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`qnaire_stage` (
+CREATE  TABLE IF NOT EXISTS `qnaire_stage` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `qnaire_id` INT UNSIGNED NOT NULL ,
   `script_id` INT UNSIGNED NOT NULL ,
@@ -112,23 +108,23 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`qnaire_stage` (
   INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
   CONSTRAINT `fk_qnaire_has_script_qnaire`
     FOREIGN KEY (`qnaire_id` )
-    REFERENCES `sabretooth`.`qnaire` (`id` )
+    REFERENCES `qnaire` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_qnaire_has_script_script`
     FOREIGN KEY (`script_id` )
-    REFERENCES `sabretooth`.`script` (`id` )
+    REFERENCES `script` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`contact`
+-- Table `contact`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`contact` ;
+DROP TABLE IF EXISTS `contact` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`contact` (
+CREATE  TABLE IF NOT EXISTS `contact` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
@@ -147,18 +143,18 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`contact` (
   UNIQUE INDEX `uq_participant_id_active_rank` (`participant_id` ASC, `active` ASC, `rank` ASC) ,
   CONSTRAINT `fk_contact_participant`
     FOREIGN KEY (`participant_id` )
-    REFERENCES `sabretooth`.`participant` (`id` )
+    REFERENCES `participant` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`interview_queue`
+-- Table `interview_queue`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`interview_queue` ;
+DROP TABLE IF EXISTS `interview_queue` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`interview_queue` (
+CREATE  TABLE IF NOT EXISTS `interview_queue` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(45) NOT NULL ,
   `query` TEXT NOT NULL ,
@@ -168,11 +164,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`interview`
+-- Table `interview`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`interview` ;
+DROP TABLE IF EXISTS `interview` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`interview` (
+CREATE  TABLE IF NOT EXISTS `interview` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `qnaire_stage_id` INT UNSIGNED NOT NULL ,
@@ -188,22 +184,22 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`interview` (
   INDEX `fk_duplicate_qnaire_stage_id` (`duplicate_qnaire_stage_id` ASC) ,
   CONSTRAINT `fk_interview_participant`
     FOREIGN KEY (`participant_id` )
-    REFERENCES `sabretooth`.`participant` (`id` )
+    REFERENCES `participant` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_interview_site`
     FOREIGN KEY (`site_id` )
-    REFERENCES `sabretooth`.`site` (`id` )
+    REFERENCES `site` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_qnaire_stage_id1`
     FOREIGN KEY (`qnaire_stage_id` )
-    REFERENCES `sabretooth`.`qnaire_stage` (`id` )
+    REFERENCES `qnaire_stage` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_qnaire_stage_id11`
     FOREIGN KEY (`duplicate_qnaire_stage_id` )
-    REFERENCES `sabretooth`.`qnaire_stage` (`id` )
+    REFERENCES `qnaire_stage` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -211,11 +207,11 @@ COMMENT = 'aka: qnaire_has_participant';
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`assignment`
+-- Table `assignment`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`assignment` ;
+DROP TABLE IF EXISTS `assignment` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`assignment` (
+CREATE  TABLE IF NOT EXISTS `assignment` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `user_id` INT UNSIGNED NOT NULL ,
   `interview_id` INT UNSIGNED NOT NULL ,
@@ -228,28 +224,28 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`assignment` (
   INDEX `fk_interview_id` (`interview_id` ASC) ,
   CONSTRAINT `fk_assignment_user`
     FOREIGN KEY (`user_id` )
-    REFERENCES `sabretooth`.`user` (`id` )
+    REFERENCES `user` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_assignment_interview_queue`
     FOREIGN KEY (`interview_queue_id` )
-    REFERENCES `sabretooth`.`interview_queue` (`id` )
+    REFERENCES `interview_queue` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_assignment_interview`
     FOREIGN KEY (`interview_id` )
-    REFERENCES `sabretooth`.`interview` (`id` )
+    REFERENCES `interview` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`phone_call`
+-- Table `phone_call`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`phone_call` ;
+DROP TABLE IF EXISTS `phone_call` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`phone_call` (
+CREATE  TABLE IF NOT EXISTS `phone_call` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `assignment_id` INT UNSIGNED NOT NULL ,
   `contact_id` INT UNSIGNED NOT NULL ,
@@ -265,33 +261,33 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`phone_call` (
   INDEX `fk_qnaire_stage_id12` (`qnaire_stage_id1` ASC) ,
   CONSTRAINT `fk_phone_call_contact`
     FOREIGN KEY (`contact_id` )
-    REFERENCES `sabretooth`.`contact` (`id` )
+    REFERENCES `contact` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_phone_call_assignment`
     FOREIGN KEY (`assignment_id` )
-    REFERENCES `sabretooth`.`assignment` (`id` )
+    REFERENCES `assignment` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_qnaire_stage_id2`
     FOREIGN KEY (`qnaire_stage_id` )
-    REFERENCES `sabretooth`.`qnaire_stage` (`id` )
+    REFERENCES `qnaire_stage` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_qnaire_stage_id12`
     FOREIGN KEY (`qnaire_stage_id1` )
-    REFERENCES `sabretooth`.`qnaire_stage` (`id` )
+    REFERENCES `qnaire_stage` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`operation`
+-- Table `operation`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`operation` ;
+DROP TABLE IF EXISTS `operation` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`operation` (
+CREATE  TABLE IF NOT EXISTS `operation` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `type` ENUM('action','widget') NOT NULL ,
   `subject` VARCHAR(45) NOT NULL ,
@@ -304,11 +300,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`role_has_operation`
+-- Table `role_has_operation`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`role_has_operation` ;
+DROP TABLE IF EXISTS `role_has_operation` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`role_has_operation` (
+CREATE  TABLE IF NOT EXISTS `role_has_operation` (
   `role_id` INT UNSIGNED NOT NULL ,
   `operation_id` INT UNSIGNED NOT NULL ,
   PRIMARY KEY (`role_id`, `operation_id`) ,
@@ -316,23 +312,23 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`role_has_operation` (
   INDEX `fk_operation_id` (`operation_id` ASC) ,
   CONSTRAINT `fk_role_has_operation_role`
     FOREIGN KEY (`role_id` )
-    REFERENCES `sabretooth`.`role` (`id` )
+    REFERENCES `role` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_role_has_operation_operation`
     FOREIGN KEY (`operation_id` )
-    REFERENCES `sabretooth`.`operation` (`id` )
+    REFERENCES `operation` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`consent`
+-- Table `consent`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`consent` ;
+DROP TABLE IF EXISTS `consent` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`consent` (
+CREATE  TABLE IF NOT EXISTS `consent` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `event` ENUM('verbal accept','verbal deny','written accept','written deny','retract','mail request','mail sent') NOT NULL ,
@@ -341,29 +337,29 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`consent` (
   INDEX `fk_participant_id` (`participant_id` ASC) ,
   CONSTRAINT `fk_consent_participant`
     FOREIGN KEY (`participant_id` )
-    REFERENCES `sabretooth`.`participant` (`id` )
+    REFERENCES `participant` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`sample`
+-- Table `sample`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`sample` ;
+DROP TABLE IF EXISTS `sample` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`sample` (
+CREATE  TABLE IF NOT EXISTS `sample` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   PRIMARY KEY (`id`) )
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`sample_has_participant`
+-- Table `sample_has_participant`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`sample_has_participant` ;
+DROP TABLE IF EXISTS `sample_has_participant` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`sample_has_participant` (
+CREATE  TABLE IF NOT EXISTS `sample_has_participant` (
   `sample_id` INT UNSIGNED NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   PRIMARY KEY (`sample_id`, `participant_id`) ,
@@ -371,23 +367,23 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`sample_has_participant` (
   INDEX `fk_sample_id` (`sample_id` ASC) ,
   CONSTRAINT `fk_sample_has_participant_sample`
     FOREIGN KEY (`sample_id` )
-    REFERENCES `sabretooth`.`sample` (`id` )
+    REFERENCES `sample` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_sample_has_participant_participant`
     FOREIGN KEY (`participant_id` )
-    REFERENCES `sabretooth`.`participant` (`id` )
+    REFERENCES `participant` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`availability`
+-- Table `availability`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`availability` ;
+DROP TABLE IF EXISTS `availability` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`availability` (
+CREATE  TABLE IF NOT EXISTS `availability` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `day_of_week` SET('mon','tue','wed','thu','fri','sat','sun') NOT NULL ,
@@ -397,18 +393,18 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`availability` (
   INDEX `fk_participant_id` (`participant_id` ASC) ,
   CONSTRAINT `fk_appointment_participant`
     FOREIGN KEY (`participant_id` )
-    REFERENCES `sabretooth`.`participant` (`id` )
+    REFERENCES `participant` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`qnaire_has_sample`
+-- Table `qnaire_has_sample`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`qnaire_has_sample` ;
+DROP TABLE IF EXISTS `qnaire_has_sample` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`qnaire_has_sample` (
+CREATE  TABLE IF NOT EXISTS `qnaire_has_sample` (
   `qnaire_id` INT UNSIGNED NOT NULL ,
   `sample_id` INT UNSIGNED NOT NULL ,
   PRIMARY KEY (`qnaire_id`, `sample_id`) ,
@@ -416,23 +412,23 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`qnaire_has_sample` (
   INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
   CONSTRAINT `fk_qnaire_has_sample_qnaire`
     FOREIGN KEY (`qnaire_id` )
-    REFERENCES `sabretooth`.`qnaire` (`id` )
+    REFERENCES `qnaire` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_qnaire_has_sample_sample`
     FOREIGN KEY (`sample_id` )
-    REFERENCES `sabretooth`.`sample` (`id` )
+    REFERENCES `sample` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`qnaire_note`
+-- Table `qnaire_note`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`qnaire_note` ;
+DROP TABLE IF EXISTS `qnaire_note` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`qnaire_note` (
+CREATE  TABLE IF NOT EXISTS `qnaire_note` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `qnaire_id` INT UNSIGNED NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
@@ -444,23 +440,23 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`qnaire_note` (
   INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
   CONSTRAINT `fk_qnaire_note_user`
     FOREIGN KEY (`user_id` )
-    REFERENCES `sabretooth`.`user` (`id` )
+    REFERENCES `user` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_qnaire_note_qnaire`
     FOREIGN KEY (`qnaire_id` )
-    REFERENCES `sabretooth`.`qnaire` (`id` )
+    REFERENCES `qnaire` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`shift`
+-- Table `shift`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`shift` ;
+DROP TABLE IF EXISTS `shift` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`shift` (
+CREATE  TABLE IF NOT EXISTS `shift` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `site_id` INT UNSIGNED NOT NULL ,
   `date` DATE NOT NULL ,
@@ -471,18 +467,18 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`shift` (
   INDEX `fk_site_id` (`site_id` ASC) ,
   CONSTRAINT `fk_shift_site`
     FOREIGN KEY (`site_id` )
-    REFERENCES `sabretooth`.`site` (`id` )
+    REFERENCES `site` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`access`
+-- Table `access`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`access` ;
+DROP TABLE IF EXISTS `access` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`access` (
+CREATE  TABLE IF NOT EXISTS `access` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `user_id` INT UNSIGNED NOT NULL ,
   `role_id` INT UNSIGNED NOT NULL ,
@@ -495,28 +491,28 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`access` (
   UNIQUE INDEX `uq_user_role_site` (`user_id` ASC, `role_id` ASC, `site_id` ASC) ,
   CONSTRAINT `fk_access_user`
     FOREIGN KEY (`user_id` )
-    REFERENCES `sabretooth`.`user` (`id` )
+    REFERENCES `user` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_access_role`
     FOREIGN KEY (`role_id` )
-    REFERENCES `sabretooth`.`role` (`id` )
+    REFERENCES `role` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_access_site`
     FOREIGN KEY (`site_id` )
-    REFERENCES `sabretooth`.`site` (`id` )
+    REFERENCES `site` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`participant_note`
+-- Table `participant_note`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`participant_note` ;
+DROP TABLE IF EXISTS `participant_note` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`participant_note` (
+CREATE  TABLE IF NOT EXISTS `participant_note` (
   `id` INT NOT NULL AUTO_INCREMENT ,
   `user_id` INT UNSIGNED NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
@@ -528,23 +524,23 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`participant_note` (
   INDEX `fk_participant_id` (`participant_id` ASC) ,
   CONSTRAINT `fk_participant_note_user`
     FOREIGN KEY (`user_id` )
-    REFERENCES `sabretooth`.`user` (`id` )
+    REFERENCES `user` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_participant_note_participant`
     FOREIGN KEY (`participant_id` )
-    REFERENCES `sabretooth`.`participant` (`id` )
+    REFERENCES `participant` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`interview_note`
+-- Table `interview_note`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`interview_note` ;
+DROP TABLE IF EXISTS `interview_note` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`interview_note` (
+CREATE  TABLE IF NOT EXISTS `interview_note` (
   `id` INT NOT NULL AUTO_INCREMENT ,
   `user_id` INT UNSIGNED NOT NULL ,
   `interview_id` INT UNSIGNED NOT NULL ,
@@ -556,23 +552,23 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`interview_note` (
   INDEX `fk_interview_id` (`interview_id` ASC) ,
   CONSTRAINT `fk_interview_note_user`
     FOREIGN KEY (`user_id` )
-    REFERENCES `sabretooth`.`user` (`id` )
+    REFERENCES `user` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_interview_note_interview`
     FOREIGN KEY (`interview_id` )
-    REFERENCES `sabretooth`.`interview` (`id` )
+    REFERENCES `interview` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`phone_call_note`
+-- Table `phone_call_note`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`phone_call_note` ;
+DROP TABLE IF EXISTS `phone_call_note` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`phone_call_note` (
+CREATE  TABLE IF NOT EXISTS `phone_call_note` (
   `id` INT NOT NULL AUTO_INCREMENT ,
   `user_id` INT UNSIGNED NOT NULL ,
   `phone_call_id` INT UNSIGNED NOT NULL ,
@@ -584,23 +580,23 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`phone_call_note` (
   INDEX `fk_phone_call_id` (`phone_call_id` ASC) ,
   CONSTRAINT `fk_phone_call_note_user`
     FOREIGN KEY (`user_id` )
-    REFERENCES `sabretooth`.`user` (`id` )
+    REFERENCES `user` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_phone_call_note_phone_call`
     FOREIGN KEY (`phone_call_id` )
-    REFERENCES `sabretooth`.`phone_call` (`id` )
+    REFERENCES `phone_call` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`site_has_interview_queue`
+-- Table `site_has_interview_queue`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`site_has_interview_queue` ;
+DROP TABLE IF EXISTS `site_has_interview_queue` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`site_has_interview_queue` (
+CREATE  TABLE IF NOT EXISTS `site_has_interview_queue` (
   `site_id` INT UNSIGNED NOT NULL ,
   `interview_queue_id` INT UNSIGNED NOT NULL ,
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
@@ -611,23 +607,23 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`site_has_interview_queue` (
   UNIQUE INDEX `uq_site_id_priority` (`site_id` ASC, `priority` ASC) ,
   CONSTRAINT `fk_site_has_interview_queue_site`
     FOREIGN KEY (`site_id` )
-    REFERENCES `sabretooth`.`site` (`id` )
+    REFERENCES `site` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_site_has_interview_queue_interview_queue`
     FOREIGN KEY (`interview_queue_id` )
-    REFERENCES `sabretooth`.`interview_queue` (`id` )
+    REFERENCES `interview_queue` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`activity`
+-- Table `activity`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`activity` ;
+DROP TABLE IF EXISTS `activity` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`activity` (
+CREATE  TABLE IF NOT EXISTS `activity` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `user_id` INT UNSIGNED NOT NULL ,
   `site_id` INT UNSIGNED NOT NULL ,
@@ -642,64 +638,64 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`activity` (
   INDEX `fk_operation_id` (`operation_id` ASC) ,
   CONSTRAINT `fk_activity_user`
     FOREIGN KEY (`user_id` )
-    REFERENCES `sabretooth`.`user` (`id` )
+    REFERENCES `user` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_activity_role`
     FOREIGN KEY (`role_id` )
-    REFERENCES `sabretooth`.`role` (`id` )
+    REFERENCES `role` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_activity_site`
     FOREIGN KEY (`site_id` )
-    REFERENCES `sabretooth`.`site` (`id` )
+    REFERENCES `site` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_activity_operation`
     FOREIGN KEY (`operation_id` )
-    REFERENCES `sabretooth`.`operation` (`id` )
+    REFERENCES `operation` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Placeholder table for view `sabretooth`.`participant_primary_location`
+-- Placeholder table for view `participant_primary_location`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `sabretooth`.`participant_primary_location` (`participant_id` INT, `contact_id` INT, `province` INT);
+CREATE TABLE IF NOT EXISTS `participant_primary_location` (`participant_id` INT, `contact_id` INT, `province` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `sabretooth`.`participant_current_consent`
+-- Placeholder table for view `participant_current_consent`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `sabretooth`.`participant_current_consent` (`participant_id` INT, `consent_id` INT, `consent` INT);
+CREATE TABLE IF NOT EXISTS `participant_current_consent` (`participant_id` INT, `consent_id` INT, `consent` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `sabretooth`.`participant_last_phone_call_status`
+-- Placeholder table for view `participant_last_phone_call_status`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `sabretooth`.`participant_last_phone_call_status` (`phone_call_id` INT, `participant_id` INT, `status` INT);
+CREATE TABLE IF NOT EXISTS `participant_last_phone_call_status` (`phone_call_id` INT, `participant_id` INT, `status` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `sabretooth`.`user_last_activity`
+-- Placeholder table for view `user_last_activity`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `sabretooth`.`user_last_activity` (`activity_id` INT, `user_id` INT);
+CREATE TABLE IF NOT EXISTS `user_last_activity` (`activity_id` INT, `user_id` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `sabretooth`.`site_last_activity`
+-- Placeholder table for view `site_last_activity`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `sabretooth`.`site_last_activity` (`activity_id` INT, `site_id` INT);
+CREATE TABLE IF NOT EXISTS `site_last_activity` (`activity_id` INT, `site_id` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `sabretooth`.`role_last_activity`
+-- Placeholder table for view `role_last_activity`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `sabretooth`.`role_last_activity` (`activity_id` INT, `role_id` INT);
+CREATE TABLE IF NOT EXISTS `role_last_activity` (`activity_id` INT, `role_id` INT);
 
 -- -----------------------------------------------------
--- View `sabretooth`.`participant_primary_location`
+-- View `participant_primary_location`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `sabretooth`.`participant_primary_location` ;
-DROP TABLE IF EXISTS `sabretooth`.`participant_primary_location`;
-USE `sabretooth`;
-CREATE  OR REPLACE VIEW `sabretooth`.`participant_primary_location` AS
+DROP VIEW IF EXISTS `participant_primary_location` ;
+DROP TABLE IF EXISTS `participant_primary_location`;
+
+CREATE  OR REPLACE VIEW `participant_primary_location` AS
 SELECT participant_id, id AS contact_id, province
 FROM contact AS t1
 WHERE t1.rank = (
@@ -711,12 +707,12 @@ WHERE t1.rank = (
   GROUP BY t2.participant_id );
 
 -- -----------------------------------------------------
--- View `sabretooth`.`participant_current_consent`
+-- View `participant_current_consent`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `sabretooth`.`participant_current_consent` ;
-DROP TABLE IF EXISTS `sabretooth`.`participant_current_consent`;
-USE `sabretooth`;
-CREATE  OR REPLACE VIEW `sabretooth`.`participant_current_consent` AS
+DROP VIEW IF EXISTS `participant_current_consent` ;
+DROP TABLE IF EXISTS `participant_current_consent`;
+
+CREATE  OR REPLACE VIEW `participant_current_consent` AS
 SELECT participant_id, id AS consent_id, event IN( 'verbal accept', 'written accept' ) AS consent
 FROM consent AS t1
 WHERE t1.date = (
@@ -727,12 +723,12 @@ WHERE t1.date = (
   GROUP BY t2.participant_id );
 
 -- -----------------------------------------------------
--- View `sabretooth`.`participant_last_phone_call_status`
+-- View `participant_last_phone_call_status`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `sabretooth`.`participant_last_phone_call_status` ;
-DROP TABLE IF EXISTS `sabretooth`.`participant_last_phone_call_status`;
-USE `sabretooth`;
-CREATE  OR REPLACE VIEW `sabretooth`.`participant_last_phone_call_status` AS
+DROP VIEW IF EXISTS `participant_last_phone_call_status` ;
+DROP TABLE IF EXISTS `participant_last_phone_call_status`;
+
+CREATE  OR REPLACE VIEW `participant_last_phone_call_status` AS
 SELECT phone_call_1.id AS phone_call_id, contact_1.participant_id, phone_call_1.status
 FROM phone_call AS phone_call_1, contact AS contact_1
 WHERE contact_1.id = phone_call_1.contact_id
@@ -744,12 +740,12 @@ AND phone_call_1.start_time = (
   GROUP BY contact_2.participant_id );
 
 -- -----------------------------------------------------
--- View `sabretooth`.`user_last_activity`
+-- View `user_last_activity`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `sabretooth`.`user_last_activity` ;
-DROP TABLE IF EXISTS `sabretooth`.`user_last_activity`;
-USE `sabretooth`;
-CREATE  OR REPLACE VIEW `sabretooth`.`user_last_activity` AS
+DROP VIEW IF EXISTS `user_last_activity` ;
+DROP TABLE IF EXISTS `user_last_activity`;
+
+CREATE  OR REPLACE VIEW `user_last_activity` AS
 SELECT activity_1.id AS activity_id, user_1.id as user_id
 FROM activity AS activity_1, user AS user_1
 WHERE user_1.id = activity_1.user_id
@@ -762,12 +758,12 @@ AND activity_1.date = (
 GROUP BY activity_1.date;
 
 -- -----------------------------------------------------
--- View `sabretooth`.`site_last_activity`
+-- View `site_last_activity`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `sabretooth`.`site_last_activity` ;
-DROP TABLE IF EXISTS `sabretooth`.`site_last_activity`;
-USE `sabretooth`;
-CREATE  OR REPLACE VIEW `sabretooth`.`site_last_activity` AS
+DROP VIEW IF EXISTS `site_last_activity` ;
+DROP TABLE IF EXISTS `site_last_activity`;
+
+CREATE  OR REPLACE VIEW `site_last_activity` AS
 SELECT activity_1.id AS activity_id, site_1.id as site_id
 FROM activity AS activity_1, site AS site_1
 WHERE site_1.id = activity_1.site_id
@@ -780,12 +776,12 @@ AND activity_1.date = (
 GROUP BY activity_1.date;
 
 -- -----------------------------------------------------
--- View `sabretooth`.`role_last_activity`
+-- View `role_last_activity`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `sabretooth`.`role_last_activity` ;
-DROP TABLE IF EXISTS `sabretooth`.`role_last_activity`;
-USE `sabretooth`;
-CREATE  OR REPLACE VIEW `sabretooth`.`role_last_activity` AS
+DROP VIEW IF EXISTS `role_last_activity` ;
+DROP TABLE IF EXISTS `role_last_activity`;
+
+CREATE  OR REPLACE VIEW `role_last_activity` AS
 SELECT activity_1.id AS activity_id, role_1.id as role_id
 FROM activity AS activity_1, role AS role_1
 WHERE role_1.id = activity_1.role_id

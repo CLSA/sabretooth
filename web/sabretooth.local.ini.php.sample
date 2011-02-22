@@ -9,6 +9,18 @@
 namespace sabretooth;
 global $SETTINGS;
 
+// The file path to the application
+$SETTINGS[ 'path' ][ 'SABRETOOTH' ] = '/path/to/app';
+
+// The path to the log file
+$SETTINGS[ 'path' ][ 'LOG_FILE' ] = '/path/to/log/file';
+
+// Whether or not to run the application in development mode
 $SETTINGS[ 'general' ][ 'development_mode' ] = true;
+
+// The database name, username and password
+$SETTINGS[ 'db' ][ 'database' ] = 'put your database name here';
+$SETTINGS[ 'db' ][ 'username' ] = 'put your database username here';
 $SETTINGS[ 'db' ][ 'password' ] = 'put your database password here';
+
 ?>
