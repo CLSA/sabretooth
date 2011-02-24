@@ -4,18 +4,19 @@
  # Base main file.
  # @author Patrick Emond <emondpd@mcmaster.ca>
  # @param string jquery-ui_css_path The relative path of a jquery theme css file.
- # @param boolean survey_active Define whether a survey is active.
+ # @param boolean survey_url The URL of the survey interface.
  #}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html lang='en' xml:lang='en' xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
   <title>Sabretooth</title>
   <script type="text/javascript"></script>
   <link href="{{ constant('JQUERY_UI_URL') }}/css{{ jquery_ui_css_path }}" rel="stylesheet" />
   <link href="css/main.css" rel="stylesheet" />
+  {# need to dynamically specify left flap colors #}
   <style media="screen" type="text/css">
-  /* need to dynamically specify left flap colors */
   .extruder.left .flap{
     color: {{ extruder_flap_color }};
     background: {{ extruder_flap_background }};
@@ -41,7 +42,7 @@
   $( function() { $( "div.content" ).addClass( "ui-widget-content" ); } );
   $( function() { $( ".flap" ).addClass( "ui-widget-header" ); } );
 
-  {% if survey_active %}
+  {% if survey_url %}
   // Defines the layout when showing the survey pane.
   // Should only be visible when there is an active survey.
   $( document ).ready( function() {
@@ -53,7 +54,7 @@
       south: {
         slidable: true,
         size: 384,
-        initClosed: true }
+        initClosed: false }
       } );
     }
   );
@@ -62,25 +63,27 @@
 </head>
 
 <body>
-  <div id="error_slot"></div>
-  <div id="confirm_slot"></div>
-  <div id="top_extruder" class="{title:'settings'}">
-    <div id="settings_slot"></div>
+  {% if survey_url %}
+  <div class="ui-layout-center">
+  {% endif %}
+    <div id="error_slot"></div>
+    <div id="confirm_slot"></div>
+    <div id="top_extruder" class="{title:'settings'}">
+      <div id="settings_slot"></div>
+    </div>
+    <div id="left_extruder" class="{title:'menu'}">
+      <div id="menu_slot"></div>
+    </div>
+    <div class="ui-widget-content" id="app_ui">
+      <div id="header_slot"></div>
+      <div id="main_slot"></div>
+    </div>
+  {% if survey_url %}
   </div>
-  <div id="left_extruder" class="{title:'menu'}" style="min-height: 100%">
-    <div id="menu_slot" style="min-height: 100%"></div>
-  </div>
-  <div class="ui-layout-center ui-widget-content" id="app_ui">
-    <div id="header_slot"></div>
-    <div id="main_slot"></div>
-  </div>
-  {% if survey_active %}
   <div class="ui-layout-south" id="survey_ui">
-    <object style="width: 100%; height: 100%; position: absolute"
-            id="survey_object"
-            data="http://gremlin/limesurvey/"
-            standby="Loading..."
-            type="application/xhtml+xml">
+    <object style="width:100%; height: 100%; position: absolute;"
+            data="{{ survey_url }}"
+            id="survey_object">
       <p>Your browser is not supported, try with Firefox 3.6+</p>
     </object>
   </div>

@@ -25,10 +25,6 @@ $SETTINGS[ 'url' ][ 'FULL' ] = $SETTINGS[ 'url' ][ 'BASE' ].$_SERVER["REQUEST_UR
 
 // the location of sabretooth internal path
 $SETTINGS[ 'path' ][ 'SABRETOOTH' ] = '/usr/local/lib/sabretooth';
-$SETTINGS[ 'path' ][ 'API' ] = $SETTINGS[ 'path' ][ 'SABRETOOTH' ].'/api';
-$SETTINGS[ 'path' ][ 'DOC' ] = $SETTINGS[ 'path' ][ 'SABRETOOTH' ].'/doc';
-$SETTINGS[ 'path' ][ 'SQL' ] = $SETTINGS[ 'path' ][ 'SABRETOOTH' ].'/sql';
-$SETTINGS[ 'path' ][ 'TPL' ] = $SETTINGS[ 'path' ][ 'SABRETOOTH' ].'/tpl';
 
 // the location of libraries
 $SETTINGS[ 'path' ][ 'ADODB' ] = '/usr/local/lib/adodb';
@@ -36,6 +32,10 @@ $SETTINGS[ 'path' ][ 'PHPAGI' ] = '/usr/local/lib/phpagi';
 $SETTINGS[ 'path' ][ 'PHPEXCEL' ] = '/usr/local/lib/phpexcel';
 $SETTINGS[ 'path' ][ 'JS' ] = 'js';
 $SETTINGS[ 'path' ][ 'CSS' ] = 'css';
+
+// the url of limesurvey
+$SETTINGS[ 'path' ][ 'LIMESURVEY' ] = '/var/www/limesurvey';
+$SETTINGS[ 'url' ][ 'LIMESURVEY' ] = $SETTINGS[ 'url' ][ 'FULL' ].'/limesurvey';
 
 // javascript libraries
 $SETTINGS[ 'version' ][ 'JQUERY' ] = '1.4.4';

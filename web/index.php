@@ -41,11 +41,12 @@ try
   // Since there is no main widget we need set up the template variables here
   $theme = session::self()->get_theme();
   $version = session::self()->get_setting( 'version', 'JQUERY_UI' );
+  $survey_url = session::self()->is_survey_enabled() ? LIMESURVEY_URL : false;
   $variables = array( 'jquery_ui_css_path' => '/'.$theme.'/jquery-ui-'.$version.'.custom.css',
                       'extruder_flap_color' => util::get_flap_css_color( $theme ),
                       'extruder_flap_background' => util::get_flap_css_background( $theme ),
-                      'survey_active' => false ); // TODO: change once survey code is implemented
-
+                      'survey_url' => $survey_url );
+  
   $result_array['output'] = $twig_template->render( $variables );
 }
 catch( exception\base_exception $e )
@@ -74,8 +75,10 @@ catch( \Twig_Error $e )
 }
 catch( \Exception $e )
 {
-  $code = util::convert_number_to_code( SYSTEM_BASE_ERROR_NUMBER );
-  log::err( "Last minute ".$e );
+  $code = class_exists( 'sabretooth\util' )
+        ? util::convert_number_to_code( SYSTEM_BASE_ERROR_NUMBER )
+        : 0;
+  if( class_exists( 'sabretooth\log' ) ) log::err( "Last minute ".$e );
   $result_array['success'] = false;
   $result_array['error_type'] = 'System';
   $result_array['error_code'] = $code;

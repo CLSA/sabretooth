@@ -76,7 +76,13 @@ VALUES( "action", "site", "new_access", true, "Grant access to a site." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "site", "delete_access", true, "Remove accesss from a site." );
 
--- access
+-- survey
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "survey", "enable", true, "Enable the survey panel for Limesurvey." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "survey", "disable", true, "Disable all panels for Limesurvey." );
+
+-- user
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "user", "delete", true, "Removes a user from the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -111,7 +117,7 @@ INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id
 FROM role, operation
 WHERE role.name in( "administrator", "supervisor" )
-AND operation.subject in( "access", "activity", "operation", "site", "role", "user" );
+AND operation.subject in( "access", "activity", "survey", "operation", "site", "role", "user" );
 
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id

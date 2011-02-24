@@ -18,6 +18,10 @@ $SETTINGS[ 'path' ][ 'LOG_FILE' ] = '/path/to/log/file';
 // Whether or not to run the application in development mode
 $SETTINGS[ 'general' ][ 'development_mode' ] = true;
 
+// The path and url of Limesurvey
+$SETTINGS[ 'path' ][ 'LIMESURVEY' ] = '/path/to/limesurvey';
+$SETTINGS[ 'url' ][ 'LIMESURVEY' ] = '/url/to/limesurvey';
+
 // The database name, username and password
 $SETTINGS[ 'db' ][ 'database' ] = 'put your database name here';
 $SETTINGS[ 'db' ][ 'username' ] = 'put your database username here';

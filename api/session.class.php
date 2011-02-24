@@ -63,8 +63,10 @@ final class session extends singleton
     error_reporting(
       $this->settings[ 'general' ][ 'development_mode' ] ? E_ALL | E_STRICT : E_ALL );
 
-    // setup the session array
+    // setup the session variables
     if( !isset( $_SESSION['slot'] ) ) $_SESSION['slot'] = array();
+    if( !isset( $_SESSION['survey_enabled'] ) ) $_SESSION['survey_enabled'] = $this->survey_enabled;
+    else $this->survey_enabled = $_SESSION['survey_enabled'];
   }
   
   /**
@@ -539,6 +541,42 @@ final class session extends singleton
         $_SESSION['slot'][$slot]['stack']['widgets'][$index+1]['name'] : NULL );
     }
   }
+  
+  /**
+   * Gets the current survey state.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function is_survey_enabled()
+  {
+    return $this->survey_enabled;
+  }
+
+  /**
+   * Enables the survey panel.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function enable_survey()
+  {
+    $this->survey_enabled = true;
+    $_SESSION['survey_enabled'] = $this->survey_enabled;
+  }
+
+  /**
+   * Disables the survey panel.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function disable_survey()
+  {
+    $this->survey_enabled = false;
+    $_SESSION['survey_enabled'] = $this->survey_enabled;
+  }
 
   /**
    * Whether the session has been initialized
@@ -581,5 +619,12 @@ final class session extends singleton
    * @access private
    */
   private $site = NULL;
+
+  /**
+   * Whether the survey is enabled or not.
+   * @var bool
+   * @access private
+   */
+  private $survey_enabled = false;
 }
 ?>

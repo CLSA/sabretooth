@@ -49,9 +49,8 @@ $( document ).ready( function() {
   $( "#{{ widget.full }}_set_theme" ).change( function() {
     var selected = $( "#{{ widget.full }}_set_theme option:selected" );
     if( 0 != selected.val() ) {
-      if( send_action( 'self', 'set_theme', { "theme": selected.text() } ) ) {
+      if( send_action( 'self', 'set_theme', { "theme": selected.text() } ) )
         window.location.reload();
-      }
     }
   } );
 } );

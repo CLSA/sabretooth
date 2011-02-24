@@ -37,10 +37,10 @@ class user_view extends base_view
       array( 'heading' => 'Active',
              'type' => 'boolean',
              'value' => $this->get_record()->active ? 'Yes' : 'No' );
-    $this->item['limesurvey_username'] =
-      array( 'heading' => 'Limesurvey username',
+    $this->item['limesurvey_user'] =
+      array( 'heading' => 'Limesurvey user',
              'type' => 'constant',
-             'value' => 'TODO' );
+             'value' => $this->get_record()->lime_uid ? 'Yes' : 'No' );
     
     $db_activity = $this->get_record()->get_last_activity();
     $last = \sabretooth\util::get_fuzzy_time_ago(
