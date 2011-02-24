@@ -1,0 +1,55 @@
+{% extends "widget.twig" %}
+{% block widget %}
+
+<script type="text/javascript">
+$( document ).ready( function() {
+
+  // sites
+  $( "#{{ widget.full }}_site_list" ).click( function() {
+    $('#left_extruder').closeMbExtruder();
+    slot_load( 'main', 'site_list' );
+  } );
+
+  // users
+  $( "#{{ widget.full }}_user_list" ).click( function() {
+    $('#left_extruder').closeMbExtruder();
+    slot_load( 'main', 'user_list' );
+  } );
+
+  // roles
+  $( "#{{ widget.full }}_role_list" ).click( function() {
+    $('#left_extruder').closeMbExtruder();
+    slot_load( 'main', 'role_list' );
+  } );
+
+  // access
+  $( "#{{ widget.full }}_access_list" ).click( function() {
+    $('#left_extruder').closeMbExtruder();
+    slot_load( 'main', 'access_list' );
+  } );
+
+  // operations
+  $( "#{{ widget.full }}_operation_list" ).click( function() {
+    $('#left_extruder').closeMbExtruder();
+    slot_load( 'main', 'operation_list' );
+  } );
+
+  // activity
+  $( "#{{ widget.full }}_activity_list" ).click( function() {
+    $('#left_extruder').closeMbExtruder();
+    slot_load( 'main', 'activity_list' );
+  } );
+
+} );
+
+</script>
+
+<div>
+  <div style="padding: 2px;"><button style="width: 100%;" id="{{ widget.full }}_site_list">Sites</button></div>
+  <div style="padding: 2px;"><button style="width: 100%;" id="{{ widget.full }}_user_list">Users</button></div>
+  <div style="padding: 2px;"><button style="width: 100%;" id="{{ widget.full }}_role_list">Roles</button></div>
+  <div style="padding: 2px;"><button style="width: 100%;" id="{{ widget.full }}_access_list">Access</button></div>
+  <div style="padding: 2px;"><button style="width: 100%;" id="{{ widget.full }}_operation_list">Operations</button></div>
+  <div style="padding: 2px;"><button style="width: 100%;" id="{{ widget.full }}_activity_list">Activity</button></div>
+</div>
+{% endblock %}

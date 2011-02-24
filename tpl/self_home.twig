@@ -1,48 +1,19 @@
 {% extends "widget.twig" %}
 {% block widget %}
 
-<script type="text/javascript">
-$( document ).ready( function() {
-  $( "#{{ widget.full }}_site_list" ).click( function() {
-    slot_load( 'main', 'site_list' );
-  } );
-} );
-$( document ).ready( function() {
-  $( "#{{ widget.full }}_user_list" ).click( function() {
-    slot_load( 'main', 'user_list' );
-  } );
-} );
-$( document ).ready( function() {
-  $( "#{{ widget.full }}_role_list" ).click( function() {
-    slot_load( 'main', 'role_list' );
-  } );
-} );
-$( document ).ready( function() {
-  $( "#{{ widget.full }}_access_list" ).click( function() {
-    slot_load( 'main', 'access_list' );
-  } );
-} );
-$( document ).ready( function() {
-  $( "#{{ widget.full }}_operation_list" ).click( function() {
-    slot_load( 'main', 'operation_list' );
-  } );
-} );
-$( document ).ready( function() {
-  $( "#{{ widget.full }}_activity_list" ).click( function() {
-    slot_load( 'main', 'activity_list' );
-  } );
-} );
-
-$( function() { $( "#{{ widget.full }}_user_list" ).button().parent().buttonset() } );
-</script>
-
-<div class="ui-widget ui-widget-content" style="padding:0.5em">
-  <span class="title">Lists:</span>
-  <button id="{{ widget.full }}_site_list">Sites</button>
-  <button id="{{ widget.full }}_user_list">Users</button>
-  <button id="{{ widget.full }}_role_list">Roles</button>
-  <button id="{{ widget.full }}_access_list">Access</button>
-  <button id="{{ widget.full }}_operation_list">Operations</button>
-  <button id="{{ widget.full }}_activity_list">Activity</button>
-</div
+<div class="ui-widget ui-widget-content" style="padding: 4px; position: relative;">
+  <div class="title" style="padding-top: 10px;">Welcome to Sabretooth version 0.1</div>
+  <div class="spacer"></div>
+  <div>
+    You are currently logged on as <span class="title">{{ user_name|capitalize }}</span>
+    under the role of <span class="title">{{ role_name|capitalize }}</span>
+    from the <span class="title">{{ site_name|capitalize }}</span> site.
+  </div>
+  <div>
+    Your last activity was on <span class="title">{{ last_day }}</span>
+    at <span class="title">{{ last_time }}</span>.
+  </div>
+  </p>
+  <div class="spacer"></div>
+</div>
 {% endblock %}

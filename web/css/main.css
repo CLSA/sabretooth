@@ -45,7 +45,44 @@ html, body {
 .extruder.top .text {
   font: 14px Arial, Helvetica, sans-serif;
   padding: 10px;
-  border-bottom: 1px solid #333;
+}
+
+.extruder.left {
+  height:100%;
+}
+
+.extruder.left .ext_wrapper{
+  height:100%;
+}
+
+.extruder.left .flap{
+  display: block;
+  font: 16px Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  text-align: center;
+  margin-right:-28px;
+  padding: 64px 3px 60px 3px;
+  width:20px;
+  position:absolute;
+  top:0;
+  right:0;
+  -moz-border-radius:0 10px 10px 0;
+  -webkit-border-top-right-radius:10px;
+  -webkit-border-bottom-right-radius:10px;
+  -moz-box-shadow:black 2px 2px 5px;
+  -webkit-box-shadow:black 2px 2px 5px;
+  cursor: pointer;
+}
+
+.extruder.left .content {
+  display: none;
+  -moz-box-shadow: black 2px 0px 5px;
+  -webkit-box-shadow: black 2px 0px 5px;
+}
+
+.extruder.left .text {
+  font: 14px Arial, Helvetica, sans-serif;
+  padding: 10px;
 }
 
 #app_ui {
@@ -56,14 +93,14 @@ html, body {
   text-align: right;
   margin-top: 4px;
   margin-bottom: 4px;
-  margin-left: 10px;
+  margin-left: 35px;
   margin-right: 10px;
 }
 
 #main_slot {
   margin-top: 0px;
   margin-bottom: 10px;
-  margin-left: 10px;
+  margin-left: 35px;
   margin-right: 10px;
 }
 

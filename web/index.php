@@ -42,6 +42,8 @@ try
   $theme = session::self()->get_theme();
   $version = session::self()->get_setting( 'version', 'JQUERY_UI' );
   $variables = array( 'jquery_ui_css_path' => '/'.$theme.'/jquery-ui-'.$version.'.custom.css',
+                      'extruder_flap_color' => util::get_flap_css_color( $theme ),
+                      'extruder_flap_background' => util::get_flap_css_background( $theme ),
                       'survey_active' => false ); // TODO: change once survey code is implemented
 
   $result_array['output'] = $twig_template->render( $variables );

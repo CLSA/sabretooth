@@ -52,6 +52,8 @@ VALUES( "action", "role", "delete_operation", true, "Remove operations from a ro
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "home", false, "The current user's home screen." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "self", "menu", false, "The current user's main menu." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "settings", false, "The current user's settings manager." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "shortcuts", false, "The current user's shortcut icon set." );

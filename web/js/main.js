@@ -1,8 +1,25 @@
 // setup the top extruder
 $( document ).ready( function() {
   $( "#top_extruder" ).buildMbExtruder( {
-    positionFixed: false,
+    position: "top",
+    positionFixed: true,
     width: 400,
+    sensibility: 500,
+    extruderOpacity: 1,
+    autoCloseTime: 0,
+    hidePanelsOnClose: true,
+    onExtOpen: function() {},
+    onExtContentLoad: function() {},
+    onExtClose: function() {}
+  } );
+} );
+
+// setup the left extruder
+$( document ).ready( function() {
+  $( "#left_extruder" ).buildMbExtruder( {
+    position: "left",
+    positionFixed: true,
+    width: 200,
     sensibility: 500,
     extruderOpacity: 1,
     autoCloseTime: 0,
@@ -251,6 +268,7 @@ function get_slot( element ) {
 }
 
 // refresh all slots
-$( document ).ready( function() { slot_refresh( "extruder" ); } );
+$( document ).ready( function() { slot_refresh( "settings" ); } );
+$( document ).ready( function() { slot_refresh( "menu" ); } );
 $( document ).ready( function() { slot_refresh( "header" ); } );
 $( document ).ready( function() { slot_refresh( "main" ); } );

@@ -14,6 +14,13 @@
   <script type="text/javascript"></script>
   <link href="{{ constant('JQUERY_UI_URL') }}/css{{ jquery_ui_css_path }}" rel="stylesheet" />
   <link href="css/main.css" rel="stylesheet" />
+  <style media="screen" type="text/css">
+  /* need to dynamically specify left flap colors */
+  .extruder.left .flap{
+    color: {{ extruder_flap_color }};
+    background: {{ extruder_flap_background }};
+  }
+  </style>
   <script type="text/javascript" src="{{ constant('JQUERY_JS_URL') }}"></script>
   <script type="text/javascript" src="{{ constant('JQUERY_UI_JS_URL') }}"></script>
   <script type="text/javascript" src="{{ constant('JQUERY_LAYOUT_JS_URL') }}"></script>
@@ -30,7 +37,7 @@
   // set button styles
   $( function() { $( "button, input:submit" ).button(); } );
 
-  // apply jquery-ui theme to extruder
+  // apply jquery-ui theme to the extruders
   $( function() { $( "div.content" ).addClass( "ui-widget-content" ); } );
   $( function() { $( ".flap" ).addClass( "ui-widget-header" ); } );
 
@@ -58,7 +65,10 @@
   <div id="error_slot"></div>
   <div id="confirm_slot"></div>
   <div id="top_extruder" class="{title:'settings'}">
-    <div id="extruder_slot"></div>
+    <div id="settings_slot"></div>
+  </div>
+  <div id="left_extruder" class="{title:'menu'}" style="min-height: 100%">
+    <div id="menu_slot" style="min-height: 100%"></div>
   </div>
   <div class="ui-layout-center ui-widget-content" id="app_ui">
     <div id="header_slot"></div>

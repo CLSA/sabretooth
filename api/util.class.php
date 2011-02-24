@@ -178,11 +178,44 @@ final class util
   }
 
   /**
+   * Returns the date as a user-friendly string.
+   * 
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @param string $date A date string in the format accepted by the DateTime constructor.
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function get_date( $date )
+  {
+    if( is_null( $date ) || !is_string( $date ) ) return 'unknown';
+
+    $date = new \DateTime( $date );
+    return $date->format( 'l, F jS, Y' );
+  }
+
+  /**
+   * Returns the time as a user-friendly string.
+   * 
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @param string $date A date string in the format accepted by the DateTime constructor.
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function get_time( $date )
+  {
+    if( is_null( $date ) || !is_string( $date ) ) return 'unknown';
+
+    $date = new \DateTime( $date );
+    return $date->format( 'g:i:s A' );
+  }
+
+  /**
    * Returns a fuzzy-time description of how long ago a certain date occured.
    * 
-   * @author Patrick EMond <emondpd@mcamster.ca>
-   * @param string|DateTime $date A DateTime object, or if a string is passed then it is converted
-                                  into a DateTime object.
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @param string $date A date string in the format accepted by the DateTime constructor.
    * @return string
    * @static
    * @access public
@@ -292,6 +325,84 @@ final class util
     \HttpResponse::setContentType( 'application/json' ); 
     \HttpResponse::setData( $data );
     \HttpResponse::send();
+  }
+  
+  /**
+   * Get the foreground color of the flap given a jquery-ui theme.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $theme The name of a jquery theme.
+   * @static
+   * @access public
+   */
+  public static function get_flap_css_color( $theme )
+  {
+    if( 'black-tie' == $theme ) $color = '#eeeeee';
+    else if( 'blitzer' == $theme ) $color = '#ffffff';
+    else if( 'cupertino' == $theme ) $color = '#222222';
+    else if( 'dark-hive' == $theme ) $color = '#ffffff';
+    else if( 'dot-luv' == $theme ) $color = '#f6f6f6';
+    else if( 'eggplant' == $theme ) $color = '#ffffff';
+    else if( 'excite-bike' == $theme ) $color = '#e69700';
+    else if( 'flick' == $theme ) $color = '#444444';
+    else if( 'hot-sneaks' == $theme ) $color = '#e1e463';
+    else if( 'humanity' == $theme ) $color = '#ffffff';
+    else if( 'le-frog' == $theme ) $color = '#ffffff';
+    else if( 'mint-choc' == $theme ) $color = '#e3ddc9';
+    else if( 'overcast' == $theme ) $color = '#444444';
+    else if( 'pepper-grinder' == $theme ) $color = '#453821';
+    else if( 'redmond' == $theme ) $color = '#ffffff';
+    else if( 'smoothness' == $theme ) $color = '#222222';
+    else if( 'south-street' == $theme ) $color = '#433f38';
+    else if( 'start' == $theme ) $color = '#eaf5f7';
+    else if( 'sunny' == $theme ) $color = '#ffffff';
+    else if( 'swanky-purse' == $theme ) $color = '#eacd86';
+    else if( 'trontastic' == $theme ) $color = '#222222';
+    else if( 'ui-darkness' == $theme ) $color = '#ffffff';
+    else if( 'ui-lightness' == $theme ) $color = '#ffffff';
+    else if( 'vader' == $theme ) $color = '#ffffff';
+    else $color = '#ffffff';
+
+    return $color;
+  }
+
+  /**
+   * Get the background color of the flap given a jquery-ui theme.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $theme The name of a jquery theme.
+   * @static
+   * @access public
+   */
+  public static function get_flap_css_background( $theme )
+  {
+    if( 'black-tie' == $theme ) $background = '#333333';
+    else if( 'blitzer' == $theme ) $background = '#cc0000';
+    else if( 'cupertino' == $theme ) $background = '#deedf7';
+    else if( 'dark-hive' == $theme ) $background = '#444444';
+    else if( 'dot-luv' == $theme ) $background = '#0b3e6f';
+    else if( 'eggplant' == $theme ) $background = '#30273a';
+    else if( 'excite-bike' == $theme ) $background = '#f9f9f9';
+    else if( 'flick' == $theme ) $background = '#dddddd';
+    else if( 'hot-sneaks' == $theme ) $background = '#35414f';
+    else if( 'humanity' == $theme ) $background = '#cb842e';
+    else if( 'le-frog' == $theme ) $background = '#3a8104';
+    else if( 'mint-choc' == $theme ) $background = '#453326';
+    else if( 'overcast' == $theme ) $background = '#dddddd';
+    else if( 'pepper-grinder' == $theme ) $background = '#ffffff';
+    else if( 'redmond' == $theme ) $background = '#5c9ccc';
+    else if( 'smoothness' == $theme ) $background = '#cccccc';
+    else if( 'south-street' == $theme ) $background = '#ece8da';
+    else if( 'start' == $theme ) $background = '#2191c0';
+    else if( 'sunny' == $theme ) $background = '#817865';
+    else if( 'swanky-purse' == $theme ) $background = '#261803';
+    else if( 'trontastic' == $theme ) $background = '#9fda58';
+    else if( 'ui-darkness' == $theme ) $background = '#333333';
+    else if( 'ui-lightness' == $theme ) $background = '#f6a828';
+    else if( 'vader' == $theme ) $background = '#888888';
+    else $background = 'white';
+
+    return $background;
   }
 
   /**
