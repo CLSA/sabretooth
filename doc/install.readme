@@ -51,3 +51,6 @@ Create a symbolic link to Sabretooth's web/ directory in a web-accessible place:
 
 cd /var/www/<username>
 ln -s /path/to/sabretooth/web sabretooth
+
+Sabretooth uses HTTP authentication to manage the logging in/out of users.  Make sure that your
+webserver is configured to require HTTP authentication for the root web directory.
