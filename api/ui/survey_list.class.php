@@ -1,6 +1,6 @@
 <?php
 /**
- * script_list.class.php
+ * survey_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,23 +10,23 @@
 namespace sabretooth\ui;
 
 /**
- * widget script list
+ * widget survey list
  * 
  * @package sabretooth\ui
  */
-class script_list extends base_list_widget
+class survey_list extends base_list_widget
 {
   /**
    * Constructor
    * 
-   * Defines all variables required by the script list.
+   * Defines all variables required by the survey list.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'script', $args );
+    parent::__construct( 'survey', $args );
     
     $session = \sabretooth\session::self();
 
@@ -56,7 +56,7 @@ class script_list extends base_list_widget
     // reset the array
     $this->rows = array();
     
-    // get all scripts
+    // get all surveys
     foreach( $this->get_record_list() as $record )
     {
       array_push(
@@ -68,6 +68,19 @@ class script_list extends base_list_widget
                         'language' => $record->language,
                         'additional_languages' => $record->additional_languages ) ) );
     }
+  }
+
+  /**
+   * Overriding parent method because we need to query limesurvey database.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return int
+   * @access protected
+   */
+  protected function determine_record_count( $modifier )
+  {
+    $modifier->where( 'active', 'Y' );
+    return \sabretooth\database\limesurvey\surveys::count( $modifier );
   }
 
   /**

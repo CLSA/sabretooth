@@ -48,12 +48,6 @@ VALUES( "action", "role", "new_operation", true, "Add new operations to a role."
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "role", "delete_operation", true, "Remove operations from a role." );
 
--- script
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "script", "view", true, "View a script's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "script", "list", true, "List scripts in the system." );
-
 -- self
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "home", false, "The current user's home screen." );
@@ -86,7 +80,9 @@ VALUES( "action", "site", "delete_access", true, "Remove accesss from a site." )
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "survey", "enable", true, "Enable the survey panel for Limesurvey." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "survey", "disable", true, "Disable all panels for Limesurvey." );
+VALUES( "action", "survey", "disable", true, "Disable the survey panel for Limesurvey." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "survey", "list", true, "List surveys in the system." );
 
 -- user
 INSERT INTO operation( type, subject, name, restricted, description )

@@ -40,10 +40,10 @@ $( document ).ready( function() {
     slot_load( 'main', 'activity_list' );
   } );
 
-  // script
-  $( "#{{ widget.full }}_script_list" ).click( function() {
+  // survey
+  $( "#{{ widget.full }}_survey_list" ).click( function() {
     $('#left_extruder').closeMbExtruder();
-    slot_load( 'main', 'script_list' );
+    slot_load( 'main', 'survey_list' );
   } );
 
 } );
@@ -70,7 +70,7 @@ $( document ).ready( function() {
     <button style="width: 100%;" id="{{ widget.full }}_activity_list">Activity</button>
   </div>
   <div style="padding: 2px;">
-    <button style="width: 100%;" id="{{ widget.full }}_script_list">Scripts</button>
+    <button style="width: 100%;" id="{{ widget.full }}_survey_list">Surveys</button>
   </div>
 </div>
 {% endblock %}
