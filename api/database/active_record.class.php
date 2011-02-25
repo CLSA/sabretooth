@@ -33,24 +33,25 @@ abstract class active_record extends \sabretooth\base_object
   {
     // determine the columns for this table
     $db = \sabretooth\session::self()->get_db();
-    $columns = $db->MetaColumnNames( self::get_table_name() );
+    $columns = $db->MetaColumnNames( static::get_table_name() );
 
     if( !is_array( $columns ) || 0 == count( $columns ) )
       throw new \sabretooth\exception\runtime(
-        "Meta column names return no columns for table ".self::get_table_name(), __METHOD__ );
+        "Meta column names return no columns for table ".static::get_table_name(), __METHOD__ );
 
     foreach( $columns as $name ) $this->columns[ $name ] = NULL;
     
     if( NULL != $id )
     {
       // make sure this table has an id column as the primary key
-      $primary_key_names = $db->MetaPrimaryKeys( self::get_table_name() );
-      if( 1 != count( $primary_key_names ) || 'id' != $primary_key_names[0] )
+      $primary_key_names = $db->MetaPrimaryKeys( static::get_table_name() );
+      if( 1 != count( $primary_key_names ) || static::$primary_key_name != $primary_key_names[0] )
       {
         throw new \sabretooth\exception\runtime(
-          'Unable to create record, single-column primary key "id" does not exist.', __METHOD__ );
+          'Unable to create record, single-column primary key "'.
+          static::$primary_key_name.'" does not exist.', __METHOD__ );
       }
-      $this->columns['id'] = intval( $id );
+      $this->columns[static::$primary_key_name] = intval( $id );
     }
     
     // now load the data from the database
@@ -70,7 +71,7 @@ abstract class active_record extends \sabretooth\base_object
   public function __destruct()
   {
     // save to the database if auto-saving is on
-    if( self::$auto_save && isset( $this->columns['id'] ) ) $this->save();
+    if( self::$auto_save && isset( $this->columns[static::$primary_key_name] ) ) $this->save();
   }
   
   /**
@@ -84,12 +85,13 @@ abstract class active_record extends \sabretooth\base_object
    */
   public function load()
   {
-    if( isset( $this->columns['id'] ) )
+    if( isset( $this->columns[static::$primary_key_name] ) )
     {
       // not using a modifier here is ok since we're forcing id to be an integer
-      $sql = sprintf( 'SELECT * FROM %s WHERE id = %d',
-                      self::get_table_name(),
-                      $this->columns['id'] );
+      $sql = sprintf( 'SELECT * FROM %s WHERE %s = %d',
+                      static::get_table_name(),
+                      static::$primary_key_name,
+                      $this->columns[static::$primary_key_name] );
 
       $row = self::get_row( $sql );
 
@@ -110,12 +112,14 @@ abstract class active_record extends \sabretooth\base_object
    */
   public function save()
   {
+    if( $this->read_only ) return;
+
     // building the SET list since it is identical for inserts and updates
     $sets = '';
     $first = true;
     foreach( $this->columns as $key => $val )
     {
-      if( 'id' != $key )
+      if( static::$primary_key_name != $key )
       {
         $sets .= sprintf( '%s %s = %s',
                           $first ? '' : ',',
@@ -126,16 +130,17 @@ abstract class active_record extends \sabretooth\base_object
     }
     
     // either insert or update the row based on whether the primary key is set
-    $sql = sprintf( is_null( $this->columns['id'] )
+    $sql = sprintf( is_null( $this->columns[static::$primary_key_name] )
                     ? 'INSERT INTO %s SET %s'
-                    : 'UPDATE %s SET %s WHERE id = %d',
-                    self::get_table_name(),
+                    : 'UPDATE %s SET %s WHERE %s = %d',
+                    static::get_table_name(),
                     $sets,
-                    $this->columns['id'] );
+                    static::$primary_key_name,
+                    $this->columns[static::$primary_key_name] );
     self::execute( $sql );
     
     // get the new new primary key
-    if( is_null( $this->columns['id'] ) ) $this->columns['id'] = self::insert_id();
+    if( is_null( $this->columns[static::$primary_key_name] ) ) $this->columns[static::$primary_key_name] = self::insert_id();
   }
   
   /**
@@ -146,16 +151,24 @@ abstract class active_record extends \sabretooth\base_object
    */
   public function delete()
   {
-    if( is_null( $this->columns['id'] ) )
+    // warn if we are in read-only mode
+    if( $this->read_only )
+    {
+      \sabretooth\log::warning( 'Tried to delete read-only record.' );
+      return;
+    }
+
+    if( is_null( $this->columns[static::$primary_key_name] ) )
     {
       \sabretooth\log::warning( 'Tried to delete record with no id.' );
       return;
     }
     
     // not using a modifier here is ok since we're forcing id to be an integer
-    $sql = sprintf( 'DELETE FROM %s WHERE id = %d',
-                    self::get_table_name(),
-                    $this->columns['id'] );
+    $sql = sprintf( 'DELETE FROM %s WHERE %s = %d',
+                    static::get_table_name(),
+                    static::$primary_key_name,
+                    $this->columns[static::$primary_key_name] );
     self::execute( $sql );
   }
 
@@ -172,7 +185,7 @@ abstract class active_record extends \sabretooth\base_object
   {
     return self::get_one(
       sprintf( 'SELECT COUNT(*) FROM %s %s',
-               self::get_table_name(),
+               static::get_table_name(),
                is_null( $modifier ) ? '' : $modifier->get_sql() ) );
   }
 
@@ -277,7 +290,7 @@ abstract class active_record extends \sabretooth\base_object
     // add and remove require a joining table
     $search_for_joining_table = 'add' == $action || 'remove' == $action;
 
-    $primary_key_name = self::get_table_name().'_id';
+    $primary_key_name = static::get_table_name().'_id';
     $foreign_key_name = $foreign_table_name.'_id';
     $sub_action = NULL;
     
@@ -302,8 +315,8 @@ abstract class active_record extends \sabretooth\base_object
     if( $search_for_joining_table )
     {
       // the joining table may be <table>_has_<foreign_table> or <foreign>_has_<table>
-      $forward_joining_table_name = self::get_table_name().'_has_'.$foreign_table_name;
-      $reverse_joining_table_name = $foreign_table_name.'_has_'.self::get_table_name();
+      $forward_joining_table_name = static::get_table_name().'_has_'.$foreign_table_name;
+      $reverse_joining_table_name = $foreign_table_name.'_has_'.static::get_table_name();
       
       if( $this->table_exists( $forward_joining_table_name ) )
       {
@@ -326,7 +339,7 @@ abstract class active_record extends \sabretooth\base_object
     }
 
     // now that we're relatively sure the method name is valid, make sure we have a valid record
-    if( is_null( $this->columns['id'] ) )
+    if( is_null( $this->columns[static::$primary_key_name] ) )
     { 
       \sabretooth\log::warning( 'Tried to query record with no id.' );
       return 0;
@@ -335,6 +348,14 @@ abstract class active_record extends \sabretooth\base_object
     // once we get here we know for sure that the function name is valid
     if( 'add' == $action )
     { // calling: add_<record>( $ids )
+      // warn if we are in read-only mode
+      if( $this->read_only )
+      {
+        \sabretooth\log::warning(
+          'Tried to add '.$foreign_table_name.' records to read-only record.' );
+        return;
+      }
+
       // make sure the first argument is a non-empty array of ids
       if( 1 != count( $args ) || !is_array( $args[0] ) || 0 == count( $args[0] ) )
         throw new \sabretooth\exception\argument( 'args', $args, __METHOD__ );
@@ -346,7 +367,7 @@ abstract class active_record extends \sabretooth\base_object
       {
         if( !$first ) $values .= ', ';
         $values .= sprintf( '(%s, %s)',
-                         active_record::format_string( $this->columns['id'] ),
+                         active_record::format_string( $this->columns[static::$primary_key_name] ),
                          active_record::format_string( $id ) );
         $first = false;
       }
@@ -360,13 +381,21 @@ abstract class active_record extends \sabretooth\base_object
     }
     else if( 'remove' == $action )
     { // calling: remove_<record>( $ids )
+      // warn if we are in read-only mode
+      if( $this->read_only )
+      {
+        \sabretooth\log::warning(
+          'Tried to remove '.$foreign_table_name.' records to read-only record.' );
+        return;
+      }
+
       // make sure the first argument is a non-empty array of ids
       if( 1 != count( $args ) || 0 >= $args[0] )
         throw new \sabretooth\exception\argument( 'args', $args, __METHOD__ );
       $id = $args[0];
       
       $modifier = new modifier();
-      $modifier->where( $primary_key_name, $this->columns['id'] );
+      $modifier->where( $primary_key_name, $this->columns[static::$primary_key_name] );
       $modifier->where( $foreign_key_name, $id );
 
       self::execute(
@@ -392,22 +421,23 @@ abstract class active_record extends \sabretooth\base_object
       { // we need to invert the list
         // first create SQL to match all records in the joining table
         $sub_modifier = new modifier();
-        $sub_modifier->where( $primary_key_name, $this->columns['id'] );
+        $sub_modifier->where( $primary_key_name, $this->columns[static::$primary_key_name] );
         $sub_select_sql =
           sprintf( 'SELECT %s FROM %s %s',
                    $foreign_key_name,
                    $joining_table_name,
                    $sub_modifier->get_sql() );
-        // now create SQL that gets all IDs that is NOT in that list
-        $modifier->where_not_in( 'id', $sub_select_sql, false );
-        $sql = sprintf( 'SELECT %s FROM %s %s',
-                        'list' == $sub_action ? 'id' : 'COUNT( id )',
+        // now create SQL that gets all primary ids that is NOT in that list
+        $modifier->where_not_in( static::$primary_key_name, $sub_select_sql, false );
+        $sql = sprintf( 'list' == $sub_action ?
+                          'SELECT COUNT( %s ) FROM %s %s' : 'SELECT %s FROM %s %s',
+                        static::$primary_key_name,
                         $foreign_table_name,
                         $modifier->get_sql() );
       }
       else
       { // no inversion, just select the records from the joining table
-        $modifier->where( $primary_key_name, $this->columns['id'] );
+        $modifier->where( $primary_key_name, $this->columns[static::$primary_key_name] );
         $sql = sprintf( 'SELECT %s FROM %s %s',
                         'list' == $sub_action
                           ? $foreign_key_name
@@ -450,7 +480,7 @@ abstract class active_record extends \sabretooth\base_object
   public static function select( $modifier = NULL )
   {
     $records = array();
-    $this_table = self::get_table_name();
+    $this_table = static::get_table_name();
     
     // check to see if the modifier is sorting a value in a foreign table
     $table_list = array( $this_table );
@@ -468,7 +498,9 @@ abstract class active_record extends \sabretooth\base_object
           {
             // add the table to the list to select and join it in the modifier
             array_push( $table_list, $table );
-            $modifier->where( $this_table.'.'.$foreign_key_name, $table.'.id', false );
+            $modifier->where(
+              $this_table.'.'.$foreign_key_name,
+              $table.'.'.static::$primary_key_name, false );
           }
         }
       }
@@ -486,8 +518,9 @@ abstract class active_record extends \sabretooth\base_object
     }
 
     $id_list = self::get_col(
-      sprintf( 'SELECT %s.id FROM %s %s',
+      sprintf( 'SELECT %s.%s FROM %s %s',
                $this_table,
+               static::$primary_key_name,
                $select_tables,
                is_null( $modifier ) ? '' : $modifier->get_sql() ) );
 
@@ -515,7 +548,7 @@ abstract class active_record extends \sabretooth\base_object
     // determine the unique key(s)
     $modifier = new modifier();
     $modifier->where( 'TABLE_SCHEMA', $database );
-    $modifier->where( 'TABLE_NAME', self::get_table_name() );
+    $modifier->where( 'TABLE_NAME', static::get_table_name() );
     $modifier->where( 'COLUMN_KEY', 'UNI' );
 
     $unique_keys = self::get_col( 
@@ -530,8 +563,9 @@ abstract class active_record extends \sabretooth\base_object
       $modifier->where( $column, $value );
 
       $id = self::get_one(
-        sprintf( 'SELECT id FROM %s %s',
-                 self::get_table_name(),
+        sprintf( 'SELECT %s FROM %s %s',
+                 static::$primary_key_name,
+                 static::get_table_name(),
                  $modifier->get_sql() ) );
 
       if( !is_null( $id ) ) $record = new static( $id );
@@ -763,6 +797,20 @@ abstract class active_record extends \sabretooth\base_object
     return \sabretooth\session::self()->get_db()->Affected_Rows();
   }
   
+  /**
+   * Determines whether the record is read only (no modifying the database).
+   * @var boolean
+   * @access protected
+   */
+  protected $read_only = false;
+
+  /**
+   * The name of the table's primary key column.
+   * @var string
+   * @access protected
+   */
+  protected static $primary_key_name = 'id';
+
   /**
    * Holds all table column values in an associate array where key=>value is
    * column_name=>column_value

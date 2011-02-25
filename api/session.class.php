@@ -47,6 +47,7 @@ final class session extends singleton
     
     // copy the setting one category at a time, ignore any unknown categories
     $categories = array( 'db',
+                         'survey_db',
                          'general',
                          'interface',
                          'version' );

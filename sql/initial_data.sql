@@ -48,6 +48,12 @@ VALUES( "action", "role", "new_operation", true, "Add new operations to a role."
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "role", "delete_operation", true, "Remove operations from a role." );
 
+-- script
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "script", "view", true, "View a script's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "script", "list", true, "List scripts in the system." );
+
 -- self
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "home", false, "The current user's home screen." );
@@ -116,13 +122,6 @@ DELETE FROM role_has_operation;
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id
 FROM role, operation
-WHERE role.name in( "administrator", "supervisor" )
-AND operation.subject in( "access", "activity", "survey", "operation", "site", "role", "user" );
-
-INSERT INTO role_has_operation( role_id, operation_id )
-SELECT role.id, operation.id
-FROM role, operation
-WHERE role.name in( "technician" )
-AND operation.subject in( "login", "voip" );
+WHERE role.name in( "administrator" );
 
 COMMIT;
