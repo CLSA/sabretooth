@@ -80,19 +80,6 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `script`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `script` ;
-
-CREATE  TABLE IF NOT EXISTS `script` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `lime_sid` INT UNSIGNED NOT NULL COMMENT 'Refers to a limesurvey survey id' ,
-  PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_lime_sid` (`lime_sid` ASC) )
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `qnaire_stage`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `qnaire_stage` ;
@@ -100,20 +87,14 @@ DROP TABLE IF EXISTS `qnaire_stage` ;
 CREATE  TABLE IF NOT EXISTS `qnaire_stage` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `qnaire_id` INT UNSIGNED NOT NULL ,
-  `script_id` INT UNSIGNED NOT NULL ,
+  `sid` VARCHAR(45) NOT NULL COMMENT 'limesurvey surveys.sid' ,
   `stage` SMALLINT UNSIGNED NOT NULL ,
   `repeated` TINYINT(1)  NOT NULL DEFAULT false ,
   PRIMARY KEY (`id`) ,
-  INDEX `fk_script_id` (`script_id` ASC) ,
   INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
   CONSTRAINT `fk_qnaire_has_script_qnaire`
     FOREIGN KEY (`qnaire_id` )
     REFERENCES `qnaire` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_qnaire_has_script_script`
-    FOREIGN KEY (`script_id` )
-    REFERENCES `script` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -694,7 +675,6 @@ CREATE TABLE IF NOT EXISTS `role_last_activity` (`activity_id` INT, `role_id` IN
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `participant_primary_location` ;
 DROP TABLE IF EXISTS `participant_primary_location`;
-
 CREATE  OR REPLACE VIEW `participant_primary_location` AS
 SELECT participant_id, id AS contact_id, province
 FROM contact AS t1
@@ -711,7 +691,6 @@ WHERE t1.rank = (
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `participant_current_consent` ;
 DROP TABLE IF EXISTS `participant_current_consent`;
-
 CREATE  OR REPLACE VIEW `participant_current_consent` AS
 SELECT participant_id, id AS consent_id, event IN( 'verbal accept', 'written accept' ) AS consent
 FROM consent AS t1
@@ -727,7 +706,6 @@ WHERE t1.date = (
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `participant_last_phone_call_status` ;
 DROP TABLE IF EXISTS `participant_last_phone_call_status`;
-
 CREATE  OR REPLACE VIEW `participant_last_phone_call_status` AS
 SELECT phone_call_1.id AS phone_call_id, contact_1.participant_id, phone_call_1.status
 FROM phone_call AS phone_call_1, contact AS contact_1
@@ -744,7 +722,6 @@ AND phone_call_1.start_time = (
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `user_last_activity` ;
 DROP TABLE IF EXISTS `user_last_activity`;
-
 CREATE  OR REPLACE VIEW `user_last_activity` AS
 SELECT activity_1.id AS activity_id, user_1.id as user_id
 FROM activity AS activity_1, user AS user_1
@@ -762,7 +739,6 @@ GROUP BY activity_1.date;
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `site_last_activity` ;
 DROP TABLE IF EXISTS `site_last_activity`;
-
 CREATE  OR REPLACE VIEW `site_last_activity` AS
 SELECT activity_1.id AS activity_id, site_1.id as site_id
 FROM activity AS activity_1, site AS site_1
@@ -780,7 +756,6 @@ GROUP BY activity_1.date;
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `role_last_activity` ;
 DROP TABLE IF EXISTS `role_last_activity`;
-
 CREATE  OR REPLACE VIEW `role_last_activity` AS
 SELECT activity_1.id AS activity_id, role_1.id as role_id
 FROM activity AS activity_1, role AS role_1
