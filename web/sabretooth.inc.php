@@ -7,7 +7,7 @@
  * @author Patrick Emond <emondpd@mcmaster.ca>
  */
 namespace sabretooth;
-session_name( 'sabretooth' );
+session_name( dirname( __FILE__ ) );
 session_start();
 $_SESSION['time']['script_start_time'] = microtime( true );
 
