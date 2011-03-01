@@ -77,7 +77,8 @@ $SETTINGS[ 'url' ][ 'JQUERY_UI_THEMES' ] = $SETTINGS[ 'url' ][ 'JQUERY_UI' ].'/c
 $SETTINGS[ 'path' ][ 'LOG_FILE' ] = '/var/local/sabretooth/log';
 
 // the location of the compiled template cache
-$SETTINGS[ 'path' ][ 'TEMPLATE_CACHE' ] = '/tmp/sabretooth';
+$SETTINGS[ 'path' ][ 'TEMPLATE_CACHE' ] =
+  '/tmp/sabretooth/'.substr( str_replace( '/', '_', dirname( __FILE__ ) ), 1 );
 
 // database settings
 $SETTINGS[ 'db' ][ 'driver' ] = 'mysql';
