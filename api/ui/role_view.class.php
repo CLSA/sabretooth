@@ -38,7 +38,7 @@ class role_view extends base_view
       array( 'heading' => 'Operations',
              'type' => 'constant',
              // add a space to get around a bug in twig
-             'value' => ' '$this->get_record()->get_operation_count() );
+             'value' => ' '.$this->get_record()->get_operation_count() );
 
     // create the operation sub-list widget
     $this->operation_list = new operation_list( $args );

@@ -29,45 +29,33 @@ class access_list extends base_list_widget
     parent::__construct( 'access', $args );
     
     $session = \sabretooth\session::self();
-
-    $this->columns = array(
-      array( 'id' => 'user.name',
-             'heading' => 'User',
-             'sortable' => true ),
-      array( 'id' => 'role.name',
-             'heading' => 'Role',
-             'sortable' => true ),
-      array( 'id' => 'site.name',
-             'heading' => 'Site',
-             'sortable' => true ),
-      array( 'id' => 'date',
-             'heading' => 'Granted',
-             'sortable' => true ) ); 
+    
+    $this->add_column( 'user.name', 'User', true );
+    $this->add_column( 'role.name', 'Role', true );
+    $this->add_column( 'site.name', 'Site', true );
+    $this->add_column( 'date', 'Granted', true );
   }
 
   /**
-   * Set the rows array needed by the template.
+   * Finish setting the variables in the list widget, including filling in the rows.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
+   * @access public
    */
-  protected function set_rows()
+  public function finish()
   {
-    // reset the array
-    $this->rows = array();
+    parent::finish();
     
-    // get all sites
     foreach( $this->get_record_list() as $record )
     {
-      array_push(
-        $this->rows,
-        array( 'id' => $record->id,
-               'columns' =>
-                 array( 'user.name' => $record->get_user()->name,
-                        'role.name' => $record->get_role()->name,
-                        'site.name' => $record->get_site()->name,
-                        'date' => \sabretooth\util::get_fuzzy_time_ago( $record->date ) ) ) );
+      $this->add_row( $record->id,
+        array( 'user.name' => $record->get_user()->name,
+               'role.name' => $record->get_role()->name,
+               'site.name' => $record->get_site()->name,
+               'date' => \sabretooth\util::get_fuzzy_time_ago( $record->date ) ) );
     }
+
+    $this->finish_setting_rows();
   }
 }
 ?>

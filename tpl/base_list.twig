@@ -324,7 +324,7 @@ $( function() {
       {% set number_of_columns = number_of_columns + 1 %}
       {% endif %}
       {% for column in columns %}
-        {% if column.sortable %}
+        {% if column.sortable|default(false) %}
           <th id="{{ column.id }}" class="{{ widget.full }}_sortable">
             {% if column.id == sort_column %}
             <button class="{{ widget.full }}_sort{{ sort_desc ? '_desc' : '' }}">

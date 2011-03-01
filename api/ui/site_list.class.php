@@ -30,28 +30,20 @@ class site_list extends base_list_widget
     
     $session = \sabretooth\session::self();
 
-    $this->columns = array(
-      array( 'id' => 'name',
-             'heading' => 'Name',
-             'sortable' => true ),
-      array( 'id' => 'users',
-             'heading' => 'Users',
-             'sortable' => false ),
-      array( 'id' => 'last',
-             'heading' => 'Last activity',
-             'sortable' => false ) ); 
+    $this->add_column( 'name', 'Name', true );
+    $this->add_column( 'users', 'Users', false );
+    $this->add_column( 'last', 'Last activity', false );
   }
 
   /**
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
+   * @access public
    */
-  protected function set_rows()
+  public function finish()
   {
-    // reset the array
-    $this->rows = array();
+    parent::finish();
     
     // get all sites
     foreach( $this->get_record_list() as $record )
@@ -61,14 +53,13 @@ class site_list extends base_list_widget
       $last = \sabretooth\util::get_fuzzy_time_ago(
                 is_null( $db_activity ) ? null : $db_activity->date );
 
-      array_push(
-        $this->rows,
-        array( 'id' => $record->id,
-               'columns' =>
-                 array( 'name' => $record->name,
-                        'users' => $record->get_user_count(),
-                        'last' => $last ) ) );
+      $this->add_row( $record->id,
+        array( 'name' => $record->name,
+               'users' => $record->get_user_count(),
+               'last' => $last ) );
     }
+
+    $this->finish_setting_rows();
   }
 }
 ?>

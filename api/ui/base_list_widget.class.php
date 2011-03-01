@@ -54,6 +54,8 @@ abstract class base_list_widget extends widget
   /**
    * Finish setting the variables in a widget.
    * 
+   * All child classes must extend this method, and within populate the list's rows by calling
+   * {@link add_row} (once for every row) and {@link finish_setting_rows} once finished.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
@@ -83,7 +85,6 @@ abstract class base_list_widget extends widget
       $this->parent && method_exists( $this->parent, $method_name )
       ? $this->parent->$method_name( $modifier )
       : $this->determine_record_list( $modifier );
-    $this->set_rows();
 
     // define all template variables for this widget
     $this->set_variable( 'checkable', $this->checkable );
@@ -97,7 +98,6 @@ abstract class base_list_widget extends widget
     $this->set_variable( 'sort_column', $this->sort_column );
     $this->set_variable( 'sort_desc', $this->sort_desc );
     $this->set_variable( 'max_page', $max_page );
-    $this->set_variable( 'rows', $this->rows );
   }
   
   /**
@@ -145,17 +145,6 @@ abstract class base_list_widget extends widget
           'action', $this->parent->get_subject(), 'delete_'.$this->get_subject() ) );
     }
   }
-  
-  /**
-   * Set the rows array needed by the template.
-   * 
-   * When implementing this method, child classes should fill the $rows member with column values
-   * for each record in the record list returned by calling {@link get_record_list}.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @abstract
-   * @access protected
-   */
-  abstract protected function set_rows();
   
   /**
    * Returns the total number of items in the list.
@@ -267,21 +256,79 @@ abstract class base_list_widget extends widget
   }
   
   /**
+   * Add a column to the list.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column_id The column's id, either in column or table.column format
+   * @param string $heading The column's heading as it will appear in the list
+   * @param boolean $sortable Whether or not the column is sortable.
+   * @param string $align Which way to align the column (left, right or center)
+   * @access public
+   */
+  public function add_column( $column_id, $heading, $sortable = false, $align = '' )
+  {
+    // if there is no "table." before the column name, add this widget's subject
+    if( false === strpos( $column_id, '.' ) ) $column_id = $this->get_subject().'.'.$column_id;
+    
+    $column = array( 'id' => $column_id, 'heading' => $heading );
+    if( $sortable ) $column['sortable'] = $sortable;
+    if( $align ) $column['align'] = $align;
+    
+    array_push( $this->columns, $column );
+  }
+  
+  /**
    * Remove a column from the list based on its unique id.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $column_id The column's id, as defined by in the list's constructor.
+   * @param string $column_id The column's id, either in column or table.column format
    * @access public
    */
   public function remove_column( $column_id )
   {
-    if( array_key_exists( $column_id, $this->columns ) ) unset( $this->columns[$column_id] );
+    // if there is no "table." before the column name, add this widget's subject
+    if( false === strpos( $column_id, '.' ) ) $column_id = $this->get_subject().'.'.$column_id;
+
     // find and remove the column who's id is equal to the column name
     $new_column_array = array();
     foreach( $this->columns as $column )
-    {
       if( $column_id != $column['id'] ) array_push( $new_column_array, $column );
-    }
+    
     $this->columns = $new_column_array;
+  }
+  
+  /**
+   * Adds a row to the list.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $row_id The row's id, usually a database id.
+   * @param array $columns An associative array with values for all columns in the row where the
+   *                       array key is the column_id (as set in {@link add_column}) and the value
+   *                       is the value for that cell.
+   * @access public
+   */
+  public function add_row( $row_id, $columns )
+  {
+    // if there is no "table." before the column name, add this widget's subject
+    foreach( array_keys( $columns ) as $column_id )
+    {
+      if( false === strpos( $column_id, '.' ) )
+      {
+        $new_column_id = $this->get_subject().'.'.$column_id;
+        $columns[$new_column_id] = $columns[$column_id];
+        unset( $columns[$column_id] );
+      }
+    }
+
+    array_push( $this->rows, array( 'id' => $row_id, 'columns' => $columns ) );
+  }
+
+  /**
+   * Must be called after all rows have been added to the list.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function finish_setting_rows()
+  {
+    // reset the array
+    $this->set_variable( 'rows', $this->rows );
   }
 
   /**
@@ -311,7 +358,7 @@ abstract class base_list_widget extends widget
    * @var int
    * @access private
    */
-  private $items_per_page = 10;
+  private $items_per_page = 20;
   
   /**
    * Whether items in the list can be checked/selected.
@@ -347,12 +394,14 @@ abstract class base_list_widget extends widget
    * Every item in the array must have the following:
    *   'id'       => a unique id identifying the column
    *   'heading'  => the name to display in in the column header
+   * The following are optional:
    *   'sortable' => whether or not the list can be sorted by the column
+   *   'align' => Which way to align the column
    * This member should only be set in the {@link set_columns} function.
    * @var array
-   * @access protected
+   * @access private
    */
-  protected $columns = array();
+  private $columns = array();
   
   /**
    * An array of rows.
@@ -360,11 +409,10 @@ abstract class base_list_widget extends widget
    * Every item in the array must have the following:
    *   'id'      => a unique identifying id
    *   'columns' => an array of values for each column listed in the columns array
-   * This member should only be set in the set_rows() function.
    * @var array
-   * @access protected
+   * @access private
    */
-  protected $rows = array();
+  private $rows = array();
 
   /**
    * The total number of records in the list.

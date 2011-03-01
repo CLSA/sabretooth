@@ -30,46 +30,34 @@ class operation_list extends base_list_widget
     
     $session = \sabretooth\session::self();
 
-    $this->columns = array(
-      array( 'id' => 'type',
-             'heading' => 'type',
-             'sortable' => true ),
-      array( 'id' => 'subject',
-             'heading' => 'subject',
-             'sortable' => true ),
-      array( 'id' => 'name',
-             'heading' => 'name',
-             'sortable' => true ),
-      array( 'id' => 'restricted',
-             'heading' => 'restricted',
-             'sortable' => false ),
-      array( 'id' => 'description',
-             'heading' => 'description',
-             'sortable' => false,
-             'align' => 'left' ) );
+    $this->add_column( 'type', 'type', true );
+    $this->add_column( 'subject', 'subject', true );
+    $this->add_column( 'name', 'name', true );
+    $this->add_column( 'restricted', 'restricted', false );
+    $this->add_column( 'description', 'description', false, 'left' );
   }
 
   /**
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
+   * @access public
    */
-  protected function set_rows()
+  public function finish()
   {
-    // reset the array
-    $this->rows = array();
+    parent::finish();
     
     foreach( $this->get_record_list() as $record )
     {
-      array_push( $this->rows, 
-        array( 'id' => $record->id,
-               'columns' => array( 'type' => $record->type,
-                                   'subject' => $record->subject,
-                                   'name' => $record->name,
-                                   'restricted' => $record->restricted ? 'yes' : 'no',
-                                   'description' => $record->description ) ) );
+      $this->add_row( $record->id,
+        array( 'type' => $record->type,
+               'subject' => $record->subject,
+               'name' => $record->name,
+               'restricted' => $record->restricted ? 'yes' : 'no',
+               'description' => $record->description ) );
     }
+
+    $this->finish_setting_rows();
   }
 }
 ?>

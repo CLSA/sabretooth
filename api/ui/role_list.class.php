@@ -30,33 +30,28 @@ class role_list extends base_list_widget
     
     $session = \sabretooth\session::self();
 
-    $this->columns = array(
-      array( 'id' => 'name',
-             'heading' => 'name',
-             'sortable' => true ),
-      array( 'id' => 'users',
-             'heading' => 'users',
-             'sortable' => false ) );
+    $this->add_column( 'name', 'Name', true );
+    $this->add_column( 'users', 'users', false );
   }
 
   /**
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
+   * @access public
    */
-  protected function set_rows()
+  public function finish()
   {
-    // reset the array
-    $this->rows = array();
+    parent::finish();
     
     foreach( $this->get_record_list() as $record )
     {
-      array_push( $this->rows, 
-        array( 'id' => $record->id,
-               'columns' => array( 'name' => $record->name,
-                                   'users' => $record->get_user_count() ) ) );
+      $this->add_row( $record->id,
+        array( 'name' => $record->name,
+               'users' => $record->get_user_count() ) );
     }
+
+    $this->finish_setting_rows();
   }
 }
 ?>

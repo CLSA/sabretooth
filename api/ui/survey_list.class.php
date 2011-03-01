@@ -30,44 +30,33 @@ class survey_list extends base_list_widget
     
     $session = \sabretooth\session::self();
 
-    $this->columns = array(
-      array( 'id' => 'sid',
-             'heading' => 'Limesurvey ID',
-             'sortable' => true ),
-      array( 'id' => 'title',
-             'heading' => 'Title',
-             'sortable' => true ),
-      array( 'id' => 'language',
-             'heading' => 'Main Language',
-             'sortable' => true ),
-      array( 'id' => 'additional_languages',
-             'heading' => 'Other Languages',
-             'sortable' => true ) );
+    $this->add_column( 'sid', 'Limesurvey ID', false );
+    $this->add_column( 'title', 'Title', false );
+    $this->add_column( 'language', 'Main Language', false );
+    $this->add_column( 'additional_languages', 'Other Languages', false );
   }
 
   /**
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
+   * @access public
    */
-  protected function set_rows()
+  public function finish()
   {
-    // reset the array
-    $this->rows = array();
+    parent::finish();
     
     // get all surveys
     foreach( $this->get_record_list() as $record )
     {
-      array_push(
-        $this->rows,
-        array( 'id' => $record->sid,
-               'columns' =>
-                 array( 'sid' => $record->sid,
-                        'title' => $record->get_title(),
-                        'language' => $record->language,
-                        'additional_languages' => $record->additional_languages ) ) );
+      $this->add_row( $record->sid,
+        array( 'sid' => $record->sid,
+               'title' => $record->get_title(),
+               'language' => $record->language,
+               'additional_languages' => $record->additional_languages ) );
     }
+
+    $this->finish_setting_rows();
   }
 
   /**

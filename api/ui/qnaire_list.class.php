@@ -30,36 +30,29 @@ class qnaire_list extends base_list_widget
     
     $session = \sabretooth\session::self();
 
-    $this->columns = array(
-      array( 'id' => 'name',
-             'heading' => 'Name',
-             'sortable' => true ),
-      array( 'id' => 'samples',
-             'heading' => 'Samples',
-             'sortable' => false ) );
+    $this->add_column( 'name', 'Name', true );
+    $this->add_column( 'samples', 'Samples', false );
   }
   
   /**
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
+   * @access public
    */
-  protected function set_rows()
+  public function finish()
   {
-    // reset the array
-    $this->rows = array();
+    parent::finish();
     
     foreach( $this->get_record_list() as $record )
     {
       // assemble the row for this record
-      array_push(
-        $this->rows, 
-        array( 'id' => $record->id,
-               'columns' =>
-                 array( 'name' => $record->name,
-                        'samples' => $record->get_sample_count() ) ) );
+      $this->add_row( $record->id,
+        array( 'name' => $record->name,
+               'samples' => $record->get_sample_count() ) );
     }
+
+    $this->finish_setting_rows();
   }
 }
 ?>

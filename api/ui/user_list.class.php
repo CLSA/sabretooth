@@ -35,19 +35,10 @@ class user_list extends base_list_widget
     $this->set_heading( sprintf( 'User list for %s',
                         $is_admin ? 'all sites' : $session->get_site()->name ) );
 
-    $this->columns = array(
-      array( 'id' => 'name',
-             'heading' => 'Username',
-             'sortable' => true ),
-      array( 'id' => 'active',
-             'heading' => 'Active',
-             'sortable' => true ),
-      array( 'id' => 'role',
-             'heading' => 'Role',
-             'sortable' => false ),
-      array( 'id' => 'last_activity',
-             'heading' => 'Last activity',
-             'sortable' => false ) );
+    $this->add_column( 'name', 'Username', true );
+    $this->add_column( 'active', 'Active', true );
+    $this->add_column( 'role', 'Role', false );
+    $this->add_column( 'last_activity', 'Last activity', false );
   }
   
   /**
@@ -96,12 +87,11 @@ class user_list extends base_list_widget
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
+   * @access public
    */
-  protected function set_rows()
+  public function finish()
   {
-    // reset the array
-    $this->rows = array();
+    parent::finish();
     
     foreach( $this->get_record_list() as $record )
     {
@@ -117,15 +107,14 @@ class user_list extends base_list_widget
                 is_null( $db_activity ) ? null : $db_activity->date );
 
       // assemble the row for this record
-      array_push(
-        $this->rows, 
-        array( 'id' => $record->id,
-               'columns' =>
-                 array( 'name' => $record->name,
-                        'active' => $record->active ? 'Yes' : 'No',
-                        'role' => $role,
-                        'last_activity' => $last ) ) );
+      $this->add_row( $record->id,
+        array( 'name' => $record->name,
+               'active' => $record->active ? 'Yes' : 'No',
+               'role' => $role,
+               'last_activity' => $last ) );
     }
+
+    $this->finish_setting_rows();
   }
 }
 ?>
