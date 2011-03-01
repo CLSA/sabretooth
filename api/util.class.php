@@ -279,11 +279,22 @@ final class util
    */
   public static function pluralize( $word )
   {
+    // special cases
     if( 'access' == $word )
-    { // special case
+    {
       return $word;
     }
     
+    if( 'qnaire' == $word )
+    {
+      return 'questionnaires';
+    }
+
+    if( 'survey' == $word )
+    {
+      return 'surveys';
+    }
+
     if( 'y' == substr( $word, -1 ) )
     { // likely, any word ending in 'y' has 'ies' at the end of the plural word
       return substr( $word, 0, -1 ).'ies';

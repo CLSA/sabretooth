@@ -37,8 +37,11 @@ class self_home extends widget
     $this->set_variable( 'user_name', $session->get_user()->name );
     $this->set_variable( 'role_name', $session->get_role()->name );
     $this->set_variable( 'site_name', $session->get_site()->name );
-    $this->set_variable( 'last_day', \sabretooth\util::get_date( $db_activity->date ) );
-    $this->set_variable( 'last_time', \sabretooth\util::get_time( $db_activity->date ) );
+    if( $db_activity )
+    {
+      $this->set_variable( 'last_day', \sabretooth\util::get_date( $db_activity->date ) );
+      $this->set_variable( 'last_time', \sabretooth\util::get_time( $db_activity->date ) );
+    }
   }
 }
 ?>

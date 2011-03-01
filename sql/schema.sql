@@ -26,7 +26,7 @@ CREATE  TABLE IF NOT EXISTS `participant` (
   `last_name` VARCHAR(45) NOT NULL ,
   `language` ENUM('en','fr') NOT NULL DEFAULT 'en' ,
   `hin` VARCHAR(45) NULL DEFAULT NULL ,
-  `condition` ENUM('deceased', 'deaf', 'mentally unfit') NULL DEFAULT NULL ,
+  `status` ENUM('deceased', 'deaf', 'mentally unfit') NULL DEFAULT NULL ,
   `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'If not null then force all calls to this participant to the site.' ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
@@ -75,7 +75,10 @@ DROP TABLE IF EXISTS `qnaire` ;
 
 CREATE  TABLE IF NOT EXISTS `qnaire` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  PRIMARY KEY (`id`) )
+  `name` VARCHAR(255) NOT NULL ,
+  `description` TEXT NULL ,
+  PRIMARY KEY (`id`) ,
+  UNIQUE INDEX `name_UNIQUE` (`name` ASC) )
 ENGINE = InnoDB;
 
 
@@ -87,7 +90,7 @@ DROP TABLE IF EXISTS `qnaire_stage` ;
 CREATE  TABLE IF NOT EXISTS `qnaire_stage` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `qnaire_id` INT UNSIGNED NOT NULL ,
-  `sid` VARCHAR(45) NOT NULL COMMENT 'limesurvey surveys.sid' ,
+  `sid` INT NOT NULL COMMENT 'limesurvey surveys.sid' ,
   `stage` SMALLINT UNSIGNED NOT NULL ,
   `repeated` TINYINT(1)  NOT NULL DEFAULT false ,
   PRIMARY KEY (`id`) ,
@@ -331,7 +334,10 @@ DROP TABLE IF EXISTS `sample` ;
 
 CREATE  TABLE IF NOT EXISTS `sample` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  PRIMARY KEY (`id`) )
+  `name` VARCHAR(255) NOT NULL ,
+  `description` TEXT NULL ,
+  PRIMARY KEY (`id`) ,
+  UNIQUE INDEX `name_UNIQUE` (`name` ASC) )
 ENGINE = InnoDB;
 
 

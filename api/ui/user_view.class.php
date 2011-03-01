@@ -86,8 +86,9 @@ class user_view extends base_view
    * @return int
    * @access protected
    */
-  public function determine_access_count( $modifier )
+  public function determine_access_count( $modifier = NULL )
   {
+    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
     $modifier->where( 'user_id', $this->get_record()->id );
     return \sabretooth\database\access::count( $modifier );
 
@@ -101,8 +102,9 @@ class user_view extends base_view
    * @return array( active_record )
    * @access protected
    */
-  public function determine_access_list( $modifier )
+  public function determine_access_list( $modifier = NULL )
   {
+    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
     $modifier->where( 'user_id', $this->get_record()->id );
     return \sabretooth\database\access::select( $modifier );
   }
@@ -114,7 +116,7 @@ class user_view extends base_view
    * @return int
    * @access protected
    */
-  public function determine_activity_count( $modifier )
+  public function determine_activity_count( $modifier = NULL )
   {
     return $this->get_record()->get_activity_count( $modifier );
   }
@@ -127,10 +129,11 @@ class user_view extends base_view
    * @return array( active_record )
    * @access protected
    */
-  public function determine_activity_list( $modifier )
+  public function determine_activity_list( $modifier = NULL )
   {
     return $this->get_record()->get_activity_list( $modifier );
   }
+
   /**
    * The user list widget.
    * @var access_list

@@ -96,7 +96,12 @@ abstract class active_record extends \sabretooth\base_object
       $row = self::get_row( $sql );
 
       if( 0 == count( $row ) )
-        throw new \sabretooth\exception\runtime( 'Load failed to find record.', $sql, __METHOD__ );
+        throw new \sabretooth\exception\runtime(
+          sprintf( 'Load failed to find record for %s with %s = %d.',
+                   static::get_table_name(),
+                   static::$primary_key_name,
+                   $this->columns[static::$primary_key_name] ),
+          __METHOD__ );
 
       $this->columns = $row;
     }
@@ -278,21 +283,28 @@ abstract class active_record extends \sabretooth\base_object
     // must have between 2 and 4 parts
     if( 2 > count( $name_parts ) || 4 < count( $name_parts ) ) throw $exception;
     
-    // first part is the action, second is the foreign table name
-    // make sure action is valid
+    // Based on the name of the called function, define what action we're taking using the
+    // $name_parts array
     $action = $name_parts[0];
+    $foreign_table_name = $name_parts[1];
+    $sub_action = NULL;
+    $inverted = false;
+
+    // make sure action is valid
     if( 'get' != $action && 'add' != $action && 'remove' != $action ) throw $exception;
 
     // make sure the foreign table exists
-    $foreign_table_name = $name_parts[1];
     if( !self::table_exists( $foreign_table_name ) ) throw $exception;
-
-    // add and remove require a joining table
+    
+    // define some handy strings
+    $current_table_name = static::get_table_name();
+    $current_key_name = $current_table_name.'.id';
+    $current_key_value = $this->columns[ static::$primary_key_name ];
+    $foreign_class_name = '\\sabretooth\\database\\'.$foreign_table_name;
+    $foreign_key_name = $foreign_table_name.'.id';
+    
+    // add and remove require a joining table and have a sub-action
     $search_for_joining_table = 'add' == $action || 'remove' == $action;
-
-    $primary_key_name = static::get_table_name().'_id';
-    $foreign_key_name = $foreign_table_name.'_id';
-    $sub_action = NULL;
     
     if( 3 <= count( $name_parts ) )
     {
@@ -307,16 +319,14 @@ abstract class active_record extends \sabretooth\base_object
                   'sabretooth\\database\\modifier' == get_class( $args[0] )
                 ? $args[0]
                 : new modifier();
-
-      $inverted = false;
     }
      
     // determine the joining table, if necessary
     if( $search_for_joining_table )
     {
       // the joining table may be <table>_has_<foreign_table> or <foreign>_has_<table>
-      $forward_joining_table_name = static::get_table_name().'_has_'.$foreign_table_name;
-      $reverse_joining_table_name = $foreign_table_name.'_has_'.static::get_table_name();
+      $forward_joining_table_name = $current_table_name.'_has_'.$foreign_table_name;
+      $reverse_joining_table_name = $foreign_table_name.'_has_'.$current_table_name;
       
       if( $this->table_exists( $forward_joining_table_name ) )
       {
@@ -330,6 +340,10 @@ abstract class active_record extends \sabretooth\base_object
       { // joining table not found
         throw $exception;
       }
+      
+      // define a few more handy strings
+      $joining_current_key_name = $joining_table_name.'.'.$current_table_name.'_id';
+      $joining_foreign_key_name = $joining_table_name.'.'.$foreign_table_name.'_id';
     }
 
     if( 4 == count( $name_parts ) )
@@ -339,7 +353,7 @@ abstract class active_record extends \sabretooth\base_object
     }
 
     // now that we're relatively sure the method name is valid, make sure we have a valid record
-    if( is_null( $this->columns[static::$primary_key_name] ) )
+    if( is_null( $current_key_value ) )
     { 
       \sabretooth\log::warning( 'Tried to query record with no id.' );
       return 0;
@@ -359,24 +373,24 @@ abstract class active_record extends \sabretooth\base_object
       // make sure the first argument is a non-empty array of ids
       if( 1 != count( $args ) || !is_array( $args[0] ) || 0 == count( $args[0] ) )
         throw new \sabretooth\exception\argument( 'args', $args, __METHOD__ );
-      $id_list = $args[0];
+      $foreign_id_list = $args[0];
       
       $values = '';
       $first = true;
-      foreach( $id_list as $id )
+      foreach( $foreign_id_list as $foreign_key_value )
       {
         if( !$first ) $values .= ', ';
         $values .= sprintf( '(%s, %s)',
-                         active_record::format_string( $this->columns[static::$primary_key_name] ),
-                         active_record::format_string( $id ) );
+                         active_record::format_string( $current_key_value ),
+                         active_record::format_string( $foreign_key_value ) );
         $first = false;
       }
 
       self::execute(
         sprintf( 'INSERT INTO %s (%s, %s) VALUES %s',
                  $joining_table_name,
-                 $primary_key_name,
-                 $foreign_key_name,
+                 $joining_current_key_name,
+                 $joining_foreign_key_name,
                  $values ) );
     }
     else if( 'remove' == $action )
@@ -392,11 +406,11 @@ abstract class active_record extends \sabretooth\base_object
       // make sure the first argument is a non-empty array of ids
       if( 1 != count( $args ) || 0 >= $args[0] )
         throw new \sabretooth\exception\argument( 'args', $args, __METHOD__ );
-      $id = $args[0];
+      $foreign_key_value = $args[0];
       
       $modifier = new modifier();
-      $modifier->where( $primary_key_name, $this->columns[static::$primary_key_name] );
-      $modifier->where( $foreign_key_name, $id );
+      $modifier->where( $joining_current_key_name, $current_key_value );
+      $modifier->where( $joining_foreign_key_name, $foreign_key_value );
 
       self::execute(
         sprintf( 'DELETE FROM %s %s',
@@ -406,11 +420,10 @@ abstract class active_record extends \sabretooth\base_object
     else if( 'get' == $action && is_null( $sub_action ) )
     { // calling: get_<record>()
       // make sure this table has the correct foreign key
-      if( !$this->has_column_name( $foreign_key_name ) ) throw $exception;
+      if( !$this->has_column_name( $foreign_table_name.'_id' ) ) throw $exception;
 
       // create the record using the foreign key
-      $class_name = '\\sabretooth\\database\\'.$foreign_table_name;
-      $return_value = new $class_name( $this->$foreign_key_name );
+      $return_value = new $foreign_class_name( $this->columns[ $foreign_table_name.'_id' ] );
     }
     else if( 'get' == $action && !is_null( $sub_action ) )
     { // calling one of: get_<record>_list( $modifier = NULL )
@@ -421,37 +434,46 @@ abstract class active_record extends \sabretooth\base_object
       { // we need to invert the list
         // first create SQL to match all records in the joining table
         $sub_modifier = new modifier();
-        $sub_modifier->where( $primary_key_name, $this->columns[static::$primary_key_name] );
+        $sub_modifier->where( $foreign_key_name, $joining_foreign_key_name, false );
+        $sub_modifier->where( $joining_current_key_name, $current_key_name, false );
+        $sub_modifier->where( $current_key_name, $current_key_value );
         $sub_select_sql =
-          sprintf( 'SELECT %s FROM %s %s',
-                   $foreign_key_name,
+          sprintf( 'SELECT %s FROM %s, %s, %s %s',
+                   $joining_foreign_key_name,
+                   $foreign_table_name,
                    $joining_table_name,
+                   $current_table_name,
                    $sub_modifier->get_sql() );
-        // now create SQL that gets all primary ids that is NOT in that list
-        $modifier->where_not_in( static::$primary_key_name, $sub_select_sql, false );
-        $sql = sprintf( 'list' == $sub_action ?
-                          'SELECT COUNT( %s ) FROM %s %s' : 'SELECT %s FROM %s %s',
-                        static::$primary_key_name,
+
+        // now create SQL that gets all primary ids that are NOT in that list
+        $modifier->where_not_in( $foreign_key_name, $sub_select_sql, false );
+        $sql = sprintf( 'SELECT %s FROM %s %s',
+                        'list' == $sub_action
+                          ? $foreign_key_name
+                          : 'COUNT( '.$foreign_key_name.' )',
                         $foreign_table_name,
                         $modifier->get_sql() );
       }
       else
       { // no inversion, just select the records from the joining table
-        $modifier->where( $primary_key_name, $this->columns[static::$primary_key_name] );
-        $sql = sprintf( 'SELECT %s FROM %s %s',
+        $modifier->where( $foreign_key_name, $joining_foreign_key_name, false );
+        $modifier->where( $joining_current_key_name, $current_key_name, false );
+        $modifier->where( $current_key_name, $current_key_value );
+        $sql = sprintf( 'SELECT %s FROM %s, %s, %s %s',
                         'list' == $sub_action
-                          ? $foreign_key_name
-                          : 'COUNT( '.$foreign_key_name.' )',
+                          ? $joining_foreign_key_name
+                          : 'COUNT( '.$joining_foreign_key_name.' )',
+                        $foreign_table_name,
                         $joining_table_name,
+                        $current_table_name,
                         $modifier->get_sql() );
       }
-      
+
       if( 'list' == $sub_action )
       {
         $ids = self::get_col( $sql );
         $return_value = array();
-        $class_name = '\\sabretooth\\database\\'.$foreign_table_name;
-        foreach( $ids as $id ) array_push( $return_value, new $class_name( $id ) );
+        foreach( $ids as $id ) array_push( $return_value, new $foreign_class_name( $id ) );
       }
       else // 'count' == $sub_action
       {
@@ -586,7 +608,13 @@ abstract class active_record extends \sabretooth\base_object
    */
   public static function format_string( $string )
   {
-    return is_null( $string ) ? 'NULL' : '"'.mysql_real_escape_string( $string ).'"';
+    // NULL values are returns as a MySQL NULL value
+    if( is_null( $string ) ) return 'NULL';
+    
+    // trim whitespace from the begining and end of the string
+    if( is_string( $string ) ) $string = trim( $string );
+    
+    return 0 == strlen( $string ) ? 'NULL' : '"'.mysql_real_escape_string( $string ).'"';
   }
 
   /**
@@ -613,13 +641,47 @@ abstract class active_record extends \sabretooth\base_object
     $database = \sabretooth\session::self()->get_setting( 'db', 'database' );
     $modifier = new modifier();
     $modifier->where( 'TABLE_SCHEMA', $database );
-    $modifier->where( 'Table_Name', $name );
+    $modifier->where( 'TABLE_NAME', $name );
 
     $count = self::get_one(
       sprintf( 'SELECT COUNT(*) FROM information_schema.TABLES %s',
                $modifier->get_sql() ) );
 
     return 0 < $count;
+  }
+
+  /**
+   * Returns an array of all enum values for a particular column.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $name A column name in the active record's corresponding table.
+   * @return array( string )
+   * @access public
+   */
+  public static function get_enum_values( $column_name )
+  {
+    $database = \sabretooth\session::self()->get_setting( 'db', 'database' );
+    $modifier = new modifier();
+    $modifier->where( 'TABLE_SCHEMA', $database );
+    $modifier->where( 'TABLE_NAME', static::get_table_name() );
+    $modifier->where( 'COLUMN_NAME', $column_name );
+    $modifier->where( 'DATA_TYPE', 'enum' );
+
+    $type = self::get_one(
+      sprintf( 'SELECT COLUMN_TYPE FROM information_schema.COLUMNS %s',
+               $modifier->get_sql() ) );
+
+    if( NULL == $type )
+      throw new \sabretooth\exception\argument( 'column_name', $column_name, __METHOD__ );
+
+    
+    // match all strings in single quotes, then cut out the quotes from the match and return them
+    preg_match_all( "/'[^']+'/", $type, $matches );
+    $values = array();
+    foreach( current( $matches ) as $match )
+    {
+      array_push( $values, substr( $match, 1, -1 ) );
+    }
+    return $values;
   }
 
   /**

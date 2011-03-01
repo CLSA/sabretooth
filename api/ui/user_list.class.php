@@ -58,12 +58,15 @@ class user_list extends base_list_widget
    * @return int
    * @access protected
    */
-  protected function determine_record_count( $modifier )
+  protected function determine_record_count( $modifier = NULL )
   {
     // only show users for current site if user is not an administrator
     $session = \sabretooth\session::self();
     if( 'administrator' != $session->get_role()->name )
+    {
+      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
       $modifier->where( 'site_id', $session->get_site()->id );
+    }
 
     return \sabretooth\database\user::count( $modifier );
   }
@@ -76,12 +79,15 @@ class user_list extends base_list_widget
    * @return array( active_record )
    * @access protected
    */
-  protected function determine_record_list( $modifier )
+  protected function determine_record_list( $modifier = NULL )
   {
     // only show users for current site if user is not an administrator
     $session = \sabretooth\session::self();
     if( 'administrator' != $session->get_role()->name )
+    {
+      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
       $modifier->where( 'site_id', $session->get_site()->id );
+    }
 
     return \sabretooth\database\user::select( $modifier );
   }

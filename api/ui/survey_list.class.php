@@ -77,8 +77,9 @@ class survey_list extends base_list_widget
    * @return int
    * @access protected
    */
-  protected function determine_record_count( $modifier )
+  protected function determine_record_count( $modifier = NULL )
   {
+    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
     $modifier->where( 'active', 'Y' );
     return \sabretooth\database\limesurvey\surveys::count( $modifier );
   }
@@ -90,8 +91,9 @@ class survey_list extends base_list_widget
    * @return array( active_record )
    * @access protected
    */
-  protected function determine_record_list( $modifier )
+  protected function determine_record_list( $modifier = NULL )
   {
+    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
     $modifier->where( 'active', 'Y' );
     return \sabretooth\database\limesurvey\surveys::select( $modifier );
   }

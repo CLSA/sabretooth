@@ -62,11 +62,10 @@ abstract class base_list_widget extends widget
     parent::finish();
     
     // determine the record count and list
-    $modifier = new \sabretooth\database\modifier();
     $method_name = 'determine_'.$this->get_subject().'_count';
     $this->record_count = $this->parent && method_exists( $this->parent, $method_name )
-                        ? $this->parent->$method_name( $modifier )
-                        : $this->determine_record_count( $modifier );
+                        ? $this->parent->$method_name()
+                        : $this->determine_record_count();
 
     // make sure the page is valid, then set the rows array based on the page
     $max_page = ceil( $this->record_count / $this->items_per_page );
@@ -171,10 +170,18 @@ abstract class base_list_widget extends widget
    * @return int
    * @access protected
    */
-  protected function determine_record_count( $modifier )
+  protected function determine_record_count( $modifier = NULL )
   {
-    $class_name = '\\sabretooth\\database\\'.$this->get_subject();
-    return $class_name::count( $modifier );
+    if( $this->parent )
+    {
+      $method_name = 'get_'.$this->get_subject().'_count';
+      return $this->parent->get_record()->$method_name( $modifier );
+    }
+    else
+    {
+      $class_name = '\\sabretooth\\database\\'.$this->get_subject();
+      return $class_name::count( $modifier );
+    }
   }
 
   /**
@@ -190,10 +197,18 @@ abstract class base_list_widget extends widget
    * @return array( active_record )
    * @access protected
    */
-  protected function determine_record_list( $modifier )
+  protected function determine_record_list( $modifier = NULL )
   {
-    $class_name = '\\sabretooth\\database\\'.$this->get_subject();
-    return $class_name::select( $modifier );
+    if( $this->parent )
+    {
+      $method_name = 'get_'.$this->get_subject().'_list';
+      return $this->parent->get_record()->$method_name( $modifier );
+    }
+    else
+    {
+      $class_name = '\\sabretooth\\database\\'.$this->get_subject();
+      return $class_name::select( $modifier );
+    }
   }
   
   /**

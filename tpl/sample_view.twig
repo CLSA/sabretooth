@@ -1,0 +1,17 @@
+{##
+ # sample_view.twig
+ # 
+ # View sample details.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @see base_view.twig for parameters
+ #}
+{% extends "base_view.twig" %}
+{% block record %}
+{{ parent() }}
+<div class="spacer"></div>
+{# Add an participant list pertaining to this sample #}
+{% include "participant_list.twig" with participant_list %}
+<div class="spacer"></div>
+{# Add an qnaire list pertaining to this sample #}
+{% include "qnaire_list.twig" with qnaire_list %}
+{% endblock %}

@@ -105,8 +105,9 @@ abstract class base_view extends base_record_widget
    * An associative array where the key is a unique identifier (usually a column name) and the
    * value is an associative array which includes:
    * "heading" => the label to display
-   * "type" => the type of variable, should be one of "boolean", "date", "string" or "text", "constant"
+   * "type" => the type of variable, should be one of "boolean", "date", "string", "text", "enum" or "constant"
    * "value" => the value of the column
+   * "enum" => all possible values if the item type is "enum"
    * "required" => boolean describes whether the value can be left blank
    * @var array
    * @access protected

@@ -1,76 +1,32 @@
+{##
+ # base_list.twig
+ # 
+ # Generic list widget.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @param array items A list of operations with each element having:
+ #                    'heading' => the name to show to the user
+ #                    'widget' => the widget to load when the item is selected
+ #}
 {% extends "widget.twig" %}
 {% block widget %}
 
 <script type="text/javascript">
 $( document ).ready( function() {
-
-  // sites
-  $( "#{{ widget.full }}_site_list" ).click( function() {
+  {% for item in items %}
+  $( "#{{ widget.full }}_{{ item.widget }}" ).click( function() {
     $('#left_extruder').closeMbExtruder();
-    slot_load( 'main', 'site_list' );
+    slot_load( 'main', '{{ item.widget }}' );
   } );
-
-  // users
-  $( "#{{ widget.full }}_user_list" ).click( function() {
-    $('#left_extruder').closeMbExtruder();
-    slot_load( 'main', 'user_list' );
-  } );
-
-  // roles
-  $( "#{{ widget.full }}_role_list" ).click( function() {
-    $('#left_extruder').closeMbExtruder();
-    slot_load( 'main', 'role_list' );
-  } );
-
-  // access
-  $( "#{{ widget.full }}_access_list" ).click( function() {
-    $('#left_extruder').closeMbExtruder();
-    slot_load( 'main', 'access_list' );
-  } );
-
-  // operations
-  $( "#{{ widget.full }}_operation_list" ).click( function() {
-    $('#left_extruder').closeMbExtruder();
-    slot_load( 'main', 'operation_list' );
-  } );
-
-  // activity
-  $( "#{{ widget.full }}_activity_list" ).click( function() {
-    $('#left_extruder').closeMbExtruder();
-    slot_load( 'main', 'activity_list' );
-  } );
-
-  // survey
-  $( "#{{ widget.full }}_survey_list" ).click( function() {
-    $('#left_extruder').closeMbExtruder();
-    slot_load( 'main', 'survey_list' );
-  } );
-
+  {% endfor %}
 } );
 
 </script>
 
 <div>
+  {% for item in items %}
   <div style="padding: 2px;">
-    <button style="width: 100%;" id="{{ widget.full }}_site_list">Sites</button>
+    <button style="width: 100%;" id="{{ widget.full }}_{{ item.widget }}">{{ item.heading|capitalize }}</button>
   </div>
-  <div style="padding: 2px;">
-    <button style="width: 100%;" id="{{ widget.full }}_user_list">Users</button>
-  </div>
-  <div style="padding: 2px;">
-    <button style="width: 100%;" id="{{ widget.full }}_role_list">Roles</button>
-  </div>
-  <div style="padding: 2px;">
-    <button style="width: 100%;" id="{{ widget.full }}_access_list">Access</button>
-  </div>
-  <div style="padding: 2px;">
-    <button style="width: 100%;" id="{{ widget.full }}_operation_list">Operations</button>
-  </div>
-  <div style="padding: 2px;">
-    <button style="width: 100%;" id="{{ widget.full }}_activity_list">Activity</button>
-  </div>
-  <div style="padding: 2px;">
-    <button style="width: 100%;" id="{{ widget.full }}_survey_list">Surveys</button>
-  </div>
+  {% endfor %}
 </div>
 {% endblock %}

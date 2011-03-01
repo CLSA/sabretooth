@@ -36,7 +36,8 @@ class site_view extends base_view
     $this->item['users'] =
       array( 'heading' => 'Number of users',
              'type' => 'constant',
-             'value' => $this->get_record()->get_user_count() );
+             // add a space to get around a bug in twig
+             'value' => ' '.$this->get_record()->get_user_count() );
 
     $db_activity = $this->get_record()->get_last_activity();
     $last = \sabretooth\util::get_fuzzy_time_ago(
@@ -82,8 +83,9 @@ class site_view extends base_view
    * @return int
    * @access protected
    */
-  public function determine_access_count( $modifier )
+  public function determine_access_count( $modifier = NULL )
   {
+    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
     $modifier->where( 'site_id', $this->get_record()->id );
     return \sabretooth\database\access::count( $modifier );
   }
@@ -96,8 +98,9 @@ class site_view extends base_view
    * @return array( active_record )
    * @access protected
    */
-  public function determine_access_list( $modifier )
+  public function determine_access_list( $modifier = NULL )
   {
+    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
     $modifier->where( 'site_id', $this->get_record()->id );
     return \sabretooth\database\access::select( $modifier );
   }
@@ -109,9 +112,9 @@ class site_view extends base_view
    * @return int
    * @access protected
    */
-  public function determine_activity_count()
+  public function determine_activity_count( $modifier = NULL )
   {
-    return $this->get_record()->get_activity_count();
+    return $this->get_record()->get_activity_count( $modifier );
   }
 
   /**
@@ -122,7 +125,7 @@ class site_view extends base_view
    * @return array( active_record )
    * @access protected
    */
-  public function determine_activity_list( $modifier )
+  public function determine_activity_list( $modifier = NULL )
   {
     return $this->get_record()->get_activity_list( $modifier );
   }

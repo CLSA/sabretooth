@@ -31,7 +31,7 @@ $( function () {
 
   // jeditable string
   jeditable_params.type = "text";
-  jeditable_params.placeholder = "(empty)";
+  jeditable_params.placeholder = "&nbsp;";
   $( "div.jeditable_string" ).editable( function( value, settings ) {
     return process_jeditable( $(this), value, "text" );
   }, jeditable_params );
@@ -50,6 +50,9 @@ $( function () {
     return process_jeditable( $(this), value, "boolean" );
   }, jeditable_params );
   
+  // jeditable enum
+  // TODO: maybe these should go down below with the HTML
+  
 } );
 
 /**
@@ -66,7 +69,7 @@ function process_jeditable( element, new_value, type )
 
   // build the args object
   var id_string = element.attr( 'id' );
-  var column_name = id_string.substring( id_string.lastIndexOf('_') + 1 );
+  var column_name = id_string.substring( id_string.lastIndexOf('.') + 1 );
   var args = new Object();
   args.id = {{ id|default(0) }};
   var columns = new Object();
@@ -95,7 +98,7 @@ $( function () {
     var columns = new Object();
     $( "#{{ widget.full }}_add_form :input" ).each( function() {
       var id_string = $(this).attr( 'id' );
-      var column_name = id_string.substring( id_string.lastIndexOf('_') + 1 );
+      var column_name = id_string.substring( id_string.lastIndexOf('.') + 1 );
       columns[column_name] = $(this).val();
     } );
     args.columns = columns;
@@ -130,6 +133,8 @@ $( function () {
 <div class="ui-widget ui-widget-content" style="padding: 4px; position: relative;">
 <table>
 {% for item_id, entry in item %}
+{# make null entries an empty string #}
+{% set entry_value = entry.value is defined ? entry.value : "" %}
   <tr>
     <td style="white-space: nowrap; padding: 4px;" align="left">
       <span class="title">{{ entry.heading }}:</span>
@@ -138,28 +143,39 @@ $( function () {
       {% block value %}
       {% if addable %}
         {% if 'boolean' == entry.type %}
-          <select id="{{ widget.full }}_{{ item_id }}"
+          <select id="{{ widget.full }}.{{ item_id }}"
                   style="width: 100%"
                   class="ui-state-default">
-            <option{{ entry.value ? ' selected' : '' }} value="1">Yes</option>
-            <option{{ entry.value ? '' : ' selected' }} value="0">No</option>
+            <option{{ entry_value ? ' selected' : '' }} value="1">Yes</option>
+            <option{{ entry_value ? '' : ' selected' }} value="0">No</option>
           </select>
         {% elseif 'date' == entry.type %}
           TODO
+        {% elseif 'enum' == entry.type %}
+          <select id="{{ widget.full }}.{{ item_id }}"
+                  style="width: 100%"
+                  class="ui-state-default">
+            {% if not entry.required|default(false) %}
+            <option{{ '' == entry_value ? ' selected' : '' }} value=""></option>
+            {% endif %}
+            {% for value_id, value in entry.enum %}
+            <option{{ entry_value == value_id ? ' selected' : '' }} value="{{ value_id }}">{{ value }}</option>
+            {% endfor %}
+          </select>
         {% elseif 'string' == entry.type %}
-          <input id="{{ widget.full }}_{{ item_id }}" type="text" style="width:99%" />
+          <input id="{{ widget.full }}.{{ item_id }}" type="text" style="width:99%" />
         {% elseif 'text' == entry.type %}
-          <textarea id="{{ widget.full }}_{{ item_id }}" style="width:99%" /></textarea>
+          <textarea id="{{ widget.full }}.{{ item_id }}" style="width:99%;height:6em;" /></textarea>
         {% endif %}
       {% elseif editable and 'constant' != entry.type %}
-        {% set value = 'boolean' == entry.type ? ( entry.value ? 'Yes' : 'No' ) : entry.value %}
-        <input id="old_{{ widget.full }}_{{ item_id }}"
-               value="{{ entry.value }}"
+        {% set value = 'boolean' == entry.type ? ( entry_value ? 'Yes' : 'No' ) : entry_value %}
+        <input id="old_{{ widget.full }}.{{ item_id }}"
+               value="{{ entry_value }}"
                type="hidden" />
-        <div id="{{ widget.full }}_{{ item_id }}"
-             class="mutable jeditable_{{ entry.type }} padded">{{ entry.value }}</div>
+        <div id="{{ widget.full }}.{{ item_id }}"
+             class="mutable jeditable_{{ entry.type }} padded">{{ entry_value }}</div>
       {% else %}
-      <div id="{{ widget.full }}_{{ item_id }}" class="padded">{{ entry.value }}</div>
+      <div id="{{ widget.full }}.{{ item_id }}" class="padded">{{ entry_value }}</div>
       {% endif %}
       {% endblock %}
     </td>

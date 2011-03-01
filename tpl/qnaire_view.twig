@@ -1,0 +1,14 @@
+{##
+ # qnaire_view.twig
+ # 
+ # View qnaire details.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @see base_view.twig for parameters
+ #}
+{% extends "base_view.twig" %}
+{% block record %}
+{{ parent() }}
+<div class="spacer"></div>
+{# Add an sample list pertaining to this qnaire #}
+{% include "sample_list.twig" with sample_list %}
+{% endblock %}

@@ -37,7 +37,8 @@ class role_view extends base_view
     $this->item['operation_count'] =
       array( 'heading' => 'Operations',
              'type' => 'constant',
-             'value' => $this->get_record()->get_operation_count() );
+             // add a space to get around a bug in twig
+             'value' => ' '$this->get_record()->get_operation_count() );
 
     // create the operation sub-list widget
     $this->operation_list = new operation_list( $args );
@@ -68,7 +69,7 @@ class role_view extends base_view
    * @return int
    * @access protected
    */
-  public function determine_operation_count( $modifier )
+  public function determine_operation_count( $modifier = NULL )
   {
     return $this->get_record()->get_operation_count( $modifier );
   }
@@ -81,7 +82,7 @@ class role_view extends base_view
    * @return array( active_record )
    * @access protected
    */
-  public function determine_operation_list( $modifier )
+  public function determine_operation_list( $modifier = NULL )
   {
     return $this->get_record()->get_operation_list( $modifier );
   }
