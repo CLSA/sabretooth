@@ -16,7 +16,11 @@ namespace sabretooth\database\limesurvey;
  */
 class surveys extends active_record
 {
-  // TODO: document
+  /**
+   * Gets the survey's title in the base language.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
   public function get_title()
   {
     $database = \sabretooth\session::self()->get_setting( 'survey_db', 'database' );
