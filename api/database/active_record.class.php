@@ -126,6 +126,9 @@ abstract class active_record extends \sabretooth\base_object
     {
       if( static::$primary_key_name != $key )
       {
+        // make sure to html-escape values for text-columns
+        if( 'text' == static::get_column_type( $key ) ) $val = htmlentities( $val );
+
         $sets .= sprintf( '%s %s = %s',
                           $first ? '' : ',',
                           $key,
@@ -648,6 +651,31 @@ abstract class active_record extends \sabretooth\base_object
                $modifier->get_sql() ) );
 
     return 0 < $count;
+  }
+
+  /**
+   * Returns a column's data type.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $name A column name in the active record's corresponding table.
+   * @return string
+   * @access public
+   */
+  public static function get_column_type( $column_name )
+  {
+    $database = \sabretooth\session::self()->get_setting( 'db', 'database' );
+    $modifier = new modifier();
+    $modifier->where( 'TABLE_SCHEMA', $database );
+    $modifier->where( 'TABLE_NAME', static::get_table_name() );
+    $modifier->where( 'COLUMN_NAME', $column_name );
+
+    $type = self::get_one(
+      sprintf( 'SELECT DATA_TYPE FROM information_schema.COLUMNS %s',
+               $modifier->get_sql() ) );
+
+    if( NULL == $type )
+      throw new \sabretooth\exception\argument( 'column_name', $column_name, __METHOD__ );
+
+    return $type;
   }
 
   /**
