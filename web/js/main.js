@@ -55,7 +55,6 @@ function update_shortcuts() {
  * @param string title The title of the dialog
  * @param string message The message to put in the dialog
  */
-
 function confirm_dialog( title, message, on_confirm ) {
   $( "#confirm_slot" ).html( message );
   $( "#confirm_slot" ).dialog( {
