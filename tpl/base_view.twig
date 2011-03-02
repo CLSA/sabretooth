@@ -7,6 +7,7 @@
 {% extends "widget.twig" %}
 {% block widget %}
 {% block record %}
+
 <script type="text/javascript">
 
 {% if editable %}
@@ -21,38 +22,6 @@ $( function () {
     $(this).removeClass( "ui-widget-content" );
     $(this).addClass( "padded" );
   } )
-
-  // common jeditable parameters
-  var jeditable_params = Object();
-  jeditable_params.tooltop = "click to edit";
-  jeditable_params.cssclass = "ui-state-default";
-  jeditable_params.event = "click";
-  jeditable_params.onblur = "cancel";
-
-  // jeditable string
-  jeditable_params.type = "text";
-  jeditable_params.placeholder = "&nbsp;";
-  $( "div.jeditable_string" ).editable( function( value, settings ) {
-    return process_jeditable( $(this), value, "text" );
-  }, jeditable_params );
-
-  // jeditable text
-  jeditable_params.type = "textarea";
-  $( "div.jeditable_text" ).editable( function( value, settings ) {
-    return process_jeditable( $(this), value, "textarea" );
-  }, jeditable_params );
-  
-  // jeditable boolean
-  jeditable_params.type = "select";
-  jeditable_params.data = "{'Yes':'Yes','No':'No','selected':'Yes'}";
-  jeditable_params.submit = 'ok';
-  $( "div.jeditable_boolean" ).editable( function( value, settings ) {
-    return process_jeditable( $(this), value, "boolean" );
-  }, jeditable_params );
-  
-  // jeditable enum
-  // TODO: maybe these should go down below with the HTML
-  
 } );
 
 /**
@@ -69,7 +38,7 @@ function process_jeditable( element, new_value, type )
 
   // build the args object
   var id_string = element.attr( 'id' );
-  var column_name = id_string.substring( id_string.lastIndexOf('.') + 1 );
+  var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
   var args = new Object();
   args.id = {{ id|default(0) }};
   var columns = new Object();
@@ -98,7 +67,7 @@ $( function () {
     var columns = new Object();
     $( "#{{ widget.full }}_add_form :input" ).each( function() {
       var id_string = $(this).attr( 'id' );
-      var column_name = id_string.substring( id_string.lastIndexOf('.') + 1 );
+      var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
       columns[column_name] = $(this).val();
     } );
     args.columns = columns;
@@ -143,7 +112,7 @@ $( function () {
       {% block value %}
       {% if addable %}
         {% if 'boolean' == entry.type %}
-          <select id="{{ widget.full }}.{{ item_id }}"
+          <select id="{{ widget.full }}__{{ item_id }}"
                   style="width: 100%"
                   class="ui-state-default">
             <option{{ entry_value ? ' selected' : '' }} value="1">Yes</option>
@@ -152,7 +121,7 @@ $( function () {
         {% elseif 'date' == entry.type %}
           TODO
         {% elseif 'enum' == entry.type %}
-          <select id="{{ widget.full }}.{{ item_id }}"
+          <select id="{{ widget.full }}__{{ item_id }}"
                   style="width: 100%"
                   class="ui-state-default">
             {% if not entry.required|default(false) %}
@@ -163,19 +132,110 @@ $( function () {
             {% endfor %}
           </select>
         {% elseif 'string' == entry.type %}
-          <input id="{{ widget.full }}.{{ item_id }}" type="text" style="width:99%" />
+          <input id="{{ widget.full }}__{{ item_id }}" type="text" style="width:99%" />
         {% elseif 'text' == entry.type %}
-          <textarea id="{{ widget.full }}.{{ item_id }}" style="width:99%;height:6em;" /></textarea>
+          <textarea id="{{ widget.full }}__{{ item_id }}" rows="5" style="width:99%;" />
         {% endif %}
       {% elseif editable and 'constant' != entry.type %}
-        {% set value = 'boolean' == entry.type ? ( entry_value ? 'Yes' : 'No' ) : entry_value %}
-        <input id="old_{{ widget.full }}.{{ item_id }}"
+        {% if 'text' == entry.type %}
+
+<script type="text/javascript">
+$( function () {
+  var $dialog = $( "#{{ widget.full }}_dialog__{{ item_id }}" );
+  var $div = $( "#{{ widget.full }}__{{ item_id }}" );
+  var $textedit = $( "#test" );
+  var text = $div.html();
+
+  // convert end-of-lines to <br>'s so that the text displays properly
+  $div.html( text.replace( /(\r\n|\r|\n)/g, "<br />" ) );
+
+  // set the dialog's text area with the (unedited) value
+  $textedit.html( text );
+
+  // create the dialog
+  $dialog.dialog( {
+    title: "Edit {{ item_id }}",
+    modal: true,
+    width: 450,
+    autoOpen: false,
+    open: function () {
+      $(this).parents( ".ui-dialog:first" ).find( ".ui-dialog-titlebar" ).addClass( "ui-state-highlight" );
+    },
+    buttons: {
+      Ok: function() {
+        // build the args object
+        var id_string = $dialog.attr( 'id' );
+        var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
+        var args = new Object();
+        args.id = {{ id|default(0) }};
+        var columns = new Object();
+        columns[column_name] = $textedit.val();
+        args.columns = columns;
+
+        // send the action, reload the record on success (since the server processes the input)
+        if( send_action( "{{ widget.subject }}", "edit", args ) )
+        {
+          // TODO: the slot should be made dynamic
+          slot_refresh( "main" );
+        }
+
+        $(this).dialog( "close" );
+      },
+      Cancel: function() {
+        $(this).dialog( "close" );
+      }
+    }
+  } );
+
+  // open the dialog when the text is clicked
+  $( "div.editable_text" ).click( function () {
+    $( "#{{ widget.full }}_dialog__{{ item_id }}" ).dialog( "open" );
+  } );
+} );
+</script>
+
+        <hr class="ui-widget ui-widget-content">
+        <div id="{{ widget.full }}_dialog__{{ item_id }}">
+          <textarea id="test" rows="5" style="width:99%;">{{ entry_value }}</textarea>
+        </div>
+        {% autoescape false %}
+        <div class="mutable padded editable_text" id="{{ widget.full }}__{{ item_id }}">{{ entry_value }}</div>
+        {% endautoescape %}
+        {% else %}
+<script type="text/javascript">
+$( function () {
+  // set up jeditable element
+  var jeditable_params = Object();
+  jeditable_params.tooltop = "click to edit";
+  jeditable_params.cssclass = "ui-state-default";
+  jeditable_params.event = "click";
+  jeditable_params.onblur = "cancel";
+  
+  {% if 'string' == entry.type %}
+  jeditable_params.type = "text";
+  jeditable_params.placeholder = "&nbsp;";
+  $( "div.jeditable_string" ).editable( function( value, settings ) {
+    return process_jeditable( $(this), value, "text" );
+  }, jeditable_params );
+  {% elseif 'boolean' == entry.type %}
+  jeditable_params.type = "select";
+  jeditable_params.data = "{'Yes':'Yes','No':'No','selected':'Yes'}";
+  jeditable_params.submit = "ok";
+  $( "div.jeditable_boolean" ).editable( function( value, settings ) {
+    return process_jeditable( $(this), value, "boolean" );
+  }, jeditable_params );
+  {% endif %}
+} );
+</script>
+
+        <input id="old_{{ widget.full }}__{{ item_id }}"
                value="{{ entry_value }}"
                type="hidden" />
-        <div id="{{ widget.full }}.{{ item_id }}"
-             class="mutable jeditable_{{ entry.type }} padded">{{ entry_value }}</div>
+        <div class="mutable jeditable_{{ entry.type }} padded"
+             id="{{ widget.full }}__{{ item_id }}">{{ entry_value }}</div>
+        {% endif %}
       {% else %}
-      <div id="{{ widget.full }}.{{ item_id }}" class="padded">{{ entry_value }}</div>
+      <div id="{{ widget.full }}__{{ item_id }}" class="padded">{{ entry_value }}</div>
       {% endif %}
       {% endblock %}
     </td>
@@ -183,7 +243,7 @@ $( function () {
 {% endfor %}
 </table>
 {% if removable %}
-<button class="{{ widget.full }}_remove" style="position: absolute; bottom: 0.2em; right: 0.1em;">remove</button>
+<button class="{{ widget.full }}_remove" style="position: absolute; top: 0.2em; right: 0.1em;">remove</button>
 {% endif %}
 </div>
 {% if addable %}</form>{% endif %}
