@@ -299,23 +299,13 @@ abstract class active_record extends \sabretooth\base_object
     // make sure the foreign table exists
     if( !self::table_exists( $foreign_table_name ) ) throw $exception;
     
-    // define some handy strings
-    $current_table_name = static::get_table_name();
-    $current_key_name = $current_table_name.'.id';
-    $current_key_value = $this->columns[ static::$primary_key_name ];
-    $foreign_class_name = '\\sabretooth\\database\\'.$foreign_table_name;
-    $foreign_key_name = $foreign_table_name.'.id';
-    
-    // add and remove require a joining table and have a sub-action
-    $search_for_joining_table = 'add' == $action || 'remove' == $action;
-    
+    // determine the sub-action and modifier argument, if necessary
+    $modifier = NULL;
     if( 3 <= count( $name_parts ) )
     {
       // make sure sub action is valid
       $sub_action = $name_parts[2];
       if( 'list' != $sub_action && 'count' != $sub_action ) throw $exception;
-      
-      $search_for_joining_table = true;
       
       // define the modifier
       $modifier = 1 == count( $args ) &&
@@ -323,168 +313,361 @@ abstract class active_record extends \sabretooth\base_object
                 ? $args[0]
                 : new modifier();
     }
-     
-    // determine the joining table, if necessary
-    if( $search_for_joining_table )
-    {
-      // the joining table may be <table>_has_<foreign_table> or <foreign>_has_<table>
-      $forward_joining_table_name = $current_table_name.'_has_'.$foreign_table_name;
-      $reverse_joining_table_name = $foreign_table_name.'_has_'.$current_table_name;
-      
-      if( $this->table_exists( $forward_joining_table_name ) )
-      {
-        $joining_table_name = $forward_joining_table_name;
-      }
-      else if( $this->table_exists( $reverse_joining_table_name ) )
-      {
-        $joining_table_name = $reverse_joining_table_name;
-      }
-      else
-      { // joining table not found
-        throw $exception;
-      }
-      
-      // define a few more handy strings
-      $joining_current_key_name = $joining_table_name.'.'.$current_table_name.'_id';
-      $joining_foreign_key_name = $joining_table_name.'.'.$foreign_table_name.'_id';
-    }
-
+    
+    // determine whether to invert (if necessary)
+    $inverted = false;
     if( 4 == count( $name_parts ) )
     {
       if( 'inverted' == $name_parts[3] ) $inverted = true;
       else throw $exception;
     }
 
-    // now that we're relatively sure the method name is valid, make sure we have a valid record
-    if( is_null( $current_key_value ) )
-    { 
-      \sabretooth\log::warning( 'Tried to query record with no id.' );
-      return 0;
-    }
-
     // once we get here we know for sure that the function name is valid
     if( 'add' == $action )
     { // calling: add_<record>( $ids )
-      // warn if we are in read-only mode
-      if( $this->read_only )
-      {
-        \sabretooth\log::warning(
-          'Tried to add '.$foreign_table_name.' records to read-only record.' );
-        return;
-      }
-
       // make sure the first argument is a non-empty array of ids
       if( 1 != count( $args ) || !is_array( $args[0] ) || 0 == count( $args[0] ) )
         throw new \sabretooth\exception\argument( 'args', $args, __METHOD__ );
-      $foreign_id_list = $args[0];
-      
-      $values = '';
-      $first = true;
-      foreach( $foreign_id_list as $foreign_key_value )
-      {
-        if( !$first ) $values .= ', ';
-        $values .= sprintf( '(%s, %s)',
-                         active_record::format_string( $current_key_value ),
-                         active_record::format_string( $foreign_key_value ) );
-        $first = false;
-      }
 
-      self::execute(
-        sprintf( 'INSERT INTO %s (%s, %s) VALUES %s',
-                 $joining_table_name,
-                 $joining_current_key_name,
-                 $joining_foreign_key_name,
-                 $values ) );
+      $ids = $args[0];
+      $this->add_records( $foreign_table_name, $ids );
+      return;
     }
     else if( 'remove' == $action )
     { // calling: remove_<record>( $ids )
-      // warn if we are in read-only mode
-      if( $this->read_only )
-      {
-        \sabretooth\log::warning(
-          'Tried to remove '.$foreign_table_name.' records to read-only record.' );
-        return;
-      }
-
       // make sure the first argument is a non-empty array of ids
       if( 1 != count( $args ) || 0 >= $args[0] )
         throw new \sabretooth\exception\argument( 'args', $args, __METHOD__ );
-      $foreign_key_value = $args[0];
-      
-      $modifier = new modifier();
-      $modifier->where( $joining_current_key_name, $current_key_value );
-      $modifier->where( $joining_foreign_key_name, $foreign_key_value );
 
-      self::execute(
-        sprintf( 'DELETE FROM %s %s',
-                 $joining_table_name,
-                 $modifier->get_sql() ) );
+      $id = $args[0];
+      $this->remove_record( $foreign_table_name, $id );
+      return;
     }
     else if( 'get' == $action && is_null( $sub_action ) )
     { // calling: get_<record>()
       // make sure this table has the correct foreign key
       if( !$this->has_column_name( $foreign_table_name.'_id' ) ) throw $exception;
 
-      // create the record using the foreign key
-      $return_value = new $foreign_class_name( $this->columns[ $foreign_table_name.'_id' ] );
+      return $this->get_record( $foreign_table_name );
     }
     else if( 'get' == $action && !is_null( $sub_action ) )
     { // calling one of: get_<record>_list( $modifier = NULL )
       //                 get_<record>_list_inverted( $modifier = NULL )
       //                 get_<record>_count( $modifier = NULL )
       //                 get_<record>_count_inverted( $modifier = NULL )
-      if( $inverted )
-      { // we need to invert the list
-        // first create SQL to match all records in the joining table
-        $sub_modifier = new modifier();
-        $sub_modifier->where( $foreign_key_name, $joining_foreign_key_name, false );
-        $sub_modifier->where( $joining_current_key_name, $current_key_name, false );
-        $sub_modifier->where( $current_key_name, $current_key_value );
-        $sub_select_sql =
-          sprintf( 'SELECT %s FROM %s, %s, %s %s',
-                   $joining_foreign_key_name,
-                   $foreign_table_name,
-                   $joining_table_name,
-                   $current_table_name,
-                   $sub_modifier->get_sql() );
-
-        // now create SQL that gets all primary ids that are NOT in that list
-        $modifier->where_not_in( $foreign_key_name, $sub_select_sql, false );
-        $sql = sprintf( 'SELECT %s FROM %s %s',
-                        'list' == $sub_action
-                          ? $foreign_key_name
-                          : 'COUNT( '.$foreign_key_name.' )',
-                        $foreign_table_name,
-                        $modifier->get_sql() );
-      }
-      else
-      { // no inversion, just select the records from the joining table
-        $modifier->where( $foreign_key_name, $joining_foreign_key_name, false );
-        $modifier->where( $joining_current_key_name, $current_key_name, false );
-        $modifier->where( $current_key_name, $current_key_value );
-        $sql = sprintf( 'SELECT %s FROM %s, %s, %s %s',
-                        'list' == $sub_action
-                          ? $joining_foreign_key_name
-                          : 'COUNT( '.$joining_foreign_key_name.' )',
-                        $foreign_table_name,
-                        $joining_table_name,
-                        $current_table_name,
-                        $modifier->get_sql() );
-      }
-
       if( 'list' == $sub_action )
       {
-        $ids = self::get_col( $sql );
-        $return_value = array();
-        foreach( $ids as $id ) array_push( $return_value, new $foreign_class_name( $id ) );
+        return $this->get_record_list( $foreign_table_name, $modifier, $inverted );
       }
-      else // 'count' == $sub_action
+      else if( 'count' == $sub_action )
       {
-        $return_value = self::get_one( $sql );
+        return $this->get_record_count( $foreign_table_name, $modifier, $inverted );
       }
     }
 
-    return $return_value;
+    // if we get here then something went wrong
+    throw $exception;
+  }
+  
+  /**
+   * Returns the record with foreign keys referencing the record table.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $record_type The type of record.
+   * @return active_record
+   * @access protected
+   */
+  protected function get_record( $record_type )
+  {
+    if( is_null( $this->columns[ static::$primary_key_name ] ) )
+    { 
+      \sabretooth\log::warning( 'Tried to query record with no id.' );
+      return NULL;
+    }
+    
+    $foreign_key_name = $record_type.'_id';
+
+    // make sure this table has the correct foreign key
+    if( !$this->has_column_name( $foreign_key_name ) )
+    { 
+      \sabretooth\log::warning( 'Tried to get invalid record type: '.$record_type );
+      return NULL;
+    }
+
+    // create the record using the foreign key
+    $class_name = '\\sabretooth\\database\\'.$record_type;
+    return new $class_name( $this->columns[$foreign_key_name] );
+  }
+
+  /**
+   * Returns an array of records from the joining record table.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $record_type The type of record.
+   * @param modifier $modifier A modifier to apply to the count.
+   * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
+   * @return array( active_record )
+   * @access protected
+   */
+  protected function get_record_list( $record_type, $modifier = NULL, $inverted = false )
+  {
+    $primary_key_value = $this->columns[ static::$primary_key_name ];
+    if( is_null( $primary_key_value ) )
+    { 
+      \sabretooth\log::warning( 'Tried to query record with no id.' );
+      return;
+    }
+    $joining_table_name = static::get_joining_table_name( $record_type );
+    if( 0 == strlen( $joining_table_name ) )
+    {
+      \sabretooth\log::warning(
+        sprintf( 'Tried to remove %s from %s without a joining table.',
+                 $record_type,
+                 static::get_table_name() ) );
+      return;
+    }
+
+    $table_name = static::get_table_name();
+    $primary_key_name = $table_name.'.'.static::$primary_key_name;
+    $foreign_class_name = '\\sabretooth\\database\\'.$record_type;
+    $foreign_key_name = $record_type.'.id'; // TODO: .id should be dynamic
+    $joining_primary_key_name = $joining_table_name.'.'.$table_name.'_id';
+    $joining_foreign_key_name = $joining_table_name.'.'.$record_type.'_id';
+    if( NULL == $modifier ) $modifier = new modifier();
+
+    if( $inverted )
+    { // we need to invert the list
+      // first create SQL to match all records in the joining table
+      $sub_modifier = new modifier();
+      $sub_modifier->where( $foreign_key_name, $joining_foreign_key_name, false );
+      $sub_modifier->where( $joining_primary_key_name, $primary_key_name, false );
+      $sub_modifier->where( $primary_key_name, $primary_key_value );
+      $sub_select_sql =
+        sprintf( 'SELECT %s FROM %s, %s, %s %s',
+                 $joining_foreign_key_name,
+                 $record_type,
+                 $joining_table_name,
+                 $table_name,
+                 $sub_modifier->get_sql() );
+
+      // now create SQL that gets all primary ids that are NOT in that list
+      $modifier->where_not_in( $foreign_key_name, $sub_select_sql, false );
+      $sql = sprintf( 'SELECT %s FROM %s %s',
+                      $foreign_key_name,
+                      $record_type,
+                      $modifier->get_sql() );
+    }
+    else
+    { // no inversion, just select the records from the joining table
+      $modifier->where( $foreign_key_name, $joining_foreign_key_name, false );
+      $modifier->where( $joining_primary_key_name, $primary_key_name, false );
+      $modifier->where( $primary_key_name, $primary_key_value );
+      $sql = sprintf( 'SELECT %s FROM %s, %s, %s %s',
+                      $joining_foreign_key_name,
+                      $record_type,
+                      $joining_table_name,
+                      $table_name,
+                      $modifier->get_sql() );
+    }
+
+    $ids = self::get_col( $sql );
+    $records = array();
+    foreach( $ids as $id ) array_push( $records, new $foreign_class_name( $id ) );
+    return $records;
+  }
+
+  /**
+   * Returns the number of records in the joining record table.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $record_type The type of record.
+   * @param modifier $modifier A modifier to apply to the count.
+   * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
+   * @return int
+   * @access protected
+   */
+  protected function get_record_count( $record_type, $modifier = NULL, $inverted = false )
+  {
+    $primary_key_value = $this->columns[ static::$primary_key_name ];
+    if( is_null( $primary_key_value ) )
+    { 
+      \sabretooth\log::warning( 'Tried to query record with no id.' );
+      return;
+    }
+    $joining_table_name = static::get_joining_table_name( $record_type );
+    if( 0 == strlen( $joining_table_name ) )
+    {
+      \sabretooth\log::warning(
+        sprintf( 'Tried to remove %s from %s without a joining table.',
+                 $record_type,
+                 static::get_table_name() ) );
+      return;
+    }
+
+    $table_name = static::get_table_name();
+    $primary_key_name = $table_name.'.'.static::$primary_key_name;
+    $foreign_class_name = '\\sabretooth\\database\\'.$record_type;
+    $foreign_key_name = $record_type.'.id'; // TODO: .id should be dynamic
+    $joining_primary_key_name = $joining_table_name.'.'.$table_name.'_id';
+    $joining_foreign_key_name = $joining_table_name.'.'.$record_type.'_id';
+    if( NULL == $modifier ) $modifier = new modifier();
+
+    if( $inverted )
+    { // we need to invert the count
+      // first create SQL to match all records in the joining table
+      $sub_modifier = new modifier();
+      $sub_modifier->where( $foreign_key_name, $joining_foreign_key_name, false );
+      $sub_modifier->where( $joining_primary_key_name, $primary_key_name, false );
+      $sub_modifier->where( $primary_key_name, $primary_key_value );
+      $sub_select_sql =
+        sprintf( 'SELECT %s FROM %s, %s, %s %s',
+                 $joining_foreign_key_name,
+                 $record_type,
+                 $joining_table_name,
+                 $table_name,
+                 $sub_modifier->get_sql() );
+
+      // now create SQL that gets all primary ids that are NOT in that list
+      $modifier->where_not_in( $foreign_key_name, $sub_select_sql, false );
+      $sql = sprintf( 'SELECT COUNT( %s ) FROM %s %s',
+                      $foreign_key_name,
+                      $record_type,
+                      $modifier->get_sql() );
+    }
+    else
+    { // no inversion, just select the records from the joining table
+      $modifier->where( $foreign_key_name, $joining_foreign_key_name, false );
+      $modifier->where( $joining_primary_key_name, $primary_key_name, false );
+      $modifier->where( $primary_key_name, $primary_key_value );
+      $sql = sprintf( 'SELECT COUNT( %s ) FROM %s, %s, %s %s',
+                      $joining_foreign_key_name,
+                      $record_type,
+                      $joining_table_name,
+                      $table_name,
+                      $modifier->get_sql() );
+    }
+
+    return self::get_one( $sql );
+  }
+
+  /**
+   * Given an array of ids, this method adds associations between the current and foreign record
+   * by adding rows into the joining "has" table.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $record_type The type of record.
+   * @param array(int) $ids An array of primary key values for the record being added.
+   * @access protected
+   */
+  protected function add_records( $record_type, $ids )
+  {
+    // warn if we are in read-only mode
+    if( $this->read_only )
+    {
+      \sabretooth\log::warning(
+        'Tried to add '.$record_type.' records to read-only record.' );
+      return;
+    }
+    $primary_key_value = $this->columns[ static::$primary_key_name ];
+    if( is_null( $primary_key_value ) )
+    { 
+      \sabretooth\log::warning( 'Tried to query record with no id.' );
+      return;
+    }
+    $joining_table_name = static::get_joining_table_name( $record_type );
+    if( 0 == strlen( $joining_table_name ) )
+    {
+      \sabretooth\log::warning(
+        sprintf( 'Tried to add %s to %s without a joining table.',
+                 $record_type,
+                 static::get_table_name() ) );
+      return;
+    }
+
+    $values = '';
+    $first = true;
+    foreach( $ids as $foreign_key_value )
+    {
+      if( !$first ) $values .= ', ';
+      $values .= sprintf( '(%s, %s)',
+                       active_record::format_string( $primary_key_value ),
+                       active_record::format_string( $foreign_key_value ) );
+      $first = false;
+    }
+
+    self::execute(
+      sprintf( 'INSERT INTO %s (%s, %s_id) VALUES %s',
+               $joining_table_name,
+               static::$primary_key_name,
+               $joining_table_name,
+               $values ) );
+  }
+
+  /**
+   * Given an id, this method removes the association between the current and record by removing
+   * the corresponding row from the joining "has" table.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $record_type The type of record.
+   * @param int $id The primary key value for the record being removed.
+   * @access protected
+   */
+  protected function remove_record( $record_type, $id )
+  {
+    // warn if we are in read-only mode
+    if( $this->read_only )
+    {
+      \sabretooth\log::warning(
+        'Tried to remove '.$foreign_table_name.' records to read-only record.' );
+      return;
+    }
+    $primary_key_value = $this->columns[ static::$primary_key_name ];
+    if( is_null( $primary_key_value ) )
+    { 
+      \sabretooth\log::warning( 'Tried to query record with no id.' );
+      return;
+    }
+    $joining_table_name = static::get_joining_table_name( $record_type );
+    if( 0 == strlen( $joining_table_name ) )
+    {
+      \sabretooth\log::warning(
+        sprintf( 'Tried to remove %s from %s without a joining table.',
+                 $record_type,
+                 static::get_table_name() ) );
+      return;
+    }
+
+    $modifier = new modifier();
+    $modifier->where( static::$primary_key_name, $primary_key_value );
+    $modifier->where( $record_type.'_id', $id );
+
+    self::execute(
+      sprintf( 'DELETE FROM %s %s',
+               $joining_table_name,
+               $modifier->get_sql() ) );
+  }
+  
+  /**
+   * Gets the name of the joining table between this record and another.
+   * If no such table exists then an empty string is returned.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $record_type The type of record.
+   * @static
+   * @access protected
+   */
+  protected static function get_joining_table_name( $record_type )
+  {
+    // the joining table may be <table>_has_<foreign_table> or <foreign>_has_<table>
+    $table_name = static::get_table_name();
+    $forward_joining_table_name = $table_name.'_has_'.$record_type;
+    $reverse_joining_table_name = $record_type.'_has_'.$table_name;
+    
+    $joining_table_name = "";
+    if( self::table_exists( $forward_joining_table_name ) )
+    {
+      $joining_table_name = $forward_joining_table_name;
+    }
+    else if( self::table_exists( $reverse_joining_table_name ) )
+    {
+      $joining_table_name = $reverse_joining_table_name;
+    }
+    
+    return $joining_table_name;
   }
 
   /**
