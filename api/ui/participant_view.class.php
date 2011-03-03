@@ -27,9 +27,15 @@ class participant_view extends base_view
   public function __construct( $args )
   {
     parent::__construct( 'participant', 'view', $args );
-
+    
+    // create enum arrays
     $languages = \sabretooth\database\participant::get_enum_values( 'language' );
-    $statuses = \sabretooth\database\participant::get_enum_values( 'status' );
+    $languages = array_combine( $languages, $languages );
+    $status_values = \sabretooth\database\participant::get_enum_values( 'status' );
+    $statuses = array( 'NULL' => '' ); // add a blank entry
+    $statuses = array_merge( $statuses, array_combine( $status_values, $status_values ) );
+    $sites = array( 'NULL' => '' ); // add a blank entry
+    foreach( \sabretooth\database\site::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
 
     // create an associative array with everything we want to display about the participant
     $this->item['first_name'] =
@@ -54,9 +60,10 @@ class participant_view extends base_view
              'type' => 'enum',
              'enum' => $statuses,
              'value' => $this->get_record()->status );
-    $this->item['site'] =
+    $this->item['site_id'] =
       array( 'heading' => 'Site',
-             'type' => 'constant',
+             'type' => 'enum',
+             'enum' => $sites,
              'value' => $this->get_record()->get_site()->name );
 
     // create the sample sub-list widget
