@@ -28,6 +28,7 @@ class participant_add extends base_view
   {
     parent::__construct( 'participant', 'add', $args );
     
+    // create enum arrays
     $languages = \sabretooth\database\participant::get_enum_values( 'language' );
     $languages = array_combine( $languages, $languages );
     $statuses = \sabretooth\database\participant::get_enum_values( 'status' );
