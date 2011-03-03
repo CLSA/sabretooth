@@ -260,7 +260,6 @@ $( function() {
       constrain_dialog(
         $(this).attr( "id" ),
         function( vars ) {
-          alert( $( "#constrain_dialog_value" ).val() );
           var args = new Object();
           var constrain_columns = new Object();
           constrain_columns[column] = vars.value.length ? vars : null;
