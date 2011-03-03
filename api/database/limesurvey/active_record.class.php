@@ -47,7 +47,7 @@ abstract class active_record extends \sabretooth\database\active_record
     $records = array();
     $id_list = self::get_col(
       sprintf( 'SELECT %s FROM %s %s',
-               static::$primary_key_name,
+               static::get_primary_key_name(),
                static::get_table_name(),
                is_null( $modifier ) ? '' : $modifier->get_sql() ) );
 
@@ -71,11 +71,10 @@ abstract class active_record extends \sabretooth\database\active_record
   {
     // same as parent but with a different database and table name prefix
     $record = NULL;
-    $database = \sabretooth\session::self()->get_setting( 'survey_db', 'database' );
 
     // determine the unique key(s)
     $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', $database );
+    $modifier->where( 'TABLE_SCHEMA', static::get_database_name() );
     $modifier->where( 'TABLE_NAME', self::get_table_name() );
     $modifier->where( 'COLUMN_KEY', 'UNI' );
 
@@ -105,15 +104,14 @@ abstract class active_record extends \sabretooth\database\active_record
    * Returns the name of the table associated with this active record.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
-   * @access protected
+   * @access public
    */
-  protected static function get_table_name()
+  public static function get_table_name()
   {
     // Table and class names (without namespaces) should always be identical, but we need to have
     // their database name and prefix added to them.
-    $database = \sabretooth\session::self()->get_setting( 'survey_db', 'database' );
     $prefix = \sabretooth\session::self()->get_setting( 'survey_db', 'prefix' );
-    return $database.'.'.$prefix.parent::get_table_name();
+    return static::get_database_name().'.'.$prefix.parent::get_table_name();
   }
 
   /**
@@ -126,10 +124,9 @@ abstract class active_record extends \sabretooth\database\active_record
   protected static function table_exists( $name )
   {
     // same as parent method but with a different database and table name prefix
-    $database = \sabretooth\session::self()->get_setting( 'survey_db', 'database' );
     $prefix = \sabretooth\session::self()->get_setting( 'survey_db', 'prefix' );
     $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', $database );
+    $modifier->where( 'TABLE_SCHEMA', static::get_database_name() );
     $modifier->where( 'Table_Name', $prefix.$name );
 
     $count = self::get_one(
@@ -137,6 +134,18 @@ abstract class active_record extends \sabretooth\database\active_record
                $modifier->get_sql() ) );
 
     return 0 < $count;
+  }
+
+  /**
+   * Returns the name of the database that the active record is found in.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @static
+   * @access protected
+   */
+  protected static function get_database_name()
+  {
+    return \sabretooth\session::self()->get_setting( 'survey_db', 'database' );
   }
 }
 ?>

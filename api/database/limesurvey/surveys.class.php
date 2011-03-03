@@ -23,7 +23,6 @@ class surveys extends active_record
    */
   public function get_title()
   {
-    $database = \sabretooth\session::self()->get_setting( 'survey_db', 'database' );
     $prefix = \sabretooth\session::self()->get_setting( 'survey_db', 'prefix' );
     
     $modifier = new \sabretooth\database\modifier();
@@ -33,7 +32,7 @@ class surveys extends active_record
     // get the title from the survey's main language
     return self::get_one(
       sprintf( 'SELECT surveyls_title FROM %s.%s, %s %s',
-               $database,
+               static::get_database_name(),
                $prefix.'surveys_languagesettings',
                static::get_table_name(),
                $modifier->get_sql() ) );

@@ -16,6 +16,6 @@ namespace sabretooth\database\limesurveys;
  */
 class users extends active_record
 {
-  protected static $primary_key_name = 'sid';
+  protected static $primary_key_name = 'uid';
 }
 ?>
