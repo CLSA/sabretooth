@@ -39,18 +39,38 @@ class phase extends active_record
                static::get_table_name(),
                $this->qnaire_id,
                $this->stage ) );
-
+    
+    $record = NULL;
+    $update_record = false;
     if( !is_null( $duplicate_id ) )
     {
-      // advance it's stage by one
+      $current_stage = static::get_one(
+        sprintf( 'SELECT stage FROM %s WHERE %s = %d',
+                 static::get_table_name(),
+                 static::get_primary_key_name(),
+                 $this->id ) );
+
       $record = new static( $duplicate_id );
-      $record->stage++;
-      // this next line makes this method recursive, which is the desired functionality
-      $record->save();
+      if( $current_stage )
+      { // exchange the stage
+        $record->stage = 0; // temporary value
+        $record->save();
+        $record->stage = $current_stage;
+        $update_record = true;
+      }
+      else
+      { // advance it's stage by one
+        $record->stage++;
+        // this next line may make this method recursive, which is the desired functionality
+        $record->save();
+      }
     }
 
     // and now save the current record
     parent::save();
+
+    // and finish, if necessary
+    if( $update_record && !is_null( $record ) ) $record->save();
   }
 
   /**
@@ -87,6 +107,26 @@ class phase extends active_record
       $record->stage--;
       $record->save();
     }
+  }
+
+  /**
+   * Returns this phase's survey.
+   * This overrides the parent's magic method because the survey record is outside the main db.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return surveys
+   * @access public
+   */
+  public function get_survey()
+  {
+    // check the primary key value
+    $primary_key_name = static::get_primary_key_name();
+    if( is_null( $this->$primary_key_name ) )
+    {
+      \sabretooth\log::warning( 'Tried to delete record with no id.' );
+      return;
+    }
+    
+    return new limesurvey\surveys( $this->sid );
   }
 }
 ?>
