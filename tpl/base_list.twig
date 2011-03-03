@@ -116,8 +116,11 @@ $( function() {
   } );
 } );
 {% endif %}
+</script>
 
 {% if addable %}
+{% block add_button_js %}
+<script type="text/javascript">
 // add button
 $( function() {
   $( "#{{ widget.full }}_add" ).click( function() {
@@ -131,8 +134,11 @@ $( function() {
     {% endif %}
   } );
 } );
+</script>
+{% endblock add_button_js %}
 {% endif %}
 
+<script type="text/javascript">
 {% if checkable %}
 {# TODO: need to create a library for these kinds of cookie operations #}
 $( function() {

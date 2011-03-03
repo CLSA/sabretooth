@@ -26,7 +26,7 @@ CREATE  TABLE IF NOT EXISTS `participant` (
   `last_name` VARCHAR(45) NOT NULL ,
   `language` ENUM('en','fr') NOT NULL DEFAULT 'en' ,
   `hin` VARCHAR(45) NULL DEFAULT NULL ,
-  `status` ENUM('deceased', 'deaf', 'mentally unfit') NULL DEFAULT NULL ,
+  `condition` ENUM('deceased', 'deaf', 'mentally unfit') NULL DEFAULT NULL ,
   `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'If not null then force all calls to this participant to the site.' ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
@@ -83,11 +83,11 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `qnaire_stage`
+-- Table `phase`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `qnaire_stage` ;
+DROP TABLE IF EXISTS `phase` ;
 
-CREATE  TABLE IF NOT EXISTS `qnaire_stage` (
+CREATE  TABLE IF NOT EXISTS `phase` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `qnaire_id` INT UNSIGNED NOT NULL ,
   `sid` INT NOT NULL COMMENT 'limesurvey surveys.sid' ,
@@ -95,7 +95,8 @@ CREATE  TABLE IF NOT EXISTS `qnaire_stage` (
   `repeated` TINYINT(1)  NOT NULL DEFAULT false ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
-  CONSTRAINT `fk_qnaire_has_script_qnaire`
+  UNIQUE INDEX `uq_qnaire_id_stage` (`qnaire_id` ASC, `stage` ASC) ,
+  CONSTRAINT `fk_phase_qnaire`
     FOREIGN KEY (`qnaire_id` )
     REFERENCES `qnaire` (`id` )
     ON DELETE NO ACTION
@@ -155,17 +156,17 @@ DROP TABLE IF EXISTS `interview` ;
 CREATE  TABLE IF NOT EXISTS `interview` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `participant_id` INT UNSIGNED NOT NULL ,
-  `qnaire_stage_id` INT UNSIGNED NOT NULL ,
+  `phase_id` INT UNSIGNED NOT NULL ,
   `require_supervisor` TINYINT(1)  NOT NULL DEFAULT false ,
   `completed` TINYINT(1)  NOT NULL DEFAULT false ,
-  `duplicate_qnaire_stage_id` INT UNSIGNED NULL DEFAULT NULL ,
+  `duplicate_phase_id` INT UNSIGNED NULL DEFAULT NULL ,
   `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'If not null then force all calls for this interview to the site.' ,
   `appointment` DATETIME NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
-  INDEX `fk_qnaire_stage_id` (`qnaire_stage_id` ASC) ,
-  INDEX `fk_duplicate_qnaire_stage_id` (`duplicate_qnaire_stage_id` ASC) ,
+  INDEX `fk_phase_id` (`phase_id` ASC) ,
+  INDEX `fk_duplicate_phase_id` (`duplicate_phase_id` ASC) ,
   CONSTRAINT `fk_interview_participant`
     FOREIGN KEY (`participant_id` )
     REFERENCES `participant` (`id` )
@@ -176,14 +177,14 @@ CREATE  TABLE IF NOT EXISTS `interview` (
     REFERENCES `site` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_qnaire_stage_id1`
-    FOREIGN KEY (`qnaire_stage_id` )
-    REFERENCES `qnaire_stage` (`id` )
+  CONSTRAINT `fk_phase_id`
+    FOREIGN KEY (`phase_id` )
+    REFERENCES `phase` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_qnaire_stage_id11`
-    FOREIGN KEY (`duplicate_qnaire_stage_id` )
-    REFERENCES `qnaire_stage` (`id` )
+  CONSTRAINT `fk_duplicate_phase_id`
+    FOREIGN KEY (`duplicate_phase_id` )
+    REFERENCES `phase` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -236,13 +237,11 @@ CREATE  TABLE IF NOT EXISTS `phone_call` (
   `status` ENUM('in progress','contacted', 'busy','no answer','machine message','machine no message','fax','disconnected','wrong number','language') NOT NULL DEFAULT 'in progress' ,
   `start_time` TIMESTAMP NOT NULL COMMENT 'The time the call started.' ,
   `end_time` DATETIME NULL DEFAULT NULL COMMENT 'The time the call endede.' ,
-  `qnaire_stage_id` INT UNSIGNED NOT NULL ,
-  `qnaire_stage_id1` INT UNSIGNED NOT NULL ,
+  `phase_id` INT UNSIGNED NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_contact_id` (`contact_id` ASC) ,
   INDEX `fk_assignment_id` (`assignment_id` ASC) ,
-  INDEX `fk_qnaire_stage_id2` (`qnaire_stage_id` ASC) ,
-  INDEX `fk_qnaire_stage_id12` (`qnaire_stage_id1` ASC) ,
+  INDEX `fk_phase_id` (`phase_id` ASC) ,
   CONSTRAINT `fk_phone_call_contact`
     FOREIGN KEY (`contact_id` )
     REFERENCES `contact` (`id` )
@@ -253,14 +252,9 @@ CREATE  TABLE IF NOT EXISTS `phone_call` (
     REFERENCES `assignment` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_qnaire_stage_id2`
-    FOREIGN KEY (`qnaire_stage_id` )
-    REFERENCES `qnaire_stage` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_qnaire_stage_id12`
-    FOREIGN KEY (`qnaire_stage_id1` )
-    REFERENCES `qnaire_stage` (`id` )
+  CONSTRAINT `fk_phone_call_phase`
+    FOREIGN KEY (`phase_id` )
+    REFERENCES `phase` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

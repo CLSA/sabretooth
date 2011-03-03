@@ -31,6 +31,7 @@ class qnaire_list extends base_list_widget
     $session = \sabretooth\session::self();
 
     $this->add_column( 'name', 'Name', true );
+    $this->add_column( 'phases', 'Stages', false );
     $this->add_column( 'samples', 'Samples', false );
   }
   
@@ -49,6 +50,7 @@ class qnaire_list extends base_list_widget
       // assemble the row for this record
       $this->add_row( $record->id,
         array( 'name' => $record->name,
+               'phases' => $record->get_phase_count(),
                'samples' => $record->get_sample_count() ) );
     }
 

@@ -39,7 +39,7 @@ abstract class base_new extends base_record_action
     {
       $this->get_record()->$column = $value;
     }
-       
+
     try
     {
       $this->get_record()->save();

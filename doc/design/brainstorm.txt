@@ -86,7 +86,7 @@ Status tracking
     mail sent
     (soft refusal)
   Interview
-    stage
+    phase
     complete
     dormant
     supervisor only

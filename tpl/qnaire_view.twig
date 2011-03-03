@@ -9,6 +9,9 @@
 {% block record %}
 {{ parent() }}
 <div class="spacer"></div>
-{# Add an sample list pertaining to this qnaire #}
+{# Add a phase list pertaining to this qnaire #}
+{% include "phase_list.twig" with phase_list %}
+<div class="spacer"></div>
+{# Add a sample list pertaining to this qnaire #}
 {% include "sample_list.twig" with sample_list %}
 {% endblock %}

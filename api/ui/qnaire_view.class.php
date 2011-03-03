@@ -33,6 +33,11 @@ class qnaire_view extends base_view
       array( 'heading' => 'Name',
              'type' => 'string',
              'value' => $this->get_record()->name );
+    $this->item['phases'] = 
+      array( 'heading' => 'Number of phases',
+             'type' => 'constant',
+             // add a space to get around a bug in twig
+             'value' => ' '.$this->get_record()->get_phase_count() );
     $this->item['samples'] = 
       array( 'heading' => 'Number of samples',
              'type' => 'constant',
@@ -42,6 +47,11 @@ class qnaire_view extends base_view
       array( 'heading' => 'Description',
              'type' => 'text',
              'value' => $this->get_record()->description );
+
+    // create the phase sub-list widget
+    $this->phase_list = new phase_list( $args );
+    $this->phase_list->set_parent( $this );
+    $this->phase_list->set_heading( 'Questionnaire phases' );
 
     // create the sample sub-list widget
     $this->sample_list = new sample_list( $args );
@@ -59,9 +69,18 @@ class qnaire_view extends base_view
   {
     parent::finish();
 
+    $this->phase_list->finish();
+    $this->set_variable( 'phase_list', $this->phase_list->get_variables() );
     $this->sample_list->finish();
     $this->set_variable( 'sample_list', $this->sample_list->get_variables() );
   }
+  
+  /**
+   * The qnaire list widget.
+   * @var phase_list
+   * @access protected
+   */
+  protected $phase_list = NULL;
   
   /**
    * The qnaire list widget.

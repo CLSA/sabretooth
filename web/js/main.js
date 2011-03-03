@@ -62,9 +62,6 @@ function confirm_dialog( title, message, on_confirm ) {
     modal: true,
     dialogClass: "alert",
     width: 450,
-    open: function () {
-      $(this).parents( ".ui-dialog:first" ).find( ".ui-dialog-titlebar" ).addClass( "ui-state-highlight" );
-    },
     buttons: {
       Ok: function() {
         on_confirm();

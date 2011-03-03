@@ -68,7 +68,7 @@ VALUES( "widget", "participant", "list", true, "List participants in the system.
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "add_sample", true, "View samples to add to a participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "participant", "new_sample", true, "Add new samples to a participant." );
+VALUES( "action", "participant", "new_sample", true, "Adds new samples to a participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "participant", "delete_sample", true, "Remove samples from a participant." );
 
@@ -88,15 +88,21 @@ VALUES( "widget", "qnaire", "view", true, "View a questionnaire's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "qnaire", "add_sample", true, "View samples to add to a questionnaire." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "qnaire", "new_sample", true, "Add new samples to a questionnaire." );
+VALUES( "action", "qnaire", "new_sample", true, "Adds new samples to a questionnaire." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "qnaire", "delete_sample", true, "Remove samples from a questionnaire." );
--- INSERT INTO operation( type, subject, name, restricted, description )
--- VALUES( "widget", "qnaire", "add_survey", true, "View surveys to add to a questionnaire." );
--- INSERT INTO operation( type, subject, name, restricted, description )
--- VALUES( "action", "qnaire", "new_survey", true, "Add new surveys to a questionnaire." );
--- INSERT INTO operation( type, subject, name, restricted, description )
--- VALUES( "action", "qnaire", "delete_survey", true, "Remove surveys from a questionnaire." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "qnaire", "add_phase", true, "View surveys to add as a new phase to a questionnaire." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "qnaire", "delete_phase", true, "Remove phases from a questionnaire." );
+
+-- phase
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "phase", "new", true, "Creates a new questionnaire phase." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "phase", "list", true, "Lists a questionnaire's phases." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "phase", "view", true, "View the details of a questionnaire's phases." );
 
 -- role
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -114,7 +120,7 @@ VALUES( "widget", "role", "list", true, "List roles in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "role", "add_operation", true, "View operations to add to a role." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "role", "new_operation", true, "Add new operations to a role." );
+VALUES( "action", "role", "new_operation", true, "Adds new operations to a role." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "role", "delete_operation", true, "Remove operations from a role." );
 
@@ -134,13 +140,13 @@ VALUES( "widget", "sample", "list", true, "List samples in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "sample", "add_qnaire", true, "View questionnaires to add to a sample." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "sample", "new_qnaire", true, "Add new questionnaires to a sample." );
+VALUES( "action", "sample", "new_qnaire", true, "Adds new questionnaires to a sample." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "sample", "delete_qnaire", true, "Remove questionnaires from a sample." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "sample", "add_participant", true, "View participants to add to a sample." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "sample", "new_participant", true, "Add new participants to a sample." );
+VALUES( "action", "sample", "new_participant", true, "Adds new participants to a sample." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "sample", "delete_participant", true, "Remove participants from a sample." );
 
