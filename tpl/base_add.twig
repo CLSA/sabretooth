@@ -1,0 +1,91 @@
+{##
+ # base_add.twig
+ # 
+ # Extends the base_record template for adding records.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ #}
+{% extends "base_record.twig" %}
+
+{% block record_javascript %}
+  <script type="text/javascript">
+  $( function () {
+    // add button
+    $( "#{{ widget.compound }}_add" ).click( function () {
+      // submit the form information as a new action
+      var args = new Object();
+      var columns = new Object();
+      $( "#{{ widget.full }}_add_form :input" ).each( function() {
+        var id_string = $(this).attr( 'id' );
+        var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
+        columns[column_name] = $(this).val();
+      } );
+      args.columns = columns;
+      
+      if( send_action( "{{ widget.subject }}", "new", args ) ) slot_prev( get_slot( $(this) ) );
+    } );
+  } );
+  </script>
+{% endblock record_javascript %}
+
+{% block record %}
+  <form id="{{ widget.full }}_add_form">
+  {{ parent() }}
+  <div class="spacer"></div>
+  {% include "confirm_buttons.twig" with { 'align': 'right', 'buttons': ['add'] } %}
+  </form>
+{% endblock record %}
+
+{% block record_items %}
+  <table>
+  {% for item_id, entry in item %}
+    {% if 'hidden' != entry.type %}
+      {# make null entries an empty string #}
+      {% set entry_value = entry.value is defined ? entry.value : "" %}
+      <tr>
+        <td style="white-space: nowrap; padding: 4px;" align="left">
+          <span class="title">{{ entry.heading }}:</span>
+        </td>
+        <td style="padding: 4px" width="95%" align="left">
+
+      {% if 'boolean' == entry.type %}
+    
+        <select id="{{ widget.full }}__{{ item_id }}"
+                style="width: 100%"
+                class="ui-state-default">
+          <option{{ entry_value ? ' selected' : '' }} value="1">Yes</option>
+          <option{{ entry_value ? '' : ' selected' }} value="0">No</option>
+        </select>
+      
+      {% elseif 'date' == entry.type %}
+      
+        TODO: need to implement a date entry type
+      
+      {% elseif 'enum' == entry.type %}
+    
+        <select id="{{ widget.full }}__{{ item_id }}"
+                style="width: 100%"
+                class="ui-state-default">
+          {% if not entry.required %}
+          <option{{ '' == entry_value ? ' selected' : 'NULL' }} value=""></option>
+          {% endif %}
+          {% for value_id, value in entry.enum %}
+          <option{{ entry_value == value_id ? ' selected' : '' }}
+                  value="{{ value_id }}">{{ value }}</option>
+          {% endfor %}
+        </select>
+    
+      {% elseif 'string' == entry.type %}
+    
+        <input id="{{ widget.full }}__{{ item_id }}" type="text" style="width:99%" />
+    
+      {% elseif 'text' == entry.type %}
+    
+        <textarea id="{{ widget.full }}__{{ item_id }}" rows="5" style="width:99%;" />
+    
+      {% endif %}
+        </td>
+      </tr>
+    {% endif %}
+  {% endfor %}
+  </table>
+{% endblock record_items %}

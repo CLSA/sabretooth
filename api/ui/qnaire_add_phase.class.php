@@ -14,7 +14,7 @@ namespace sabretooth\ui;
  * 
  * @package sabretooth\ui
  */
-class qnaire_add_phase extends base_add_list
+class qnaire_add_phase extends base_add_record
 {
   /**
    * Constructor
@@ -28,32 +28,6 @@ class qnaire_add_phase extends base_add_list
   public function __construct( $args )
   {
     parent::__construct( 'qnaire', 'phase', $args );
-  }
-
-  /**
-   * Overrides the phase list widget's method.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the list.
-   * @return int
-   * @access protected
-   */
-  public function determine_phase_count( $modifier = NULL )
-  {
-    return $this->get_record()->get_phase_count_inverted( $modifier );
-  }
-
-  /**
-   * Overrides the phase list widget's method.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the list.
-   * @return array( active_record )
-   * @access protected
-   */
-  public function determine_phase_list( $modifier = NULL )
-  {
-    return $this->get_record()->get_phase_list_inverted( $modifier );
   }
 }
 ?>

@@ -1,273 +1,236 @@
 {##
  # base_view.twig
  # 
- # Base template for viewing, editing and adding records.
+ # Extends the base_record template for adding records.
  # @author Patrick Emond <emondpd@mcmaster.ca>
  #}
-{% extends "widget.twig" %}
-{% block widget %}
-{% block record %}
+{% extends "base_record.twig" %}
 
-<script type="text/javascript">
-
-{% if editable %}
-// make mutable elements
-$( function () {
-  // identify a mutable element by changing classes on mouse over/out
-  $( "div.mutable" ).mouseover( function() {
-    $(this).removeClass( "padded" );
-    $(this).addClass( "ui-widget-content" );
-  } )
-  $( "div.mutable" ).mouseout( function() {
-    $(this).removeClass( "ui-widget-content" );
-    $(this).addClass( "padded" );
-  } )
-} );
-
-/**
- * Processes jeditable value changes.
- * @author Patrick Emond <emondpd@mcmaster.ca>
- * @param string new_value The elements new value.
- * @param string type The type of element being edited.
- */
-function process_jeditable( element, new_value, type )
-{
-  // don't do anything if there hasn't been any change to the value
-  var old_value = $( "#old_" + element.attr( 'id' ) ).val();
-  if( new_value == old_value ) return old_value;
-
-  // build the args object
-  var id_string = element.attr( 'id' );
-  var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
-  var args = new Object();
-  args.id = {{ id|default(0) }};
-  var columns = new Object();
-
-  // set the column's value (this depends on the type)
-  if( 'boolean' == type ) columns[column_name] = 'Yes' == new_value ? 1 : 0;
-  else if( 'enum' == type ) columns[column_name] = 'NULL' == new_value ? '' : new_value;
-  else columns[column_name] = new_value;
-  args.columns = columns;
-
-  // send the action, updating the hidden "old" input upon success
-  if( send_action( "{{ widget.subject }}", "edit", args ) )
+{% block record_javascript %}
+  <script type="text/javascript">
+  // make mutable elements
+  $( function () {
+    // identify a mutable element by changing classes on mouse over/out
+    $( "div.mutable" ).mouseover( function() {
+      $(this).removeClass( "padded" );
+      $(this).addClass( "ui-widget-content" );
+    } )
+    $( "div.mutable" ).mouseout( function() {
+      $(this).removeClass( "ui-widget-content" );
+      $(this).addClass( "padded" );
+    } )
+  } );
+  
+  /**
+   * Processes jeditable value changes.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string new_value The elements new value.
+   * @param string type The type of element being edited.
+   */
+  function process_jeditable( element, new_value, type )
   {
-    if( 'string' == type ) $( "#old_" + element.attr( 'id' ) ).val( new_value );
-    return new_value;
-  }
-
-  return old_value;
-}
-{% endif %}
-
-{% if addable %}
-$( function () {
-  // add button
-  $( "#{{ widget.compound }}_add" ).click( function () {
-    // submit the form information as a new action
+    // don't do anything if there hasn't been any change to the value
+    var old_value = $( "#old_" + element.attr( 'id' ) ).val();
+    if( new_value == old_value ) return old_value;
+  
+    // build the args object
+    var id_string = element.attr( 'id' );
+    var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
     var args = new Object();
+    args.id = {{ id|default(0) }};
     var columns = new Object();
-    $( "#{{ widget.full }}_add_form :input" ).each( function() {
-      var id_string = $(this).attr( 'id' );
-      var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
-      columns[column_name] = $(this).val();
-    } );
+  
+    // make sure to change empty strings for boolean and enum values to NULL
+    if( 'boolean' == type || 'enum' == type )
+      columns[column_name] = 'NULL' == new_value ? '' : new_value;
+    else columns[column_name] = new_value;
     args.columns = columns;
-
-    if( send_action( "{{ widget.subject }}", "new", args ) ) slot_prev( get_slot( $(this) ) );
-  } );
-} );
-{% endif %}
-
-{% if removable %}
-// delete button
-$( function () {
-  $( "button.{{ widget.full }}_remove" ).click( function() {
-  var slot = get_slot( $(this) );
-  confirm_dialog(
-    "Delete {{ widget.subject }}?",
-    "Are you sure you want to remove this {{ widget.subject }}?",
-    function() {
-      if( send_action( "{{ widget.subject }}", "delete", { "id": {{ id|default(0) }} } ) )
-        slot_prev( slot );
-    } );
-
-  } );
-} );
-{% endif %}
-
-</script>
-
-{% if addable %}
-<form id="{{ widget.full }}_add_form">
-{% endif %}
-<div class="ui-widget ui-widget-content" style="padding: 4px; position: relative;">
-<table>
-{% for item_id, entry in item %}
-{# make null entries an empty string #}
-{% set entry_value = entry.value is defined ? entry.value : "" %}
-  <tr>
-    <td style="white-space: nowrap; padding: 4px;" align="left">
-      <span class="title">{{ entry.heading }}:</span>
-    </td>
-    <td style="padding: 4px" width="95%" align="left">
-
-{% block value %}
-      {% if addable %}
-        {% if 'boolean' == entry.type %}
-          <select id="{{ widget.full }}__{{ item_id }}"
-                  style="width: 100%"
-                  class="ui-state-default">
-            <option{{ entry_value ? ' selected' : '' }} value="1">Yes</option>
-            <option{{ entry_value ? '' : ' selected' }} value="0">No</option>
-          </select>
-        {% elseif 'date' == entry.type %}
-          TODO
-        {% elseif 'enum' == entry.type %}
-          <select id="{{ widget.full }}__{{ item_id }}"
-                  style="width: 100%"
-                  class="ui-state-default">
-            {% if not entry.required|default(false) %}
-            <option{{ '' == entry_value ? ' selected' : '' }} value=""></option>
-            {% endif %}
-            {% for value_id, value in entry.enum %}
-            <option{{ entry_value == value_id ? ' selected' : '' }} value="{{ value_id }}">{{ value }}</option>
-            {% endfor %}
-          </select>
-        {% elseif 'string' == entry.type %}
-          <input id="{{ widget.full }}__{{ item_id }}" type="text" style="width:99%" />
-        {% elseif 'text' == entry.type %}
-          <textarea id="{{ widget.full }}__{{ item_id }}" rows="5" style="width:99%;" />
-        {% endif %}
-      {% elseif editable and 'constant' != entry.type %}
-
-{% if 'text' == entry.type %}
-
-<script type="text/javascript">
-$( function () {
-  var $dialog = $( "#{{ widget.full }}_dialog__{{ item_id }}" );
-  var $div = $( "#{{ widget.full }}__{{ item_id }}" );
-  var $textedit = $( "#test" );
-  var text = $div.html();
-
-  // convert end-of-lines to <br>'s so that the text displays properly
-  $div.html( text.replace( /(\r\n|\r|\n)/g, "<br />" ) );
-
-  // set the dialog's text area with the (unedited) value
-  $textedit.html( text );
-
-  // create the dialog
-  $dialog.dialog( {
-    title: "Edit {{ item_id }}",
-    modal: true,
-    width: 450,
-    autoOpen: false,
-    buttons: {
-      Ok: function() {
-        // build the args object
-        var id_string = $dialog.attr( 'id' );
-        var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
-        var args = new Object();
-        args.id = {{ id|default(0) }};
-        var columns = new Object();
-        columns[column_name] = $textedit.val();
-        args.columns = columns;
-
-        // send the action, reload the record on success (since the server processes the input)
-        if( send_action( "{{ widget.subject }}", "edit", args ) )
-        {
-          // TODO: the slot should be made dynamic
-          slot_refresh( "main" );
-        }
-
-        $(this).dialog( "close" );
-      },
-      Cancel: function() {
-        $(this).dialog( "close" );
-      }
+  
+    // send the action, updating the hidden "old" input upon success
+    if( send_action( "{{ widget.subject }}", "edit", args ) )
+    {
+      if( 'string' == type ) $( "#old_" + element.attr( 'id' ) ).val( new_value );
+      return new_value;
     }
+  
+    return old_value;
+  }
+  
+  {% if removable %}
+  // delete button
+  $( function () {
+    $( "button.{{ widget.full }}_remove" ).click( function() {
+    var slot = get_slot( $(this) );
+    confirm_dialog(
+      "Delete {{ widget.subject }}?",
+      "Are you sure you want to remove this {{ widget.subject }}?",
+      function() {
+        if( send_action( "{{ widget.subject }}", "delete", { "id": {{ id|default(0) }} } ) )
+          slot_prev( slot );
+      } );
+  
+    } );
   } );
+  {% endif %}
+  </script>
+{% endblock record_javascript %}
 
-  // open the dialog when the text is clicked
-  $( "div.editable_text" ).click( function () {
-    $( "#{{ widget.full }}_dialog__{{ item_id }}" ).dialog( "open" );
-  } );
-} );
-</script>
+{% block record_items %}
+  <table>
+  {% for item_id, entry in item %}
+    {% if 'hidden' != entry.type %}
+      {# make null entries an empty string #}
+      {% set entry_value = entry.value is defined ? entry.value : "" %}
+      <tr>
+        <td style="white-space: nowrap; padding: 4px;" align="left">
+          <span class="title">{{ entry.heading }}:</span>
+        </td>
+        <td style="padding: 4px" width="95%" align="left">
 
+      {% if 'constant' == entry.type %}
+    
+        <div id="{{ widget.full }}__{{ item_id }}" class="padded">{{ entry_value }}</div>
+    
+      {% elseif 'text' == entry.type %}
+    
+        <script type="text/javascript">
+        $( function () {
+          var $dialog = $( "#{{ widget.full }}_dialog__{{ item_id }}" );
+          var $div = $( "#{{ widget.full }}__{{ item_id }}" );
+          var $textedit = $( "#test" );
+          var text = $div.html();
+        
+          // convert end-of-lines to <br>'s so that the text displays properly
+          $div.html( text.replace( /(\r\n|\r|\n)/g, "<br />" ) );
+        
+          // set the dialog's text area with the (unedited) value
+          $textedit.html( text );
+        
+          // create the dialog
+          $dialog.dialog( {
+            title: "Edit {{ item_id }}",
+            modal: true,
+            width: 450,
+            autoOpen: false,
+            buttons: {
+              Ok: function() {
+                // build the args object
+                var id_string = $dialog.attr( 'id' );
+                var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
+                var args = new Object();
+                args.id = {{ id|default(0) }};
+                var columns = new Object();
+                columns[column_name] = $textedit.val();
+                args.columns = columns;
+        
+                // send the action, reload the record on success
+                if( send_action( "{{ widget.subject }}", "edit", args ) )
+                  slot_refresh( "main" ); // TODO: the slot should be made dynamic
+    
+                $(this).dialog( "close" );
+              },
+              Cancel: function() {
+                $(this).dialog( "close" );
+              }
+            }
+          } );
+        
+          // open the dialog when the text is clicked
+          $( "div.editable_text" ).click( function () {
+            $( "#{{ widget.full }}_dialog__{{ item_id }}" ).dialog( "open" );
+          } );
+        } );
+        </script>
+    
         <hr class="ui-widget ui-widget-content">
         <div id="{{ widget.full }}_dialog__{{ item_id }}">
           <textarea id="test" rows="5" style="width:99%;">{{ entry_value }}</textarea>
         </div>
         {% autoescape false %}
-        <div class="mutable padded editable_text" id="{{ widget.full }}__{{ item_id }}">{{ entry_value }}</div>
+          <div class="mutable padded editable_text"
+               id="{{ widget.full }}__{{ item_id }}">{{ entry_value }}</div>
         {% endautoescape %}
-
-{% else %} {# not a text entry type #}
-
-<script type="text/javascript">
-$( function () {
-  // set up jeditable element
-  var jeditable_params = Object();
-  jeditable_params.tooltop = "click to edit";
-  jeditable_params.cssclass = "ui-state-default";
-  jeditable_params.event = "click";
-  jeditable_params.onblur = "cancel";
-  
-  {% if 'string' == entry.type %}
-  jeditable_params.type = "text";
-  jeditable_params.placeholder = "&nbsp;";
-  $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
-    return process_jeditable( $(this), value, "{{ entry.type }}" );
-  }, jeditable_params );
-  {% elseif 'boolean' == entry.type %}
-  jeditable_params.type = "select";
-  jeditable_params.data = "{ Yes:'Yes', No:'No', selected:'Yes' }";
-  jeditable_params.submit = "ok";
-  $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
-    return process_jeditable( $(this), value, "{{ entry.type }}" );
-  }, jeditable_params );
-  {% elseif 'enum' == entry.type %}
-  jeditable_params.type = "select";
-  jeditable_params.placeholder = "&nbsp;";
-  jeditable_params.data = '{ {% for id, value in entry.enum %}"{{ id }}":"{{ value }}",{% endfor %}' +
-                          '"selected":"{{ entry_value }}" }';
-  jeditable_params.submit = "ok";
-  $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
-    var index = process_jeditable( $(this), value, "{{ entry.type }}" );
-    var data = jQuery.parseJSON( jeditable_params.data );
-    return data[index];
-  }, jeditable_params );
-  {% endif %}
-
-} );
-</script>
-
+    
+      {% else %} {# not a text or constant entry type #}
+    
+        <script type="text/javascript">
+        $( function () {
+          // set up jeditable element
+          var jeditable_params = Object();
+          jeditable_params.tooltop = "click to edit";
+          jeditable_params.cssclass = "ui-state-default";
+          jeditable_params.event = "click";
+          jeditable_params.onblur = "cancel";
+          jeditable_params.placeholder = "&nbsp;";
+          
+        {% if 'string' == entry.type %}
+          jeditable_params.type = "text";
+          $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
+            return process_jeditable( $(this), value, "{{ entry.type }}" );
+          }, jeditable_params );
+        
+        {% elseif 'boolean' == entry.type %}
+          jeditable_params.type = "select";
+          jeditable_params.data = '{ ' +
+                                  {% if not entry.required %}
+                                  '"NULL":"",' +
+                                  {% endif %}
+                                  '"1":"Yes", "0":"No", "selected":"Yes" }';
+          jeditable_params.submit = "ok";
+          $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
+            var index = process_jeditable( $(this), value, "{{ entry.type }}" );
+            var data = jQuery.parseJSON( jeditable_params.data );
+            return data[index];
+          }, jeditable_params );
+        
+        {% elseif 'enum' == entry.type %}
+          jeditable_params.type = "select";
+          jeditable_params.data = '{ ' +
+                                  {% if not entry.required %}
+                                  '"NULL":"",' +
+                                  {% endif %}
+                                  {% for id, value in entry.enum %}
+                                  '"{{ id }}":"{{ value }}",' +
+                                  {% endfor %}
+                                  '"selected":"{{ entry_value }}" }';
+          jeditable_params.submit = "ok";
+          $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
+            var index = process_jeditable( $(this), value, "{{ entry.type }}" );
+            var data = jQuery.parseJSON( jeditable_params.data );
+            return data[index];
+          }, jeditable_params );
+        
+        {% endif %}
+        
+        } );
+        </script>
+    
         <input id="old_{{ widget.full }}__{{ item_id }}"
                value="{{ entry_value }}"
                type="hidden" />
-        <div id="{{ widget.full }}__{{ item_id }}"
-             class="mutable padded jeditable_{{ item_id }}">{{ entry_value }}</div>
+        {% if 'boolean' == entry.type %}
+          {% if entry.value is defined %}
+            {% set entry_display_value = entry_value ? 'Yes' : 'No' %}
+          {% else %}
+            {% set entry_display_value = '' %}
+          {% endif %}
+        {% elseif 'enum' == entry.type %}
+          {% set entry_display_value = entry.enum[entry_value] %}
+        {% else %}
+          {% set entry_display_value = entry_value %}
         {% endif %}
-      {% else %}
-      <div id="{{ widget.full }}__{{ item_id }}" class="padded">{{ entry_value }}</div>
+        <div id="{{ widget.full }}__{{ item_id }}"
+             class="mutable padded jeditable_{{ item_id }}">{{ entry_display_value }}</div>
+    
       {% endif %}
-{% endblock %}
 
-    </td>
-  </tr>
-{% endfor %}
-</table>
-{% if removable %}
-<button class="{{ widget.full }}_remove" style="position: absolute; top: 0.2em; right: 0.1em;">remove</button>
-{% endif %}
-</div>
-{% if addable %}</form>{% endif %}
-
-{% if addable %}
-<div class="spacer"></div>
-{% include "confirm_buttons.twig" with { 'align': 'right', 'buttons': ['add'] } %}
-{% endif %}
-
-{% endblock record %}
-{% endblock widget %}
+        </td>
+      </tr>
+    {% endif %}
+  {% endfor %}
+  </table>
+  {% if removable %}
+    <button class="{{ widget.full }}_remove"
+            style="position: absolute; top: 0.2em; right: 0.1em;">remove</button>
+  {% endif %}
+{% endblock record_items %}

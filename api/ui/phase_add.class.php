@@ -1,6 +1,6 @@
 <?php
 /**
- * phase_view.class.php
+ * phase_add.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,11 +10,11 @@
 namespace sabretooth\ui;
 
 /**
- * widget phase view
+ * widget phase add
  * 
  * @package sabretooth\ui
  */
-class phase_view extends base_view
+class phase_add extends base_view
 {
   /**
    * Constructor
@@ -26,9 +26,10 @@ class phase_view extends base_view
    */
   public function __construct( $args )
   {
-    parent::__construct( 'phase', 'view', $args );
+    parent::__construct( 'phase', 'add', $args );
     
     // add items to the view
+    $this->add_item( 'qnaire_id', 'hidden' );
     $this->add_item( 'sid', 'enum', 'Survey' );
     $this->add_item( 'stage', 'enum', 'Stage' );
     $this->add_item( 'repeated', 'boolean', 'Repeated' );
@@ -43,20 +44,32 @@ class phase_view extends base_view
   public function finish()
   {
     parent::finish();
-
+    
+    // this widget must have a parent, and it must be a qnaire
+    if( is_null( $this->parent ) ||
+        'sabretooth\\ui\\qnaire_add_phase' != get_class( $this->parent ) )
+      throw new \sabretooth\exception\runtime(
+        'Phase list must have qnaire_view as a parent.', __METHOD );
+    
     // create enum arrays
     foreach( \sabretooth\database\limesurvey\surveys::select() as $db_survey )
       $surveys[$db_survey->sid] = $db_survey->get_title();
+    $num_phases = $this->parent->get_record()->get_phase_count();
     $stages = array();
-    for( $stage = 1; $stage <= $this->get_record()->get_qnaire()->get_phase_count(); $stage++ )
+    for( $stage = 1; $stage <= ( $num_phases + 1 ); $stage++ )
       array_push( $stages, $stage );
     $stages = array_combine( $stages, $stages );
+    $sites = array( 'NULL' => '' ); // add a blank entry
+    foreach( \sabretooth\database\site::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
+    end( $stages );
+    $last_stage_key = key( $stages );
+    reset( $stages );
 
     // set the view's items
-    // TODO: move qnaire_id here as a hidden variable
-    $this->set_item( 'sid', $this->get_record()->sid, $surveys, true );
-    $this->set_item( 'stage', $this->get_record()->stage, $stages, true );
-    $this->set_item( 'repeated', $this->get_record()->repeated, true );
+    $this->set_item( 'qnaire_id', $this->parent->get_record()->id );
+    $this->set_item( 'sid', key( $surveys ), $surveys, true );
+    $this->set_item( 'stage', $last_stage_key, $stages, true );
+    $this->set_item( 'repeated', 'No', true );
 
     $this->finish_setting_items();
   }

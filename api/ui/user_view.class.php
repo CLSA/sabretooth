@@ -29,26 +29,10 @@ class user_view extends base_view
     parent::__construct( 'user', 'view', $args );
 
     // create an associative array with everything we want to display about the user
-    $this->item['name'] =
-      array( 'heading' => 'Username',
-             'type' => 'string',
-             'value' => $this->get_record()->name );
-    $this->item['active'] =
-      array( 'heading' => 'Active',
-             'type' => 'boolean',
-             'value' => $this->get_record()->active ? 'Yes' : 'No' );
-    $this->item['limesurvey_user'] =
-      array( 'heading' => 'Limesurvey user',
-             'type' => 'constant',
-             'value' => $this->get_record()->lime_uid ? 'Yes' : 'No' );
-    
-    $db_activity = $this->get_record()->get_last_activity();
-    $last = \sabretooth\util::get_fuzzy_time_ago(
-              is_null( $db_activity ) ? null : $db_activity->date );
-    $this->item['last_activity'] =
-      array( 'heading' => 'Last activity',
-             'type' => 'constant',
-             'value' => $last );
+    $this->add_item( 'name', 'string', 'Username' );
+    $this->add_item( 'active', 'boolean', 'Active' );
+    $this->add_item( 'limesurvey_user', 'constant', 'Limesurvey user' );
+    $this->add_item( 'last_activity', 'constant', 'Last activity' );
 
     // create the access sub-list widget
     $this->access_list = new access_list( $args );
@@ -71,9 +55,21 @@ class user_view extends base_view
   {
     parent::finish();
 
+    // set the view's items
+    $this->set_item( 'name', $this->get_record()->name );
+    $this->set_item( 'active', $this->get_record()->active ? 'Yes' : 'No' );
+    $this->set_item( 'limesurvey_user', $this->get_record()->lime_uid ? 'Yes' : 'No' );
+    
+    $db_activity = $this->get_record()->get_last_activity();
+    $last = \sabretooth\util::get_fuzzy_time_ago(
+              is_null( $db_activity ) ? null : $db_activity->date );
+    $this->set_item( 'last_activity', $last );
+
+    $this->finish_setting_items();
+
+    // finish the child widgets
     $this->access_list->finish();
     $this->set_variable( 'access_list', $this->access_list->get_variables() );
-
     $this->activity_list->finish();
     $this->set_variable( 'activity_list', $this->activity_list->get_variables() );
   }

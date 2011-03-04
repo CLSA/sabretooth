@@ -327,7 +327,6 @@ abstract class base_list_widget extends widget
    */
   public function finish_setting_rows()
   {
-    // reset the array
     $this->set_variable( 'rows', $this->rows );
   }
 

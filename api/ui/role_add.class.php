@@ -29,10 +29,23 @@ class role_add extends base_view
     parent::__construct( 'role', 'add', $args );
 
     // define all columns defining this record
-    $this->item['name'] =
-      array( 'heading' => 'Name',
-             'type' => 'string',
-             'value' => '' );
+    $this->add_item( 'name', 'string', 'Name' );
+  }
+
+  /**
+   * Finish setting the variables in a widget.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function finish()
+  {
+    parent::finish();
+    
+    // set the view's items
+    $this->set_item( 'name', '' );
+
+    $this->finish_setting_items();
   }
 }
 ?>

@@ -29,14 +29,25 @@ class user_add extends base_view
     parent::__construct( 'user', 'add', $args );
     
     // define all columns defining this record
-    $this->item['name'] =
-      array( 'heading' => 'Username',
-             'type' => 'string',
-             'value' => '' );
-    $this->item['active'] =
-      array( 'heading' => 'Active',
-             'type' => 'boolean',
-             'value' => true );
+    $this->add_item( 'name', 'string', 'Username' );
+    $this->add_item( 'active', 'boolean', 'Active' );
+  }
+
+  /**
+   * Finish setting the variables in a widget.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function finish()
+  {
+    parent::finish();
+    
+    // set the view's items
+    $this->set_item( 'name', '' );
+    $this->set_item( 'active', true );
+
+    $this->finish_setting_items();
   }
 }
 ?>

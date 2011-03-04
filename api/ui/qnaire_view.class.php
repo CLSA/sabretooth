@@ -29,24 +29,10 @@ class qnaire_view extends base_view
     parent::__construct( 'qnaire', 'view', $args );
 
     // create an associative array with everything we want to display about the qnaire
-    $this->item['name'] =
-      array( 'heading' => 'Name',
-             'type' => 'string',
-             'value' => $this->get_record()->name );
-    $this->item['phases'] = 
-      array( 'heading' => 'Number of phases',
-             'type' => 'constant',
-             // add a space to get around a bug in twig
-             'value' => ' '.$this->get_record()->get_phase_count() );
-    $this->item['samples'] = 
-      array( 'heading' => 'Number of samples',
-             'type' => 'constant',
-             // add a space to get around a bug in twig
-             'value' => ' '.$this->get_record()->get_sample_count() );
-    $this->item['description'] =
-      array( 'heading' => 'Description',
-             'type' => 'text',
-             'value' => $this->get_record()->description );
+    $this->add_item( 'name', 'string', 'Name' );
+    $this->add_item( 'phases', 'constant', 'Number of phases' );
+    $this->add_item( 'samples', 'constant', 'Number of samples' );
+    $this->add_item( 'description', 'text', 'Description' );
 
     // create the phase sub-list widget
     $this->phase_list = new phase_list( $args );
@@ -69,6 +55,15 @@ class qnaire_view extends base_view
   {
     parent::finish();
 
+    // set the view's items
+    $this->set_item( 'name', $this->get_record()->name );
+    $this->set_item( 'phases', $this->get_record()->get_phase_count() );
+    $this->set_item( 'samples', $this->get_record()->get_sample_count() );
+    $this->set_item( 'description', $this->get_record()->description );
+
+    $this->finish_setting_items();
+    
+    // finish the child widgets
     $this->phase_list->finish();
     $this->set_variable( 'phase_list', $this->phase_list->get_variables() );
     $this->sample_list->finish();

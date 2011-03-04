@@ -69,9 +69,54 @@ abstract class base_view extends base_record_widget
     $this->set_variable( 'editable', $this->editable );
     $this->set_variable( 'removable', $this->removable );
     $this->set_variable( 'addable', $this->addable );
-    $this->set_variable( 'item', $this->item );
   }
   
+  /**
+   * Add an item to the view.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $item_id The item's id, can be one of the record's column names.
+   * @param string $heading The item's heading as it will appear in the view
+   * @param string $type The item's type, one of "boolean", "date", "string", "text",
+   *                     "enum" or "constant"
+   * @access public
+   */
+  public function add_item( $item_id, $type, $heading = NULL )
+  {
+    $this->items[$item_id] = array( 'type' => $type );
+    if( !is_null( $heading ) ) $this->items[$item_id]['heading'] = $heading;
+  }
+
+  /**
+   * Sets and item's value (and enum values for enum types).
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $item_id The item's id, can be one of the record's column names.
+   * @param mixed $value The item's value.
+   * @param array $enum For enum item types, all possible values.
+   * @access public
+   */
+  public function set_item( $item_id, $value, $enum = NULL, $required = false )
+  {
+    // make sure the item exists
+    if( !array_key_exists( $item_id, $this->items ) )
+      throw new \sabretooth\exception\argument( 'item_id', $item_id, __METHOD__ );
+    
+    // adding a space to get around a bug in twig
+    if( 'constant' == $this->items[$item_id]['type'] && 0 == $value ) $value = ' 0';
+    $this->items[$item_id]['value'] = $value;
+    if( !is_null( $enum ) ) $this->items[$item_id]['enum'] = $enum;
+    $this->items[$item_id]['required'] = $required;
+  }
+
+  /**
+   * Must be called after all items have been set.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function finish_setting_items()
+  {
+    $this->set_variable( 'item', $this->items );
+  }
+
   /**
    * Determines which mode the widget is in.
    * Must be one of 'view', 'edit' or 'add'.
@@ -105,13 +150,14 @@ abstract class base_view extends base_record_widget
    * An associative array where the key is a unique identifier (usually a column name) and the
    * value is an associative array which includes:
    * "heading" => the label to display
-   * "type" => the type of variable, should be one of "boolean", "date", "string", "text", "enum" or "constant"
+   * "type" => the type of variable, should be one of "boolean", "date", "string", "text",
+   *           "enum" or "constant"
    * "value" => the value of the column
    * "enum" => all possible values if the item type is "enum"
    * "required" => boolean describes whether the value can be left blank
    * @var array
-   * @access protected
+   * @access private
    */
-  protected $item = array();
+  private $items = array();
 }
 ?>

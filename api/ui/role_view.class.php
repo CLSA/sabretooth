@@ -30,15 +30,8 @@ class role_view extends base_view
     parent::__construct( 'role', 'view', $args );
 
     // create an associative array with everything we want to display about the role
-    $this->item['name'] =
-      array( 'heading' => 'Name',
-             'type' => 'string',
-             'value' => $this->get_record()->name );
-    $this->item['operation_count'] =
-      array( 'heading' => 'Operations',
-             'type' => 'constant',
-             // add a space to get around a bug in twig
-             'value' => ' '.$this->get_record()->get_operation_count() );
+    $this->add_item( 'name', 'string', 'Name' );
+    $this->add_item( 'operation_count', 'constant', 'Operations' );
 
     // create the operation sub-list widget
     $this->operation_list = new operation_list( $args );
@@ -57,6 +50,13 @@ class role_view extends base_view
   {
     parent::finish();
 
+    // set the view's items
+    $this->set_item( 'name', $this->get_record()->name );
+    $this->set_item( 'operation_count', $this->get_record()->get_operation_count() );
+
+    $this->finish_setting_items();
+
+    // finish the child widgets
     $this->operation_list->finish();
     $this->set_variable( 'operation_list', $this->operation_list->get_variables() );
   }

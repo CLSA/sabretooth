@@ -28,43 +28,13 @@ class participant_view extends base_view
   {
     parent::__construct( 'participant', 'view', $args );
     
-    // create enum arrays
-    $languages = \sabretooth\database\participant::get_enum_values( 'language' );
-    $languages = array_combine( $languages, $languages );
-    $status_values = \sabretooth\database\participant::get_enum_values( 'status' );
-    $statuses = array( 'NULL' => '' ); // add a blank entry
-    $statuses = array_merge( $statuses, array_combine( $status_values, $status_values ) );
-    $sites = array( 'NULL' => '' ); // add a blank entry
-    foreach( \sabretooth\database\site::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
-
     // create an associative array with everything we want to display about the participant
-    $this->item['first_name'] =
-      array( 'heading' => 'First Name',
-             'type' => 'string',
-             'value' => $this->get_record()->first_name );
-    $this->item['last_name'] =
-      array( 'heading' => 'Last Name',
-             'type' => 'string',
-             'value' => $this->get_record()->last_name );
-    $this->item['language'] =
-      array( 'heading' => 'Language',
-             'type' => 'enum',
-             'enum' => $languages,
-             'value' => $this->get_record()->language );
-    $this->item['hin'] =
-      array( 'heading' => 'Health Insurance Number',
-             'type' => 'string',
-             'value' => $this->get_record()->hin );
-    $this->item['status'] =
-      array( 'heading' => 'Condition',
-             'type' => 'enum',
-             'enum' => $statuses,
-             'value' => $this->get_record()->status );
-    $this->item['site_id'] =
-      array( 'heading' => 'Site',
-             'type' => 'enum',
-             'enum' => $sites,
-             'value' => $this->get_record()->get_site()->name );
+    $this->add_item( 'first_name', 'string', 'First Name' );
+    $this->add_item( 'last_name', 'string', 'Last Name' );
+    $this->add_item( 'language', 'enum', 'Language' );
+    $this->add_item( 'hin', 'string', 'Health Insurance Number' );
+    $this->add_item( 'status', 'enum', 'Condition' );
+    $this->add_item( 'site_id', 'enum', 'Site' );
 
     // create the sample sub-list widget
     $this->sample_list = new sample_list( $args );
@@ -84,6 +54,25 @@ class participant_view extends base_view
 
     $this->sample_list->finish();
     $this->set_variable( 'sample_list', $this->sample_list->get_variables() );
+
+    // create enum arrays
+    $languages = \sabretooth\database\participant::get_enum_values( 'language' );
+    $languages = array_combine( $languages, $languages );
+    $status_values = \sabretooth\database\participant::get_enum_values( 'status' );
+    $statuses = array( 'NULL' => '' ); // add a blank entry
+    $statuses = array_merge( $statuses, array_combine( $status_values, $status_values ) );
+    $sites = array( 'NULL' => '' ); // add a blank entry
+    foreach( \sabretooth\database\site::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
+    
+    // set the view's items
+    $this->set_item( 'first_name', $this->get_record()->first_name );
+    $this->set_item( 'last_name', $this->get_record()->last_name );
+    $this->set_item( 'language', $this->get_record()->language, $languages, true );
+    $this->set_item( 'hin', $this->get_record()->hin );
+    $this->set_item( 'status', $this->get_record()->status, $statuses );
+    $this->set_item( 'site_id', $this->get_record()->get_site()->name, $sites );
+
+    $this->finish_setting_items();
   }
   
   /**

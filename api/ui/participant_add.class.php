@@ -28,6 +28,25 @@ class participant_add extends base_view
   {
     parent::__construct( 'participant', 'add', $args );
     
+    // define all columns defining this record
+    $this->add_item( 'first_name', 'string', 'First Name' );
+    $this->add_item( 'last_name', 'string', 'Last Name' );
+    $this->add_item( 'language', 'enum', 'Language' );
+    $this->add_item( 'hin', 'string', 'Health Insurance Number' );
+    $this->add_item( 'status', 'enum', 'Condition' );
+    $this->add_item( 'site_id', 'enum', 'Prefered Site' );
+  }
+
+  /**
+   * Finish setting the variables in a widget.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function finish()
+  {
+    parent::finish();
+    
     // create enum arrays
     $languages = \sabretooth\database\participant::get_enum_values( 'language' );
     $languages = array_combine( $languages, $languages );
@@ -36,37 +55,15 @@ class participant_add extends base_view
     $sites = array();
     foreach( \sabretooth\database\site::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
 
-    // define all columns defining this record
-    $this->item['first_name'] =
-      array( 'heading' => 'First Name',
-             'type' => 'string',
-             'required' => true,
-             'value' => '' );
-    $this->item['last_name'] =
-      array( 'heading' => 'Last Name',
-             'type' => 'string',
-             'required' => true,
-             'value' => '' );
-    $this->item['language'] =
-      array( 'heading' => 'Language',
-             'type' => 'enum',
-             'required' => true,
-             'enum' => $languages,
-             'value' => current( $languages ) );
-    $this->item['hin'] =
-      array( 'heading' => 'Health Insurance Number',
-             'type' => 'string',
-             'value' => '' );
-    $this->item['status'] =
-      array( 'heading' => 'Condition',
-             'type' => 'enum',
-             'enum' => $statuses,
-             'value' => '' );
-    $this->item['site_id'] =
-      array( 'heading' => 'Prefered Site',
-             'type' => 'enum',
-             'enum' => $sites,
-             'value' => '' );
+    // set the view's items
+    $this->set_item( 'first_name', '', true );
+    $this->set_item( 'last_name', '', true );
+    $this->set_item( 'language', current( $languages ), $languages, true );
+    $this->set_item( 'hin', '' );
+    $this->set_item( 'status', '', $statuses );
+    $this->set_item( 'site_id', '', $sites );
+
+    $this->finish_setting_items();
   }
 }
 ?>

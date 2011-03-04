@@ -1,0 +1,28 @@
+{##
+ # base_record.twig
+ # 
+ # Base template for viewing, editing and adding records.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ #}
+{% extends "widget.twig" %}
+{% block widget %}
+
+  {% block record_javascript %}{% endblock %}
+  
+  {% block record %}
+    <div class="ui-widget ui-widget-content" style="padding: 4px; position: relative;">
+    
+    {# put in all hidden variables #}
+    {% for item_id, entry in item %}
+      {% if 'hidden' == entry.type %}
+      {% set entry_value = entry.value is defined ? entry.value : "" %}
+      <input id="{{ widget.full }}__{{ item_id }}" type="hidden" value="{{ entry_value }}"/>
+      {% endif %}
+    {% endfor %}
+    
+    {% block record_items %}{% endblock %}
+
+    </div>
+  {% endblock record %}
+
+{% endblock widget %}

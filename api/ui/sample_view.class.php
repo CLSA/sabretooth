@@ -29,24 +29,10 @@ class sample_view extends base_view
     parent::__construct( 'sample', 'view', $args );
 
     // create an associative array with everything we want to display about the sample
-    $this->item['name'] =
-      array( 'heading' => 'Name',
-             'type' => 'string',
-             'value' => $this->get_record()->name );
-    $this->item['participants'] = 
-      array( 'heading' => 'Number of participants',
-             'type' => 'constant',
-             // add a space to get around a bug in twig
-             'value' => ' '.$this->get_record()->get_participant_count() );
-    $this->item['qnaires'] = 
-      array( 'heading' => 'Number of questionnaires',
-             'type' => 'constant',
-             // add a space to get around a bug in twig
-             'value' => ' '.$this->get_record()->get_qnaire_count() );
-    $this->item['description'] =
-      array( 'heading' => 'Description',
-             'type' => 'text',
-             'value' => $this->get_record()->description );
+    $this->add_item( 'name', 'string', 'Name' );
+    $this->add_item( 'participants', 'constant', 'Number of participants' );
+    $this->add_item( 'qnaires', 'constant', 'Number of questionnaires' );
+    $this->add_item( 'description', 'text', 'Description' );
 
     // create the participant sub-list widget
     $this->participant_list = new participant_list( $args );
@@ -69,6 +55,15 @@ class sample_view extends base_view
   {
     parent::finish();
 
+    // set the view's items
+    $this->set_item( 'name', $this->get_record()->name );
+    $this->set_item( 'participants', $this->get_record()->get_participant_count() );
+    $this->set_item( 'qnaires', $this->get_record()->get_qnaire_count() );
+    $this->set_item( 'description', $this->get_record()->description );
+
+    $this->finish_setting_items();
+
+    // finish the child widgets
     $this->participant_list->finish();
     $this->set_variable( 'participant_list', $this->participant_list->get_variables() );
     $this->qnaire_list->finish();
