@@ -51,7 +51,10 @@ class phase extends active_record
                  $this->id ) );
 
       $record = new static( $duplicate_id );
-      if( $current_stage )
+      if( $current_stage == $this->stage )
+      { // the stage isn't changing, do nothing
+      }
+      else if( $current_stage )
       { // exchange the stage
         $record->stage = 0; // temporary value
         $record->save();
