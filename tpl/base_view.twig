@@ -215,7 +215,7 @@
             {% set entry_display_value = '' %}
           {% endif %}
         {% elseif 'enum' == entry.type %}
-          {% set entry_display_value = entry.enum[entry_value] %}
+          {% set entry_display_value = '' == entry_value ? entry.enum['NULL'] : entry.enum[entry_value] %}
         {% else %}
           {% set entry_display_value = entry_value %}
         {% endif %}
