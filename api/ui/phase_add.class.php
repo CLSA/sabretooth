@@ -59,8 +59,6 @@ class phase_add extends base_view
     for( $stage = 1; $stage <= ( $num_phases + 1 ); $stage++ )
       array_push( $stages, $stage );
     $stages = array_combine( $stages, $stages );
-    $sites = array( 'NULL' => '' ); // add a blank entry
-    foreach( \sabretooth\database\site::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
     end( $stages );
     $last_stage_key = key( $stages );
     reset( $stages );
