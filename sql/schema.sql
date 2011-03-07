@@ -116,8 +116,8 @@ CREATE  TABLE IF NOT EXISTS `contact` (
   `participant_id` INT UNSIGNED NOT NULL ,
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
   `rank` INT NOT NULL ,
-  `phone` VARCHAR(20) NULL DEFAULT NULL ,
   `type` ENUM('home','home2','work','work2','cell','cell2','other') NULL DEFAULT NULL ,
+  `phone` VARCHAR(20) NULL DEFAULT NULL ,
   `address1` VARCHAR(512) NULL DEFAULT NULL ,
   `address2` VARCHAR(512) NULL DEFAULT NULL ,
   `city` VARCHAR(45) NULL DEFAULT NULL COMMENT 'If outside Canada, this should contain state and/or region as well.' ,
@@ -127,7 +127,7 @@ CREATE  TABLE IF NOT EXISTS `contact` (
   `note` TEXT NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
-  UNIQUE INDEX `uq_participant_id_active_rank` (`participant_id` ASC, `active` ASC, `rank` ASC) ,
+  UNIQUE INDEX `uq_participant_id_active_rank` (`participant_id` ASC, `rank` ASC) ,
   CONSTRAINT `fk_contact_participant`
     FOREIGN KEY (`participant_id` )
     REFERENCES `participant` (`id` )

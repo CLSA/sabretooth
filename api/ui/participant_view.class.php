@@ -35,11 +35,24 @@ class participant_view extends base_view
     $this->add_item( 'hin', 'string', 'Health Insurance Number' );
     $this->add_item( 'status', 'enum', 'Condition' );
     $this->add_item( 'site_id', 'enum', 'Site' );
+    $this->add_item( 'groups', 'constant', 'Number of groups' );
+    $this->add_item( 'contacts', 'constant', 'Number of contact entries' );
+    $this->add_item( 'consents', 'constant', 'Number of consent entries' );
 
     // create the sample sub-list widget
     $this->sample_list = new sample_list( $args );
     $this->sample_list->set_parent( $this );
     $this->sample_list->set_heading( 'Samples the participant belongs to' );
+
+    // create the contact sub-list widget
+    $this->contact_list = new contact_list( $args );
+    $this->contact_list->set_parent( $this );
+    $this->contact_list->set_heading( 'Participant\'s contact information' );
+
+    // create the consent sub-list widget
+    $this->consent_list = new consent_list( $args );
+    $this->consent_list->set_parent( $this );
+    $this->consent_list->set_heading( 'Participant\'s consent information' );
   }
 
   /**
@@ -51,9 +64,6 @@ class participant_view extends base_view
   public function finish()
   {
     parent::finish();
-
-    $this->sample_list->finish();
-    $this->set_variable( 'sample_list', $this->sample_list->get_variables() );
 
     // create enum arrays
     $languages = \sabretooth\database\participant::get_enum_values( 'language' );
@@ -73,6 +83,13 @@ class participant_view extends base_view
     $this->set_item( 'site_id', $this->get_record()->get_site()->name, $sites );
 
     $this->finish_setting_items();
+
+    $this->sample_list->finish();
+    $this->set_variable( 'sample_list', $this->sample_list->get_variables() );
+    $this->contact_list->finish();
+    $this->set_variable( 'contact_list', $this->contact_list->get_variables() );
+    $this->consent_list->finish();
+    $this->set_variable( 'consent_list', $this->consent_list->get_variables() );
   }
   
   /**
@@ -81,5 +98,19 @@ class participant_view extends base_view
    * @access protected
    */
   protected $sample_list = NULL;
+  
+  /**
+   * The participant list widget.
+   * @var contact_list
+   * @access protected
+   */
+  protected $contact_list = NULL;
+  
+  /**
+   * The participant list widget.
+   * @var consent_list
+   * @access protected
+   */
+  protected $consent_list = NULL;
 }
 ?>

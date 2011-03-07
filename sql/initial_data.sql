@@ -25,22 +25,46 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "activity", "list", true, "List system activity." );
 
 -- availability
--- INSERT INTO operation( type, subject, name, restricted, description )
--- VALUES( "widget", "availability", "view", true, "View the details of an availability." );
--- INSERT INTO operation( type, subject, name, restricted, description )
--- VALUES( "widget", "availability", "list", true, "List availabilities in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "availability", "delete", true, "Removes a participant's availability entry from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "availability", "edit", true, "Edits the details of a participant's availability entry." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "availability", "new", true, "Creates new availability entry for a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "availability", "add", true, "View a form for creating new availability entry for a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "availability", "view", true, "View the details of a participant's particular availability entry." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "availability", "list", true, "Lists a participant's availability entries." );
 
 -- consent
--- INSERT INTO operation( type, subject, name, restricted, description )
--- VALUES( "widget", "consent", "view", true, "View the details of consent activity." );
--- INSERT INTO operation( type, subject, name, restricted, description )
--- VALUES( "widget", "consent", "list", true, "List consent activity in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "consent", "delete", true, "Removes a participant's consent entry from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "consent", "edit", true, "Edits the details of a participant's consent entry." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "consent", "new", true, "Creates new consent enry for a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "consent", "add", true, "View a form for creating new consent entry for a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "consent", "view", true, "View the details of a participant's particular consent entry." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "consent", "list", true, "Lists a participant's consent entries." );
 
 -- contact
--- INSERT INTO operation( type, subject, name, restricted, description )
--- VALUES( "widget", "contact", "view", true, "View the details of a contact." );
--- INSERT INTO operation( type, subject, name, restricted, description )
--- VALUES( "widget", "contact", "list", true, "List contacts in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "contact", "delete", true, "Removes a participant's contact entry from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "contact", "edit", true, "Edits the details of a participant's contact entry." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "contact", "new", true, "Creates new contact enry for a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "contact", "add", true, "View a form for creating new contact entry for a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "contact", "view", true, "View the details of a participant's particular contact entry." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "contact", "list", true, "Lists a participant's contact entries." );
 
 -- interview
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -71,6 +95,18 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "participant", "new_sample", true, "Adds new samples to a participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "participant", "delete_sample", true, "Remove samples from a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "add_availability", true, "A form to create a new availability entry to add to a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "participant", "delete_availability", true, "Remove a participant's availability entry." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "add_consent", true, "A form to create a new consent entry to add to a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "participant", "delete_consent", true, "Remove a participant's consent entry." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "add_contact", true, "A form to create a new contact entry to add to a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "participant", "delete_contact", true, "Remove a participant's contact entry." );
 
 -- phase
 INSERT INTO operation( type, subject, name, restricted, description )
