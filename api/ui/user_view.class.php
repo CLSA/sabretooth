@@ -57,7 +57,7 @@ class user_view extends base_view
 
     // set the view's items
     $this->set_item( 'name', $this->get_record()->name );
-    $this->set_item( 'active', $this->get_record()->active ? 'Yes' : 'No' );
+    $this->set_item( 'active', $this->get_record()->active );
     $this->set_item( 'limesurvey_user', $this->get_record()->lime_uid ? 'Yes' : 'No' );
     
     $db_activity = $this->get_record()->get_last_activity();
