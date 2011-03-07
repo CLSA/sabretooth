@@ -53,7 +53,6 @@ class phase_view extends base_view
     $stages = array_combine( $stages, $stages );
 
     // set the view's items
-    // TODO: move qnaire_id here as a hidden variable
     $this->set_item( 'sid', $this->get_record()->sid, $surveys, true );
     $this->set_item( 'stage', $this->get_record()->stage, $stages, true );
     $this->set_item( 'repeated', $this->get_record()->repeated, true );
