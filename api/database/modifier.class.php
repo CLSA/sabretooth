@@ -22,149 +22,52 @@ class modifier extends \sabretooth\base_object
    * Add a where statement to the modifier.
    * 
    * This method appends where clauses onto the end of already existing where clauses.
-   * TODO: add in <, <=, >= and > comparisons
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to restrict.
+   * @param string $operator Specify which comparison operator to use.  Examples include 'in',
+   *                         for the SQL IN() function, 'like' for the SQL LIKE() function, '=',
+   *                         '>', '>=', '<=', '<', etc.
+   *                         When this is set to 'in' $value may be an array of values.
    * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).
    * @param boolean $format Set whether to format the $value argument.
-   *                         This should only be set to false when $value is the name of a column
-   *                         or a pre-formatted function, etc.
-   * @param boolean $in Whether to use the SQL IN() function instead of an equation.
-                        When this is set to true $value may be an array of values.
-   * @param boolean $not Whether to logically "not" the clause (default is false)
+   *                        This should only be set to false when $value is the name of a column
+   *                        or a pre-formatted function, etc.
    * @param boolean $or Whether to logically "or" the clause (default is false, which means "and")
    * @throws exception\argument
    * @access public
    */
-  public function where( $column, $value, $format = true, $in = false, $not = false, $or = false )
+  public function where(
+    $column, $operator, $value, $format = true, $or = false )
   {
     if( !is_string( $column ) || 0 == strlen( $column ) )
       throw new \sabretooth\exception\argument( 'column', $column, __METHOD__ );
 
-    $this->where_list[$column] = array( 'value' => $value,
-                                        'format' => $format,
-                                        'in' => $in,
-                                        'not' => $not,
-                                        'or' => $or );
+    array_push( $this->where_list, array( 'column' => $column,
+                                          'operator' => strtoupper( $operator ),
+                                          'value' => $value,
+                                          'format' => $format,
+                                          'or' => $or ) );
   }
   
-  /**
-   * Add a where-in statement to the modifier.
-   * 
-   * This is a convenience method which makes where() calls more readable.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $column The column to restrict.
-   * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).
-   * @param boolean $format Set whether to format the $value argument.
-   *                         This should only be set to false when $value is the name of a column
-   *                         or a pre-formatted function, etc.
-   * @access public
-   */
-  public function where_in( $column, $value, $format = true )
-  {
-    $this->where( $column, $value, $format, true );
-  }
-
-  /**
-   * Add a logical "not" where statement to the modifier.
-   * 
-   * This is a convenience method which makes where() calls more readable.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $column The column to restrict.
-   * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).
-   * @param boolean $format Set whether to format the $value argument.
-   *                         This should only be set to false when $value is the name of a column
-   *                         or a pre-formatted function, etc.
-   * @access public
-   */
-  public function where_not( $column, $value, $format = true )
-  {
-    $this->where( $column, $value, $format, false, true );
-  }
-
-  /**
-   * Add a logical "not" where-in statement to the modifier.
-   * 
-   * This is a convenience method which makes where() calls more readable.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $column The column to restrict.
-   * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).
-   * @param boolean $format Set whether to format the $value argument.
-   *                         This should only be set to false when $value is the name of a column
-   *                         or a pre-formatted function, etc.
-   * @access public
-   */
-  public function where_not_in( $column, $value, $format = true )
-  {
-    $this->where( $column, $value, $format, true, true );
-  }
-
   /**
    * Add where statement which will be "or" combined to the modifier.
    * 
    * This is a convenience method which makes where() calls more readable.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to restrict.
+   * @param string $operator Specify which comparison operator to use.  Examples include 'in',
+   *                         for the SQL IN() function, 'like' for the SQL LIKE() function, '=',
+   *                         '>', '>=', '<=', '<', etc.
+   *                         When this is set to 'in' $value may be an array of values.
    * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).
    * @param boolean $format Set whether to format the $value argument.
    *                         This should only be set to false when $value is the name of a column
    *                         or a pre-formatted function, etc.
    * @access public
    */
-  public function or_where( $column, $value, $format = true )
+  public function or_where( $column, $operator, $value, $format = true )
   {
-    $this->where( $column, $value, $format, false, false, true );
-  }
-
-  /**
-   * Add where-in statement which will be "or" combined to the modifier.
-   * 
-   * This is a convenience method which makes where() calls more readable.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $column The column to restrict.
-   * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).
-   * @param boolean $format Set whether to format the $value argument.
-   *                         This should only be set to false when $value is the name of a column
-   *                         or a pre-formatted function, etc.
-   * @access public
-   */
-  public function or_where_in( $column, $value, $format = true )
-  {
-    $this->where( $column, $value, $format, true, false, true );
-  }
-
-  /**
-   * Add a logical "not" where statement which will be "or" combined to the modifier.
-   * 
-   * This is a convenience method which makes where() calls more readable.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $column The column to restrict.
-   * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).
-   * @param boolean $format Set whether to format the $value argument.
-   *                         This should only be set to false when $value is the name of a column
-   *                         or a pre-formatted function, etc.
-   * @access public
-   */
-  public function or_where_not( $column, $value, $format = true )
-  {
-    $this->where( $column, $value, $format, false, true, true );
-  }
-
-  /**
-   * Add a logical "not" where-in statement which will be "or" combined to the modifier.
-   * 
-   * This is a convenience method which makes where() calls more readable.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $column The column to restrict.
-   * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).
-   * @param boolean $format Set whether to format the $value argument.
-   *                         This should only be set to false when $value is the name of a column
-   *                         or a pre-formatted function, etc.
-   * @access public
-   */
-  public function or_where_not_in( $column, $value, $format = true )
-  {
-    $this->where( $column, $value, $format, true, true, true );
+    $this->where( $column, $operator, $value, $format, true );
   }
 
   /**
@@ -203,6 +106,20 @@ class modifier extends \sabretooth\base_object
   }
 
   /**
+   * Add order descending statement to the modifier.
+   * 
+   * This is a convenience method which makes order() calls more readable.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column The column to order descending by.
+   * @throws exception\argument
+   * @access public
+   */
+  public function order_desc( $column )
+  {
+    $this->order_desc( $column, true );
+  }
+
+  /**
    * Sets a limit to how many rows are returned.
    * 
    * This method sets the total number of rows and offset to begin selecting by.
@@ -233,7 +150,8 @@ class modifier extends \sabretooth\base_object
    */
   public function has_where( $column )
   {
-    return array_key_exists( $column, $this->where_list );
+    foreach( $this->where_list as $where ) if( $column == $where['column'] ) return true;
+    return false;
   }
 
   /**
@@ -271,7 +189,9 @@ class modifier extends \sabretooth\base_object
    */
   public function get_where_columns()
   {
-    return array_keys( $this->where_list );
+    $columns = array();
+    foreach( $this->where_list as $where ) array_push( $columns, $where['column'] );
+    return $columns;
   }
 
   /**
@@ -327,51 +247,51 @@ class modifier extends \sabretooth\base_object
    */
   public function get_where()
   {
-    $where = '';
+    $sql = '';
     $first_item = true;
-    foreach( $this->where_list as $column => $item )
+    foreach( $this->where_list as $where )
     {
-      if( $item['in'] )
+      if( 'IN' == $where['operator'] || 'NOT IN' == $where['operator'] )
       {
-        if( is_array( $item['value'] ) )
+        if( is_array( $where['value'] ) )
         {
           $first_value = true;
-          foreach( $item['value'] as $value )
+          foreach( $where['value'] as $value )
           {
             $compare .= $first_value
-                      ? sprintf( '%s%s IN( ', $column, $item['not'] ? ' NOT' : '' )
+                      ? sprintf( '%s %s( ', $where['column'], $where['operator'] )
                       : ', ';
-            $compare .= $item['format']
-                      ? active_record::format_string( $item['value'] )
-                      : $item['value'];
+            $compare .= $where['format']
+                      ? active_record::format_string( $where['value'] )
+                      : $where['value'];
             $first_value = false;
           }
           $compare .= ' )';
         }
         else
         {
-          $compare = sprintf( '%s%s IN( %s )',
-                              $column,
-                              $item['not'] ? ' NOT' : '',
-                              $item['format'] ?
-                                active_record::format_string( $item['value'] ) : $item['value'] );
+          $compare = sprintf( '%s %s( %s )',
+                              $where['column'],
+                              $where['operator'],
+                              $where['format'] ?
+                                active_record::format_string( $where['value'] ) : $where['value'] );
         }
       }
       else
       {
-        $compare = sprintf( '%s %s= %s',
-                            $column,
-                            $item['not'] ? '!' : '',
-                            $item['format'] ?
-                              active_record::format_string( $item['value'] ) : $item['value'] );
+        $compare = sprintf( '%s %s %s',
+                            $where['column'],
+                            $where['operator'],
+                            $where['format'] ?
+                              active_record::format_string( $where['value'] ) : $where['value'] );
       }
       
-      $logic_type = $item['or'] ? ' OR' : ' AND';
-      $where .= ( $first_item ? 'WHERE' : $logic_type ).' '.$compare;
+      $logic_type = $where['or'] ? ' OR' : ' AND';
+      $sql .= ( $first_item ? 'WHERE' : $logic_type ).' '.$compare;
       $first_item = false;
     }
 
-    return $where;
+    return $sql;
   }
   
   /**
@@ -385,17 +305,17 @@ class modifier extends \sabretooth\base_object
    */
   public function get_group()
   {
-    $group = '';
+    $sql = '';
     $first = true;
     foreach( $this->group_list as $column )
     {
-      $group .= sprintf( '%s %s',
-                         $first ? 'GROUP BY' : ',',
-                         $column );
+      $sql .= sprintf( '%s %s',
+                       $first ? 'GROUP BY' : ',',
+                       $column );
       $first = false;
     }
 
-    return $group;
+    return $sql;
   }
   
   /**
@@ -409,18 +329,18 @@ class modifier extends \sabretooth\base_object
    */
   public function get_order()
   {
-    $order = '';
+    $sql = '';
     $first = true;
     foreach( $this->order_list as $column => $value )
     {
-      $order .= sprintf( '%s %s %s',
-                         $first ? 'ORDER BY' : ',',
-                         $column,
-                         $value ? 'DESC' : '' );
+      $sql .= sprintf( '%s %s %s',
+                       $first ? 'ORDER BY' : ',',
+                       $column,
+                       $value ? 'DESC' : '' );
       $first = false;
     }
 
-    return $order;
+    return $sql;
   }
   
   /**
@@ -434,19 +354,19 @@ class modifier extends \sabretooth\base_object
    */
   public function get_limit()
   {
-    $limit = '';
+    $sql = '';
     if( 0 < $this->limit_count )
     {
-      $limit .= sprintf( 'LIMIT %d OFFSET %d',
-                         $this->limit_count,
-                         $this->limit_offset );
+      $sql .= sprintf( 'LIMIT %d OFFSET %d',
+                       $this->limit_count,
+                       $this->limit_offset );
     }
 
-    return $limit;
+    return $sql;
   }
 
   /**
-   * Holds all where clauses in an associative array named after the column.
+   * Holds all where clauses in an array of associative arrays
    * @var array
    * @access private
    */

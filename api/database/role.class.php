@@ -32,7 +32,7 @@ class role extends base_access
     }
 
     $modifier = new modifier();
-    $modifier->where( 'operation_id', $db_operation->id );
+    $modifier->where( 'operation_id', '=', $db_operation->id );
     return 0 < $this->get_operation_count( $modifier );
   }
 }

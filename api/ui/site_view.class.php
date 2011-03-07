@@ -83,7 +83,7 @@ class site_view extends base_view
   public function determine_access_count( $modifier = NULL )
   {
     if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
-    $modifier->where( 'site_id', $this->get_record()->id );
+    $modifier->where( 'site_id', '=', $this->get_record()->id );
     return \sabretooth\database\access::count( $modifier );
   }
 
@@ -98,7 +98,7 @@ class site_view extends base_view
   public function determine_access_list( $modifier = NULL )
   {
     if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
-    $modifier->where( 'site_id', $this->get_record()->id );
+    $modifier->where( 'site_id', '=', $this->get_record()->id );
     return \sabretooth\database\access::select( $modifier );
   }
 

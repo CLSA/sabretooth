@@ -41,8 +41,8 @@ class self_menu extends widget
     
     // get all 'list' widgets that the user has access to
     $modifier = new \sabretooth\database\modifier();
-    $modifier->where( 'operation.type', 'widget' );
-    $modifier->where( 'operation.name', 'list' );
+    $modifier->where( 'operation.type', '=', 'widget' );
+    $modifier->where( 'operation.name', '=', 'list' );
     $widgets = \sabretooth\session::self()->get_role()->get_operation_list( $modifier );
     
     $items = array();

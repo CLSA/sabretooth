@@ -27,9 +27,9 @@ class access extends active_record
   public static function exists( $user, $role, $site )
   {
     $modifier = new modifier();
-    $modifier->where( 'user_id', $user->id );
-    $modifier->where( 'role_id', $role->id );
-    $modifier->where( 'site_id', $site->id );
+    $modifier->where( 'user_id', '=', $user->id );
+    $modifier->where( 'role_id', '=', $role->id );
+    $modifier->where( 'site_id', '=', $site->id );
 
     $id = self::get_one(
       sprintf( 'SELECT id FROM access %s',

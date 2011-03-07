@@ -74,9 +74,9 @@ class site extends base_access
     }
 
     $modifier = new modifier();
-    $modifier->where( 'id', $access_id );
+    $modifier->where( 'id', '=', $access_id );
     // this just to make sure the access belongs to this site
-    $modifier->where( 'site_id', $this->id );
+    $modifier->where( 'site_id', '=', $this->id );
 
     self::execute(
       sprintf( 'DELETE FROM access %s',

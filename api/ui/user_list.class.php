@@ -56,7 +56,7 @@ class user_list extends base_list_widget
     if( 'administrator' != $session->get_role()->name )
     {
       if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
-      $modifier->where( 'site_id', $session->get_site()->id );
+      $modifier->where( 'site_id', '=', $session->get_site()->id );
     }
 
     return \sabretooth\database\user::count( $modifier );
@@ -77,7 +77,7 @@ class user_list extends base_list_widget
     if( 'administrator' != $session->get_role()->name )
     {
       if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
-      $modifier->where( 'site_id', $session->get_site()->id );
+      $modifier->where( 'site_id', '=', $session->get_site()->id );
     }
 
     return \sabretooth\database\user::select( $modifier );

@@ -52,7 +52,7 @@ class self_settings extends widget
 
     $role_names = array();
     $modifier = new \sabretooth\database\modifier();
-    $modifier->where( 'site_id', $db_site->id );
+    $modifier->where( 'site_id', '=', $db_site->id );
     $roles = $db_user->get_role_list( $modifier );
     foreach( $roles as $role )
     {

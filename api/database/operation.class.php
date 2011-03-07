@@ -26,9 +26,9 @@ class operation extends active_record
   public static function get_operation( $type, $subject, $name )
   {
     $modifier = new modifier();
-    $modifier->where( 'type', $type );
-    $modifier->where( 'subject', $subject );
-    $modifier->where( 'name', $name );
+    $modifier->where( 'type', '=', $type );
+    $modifier->where( 'subject', '=', $subject );
+    $modifier->where( 'name', '=', $name );
 
     $id = self::get_one(
       sprintf( 'SELECT id FROM %s %s',

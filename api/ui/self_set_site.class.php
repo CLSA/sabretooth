@@ -45,7 +45,7 @@ class self_set_site extends action
 
     // get the first role associated with the site
     $modifier = new \sabretooth\database\modifier();
-    $modifier->where( 'site_id', $db_site->id );
+    $modifier->where( 'site_id', '=', $db_site->id );
     $session = \sabretooth\session::self();
     $db_role_list = $session->get_user()->get_role_list( $modifier );
     if( 0 == count( $db_role_list ) )

@@ -34,22 +34,23 @@ class phase extends active_record
     }
     
     // see if there is already another phase at the new stage
-    $duplicate_id = static::get_one(
-      sprintf( 'SELECT id FROM %s WHERE id != %d AND qnaire_id = %d AND stage = %d',
-               static::get_table_name(),
-               $this->id,
-               $this->qnaire_id,
-               $this->stage ) );
+    $modifier = new modifier();
+    $modifier->where( 'id', '!=', $this->id );
+    $modifier->where( 'qnaire_id', '=', $this->qnaire_id );
+    $modifier->where( 'stage', '=', $this->stage );
 
-    // if duplicate_id is not null then there is already a phase in this slot
-    if( !is_null( $duplicate_id ) )
+    $result = static::select( $modifier );
+
+    // if a record is found then there is already a phase in this slot
+    if( 0 < count( $result ) )
     {
       // check to see if this phase is being moved or added to the list
+      $modifier = new modifier();
+      $modifier->where( 'id', '=', $this->id );
       $current_stage = static::get_one(
-        sprintf( 'SELECT stage FROM %s WHERE %s = %d',
+        sprintf( 'SELECT stage FROM %s %s',
                  static::get_table_name(),
-                 static::get_primary_key_name(),
-                 $this->id ) );
+                 $modifier->get_sql() ) );
       
       if( !is_null( $current_stage ) )
       { // moving the phase, make room
@@ -57,16 +58,12 @@ class phase extends active_record
         $forward = $current_stage < $this->stage;
 
         // get all phases which are between the phase's current and new stage
-        $id_list = static::get_col(
-          sprintf( 'SELECT id FROM %s '.
-                   'WHERE qnaire_id = %d AND stage %s %d AND stage %s %d ORDER BY stage %s',
-                   static::get_table_name(),
-                   $this->qnaire_id,
-                   $forward ? '>' : '<',
-                   $current_stage,
-                   $forward ? '<=' : '>=',
-                   $this->stage,
-                   $forward ? '' : 'DESC' ) );
+        $modifier = new modifier();
+        $modifier->where( 'qnaire_id', '=', $this->qnaire_id );
+        $modifier->where( 'stage', $forward ? '>'  : '<' , $current_stage );
+        $modifier->where( 'stage', $forward ? '<=' : '>=', $this->stage );
+        $modifier->order( 'stage', !$forward );
+        $records = static::select( $modifier );
         
         // temporarily set this record's stage to 0, preserving the new phase
         $new_stage = $this->stage;
@@ -75,9 +72,8 @@ class phase extends active_record
         $this->stage = $new_stage;
 
         // and move each of the middle phase's stage backward by one
-        foreach( $id_list as $id )
+        foreach( $records as $record )
         {
-          $record = new static( $id );
           $record->stage = $record->stage + ( $forward ? -1 : 1 );
           $record->save();
         }
@@ -85,17 +81,15 @@ class phase extends active_record
       else
       { // adding the phase, make room
         // get all phases at this stage and afterwards
-        $id_list = static::get_col(
-          sprintf( 'SELECT id FROM %s '.
-                   'WHERE qnaire_id = %d AND stage >= %d ORDER BY stage DESC',
-                   static::get_table_name(),
-                   $this->qnaire_id,
-                   $this->stage ) );
+        $modifier = new modifier();
+        $modifier->where( 'qnaire_id', '=', $this->qnaire_id );
+        $modifier->where( 'stage', '>=', $this->stage );
+        $modifier->order_desc( 'stage' );
+        $records = static::select( $modifier );
         
         // and move their stage forward by one to make room for the new phase
-        foreach( $id_list as $id )
+        foreach( $records as $record )
         {
-          $record = new static( $id );
           $record->stage++;
           $record->save();
         }
@@ -127,16 +121,15 @@ class phase extends active_record
     parent::delete();
 
     // now get a list of all phases that come after this one
-    $id_list = static::get_col(
-      sprintf( 'SELECT id FROM %s WHERE qnaire_id = %d AND stage >= %d ORDER BY stage',
-               static::get_table_name(),
-               $this->qnaire_id,
-               $this->stage ) );
-    
+    $modifier = new modifier();
+    $modifier->where( 'qnaire_id', '=', $this->qnaire_id );
+    $modifier->where( 'stage', '>=', $this->stage );
+    $modifier->order( 'stage' );
+    $records = static::select( $modifier );
+
     // and now decrement the stage for all phases from the list above
-    foreach( $id_list as $id )
+    foreach( $records as $record )
     {
-      $record = new static( $id );
       $record->stage--;
       $record->save();
     }

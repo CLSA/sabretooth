@@ -253,7 +253,7 @@ final class session extends singleton
 
         $db_site = $db_site_list[0];
         $modifier = new database\modifier();
-        $modifier->where( 'site_id', $db_site->id );
+        $modifier->where( 'site_id', '=', $db_site->id );
         $db_role_list = $this->user->get_role_list( $modifier );
         $db_role = $db_role_list[0];
 

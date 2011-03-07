@@ -74,9 +74,9 @@ abstract class active_record extends \sabretooth\database\active_record
 
     // determine the unique key(s)
     $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', static::get_database_name() );
-    $modifier->where( 'TABLE_NAME', self::get_table_name() );
-    $modifier->where( 'COLUMN_KEY', 'UNI' );
+    $modifier->where( 'TABLE_SCHEMA', '=', static::get_database_name() );
+    $modifier->where( 'TABLE_NAME', '=', self::get_table_name() );
+    $modifier->where( 'COLUMN_KEY', '=', 'UNI' );
 
     $unique_keys = self::get_col(
       sprintf( 'SELECT COLUMN_NAME FROM information_schema.COLUMNS %s',
@@ -87,7 +87,7 @@ abstract class active_record extends \sabretooth\database\active_record
     {
       // this returns null if no records are found
       $modifier = new modifier();
-      $modifier->where( $column, $value );
+      $modifier->where( $column, '=', $value );
 
       $id = self::get_one(
         sprintf( 'SELECT %s FROM %s %s',
@@ -126,8 +126,8 @@ abstract class active_record extends \sabretooth\database\active_record
     // same as parent method but with a different database and table name prefix
     $prefix = \sabretooth\session::self()->get_setting( 'survey_db', 'prefix' );
     $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', static::get_database_name() );
-    $modifier->where( 'Table_Name', $prefix.$name );
+    $modifier->where( 'TABLE_SCHEMA', '=', static::get_database_name() );
+    $modifier->where( 'Table_Name', '=', $prefix.$name );
 
     $count = self::get_one(
       sprintf( 'SELECT COUNT(*) FROM information_schema.TABLES %s',

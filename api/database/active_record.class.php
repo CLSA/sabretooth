@@ -150,6 +150,7 @@ abstract class active_record extends \sabretooth\base_object
                     $sets,
                     static::get_primary_key_name(),
                     $this->columns[static::get_primary_key_name()] );
+
     self::execute( $sql );
     
     // get the new new primary key
@@ -456,7 +457,7 @@ abstract class active_record extends \sabretooth\base_object
     else if( relationship::ONE_TO_MANY == $relationship )
     {
       if( is_null( $modifier ) ) $modifier = new modifier();
-      $modifier->where( $table_name.'_id', $primary_key_value );
+      $modifier->where( $table_name.'_id', '=', $primary_key_value );
       return $count
         ? $foreign_class_name::count( $modifier )
         : $foreign_class_name::select( $modifier );
@@ -473,9 +474,9 @@ abstract class active_record extends \sabretooth\base_object
       { // we need to invert the list
         // first create SQL to match all records in the joining table
         $sub_modifier = new modifier();
-        $sub_modifier->where( $foreign_key_name, $joining_foreign_key_name, false );
-        $sub_modifier->where( $joining_primary_key_name, $primary_key_name, false );
-        $sub_modifier->where( $primary_key_name, $primary_key_value );
+        $sub_modifier->where( $foreign_key_name, '=', $joining_foreign_key_name, false );
+        $sub_modifier->where( $joining_primary_key_name, '=', $primary_key_name, false );
+        $sub_modifier->where( $primary_key_name, '=', $primary_key_value );
         $sub_select_sql =
           sprintf( 'SELECT %s FROM %s, %s, %s %s',
                    $joining_foreign_key_name,
@@ -485,7 +486,7 @@ abstract class active_record extends \sabretooth\base_object
                    $sub_modifier->get_sql() );
   
         // now create SQL that gets all primary ids that are NOT in that list
-        $modifier->where_not_in( $foreign_key_name, $sub_select_sql, false );
+        $modifier->where( $foreign_key_name, 'NOT IN', $sub_select_sql, false );
         $sql = sprintf( $count
                           ? 'SELECT COUNT( %s ) FROM %s %s'
                           : 'SELECT %s FROM %s %s',
@@ -495,9 +496,9 @@ abstract class active_record extends \sabretooth\base_object
       }
       else
       { // no inversion, just select the records from the joining table
-        $modifier->where( $foreign_key_name, $joining_foreign_key_name, false );
-        $modifier->where( $joining_primary_key_name, $primary_key_name, false );
-        $modifier->where( $primary_key_name, $primary_key_value );
+        $modifier->where( $foreign_key_name, '=', $joining_foreign_key_name, false );
+        $modifier->where( $joining_primary_key_name, '=', $primary_key_name, false );
+        $modifier->where( $primary_key_name, '=', $primary_key_value );
         $sql = sprintf( $count
                           ? 'SELECT COUNT( %s ) FROM %s, %s, %s %s'
                           : 'SELECT %s FROM %s, %s, %s %s',
@@ -659,8 +660,8 @@ abstract class active_record extends \sabretooth\base_object
       $joining_table_name = static::get_joining_table_name( $record_type );
   
       $modifier = new modifier();
-      $modifier->where( static::get_primary_key_name(), $primary_key_value );
-      $modifier->where( $record_type.'_id', $id );
+      $modifier->where( static::get_primary_key_name(), '=', $primary_key_value );
+      $modifier->where( $record_type.'_id', '=', $id );
   
       self::execute(
         sprintf( 'DELETE FROM %s %s',
@@ -769,6 +770,7 @@ abstract class active_record extends \sabretooth\base_object
             array_push( $table_list, $table );
             $modifier->where(
               $this_table.'.'.$foreign_key_name,
+              '=',
               $table.'.'.static::get_primary_key_name(), false );
           }
         }
@@ -815,9 +817,9 @@ abstract class active_record extends \sabretooth\base_object
 
     // determine the unique key(s)
     $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', static::get_database_name() );
-    $modifier->where( 'TABLE_NAME', static::get_table_name() );
-    $modifier->where( 'COLUMN_KEY', 'UNI' );
+    $modifier->where( 'TABLE_SCHEMA', '=', static::get_database_name() );
+    $modifier->where( 'TABLE_NAME', '=', static::get_table_name() );
+    $modifier->where( 'COLUMN_KEY', '=', 'UNI' );
 
     $unique_keys = self::get_col( 
       sprintf( 'SELECT COLUMN_NAME FROM information_schema.COLUMNS %s',
@@ -828,7 +830,7 @@ abstract class active_record extends \sabretooth\base_object
     {
       // this returns null if no records are found
       $modifier = new modifier();
-      $modifier->where( $column, $value );
+      $modifier->where( $column, '=', $value );
 
       $id = self::get_one(
         sprintf( 'SELECT %s FROM %s %s',
@@ -898,8 +900,8 @@ abstract class active_record extends \sabretooth\base_object
   protected static function table_exists( $name )
   {
     $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', static::get_database_name() );
-    $modifier->where( 'TABLE_NAME', $name );
+    $modifier->where( 'TABLE_SCHEMA', '=', static::get_database_name() );
+    $modifier->where( 'TABLE_NAME', '=', $name );
 
     $count = self::get_one(
       sprintf( 'SELECT COUNT(*) FROM information_schema.TABLES %s',
@@ -918,9 +920,9 @@ abstract class active_record extends \sabretooth\base_object
   public static function get_column_type( $column_name )
   {
     $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', static::get_database_name() );
-    $modifier->where( 'TABLE_NAME', static::get_table_name() );
-    $modifier->where( 'COLUMN_NAME', $column_name );
+    $modifier->where( 'TABLE_SCHEMA', '=', static::get_database_name() );
+    $modifier->where( 'TABLE_NAME', '=', static::get_table_name() );
+    $modifier->where( 'COLUMN_NAME', '=', $column_name );
 
     $type = self::get_one(
       sprintf( 'SELECT DATA_TYPE FROM information_schema.COLUMNS %s',
@@ -942,10 +944,10 @@ abstract class active_record extends \sabretooth\base_object
   public static function get_enum_values( $column_name )
   {
     $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', static::get_database_name() );
-    $modifier->where( 'TABLE_NAME', static::get_table_name() );
-    $modifier->where( 'COLUMN_NAME', $column_name );
-    $modifier->where( 'DATA_TYPE', 'enum' );
+    $modifier->where( 'TABLE_SCHEMA', '=', static::get_database_name() );
+    $modifier->where( 'TABLE_NAME', '=', static::get_table_name() );
+    $modifier->where( 'COLUMN_NAME', '=', $column_name );
+    $modifier->where( 'DATA_TYPE', '=', 'enum' );
 
     $type = self::get_one(
       sprintf( 'SELECT COLUMN_TYPE FROM information_schema.COLUMNS %s',
@@ -982,9 +984,9 @@ abstract class active_record extends \sabretooth\base_object
     }
 
     $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', static::get_database_name() );
-    $modifier->where( 'TABLE_NAME', $table_name );
-    $modifier->where( 'COLUMN_NAME', $column_name );
+    $modifier->where( 'TABLE_SCHEMA', '=', static::get_database_name() );
+    $modifier->where( 'TABLE_NAME', '=', $table_name );
+    $modifier->where( 'COLUMN_NAME', '=', $column_name );
 
     return 1 == self::get_one(
       sprintf( 'SELECT COUNT( * ) FROM information_schema.COLUMNS %s',

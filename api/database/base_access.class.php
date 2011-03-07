@@ -34,9 +34,9 @@ abstract class base_access extends active_record
     } 
     
     $modifier = new modifier();
-    $modifier->where( 'user_id', $this->id );
-    $modifier->where( 'site_id', $db_site->id );
-    $modifier->where( 'role_id', $db_role->id );
+    $modifier->where( 'user_id', '=', $this->id );
+    $modifier->where( 'site_id', '=', $db_site->id );
+    $modifier->where( 'role_id', '=', $db_role->id );
     
     $rows = self::get_one(
       sprintf( 'SELECT user_id FROM access %s',
@@ -68,7 +68,7 @@ abstract class base_access extends active_record
         {
           if( $modifier->has_where( $access_table.'_id' ) )
           {
-            $modifier->where( $subject_name.'.id', 'access.'.$subject_name.'_id', false );
+            $modifier->where( $subject_name.'.id', '=', 'access.'.$subject_name.'_id', false );
             return self::get_one(
               sprintf( 'SELECT COUNT( DISTINCT access.%s_id ) FROM %s, access %s',
                        $subject_name,
@@ -111,7 +111,7 @@ abstract class base_access extends active_record
         {
           if( $modifier->has_where( $access_table.'_id' ) )
           {
-            $modifier->where( $subject_name.'.id', 'access.'.$subject_name.'_id', false );
+            $modifier->where( $subject_name.'.id', '=', 'access.'.$subject_name.'_id', false );
             $modifier->group( 'access.'.$subject_name.'_id' );
     
             $id_list = self::get_col(
@@ -149,7 +149,7 @@ abstract class base_access extends active_record
     }
     
     $modifier = new modifier();
-    $modifier->where( $subject_name.'_id', $this->id );
+    $modifier->where( $subject_name.'_id', '=', $this->id );
     $activity_id = self::get_one(
       sprintf( 'SELECT activity_id FROM %s_last_activity %s',
                $subject_name,
@@ -176,7 +176,7 @@ abstract class base_access extends active_record
     }
     
     if( is_null( $modifier ) ) $modifier = new modifier();
-    $modifier->where( $subject_name.'_id', $this->id );
+    $modifier->where( $subject_name.'_id', '=', $this->id );
     return activity::count( $modifier );
   }
 
@@ -199,7 +199,7 @@ abstract class base_access extends active_record
     }
     
     if( is_null( $modifier ) ) $modifier = new modifier();
-    $modifier->where( $subject_name.'_id', $this->id );
+    $modifier->where( $subject_name.'_id', '=', $this->id );
     return activity::select( $modifier );
   }
 
@@ -251,7 +251,7 @@ abstract class base_access extends active_record
               ? $args[0]
               : new modifier();
 
-    $modifier->where( $subject_name.'_id', $this->id );
+    $modifier->where( $subject_name.'_id', '=', $this->id );
     
     $class_name = '\\sabretooth\\database\\'.$related_name;
     return 'list' == $action

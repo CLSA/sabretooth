@@ -62,9 +62,9 @@ class user extends base_access
   public function remove_access( $access_id )
   {
     $modifier = new modifier();
-    $modifier->where( 'id', $access_id );
+    $modifier->where( 'id', '=', $access_id );
     // this just to make sure the access belongs to this user
-    $modifier->where( 'user_id', $this->id );
+    $modifier->where( 'user_id', '=', $this->id );
 
     self::execute(
       sprintf( 'DELETE FROM access %s',
