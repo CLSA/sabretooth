@@ -58,7 +58,7 @@ class participant_add extends base_view
     // set the view's items
     $this->set_item( 'first_name', '', true );
     $this->set_item( 'last_name', '', true );
-    $this->set_item( 'language', current( $languages ), $languages, true );
+    $this->set_item( 'language', key( $languages ), $languages, true );
     $this->set_item( 'hin', '' );
     $this->set_item( 'status', '', $statuses );
     $this->set_item( 'site_id', '', $sites );
