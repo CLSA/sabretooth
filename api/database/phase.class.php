@@ -33,47 +33,77 @@ class phase extends active_record
       return;
     }
     
-    // make room for this phase if necessary
+    // see if there is already another phase at the new stage
     $duplicate_id = static::get_one(
-      sprintf( 'SELECT id FROM %s WHERE qnaire_id = %d AND stage = %d',
+      sprintf( 'SELECT id FROM %s WHERE id != %d AND qnaire_id = %d AND stage = %d',
                static::get_table_name(),
+               $this->id,
                $this->qnaire_id,
                $this->stage ) );
-    
-    $record = NULL;
-    $update_record = false;
+
+    // if duplicate_id is not null then there is already a phase in this slot
     if( !is_null( $duplicate_id ) )
     {
+      // check to see if this phase is being moved or added to the list
       $current_stage = static::get_one(
         sprintf( 'SELECT stage FROM %s WHERE %s = %d',
                  static::get_table_name(),
                  static::get_primary_key_name(),
                  $this->id ) );
+      
+      if( !is_null( $current_stage ) )
+      { // moving the phase, make room
+        // determine if we are moving the stage forward or backward
+        $forward = $current_stage < $this->stage;
 
-      $record = new static( $duplicate_id );
-      if( $current_stage == $this->stage )
-      { // the stage isn't changing, do nothing
-      }
-      else if( $current_stage )
-      { // exchange the stage
-        $record->stage = 0; // temporary value
-        $record->save();
-        $record->stage = $current_stage;
-        $update_record = true;
+        // get all phases which are between the phase's current and new stage
+        $id_list = static::get_col(
+          sprintf( 'SELECT id FROM %s '.
+                   'WHERE qnaire_id = %d AND stage %s %d AND stage %s %d ORDER BY stage %s',
+                   static::get_table_name(),
+                   $this->qnaire_id,
+                   $forward ? '>' : '<',
+                   $current_stage,
+                   $forward ? '<=' : '>=',
+                   $this->stage,
+                   $forward ? '' : 'DESC' ) );
+        
+        // temporarily set this record's stage to 0, preserving the new phase
+        $new_stage = $this->stage;
+        $this->stage = 0;
+        parent::save();
+        $this->stage = $new_stage;
+
+        // and move each of the middle phase's stage backward by one
+        foreach( $id_list as $id )
+        {
+          $record = new static( $id );
+          $record->stage = $record->stage + ( $forward ? -1 : 1 );
+          $record->save();
+        }
       }
       else
-      { // advance it's stage by one
-        $record->stage++;
-        // this next line may make this method recursive, which is the desired functionality
-        $record->save();
+      { // adding the phase, make room
+        // get all phases at this stage and afterwards
+        $id_list = static::get_col(
+          sprintf( 'SELECT id FROM %s '.
+                   'WHERE qnaire_id = %d AND stage >= %d ORDER BY stage DESC',
+                   static::get_table_name(),
+                   $this->qnaire_id,
+                   $this->stage ) );
+        
+        // and move their stage forward by one to make room for the new phase
+        foreach( $id_list as $id )
+        {
+          $record = new static( $id );
+          $record->stage++;
+          $record->save();
+        }
       }
     }
 
-    // and now save the current record
+    // finish by saving this record
     parent::save();
-
-    // and finish, if necessary
-    if( $update_record && !is_null( $record ) ) $record->save();
   }
 
   /**

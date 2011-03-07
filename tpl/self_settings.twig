@@ -50,7 +50,7 @@ $( document ).ready( function() {
     var selected = $( "#{{ widget.full }}_set_theme option:selected" );
     if( 0 != selected.val() ) {
       if( send_action( 'self', 'set_theme', { "theme": selected.text() } ) )
-        window.location.reload();
+        // DEBUG: uncomment window.location.reload();
     }
   } );
 } );

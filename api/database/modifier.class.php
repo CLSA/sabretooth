@@ -22,6 +22,7 @@ class modifier extends \sabretooth\base_object
    * Add a where statement to the modifier.
    * 
    * This method appends where clauses onto the end of already existing where clauses.
+   * TODO: add in <, <=, >= and > comparisons
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column The column to restrict.
    * @param mixed $value The value to restrict to (will be sql-escaped, quotes not necessary).

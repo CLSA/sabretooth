@@ -172,6 +172,20 @@ VALUES( "action", "self", "set_role", false, "Change the current user's active r
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "self", "set_theme", false, "Change the current user's web interface theme." );
 
+-- shift
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "shift", "delete", true, "Removes a shift from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "shift", "edit", true, "Edits a shift's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "shift", "new", true, "Add a new shift to the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "shift", "add", true, "View a form for creating a new shift." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "shift", "view", true, "View a shift's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "shift", "list", true, "List shifts in the system." );
+
 -- site
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "site", "view", true, "View a site's details." );

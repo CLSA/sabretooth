@@ -20,7 +20,7 @@
         columns[column_name] = $(this).val();
       } );
       args.columns = columns;
-      
+
       if( send_action( "{{ widget.subject }}", "new", args ) ) slot_prev( get_slot( $(this) ) );
     } );
   } );
@@ -28,11 +28,11 @@
 {% endblock record_javascript %}
 
 {% block record %}
-  <form id="{{ widget.full }}_add_form">
+  <div id="{{ widget.full }}_add_form">
   {{ parent() }}
+  </div>
   <div class="spacer"></div>
   {% include "confirm_buttons.twig" with { 'align': 'right', 'buttons': ['add'] } %}
-  </form>
 {% endblock record %}
 
 {% block record_items %}
