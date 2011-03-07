@@ -49,7 +49,7 @@ class phase_add extends base_view
     if( is_null( $this->parent ) ||
         'sabretooth\\ui\\qnaire_add_phase' != get_class( $this->parent ) )
       throw new \sabretooth\exception\runtime(
-        'Phase list must have qnaire_view as a parent.', __METHOD );
+        'Phase widget must have qnaire_view as a parent.', __METHOD );
     
     // create enum arrays
     foreach( \sabretooth\database\limesurvey\surveys::select() as $db_survey )
