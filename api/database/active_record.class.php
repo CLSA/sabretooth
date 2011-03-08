@@ -199,10 +199,10 @@ abstract class active_record extends \sabretooth\base_object
    */
   public static function count( $modifier )
   {
-    return self::get_one(
+    return intval( self::get_one(
       sprintf( 'SELECT COUNT(*) FROM %s %s',
                static::get_table_name(),
-               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
+               is_null( $modifier ) ? '' : $modifier->get_sql() ) ) );
   }
 
   /**
@@ -511,7 +511,7 @@ abstract class active_record extends \sabretooth\base_object
       
       if( $count )
       {
-        return self::get_one( $sql );
+        return intval( self::get_one( $sql ) );
       }
       else
       {
