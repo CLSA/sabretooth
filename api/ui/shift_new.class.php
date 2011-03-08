@@ -1,6 +1,6 @@
 <?php
 /**
- * consent_new.class.php
+ * shift_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,12 +10,12 @@
 namespace sabretooth\ui;
 
 /**
- * action consent new
+ * action shift new
  *
- * Create a new consent.
+ * Create a new shift.
  * @package sabretooth\ui
  */
-class consent_new extends base_new
+class shift_new extends base_new
 {
   /**
    * Constructor.
@@ -25,7 +25,7 @@ class consent_new extends base_new
    */
   public function __construct( $args )
   {
-    parent::__construct( 'consent', $args );
+    parent::__construct( 'shift', $args );
   }
 
   /**

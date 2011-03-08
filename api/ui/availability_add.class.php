@@ -37,8 +37,7 @@ class availability_add extends base_view
     $this->add_item( 'friday', 'boolean', 'Friday' );
     $this->add_item( 'saturday', 'boolean', 'Saturday' );
     $this->add_item( 'sunday', 'boolean', 'Sunday' );
-    $this->add_item( 'period_start', 'time', 'Start Time' );
-    $this->add_item( 'period_end', 'time', 'End Time' );
+    $this->add_item( array( 'period_start', 'period_end' ), 'timerange', 'Time' );
   }
 
   /**
@@ -51,11 +50,10 @@ class availability_add extends base_view
   {
     parent::finish();
     
-    // this widget must have a parent, and it must be a participant
-    if( is_null( $this->parent ) ||
-        'sabretooth\\ui\\participant_add_availability' != get_class( $this->parent ) )
+    // this widget must have a parent, and it's subject must be a participant
+    if( is_null( $this->parent ) || 'participant' != $this->parent->get_subject() )
       throw new \sabretooth\exception\runtime(
-        'Consent widget must have participant_view as a parent.', __METHOD );
+        'Consent widget must have a parent with participant as the subject.', __METHOD );
     
     // set the view's items
     $this->set_item( 'participant_id', $this->parent->get_record()->id );

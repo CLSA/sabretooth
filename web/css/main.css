@@ -128,6 +128,12 @@ table {
   padding: 1px;
 }
 
+/* override a few things in the calendrical plugin */
+.calendricalTimePopup {
+  width: 400px;
+  height: 300px;
+}
+
 /* override a few things in the jquery ui theme */
 .ui-button-text-only .ui-button-text { padding: .1em 1em; }
 .ui-button-icon-only .ui-button-text, .ui-button-icons-only .ui-button-text { padding: .1em; text-indent: -9999999px; }

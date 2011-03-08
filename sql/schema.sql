@@ -26,7 +26,7 @@ CREATE  TABLE IF NOT EXISTS `participant` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `first_name` VARCHAR(45) NOT NULL ,
   `last_name` VARCHAR(45) NOT NULL ,
-  `language` ENUM('en','fr') NOT NULL DEFAULT 'en' ,
+  `language` ENUM('en','fr') NULL DEFAULT NULL ,
   `hin` VARCHAR(45) NULL DEFAULT NULL ,
   `status` ENUM('deceased', 'deaf', 'mentally unfit') NULL DEFAULT NULL ,
   `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'If not null then force all calls to this participant to the site.' ,
@@ -49,11 +49,9 @@ CREATE  TABLE IF NOT EXISTS `user` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(45) NOT NULL ,
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
-  `lime_uid` INT NULL DEFAULT NULL COMMENT 'Refers to a limesurvey user id.' ,
   `theme` VARCHAR(45) NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_name` (`name` ASC) ,
-  UNIQUE INDEX `uq_lime_uid` (`lime_uid` ASC) )
+  UNIQUE INDEX `uq_name` (`name` ASC) )
 ENGINE = InnoDB;
 
 
@@ -312,7 +310,7 @@ CREATE  TABLE IF NOT EXISTS `consent` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `event` ENUM('verbal accept','verbal deny','written accept','written deny','retract','mail request','mail sent') NOT NULL ,
-  `date` DATETIME NOT NULL ,
+  `date` DATE NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
   CONSTRAINT `fk_consent_participant`

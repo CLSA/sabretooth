@@ -56,7 +56,7 @@ class qnaire_view extends base_view
     parent::finish();
 
     // set the view's items
-    $this->set_item( 'name', $this->get_record()->name );
+    $this->set_item( 'name', $this->get_record()->name, true );
     $this->set_item( 'phases', $this->get_record()->get_phase_count() );
     $this->set_item( 'samples', $this->get_record()->get_sample_count() );
     $this->set_item( 'description', $this->get_record()->description );

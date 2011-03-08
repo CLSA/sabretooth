@@ -29,17 +29,10 @@ class shift_view extends base_view
     parent::__construct( 'shift', 'view', $args );
     
     // create an associative array with everything we want to display about the shift
-    $this->add_item( 'first_name', 'string', 'First Name' );
-    $this->add_item( 'last_name', 'string', 'Last Name' );
-    $this->add_item( 'language', 'enum', 'Language' );
-    $this->add_item( 'hin', 'string', 'Health Insurance Number' );
-    $this->add_item( 'status', 'enum', 'Condition' );
-    $this->add_item( 'site_id', 'enum', 'Site' );
-
-    // create the sample sub-list widget
-    $this->sample_list = new sample_list( $args );
-    $this->sample_list->set_parent( $this );
-    $this->sample_list->set_heading( 'Samples the shift belongs to' );
+    $this->add_item( 'user', 'constant', 'User' );
+    $this->add_item( 'site', 'constant', 'Site' );
+    $this->add_item( 'date', 'date', 'Date' );
+    $this->add_item( array( 'start_time', 'end_time' ), 'timerange', 'Time' );
   }
 
   /**
@@ -52,35 +45,14 @@ class shift_view extends base_view
   {
     parent::finish();
 
-    // create enum arrays
-    $languages = \sabretooth\database\shift::get_enum_values( 'language' );
-    $languages = array_combine( $languages, $languages );
-    $status_values = \sabretooth\database\shift::get_enum_values( 'status' );
-    $statuses = array( 'NULL' => '' ); // add a blank entry
-    $statuses = array_merge( $statuses, array_combine( $status_values, $status_values ) );
-    $sites = array( 'NULL' => '' ); // add a blank entry
-    foreach( \sabretooth\database\site::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
-
     // set the view's items
-    $this->set_item( 'first_name', $this->get_record()->first_name );
-    $this->set_item( 'last_name', $this->get_record()->last_name );
-    $this->set_item( 'language', $this->get_record()->language, $languages );
-    $this->set_item( 'hin', $this->get_record()->hin );
-    $this->set_item( 'status', $this->get_record()->status, $statuses );
-    $this->set_item( 'site_id', $this->get_record()->get_site()->name, $sites );
+    $this->set_item( 'user', $this->get_record()->get_user()->name );
+    $this->set_item( 'site', $this->get_record()->get_site()->name );
+    $this->set_item( 'date', $this->get_record()->date, true );
+    $this->set_item( 'start_time', $this->get_record()->start_time, true );
+    $this->set_item( 'end_time', $this->get_record()->end_time, true );
 
     $this->finish_setting_items();
-
-    // finish the child widgets
-    $this->sample_list->finish();
-    $this->set_variable( 'sample_list', $this->sample_list->get_variables() );
   }
-  
-  /**
-   * The shift list widget.
-   * @var sample_list
-   * @access protected
-   */
-  protected $sample_list = NULL;
 }
 ?>

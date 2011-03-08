@@ -64,13 +64,13 @@ class contact_view extends base_view
 
     // set the view's items
     $this->set_item( 'active', $this->get_record()->active, true );
-    $this->set_item( 'rank', $this->get_record()->rank, $ranks, true );
-    $this->set_item( 'type', $this->get_record()->type, $types, true );
+    $this->set_item( 'rank', $this->get_record()->rank, true, $ranks );
+    $this->set_item( 'type', $this->get_record()->type, true, $types );
     $this->set_item( 'phone', $this->get_record()->phone );
     $this->set_item( 'address1', $this->get_record()->address1 );
     $this->set_item( 'address2', $this->get_record()->address2 );
     $this->set_item( 'city', $this->get_record()->city );
-    $this->set_item( 'province', $this->get_record()->province, $provinces );
+    $this->set_item( 'province', $this->get_record()->province, false, $provinces );
     $this->set_item( 'country', $this->get_record()->country );
     $this->set_item( 'postcode', $this->get_record()->postcode );
     $this->set_item( 'note', $this->get_record()->note );

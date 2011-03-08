@@ -53,11 +53,10 @@ class contact_add extends base_view
   {
     parent::finish();
     
-    // this widget must have a parent, and it must be a participant
-    if( is_null( $this->parent ) ||
-        'sabretooth\\ui\\participant_add_contact' != get_class( $this->parent ) )
+    // this widget must have a parent, and it's subject must be a participant
+    if( is_null( $this->parent ) || 'participant' != $this->parent->get_subject() )
       throw new \sabretooth\exception\runtime(
-        'Contact widget must have participant_view as a parent.', __METHOD );
+        'Contact widget must have a parent with participant as the subject.', __METHOD );
     
     // create enum arrays
     foreach( \sabretooth\database\limesurvey\surveys::select() as $db_survey )
@@ -78,13 +77,13 @@ class contact_add extends base_view
     // set the view's items
     $this->set_item( 'participant_id', $this->parent->get_record()->id );
     $this->set_item( 'active', true, true );
-    $this->set_item( 'rank', $last_rank_key, $ranks, true );
-    $this->set_item( 'type', key( $types ), $types, true );
+    $this->set_item( 'rank', $last_rank_key, true, $ranks );
+    $this->set_item( 'type', key( $types ), true, $types );
     $this->set_item( 'phone', '' );
     $this->set_item( 'address1', '' );
     $this->set_item( 'address2', '' );
     $this->set_item( 'city', '' );
-    $this->set_item( 'province', key( $provinces ), $provinces );
+    $this->set_item( 'province', key( $provinces ), false, $provinces );
     $this->set_item( 'country', '' );
     $this->set_item( 'postcode', '' );
     $this->set_item( 'note', '' );

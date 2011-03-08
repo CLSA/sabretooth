@@ -48,7 +48,7 @@ class consent_view extends base_view
     $events = array_combine( $events, $events );
 
     // set the view's items
-    $this->set_item( 'event', $this->get_record()->event, $events, true );
+    $this->set_item( 'event', $this->get_record()->event, true, $events );
     $this->set_item( 'date', $this->get_record()->date, true );
 
     $this->finish_setting_items();

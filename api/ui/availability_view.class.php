@@ -36,8 +36,7 @@ class availability_view extends base_view
     $this->add_item( 'friday', 'boolean', 'Friday' );
     $this->add_item( 'saturday', 'boolean', 'Saturday' );
     $this->add_item( 'sunday', 'boolean', 'Sunday' );
-    $this->add_item( 'period_start', 'time', 'Start Time' );
-    $this->add_item( 'period_end', 'time', 'End Time' );
+    $this->add_item( array( 'period_start', 'period_end' ), 'timerange', 'Time' );
   }
 
   /**
@@ -51,15 +50,15 @@ class availability_view extends base_view
     parent::finish();
 
     // set the view's items
-    $this->add_item( 'monday', $this->get_record()->monday, true );
-    $this->add_item( 'tuesday', $this->get_record()->tuesday, true );
-    $this->add_item( 'wednesday', $this->get_record()->wednesday, true );
-    $this->add_item( 'thursday', $this->get_record()->thursday, true );
-    $this->add_item( 'friday', $this->get_record()->friday, true );
-    $this->add_item( 'saturday', $this->get_record()->saturday, true );
-    $this->add_item( 'sunday', $this->get_record()->sunday, true );
-    $this->add_item( 'period_start', $this->get_record()->period_start, true );
-    $this->add_item( 'period_end', $this->get_record()->period_end, true );
+    $this->set_item( 'monday', $this->get_record()->monday, true );
+    $this->set_item( 'tuesday', $this->get_record()->tuesday, true );
+    $this->set_item( 'wednesday', $this->get_record()->wednesday, true );
+    $this->set_item( 'thursday', $this->get_record()->thursday, true );
+    $this->set_item( 'friday', $this->get_record()->friday, true );
+    $this->set_item( 'saturday', $this->get_record()->saturday, true );
+    $this->set_item( 'sunday', $this->get_record()->sunday, true );
+    $this->set_item( 'period_start', $this->get_record()->period_start, true );
+    $this->set_item( 'period_end', $this->get_record()->period_end, true );
 
     $this->finish_setting_items();
   }

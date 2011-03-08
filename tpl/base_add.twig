@@ -48,18 +48,50 @@
         <td style="padding: 4px" width="95%" align="left">
 
       {% if 'boolean' == entry.type %}
-    
+        
         <select id="{{ widget.full }}__{{ item_id }}"
                 style="width: 100%"
                 class="ui-state-default">
-          <option{{ entry_value ? ' selected' : '' }} value="1">Yes</option>
-          <option{{ entry_value ? '' : ' selected' }} value="0">No</option>
+          <option{% if 'Yes' == entry_value %} selected{% endif %} value="1">Yes</option>
+          <option{% if 'No' == entry_value %} selected{% endif %} value="0">No</option>
         </select>
       
       {% elseif 'date' == entry.type %}
       
-        TODO: need to implement a date entry type
+        <script type="text/javascript">
+          $( function () {
+            $( "#{{ widget.full }}__{{ item_id }}" ).datepicker( {
+              dateFormat: 'yy-mm-dd',
+              showAnim: 'slideDown'
+            } );
+          } );
+        </script>
+        <input id="{{ widget.full }}__{{ item_id }}" type="text" style="width:99%" readonly />
       
+      {% elseif 'time' == entry.type %}
+      
+        <script type="text/javascript">
+          $( function () {
+            $( "#{{ widget.full }}__{{ item_id }}" ).calendricalTime();
+          } );
+        </script>
+        <input id="{{ widget.full }}__{{ item_id }}" type="text" style="width:99%" readonly />
+      
+      {% elseif 'timerange' == entry.type %}
+      
+        <script type="text/javascript">
+          $( function () {
+            $( "#{{ widget.full }}__{{ item_id }}, #{{ widget.full }}__{{ entry.second }}" ).calendricalTimeRange();
+          } );
+        </script>
+        <input id="{{ widget.full }}__{{ item_id }}" type="text" style="width:99%"
+               value="{{ entry_value }}" readonly />
+      
+      {% elseif 'timerange_second' == entry.type %}
+    
+        <input id="{{ widget.full }}__{{ item_id }}" type="text" style="width:99%;"
+               value="{{ entry_value }}" readonly />
+    
       {% elseif 'enum' == entry.type %}
     
         <select id="{{ widget.full }}__{{ item_id }}"
@@ -76,11 +108,13 @@
     
       {% elseif 'string' == entry.type %}
     
-        <input id="{{ widget.full }}__{{ item_id }}" type="text" style="width:99%" />
+        <input id="{{ widget.full }}__{{ item_id }}" type="text" style="width:99%"
+               value="{{ entry_value }}" />
     
       {% elseif 'text' == entry.type %}
     
-        <textarea id="{{ widget.full }}__{{ item_id }}" rows="5" style="width:99%;" />
+        <textarea id="{{ widget.full }}__{{ item_id }}" rows="5"
+                  style="width:99%;" />{{ entry_value }}</textarea>
     
       {% endif %}
         </td>

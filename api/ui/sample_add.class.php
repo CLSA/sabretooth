@@ -44,7 +44,7 @@ class sample_add extends base_view
     parent::finish();
     
     // set the view's items
-    $this->set_item( 'name', '' );
+    $this->set_item( 'name', '', true );
     $this->set_item( 'description', '' );
 
     $this->finish_setting_items();

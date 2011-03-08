@@ -44,11 +44,10 @@ class consent_add extends base_view
   {
     parent::finish();
     
-    // this widget must have a parent, and it must be a participant
-    if( is_null( $this->parent ) ||
-        'sabretooth\\ui\\participant_add_consent' != get_class( $this->parent ) )
+    // this widget must have a parent, and it's subject must be a participant
+    if( is_null( $this->parent ) || 'participant' != $this->parent->get_subject() )
       throw new \sabretooth\exception\runtime(
-        'Consent widget must have participant_view as a parent.', __METHOD );
+        'Consent widget must have a parent with participant as the subject.', __METHOD );
     
     // create enum arrays
     $events = \sabretooth\database\consent::get_enum_values( 'event' );
@@ -56,8 +55,8 @@ class consent_add extends base_view
 
     // set the view's items
     $this->set_item( 'participant_id', $this->parent->get_record()->id );
-    $this->set_item( 'event', key( $events ), $events, true );
-    $this->set_item( 'date', 'TODO', true );
+    $this->set_item( 'event', key( $events ), true, $events );
+    $this->set_item( 'date', '', true );
 
     $this->finish_setting_items();
   }

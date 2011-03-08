@@ -31,7 +31,6 @@ class user_view extends base_view
     // create an associative array with everything we want to display about the user
     $this->add_item( 'name', 'string', 'Username' );
     $this->add_item( 'active', 'boolean', 'Active' );
-    $this->add_item( 'limesurvey_user', 'constant', 'Limesurvey user' );
     $this->add_item( 'last_activity', 'constant', 'Last activity' );
 
     // create the access sub-list widget
@@ -56,9 +55,8 @@ class user_view extends base_view
     parent::finish();
 
     // set the view's items
-    $this->set_item( 'name', $this->get_record()->name );
-    $this->set_item( 'active', $this->get_record()->active );
-    $this->set_item( 'limesurvey_user', $this->get_record()->lime_uid ? 'Yes' : 'No' );
+    $this->set_item( 'name', $this->get_record()->name, true );
+    $this->set_item( 'active', $this->get_record()->active, true );
     
     $db_activity = $this->get_record()->get_last_activity();
     $last = \sabretooth\util::get_fuzzy_time_ago(

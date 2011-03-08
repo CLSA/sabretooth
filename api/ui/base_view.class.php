@@ -74,16 +74,37 @@ abstract class base_view extends base_record_widget
   /**
    * Add an item to the view.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $item_id The item's id, can be one of the record's column names.
+   * @param string|array $items The item's id, can be one of the record's column names.
+                         For range types this should be an array of two item ids.
    * @param string $heading The item's heading as it will appear in the view
-   * @param string $type The item's type, one of "boolean", "date", "string", "text",
-   *                     "enum" or "constant"
+   * @param string $type The item's type, one of "boolean", "date", "time", "timerange",
+   *               "string", "text", "enum" or "constant"
    * @access public
    */
-  public function add_item( $item_id, $type, $heading = NULL )
+  public function add_item( $items, $type, $heading = NULL )
   {
-    $this->items[$item_id] = array( 'type' => $type );
-    if( !is_null( $heading ) ) $this->items[$item_id]['heading'] = $heading;
+    if( is_array( $items ) )
+    {
+      if( 2 == count( $items ) )
+      {
+        // add the first item
+        $item_id = $items[0];
+        $this->items[$item_id] = array( 'type' => $type, 'second' => $items[1] );
+        if( !is_null( $heading ) ) $this->items[$item_id]['heading'] = 'Start '.$heading;
+
+        // add the second item
+        $item_id = $items[1];
+        $this->items[$item_id] = array( 'type' => $type.'_second' );
+        if( !is_null( $heading ) ) $this->items[$item_id]['heading'] = 'End '.$heading;
+      }
+      else throw new \sabretooth\exception\argument( 'items', $items, __METHOD__ );
+    }
+    else
+    {
+      $item_id = $items;
+      $this->items[$item_id] = array( 'type' => $type );
+      if( !is_null( $heading ) ) $this->items[$item_id]['heading'] = $heading;
+    }
   }
 
   /**
@@ -94,16 +115,30 @@ abstract class base_view extends base_record_widget
    * @param array $enum For enum item types, all possible values.
    * @access public
    */
-  public function set_item( $item_id, $value, $enum = NULL, $required = false )
+  public function set_item( $item_id, $value, $required = false, $enum = NULL )
   {
     // make sure the item exists
     if( !array_key_exists( $item_id, $this->items ) )
       throw new \sabretooth\exception\argument( 'item_id', $item_id, __METHOD__ );
-    
-    // adding a space to get around a bug in twig
-    if( 'constant' == $this->items[$item_id]['type'] && 0 == $value ) $value = ' 0';
+
+    // process the value so that it displays correctly
+    if( 'boolean' == $this->items[$item_id]['type'] )
+    {
+      if( is_null( $value ) ) $value = '';
+      else $value = $value ? 'Yes' : 'No';
+    }
+    else if( 'constant' == $this->items[$item_id]['type'] && 0 === $value )
+    {
+      $value = ' 0';
+    }
+
     $this->items[$item_id]['value'] = $value;
-    if( !is_null( $enum ) ) $this->items[$item_id]['enum'] = $enum;
+    if( !is_null( $enum ) )
+    {
+      // add a null entry if the item is not required
+      if( !$required ) $enum['NULL'] = '';
+      $this->items[$item_id]['enum'] = $enum;
+    }
     $this->items[$item_id]['required'] = $required;
   }
 
@@ -150,8 +185,7 @@ abstract class base_view extends base_record_widget
    * An associative array where the key is a unique identifier (usually a column name) and the
    * value is an associative array which includes:
    * "heading" => the label to display
-   * "type" => the type of variable, should be one of "boolean", "date", "string", "text",
-   *           "enum" or "constant"
+   * "type" => the type of variable (see {@link add_item} for details)
    * "value" => the value of the column
    * "enum" => all possible values if the item type is "enum"
    * "required" => boolean describes whether the value can be left blank

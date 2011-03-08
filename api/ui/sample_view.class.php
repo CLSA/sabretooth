@@ -56,7 +56,7 @@ class sample_view extends base_view
     parent::finish();
 
     // set the view's items
-    $this->set_item( 'name', $this->get_record()->name );
+    $this->set_item( 'name', $this->get_record()->name, true );
     $this->set_item( 'participants', $this->get_record()->get_participant_count() );
     $this->set_item( 'qnaires', $this->get_record()->get_qnaire_count() );
     $this->set_item( 'description', $this->get_record()->description );

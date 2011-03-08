@@ -44,8 +44,8 @@ class user_add extends base_view
     parent::finish();
     
     // set the view's items
-    $this->set_item( 'name', '' );
-    $this->set_item( 'active', true );
+    $this->set_item( 'name', '', true );
+    $this->set_item( 'active', true, true );
 
     $this->finish_setting_items();
   }

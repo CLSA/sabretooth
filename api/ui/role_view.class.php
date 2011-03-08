@@ -51,7 +51,7 @@ class role_view extends base_view
     parent::finish();
 
     // set the view's items
-    $this->set_item( 'name', $this->get_record()->name );
+    $this->set_item( 'name', $this->get_record()->name, true );
     $this->set_item( 'operation_count', $this->get_record()->get_operation_count() );
 
     $this->finish_setting_items();

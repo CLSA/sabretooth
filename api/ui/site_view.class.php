@@ -55,7 +55,7 @@ class site_view extends base_view
     parent::finish();
 
     // set the view's items
-    $this->set_item( 'name', $this->get_record()->name );
+    $this->set_item( 'name', $this->get_record()->name, true );
     $this->set_item( 'users', $this->get_record()->get_user_count() );
 
     $db_activity = $this->get_record()->get_last_activity();

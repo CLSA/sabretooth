@@ -30,9 +30,6 @@ class availability_list extends base_list_widget
     
     $session = \sabretooth\session::self();
 
-    $this->add_column( 'event', 'Event', true );
-    $this->add_column( 'date', 'Date', true );
-
     $this->add_column( 'monday', 'Mon', true );
     $this->add_column( 'tuesday', 'Tue', true );
     $this->add_column( 'wednesday', 'Wed', true );
@@ -57,13 +54,13 @@ class availability_list extends base_list_widget
     foreach( $this->get_record_list() as $record )
     {
       $this->add_row( $record->id,
-        array( 'monday' => $record->monday,
-               'tuesday' => $record->tuesday,
-               'wednesday' => $record->wednesday,
-               'thursday' => $record->thursday,
-               'friday' => $record->friday,
-               'saturday' => $record->saturday,
-               'sunday' => $record->sunday,
+        array( 'monday' => $record->monday ? 'Yes' : 'No',
+               'tuesday' => $record->tuesday ? 'Yes' : 'No',
+               'wednesday' => $record->wednesday ? 'Yes' : 'No',
+               'thursday' => $record->thursday ? 'Yes' : 'No',
+               'friday' => $record->friday ? 'Yes' : 'No',
+               'saturday' => $record->saturday ? 'Yes' : 'No',
+               'sunday' => $record->sunday ? 'Yes' : 'No',
                'period_start' => $record->period_start,
                'period_end' => $record->period_end ) );
     }

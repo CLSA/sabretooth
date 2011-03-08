@@ -53,8 +53,8 @@ class phase_view extends base_view
     $stages = array_combine( $stages, $stages );
 
     // set the view's items
-    $this->set_item( 'sid', $this->get_record()->sid, $surveys, true );
-    $this->set_item( 'stage', $this->get_record()->stage, $stages, true );
+    $this->set_item( 'sid', $this->get_record()->sid, true, $surveys );
+    $this->set_item( 'stage', $this->get_record()->stage, true, $stages );
     $this->set_item( 'repeated', $this->get_record()->repeated, true );
 
     $this->finish_setting_items();

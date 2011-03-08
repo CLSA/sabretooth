@@ -45,11 +45,10 @@ class phase_add extends base_view
   {
     parent::finish();
     
-    // this widget must have a parent, and it must be a qnaire
-    if( is_null( $this->parent ) ||
-        'sabretooth\\ui\\qnaire_add_phase' != get_class( $this->parent ) )
+    // this widget must have a parent, and it's subject must be a qnaire
+    if( is_null( $this->parent ) || 'qnaire' != $this->parent->get_subject() )
       throw new \sabretooth\exception\runtime(
-        'Phase widget must have qnaire_view as a parent.', __METHOD );
+        'Phase widget must have a parent with qnaire as the subject.', __METHOD );
     
     // create enum arrays
     foreach( \sabretooth\database\limesurvey\surveys::select() as $db_survey )
@@ -65,8 +64,8 @@ class phase_add extends base_view
 
     // set the view's items
     $this->set_item( 'qnaire_id', $this->parent->get_record()->id );
-    $this->set_item( 'sid', key( $surveys ), $surveys, true );
-    $this->set_item( 'stage', $last_stage_key, $stages, true );
+    $this->set_item( 'sid', key( $surveys ), true, $surveys );
+    $this->set_item( 'stage', $last_stage_key, true, $stages );
     $this->set_item( 'repeated', 'No', true );
 
     $this->finish_setting_items();
