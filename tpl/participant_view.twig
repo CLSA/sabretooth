@@ -15,6 +15,9 @@
 {# Add a contact list pertaining to this participant #}
 {% include "contact_list.twig" with contact_list %}
 <div class="spacer"></div>
+{# Add a availability list pertaining to this participant #}
+{% include "availability_list.twig" with availability_list %}
+<div class="spacer"></div>
 {# Add a consent list pertaining to this participant #}
 {% include "consent_list.twig" with consent_list %}
 {% endblock %}
