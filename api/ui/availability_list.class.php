@@ -53,10 +53,8 @@ class availability_list extends base_list_widget
 
     foreach( $this->get_record_list() as $record )
     {
-      $start_time = \sabretooth\util::get_formatted_time(
-        \sabretooth\util::from_server_time( $record->start_time ), false );
-      $end_time = \sabretooth\util::get_formatted_time(
-        \sabretooth\util::from_server_time( $record->end_time ), false );
+      $start_time = \sabretooth\util::get_formatted_time( $record->start_time, false );
+      $end_time = \sabretooth\util::get_formatted_time( $record->end_time, false );
 
       $this->add_row( $record->id,
         array( 'monday' => $record->monday ? 'Yes' : 'No',

@@ -104,6 +104,20 @@ abstract class active_record extends \sabretooth\base_object
           __METHOD__ );
 
       $this->columns = $row;
+
+      // convert where necessary
+      foreach( $this->columns as $key => $val )
+      {
+        if( 'datetime' == static::get_column_type( $key ) ||
+            'timestamp' == static::get_column_type( $key ) )
+        { // convert datetime to server date and time
+          $this->columns[$key] = \sabretooth\util::from_server_date( $val );
+        }
+        elseif( 'time' == static::get_column_type( $key ) )
+        { // convert time to server time
+          $this->columns[$key] = \sabretooth\util::from_server_time( $val );
+        }
+      }
     }
   }
   
@@ -131,7 +145,7 @@ abstract class active_record extends \sabretooth\base_object
     {
       if( static::get_primary_key_name() != $key )
       {
-        // make sure to html-escape values for text-columns
+        // convert where necessary
         if( 'text' == static::get_column_type( $key ) )
         { // html-escape text types
           $val = htmlentities( $val );

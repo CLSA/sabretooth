@@ -269,6 +269,10 @@
         {% endif %}
     
       {% endif %}
+      
+      {% if entry.note is defined %}
+        <div class="help_note">{{ entry.note }}</div>
+      {% endif %}
 
         </td>
       </tr>
