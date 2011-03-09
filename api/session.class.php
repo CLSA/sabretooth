@@ -92,7 +92,8 @@ final class session extends singleton
       session::self()->get_setting( 'db', 'password' ),
       session::self()->get_setting( 'db', 'database' ) ) )
     {
-      log::alert( 'Unable to connect to the database.' );
+      throw new \sabretooth\exception\runtime(
+        'Unable to connect to the database.', __METHOD__ );
     }
     $this->db->SetFetchMode( ADODB_FETCH_ASSOC );
     
@@ -577,6 +578,18 @@ final class session extends singleton
   {
     $this->survey_enabled = false;
     $_SESSION['survey_enabled'] = $this->survey_enabled;
+  }
+  
+  /**
+   * Returns whether the session has been initialized or not.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function is_initialized()
+  {
+    return $this->initialized;
   }
 
   /**
