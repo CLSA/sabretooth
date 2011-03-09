@@ -14,11 +14,14 @@
   <title>Sabretooth</title>
   <script type="text/javascript"></script>
   <link href="{{ constant('JQUERY_UI_URL') }}/css{{ jquery_ui_css_path }}" rel="stylesheet" />
-  <link href="{{ constant('JQUERY_CALENDRICAL_CSS_URL') }}" rel="stylesheet" />
   <link href="css/main.css" rel="stylesheet" />
   {# need to dynamically specify left flap colors #}
   <style media="screen" type="text/css">
   .extruder.left .flap{
+    color: {{ extruder_flap_color }};
+    background: {{ extruder_flap_background }};
+  }
+  .AnytTime-win {
     color: {{ extruder_flap_color }};
     background: {{ extruder_flap_background }};
   }
@@ -34,7 +37,7 @@
   <script type="text/javascript" src="{{ constant('JQUERY_LOADING_JS_URL') }}"></script>
   <script type="text/javascript" src="{{ constant('JQUERY_LOADING_OVERFLOW_JS_URL') }}"></script>
   <script type="text/javascript" src="{{ constant('JQUERY_JEDITABLE_JS_URL') }}"></script>
-  <script type="text/javascript" src="{{ constant('JQUERY_CALENDRICAL_JS_URL') }}"></script>
+  <script type="text/javascript" src="{{ constant('JQUERY_TIMEPICKER_JS_URL') }}"></script>
   <script type="text/javascript" src="js/main.js"></script>
   <script type="text/javascript">
   // set button styles

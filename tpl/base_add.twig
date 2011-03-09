@@ -66,32 +66,24 @@
             } );
           } );
         </script>
-        <input id="{{ widget.full }}__{{ item_id }}" type="text" style="width:99%" readonly />
+        <input id="{{ widget.full }}__{{ item_id }}" type="text" style="width:99%"
+               value="{{ entry_value }}" readonly />
       
       {% elseif 'time' == entry.type %}
       
         <script type="text/javascript">
           $( function () {
-            $( "#{{ widget.full }}__{{ item_id }}" ).calendricalTime();
-          } );
-        </script>
-        <input id="{{ widget.full }}__{{ item_id }}" type="text" style="width:99%" readonly />
-      
-      {% elseif 'timerange' == entry.type %}
-      
-        <script type="text/javascript">
-          $( function () {
-            $( "#{{ widget.full }}__{{ item_id }}, #{{ widget.full }}__{{ entry.second }}" ).calendricalTimeRange();
+            $( "#{{ widget.full }}__{{ item_id }}" ).timepicker( {
+              timeFormat: 'hh:mm',
+              showAnim: 'slideDown',
+              ampm: false,
+              stepMinute: 5
+            } );
           } );
         </script>
         <input id="{{ widget.full }}__{{ item_id }}" type="text" style="width:99%"
                value="{{ entry_value }}" readonly />
       
-      {% elseif 'timerange_second' == entry.type %}
-    
-        <input id="{{ widget.full }}__{{ item_id }}" type="text" style="width:99%;"
-               value="{{ entry_value }}" readonly />
-    
       {% elseif 'enum' == entry.type %}
     
         <select id="{{ widget.full }}__{{ item_id }}"
@@ -116,6 +108,10 @@
         <textarea id="{{ widget.full }}__{{ item_id }}" rows="5"
                   style="width:99%;" />{{ entry_value }}</textarea>
     
+      {% endif %}
+      
+      {% if entry.note is defined %}
+        <div class="help_note">{{ entry.note }}</div>
       {% endif %}
         </td>
       </tr>

@@ -1,6 +1,7 @@
 <?php
 /**
  * site_view.class.php
+ * TODO: add timezone and operators_expected to each site
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -59,8 +60,9 @@ class site_view extends base_view
     $this->set_item( 'users', $this->get_record()->get_user_count() );
 
     $db_activity = $this->get_record()->get_last_activity();
-    $last = \sabretooth\util::get_fuzzy_time_ago(
-              is_null( $db_activity ) ? null : $db_activity->date );
+    $last = \sabretooth\util::get_fuzzy_period_ago(
+              is_null( $db_activity ) ?
+              null : \sabretooth\util::from_server_date( $db_activity->date ) );
     $this->set_item( 'last_activity', $last );
 
     $this->finish_setting_items();

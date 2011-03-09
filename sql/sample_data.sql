@@ -5,12 +5,11 @@
 SET AUTOCOMMIT=0;
 
 DELETE FROM site;
-INSERT INTO site( name ) VALUES( 'Dalhousie' );
-INSERT INTO site( name ) VALUES( 'McMaster' );
-INSERT INTO site( name ) VALUES( 'Manitoba' );
-INSERT INTO site( name ) VALUES( 'Sherbrooke' );
-INSERT INTO site( name ) VALUES( 'Usher' );
-INSERT INTO site( name ) VALUES( 'Victoria' );
+INSERT INTO site( name, timezone ) VALUES( 'Dalhousie', 'Canada/Atlantic' );
+INSERT INTO site( name, timezone ) VALUES( 'McMaster', 'Canada/Eastern' );
+INSERT INTO site( name, timezone ) VALUES( 'Manitoba', 'Canada/Central' );
+INSERT INTO site( name, timezone ) VALUES( 'Sherbrooke', 'Canada/Eastern' );
+INSERT INTO site( name, timezone ) VALUES( 'Victoria', 'Canada/Pacific' );
 
 DELETE FROM user;
 INSERT INTO user( name ) VALUES( 'patrick' );

@@ -120,6 +120,11 @@ table {
   font-weight: bold;
 }
 
+.help_note {
+  font-style: italic;
+  font-size: 0.8em;
+}
+
 .spacer {
   margin: 16px;
 }
@@ -128,11 +133,12 @@ table {
   padding: 1px;
 }
 
-/* override a few things in the calendrical plugin */
-.calendricalTimePopup {
-  width: 400px;
-  height: 300px;
-}
+/* css for timepicker */
+.ui-timepicker-div .ui-widget-header{ margin-bottom: 8px; }
+.ui-timepicker-div dl{ text-align: left; }
+.ui-timepicker-div dl dt{ height: 25px; }
+.ui-timepicker-div dl dd{ margin: -25px 0 10px 65px; }
+.ui-timepicker-div td { font-size: 90%; }
 
 /* override a few things in the jquery ui theme */
 .ui-button-text-only .ui-button-text { padding: .1em 1em; }

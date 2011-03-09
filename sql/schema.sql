@@ -11,6 +11,7 @@ DROP TABLE IF EXISTS `site` ;
 CREATE  TABLE IF NOT EXISTS `site` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(45) NOT NULL ,
+  `timezone` ENUM('Canada/Pacific','Canada/Mountain','Canada/Central','Canada/Eastern','Canada/Atlantic','Canada/Newfoundland') NOT NULL ,
   `operators_expected` INT UNSIGNED NOT NULL DEFAULT 0 ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) )
@@ -374,8 +375,8 @@ CREATE  TABLE IF NOT EXISTS `availability` (
   `friday` TINYINT(1)  NOT NULL DEFAULT false ,
   `saturday` TINYINT(1)  NOT NULL DEFAULT false ,
   `sunday` TINYINT(1)  NOT NULL DEFAULT false ,
-  `period_start` TIME NOT NULL ,
-  `period_end` TIME NOT NULL ,
+  `start_time` TIME NOT NULL ,
+  `end_time` TIME NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
   CONSTRAINT `fk_appointment_participant`

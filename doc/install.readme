@@ -12,7 +12,7 @@ The following software must be installed prior to installing sabretooth:
 - jQuery-ui 1.8.8+
 - jQuery plugins:
     cookie, hoverIntent, layout, extruder, flipText, metadata, loading, loading.overflow,
-    jeditable, calendrical
+    jeditable, timepicker
 - phpagi 2.20+
 - phpexcel 1.7.5+
 

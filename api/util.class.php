@@ -176,6 +176,90 @@ final class util
     // output as a pre
     echo '<pre style="font-weight: bold; color: #B0B0B0; background: black">'.$output.'</pre>';
   }
+  
+  /**
+   * Converts the server's date to a user's date
+   * 
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @param string $date A date string in yyyy-mm-dd hh:mm:dd format
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function from_server_date( $date )
+  {
+    if( is_null( $date ) || !is_string( $date ) ) return $date;
+
+    $user_tz = \sabretooth\session::self()->get_site()->timezone;
+    $server_tz = date( 'e' );
+
+    $date_obj = new \DateTime( $date, new \DateTimeZone( $server_tz ) );
+    $date_obj->setTimeZone( new \DateTimeZone( $user_tz ) );
+    return $date_obj->format( "Y-m-d G:i:s" );
+  }
+
+  /**
+   * Converts a user's date to server date.
+   * 
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @param string $date A date string in yyyy-mm-dd hh:mm:dd format
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function to_server_date( $date )
+  {
+    if( is_null( $date ) || !is_string( $date ) ) return $date;
+
+    $user_tz = \sabretooth\session::self()->get_site()->timezone;
+    $server_tz = date( 'e' );
+
+    $date_obj = new \DateTime( $date, new \DateTimeZone( $user_tz ) );
+    $date_obj->setTimeZone( new \DateTimeZone( $server_tz ) );
+    return $date_obj->format( "Y-m-d G:i:s" );
+  }
+
+  /**
+   * Converts the server's time to a user's time
+   * 
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @param string $time A time string in hh:mm or hh:mm:ss
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function from_server_time( $time )
+  {
+    if( is_null( $time ) || !is_string( $time ) ) return $time;
+
+    $user_tz = \sabretooth\session::self()->get_site()->timezone;
+    $server_tz = date( 'e' );
+
+    $time_obj = new \DateTime( $time, new \DateTimeZone( $server_tz ) );
+    $time_obj->setTimeZone( new \DateTimeZone( $user_tz ) );
+    return $time_obj->format( "G:i:s" );
+  }
+
+  /**
+   * Converts a user's time to server time.
+   * 
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @param string $time A time string in hh:mm or hh:mm:ss
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function to_server_time( $time )
+  {
+    if( is_null( $time ) || !is_string( $time ) ) return $time;
+
+    $user_tz = \sabretooth\session::self()->get_site()->timezone;
+    $server_tz = date( 'e' );
+
+    $time_obj = new \DateTime( $time, new \DateTimeZone( $user_tz ) );
+    $time_obj->setTimeZone( new \DateTimeZone( $server_tz ) );
+    return $time_obj->format( "G:i:s" );
+  }
 
   /**
    * Returns the date as a user-friendly string.
@@ -186,12 +270,12 @@ final class util
    * @static
    * @access public
    */
-  public static function get_date( $date )
+  public static function get_formatted_date( $date )
   {
     if( is_null( $date ) || !is_string( $date ) ) return 'unknown';
 
-    $date = new \DateTime( $date );
-    return $date->format( 'l, F jS, Y' );
+    $date_obj = new \DateTime( $date );
+    return $date_obj->format( 'l, F jS, Y' );
   }
 
   /**
@@ -203,16 +287,17 @@ final class util
    * @static
    * @access public
    */
-  public static function get_time( $date )
+  public static function get_formatted_time( $time, $include_seconds = true )
   {
-    if( is_null( $date ) || !is_string( $date ) ) return 'unknown';
+    if( is_null( $time ) || !is_string( $time ) ) return 'unknown';
 
-    $date = new \DateTime( $date );
-    return $date->format( 'g:i:s A' );
+    $user_tz = \sabretooth\session::self()->get_site()->timezone;
+    $time_obj = new \DateTime( $time, new \DateTimeZone( $user_tz ) );
+    return $time_obj->format( $include_seconds ? 'g:i:s A, T' : 'g:i A, T' );
   }
 
   /**
-   * Returns a fuzzy-time description of how long ago a certain date occured.
+   * Returns a fuzzy description of how long ago a certain date occured.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
    * @param string $date A date string in the format accepted by the DateTime constructor.
@@ -220,7 +305,7 @@ final class util
    * @static
    * @access public
    */
-  public static function get_fuzzy_time_ago( $date )
+  public static function get_fuzzy_period_ago( $date )
   {
     if( is_null( $date ) || !is_string( $date ) ) return 'never';
 

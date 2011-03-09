@@ -35,6 +35,7 @@
   
     // build the args object
     var id_string = element.attr( 'id' );
+    console.log( id_string );
     var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
     var args = new Object();
     args.id = {{ id|default(0) }};
@@ -202,23 +203,26 @@
           }, jeditable_params );
         
         {% elseif 'date' == entry.type %}
-          $( "input.datepicker_{{ item_id }}" ).datepicker( {
+          $input_{{ item_id }} = $( "input.datepicker_{{ item_id }}" );
+          $input_{{ item_id }}.datepicker( {
             dateFormat: 'yy-mm-dd',
             showAnim: 'slideDown',
             onClose: function( dateText, inst ) {
-              return process_change( $(this), dateText, "{{ entry.type }}" );
+              return process_change( $input_{{ item_id }}, dateText, "{{ entry.type }}" );
             }
           } );
         
         {% elseif 'time' == entry.type %}
-            $( function () {
-              $( "input.calendrical_{{ item_id }}" ).calendricalTime();
-            } );
-
-        {% elseif 'timerange' == entry.type %}
-            $( function () {
-              $( "input.calendrical_{{ item_id }}, input.calendrical_second_{{ entry.second }}" ).calendricalTimeRange();
-            } );
+          $input_{{ item_id }} = $( "input.timepicker_{{ item_id }}" );
+          $input_{{ item_id }}.timepicker( {
+            timeFormat: 'hh:mm',
+            showAnim: 'slideDown',
+            ampm: false,
+            stepMinute: 5,
+            onClose: function( timeText, inst ) {
+              return process_change( $input_{{ item_id }}, timeText, "{{ entry.type }}" );
+            }
+          } );
 
         {% endif %}
         
@@ -246,27 +250,9 @@
 
           <div class="mutable padded">
             <input id="{{ widget.full }}__{{ item_id }}" type="text"
-                   class="ui-widget-content calendrical_{{ item_id }}"
+                   class="ui-widget-content timepicker_{{ item_id }}"
                    value="{{ entry_value }}"
-                   style="border: 0px; background: transparent; width: 100%;" readonly />
-          </div>
-
-        {% elseif 'timerange' == entry.type %}
-
-          <div class="mutable padded">
-            <input id="{{ widget.full }}__{{ item_id }}" type="text"
-                   class="ui-widget-content calendrical_{{ item_id }}"
-                   value="{{ entry_value }}"
-                   style="border: 0px; background: transparent; width: 100%;" readonly />
-          </div>
-
-        {% elseif 'timerange_second' == entry.type %}
-
-          <div class="mutable padded">
-            <input id="{{ widget.full }}__{{ item_id }}" type="text"
-                   class="ui-widget-content calendrical_second_{{ item_id }}"
-                   value="{{ entry_value }}"
-                   style="border: 0px; background: transparent; width: 100%;" readonly />
+                   style="border: 0px; background: transparent; width: 100%;" />
           </div>
 
         {% elseif 'enum' == entry.type %}

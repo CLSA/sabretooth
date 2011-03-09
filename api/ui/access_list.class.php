@@ -52,7 +52,8 @@ class access_list extends base_list_widget
         array( 'user.name' => $record->get_user()->name,
                'role.name' => $record->get_role()->name,
                'site.name' => $record->get_site()->name,
-               'date' => \sabretooth\util::get_fuzzy_time_ago( $record->date ) ) );
+               'date' => \sabretooth\util::get_fuzzy_period_ago(
+                           \sabretooth\util::from_server_date( $record->date ) ) ) );
     }
 
     $this->finish_setting_rows();

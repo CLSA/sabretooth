@@ -132,8 +132,20 @@ abstract class active_record extends \sabretooth\base_object
       if( static::get_primary_key_name() != $key )
       {
         // make sure to html-escape values for text-columns
-        if( 'text' == static::get_column_type( $key ) ) $val = htmlentities( $val );
-
+        if( 'text' == static::get_column_type( $key ) )
+        { // html-escape text types
+          $val = htmlentities( $val );
+        }
+        elseif( 'datetime' == static::get_column_type( $key ) ||
+                'timestamp' == static::get_column_type( $key ) )
+        { // convert datetime to server date and time
+          $val = \sabretooth\util::to_server_date( $val );
+        }
+        elseif( 'time' == static::get_column_type( $key ) )
+        { // convert time to server time
+          $val = \sabretooth\util::to_server_time( $val );
+        }
+        
         $sets .= sprintf( '%s %s = %s',
                           $first ? '' : ',',
                           $key,

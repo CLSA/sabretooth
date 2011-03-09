@@ -28,6 +28,12 @@ class availability_add extends base_view
   {
     parent::__construct( 'availability', 'add', $args );
     
+    // build time help text
+    $session = \sabretooth\session::self();
+    $time_help = sprintf( 'Time is in %s\'s time zone (%s)',
+                          $session->get_site()->name,
+                          $session->get_site()->timezone );
+
     // add items to the view
     $this->add_item( 'participant_id', 'hidden' );
     $this->add_item( 'monday', 'boolean', 'Monday' );
@@ -37,7 +43,8 @@ class availability_add extends base_view
     $this->add_item( 'friday', 'boolean', 'Friday' );
     $this->add_item( 'saturday', 'boolean', 'Saturday' );
     $this->add_item( 'sunday', 'boolean', 'Sunday' );
-    $this->add_item( array( 'period_start', 'period_end' ), 'timerange', 'Time' );
+    $this->add_item( 'start_time', 'time', 'Start Time', $time_help );
+    $this->add_item( 'end_time', 'time', 'End Time', $time_help );
   }
 
   /**
@@ -64,8 +71,8 @@ class availability_add extends base_view
     $this->set_item( 'friday', false, true );
     $this->set_item( 'saturday', false, true );
     $this->set_item( 'sunday', false, true );
-    $this->set_item( 'period_start', '', true );
-    $this->set_item( 'period_end', '', true );
+    $this->set_item( 'start_time', '', true );
+    $this->set_item( 'end_time', '', true );
 
     $this->finish_setting_items();
   }

@@ -70,14 +70,12 @@ $SETTINGS[ 'url' ][ 'JQUERY_LOADING_OVERFLOW_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/jquery.loading.overflow.min.js';
 $SETTINGS[ 'url' ][ 'JQUERY_JEDITABLE_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/jquery.jeditable.min.js';
-$SETTINGS[ 'url' ][ 'JQUERY_CALENDRICAL_JS' ] =
-  $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/calendrical/jquery.calendrical.js';
+$SETTINGS[ 'url' ][ 'JQUERY_TIMEPICKER_JS' ] =
+  $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/timepicker/jquery-ui-timepicker-addon.js';
 
 
 // css files
 $SETTINGS[ 'url' ][ 'JQUERY_UI_THEMES' ] = $SETTINGS[ 'url' ][ 'JQUERY_UI' ].'/css';
-$SETTINGS[ 'url' ][ 'JQUERY_CALENDRICAL_CSS' ] =
-  $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS'].'/calendrical/calendrical.css';
 
 // the location of log files
 $SETTINGS[ 'path' ][ 'LOG_FILE' ] = '/var/local/sabretooth/log';

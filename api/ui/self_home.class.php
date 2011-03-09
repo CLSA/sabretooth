@@ -39,8 +39,10 @@ class self_home extends widget
     $this->set_variable( 'site_name', $session->get_site()->name );
     if( $db_activity )
     {
-      $this->set_variable( 'last_day', \sabretooth\util::get_date( $db_activity->date ) );
-      $this->set_variable( 'last_time', \sabretooth\util::get_time( $db_activity->date ) );
+      $date = \sabretooth\util::from_server_date( $db_activity->date );
+      $this->set_variable( 'last_day', \sabretooth\util::get_formatted_date( $date ) );
+      $time = \sabretooth\util::from_server_time( $db_activity->date );
+      $this->set_variable( 'last_time', \sabretooth\util::get_formatted_time( $time ) );
     }
   }
 }

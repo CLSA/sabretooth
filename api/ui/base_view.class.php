@@ -74,37 +74,18 @@ abstract class base_view extends base_record_widget
   /**
    * Add an item to the view.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string|array $items The item's id, can be one of the record's column names.
-                         For range types this should be an array of two item ids.
+   * @param string $item_id The item's id, can be one of the record's column names.
+   * @param string $type The item's type, one of "boolean", "date", "time", "string",
+                   "text", "enum" or "constant"
    * @param string $heading The item's heading as it will appear in the view
-   * @param string $type The item's type, one of "boolean", "date", "time", "timerange",
-   *               "string", "text", "enum" or "constant"
+   * @param string $note A note to add below the item.
    * @access public
    */
-  public function add_item( $items, $type, $heading = NULL )
+  public function add_item( $item_id, $type, $heading = NULL, $note = NULL )
   {
-    if( is_array( $items ) )
-    {
-      if( 2 == count( $items ) )
-      {
-        // add the first item
-        $item_id = $items[0];
-        $this->items[$item_id] = array( 'type' => $type, 'second' => $items[1] );
-        if( !is_null( $heading ) ) $this->items[$item_id]['heading'] = 'Start '.$heading;
-
-        // add the second item
-        $item_id = $items[1];
-        $this->items[$item_id] = array( 'type' => $type.'_second' );
-        if( !is_null( $heading ) ) $this->items[$item_id]['heading'] = 'End '.$heading;
-      }
-      else throw new \sabretooth\exception\argument( 'items', $items, __METHOD__ );
-    }
-    else
-    {
-      $item_id = $items;
-      $this->items[$item_id] = array( 'type' => $type );
-      if( !is_null( $heading ) ) $this->items[$item_id]['heading'] = $heading;
-    }
+    $this->items[$item_id] = array( 'type' => $type );
+    if( !is_null( $heading ) ) $this->items[$item_id]['heading'] = $heading;
+    if( !is_null( $note ) ) $this->items[$item_id]['note'] = $note;
   }
 
   /**
@@ -127,6 +108,10 @@ abstract class base_view extends base_record_widget
       if( is_null( $value ) ) $value = '';
       else $value = $value ? 'Yes' : 'No';
     }
+    else if( 'time' == $this->items[$item_id]['type'] )
+    {
+      $value = strlen( $value ) ? date( 'H:i', strtotime( $value ) ) : "12:00";
+    }
     else if( 'constant' == $this->items[$item_id]['type'] && 0 === $value )
     {
       $value = ' 0';
@@ -139,7 +124,14 @@ abstract class base_view extends base_record_widget
       if( !$required ) $enum['NULL'] = '';
       $this->items[$item_id]['enum'] = $enum;
     }
+    else if( 'enum' == $this->items[$item_id]['type'] )
+    { // make sure the type isn't an enum (since enum values aren't provided)
+      throw new \sabretooth\exception\runtime(
+        'Trying to set enum item without enum values.', __METHOD__ );
+    }
+
     $this->items[$item_id]['required'] = $required;
+
   }
 
   /**

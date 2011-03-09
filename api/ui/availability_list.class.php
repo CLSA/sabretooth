@@ -37,8 +37,8 @@ class availability_list extends base_list_widget
     $this->add_column( 'friday', 'Fri', true );
     $this->add_column( 'saturday', 'Sat', true );
     $this->add_column( 'sunday', 'Sun', true );
-    $this->add_column( 'period_start', 'Start', true );
-    $this->add_column( 'period_end', 'End', true );
+    $this->add_column( 'start_time', 'Start', true );
+    $this->add_column( 'end_time', 'End', true );
   }
   
   /**
@@ -53,6 +53,11 @@ class availability_list extends base_list_widget
 
     foreach( $this->get_record_list() as $record )
     {
+      $start_time = \sabretooth\util::get_formatted_time(
+        \sabretooth\util::from_server_time( $record->start_time ), false );
+      $end_time = \sabretooth\util::get_formatted_time(
+        \sabretooth\util::from_server_time( $record->end_time ), false );
+
       $this->add_row( $record->id,
         array( 'monday' => $record->monday ? 'Yes' : 'No',
                'tuesday' => $record->tuesday ? 'Yes' : 'No',
@@ -61,8 +66,8 @@ class availability_list extends base_list_widget
                'friday' => $record->friday ? 'Yes' : 'No',
                'saturday' => $record->saturday ? 'Yes' : 'No',
                'sunday' => $record->sunday ? 'Yes' : 'No',
-               'period_start' => $record->period_start,
-               'period_end' => $record->period_end ) );
+               'start_time' => $start_time,
+               'end_time' => $end_time ) );
     }
 
     $this->finish_setting_rows();

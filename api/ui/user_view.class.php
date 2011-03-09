@@ -59,8 +59,9 @@ class user_view extends base_view
     $this->set_item( 'active', $this->get_record()->active, true );
     
     $db_activity = $this->get_record()->get_last_activity();
-    $last = \sabretooth\util::get_fuzzy_time_ago(
-              is_null( $db_activity ) ? null : $db_activity->date );
+    $last = \sabretooth\util::get_fuzzy_period_ago(
+              is_null( $db_activity ) ?
+              null : \sabretooth\util::from_server_date( $db_activity->date ) );
     $this->set_item( 'last_activity', $last );
 
     $this->finish_setting_items();
