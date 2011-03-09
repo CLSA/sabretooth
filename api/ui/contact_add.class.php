@@ -59,8 +59,6 @@ class contact_add extends base_view
         'Contact widget must have a parent with participant as the subject.', __METHOD );
     
     // create enum arrays
-    foreach( \sabretooth\database\limesurvey\surveys::select() as $db_survey )
-      $surveys[$db_survey->sid] = $db_survey->get_title();
     $num_contacts = $this->parent->get_record()->get_contact_count();
     $ranks = array();
     for( $rank = 1; $rank <= ( $num_contacts + 1 ); $rank++ )
