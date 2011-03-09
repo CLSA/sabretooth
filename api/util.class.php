@@ -116,8 +116,8 @@ final class util
     }
     else if( is_string( $context ) )
     {
-      // in case this is a method name then we need to replace :: with _
-      $context = str_replace( '::', '_', $context );
+      // in case this is a method name then we need to replace :: with __
+      $context = str_replace( '::', '__', $context );
 
       // remove namespaces
       $index = strrchr( $context, '\\' );
