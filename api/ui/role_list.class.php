@@ -31,7 +31,7 @@ class role_list extends base_list_widget
     $session = \sabretooth\session::self();
 
     $this->add_column( 'name', 'Name', true );
-    $this->add_column( 'users', 'users', false );
+    $this->add_column( 'users', 'Users', false );
   }
 
   /**

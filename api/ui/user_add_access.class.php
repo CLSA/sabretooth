@@ -35,5 +35,33 @@ class user_add_access extends base_add_access
     $this->list_widget->set_parent( $this, 'edit' );
     $this->list_widget->set_heading( 'Choose sites to grant access to the user' );
   }
+
+  /**
+   * Overrides the role list widget's method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return int
+   * @access protected
+   */
+  public function determine_role_count( $modifier = NULL )
+  {
+    // we want to display all roles
+    return \sabretooth\database\role::count( $modifier );
+  }
+
+  /**
+   * Overrides the role list widget's method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return array( active_record )
+   * @access protected
+   */
+  public function determine_role_list( $modifier = NULL )
+  {
+    // we want to display all roles
+    return \sabretooth\database\role::select( $modifier );
+  }
 }
 ?>
