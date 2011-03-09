@@ -256,6 +256,17 @@ abstract class base_list_widget extends widget
   }
   
   /**
+   * Set the number of items to show per page
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param int $items_per_page
+   * @access public
+   */
+  public function set_items_per_page( $items_per_page )
+  {
+    $this->items_per_page = $items_per_page;
+  }
+
+  /**
    * Add a column to the list.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_id The column's id, either in column or table.column format
