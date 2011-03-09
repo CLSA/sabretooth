@@ -51,8 +51,7 @@ class site_list extends base_list_widget
       // determine the last activity
       $db_activity = $record->get_last_activity();
       $last = \sabretooth\util::get_fuzzy_period_ago(
-                is_null( $db_activity ) ?
-                null : \sabretooth\util::from_server_date( $db_activity->date ) );
+                is_null( $db_activity ) ? null : $db_activity->date );
 
       $this->add_row( $record->id,
         array( 'name' => $record->name,

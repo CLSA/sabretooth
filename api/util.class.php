@@ -178,6 +178,26 @@ final class util
   }
   
   /**
+   * Returns timezone abbreviations
+   * 
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @param string $timezone
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function get_timezone_abbreviation( $timezone )
+  {
+    if( 'Canada/Pacific' == $timezone ) return 'PST';
+    else if( 'Canada/Mountain' == $timezone ) return 'MST';
+    else if( 'Canada/Central' == $timezone ) return 'CST';
+    else if( 'Canada/Eastern' == $timezone ) return 'EST';
+    else if( 'Canada/Atlantic' == $timezone ) return 'AST';
+    else if( 'Canada/Newfoundland' == $timezone ) return 'NST';
+    else '???';
+  }
+  
+  /**
    * Converts the server's date to a user's date
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
@@ -308,8 +328,9 @@ final class util
   public static function get_fuzzy_period_ago( $date )
   {
     if( is_null( $date ) || !is_string( $date ) ) return 'never';
-
-    $date = new \DateTime( $date );
+    
+    // we need to convert to server time since we will compare to the server's "now" time
+    $date = new \DateTime( self::to_server_time( $date ) );
     $interval = $date->diff( new \DateTime() );
     
     if( 0 != $interval->invert )
