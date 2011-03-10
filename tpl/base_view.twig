@@ -101,6 +101,7 @@
           var $div = $( "#{{ widget.full }}__{{ item_id }}" );
           var $textedit = $( "#test" );
           var text = $div.html();
+          var slot = get_slot( $div );
         
           // convert end-of-lines to <br>'s so that the text displays properly
           $div.html( text.replace( /(\r\n|\r|\n)/g, "<br />" ) );
@@ -127,7 +128,7 @@
         
                 // send the action, reload the record on success
                 if( send_action( "{{ widget.subject }}", "edit", args ) )
-                  slot_refresh( "main" ); // TODO: the slot should be made dynamic
+                  slot_refresh( slot );
     
                 $(this).dialog( "close" );
               },
