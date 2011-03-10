@@ -32,7 +32,7 @@ class participant_list extends base_list_widget
 
     $this->add_column( 'first_name', 'First Name', true );
     $this->add_column( 'last_name', 'Last Name', true );
-    $this->add_column( 'language', 'Language', true );
+    $this->add_column( 'language', 'Language Preference', true );
     $this->add_column( 'status', 'Condition', true );
   }
   
@@ -51,7 +51,7 @@ class participant_list extends base_list_widget
       $this->add_row( $record->id,
         array( 'first_name' => $record->first_name,
                'last_name' => $record->last_name,
-               'language' => $record->language,
+               'language' => $record->language ? $record->language : '(none)',
                'status' => $record->status ? $record->status : '(none)' ) );
     }
 
