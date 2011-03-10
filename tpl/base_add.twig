@@ -103,6 +103,11 @@
         <input id="{{ widget.full }}__{{ item_id }}" type="text" style="width:99%"
                value="{{ entry_value }}" />
     
+      {% elseif 'number' == entry.type %}
+    
+        <input id="{{ widget.full }}__{{ item_id }}" type="text" style="width:99%"
+               value="{{ entry.value|default(0) }}" />
+    
       {% elseif 'text' == entry.type %}
     
         <textarea id="{{ widget.full }}__{{ item_id }}" rows="5"

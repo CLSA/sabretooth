@@ -166,7 +166,8 @@
           jeditable_params.onblur = "cancel";
           jeditable_params.placeholder = "&nbsp;";
           
-        {% if 'string' == entry.type %}
+        {% if 'string' == entry.type or 'number' == entry.type %}
+          {% if 'number' == entry.type %}jeditable_params.placeholder = "0";{% endif %}
           jeditable_params.type = "text";
           $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
             return process_change( $(this), value, "{{ entry.type }}" );

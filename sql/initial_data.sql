@@ -224,6 +224,12 @@ VALUES( "widget", "shift", "list", true, "List shifts in the system." );
 
 -- site
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "site", "edit", true, "Edits a site's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "site", "new", true, "Add a new site to the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "site", "add", true, "View a form for creating a new site." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "site", "view", true, "View a site's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "site", "list", true, "List sites in the system." );

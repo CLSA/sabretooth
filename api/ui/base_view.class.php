@@ -75,7 +75,7 @@ abstract class base_view extends base_record_widget
    * Add an item to the view.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $item_id The item's id, can be one of the record's column names.
-   * @param string $type The item's type, one of "boolean", "date", "time", "string",
+   * @param string $type The item's type, one of "boolean", "date", "time", "number", "string",
                    "text", "enum" or "constant"
    * @param string $heading The item's heading as it will appear in the view
    * @param string $note A note to add below the item.
@@ -112,9 +112,13 @@ abstract class base_view extends base_record_widget
     {
       $value = strlen( $value ) ? date( 'H:i', strtotime( $value ) ) : "12:00";
     }
-    else if( 'constant' == $this->items[$item_id]['type'] && 0 === $value )
+    else if( 'constant' == $this->items[$item_id]['type'] && !$value && '' != $value )
     {
       $value = ' 0';
+    }
+    else if( 'number' == $this->items[$item_id]['type'] )
+    {
+      $value = floatval( $value );
     }
 
     $this->items[$item_id]['value'] = $value;
