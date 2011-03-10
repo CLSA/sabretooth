@@ -136,14 +136,15 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `interview_queue`
+-- Table `queue`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `interview_queue` ;
+DROP TABLE IF EXISTS `queue` ;
 
-CREATE  TABLE IF NOT EXISTS `interview_queue` (
+CREATE  TABLE IF NOT EXISTS `queue` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(45) NOT NULL ,
-  `query` TEXT NOT NULL ,
+  `view` TEXT NOT NULL ,
+  `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) )
 ENGINE = InnoDB;
@@ -201,21 +202,21 @@ CREATE  TABLE IF NOT EXISTS `assignment` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `user_id` INT UNSIGNED NOT NULL ,
   `interview_id` INT UNSIGNED NOT NULL ,
-  `interview_queue_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'What queue did the interview get assigned from?' ,
+  `queue_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'What queue did the interview get assigned from?' ,
   `start_time` TIMESTAMP NOT NULL ,
   `end_time` DATETIME NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_user_id` (`user_id` ASC) ,
-  INDEX `fk_interview_queue_id` (`interview_queue_id` ASC) ,
+  INDEX `fk_queue_id` (`queue_id` ASC) ,
   INDEX `fk_interview_id` (`interview_id` ASC) ,
   CONSTRAINT `fk_assignment_user`
     FOREIGN KEY (`user_id` )
     REFERENCES `user` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_assignment_interview_queue`
-    FOREIGN KEY (`interview_queue_id` )
-    REFERENCES `interview_queue` (`id` )
+  CONSTRAINT `fk_assignment_queue`
+    FOREIGN KEY (`queue_id` )
+    REFERENCES `queue` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_assignment_interview`
@@ -586,27 +587,27 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `site_has_interview_queue`
+-- Table `site_has_queue`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `site_has_interview_queue` ;
+DROP TABLE IF EXISTS `site_has_queue` ;
 
-CREATE  TABLE IF NOT EXISTS `site_has_interview_queue` (
+CREATE  TABLE IF NOT EXISTS `site_has_queue` (
   `site_id` INT UNSIGNED NOT NULL ,
-  `interview_queue_id` INT UNSIGNED NOT NULL ,
+  `queue_id` INT UNSIGNED NOT NULL ,
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
   `priority` TINYINT NOT NULL ,
-  PRIMARY KEY (`site_id`, `interview_queue_id`) ,
-  INDEX `fk_interview_queue_id` (`interview_queue_id` ASC) ,
+  PRIMARY KEY (`site_id`, `queue_id`) ,
+  INDEX `fk_queue_id` (`queue_id` ASC) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
   UNIQUE INDEX `uq_site_id_priority` (`site_id` ASC, `priority` ASC) ,
-  CONSTRAINT `fk_site_has_interview_queue_site`
+  CONSTRAINT `fk_site_has_queue_site`
     FOREIGN KEY (`site_id` )
     REFERENCES `site` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_site_has_interview_queue_interview_queue`
-    FOREIGN KEY (`interview_queue_id` )
-    REFERENCES `interview_queue` (`id` )
+  CONSTRAINT `fk_site_has_queue_queue`
+    FOREIGN KEY (`queue_id` )
+    REFERENCES `queue` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

@@ -1,6 +1,6 @@
 <?php
 /**
- * interview_queue.class.php
+ * queue.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\database
@@ -10,9 +10,9 @@
 namespace sabretooth\database;
 
 /**
- * interview_queue: active record
+ * queue: active record
  *
  * @package sabretooth\database
  */
-class interview_queue extends active_record {}
+class queue extends active_record {}
 ?>
