@@ -35,10 +35,15 @@ class site_view extends base_view
     $this->add_item( 'users', 'constant', 'Number of users' );
     $this->add_item( 'last_activity', 'constant', 'Last activity' );
 
+    // create the shift sub-list widget
+    $this->shift_list = new shift_list( $args );
+    $this->shift_list->set_parent( $this );
+    $this->shift_list->set_heading( 'Site shifts' );
+
     // create the access sub-list widget
     $this->access_list = new access_list( $args );
     $this->access_list->set_parent( $this );
-    $this->access_list->set_heading( 'This site\'s access list' );
+    $this->access_list->set_heading( 'Site access list' );
 
     // create the activity sub-list widget
     $this->activity_list = new activity_list( $args );
@@ -74,10 +79,42 @@ class site_view extends base_view
     $this->finish_setting_items();
 
     // finish the child widgets
+    $this->shift_list->finish();
+    $this->set_variable( 'shift_list', $this->shift_list->get_variables() );
     $this->access_list->finish();
     $this->set_variable( 'access_list', $this->access_list->get_variables() );
     $this->activity_list->finish();
     $this->set_variable( 'activity_list', $this->activity_list->get_variables() );
+  }
+
+  /**
+   * Overrides the shift list widget's method to only include this site's shift.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return int
+   * @access protected
+   */
+  public function determine_shift_count( $modifier = NULL )
+  {
+    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    $modifier->where( 'site_id', '=', $this->get_record()->id );
+    return \sabretooth\database\shift::count( $modifier );
+  }
+
+  /**
+   * Overrides the shift list widget's method to only include this site's shift.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return array( active_record )
+   * @access protected
+   */
+  public function determine_shift_list( $modifier = NULL )
+  {
+    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    $modifier->where( 'site_id', '=', $this->get_record()->id );
+    return \sabretooth\database\shift::select( $modifier );
   }
 
   /**

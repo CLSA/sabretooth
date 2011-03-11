@@ -9,6 +9,9 @@
 {% block record %}
 {{ parent() }}
 <div class="spacer"></div>
+{# Add an shift list pertaining to this site #}
+{% include "shift_list.twig" with shift_list %}
+<div class="spacer"></div>
 {# Add an access list pertaining to this site #}
 {% include "access_list.twig" with access_list %}
 <div class="spacer"></div>

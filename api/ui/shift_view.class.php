@@ -32,8 +32,8 @@ class shift_view extends base_view
     $this->add_item( 'user', 'constant', 'User' );
     $this->add_item( 'site', 'constant', 'Site' );
     $this->add_item( 'date', 'date', 'Date' );
-    $this->add_item( 'start_time', 'time', 'Time' );
-    $this->add_item( 'end_time', 'time', 'Time' );
+    $this->add_item( 'start_time', 'time', 'Start Time' );
+    $this->add_item( 'end_time', 'time', 'End Time' );
   }
 
   /**
