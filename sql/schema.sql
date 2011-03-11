@@ -103,7 +103,7 @@ CREATE  TABLE IF NOT EXISTS `phase` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'aka: qnaire_has_survey' ;
+COMMENT = 'aka: qnaire_has_survey';
 
 
 -- -----------------------------------------------------
@@ -189,8 +189,8 @@ CREATE  TABLE IF NOT EXISTS `interview` (
     REFERENCES `phase` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB, 
-COMMENT = 'aka: qnaire_has_participant' ;
+ENGINE = InnoDB
+COMMENT = 'aka: qnaire_has_participant';
 
 
 -- -----------------------------------------------------
@@ -445,11 +445,11 @@ DROP TABLE IF EXISTS `qnaire_note` ;
 
 CREATE  TABLE IF NOT EXISTS `qnaire_note` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `qnaire_id` INT UNSIGNED NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
+  `qnaire_id` INT UNSIGNED NOT NULL ,
   `sticky` TINYINT(1)  NOT NULL DEFAULT false ,
   `date` TIMESTAMP NOT NULL ,
-  `description` TEXT NOT NULL ,
+  `note` TEXT NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_user_id` (`user_id` ASC) ,
   INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
@@ -613,36 +613,6 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `site_queue`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `site_queue` ;
-
-CREATE  TABLE IF NOT EXISTS `site_queue` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `site_id` INT UNSIGNED NOT NULL ,
-  `queue_id` INT UNSIGNED NOT NULL ,
-  `active` TINYINT(1)  NOT NULL DEFAULT true ,
-  `rank` INT NOT NULL ,
-  INDEX `fk_queue_id` (`queue_id` ASC) ,
-  INDEX `fk_site_id` (`site_id` ASC) ,
-  UNIQUE INDEX `uq_site_id_priority` (`site_id` ASC, `rank` ASC) ,
-  PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_site_id_queue_id` (`site_id` ASC, `queue_id` ASC) ,
-  CONSTRAINT `fk_site_queue_site`
-    FOREIGN KEY (`site_id` )
-    REFERENCES `site` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_site_queue_queue`
-    FOREIGN KEY (`queue_id` )
-    REFERENCES `queue` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB, 
-COMMENT = 'aka: site_has_queue' ;
-
-
--- -----------------------------------------------------
 -- Table `activity`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `activity` ;
@@ -694,6 +664,7 @@ CREATE  TABLE IF NOT EXISTS `setting` (
   `name` VARCHAR(45) NOT NULL ,
   `value` VARCHAR(45) NULL DEFAULT NULL ,
   `site_id` INT UNSIGNED NULL DEFAULT NULL ,
+  `description` TEXT NULL ,
   INDEX `fk_setting_site` (`site_id` ASC) ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_category_name_site_id` (`category` ASC, `name` ASC, `site_id` ASC) ,
