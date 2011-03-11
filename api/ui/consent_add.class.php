@@ -47,7 +47,7 @@ class consent_add extends base_view
     // this widget must have a parent, and it's subject must be a participant
     if( is_null( $this->parent ) || 'participant' != $this->parent->get_subject() )
       throw new \sabretooth\exception\runtime(
-        'Consent widget must have a parent with participant as the subject.', __METHOD );
+        'Consent widget must have a parent with participant as the subject.', __METHOD__ );
     
     // create enum arrays
     $events = \sabretooth\database\consent::get_enum_values( 'event' );
