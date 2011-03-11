@@ -89,6 +89,7 @@ $SETTINGS[ 'db' ][ 'server' ] = 'localhost';
 $SETTINGS[ 'db' ][ 'username' ] = 'sabretooth';
 $SETTINGS[ 'db' ][ 'password' ] = '';
 $SETTINGS[ 'db' ][ 'database' ] = 'sabretooth';
+$SETTINGS[ 'db' ][ 'prefix' ] = '';
 
 // themes
 $SETTINGS[ 'interface' ][ 'default_theme' ] = 'humanity';

@@ -26,5 +26,6 @@ $SETTINGS[ 'url' ][ 'LIMESURVEY' ] = '/url/to/limesurvey';
 $SETTINGS[ 'db' ][ 'database' ] = 'put your database name here';
 $SETTINGS[ 'db' ][ 'username' ] = 'put your database username here';
 $SETTINGS[ 'db' ][ 'password' ] = 'put your database password here';
+$SETTINGS[ 'db' ][ 'prefix' ] = 'put your table prefix here';
 
 ?>

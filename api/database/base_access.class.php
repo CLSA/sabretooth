@@ -38,7 +38,7 @@ abstract class base_access extends active_record
     $modifier->where( 'site_id', '=', $db_site->id );
     $modifier->where( 'role_id', '=', $db_role->id );
     
-    $rows = self::get_one(
+    $rows = static::db()->get_one(
       sprintf( 'SELECT user_id FROM access %s',
                $modifier->get_sql() ) );
                
@@ -57,7 +57,7 @@ abstract class base_access extends active_record
    */
   public static function count( $modifier )
   {
-    $subject_name = self::get_table_name();
+    $subject_name = static::get_table_name();
 
     // check to see if the modifier is sorting a value in the access table
     if( !is_null( $modifier ) )
@@ -69,7 +69,7 @@ abstract class base_access extends active_record
           if( $modifier->has_where( $access_table.'_id' ) )
           {
             $modifier->where( $subject_name.'.id', '=', 'access.'.$subject_name.'_id', false );
-            return self::get_one(
+            return static::db()->get_one(
               sprintf( 'SELECT COUNT( DISTINCT access.%s_id ) FROM %s, access %s',
                        $subject_name,
                        $subject_name,
@@ -100,7 +100,7 @@ abstract class base_access extends active_record
    */
   public static function select( $modifier = NULL )
   {
-    $subject_name = self::get_table_name();
+    $subject_name = static::get_table_name();
 
     // check to see if the modifier is sorting a value in the access table
     if( !is_null( $modifier ) )
@@ -114,7 +114,7 @@ abstract class base_access extends active_record
             $modifier->where( $subject_name.'.id', '=', 'access.'.$subject_name.'_id', false );
             $modifier->group( 'access.'.$subject_name.'_id' );
     
-            $id_list = self::get_col(
+            $id_list = static::db()->get_col(
               sprintf( 'SELECT %s.id FROM %s, access %s',
                        $subject_name,
                        $subject_name,
@@ -141,7 +141,7 @@ abstract class base_access extends active_record
    */
   public function get_last_activity()
   {
-    $subject_name = self::get_table_name();
+    $subject_name = static::get_table_name();
     if( is_null( $this->id ) )
     {
       \sabretooth\log::warning( 'Tried to query '.$subject_name.' with no id.' );
@@ -150,7 +150,7 @@ abstract class base_access extends active_record
     
     $modifier = new modifier();
     $modifier->where( $subject_name.'_id', '=', $this->id );
-    $activity_id = self::get_one(
+    $activity_id = static::db()->get_one(
       sprintf( 'SELECT activity_id FROM %s_last_activity %s',
                $subject_name,
                $modifier->get_sql() ) );
@@ -168,7 +168,7 @@ abstract class base_access extends active_record
    */
   public function get_activity_count( $modifier = NULL)
   {
-    $subject_name = self::get_table_name();
+    $subject_name = static::get_table_name();
     if( is_null( $this->id ) )
     {
       \sabretooth\log::warning( 'Tried to query '.$subject_name.' with no id.' );
@@ -190,7 +190,7 @@ abstract class base_access extends active_record
    */
   public function get_activity_list( $modifier = NULL )
   {
-    $subject_name = self::get_table_name();
+    $subject_name = static::get_table_name();
     $activity_list = array();
     if( is_null( $this->id ) )
     {
@@ -221,7 +221,7 @@ abstract class base_access extends active_record
    */
   public function __call( $name, $args )
   {
-    $subject_name = self::get_table_name();
+    $subject_name = static::get_table_name();
     
     // parse the function call name
     $name_parts = explode( '_', $name );

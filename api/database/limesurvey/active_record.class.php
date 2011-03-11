@@ -45,7 +45,7 @@ abstract class active_record extends \sabretooth\database\active_record
   public static function select( $modifier = NULL )
   {
     $records = array();
-    $id_list = self::get_col(
+    $id_list = static::db()->get_col(
       sprintf( 'SELECT %s FROM %s %s',
                static::get_primary_key_name(),
                static::get_table_name(),
@@ -57,95 +57,15 @@ abstract class active_record extends \sabretooth\database\active_record
   }
 
   /**
-   * Get record using unique key.
-   * 
-   * Overrides the parent method so that it is compatible with limesurvey tables.
+   * Returns the active record's database.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $column a column with the unique key property
-   * @param string $value the value of the column to match
-   * @return database\active_record
-   * @static
-   * @access public
-   */
-  public static function get_unique_record( $column, $value )
-  {
-    // same as parent but with a different database and table name prefix
-    $record = NULL;
-
-    // determine the unique key(s)
-    $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', '=', static::get_database_name() );
-    $modifier->where( 'TABLE_NAME', '=', self::get_table_name() );
-    $modifier->where( 'COLUMN_KEY', '=', 'UNI' );
-
-    $unique_keys = self::get_col(
-      sprintf( 'SELECT COLUMN_NAME FROM information_schema.COLUMNS %s',
-               $modifier->get_sql() ) );
-
-    // make sure the column is unique
-    if( in_array( $column, $unique_keys ) )
-    {
-      // this returns null if no records are found
-      $modifier = new modifier();
-      $modifier->where( $column, '=', $value );
-
-      $id = self::get_one(
-        sprintf( 'SELECT %s FROM %s %s',
-                 static::$primary_id_name,
-                 self::get_table_name(),
-                 $modifier->get_sql() ) );
-
-      if( !is_null( $id ) ) $record = new static( $id );
-    }
-    return $record;
-  }
-
-  /**
-   * Returns the name of the table associated with this active record.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access public
-   */
-  public static function get_table_name()
-  {
-    // Table and class names (without namespaces) should always be identical, but we need to have
-    // their database name and prefix added to them.
-    $prefix = \sabretooth\session::self()->get_setting( 'survey_db', 'prefix' );
-    return static::get_database_name().'.'.$prefix.parent::get_table_name();
-  }
-
-  /**
-   * Determines whether a particular table exists.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $name The name of the table to check for.
-   * @return boolean
-   * @access protected
-   */
-  protected static function table_exists( $name )
-  {
-    // same as parent method but with a different database and table name prefix
-    $prefix = \sabretooth\session::self()->get_setting( 'survey_db', 'prefix' );
-    $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', '=', static::get_database_name() );
-    $modifier->where( 'Table_Name', '=', $prefix.$name );
-
-    $count = self::get_one(
-      sprintf( 'SELECT COUNT(*) FROM information_schema.TABLES %s',
-               $modifier->get_sql() ) );
-
-    return 0 < $count;
-  }
-
-  /**
-   * Returns the name of the database that the active record is found in.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
+   * @return database
    * @static
    * @access protected
    */
-  protected static function get_database_name()
+  public static function db()
   {
-    return \sabretooth\session::self()->get_setting( 'survey_db', 'database' );
+    return \sabretooth\session::self()->get_survey_database();
   }
 }
 ?>

@@ -10,11 +10,6 @@
 namespace sabretooth;
 
 /**
- * @category external
- */
-require_once ADODB_PATH.'/adodb.inc.php';
-
-/**
  * session: handles all session-based information
  *
  * The session class is used to track all information from the time a user logs into the system
@@ -83,23 +78,25 @@ final class session extends singleton
     // don't initialize more than once
     if( $this->initialized ) return;
 
-    // set up the database
-    $this->db = ADONewConnection( session::self()->get_setting( 'db', 'driver' ) );
-    
-    if( false == $this->db->PConnect(
+    // create the databases
+    $this->database = new \sabretooth\database\database(
+      session::self()->get_setting( 'db', 'driver' ),
       session::self()->get_setting( 'db', 'server' ),
       session::self()->get_setting( 'db', 'username' ),
       session::self()->get_setting( 'db', 'password' ),
-      session::self()->get_setting( 'db', 'database' ) ) )
-    {
-      throw new \sabretooth\exception\runtime(
-        'Unable to connect to the database.', __METHOD__ );
-    }
-    $this->db->SetFetchMode( ADODB_FETCH_ASSOC );
+      session::self()->get_setting( 'db', 'database' ),
+      session::self()->get_setting( 'db', 'prefix' ) );
+    $this->survey_database = new \sabretooth\database\database(
+      session::self()->get_setting( 'survey_db', 'driver' ),
+      session::self()->get_setting( 'survey_db', 'server' ),
+      session::self()->get_setting( 'survey_db', 'username' ),
+      session::self()->get_setting( 'survey_db', 'password' ),
+      session::self()->get_setting( 'survey_db', 'database' ),
+      session::self()->get_setting( 'survey_db', 'prefix' ) );
     
     // determine the user (setting the user will also set the site and role)
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
-    $this->set_user( database\user::get_unique_record( 'name', $user_name ) );
+    $this->set_user( \sabretooth\database\user::get_unique_record( 'name', $user_name ) );
     if( NULL == $this->user )
       throw new exception\runtime( 'User "'.$user_name.'" not found.', __METHOD__ );
 
@@ -132,15 +129,27 @@ final class session extends singleton
   }
 
   /**
-   * Get the database resource.
+   * Get the main database.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return database\site
+   * @return database
    * @access public
    */
-  public function get_db()
+  public function get_database()
   {
-    return $this->db;
+    return $this->database;
+  }
+
+  /**
+   * Get the survey database.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database
+   * @access public
+   */
+  public function get_survey_database()
+  {
+    return $this->survey_database;
   }
 
   /**
@@ -239,8 +248,8 @@ final class session extends singleton
       // see if we already have the current site stored in the php session
       if( isset( $_SESSION['current_site_id'] ) && isset( $_SESSION['current_role_id'] ) )
       {
-        $this->set_site_and_role( new database\site( $_SESSION['current_site_id'] ),
-                                  new database\role( $_SESSION['current_role_id'] ) );
+        $this->set_site_and_role( new \sabretooth\database\site( $_SESSION['current_site_id'] ),
+                                  new \sabretooth\database\role( $_SESSION['current_role_id'] ) );
       }
       
       // if we still don't have a site and role then pick the first one we can find
@@ -253,7 +262,7 @@ final class session extends singleton
             'Please contact a supervisor to be granted access to a site.', __METHOD__ );
 
         $db_site = $db_site_list[0];
-        $modifier = new database\modifier();
+        $modifier = new \sabretooth\database\modifier();
         $modifier->where( 'site_id', '=', $db_site->id );
         $db_role_list = $this->user->get_role_list( $modifier );
         $db_role = $db_role_list[0];
@@ -607,11 +616,18 @@ final class session extends singleton
   private $settings = array();
 
   /**
-   * A reference to the ADODB resource.
-   * @var resource
+   * The main database object.
+   * @var database
    * @access private
    */
-  private $db = NULL;
+  private $database = NULL;
+
+  /**
+   * The survey database object.
+   * @var database
+   * @access private
+   */
+  private $survey_database = NULL;
 
   /**
    * The active record of the current user.

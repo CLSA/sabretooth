@@ -41,13 +41,13 @@ class user extends base_access
     {
       if( !$first ) $values .= ', ';
       $values .= sprintf( '(%s, %s, %s)',
-                       active_record::format_string( $id ),
-                       active_record::format_string( $role_id ),
-                       active_record::format_string( $this->id ) );
+                       database::format_string( $id ),
+                       database::format_string( $role_id ),
+                       database::format_string( $this->id ) );
       $first = false;
     }
 
-    self::execute(
+    static::db()->execute(
       sprintf( 'INSERT IGNORE INTO access (site_id, role_id, user_id) VALUES %s',
                $values ) );
   }
@@ -66,7 +66,7 @@ class user extends base_access
     // this just to make sure the access belongs to this user
     $modifier->where( 'user_id', '=', $this->id );
 
-    self::execute(
+    static::db()->execute(
       sprintf( 'DELETE FROM access %s',
                $modifier->get_sql() ) );
   }

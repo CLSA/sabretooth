@@ -31,7 +31,7 @@ class access extends active_record
     $modifier->where( 'role_id', '=', $role->id );
     $modifier->where( 'site_id', '=', $site->id );
 
-    $id = self::get_one(
+    $id = static::db()->get_one(
       sprintf( 'SELECT id FROM access %s',
                $modifier->get_sql() ) );
 

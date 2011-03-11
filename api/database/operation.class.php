@@ -30,7 +30,7 @@ class operation extends active_record
     $modifier->where( 'subject', '=', $subject );
     $modifier->where( 'name', '=', $name );
 
-    $id = self::get_one(
+    $id = static::db()->get_one(
       sprintf( 'SELECT id FROM %s %s',
                static::get_table_name(),
                $modifier->get_sql() ) );

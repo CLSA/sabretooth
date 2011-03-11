@@ -262,7 +262,7 @@ class modifier extends \sabretooth\base_object
                       ? sprintf( '%s %s( ', $where['column'], $where['operator'] )
                       : ', ';
             $compare .= $where['format']
-                      ? active_record::format_string( $where['value'] )
+                      ? database::format_string( $where['value'] )
                       : $where['value'];
             $first_value = false;
           }
@@ -274,7 +274,7 @@ class modifier extends \sabretooth\base_object
                               $where['column'],
                               $where['operator'],
                               $where['format'] ?
-                                active_record::format_string( $where['value'] ) : $where['value'] );
+                                database::format_string( $where['value'] ) : $where['value'] );
         }
       }
       else
@@ -283,7 +283,7 @@ class modifier extends \sabretooth\base_object
                             $where['column'],
                             $where['operator'],
                             $where['format'] ?
-                              active_record::format_string( $where['value'] ) : $where['value'] );
+                              database::format_string( $where['value'] ) : $where['value'] );
       }
       
       $logic_type = $where['or'] ? ' OR' : ' AND';

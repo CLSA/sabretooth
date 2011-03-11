@@ -47,7 +47,7 @@ class phase extends active_record
       // check to see if this phase is being moved or added to the list
       $modifier = new modifier();
       $modifier->where( 'id', '=', $this->id );
-      $current_stage = static::get_one(
+      $current_stage = static::db()->get_one(
         sprintf( 'SELECT stage FROM %s %s',
                  static::get_table_name(),
                  $modifier->get_sql() ) );

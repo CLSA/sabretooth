@@ -1,6 +1,7 @@
 <?php
 /**
  * active_record.class.php
+ * TODO: change name to record
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\database
@@ -32,26 +33,27 @@ abstract class active_record extends \sabretooth\base_object
   public function __construct( $id = NULL )
   {
     // determine the columns for this table
-    $db = \sabretooth\session::self()->get_db();
-    $columns = $db->MetaColumnNames( static::get_table_name() );
+    $db = \sabretooth\session::self()->get_database();
+    $columns = $db->get_column_names( static::get_table_name() );
 
     if( !is_array( $columns ) || 0 == count( $columns ) )
       throw new \sabretooth\exception\runtime(
-        "Meta column names return no columns for table ".static::get_table_name(), __METHOD__ );
+        "No column names returned for table ".static::get_table_name(), __METHOD__ );
 
-    foreach( $columns as $name ) $this->columns[ $name ] = NULL;
+    foreach( $columns as $name ) $this->column_values[ $name ] = NULL;
     
     if( NULL != $id )
     {
       // make sure this table has an id column as the primary key
-      $primary_key_names = $db->MetaPrimaryKeys( static::get_table_name() );
-      if( 1 != count( $primary_key_names ) || static::get_primary_key_name() != $primary_key_names[0] )
+      $primary_key_names = $db->meta_primary_keys( static::get_table_name() );
+      if( 1 != count( $primary_key_names ) ||
+          static::get_primary_key_name() != $primary_key_names[0] )
       {
         throw new \sabretooth\exception\runtime(
           'Unable to create record, single-column primary key "'.
           static::get_primary_key_name().'" does not exist.', __METHOD__ );
       }
-      $this->columns[static::get_primary_key_name()] = intval( $id );
+      $this->column_values[static::get_primary_key_name()] = intval( $id );
     }
     
     // now load the data from the database
@@ -71,7 +73,8 @@ abstract class active_record extends \sabretooth\base_object
   public function __destruct()
   {
     // save to the database if auto-saving is on
-    if( self::$auto_save && isset( $this->columns[static::get_primary_key_name()] ) ) $this->save();
+    if( self::$auto_save && isset( $this->column_values[static::get_primary_key_name()] ) )
+      $this->save();
   }
   
   /**
@@ -85,37 +88,39 @@ abstract class active_record extends \sabretooth\base_object
    */
   public function load()
   {
-    if( isset( $this->columns[static::get_primary_key_name()] ) )
+    if( isset( $this->column_values[static::get_primary_key_name()] ) )
     {
       // not using a modifier here is ok since we're forcing id to be an integer
       $sql = sprintf( 'SELECT * FROM %s WHERE %s = %d',
                       static::get_table_name(),
                       static::get_primary_key_name(),
-                      $this->columns[static::get_primary_key_name()] );
+                      $this->column_values[static::get_primary_key_name()] );
 
-      $row = self::get_row( $sql );
+      $row = static::db()->get_row( $sql );
 
       if( 0 == count( $row ) )
         throw new \sabretooth\exception\runtime(
           sprintf( 'Load failed to find record for %s with %s = %d.',
                    static::get_table_name(),
                    static::get_primary_key_name(),
-                   $this->columns[static::get_primary_key_name()] ),
+                   $this->column_values[static::get_primary_key_name()] ),
           __METHOD__ );
 
-      $this->columns = $row;
+      $this->column_values = $row;
 
       // convert where necessary
-      foreach( $this->columns as $key => $val )
+      foreach( $this->column_values as $key => $val )
       {
-        if( 'datetime' == static::get_column_type( $key ) ||
-            'timestamp' == static::get_column_type( $key ) )
+        $column_type = static::db()->get_column_type( static::get_table_name(), $key );
+
+        // convert where necessary
+        if( 'datetime' == $column_type || 'timestamp' == $column_type )
         { // convert datetime to server date and time
-          $this->columns[$key] = \sabretooth\util::from_server_date( $val );
+          $this->column_values[$key] = \sabretooth\util::from_server_date( $val );
         }
-        elseif( 'time' == static::get_column_type( $key ) )
+        elseif( 'time' == $column_type )
         { // convert time to server time
-          $this->columns[$key] = \sabretooth\util::from_server_time( $val );
+          $this->column_values[$key] = \sabretooth\util::from_server_time( $val );
         }
       }
     }
@@ -141,21 +146,22 @@ abstract class active_record extends \sabretooth\base_object
     // building the SET list since it is identical for inserts and updates
     $sets = '';
     $first = true;
-    foreach( $this->columns as $key => $val )
+    foreach( $this->column_values as $key => $val )
     {
       if( static::get_primary_key_name() != $key )
       {
+        $column_type = static::db()->get_column_type( static::get_table_name(), $key );
+
         // convert where necessary
-        if( 'text' == static::get_column_type( $key ) )
+        if( 'text' == $column_type )
         { // html-escape text types
           $val = htmlentities( $val );
         }
-        elseif( 'datetime' == static::get_column_type( $key ) ||
-                'timestamp' == static::get_column_type( $key ) )
+        elseif( 'datetime' == $column_type || 'timestamp' == $column_type )
         { // convert datetime to server date and time
           $val = \sabretooth\util::to_server_date( $val );
         }
-        elseif( 'time' == static::get_column_type( $key ) )
+        elseif( 'time' == $column_type )
         { // convert time to server time
           $val = \sabretooth\util::to_server_time( $val );
         }
@@ -163,25 +169,25 @@ abstract class active_record extends \sabretooth\base_object
         $sets .= sprintf( '%s %s = %s',
                           $first ? '' : ',',
                           $key,
-                          self::format_string( $val ) );
+                          database::format_string( $val ) );
         $first = false;
       }
     }
     
     // either insert or update the row based on whether the primary key is set
-    $sql = sprintf( is_null( $this->columns[static::get_primary_key_name()] )
+    $sql = sprintf( is_null( $this->column_values[static::get_primary_key_name()] )
                     ? 'INSERT INTO %s SET %s'
                     : 'UPDATE %s SET %s WHERE %s = %d',
                     static::get_table_name(),
                     $sets,
                     static::get_primary_key_name(),
-                    $this->columns[static::get_primary_key_name()] );
+                    $this->column_values[static::get_primary_key_name()] );
 
-    self::execute( $sql );
+    static::db()->execute( $sql );
     
     // get the new new primary key
-    if( is_null( $this->columns[static::get_primary_key_name()] ) )
-      $this->columns[static::get_primary_key_name()] = self::insert_id();
+    if( is_null( $this->column_values[static::get_primary_key_name()] ) )
+      $this->column_values[static::get_primary_key_name()] = static::db()->insert_id();
   }
   
   /**
@@ -200,7 +206,7 @@ abstract class active_record extends \sabretooth\base_object
     }
 
     // check the primary key value
-    if( is_null( $this->columns[static::get_primary_key_name()] ) )
+    if( is_null( $this->column_values[static::get_primary_key_name()] ) )
     {
       \sabretooth\log::warning( 'Tried to delete record with no id.' );
       return;
@@ -210,8 +216,8 @@ abstract class active_record extends \sabretooth\base_object
     $sql = sprintf( 'DELETE FROM %s WHERE %s = %d',
                     static::get_table_name(),
                     static::get_primary_key_name(),
-                    $this->columns[static::get_primary_key_name()] );
-    self::execute( $sql );
+                    $this->column_values[static::get_primary_key_name()] );
+    static::db()->execute( $sql );
   }
 
   /**
@@ -225,7 +231,7 @@ abstract class active_record extends \sabretooth\base_object
    */
   public static function count( $modifier )
   {
-    return intval( self::get_one(
+    return intval( static::db()->get_one(
       sprintf( 'SELECT COUNT(*) FROM %s %s',
                static::get_table_name(),
                is_null( $modifier ) ? '' : $modifier->get_sql() ) ) );
@@ -244,10 +250,11 @@ abstract class active_record extends \sabretooth\base_object
   public function __get( $column_name )
   {
     // make sure the column exists
-    if( !static::has_column_name( $column_name ) )
+    if( !static::db()->column_exists( static::get_table_name(), $column_name ) )
       throw new \sabretooth\exception\argument( 'column_name', $column_name, __METHOD__ );
     
-    return isset( $this->columns[ $column_name ] ) ? $this->columns[ $column_name ] : NULL;
+    return isset( $this->column_values[ $column_name ] ) ?
+      $this->column_values[ $column_name ] : NULL;
   }
 
   /**
@@ -264,10 +271,10 @@ abstract class active_record extends \sabretooth\base_object
   public function __set( $column_name, $value )
   {
     // make sure the column exists
-    if( !static::has_column_name( $column_name ) )
+    if( !static::db()->column_exists( static::get_table_name(), $column_name ) )
       throw new \sabretooth\exception\argument( 'column_name', $column_name, __METHOD__ );
     
-    $this->columns[ $column_name ] = $value;
+    $this->column_values[ $column_name ] = $value;
   }
   
   /**
@@ -306,6 +313,8 @@ abstract class active_record extends \sabretooth\base_object
    */
   public function __call( $name, $args )
   {
+    $db = \sabretooth\session::self()->get_database();
+
     // create an exception which will be thrown if anything bad happens
     $exception = new \sabretooth\exception\runtime(
       sprintf( 'Call to undefined function: %s::%s().',
@@ -331,7 +340,7 @@ abstract class active_record extends \sabretooth\base_object
     if( 'get' != $action && 'add' != $action && 'remove' != $action ) throw $exception;
 
     // make sure the foreign table exists
-    if( !self::table_exists( $foreign_table_name ) ) throw $exception;
+    if( !$db->table_exists( $foreign_table_name ) ) throw $exception;
     
     // determine the sub-action and modifier argument, if necessary
     $modifier = NULL;
@@ -380,7 +389,8 @@ abstract class active_record extends \sabretooth\base_object
     else if( 'get' == $action && is_null( $sub_action ) )
     { // calling: get_<record>()
       // make sure this table has the correct foreign key
-      if( !static::has_column_name( $foreign_table_name.'_id' ) ) throw $exception;
+      if( !static::db()->column_exists( static::get_table_name(), $foreign_table_name.'_id' ) )
+        throw $exception;
 
       return $this->get_record( $foreign_table_name );
     }
@@ -414,7 +424,7 @@ abstract class active_record extends \sabretooth\base_object
   protected function get_record( $record_type )
   {
     // check the primary key value
-    if( is_null( $this->columns[ static::get_primary_key_name() ] ) )
+    if( is_null( $this->column_values[ static::get_primary_key_name() ] ) )
     { 
       \sabretooth\log::warning( 'Tried to query record with no id.' );
       return NULL;
@@ -423,7 +433,7 @@ abstract class active_record extends \sabretooth\base_object
     $foreign_key_name = $record_type.'_id';
 
     // make sure this table has the correct foreign key
-    if( !static::has_column_name( $foreign_key_name ) )
+    if( !static::db()->column_exists( static::get_table_name(), $foreign_key_name ) )
     { 
       \sabretooth\log::warning( 'Tried to get invalid record type: '.$record_type );
       return NULL;
@@ -431,7 +441,7 @@ abstract class active_record extends \sabretooth\base_object
 
     // create the record using the foreign key
     $class_name = '\\sabretooth\\database\\'.$record_type;
-    return new $class_name( $this->columns[$foreign_key_name] );
+    return new $class_name( $this->column_values[$foreign_key_name] );
   }
 
   /**
@@ -454,7 +464,7 @@ abstract class active_record extends \sabretooth\base_object
     $foreign_class_name = '\\sabretooth\\database\\'.$record_type;
 
     // check the primary key value
-    $primary_key_value = $this->columns[ static::get_primary_key_name() ];
+    $primary_key_value = $this->column_values[ static::get_primary_key_name() ];
     if( is_null( $primary_key_value ) )
     { 
       \sabretooth\log::warning( 'Tried to query record with no id.' );
@@ -537,11 +547,11 @@ abstract class active_record extends \sabretooth\base_object
       
       if( $count )
       {
-        return intval( self::get_one( $sql ) );
+        return intval( static::db()->get_one( $sql ) );
       }
       else
       {
-        $ids = self::get_col( $sql );
+        $ids = static::db()->get_col( $sql );
         $records = array();
         foreach( $ids as $id ) array_push( $records, new $foreign_class_name( $id ) );
         return $records;
@@ -592,7 +602,7 @@ abstract class active_record extends \sabretooth\base_object
     }
     
     // check the primary key value
-    $primary_key_value = $this->columns[ static::get_primary_key_name() ];
+    $primary_key_value = $this->column_values[ static::get_primary_key_name() ];
     if( is_null( $primary_key_value ) )
     { 
       \sabretooth\log::warning( 'Tried to query record with no id.' );
@@ -618,12 +628,12 @@ abstract class active_record extends \sabretooth\base_object
     {
       if( !$first ) $values .= ', ';
       $values .= sprintf( '(%s, %s)',
-                       active_record::format_string( $primary_key_value ),
-                       active_record::format_string( $foreign_key_value ) );
+                       database::format_string( $primary_key_value ),
+                       database::format_string( $foreign_key_value ) );
       $first = false;
     }
 
-    self::execute(
+    static::db()->execute(
       sprintf( 'INSERT INTO %s (%s, %s_id) VALUES %s',
                $joining_table_name,
                static::get_primary_key_name(),
@@ -651,7 +661,7 @@ abstract class active_record extends \sabretooth\base_object
     }
 
     // check the primary key value
-    $primary_key_value = $this->columns[ static::get_primary_key_name() ];
+    $primary_key_value = $this->column_values[ static::get_primary_key_name() ];
     if( is_null( $primary_key_value ) )
     { 
       \sabretooth\log::warning( 'Tried to query record with no id.' );
@@ -689,7 +699,7 @@ abstract class active_record extends \sabretooth\base_object
       $modifier->where( static::get_primary_key_name(), '=', $primary_key_value );
       $modifier->where( $record_type.'_id', '=', $id );
   
-      self::execute(
+      static::db()->execute(
         sprintf( 'DELETE FROM %s %s',
                  $joining_table_name,
                  $modifier->get_sql() ) );
@@ -714,17 +724,19 @@ abstract class active_record extends \sabretooth\base_object
    */
   protected static function get_joining_table_name( $record_type )
   {
+    $db = \sabretooth\session::self()->get_database();
+
     // the joining table may be <table>_has_<foreign_table> or <foreign>_has_<table>
     $table_name = static::get_table_name();
     $forward_joining_table_name = $table_name.'_has_'.$record_type;
     $reverse_joining_table_name = $record_type.'_has_'.$table_name;
     
     $joining_table_name = "";
-    if( self::table_exists( $forward_joining_table_name ) )
+    if( $db->table_exists( $forward_joining_table_name ) )
     {
       $joining_table_name = $forward_joining_table_name;
     }
-    else if( self::table_exists( $reverse_joining_table_name ) )
+    else if( $db->table_exists( $reverse_joining_table_name ) )
     {
       $joining_table_name = $reverse_joining_table_name;
     }
@@ -745,9 +757,11 @@ abstract class active_record extends \sabretooth\base_object
   {
     $type = relationship::NONE;
     $class_name = '\\sabretooth\\database\\'.$record_type;
-    if( $class_name::has_column_name( static::get_table_name().'_id' ) )
+    if( $class_name::db()->column_exists(
+      $class_name::get_table_name(),
+      static::get_table_name().'_id' ) )
     { // the record_type has a foreign key for this record
-      $type = static::has_column_name( $record_type.'_id' )
+      $type = static::db()->column_exists( static::get_table_name(), $record_type.'_id' )
             ? relationship::ONE_TO_ONE
             : relationship::ONE_TO_MANY;
     }
@@ -790,7 +804,7 @@ abstract class active_record extends \sabretooth\base_object
         {
           // check to see if we have a foreign key for this table
           $foreign_key_name = $table.'_id';
-          if( static::has_column_name( $foreign_key_name ) )
+          if( static::db()->column_exists( static::get_table_name(), $foreign_key_name ) )
           {
             // add the table to the list to select and join it in the modifier
             array_push( $table_list, $table );
@@ -814,7 +828,7 @@ abstract class active_record extends \sabretooth\base_object
       $first = false;
     }
 
-    $id_list = self::get_col(
+    $id_list = static::db()->get_col(
       sprintf( 'SELECT %s.%s FROM %s %s',
                $this_table,
                static::get_primary_key_name(),
@@ -843,11 +857,11 @@ abstract class active_record extends \sabretooth\base_object
 
     // determine the unique key(s)
     $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', '=', static::get_database_name() );
+    $modifier->where( 'TABLE_SCHEMA', '=', static::db()->get_name() );
     $modifier->where( 'TABLE_NAME', '=', static::get_table_name() );
     $modifier->where( 'COLUMN_KEY', '=', 'UNI' );
 
-    $unique_keys = self::get_col( 
+    $unique_keys = static::db()->get_col( 
       sprintf( 'SELECT COLUMN_NAME FROM information_schema.COLUMNS %s',
                $modifier->get_sql() ) );
     
@@ -858,7 +872,7 @@ abstract class active_record extends \sabretooth\base_object
       $modifier = new modifier();
       $modifier->where( $column, '=', $value );
 
-      $id = self::get_one(
+      $id = static::db()->get_one(
         sprintf( 'SELECT %s FROM %s %s',
                  static::get_primary_key_name(),
                  static::get_table_name(),
@@ -870,28 +884,6 @@ abstract class active_record extends \sabretooth\base_object
   }
 
   /**
-   * Returns the string formatted for database queries.
-   * 
-   * The returned value will be put in double quotes unless the input is null in which case NULL
-   * is returned.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $string The string to format for use in a query.
-   * @return string
-   * @static
-   * @access public
-   */
-  public static function format_string( $string )
-  {
-    // NULL values are returns as a MySQL NULL value
-    if( is_null( $string ) ) return 'NULL';
-    
-    // trim whitespace from the begining and end of the string
-    if( is_string( $string ) ) $string = trim( $string );
-    
-    return 0 == strlen( $string ) ? 'NULL' : '"'.mysql_real_escape_string( $string ).'"';
-  }
-
-  /**
    * Returns the name of the table associated with this active record.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
@@ -899,8 +891,10 @@ abstract class active_record extends \sabretooth\base_object
    */
   public static function get_table_name()
   {
-    // table and class names (without namespaces) should always be identical
-    return substr( strrchr( get_called_class(), '\\' ), 1 );
+    // Table and class names (without namespaces) should always be identical (with the exception
+    // of the table prefix
+    $prefix = static::db()->get_prefix();
+    return $prefix.substr( strrchr( get_called_class(), '\\' ), 1 );
   }
   
   /**
@@ -917,50 +911,6 @@ abstract class active_record extends \sabretooth\base_object
   }
   
   /**
-   * Determines whether a particular table exists.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $name The name of the table to check for.
-   * @return boolean
-   * @access protected
-   */
-  protected static function table_exists( $name )
-  {
-    $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', '=', static::get_database_name() );
-    $modifier->where( 'TABLE_NAME', '=', $name );
-
-    $count = self::get_one(
-      sprintf( 'SELECT COUNT(*) FROM information_schema.TABLES %s',
-               $modifier->get_sql() ) );
-
-    return 0 < $count;
-  }
-
-  /**
-   * Returns a column's data type.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $name A column name in the active record's corresponding table.
-   * @return string
-   * @access public
-   */
-  public static function get_column_type( $column_name )
-  {
-    $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', '=', static::get_database_name() );
-    $modifier->where( 'TABLE_NAME', '=', static::get_table_name() );
-    $modifier->where( 'COLUMN_NAME', '=', $column_name );
-
-    $type = self::get_one(
-      sprintf( 'SELECT DATA_TYPE FROM information_schema.COLUMNS %s',
-               $modifier->get_sql() ) );
-
-    if( is_null( $type ) )
-      throw new \sabretooth\exception\argument( 'column_name', $column_name, __METHOD__ );
-
-    return $type;
-  }
-
-  /**
    * Returns an array of all enum values for a particular column.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $name A column name in the active record's corresponding table.
@@ -970,12 +920,12 @@ abstract class active_record extends \sabretooth\base_object
   public static function get_enum_values( $column_name )
   {
     $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', '=', static::get_database_name() );
+    $modifier->where( 'TABLE_SCHEMA', '=', static::db()->get_name() );
     $modifier->where( 'TABLE_NAME', '=', static::get_table_name() );
     $modifier->where( 'COLUMN_NAME', '=', $column_name );
     $modifier->where( 'DATA_TYPE', '=', 'enum' );
 
-    $type = self::get_one(
+    $type = static::db()->get_one(
       sprintf( 'SELECT COLUMN_TYPE FROM information_schema.COLUMNS %s',
                $modifier->get_sql() ) );
 
@@ -994,204 +944,15 @@ abstract class active_record extends \sabretooth\base_object
   }
 
   /**
-   * Returns whether the record's associated table has a specific column name.
+   * Returns the active record's database.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $name A column name
-   * @return boolean
+   * @return database
    * @static
    * @access public
    */
-  public static function has_column_name( $column_name )
+  public static function db()
   {
-    $table_name = static::get_table_name();
-    if( strrchr( $table_name, '.' ) )
-    { // strip the database name from the table name
-      $table_name = substr( strrchr( $table_name, '.' ), 1 );
-    }
-
-    $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', '=', static::get_database_name() );
-    $modifier->where( 'TABLE_NAME', '=', $table_name );
-    $modifier->where( 'COLUMN_NAME', '=', $column_name );
-
-    return 1 == self::get_one(
-      sprintf( 'SELECT COUNT( * ) FROM information_schema.COLUMNS %s',
-               $modifier->get_sql() ) );
-  }
-  
-  /**
-   * Database convenience method.
-   * 
-   * Execute SQL statement $sql and return derived class of ADORecordSet if successful. Note that a
-   * record set is always returned on success, even if we are executing an insert or update
-   * statement.
-   * Note: This is a convenience wrapper for ADOdb::Execute()
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $sql SQL statement
-   * @param array $input_array binding variables to parameters
-   * @return ADORecordSet
-   * @throws exception\database
-   * @static
-   * @access protected
-   */
-  protected static function execute( $sql, $input_array = false )
-  {
-    $db = \sabretooth\session::self()->get_db();
-    $result = $db->Execute( $sql, $input_array );
-    if( false === $result )
-    {
-      // pass the db error code instead of a class error code
-      throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql, $db->ErrorNo() );
-    }
-
-    return $result;
-  }
-  
-  /**
-   * Database convenience method.
-   * 
-   * Executes the SQL and returns the first field of the first row.
-   * Note: This is a convenience wrapper for ADOdb::GetOne()
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $sql SQL statement
-   * @param array $input_array binding variables to parameters
-   * @return native or NULL if no records were found.
-   * @throws exception\database
-   * @static
-   * @access protected
-   */
-  protected static function get_one( $sql, $input_array = false )
-  {
-    $db = \sabretooth\session::self()->get_db();
-    $result = $db->GetOne( $sql, $input_array );
-    if( false === $result )
-    {
-      // pass the db error code instead of a class error code
-      throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql, $db->ErrorNo() );
-    }
-
-    return $result;
-  }
-  
-  /**
-   * Database convenience method.
-   * 
-   * Executes the SQL and returns the first row as an array.
-   * Note: This is a convenience wrapper for ADOdb::GetRow()
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $sql SQL statement
-   * @param array $input_array binding variables to parameters
-   * @return array (empty if no records are found)
-   * @throws exception\database
-   * @static
-   * @access protected
-   */
-  protected static function get_row( $sql, $input_array = false )
-  {
-    $db = \sabretooth\session::self()->get_db();
-    $result = $db->GetRow( $sql, $input_array );
-    if( false === $result )
-    {
-      // pass the db error code instead of a class error code
-      throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql, $db->ErrorNo() );
-    }
-
-    return $result;
-  }
-  
-  /**
-   * Database convenience method.
-   * 
-   * Executes the SQL and returns the all the rows as a 2-dimensional array.
-   * Note: This is a convenience wrapper for ADOdb::GetAll()
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $sql SQL statement
-   * @param array $input_array binding variables to parameters
-   * @return array (empty if no records are found)
-   * @throws exception\database
-   * @static
-   * @access protected
-   */
-  protected static function get_all( $sql, $input_array = false )
-  {
-    $db = \sabretooth\session::self()->get_db();
-    $result = $db->GetAll( $sql, $input_array );
-    if( false === $result )
-    {
-      // pass the db error code instead of a class error code
-      throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql, $db->ErrorNo() );
-    }
-
-    return $result;
-  }
-  
-  /**
-   * Database convenience method.
-   * 
-   * Executes the SQL and returns all elements of the first column as a 1-dimensional array.
-   * Note: This is a convenience wrapper for ADOdb::GetCol()
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $sql SQL statement
-   * @param array $input_array binding variables to parameters
-   * @param boolean $trim determines whether to right trim CHAR fields
-   * @return array (empty if no records are found)
-   * @throws exception\database
-   * @static
-   * @access protected
-   */
-  protected static function get_col( $sql, $input_array = false, $trim = false )
-  {
-    $db = \sabretooth\session::self()->get_db();
-    $result = $db->GetCol( $sql, $input_array, $trim );
-    if( false === $result )
-    {
-      // pass the db error code instead of a class error code
-      throw new \sabretooth\exception\database( $db->ErrorMsg(), $sql, $db->ErrorNo() );
-    }
-
-    return $result;
-  }
-  
-  /**
-   * Database convenience method.
-   * 
-   * Returns the last autonumbering ID inserted.
-   * Note: This is a convenience wrapper for ADOdb::Insert_ID()
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return int
-   * @static
-   * @access protected
-   */
-  protected static function insert_id()
-  {
-    return \sabretooth\session::self()->get_db()->Insert_ID();
-  }
-  
-  /**
-   * Database convenience method.
-   * 
-   * Returns the number of rows affected by a update or delete statement.
-   * Note: This is a convenience wrapper for ADOdb::Affected_Rows()
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return int
-   * @static
-   * @access protected
-   */
-  protected static function affected_rows( $sql, $input_array = false, $trim = false )
-  {
-    return \sabretooth\session::self()->get_db()->Affected_Rows();
-  }
-  
-  /**
-   * Returns the name of the database that the active record is found in.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @static
-   * @access protected
-   */
-  protected static function get_database_name()
-  {
-    return \sabretooth\session::self()->get_setting( 'db', 'database' );
+    return \sabretooth\session::self()->get_database();
   }
 
   /**
@@ -1214,7 +975,7 @@ abstract class active_record extends \sabretooth\base_object
    * @var array
    * @access private
    */
-  private $columns = array();
+  private $column_values = array();
 
   /**
    * Determines whether or not to write changes to the database on deletion.

@@ -48,7 +48,7 @@ class contact extends active_record
       // check to see if this contact is being moved or added to the list
       $modifier = new modifier();
       $modifier->where( 'id', '=', $this->id );
-      $current_rank = static::get_one(
+      $current_rank = static::db()->get_one(
         sprintf( 'SELECT rank FROM %s %s',
                  static::get_table_name(),
                  $modifier->get_sql() ) );
