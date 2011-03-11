@@ -37,8 +37,34 @@ class base_exception extends \Exception
       $who = "$user_name:$role_name@$site_name";
     }
     
-    $code = \sabretooth\util::get_error_number( $this->get_type(), $context );
-    parent::__construct( "\n$who\n$message", $code, $previous );
+    // determine the error number
+    $code = 0;
+    
+    // try and determine the error type base code
+    $constant_name = strtoupper( $this->get_type() ).'_BASE_ERROR_NUMBER';
+    $base_code = defined( $constant_name ) ? constant( $constant_name ) : 0;
+
+    if( is_numeric( $context ) )
+    { // pre-defined error code, add the type code to it
+      $code = $base_code + $context;
+    }
+    else if( is_string( $context ) )
+    {
+      // in case this is a method name then we need to replace :: with __
+      $context = str_replace( '::', '__', $context );
+
+      // remove namespaces
+      $index = strrchr( $context, '\\' );
+      if( false !== $index ) $context = substr( $index, 1 );
+
+      $constant_name = strtoupper( sprintf( '%s_%s_ERROR_NUMBER',
+                                   $this->get_type(),
+                                   $context ) );
+      $code = defined( $constant_name ) ? constant( $constant_name ) : $base_code;
+    }
+    
+    $this->error_number_constant_name = $constant_name;
+    parent::__construct( "$constant_name : $who : $message", $code, $previous );
   }
   
   /**
@@ -89,5 +115,12 @@ class base_exception extends \Exception
    * @access public
    */
   public function get_backtrace() { return $this->getTraceAsString(); }
+
+  /**
+   * The name of the error number constant defining this widget
+   * @var string
+   * @access private
+   */
+  private $error_number_constant_name;
 }
 ?>
