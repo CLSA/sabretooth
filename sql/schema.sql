@@ -102,7 +102,8 @@ CREATE  TABLE IF NOT EXISTS `phase` (
     REFERENCES `qnaire` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+COMMENT = 'aka: qnaire_has_survey' ;
 
 
 -- -----------------------------------------------------
@@ -188,7 +189,7 @@ CREATE  TABLE IF NOT EXISTS `interview` (
     REFERENCES `phase` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB
+ENGINE = InnoDB, 
 COMMENT = 'aka: qnaire_has_participant' ;
 
 
@@ -612,30 +613,33 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `site_has_queue`
+-- Table `site_queue`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `site_has_queue` ;
+DROP TABLE IF EXISTS `site_queue` ;
 
-CREATE  TABLE IF NOT EXISTS `site_has_queue` (
+CREATE  TABLE IF NOT EXISTS `site_queue` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `site_id` INT UNSIGNED NOT NULL ,
   `queue_id` INT UNSIGNED NOT NULL ,
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
-  `priority` TINYINT NOT NULL ,
-  PRIMARY KEY (`site_id`, `queue_id`) ,
+  `rank` INT NOT NULL ,
   INDEX `fk_queue_id` (`queue_id` ASC) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
-  UNIQUE INDEX `uq_site_id_priority` (`site_id` ASC, `priority` ASC) ,
-  CONSTRAINT `fk_site_has_queue_site`
+  UNIQUE INDEX `uq_site_id_priority` (`site_id` ASC, `rank` ASC) ,
+  PRIMARY KEY (`id`) ,
+  UNIQUE INDEX `uq_site_id_queue_id` (`site_id` ASC, `queue_id` ASC) ,
+  CONSTRAINT `fk_site_queue_site`
     FOREIGN KEY (`site_id` )
     REFERENCES `site` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_site_has_queue_queue`
+  CONSTRAINT `fk_site_queue_queue`
     FOREIGN KEY (`queue_id` )
     REFERENCES `queue` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB, 
+COMMENT = 'aka: site_has_queue' ;
 
 
 -- -----------------------------------------------------
