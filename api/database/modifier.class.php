@@ -239,7 +239,7 @@ class modifier extends \sabretooth\base_object
   /**
    * Returns an SQL where statement.
    * 
-   * This method should only be called by an active_record class and only after all modifications
+   * This method should only be called by an record class and only after all modifications
    * have been set.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
@@ -297,7 +297,7 @@ class modifier extends \sabretooth\base_object
   /**
    * Returns an SQL group statement.
    * 
-   * This method should only be called by an active_record class and only after all modifications
+   * This method should only be called by an record class and only after all modifications
    * have been set.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
@@ -321,7 +321,7 @@ class modifier extends \sabretooth\base_object
   /**
    * Returns an SQL order statement.
    * 
-   * This method should only be called by an active_record class and only after all modifications
+   * This method should only be called by an record class and only after all modifications
    * have been set.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
@@ -346,7 +346,7 @@ class modifier extends \sabretooth\base_object
   /**
    * Returns an SQL limit statement.
    * 
-   * This method should only be called by an active_record class and only after all modifications
+   * This method should only be called by an record class and only after all modifications
    * have been set.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string

@@ -10,9 +10,9 @@
 namespace sabretooth\database;
 
 /**
- * shift: active record
+ * shift: record
  *
  * @package sabretooth\database
  */
-class shift extends active_record {}
+class shift extends record {}
 ?>

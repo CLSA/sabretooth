@@ -10,9 +10,9 @@
 namespace sabretooth\database;
 
 /**
- * phone_call_note: active record
+ * phone_call_note: record
  *
  * @package sabretooth\database
  */
-class phone_call_note extends active_record {}
+class phone_call_note extends record {}
 ?>

@@ -119,7 +119,7 @@ abstract class operation extends \sabretooth\base_object
 
   /**
    * The database record for this operation
-   * @var database\active_record
+   * @var database\record
    * @access protected
    */
   protected $operation_record = NULL;

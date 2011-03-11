@@ -10,11 +10,11 @@
 namespace sabretooth\database\limesurvey;
 
 /**
- * surveys: active record
+ * surveys: record
  *
  * @package sabretooth\database
  */
-class surveys extends active_record
+class surveys extends record
 {
   /**
    * Gets the survey's title in the base language.

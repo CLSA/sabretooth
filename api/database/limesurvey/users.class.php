@@ -10,11 +10,11 @@
 namespace sabretooth\database\limesurveys;
 
 /**
- * users: active record
+ * users: record
  *
  * @package sabretooth\database
  */
-class users extends active_record
+class users extends record
 {
   protected static $primary_key_name = 'uid';
 }

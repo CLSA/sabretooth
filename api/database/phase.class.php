@@ -10,11 +10,11 @@
 namespace sabretooth\database;
 
 /**
- * phase: active record
+ * phase: record
  *
  * @package sabretooth\database
  */
-class phase extends active_record
+class phase extends record
 {
   /**
    * Overrides the parent class so manage stages.

@@ -14,7 +14,7 @@ namespace sabretooth\database;
  * 
  * @package sabretooth\database
  */
-abstract class base_access extends active_record
+abstract class base_access extends record
 {
    /**
    * Returns whether the user has the role for the given site.
@@ -94,7 +94,7 @@ abstract class base_access extends active_record
    * need to be expanded.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
-   * @return array( active_record )
+   * @return array( record )
    * @static
    * @access public
    */
@@ -206,7 +206,7 @@ abstract class base_access extends active_record
   /**
    * Get the number of related access-based records.
    * 
-   * This method expands on the active_record magic call method by allowing access-based records
+   * This method expands on the record magic call method by allowing access-based records
    * select their related lists.
    * For instance:
    *   user has get_role_<count|list>() and get_site_<count|list>()

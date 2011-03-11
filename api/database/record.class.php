@@ -1,6 +1,6 @@
 <?php
 /**
- * active_record.class.php
+ * record.class.php
  * TODO: change name to record
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -11,13 +11,13 @@
 namespace sabretooth\database;
 
 /**
- * active_record: abstract database table object
+ * record: abstract database table object
  *
- * The active_record class represents tables in the database.  Each table has its own class which
+ * The record class represents tables in the database.  Each table has its own class which
  * extends this class.  Furthermore, each table must have a single 'id' column as its primary key.
  * @package sabretooth\database
  */
-abstract class active_record extends \sabretooth\base_object
+abstract class record extends \sabretooth\base_object
 {
   /**
    * Constructor
@@ -78,7 +78,7 @@ abstract class active_record extends \sabretooth\base_object
   }
   
   /**
-   * Loads the active record from the database.
+   * Loads the record from the database.
    * 
    * If this is a new record then this method does nothing, if the record's primary key is set then
    * the data from the corresponding row is loaded.
@@ -127,7 +127,7 @@ abstract class active_record extends \sabretooth\base_object
   }
   
   /**
-   * Saves the active record to the database.
+   * Saves the record to the database.
    * 
    * If this is a new record then a new row will be inserted, if not then the row with the
    * corresponding id will be updated.
@@ -285,7 +285,7 @@ abstract class active_record extends \sabretooth\base_object
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $name The name of the called function (should be get_<record>,
    *                     get_<record>_count() or get_<record>_list(), where <record> is the name
-   *                     of an active record class related to this record.
+   *                     of an record class related to this record.
    * @param array $args The arguments passed to the called function.  This can either be null or
    *                    a modifier to be applied to the magic methods.
    * @throws exception\runtime, exception\argument
@@ -418,7 +418,7 @@ abstract class active_record extends \sabretooth\base_object
    * This method is used to select a record's parent record in many-to-one relationships.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
-   * @return active_record
+   * @return record
    * @access protected
    */
   protected function get_record( $record_type )
@@ -453,7 +453,7 @@ abstract class active_record extends \sabretooth\base_object
    * @param modifier $modifier A modifier to apply to the count.
    * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
    * @param boolean $count If true then this method returns the count instead of list of records.
-   * @return array( active_record ) | int
+   * @return array( record ) | int
    * @access protected
    */
   protected function get_record_list(
@@ -784,7 +784,7 @@ abstract class active_record extends \sabretooth\base_object
    * every row being selected, so selecting a very large number of rows (100+) isn't a good idea.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
-   * @return array( active_record )
+   * @return array( record )
    * @static
    * @access public
    */
@@ -843,11 +843,11 @@ abstract class active_record extends \sabretooth\base_object
   /**
    * Get record using unique key.
    * 
-   * This method returns an instance of the active record using the name and value of a unique key.
+   * This method returns an instance of the record using the name and value of a unique key.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column a column with the unique key property
    * @param string $value the value of the column to match
-   * @return database\active_record
+   * @return database\record
    * @static
    * @access public
    */
@@ -884,7 +884,7 @@ abstract class active_record extends \sabretooth\base_object
   }
 
   /**
-   * Returns the name of the table associated with this active record.
+   * Returns the name of the table associated with this record.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
@@ -913,7 +913,7 @@ abstract class active_record extends \sabretooth\base_object
   /**
    * Returns an array of all enum values for a particular column.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $name A column name in the active record's corresponding table.
+   * @param string $name A column name in the record's corresponding table.
    * @return array( string )
    * @access public
    */
@@ -944,7 +944,7 @@ abstract class active_record extends \sabretooth\base_object
   }
 
   /**
-   * Returns the active record's database.
+   * Returns the record's database.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database
    * @static
@@ -979,7 +979,7 @@ abstract class active_record extends \sabretooth\base_object
 
   /**
    * Determines whether or not to write changes to the database on deletion.
-   * This value affects ALL active records.
+   * This value affects ALL records.
    * @var boolean
    * @static
    * @access public

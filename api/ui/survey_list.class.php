@@ -77,7 +77,7 @@ class survey_list extends base_list_widget
    * Overriding parent method because we need to query limesurvey database.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
-   * @return array( active_record )
+   * @return array( record )
    * @access protected
    */
   protected function determine_record_list( $modifier = NULL )

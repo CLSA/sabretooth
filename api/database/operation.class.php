@@ -10,11 +10,11 @@
 namespace sabretooth\database;
 
 /**
- * operation: active record
+ * operation: record
  *
  * @package sabretooth\database
  */
-class operation extends active_record
+class operation extends record
 {
   /**
    * Get an operation given it's type, subject and name.

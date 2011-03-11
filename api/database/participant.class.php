@@ -10,9 +10,9 @@
 namespace sabretooth\database;
 
 /**
- * participant: active record
+ * participant: record
  *
  * @package sabretooth\database
  */
-class participant extends active_record {}
+class participant extends record {}
 ?>

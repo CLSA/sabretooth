@@ -630,21 +630,21 @@ final class session extends singleton
   private $survey_database = NULL;
 
   /**
-   * The active record of the current user.
+   * The record of the current user.
    * @var database\user
    * @access private
    */
   private $user = NULL;
 
   /**
-   * The active record of the current role.
+   * The record of the current role.
    * @var database\role
    * @access private
    */
   private $role = NULL;
 
   /**
-   * The active record of the current site.
+   * The record of the current site.
    * @var database\site
    * @access private
    */

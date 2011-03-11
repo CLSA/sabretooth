@@ -10,9 +10,9 @@
 namespace sabretooth\database;
 
 /**
- * consent: active record
+ * consent: record
  *
  * @package sabretooth\database
  */
-class consent extends active_record {}
+class consent extends record {}
 ?>

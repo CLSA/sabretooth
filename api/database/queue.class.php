@@ -10,9 +10,9 @@
 namespace sabretooth\database;
 
 /**
- * queue: active record
+ * queue: record
  *
  * @package sabretooth\database
  */
-class queue extends active_record {}
+class queue extends record {}
 ?>

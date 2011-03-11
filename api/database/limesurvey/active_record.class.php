@@ -14,7 +14,7 @@ namespace sabretooth\database\limesurvey;
  * 
  * @package sabretooth\database
  */
-abstract class active_record extends \sabretooth\database\active_record
+abstract class record extends \sabretooth\database\record
 {
   /**
    * Magic call method.
@@ -38,7 +38,7 @@ abstract class active_record extends \sabretooth\database\active_record
    * Overrides the parent method so that it is compatible with limesurvey tables.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
-   * @return array( active_record )
+   * @return array( record )
    * @static
    * @access public
    */
@@ -57,7 +57,7 @@ abstract class active_record extends \sabretooth\database\active_record
   }
 
   /**
-   * Returns the active record's database.
+   * Returns the record's database.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database
    * @static

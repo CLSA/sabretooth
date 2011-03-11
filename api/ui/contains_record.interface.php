@@ -16,17 +16,17 @@ namespace sabretooth\ui;
 interface contains_record
 {
   /**
-   * Returns this object's active record.
+   * Returns this object's record.
    * 
-   * @return database\active_record
+   * @return database\record
    * @access public
    */
   public function get_record();
 
   /**
-   * Sets this object's active record.
+   * Sets this object's record.
    * 
-   * @param $record database\active_record
+   * @param $record database\record
    * @access public
    */
   public function set_record( $record );

@@ -139,7 +139,7 @@ class database extends \sabretooth\base_object
    * Returns a column's data type.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
-   * @param string $column_name A column name in the active record's corresponding table.
+   * @param string $column_name A column name in the record's corresponding table.
    * @return string
    * @access public
    */

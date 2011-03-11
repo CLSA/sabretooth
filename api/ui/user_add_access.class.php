@@ -55,7 +55,7 @@ class user_add_access extends base_add_access
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
-   * @return array( active_record )
+   * @return array( record )
    * @access protected
    */
   public function determine_site_list( $modifier = NULL )

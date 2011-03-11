@@ -56,7 +56,7 @@ abstract class base_record_widget extends widget implements contains_record
   /**
    * Method required by the contains_record interface.
    * @author Patrick Emond
-   * @return database\active_record
+   * @return database\record
    * @access public
    */
   public function get_record()
@@ -67,7 +67,7 @@ abstract class base_record_widget extends widget implements contains_record
   /**
    * Method required by the contains_record interface.
    * @author Patrick Emond
-   * @param database\active_record $record
+   * @param database\record $record
    * @access public
    */
   public function set_record( $record )
@@ -76,8 +76,8 @@ abstract class base_record_widget extends widget implements contains_record
   }
 
   /**
-   * An active record of the item being viewed.
-   * @var active_record
+   * An record of the item being viewed.
+   * @var record
    * @access private
    */
   private $record = NULL;

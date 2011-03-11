@@ -102,7 +102,7 @@ class shift_add extends base_view
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
-   * @return array( active_record )
+   * @return array( record )
    * @access protected
    */
   public function determine_site_list( $modifier = NULL )
@@ -130,7 +130,7 @@ class shift_add extends base_view
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
-   * @return array( active_record )
+   * @return array( record )
    * @access protected
    */
   public function determine_user_list( $modifier = NULL )

@@ -93,7 +93,7 @@ class user_view extends base_view
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
-   * @return array( active_record )
+   * @return array( record )
    * @access protected
    */
   public function determine_access_list( $modifier = NULL )
@@ -120,7 +120,7 @@ class user_view extends base_view
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
-   * @return array( active_record )
+   * @return array( record )
    * @access protected
    */
   public function determine_activity_list( $modifier = NULL )

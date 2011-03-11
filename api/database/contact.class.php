@@ -10,11 +10,11 @@
 namespace sabretooth\database;
 
 /**
- * contact: active record
+ * contact: record
  *
  * @package sabretooth\database
  */
-class contact extends active_record
+class contact extends record
 {
   /**
    * Overrides the parent class so manage ranks.

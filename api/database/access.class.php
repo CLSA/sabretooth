@@ -10,11 +10,11 @@
 namespace sabretooth\database;
 
 /**
- * access: active record
+ * access: record
  *
  * @package sabretooth\database
  */
-class access extends active_record
+class access extends record
 {
   /**
    * Returns whether or not the access exists.

@@ -34,7 +34,7 @@ abstract class base_record_action extends action implements contains_record
   /**
    * Method required by the contains_record interface.
    * @author Patrick Emond
-   * @return database\active_record
+   * @return database\record
    * @access public
    */
   public function get_record()
@@ -45,7 +45,7 @@ abstract class base_record_action extends action implements contains_record
   /**
    * Method required by the contains_record interface.
    * @author Patrick Emond
-   * @param database\active_record $record
+   * @param database\record $record
    * @access public
    */
   public function set_record( $record )
@@ -54,8 +54,8 @@ abstract class base_record_action extends action implements contains_record
   }
 
   /**
-   * The active record of the item being created.
-   * @var active_record
+   * The record of the item being created.
+   * @var record
    * @access private
    */
   private $record = NULL;

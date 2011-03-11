@@ -10,7 +10,7 @@
 namespace sabretooth\database;
 
 /**
- * role: active record
+ * role: record
  *
  * @package sabretooth\database
  */

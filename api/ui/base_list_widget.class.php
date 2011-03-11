@@ -183,7 +183,7 @@ abstract class base_list_widget extends widget
    * record/table of the embedded widget.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
-   * @return array( active_record )
+   * @return array( record )
    * @access protected
    */
   protected function determine_record_list( $modifier = NULL )
