@@ -65,12 +65,5 @@ abstract class base_add_record extends base_record_widget
     $this->add_widget->finish();
     $this->set_variable( 'record', $this->add_widget->get_variables() );
   }
-  
-  /**
-   * The list widget from which to add to the record.
-   * @var list_widget
-   * @access protected
-   */
-  protected $list_widget = NULL;
 }
 ?>

@@ -32,9 +32,15 @@ class base_add_access extends base_add_list
     // build the role list widget
     $this->role_list = new role_list( $args );
     $this->role_list->set_parent( $this, 'edit' );
-    $this->role_list->set_heading( 'Select roles to grant to the selected users' );
+    $this->role_list->set_heading( 'Select roles to grant' );
   }
 
+  /**
+   * Finish setting the variables in a widget.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
   public function finish()
   {
     parent::finish();
@@ -42,12 +48,40 @@ class base_add_access extends base_add_list
     $this->role_list->finish();
     $this->set_variable( 'role_list', $this->role_list->get_variables() );
   }
+  
+  /**
+   * Overrides the role list widget's method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return int
+   * @access protected
+   */
+  public function determine_role_count( $modifier = NULL )
+  {
+    // we want to display all roles
+    return \sabretooth\database\role::count( $modifier );
+  }
+
+  /**
+   * Overrides the role list widget's method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return array( active_record )
+   * @access protected
+   */
+  public function determine_role_list( $modifier = NULL )
+  {
+    // we want to display all roles
+    return \sabretooth\database\role::select( $modifier );
+  }
 
   /**
    * The role list widget used to define the access type.
    * @var role_list
    * @access protected
    */
-  protected $list_widget = NULL;
+  protected $role_list = NULL;
 }
 ?>

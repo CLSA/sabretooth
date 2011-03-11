@@ -37,31 +37,31 @@ class site_add_access extends base_add_access
   }
 
   /**
-   * Overrides the role list widget's method.
+   * Overrides the user list widget's method.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
    * @return int
    * @access protected
    */
-  public function determine_role_count( $modifier = NULL )
+  public function determine_user_count( $modifier = NULL )
   {
-    // we want to display all roles
-    return \sabretooth\database\role::count( $modifier );
+    // we want to display all users
+    return \sabretooth\database\user::count( $modifier );
   }
 
   /**
-   * Overrides the role list widget's method.
+   * Overrides the user list widget's method.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
    * @return array( active_record )
    * @access protected
    */
-  public function determine_role_list( $modifier = NULL )
+  public function determine_user_list( $modifier = NULL )
   {
-    // we want to display all roles
-    return \sabretooth\database\role::select( $modifier );
+    // we want to display all users
+    return \sabretooth\database\user::select( $modifier );
   }
 }
 ?>
