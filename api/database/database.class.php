@@ -3,6 +3,7 @@
  * database.class.php
  * TODO: may need to dump ADODB because of no-multiple connections bug:
  * http://php.bigresource.com/ADODB-Multiple-Database-Connection-wno2zASC.html
+ * TODO: limesurvey db connection still not working right
  * For now see {@link connect} for the current hack/solution.
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -129,7 +130,7 @@ class database extends \sabretooth\base_object
     if( !$this->table_exists( $table_name ) )
       throw new \sabretooth\exception\runtime(
         sprintf( "Tried to get column names for table '%s' which doesn't exist.",
-                 $table_name ), __METHOD__ ); // TODO: add error code
+                 $table_name ), __METHOD__ );
 
     $table_name = $this->prefix.$table_name;
     return array_keys( $this->columns[$table_name] );
@@ -149,7 +150,7 @@ class database extends \sabretooth\base_object
       throw new \sabretooth\exception\runtime(
         sprintf( "Tried to get column type for '%s.%s' which doesn't exist.",
                  $table_name,
-                 $column_name ), __METHOD__ ); // TODO: add error code
+                 $column_name ), __METHOD__ );
 
     $table_name = $this->prefix.$table_name;
     return $this->columns[$table_name][$column_name];
@@ -355,7 +356,12 @@ class database extends \sabretooth\base_object
     return 0 == strlen( $string ) ? 'NULL' : '"'.mysql_real_escape_string( $string ).'"';
   }
   
-  // TODO: document
+  /**
+   * Since ADODB does not support multiple database with the same driver this method must be
+   * called before using the connection member.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access private
+   */
   private function connect()
   {
     if( $this->database != static::$current_database )
@@ -398,6 +404,12 @@ class database extends \sabretooth\base_object
    */
   private $connection;
 
+  /**
+   * Tracks which database was connected to last.
+   * @var string
+   * @static
+   * @access private
+   */
   private static $current_database = '';
 }
 ?>

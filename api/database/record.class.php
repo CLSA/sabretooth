@@ -1,7 +1,6 @@
 <?php
 /**
  * record.class.php
- * TODO: change name to record
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\database
