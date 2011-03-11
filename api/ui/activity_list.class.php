@@ -28,10 +28,6 @@ class activity_list extends base_list_widget
   {
     parent::__construct( 'activity', $args );
     
-    // this widget is taking a while to load, this is a temporary fix
-    // TODO: speed up widget
-    $this->set_items_per_page( 10 );
-
     $session = \sabretooth\session::self();
 
     $this->add_column( 'user.name', 'User', true );
