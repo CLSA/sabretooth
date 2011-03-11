@@ -115,7 +115,7 @@ CREATE  TABLE IF NOT EXISTS `contact` (
   `participant_id` INT UNSIGNED NOT NULL ,
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
   `rank` INT NOT NULL ,
-  `type` ENUM('home','home2','work','work2','cell','cell2','other') NULL DEFAULT NULL ,
+  `type` ENUM('home','home2','work','work2','cell','cell2','other') NOT NULL DEFAULT 'home' ,
   `phone` VARCHAR(20) NULL DEFAULT NULL ,
   `address1` VARCHAR(512) NULL DEFAULT NULL ,
   `address2` VARCHAR(512) NULL DEFAULT NULL ,
@@ -143,7 +143,7 @@ DROP TABLE IF EXISTS `queue` ;
 CREATE  TABLE IF NOT EXISTS `queue` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(45) NOT NULL ,
-  `view` TEXT NOT NULL ,
+  `view` VARCHAR(45) NOT NULL ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) )
@@ -163,7 +163,6 @@ CREATE  TABLE IF NOT EXISTS `interview` (
   `completed` TINYINT(1)  NOT NULL DEFAULT false ,
   `duplicate_phase_id` INT UNSIGNED NULL DEFAULT NULL ,
   `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'If not null then force all calls for this interview to the site.' ,
-  `appointment` DATETIME NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
@@ -190,7 +189,7 @@ CREATE  TABLE IF NOT EXISTS `interview` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-COMMENT = 'aka: qnaire_has_participant';
+COMMENT = 'aka: qnaire_has_participant' ;
 
 
 -- -----------------------------------------------------
@@ -228,6 +227,25 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `appointment`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `appointment` ;
+
+CREATE  TABLE IF NOT EXISTS `appointment` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `contact_id` INT UNSIGNED NOT NULL ,
+  `date` DATETIME NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_contact_id` (`contact_id` ASC) ,
+  CONSTRAINT `fk_appointment_contact`
+    FOREIGN KEY (`contact_id` )
+    REFERENCES `contact` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `phone_call`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `phone_call` ;
@@ -240,10 +258,12 @@ CREATE  TABLE IF NOT EXISTS `phone_call` (
   `start_time` TIMESTAMP NOT NULL COMMENT 'The time the call started.' ,
   `end_time` DATETIME NULL DEFAULT NULL COMMENT 'The time the call endede.' ,
   `phase_id` INT UNSIGNED NOT NULL ,
+  `appointment_id` INT UNSIGNED NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_contact_id` (`contact_id` ASC) ,
   INDEX `fk_assignment_id` (`assignment_id` ASC) ,
   INDEX `fk_phase_id` (`phase_id` ASC) ,
+  INDEX `fk_appointment_id` (`appointment_id` ASC) ,
   CONSTRAINT `fk_phone_call_contact`
     FOREIGN KEY (`contact_id` )
     REFERENCES `contact` (`id` )
@@ -257,6 +277,11 @@ CREATE  TABLE IF NOT EXISTS `phone_call` (
   CONSTRAINT `fk_phone_call_phase`
     FOREIGN KEY (`phase_id` )
     REFERENCES `phase` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_phone_call_appointment`
+    FOREIGN KEY (`appointment_id` )
+    REFERENCES `appointment` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -655,6 +680,28 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `setting`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `setting` ;
+
+CREATE  TABLE IF NOT EXISTS `setting` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `category` VARCHAR(45) NOT NULL ,
+  `name` VARCHAR(45) NOT NULL ,
+  `value` VARCHAR(45) NULL DEFAULT NULL ,
+  `site_id` INT UNSIGNED NULL DEFAULT NULL ,
+  INDEX `fk_setting_site` (`site_id` ASC) ,
+  PRIMARY KEY (`id`) ,
+  UNIQUE INDEX `uq_category_name_site_id` (`category` ASC, `name` ASC, `site_id` ASC) ,
+  CONSTRAINT `fk_setting_site`
+    FOREIGN KEY (`site_id` )
+    REFERENCES `site` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Placeholder table for view `participant_primary_location`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `participant_primary_location` (`participant_id` INT, `contact_id` INT, `province` INT);
@@ -683,6 +730,46 @@ CREATE TABLE IF NOT EXISTS `site_last_activity` (`activity_id` INT, `site_id` IN
 -- Placeholder table for view `role_last_activity`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `role_last_activity` (`activity_id` INT, `role_id` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `queue_general`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `queue_general` (`id` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `queue_appointment`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `queue_appointment` (`id` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `queue_missed`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `queue_missed` (`id` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `queue_available`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `queue_available` (`id` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `queue_previous_busy`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `queue_previous_busy` (`id` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `queue_previous_no_answer`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `queue_previous_no_answer` (`id` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `queue_previous_answering_machine`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `queue_previous_answering_machine` (`id` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `queue_previous_fax`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `queue_previous_fax` (`id` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT);
 
 -- -----------------------------------------------------
 -- View `participant_primary_location`
@@ -781,6 +868,87 @@ AND activity_1.date = (
   AND role_2.id = role_1.id
   GROUP BY role_2.id )
 GROUP BY activity_1.date;
+
+-- -----------------------------------------------------
+-- View `queue_general`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `queue_general` ;
+DROP TABLE IF EXISTS `queue_general`;
+CREATE  OR REPLACE VIEW `queue_general` AS
+SELECT participant.*
+FROM participant
+LEFT JOIN interview
+ON participant.id = interview.participant_id
+WHERE interview.id IS NULL;
+
+-- -----------------------------------------------------
+-- View `queue_appointment`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `queue_appointment` ;
+DROP TABLE IF EXISTS `queue_appointment`;
+CREATE  OR REPLACE VIEW `queue_appointment` AS
+SELECT participant.*
+FROM participant, contact, appointment
+LEFT JOIN phone_call
+ON appointment.id = phone_call.appointment_id
+WHERE participant.id = contact.participant_id
+AND contact.id = appointment.contact_id
+AND phone_call.status NOT IN ( 'in progress', 'contacted' )
+;
+
+-- -----------------------------------------------------
+-- View `queue_missed`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `queue_missed` ;
+DROP TABLE IF EXISTS `queue_missed`;
+CREATE  OR REPLACE VIEW `queue_missed` AS
+SELECT participant.*
+FROM participant;
+
+-- -----------------------------------------------------
+-- View `queue_available`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `queue_available` ;
+DROP TABLE IF EXISTS `queue_available`;
+CREATE  OR REPLACE VIEW `queue_available` AS
+SELECT participant.*
+FROM participant;
+
+-- -----------------------------------------------------
+-- View `queue_previous_busy`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `queue_previous_busy` ;
+DROP TABLE IF EXISTS `queue_previous_busy`;
+CREATE  OR REPLACE VIEW `queue_previous_busy` AS
+SELECT participant.*
+FROM participant;
+
+-- -----------------------------------------------------
+-- View `queue_previous_no_answer`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `queue_previous_no_answer` ;
+DROP TABLE IF EXISTS `queue_previous_no_answer`;
+CREATE  OR REPLACE VIEW `queue_previous_no_answer` AS
+SELECT participant.*
+FROM participant;
+
+-- -----------------------------------------------------
+-- View `queue_previous_answering_machine`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `queue_previous_answering_machine` ;
+DROP TABLE IF EXISTS `queue_previous_answering_machine`;
+CREATE  OR REPLACE VIEW `queue_previous_answering_machine` AS
+SELECT participant.*
+FROM participant;
+
+-- -----------------------------------------------------
+-- View `queue_previous_fax`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `queue_previous_fax` ;
+DROP TABLE IF EXISTS `queue_previous_fax`;
+CREATE  OR REPLACE VIEW `queue_previous_fax` AS
+SELECT participant.*
+FROM participant;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
