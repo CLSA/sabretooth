@@ -32,8 +32,7 @@ abstract class record extends \sabretooth\base_object
   public function __construct( $id = NULL )
   {
     // determine the columns for this table
-    $db = \sabretooth\session::self()->get_database();
-    $columns = $db->get_column_names( static::get_table_name() );
+    $columns = static::db()->get_column_names( static::get_table_name() );
 
     if( !is_array( $columns ) || 0 == count( $columns ) )
       throw new \sabretooth\exception\runtime(
@@ -44,7 +43,7 @@ abstract class record extends \sabretooth\base_object
     if( NULL != $id )
     {
       // make sure this table has an id column as the primary key
-      $primary_key_names = $db->meta_primary_keys( static::get_table_name() );
+      $primary_key_names = static::db()->meta_primary_keys( static::get_table_name() );
       if( 1 != count( $primary_key_names ) ||
           static::get_primary_key_name() != $primary_key_names[0] )
       {
@@ -312,8 +311,6 @@ abstract class record extends \sabretooth\base_object
    */
   public function __call( $name, $args )
   {
-    $db = \sabretooth\session::self()->get_database();
-
     // create an exception which will be thrown if anything bad happens
     $exception = new \sabretooth\exception\runtime(
       sprintf( 'Call to undefined function: %s::%s().',
@@ -339,7 +336,7 @@ abstract class record extends \sabretooth\base_object
     if( 'get' != $action && 'add' != $action && 'remove' != $action ) throw $exception;
 
     // make sure the foreign table exists
-    if( !$db->table_exists( $foreign_table_name ) ) throw $exception;
+    if( !static::db()->table_exists( $foreign_table_name ) ) throw $exception;
     
     // determine the sub-action and modifier argument, if necessary
     $modifier = NULL;
@@ -723,19 +720,17 @@ abstract class record extends \sabretooth\base_object
    */
   protected static function get_joining_table_name( $record_type )
   {
-    $db = \sabretooth\session::self()->get_database();
-
     // the joining table may be <table>_has_<foreign_table> or <foreign>_has_<table>
     $table_name = static::get_table_name();
     $forward_joining_table_name = $table_name.'_has_'.$record_type;
     $reverse_joining_table_name = $record_type.'_has_'.$table_name;
     
     $joining_table_name = "";
-    if( $db->table_exists( $forward_joining_table_name ) )
+    if( static::db()->table_exists( $forward_joining_table_name ) )
     {
       $joining_table_name = $forward_joining_table_name;
     }
-    else if( $db->table_exists( $reverse_joining_table_name ) )
+    else if( static::db()->table_exists( $reverse_joining_table_name ) )
     {
       $joining_table_name = $reverse_joining_table_name;
     }
