@@ -12,41 +12,28 @@
   $( function () {
     // add button
     $( "#{{ widget.compound }}_add" ).click( function () {
-      // get the list of checked sites from the cookies
-      var json_checked_site_ids =
-        $.cookie( "{{ widget.full }}_site_list_checked_ids" );
-      var checked_site_ids = undefined == json_checked_site_ids
-                           ? new Object()
-                           : jQuery.parseJSON( json_checked_site_ids );
-  
-      var site_ids = new Array();
-      for( id_string in checked_site_ids )
-      {
-        site_ids.push( parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) ) );
-      }
+      // get the list of checked users
+      {% if user_id is defined %}
 
-      // get the list of checked users from the cookies
-      var json_checked_user_ids =
-        $.cookie( "{{ widget.full }}_user_list_checked_ids" );
-      var checked_user_ids = undefined == json_checked_user_ids
-                           ? new Object()
-                           : jQuery.parseJSON( json_checked_user_ids );
-  
+        var checked_user_ids = new Object();
+        checked_user_ids[{{ user_id }}] = true;
+
+      {% else %}
+
+        var json_checked_user_ids =
+          $.cookie( "{{ widget.full }}_user_list_checked_ids" );
+        var checked_user_ids = undefined == json_checked_user_ids
+                             ? new Object()
+                             : jQuery.parseJSON( json_checked_user_ids );
+      {% endif %}
+
       var user_ids = new Array();
       for( id_string in checked_user_ids )
       {
         user_ids.push( parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) ) );
       }
 
-      if( 0 == site_ids.length )
-      {
-        error_dialog(
-          "Error: No sites selected",
-          "<p>You must select at least one site.<br>" +
-          "Please select which sites to add the {{ widget.subject }} to, or click cancel.</p>"
-        );
-      }
-      else if( 0 == user_ids.length )
+      if( 0 == user_ids.length )
       {
         error_dialog(
           "Error: No users selected",
@@ -59,7 +46,6 @@
         // submit the form information as a new action
         var slot = get_slot( $(this) );
         var args = new Object();
-        args.site_id_list = site_ids;
         args.user_id_list = user_ids;
         var columns = new Object();
         $( "#{{ widget.full }}_add_form :input" ).each( function() {
@@ -68,9 +54,8 @@
           columns[column_name] = $(this).val();
         } );
         args.columns = columns;
-        console.log( args );
 
-        //if( send_action( "{{ widget.subject }}", "new", args ) ) slot_prev( get_slot( $(this) ) );
+        if( send_action( "{{ widget.subject }}", "new", args ) ) slot_prev( get_slot( $(this) ) );
       }
     } );
   } );
@@ -78,11 +63,6 @@
 {% endblock record_javascript %}
 
 {% block record %}
-
-{% if site_list is defined %}
-<div class="spacer"></div>
-{% include "site_list.twig" with site_list %}
-{% endif %}
 
 {% if user_list is defined %}
 <div class="spacer"></div>

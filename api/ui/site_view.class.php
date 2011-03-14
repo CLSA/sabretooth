@@ -88,36 +88,6 @@ class site_view extends base_view
   }
 
   /**
-   * Overrides the shift list widget's method to only include this site's shift.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the list.
-   * @return int
-   * @access protected
-   */
-  public function determine_shift_count( $modifier = NULL )
-  {
-    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
-    $modifier->where( 'site_id', '=', $this->get_record()->id );
-    return \sabretooth\database\shift::count( $modifier );
-  }
-
-  /**
-   * Overrides the shift list widget's method to only include this site's shift.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the list.
-   * @return array( record )
-   * @access protected
-   */
-  public function determine_shift_list( $modifier = NULL )
-  {
-    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
-    $modifier->where( 'site_id', '=', $this->get_record()->id );
-    return \sabretooth\database\shift::select( $modifier );
-  }
-
-  /**
    * Overrides the access list widget's method to only include this site's access.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

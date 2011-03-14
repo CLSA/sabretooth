@@ -305,6 +305,12 @@ VALUES( "widget", "user", "view", true, "View a user's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "user", "list", true, "List users in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "user", "add_shift", true, "View shift form for adding the user to a new shift." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "user", "new_shift", true, "Create new shifts." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "user", "delete_shift", true, "Remove shifts from a user." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "user", "add_access", true, "View sites to grant the user access to." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "user", "new_access", true, "Grant this user access to sites." );

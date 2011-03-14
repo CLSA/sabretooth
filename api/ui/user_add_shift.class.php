@@ -1,6 +1,6 @@
 <?php
 /**
- * site_add_shift.class.php
+ * user_add_shift.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,11 +10,11 @@
 namespace sabretooth\ui;
 
 /**
- * widget site add_shift
+ * widget user add_shift
  * 
  * @package sabretooth\ui
  */
-class site_add_shift extends base_add_record
+class user_add_shift extends base_add_record
 {
   /**
    * Constructor
@@ -27,7 +27,7 @@ class site_add_shift extends base_add_record
    */
   public function __construct( $args )
   {
-    parent::__construct( 'site', 'shift', $args );
+    parent::__construct( 'user', 'shift', $args );
     $this->add_widget->set_heading( "Create a new shift" );
   }
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * site_new_shift.class.php
+ * user_new_shift.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,11 +10,11 @@
 namespace sabretooth\ui;
 
 /**
- * action site new_shift
+ * action user new_shift
  * 
  * @package sabretooth\ui
  */
-class site_new_shift extends base_new_record
+class user_new_shift extends base_new_record
 {
   /**
    * Constructor.
@@ -24,7 +24,7 @@ class site_new_shift extends base_new_record
    */
   public function __construct( $args )
   {
-    parent::__construct( 'site', 'shift', $args );
+    parent::__construct( 'user', 'shift', $args );
   }
 
   /**
@@ -34,7 +34,7 @@ class site_new_shift extends base_new_record
    */
   public function execute()
   {
-    $this->get_record()->add_shift( $this->get_argument( 'user_id_list' ) );
+    $this->get_record()->add_shift( $this->get_argument( 'site_id' ) );
   }
 }
 ?>

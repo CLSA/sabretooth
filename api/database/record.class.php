@@ -584,7 +584,8 @@ abstract class record extends \sabretooth\base_object
    * This method is used to add child records for many-to-many relationships.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
-   * @param array(int) $ids An array of primary key values for the record being added.
+   * @param int|array(int) $ids A single or array of primary key values for the record(s) being
+   *                       added.
    * @access protected
    */
   protected function add_records( $record_type, $ids )
@@ -617,6 +618,9 @@ abstract class record extends \sabretooth\base_object
     }
     
     $joining_table_name = static::get_joining_table_name( $record_type );
+    
+    // if ids is not an array then create a single-element array with it
+    if( !is_array( $ids ) ) $ids = array( $ids );
 
     $values = '';
     $first = true;

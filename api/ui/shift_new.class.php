@@ -39,8 +39,28 @@ class shift_new extends base_new
     $columns = $this->get_argument( 'columns' );
     if( !array_key_exists( 'date', $columns ) || 0 == strlen( $columns['date'] ) )
       throw new \sabretooth\exception\notice( 'The date cannot be left blank.', __METHOD__ );
+    
+    $exception = NULL;
 
-    parent::execute();
+    // execute for every selected user
+    foreach( $this->get_argument( 'user_id_list' ) as $user_id )
+    {
+      $this->get_record()->user_id = $user_id;
+      try
+      {
+        parent::execute();
+      }
+      catch( \sabretooth\exception\base_exception $e )
+      {
+        $exception = $e;
+      }
+
+      // create a new shift record for the next iteration
+      $this->set_record( new \sabretooth\database\shift() );
+    }
+
+    // throw an exception if any were caught
+    if( !is_null( $exception ) ) throw $exception;
   }
 }
 ?>

@@ -64,7 +64,7 @@ class base_exception extends \Exception
     }
     
     $this->error_number_constant_name = $constant_name;
-    parent::__construct( "$constant_name : $who : $message", $code, $previous );
+    parent::__construct( "$constant_name ($code) : $who : $message", $code, $previous );
   }
   
   /**

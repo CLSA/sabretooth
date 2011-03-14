@@ -33,6 +33,11 @@ class user_view extends base_view
     $this->add_item( 'active', 'boolean', 'Active' );
     $this->add_item( 'last_activity', 'constant', 'Last activity' );
 
+    // create the shift sub-list widget
+    $this->shift_list = new shift_list( $args );
+    $this->shift_list->set_parent( $this );
+    $this->shift_list->set_heading( 'User\'s shift list' );
+
     // create the access sub-list widget
     $this->access_list = new access_list( $args );
     $this->access_list->set_parent( $this );
@@ -66,6 +71,8 @@ class user_view extends base_view
     $this->finish_setting_items();
 
     // finish the child widgets
+    $this->shift_list->finish();
+    $this->set_variable( 'shift_list', $this->shift_list->get_variables() );
     $this->access_list->finish();
     $this->set_variable( 'access_list', $this->access_list->get_variables() );
     $this->activity_list->finish();
@@ -127,6 +134,13 @@ class user_view extends base_view
   {
     return $this->get_record()->get_activity_list( $modifier );
   }
+
+  /**
+   * The user list widget.
+   * @var shift_list
+   * @shift protected
+   */
+  protected $shift_list = NULL;
 
   /**
    * The user list widget.

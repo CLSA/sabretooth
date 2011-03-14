@@ -28,12 +28,6 @@ class availability_add extends base_view
   {
     parent::__construct( 'availability', 'add', $args );
     
-    // build time help text
-    $session = \sabretooth\session::self();
-    $time_help = sprintf( 'Time is in %s\'s time zone (%s)',
-                          $session->get_site()->name,
-                          $session->get_site()->timezone );
-
     // add items to the view
     $this->add_item( 'participant_id', 'hidden' );
     $this->add_item( 'monday', 'boolean', 'Monday' );
@@ -43,8 +37,8 @@ class availability_add extends base_view
     $this->add_item( 'friday', 'boolean', 'Friday' );
     $this->add_item( 'saturday', 'boolean', 'Saturday' );
     $this->add_item( 'sunday', 'boolean', 'Sunday' );
-    $this->add_item( 'start_time', 'time', 'Start Time', $time_help );
-    $this->add_item( 'end_time', 'time', 'End Time', $time_help );
+    $this->add_item( 'start_time', 'time', 'Start Time' );
+    $this->add_item( 'end_time', 'time', 'End Time' );
   }
 
   /**

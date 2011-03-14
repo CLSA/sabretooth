@@ -29,14 +29,10 @@ class shift_add extends base_view
     parent::__construct( 'shift', 'add', $args );
     
     // add items to the view
+    $this->add_item( 'site_id', 'enum', 'Site' );
     $this->add_item( 'date', 'date', 'Date' );
     $this->add_item( 'start_time', 'time', 'Start Time' );
     $this->add_item( 'end_time', 'time', 'End Time' );
-
-    // and a list of sites
-    $this->site_list = new site_list( $args );
-    $this->site_list->set_parent( $this, 'edit' );
-    $this->site_list->set_heading( 'Choose sites to add to this shift' );
 
     // and a list of users
     $this->user_list = new user_list( $args );
@@ -54,26 +50,40 @@ class shift_add extends base_view
   {
     parent::finish();
     
-    if( 'site' != $this->parent->get_subject() )
+    // create enum arrays
+    $sites = array();
+    foreach( \sabretooth\database\site::select() as $db_site )
+      $sites[$db_site->id] = $db_site->name;
+
+    if( $this->parent )
     {
-      $this->site_list->finish();
-      $this->set_variable( 'site_list', $this->site_list->get_variables() );
+      if( 'user' == $this->parent->get_subject() )
+      {
+        $this->set_variable( 'user_id', $this->parent->get_record()->id );
+        $this->set_item( 'site_id', \sabretooth\session::self()->get_site()->id, true, $sites );
+      }
+      else if( 'site' == $this->parent->get_subject() )
+      {
+        // replace the site enum with a hidden variable
+        $this->add_item( 'site_id', 'hidden' );
+        $this->set_item( 'site_id', $this->parent->get_record()->id );
+        $this->user_list->finish();
+        $this->set_variable( 'user_list', $this->user_list->get_variables() );
+      }
+      else
+      {
+        throw new \sabretooth\exception\runtime(
+          'Shift widget has an invalid parent "'.$this->parent->get_subject().
+          '", which should be "user" or "site".', __METHOD__ );
+        
+      }
     }
-    
-    if( 'user' != $this->parent->get_subject() )
+    else
     {
       $this->user_list->finish();
       $this->set_variable( 'user_list', $this->user_list->get_variables() );
+      $this->set_item( 'site_id', \sabretooth\session::self()->get_site()->id, true, $sites );
     }
-
-    // this widget must have a parent, and it's subject must be a user or site
-    // TODO: remove this, and the error code
-    /*
-    if( is_null( $this->parent ) ||
-        ( 'user' != $this->parent->get_subject() && 'site' != $this->parent->get_subject() ) )
-      throw new \sabretooth\exception\runtime(
-        'Consent widget must have a parent with either user or site as the subject.', __METHOD__ );
-    */
 
     // set the view's items
     $this->set_item( 'date', '', true );
@@ -81,34 +91,6 @@ class shift_add extends base_view
     $this->set_item( 'end_time', '', true );
     
     $this->finish_setting_items();
-  }
-
-  /**
-   * Overrides the site list widget's method.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the list.
-   * @return int
-   * @access protected
-   */
-  public function determine_site_count( $modifier = NULL )
-  {
-    // TODO: only include sites the user has operator access to
-    return \sabretooth\database\site::count( $modifier );
-  }
-
-  /**
-   * Overrides the site list widget's method.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the list.
-   * @return array( record )
-   * @access protected
-   */
-  public function determine_site_list( $modifier = NULL )
-  {
-    // TODO: only include sites the user has operator access to
-    return \sabretooth\database\site::select( $modifier );
   }
 
   /**
@@ -138,13 +120,6 @@ class shift_add extends base_view
     // TODO: only include operators
     return \sabretooth\database\user::select( $modifier );
   }
-
-  /**
-   * The site list widget used to define the access type.
-   * @var site_list
-   * @access protected
-   */
-  protected $site_list = NULL;
 
   /**
    * The user list widget used to define the access type.

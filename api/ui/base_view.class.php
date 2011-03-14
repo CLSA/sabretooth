@@ -86,6 +86,16 @@ abstract class base_view extends base_record_widget
     $this->items[$item_id] = array( 'type' => $type );
     if( !is_null( $heading ) ) $this->items[$item_id]['heading'] = $heading;
     if( !is_null( $note ) ) $this->items[$item_id]['note'] = $note;
+    else if( 'time' == $type )
+    {
+      // build time time zone help text
+      $session = \sabretooth\session::self();
+      $date_obj = new \DateTime( "now", new \DateTimeZone( $session->get_site()->timezone ) );
+      $time_note = sprintf( 'Time is in %s\'s time zone (%s)',
+                            $session->get_site()->name,
+                            $date_obj->format( 'T' ) );
+      $this->items[$item_id]['note'] = $time_note;
+    }
   }
 
   /**
