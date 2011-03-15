@@ -55,9 +55,20 @@
         } );
         args.columns = columns;
 
-        if( send_action( "{{ widget.subject }}", "new", args ) ) slot_prev( get_slot( $(this) ) );
+        if( send_action( "{{ widget.subject }}", "new", args ) )
+        {
+          // clear the checked ids object cookie and return to the previous page
+          $.cookie( "{{ widget.full }}_user_list_checked_ids", null );
+          slot_prev( get_slot( $(this) ) );
+        }
       }
     } );
+  } );
+
+  // cancel button
+  $( "#{{ widget.compound }}_cancel" ).click( function() {
+    // clear the checked ids cookie
+    $.cookie( "{{ widget.full }}_user_list_checked_ids", null );
   } );
   </script>
 {% endblock record_javascript %}

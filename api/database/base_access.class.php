@@ -59,7 +59,7 @@ abstract class base_access extends record
   {
     $subject_name = static::get_table_name();
 
-    // check to see if the modifier is sorting a value in the access table
+    // check to see if the modifier has a where condition in the access table
     if( !is_null( $modifier ) )
     {
       foreach( array( 'user', 'role', 'site' ) as $access_table )
