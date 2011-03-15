@@ -1,6 +1,7 @@
 <?php
 /**
  * record.class.php
+ * TODO: create a column_exists convenience method
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\database
@@ -139,6 +140,21 @@ abstract class record extends \sabretooth\base_object
     {
       \sabretooth\log::warning( 'Tried to save read-only record.' );
       return;
+    }
+    
+    // if we have start_time and end_time, make sure end comes after start
+    if( static::db()->column_exists( static::get_table_name(), 'start_time' ) &&
+        static::db()->column_exists( static::get_table_name(), 'end_time' ) )
+    {
+      $start_obj = new \DateTime( $this->start_time );
+      $end_obj = new \DateTime( $this->end_time );
+      $interval = $start_obj->diff( $end_obj );
+      if( 0 != $interval->invert ||
+        ( 0 == $interval->days && 0 == $interval->h && 0 == $interval->i && 0 == $interval->s ) )
+      {
+        throw new \sabretooth\exception\runtime(
+          'Tried to set end time which is not after the start time.', __METHOD__ );
+      }
     }
 
     // building the SET list since it is identical for inserts and updates
