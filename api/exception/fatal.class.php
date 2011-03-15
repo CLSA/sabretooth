@@ -27,6 +27,7 @@ class fatal extends base_exception
    */
   public function __construct( $message, $context, $previous = NULL )
   {
+    $this->raw_message = $message;
     parent::__construct( 'fatal error: "'.$message.'"', $context, $previous );
   }
 }

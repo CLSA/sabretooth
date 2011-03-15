@@ -35,6 +35,7 @@ class permission extends base_exception
              : sprintf( 'operation "%s %s" denied.',
                         $db_operation->subject,
                         $db_operation->name );
+    $this->raw_message = $message;
     parent::__construct( $message, $context, $previous );
   }
 

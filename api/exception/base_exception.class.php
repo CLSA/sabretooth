@@ -64,7 +64,7 @@ class base_exception extends \Exception
     }
     
     $this->error_number_constant_name = $constant_name;
-    parent::__construct( "$constant_name ($code) : $who : $message", $code, $previous );
+    parent::__construct( "$constant_name ($code) : $who : $this->raw_message", $code, $previous );
   }
   
   /**
@@ -109,6 +109,14 @@ class base_exception extends \Exception
   public function get_message() { return $this->getMessage(); }
 
   /**
+   * Get the exception raw message (sub-string of message)
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_raw_message() { return $this->raw_message; }
+
+  /**
    * Get the exception backtrace.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
@@ -122,5 +130,12 @@ class base_exception extends \Exception
    * @access private
    */
   private $error_number_constant_name;
+
+  /**
+   * The exceptions raw message.
+   * @var string
+   * @access protected
+   */
+  protected $raw_message;
 }
 ?>

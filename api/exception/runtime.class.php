@@ -27,6 +27,7 @@ class runtime extends base_exception
    */
   public function __construct( $message, $context, $previous = NULL )
   {
+    $this->raw_message = $message;
     parent::__construct( 'runtime error: "'.$message.'"', $context, $previous );
   }
 }
