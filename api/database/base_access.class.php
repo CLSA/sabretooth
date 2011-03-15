@@ -16,35 +16,6 @@ namespace sabretooth\database;
  */
 abstract class base_access extends record
 {
-   /**
-   * Returns whether the user has the role for the given site.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\site $db_site
-   * @param database\role $db_role
-   * @return bool
-   * @access public
-   */
-  public function has_access( $db_site, $db_role )
-  {
-    if( is_null( $this->id ) )
-    {
-      \sabretooth\log::warning( 'Tried to determine access for user with no id.' );
-      return 0;
-    } 
-    
-    $modifier = new modifier();
-    $modifier->where( 'user_id', '=', $this->id );
-    $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'role_id', '=', $db_role->id );
-    
-    $rows = static::db()->get_one(
-      sprintf( 'SELECT user_id FROM access %s',
-               $modifier->get_sql() ) );
-               
-    return count( $rows );
-  } 
- 
   /**
    * Count the total number of rows in the table.
    * 

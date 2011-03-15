@@ -50,15 +50,19 @@ class shift_add extends base_view
   {
     parent::finish();
     
-    // create enum arrays
-    $sites = array();
-    foreach( \sabretooth\database\site::select() as $db_site )
-      $sites[$db_site->id] = $db_site->name;
-
     if( $this->parent )
     {
       if( 'user' == $this->parent->get_subject() )
       {
+        // create site enum array (for sites that user has operator access to only)
+        $sites = array();
+        $db_role = \sabretooth\database\role::get_unique_record( 'name', 'operator' );
+        $modifier = new \sabretooth\database\modifier();
+        $modifier->where( 'user_id', '=', $this->parent->get_record()->id );
+        $modifier->where( 'role_id', '=', $db_role->id );
+        foreach( \sabretooth\database\access::select( $modifier ) as $db_access )
+          $sites[$db_access->site_id] = $db_access->get_site()->name;
+
         $this->set_variable( 'user_id', $this->parent->get_record()->id );
         $this->set_item( 'site_id', \sabretooth\session::self()->get_site()->id, true, $sites );
       }
@@ -80,6 +84,11 @@ class shift_add extends base_view
     }
     else
     {
+      // create site enum array
+      $sites = array();
+      foreach( \sabretooth\database\site::select() as $db_site )
+        $sites[$db_site->id] = $db_site->name;
+
       $this->user_list->finish();
       $this->set_variable( 'user_list', $this->user_list->get_variables() );
       $this->set_item( 'site_id', \sabretooth\session::self()->get_site()->id, true, $sites );
@@ -103,7 +112,12 @@ class shift_add extends base_view
    */
   public function determine_user_count( $modifier = NULL )
   {
-    // TODO: only include operators
+    $db_role = \sabretooth\database\role::get_unique_record( 'name', 'operator' );
+    if( is_null( $modifier ) ) $modifier = new \sabretooth\database\modifier();
+    $modifier->where( 'role_id', '=', $db_role->id );
+    if( 'site' == $this->parent->get_subject() )
+      $modifier->where( 'site_id', '=', $this->parent->get_record()->id );
+
     return \sabretooth\database\user::count( $modifier );
   }
 
@@ -117,7 +131,12 @@ class shift_add extends base_view
    */
   public function determine_user_list( $modifier = NULL )
   {
-    // TODO: only include operators
+    $db_role = \sabretooth\database\role::get_unique_record( 'name', 'operator' );
+    if( is_null( $modifier ) ) $modifier = new \sabretooth\database\modifier();
+    $modifier->where( 'role_id', '=', $db_role->id );
+    if( 'site' == $this->parent->get_subject() )
+      $modifier->where( 'site_id', '=', $this->parent->get_record()->id );
+
     return \sabretooth\database\user::select( $modifier );
   }
 

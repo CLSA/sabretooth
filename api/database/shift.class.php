@@ -33,7 +33,20 @@ class shift extends record
       \sabretooth\log::warning( 'Tried to save read-only record.' );
       return;
     }
+
+    $db_user = new user( $this->user_id );
+    $db_site = new site( $this->site_id );
+    $db_role = role::get_unique_record( 'name', 'operator' );
     
+    // Make sure the user has the operator role at the site
+    if( !$db_user->has_access( $db_site, $db_role ) )
+    {
+      throw new \sabretooth\exception\runtime(
+        sprintf( 'Cannot assign shift to "%s", user does not have operator access to %s',
+                 $db_user->name,
+                 $db_site->name ), __METHOD__ );
+    }
+
     // See if the user already has a shift at this time
     $modifier = new modifier();
     $modifier->where( 'id', '!=', $this->id );
@@ -59,7 +72,6 @@ class shift extends record
     if( 0 < count( $overlap_ids ) )
     {
       $overlap_id = current( $overlap_ids );
-      $db_user = new user( $this->user_id );
       $db_overlap = new static( $overlap_id );
       throw new \sabretooth\exception\runtime(
         sprintf( 'Shift time (%s to %s) for user "%s" overlaps '.

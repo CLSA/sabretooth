@@ -62,13 +62,20 @@ class shift_new extends base_new
     // throw an exception if any were caught
     if( 1 == count( $exceptions ) )
     {
+      // test the exception type to decide what type of exception to throw
       $e = current( $exceptions );
-      throw new \sabretooth\exception\notice( $e, __METHOD__, $e );
+      throw RUNTIME_SHIFT__SAVE_ERROR_NUMBER == $e->get_number() ?
+        new \sabretooth\exception\notice( $e, __METHOD__, $e ) : $e;
     }
     else if( 1 < count( $exceptions ) )
     {
       $message = "The following errors have occured:<br>\n";
-      foreach( $exceptions as $e ) $message .= $e->get_raw_message()."<br>\n";
+      foreach( $exceptions as $e )
+      {
+        // if we find an unexpected exception throw it instead of a notice
+        if( RUNTIME_SHIFT__SAVE_ERROR_NUMBER != $e->get_number() ) throw $e;
+        $message .= $e->get_raw_message()."<br>\n";
+      }
       throw new \sabretooth\exception\notice( $message, __METHOD__ );
     }
   }

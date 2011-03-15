@@ -8,9 +8,11 @@
 {% extends "base_view.twig" %}
 {% block record %}
 {{ parent() }}
-<div class="spacer"></div>
-{# Add an shift list pertaining to this user #}
-{% include "shift_list.twig" with shift_list %}
+{% if shift_list is defined %}
+  <div class="spacer"></div>
+  {# Add an shift list pertaining to this user #}
+  {% include "shift_list.twig" with shift_list %}
+{% endif %}
 <div class="spacer"></div>
 {# Add an access list pertaining to this user #}
 {% include "access_list.twig" with access_list %}

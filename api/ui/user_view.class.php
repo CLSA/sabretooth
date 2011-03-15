@@ -70,9 +70,19 @@ class user_view extends base_view
 
     $this->finish_setting_items();
 
+    // determine if the user has the operator role at any sites
+    $db_role = \sabretooth\database\role::get_unique_record( 'name', 'operator' );
+    $modifier = new \sabretooth\database\modifier();
+    $modifier->where( 'user_id', '=', $this->get_record()->id );
+    $modifier->where( 'role_id', '=', $db_role->id );
+    $is_operator = 0 < count( \sabretooth\database\access::select( $modifier ) );
+
     // finish the child widgets
-    $this->shift_list->finish();
-    $this->set_variable( 'shift_list', $this->shift_list->get_variables() );
+    if( $is_operator )
+    { // only add the shift list if the user has an operator role
+      $this->shift_list->finish();
+      $this->set_variable( 'shift_list', $this->shift_list->get_variables() );
+    }
     $this->access_list->finish();
     $this->set_variable( 'access_list', $this->access_list->get_variables() );
     $this->activity_list->finish();

@@ -16,6 +16,26 @@ namespace sabretooth\database;
  */
 class user extends base_access
 {
+   /**
+   * Returns whether the user has the role for the given site.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param site $db_site
+   * @param role $db_role
+   * @return bool
+   * @access public
+   */
+  public function has_access( $db_site, $db_role )
+  {
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to determine access for user with no id.' );
+      return 0;
+    } 
+    
+    return access::exists( $this, $db_site, $db_role );
+  } 
+ 
   /**
    * Adds a list of sites to the user with the given role.
    * 

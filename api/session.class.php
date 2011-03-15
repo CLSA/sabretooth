@@ -200,7 +200,7 @@ final class session extends singleton
     else
     {
       // verify that the user has the right access
-      if( \sabretooth\database\access::exists( $this->user, $db_role, $db_site ) )
+      if( $this->user->has_access( $db_site, $db_role ) )
       {
         $this->site = $db_site;
         $this->role = $db_role;
