@@ -1,7 +1,6 @@
 <?php
 /**
  * record.class.php
- * TODO: create a column_exists convenience method
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\database
@@ -143,8 +142,7 @@ abstract class record extends \sabretooth\base_object
     }
     
     // if we have start_time and end_time, make sure end comes after start
-    if( static::db()->column_exists( static::get_table_name(), 'start_time' ) &&
-        static::db()->column_exists( static::get_table_name(), 'end_time' ) )
+    if( static::column_exists( 'start_time' ) && static::column_exists( 'end_time' ) )
     {
       $start_obj = new \DateTime( $this->start_time );
       $end_obj = new \DateTime( $this->end_time );
@@ -264,7 +262,7 @@ abstract class record extends \sabretooth\base_object
   public function __get( $column_name )
   {
     // make sure the column exists
-    if( !static::db()->column_exists( static::get_table_name(), $column_name ) )
+    if( !static::column_exists( $column_name ) )
       throw new \sabretooth\exception\argument( 'column_name', $column_name, __METHOD__ );
     
     return isset( $this->column_values[ $column_name ] ) ?
@@ -285,7 +283,7 @@ abstract class record extends \sabretooth\base_object
   public function __set( $column_name, $value )
   {
     // make sure the column exists
-    if( !static::db()->column_exists( static::get_table_name(), $column_name ) )
+    if( !static::column_exists( $column_name ) )
       throw new \sabretooth\exception\argument( 'column_name', $column_name, __METHOD__ );
     
     $this->column_values[ $column_name ] = $value;
@@ -401,7 +399,7 @@ abstract class record extends \sabretooth\base_object
     else if( 'get' == $action && is_null( $sub_action ) )
     { // calling: get_<record>()
       // make sure this table has the correct foreign key
-      if( !static::db()->column_exists( static::get_table_name(), $foreign_table_name.'_id' ) )
+      if( !static::column_exists( $foreign_table_name.'_id' ) )
         throw $exception;
 
       return $this->get_record( $foreign_table_name );
@@ -445,7 +443,7 @@ abstract class record extends \sabretooth\base_object
     $foreign_key_name = $record_type.'_id';
 
     // make sure this table has the correct foreign key
-    if( !static::db()->column_exists( static::get_table_name(), $foreign_key_name ) )
+    if( !static::column_exists( $foreign_key_name ) )
     { 
       \sabretooth\log::warning( 'Tried to get invalid record type: '.$record_type );
       return NULL;
@@ -771,11 +769,9 @@ abstract class record extends \sabretooth\base_object
   {
     $type = relationship::NONE;
     $class_name = '\\sabretooth\\database\\'.$record_type;
-    if( $class_name::db()->column_exists(
-      $class_name::get_table_name(),
-      static::get_table_name().'_id' ) )
+    if( $class_name::column_exists( static::get_table_name().'_id' ) )
     { // the record_type has a foreign key for this record
-      $type = static::db()->column_exists( static::get_table_name(), $record_type.'_id' )
+      $type = static::column_exists( $record_type.'_id' )
             ? relationship::ONE_TO_ONE
             : relationship::ONE_TO_MANY;
     }
@@ -818,7 +814,7 @@ abstract class record extends \sabretooth\base_object
         {
           // check to see if we have a foreign key for this table
           $foreign_key_name = $table.'_id';
-          if( static::db()->column_exists( static::get_table_name(), $foreign_key_name ) )
+          if( static::column_exists( $foreign_key_name ) )
           {
             // add the table to the list to select and join it in the modifier
             array_push( $table_list, $table );
@@ -927,7 +923,7 @@ abstract class record extends \sabretooth\base_object
   /**
    * Returns an array of all enum values for a particular column.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $name A column name in the record's corresponding table.
+   * @param string $column_name A column name in the record's corresponding table.
    * @return array( string )
    * @access public
    */
@@ -955,6 +951,19 @@ abstract class record extends \sabretooth\base_object
       array_push( $values, substr( $match, 1, -1 ) );
     }
     return $values;
+  }
+  
+  /**
+   * Convenience method for database::column_exists(), but for this record
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column_name A column name.
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function column_exists( $column_name )
+  {
+    return static::db()->column_exists( static::get_table_name(), $column_name );
   }
 
   /**
