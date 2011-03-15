@@ -648,10 +648,10 @@ abstract class record extends \sabretooth\base_object
     }
 
     static::db()->execute(
-      sprintf( 'INSERT INTO %s (%s, %s_id) VALUES %s',
+      sprintf( 'INSERT INTO %s (%s_id, %s_id) VALUES %s',
                $joining_table_name,
-               static::get_primary_key_name(),
-               $joining_table_name,
+               static::get_table_name(),
+               $record_type,
                $values ) );
   }
 

@@ -34,10 +34,17 @@ class shift_add extends base_view
     $this->add_item( 'start_time', 'time', 'Start Time' );
     $this->add_item( 'end_time', 'time', 'End Time' );
 
-    // and a list of users
-    $this->user_list = new user_list( $args );
-    $this->user_list->set_parent( $this, 'edit' );
-    $this->user_list->set_heading( 'Choose users to add to this shift' );
+    try
+    {
+      // and a list of users
+      $this->user_list = new user_list( $args );
+      $this->user_list->set_parent( $this, 'edit' );
+      $this->user_list->set_heading( 'Choose users to add to this shift' );
+    }
+    catch( \sabretooth\exception\permission $e )
+    {
+      $this->user_list = NULL;
+    }
   }
 
   /**
@@ -71,8 +78,11 @@ class shift_add extends base_view
         // replace the site enum with a hidden variable
         $this->add_item( 'site_id', 'hidden' );
         $this->set_item( 'site_id', $this->parent->get_record()->id );
-        $this->user_list->finish();
-        $this->set_variable( 'user_list', $this->user_list->get_variables() );
+        if( !is_null( $this->user_list ) )
+        {
+          $this->user_list->finish();
+          $this->set_variable( 'user_list', $this->user_list->get_variables() );
+        }
       }
       else
       {
@@ -89,8 +99,12 @@ class shift_add extends base_view
       foreach( \sabretooth\database\site::select() as $db_site )
         $sites[$db_site->id] = $db_site->name;
 
-      $this->user_list->finish();
-      $this->set_variable( 'user_list', $this->user_list->get_variables() );
+      if( !is_null( $this->user_list ) )
+      {
+        $this->user_list->finish();
+        $this->set_variable( 'user_list', $this->user_list->get_variables() );
+      }
+
       $this->set_item( 'site_id', \sabretooth\session::self()->get_site()->id, true, $sites );
     }
 

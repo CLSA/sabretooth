@@ -1,0 +1,19 @@
+{##
+ # macros.twig
+ # 
+ # Contains a list of twig macros.
+ #}
+
+{##
+ # Includes a list widget, if list is set.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @param string subject The list's subject.
+ # @param array list The list's arguments.
+ # @param boolean spacer Whether to include spacing before including the list.
+ #}
+{% macro include_list( subject, list, spacer ) %}
+  {% if list %}
+    {% if spacer is defined %}<div class="spacer"></div>{% endif %}
+    {% include [ subject, "list.twig" ]|join("_") with list %}
+  {% endif %}
+{% endmacro %}

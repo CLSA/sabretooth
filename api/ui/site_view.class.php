@@ -35,20 +35,41 @@ class site_view extends base_view
     $this->add_item( 'users', 'constant', 'Number of users' );
     $this->add_item( 'last_activity', 'constant', 'Last activity' );
 
-    // create the shift sub-list widget
-    $this->shift_list = new shift_list( $args );
-    $this->shift_list->set_parent( $this );
-    $this->shift_list->set_heading( 'Site shifts' );
+    try
+    {
+      // create the shift sub-list widget
+      $this->shift_list = new shift_list( $args );
+      $this->shift_list->set_parent( $this );
+      $this->shift_list->set_heading( 'Site shifts' );
+    }
+    catch( \sabretooth\exception\permission $e )
+    {
+      $this->shift_list = NULL;
+    }
 
-    // create the access sub-list widget
-    $this->access_list = new access_list( $args );
-    $this->access_list->set_parent( $this );
-    $this->access_list->set_heading( 'Site access list' );
+    try
+    {
+      // create the access sub-list widget
+      $this->access_list = new access_list( $args );
+      $this->access_list->set_parent( $this );
+      $this->access_list->set_heading( 'Site access list' );
+    }
+    catch( \sabretooth\exception\permission $e )
+    {
+      $this->access_list = NULL;
+    }
 
-    // create the activity sub-list widget
-    $this->activity_list = new activity_list( $args );
-    $this->activity_list->set_parent( $this );
-    $this->activity_list->set_heading( 'Site activity' );
+    try
+    {
+      // create the activity sub-list widget
+      $this->activity_list = new activity_list( $args );
+      $this->activity_list->set_parent( $this );
+      $this->activity_list->set_heading( 'Site activity' );
+    }
+    catch( \sabretooth\exception\permission $e )
+    {
+      $this->activity_list = NULL;
+    }
   }
 
   /**
@@ -79,12 +100,23 @@ class site_view extends base_view
     $this->finish_setting_items();
 
     // finish the child widgets
-    $this->shift_list->finish();
-    $this->set_variable( 'shift_list', $this->shift_list->get_variables() );
-    $this->access_list->finish();
-    $this->set_variable( 'access_list', $this->access_list->get_variables() );
-    $this->activity_list->finish();
-    $this->set_variable( 'activity_list', $this->activity_list->get_variables() );
+    if( !is_null( $this->shift_list ) )
+    {
+      $this->shift_list->finish();
+      $this->set_variable( 'shift_list', $this->shift_list->get_variables() );
+    }
+
+    if( !is_null( $this->access_list ) )
+    {
+      $this->access_list->finish();
+      $this->set_variable( 'access_list', $this->access_list->get_variables() );
+    }
+
+    if( !is_null( $this->activity_list ) )
+    {
+      $this->activity_list->finish();
+      $this->set_variable( 'activity_list', $this->activity_list->get_variables() );
+    }
   }
 
   /**

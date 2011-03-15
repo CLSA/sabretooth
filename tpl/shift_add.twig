@@ -75,10 +75,8 @@
 
 {% block record %}
 
-{% if user_list is defined %}
-<div class="spacer"></div>
-{% include "user_list.twig" with user_list %}
-{% endif %}
+{% from 'macros.twig' import include_list %}
+{{ include_list( 'user', user_list|default(false), true ) }}
 
 {{ parent() }}
 {% endblock %}

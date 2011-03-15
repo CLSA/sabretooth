@@ -34,15 +34,29 @@ class qnaire_view extends base_view
     $this->add_item( 'samples', 'constant', 'Number of samples' );
     $this->add_item( 'description', 'text', 'Description' );
 
-    // create the phase sub-list widget
-    $this->phase_list = new phase_list( $args );
-    $this->phase_list->set_parent( $this );
-    $this->phase_list->set_heading( 'Questionnaire phases' );
+    try
+    {
+      // create the phase sub-list widget
+      $this->phase_list = new phase_list( $args );
+      $this->phase_list->set_parent( $this );
+      $this->phase_list->set_heading( 'Questionnaire phases' );
+    }
+    catch( \sabretooth\exception\permission $e )
+    {
+      $this->phase_list = NULL;
+    }
 
-    // create the sample sub-list widget
-    $this->sample_list = new sample_list( $args );
-    $this->sample_list->set_parent( $this );
-    $this->sample_list->set_heading( 'Samples this questionnaire has been assigned to' );
+    try
+    {
+      // create the sample sub-list widget
+      $this->sample_list = new sample_list( $args );
+      $this->sample_list->set_parent( $this );
+      $this->sample_list->set_heading( 'Samples this questionnaire has been assigned to' );
+    }
+    catch( \sabretooth\exception\permission $e )
+    {
+      $this->sample_list = NULL;
+    }
   }
 
   /**
@@ -64,10 +78,17 @@ class qnaire_view extends base_view
     $this->finish_setting_items();
     
     // finish the child widgets
-    $this->phase_list->finish();
-    $this->set_variable( 'phase_list', $this->phase_list->get_variables() );
-    $this->sample_list->finish();
-    $this->set_variable( 'sample_list', $this->sample_list->get_variables() );
+    if( !is_null( $this->phase_list ) )
+    {
+      $this->phase_list->finish();
+      $this->set_variable( 'phase_list', $this->phase_list->get_variables() );
+    }
+
+    if( !is_null( $this->sample_list ) )
+    {
+      $this->sample_list->finish();
+      $this->set_variable( 'sample_list', $this->sample_list->get_variables() );
+    }
   }
   
   /**

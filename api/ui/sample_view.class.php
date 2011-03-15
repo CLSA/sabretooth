@@ -34,15 +34,29 @@ class sample_view extends base_view
     $this->add_item( 'qnaires', 'constant', 'Number of questionnaires' );
     $this->add_item( 'description', 'text', 'Description' );
 
-    // create the participant sub-list widget
-    $this->participant_list = new participant_list( $args );
-    $this->participant_list->set_parent( $this );
-    $this->participant_list->set_heading( 'Participants belonging to this sample' );
+    try
+    {
+      // create the participant sub-list widget
+      $this->participant_list = new participant_list( $args );
+      $this->participant_list->set_parent( $this );
+      $this->participant_list->set_heading( 'Participants belonging to this sample' );
+    }
+    catch( \sabretooth\exception\permission $e )
+    {
+      $this->participant_list = NULL;
+    }
 
-    // create the qnaire sub-list widget
-    $this->qnaire_list = new qnaire_list( $args );
-    $this->qnaire_list->set_parent( $this );
-    $this->qnaire_list->set_heading( 'Questionnaires assigned to this sample' );
+    try
+    {
+      // create the qnaire sub-list widget
+      $this->qnaire_list = new qnaire_list( $args );
+      $this->qnaire_list->set_parent( $this );
+      $this->qnaire_list->set_heading( 'Questionnaires assigned to this sample' );
+    }
+    catch( \sabretooth\exception\permission $e )
+    {
+      $this->qnaire_list = NULL;
+    }
   }
 
   /**
@@ -64,10 +78,17 @@ class sample_view extends base_view
     $this->finish_setting_items();
 
     // finish the child widgets
-    $this->participant_list->finish();
-    $this->set_variable( 'participant_list', $this->participant_list->get_variables() );
-    $this->qnaire_list->finish();
-    $this->set_variable( 'qnaire_list', $this->qnaire_list->get_variables() );
+    if( !is_null( $this->participant_list ) )
+    {
+      $this->participant_list->finish();
+      $this->set_variable( 'participant_list', $this->participant_list->get_variables() );
+    }
+
+    if( !is_null( $this->qnaire_list ) )
+    {
+      $this->qnaire_list->finish();
+      $this->set_variable( 'qnaire_list', $this->qnaire_list->get_variables() );
+    }
   }
   
   /**

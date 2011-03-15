@@ -7,11 +7,10 @@
  #}
 {% extends "base_view.twig" %}
 {% block record %}
-{{ parent() }}
-<div class="spacer"></div>
-{# Add a phase list pertaining to this qnaire #}
-{% include "phase_list.twig" with phase_list %}
-<div class="spacer"></div>
-{# Add a sample list pertaining to this qnaire #}
-{% include "sample_list.twig" with sample_list %}
+
+  {{ parent() }}
+  {% from 'macros.twig' import include_list %}
+  {{ include_list( 'phase', phase_list|default(false), true ) }}
+  {{ include_list( 'sample', sample_list|default(false), true ) }}
+
 {% endblock %}

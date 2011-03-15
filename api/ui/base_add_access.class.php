@@ -29,10 +29,17 @@ class base_add_access extends base_add_list
   {
     parent::__construct( $subject, 'access', $args );
     
-    // build the role list widget
-    $this->role_list = new role_list( $args );
-    $this->role_list->set_parent( $this, 'edit' );
-    $this->role_list->set_heading( 'Select roles to grant' );
+    try
+    {
+      // build the role list widget
+      $this->role_list = new role_list( $args );
+      $this->role_list->set_parent( $this, 'edit' );
+      $this->role_list->set_heading( 'Select roles to grant' );
+    }
+    catch( \sabretooth\exception\permission $e )
+    {
+      $this->role_list = NULL;
+    }
   }
 
   /**
@@ -45,8 +52,11 @@ class base_add_access extends base_add_list
   {
     parent::finish();
 
-    $this->role_list->finish();
-    $this->set_variable( 'role_list', $this->role_list->get_variables() );
+    if( !is_null( $this->role_list ) )
+    {
+      $this->role_list->finish();
+      $this->set_variable( 'role_list', $this->role_list->get_variables() );
+    }
   }
   
   /**

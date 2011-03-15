@@ -94,7 +94,9 @@ $( function () {
 {% endblock %}
 
 {% block listing %}
-{{ parent() }}
-<div class="spacer"></div>
-{% include "role_list.twig" with role_list %}
+
+  {{ parent() }}
+  {% from 'macros.twig' import include_list %}
+  {{ include_list( 'role', role_list|default(false) ) }}
+
 {% endblock %}

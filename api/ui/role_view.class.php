@@ -33,11 +33,18 @@ class role_view extends base_view
     $this->add_item( 'name', 'string', 'Name' );
     $this->add_item( 'operation_count', 'constant', 'Operations' );
 
-    // create the operation sub-list widget
-    $this->operation_list = new operation_list( $args );
-    $this->operation_list->set_parent( $this );
-    $this->operation_list->remove_column( 'restricted' );
-    $this->operation_list->set_heading( 'Operations belonging to this role' );
+    try
+    {
+      // create the operation sub-list widget
+      $this->operation_list = new operation_list( $args );
+      $this->operation_list->set_parent( $this );
+      $this->operation_list->remove_column( 'restricted' );
+      $this->operation_list->set_heading( 'Operations belonging to this role' );
+    }
+    catch( \sabretooth\exception\permission $e )
+    {
+      $this->operation_list = NULL;
+    }
   }
 
   /**
@@ -57,8 +64,11 @@ class role_view extends base_view
     $this->finish_setting_items();
 
     // finish the child widgets
-    $this->operation_list->finish();
-    $this->set_variable( 'operation_list', $this->operation_list->get_variables() );
+    if( !is_null( $this->operation_list ) )
+    {
+      $this->operation_list->finish();
+      $this->set_variable( 'operation_list', $this->operation_list->get_variables() );
+    }
   }
 
   /**

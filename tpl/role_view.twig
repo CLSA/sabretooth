@@ -7,8 +7,9 @@
  #}
 {% extends "base_view.twig" %}
 {% block record %}
-{{ parent() }}
-<div class="spacer"></div>
-{# Add a list of operations belonging to this role #}
-{% include "operation_list.twig" with operation_list %}
+  
+  {{ parent() }}
+  {% from 'macros.twig' import include_list %}
+  {{ include_list( 'operation', operation_list|default(false), true ) }}
+
 {% endblock %}

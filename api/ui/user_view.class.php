@@ -32,21 +32,42 @@ class user_view extends base_view
     $this->add_item( 'name', 'string', 'Username' );
     $this->add_item( 'active', 'boolean', 'Active' );
     $this->add_item( 'last_activity', 'constant', 'Last activity' );
+    
+    try
+    {
+      // create the shift sub-list widget
+      $this->shift_list = new shift_list( $args );
+      $this->shift_list->set_parent( $this );
+      $this->shift_list->set_heading( 'User\'s shift list' );
+    }
+    catch( \sabretooth\exception\permission $e )
+    {
+      $this->shift_list = NULL;
+    }
 
-    // create the shift sub-list widget
-    $this->shift_list = new shift_list( $args );
-    $this->shift_list->set_parent( $this );
-    $this->shift_list->set_heading( 'User\'s shift list' );
+    try
+    {
+      // create the access sub-list widget
+      $this->access_list = new access_list( $args );
+      $this->access_list->set_parent( $this );
+      $this->access_list->set_heading( 'User\'s site access list' );
+    }
+    catch( \sabretooth\exception\permission $e )
+    {
+      $this->access_list = NULL;
+    }
 
-    // create the access sub-list widget
-    $this->access_list = new access_list( $args );
-    $this->access_list->set_parent( $this );
-    $this->access_list->set_heading( 'User\'s site access list' );
-
-    // create the activity sub-list widget
-    $this->activity_list = new activity_list( $args );
-    $this->activity_list->set_parent( $this );
-    $this->activity_list->set_heading( 'User activity' );
+    try
+    {
+      // create the activity sub-list widget
+      $this->activity_list = new activity_list( $args );
+      $this->activity_list->set_parent( $this );
+      $this->activity_list->set_heading( 'User activity' );
+    }
+    catch( \sabretooth\exception\permission $e )
+    {
+      $this->activity_list = NULL;
+    }
   }
 
   /**
@@ -69,24 +90,35 @@ class user_view extends base_view
     $this->set_item( 'last_activity', $last );
 
     $this->finish_setting_items();
-
-    // determine if the user has the operator role at any sites
-    $db_role = \sabretooth\database\role::get_unique_record( 'name', 'operator' );
-    $modifier = new \sabretooth\database\modifier();
-    $modifier->where( 'user_id', '=', $this->get_record()->id );
-    $modifier->where( 'role_id', '=', $db_role->id );
-    $is_operator = 0 < count( \sabretooth\database\access::select( $modifier ) );
-
-    // finish the child widgets
-    if( $is_operator )
-    { // only add the shift list if the user has an operator role
-      $this->shift_list->finish();
-      $this->set_variable( 'shift_list', $this->shift_list->get_variables() );
+    
+    if( !is_null( $this->shift_list ) )
+    {
+      // determine if the user has the operator role at any sites
+      $db_role = \sabretooth\database\role::get_unique_record( 'name', 'operator' );
+      $modifier = new \sabretooth\database\modifier();
+      $modifier->where( 'user_id', '=', $this->get_record()->id );
+      $modifier->where( 'role_id', '=', $db_role->id );
+      $is_operator = 0 < count( \sabretooth\database\access::select( $modifier ) );
+  
+      // finish the child widgets
+      if( $is_operator )
+      { // only add the shift list if the user has an operator role
+        $this->shift_list->finish();
+        $this->set_variable( 'shift_list', $this->shift_list->get_variables() );
+      }
     }
-    $this->access_list->finish();
-    $this->set_variable( 'access_list', $this->access_list->get_variables() );
-    $this->activity_list->finish();
-    $this->set_variable( 'activity_list', $this->activity_list->get_variables() );
+
+    if( !is_null( $this->access_list ) )
+    {
+      $this->access_list->finish();
+      $this->set_variable( 'access_list', $this->access_list->get_variables() );
+    }
+
+    if( !is_null( $this->activity_list ) )
+    {
+      $this->activity_list->finish();
+      $this->set_variable( 'activity_list', $this->activity_list->get_variables() );
+    }
   }
   
   /**

@@ -7,14 +7,11 @@
  #}
 {% extends "base_view.twig" %}
 {% block record %}
-{{ parent() }}
-<div class="spacer"></div>
-{# Add an shift list pertaining to this site #}
-{% include "shift_list.twig" with shift_list %}
-<div class="spacer"></div>
-{# Add an access list pertaining to this site #}
-{% include "access_list.twig" with access_list %}
-<div class="spacer"></div>
-{# Add a list of the activity at this site #}
-{% include "activity_list.twig" with activity_list %}
+
+  {{ parent() }}
+  {% from 'macros.twig' import include_list %}
+  {{ include_list( 'shift', shift_list|default(false), true ) }}
+  {{ include_list( 'access', access_list|default(false), true ) }}
+  {{ include_list( 'activity', activity_list|default(false), true ) }}
+
 {% endblock %}
