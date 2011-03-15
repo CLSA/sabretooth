@@ -279,11 +279,22 @@ class modifier extends \sabretooth\base_object
       }
       else
       {
-        $compare = sprintf( '%s %s %s',
-                            $where['column'],
-                            $where['operator'],
-                            $where['format'] ?
-                              database::format_string( $where['value'] ) : $where['value'] );
+        $value = $where['format'] ? database::format_string( $where['value'] ) : $where['value'];
+        
+        if( 'NULL' == $value )
+        {
+          if( '=' == $where['operator'] ) $compare = $where['column'].' IS NULL';
+          else if( '!=' == $where['operator'] ) $compare = $where['column'].' IS NOT NULL';
+          else \sabretooth\log::warning(
+                 'Tried to compare to NULL value with "'.$where['operator'].'" operator.' );
+        }
+        else
+        {
+          $compare = sprintf( '%s %s %s',
+                              $where['column'],
+                              $where['operator'],
+                              $value );
+        }
       }
       
       $logic_type = $where['or'] ? ' OR' : ' AND';
