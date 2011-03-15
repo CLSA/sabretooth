@@ -1,9 +1,6 @@
 <?php
 /**
  * database.class.php
- * TODO: may need to dump ADODB because of no-multiple connections bug:
- * http://php.bigresource.com/ADODB-Multiple-Database-Connection-wno2zASC.html
- * TODO: limesurvey db connection still not working right
  * For now see {@link connect} for the current hack/solution.
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -180,15 +177,14 @@ class database extends \sabretooth\base_object
    * Note: This is a wrapper for ADOdb::Execute()
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
-   * @param array $input_array binding variables to parameters
    * @return ADORecordSet
    * @throws exception\database
    * @access public
    */
-  public function execute( $sql, $input_array = false )
+  public function execute( $sql )
   {
     $this->connect();
-    $result = $this->connection->Execute( $sql, $input_array );
+    $result = $this->connection->Execute( $sql );
     if( false === $result )
     {
       // pass the db error code instead of a class error code
@@ -206,15 +202,14 @@ class database extends \sabretooth\base_object
    * Note: This is a wrapper for ADOdb::GetOne()
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
-   * @param array $input_array binding variables to parameters
    * @return native or NULL if no records were found.
    * @throws exception\database
    * @access public
    */
-  public function get_one( $sql, $input_array = false )
+  public function get_one( $sql )
   {
     $this->connect();
-    $result = $this->connection->GetOne( $sql, $input_array );
+    $result = $this->connection->GetOne( $sql );
     if( false === $result )
     {
       // pass the db error code instead of a class error code
@@ -232,15 +227,14 @@ class database extends \sabretooth\base_object
    * Note: This is a wrapper for ADOdb::GetRow()
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
-   * @param array $input_array binding variables to parameters
    * @return array (empty if no records are found)
    * @throws exception\database
    * @access public
    */
-  public function get_row( $sql, $input_array = false )
+  public function get_row( $sql )
   {
     $this->connect();
-    $result = $this->connection->GetRow( $sql, $input_array );
+    $result = $this->connection->GetRow( $sql );
     if( false === $result )
     {
       // pass the db error code instead of a class error code
@@ -258,15 +252,14 @@ class database extends \sabretooth\base_object
    * Note: This is a wrapper for ADOdb::GetAll()
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
-   * @param array $input_array binding variables to parameters
    * @return array (empty if no records are found)
    * @throws exception\database
    * @access public
    */
-  public function get_all( $sql, $input_array = false )
+  public function get_all( $sql )
   {
     $this->connect();
-    $result = $this->connection->GetAll( $sql, $input_array );
+    $result = $this->connection->GetAll( $sql );
     if( false === $result )
     {
       // pass the db error code instead of a class error code
@@ -284,16 +277,15 @@ class database extends \sabretooth\base_object
    * Note: This is a wrapper for ADOdb::GetCol()
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sql SQL statement
-   * @param array $input_array binding variables to parameters
    * @param boolean $trim determines whether to right trim CHAR fields
    * @return array (empty if no records are found)
    * @throws exception\database
    * @access public
    */
-  public function get_col( $sql, $input_array = false, $trim = false )
+  public function get_col( $sql, $trim = false )
   {
     $this->connect();
-    $result = $this->connection->GetCol( $sql, $input_array, $trim );
+    $result = $this->connection->GetCol( $sql, $trim );
     if( false === $result )
     {
       // pass the database error code instead of a class error code
@@ -359,6 +351,9 @@ class database extends \sabretooth\base_object
   /**
    * Since ADODB does not support multiple database with the same driver this method must be
    * called before using the connection member.
+   * This method is necessary because ADODB cannot connect to more than one database of the
+   * same driver at the same time:
+   * http://php.bigresource.com/ADODB-Multiple-Database-Connection-wno2zASC.html
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access private
    */
