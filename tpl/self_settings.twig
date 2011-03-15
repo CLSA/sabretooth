@@ -24,8 +24,7 @@ $( document ).ready( function() {
     var selected = $( "#{{ widget.full }}_set_site option:selected" );
     if( 0 != selected.val() ) {
       if( send_action( 'self', 'set_site', { "site": selected.text() } ) ) {
-        slot_refresh( get_slot( $(this) ) );
-        slot_load( 'main', 'self_home' );
+        window.location.reload();
       }
     }
   } );
@@ -37,8 +36,7 @@ $( document ).ready( function() {
     var selected = $( "#{{ widget.full }}_set_role option:selected" );
     if( 0 != selected.val() ) {
       if( send_action( 'self', 'set_role', { "role": selected.text() } ) ) {
-        slot_refresh( get_slot( $(this) ) );
-        slot_load( 'main', 'self_home' );
+        window.location.reload();
       }
     }
   } );

@@ -45,11 +45,14 @@ class self_menu extends widget
     $modifier->where( 'operation.name', '=', 'list' );
     $widgets = \sabretooth\session::self()->get_role()->get_operation_list( $modifier );
     
+    $exclude = array( 'availability', 'consent', 'contact', 'phase' );
+
     $items = array();
     foreach( $widgets as $db_widget )
     {
-      array_push( $items, array( 'heading' => \sabretooth\util::pluralize( $db_widget->subject ),
-                                 'widget' => $db_widget->subject.'_'.$db_widget->name ) );
+      if( !in_array( $db_widget->subject, $exclude ) )
+        array_push( $items, array( 'heading' => \sabretooth\util::pluralize( $db_widget->subject ),
+                                   'widget' => $db_widget->subject.'_'.$db_widget->name ) );
     }
 
     $this->set_variable( 'items', $items );

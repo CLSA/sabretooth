@@ -114,7 +114,7 @@
         </td>
         <td style="padding: 4px" width="95%" align="left">
 
-      {% if 'constant' == entry.type %}
+      {% if 'constant' == entry.type or not editable %}
     
         <div id="{{ widget.full }}__{{ item_id }}" class="padded">{{ entry_value }}</div>
     
