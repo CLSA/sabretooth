@@ -35,24 +35,49 @@
   
     // build the args object
     var id_string = element.attr( 'id' );
-    console.log( id_string );
     var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
     var args = new Object();
     args.id = {{ id|default(0) }};
     var columns = new Object();
-  
+    
+    // when changing start_time, also adjust end_time
+    if( 'time' == type && 'start_time' == column_name )
+    {
+      // determine the time difference between the old and new time
+      end_time_obj = new Date( "Jan 2, 2000 " + $( "#old_{{ widget.full }}__end_time" ).val() );
+      old_time_obj = new Date( "Jan 2, 2000 " + old_value );
+      new_time_obj = new Date( "Jan 2, 2000 " + new_value );
+      end_time_obj.setTime(
+        end_time_obj.getTime() + ( new_time_obj.getTime() - old_time_obj.getTime() ) );
+      var hours = ( end_time_obj.getHours() < 10 ? '0' : '' ) + end_time_obj.getHours();
+      var minutes = ( end_time_obj.getMinutes() < 10 ? '0' : '' ) + end_time_obj.getMinutes();
+      columns.end_time = hours + ":" + minutes;
+    }
+
     // make sure to change empty strings for boolean and enum values to NULL
     if( 'boolean' == type || 'enum' == type )
       columns[column_name] = 'NULL' == new_value ? '' : new_value;
     else columns[column_name] = new_value;
     args.columns = columns;
-  
+
     // send the action, updating the hidden "old" input upon success
     if( send_action( "{{ widget.subject }}", "edit", args ) )
     {
+      // if we are setting start_time, then update end_time
+      if( 'time' == type && 'start_time' == column_name )
+      {
+        $( "#old_{{ widget.full }}__end_time" ).val( columns.end_time );
+        $( "#{{ widget.full }}__end_time" ).val( columns.end_time );
+      }
+
       if( 'boolean' != type && 'enum' != type )
         $( "#old_" + element.attr( 'id' ) ).val( new_value );
       return new_value;
+    }
+    else
+    {
+      // put the old value back
+      element.val( old_value );
     }
   
     return old_value;
@@ -221,7 +246,7 @@
             showAnim: 'slideDown',
             ampm: false,
             stepMinute: 5,
-            onClose: function( timeText, inst ) {
+            onClose: function( timeText, date_inst, time_inst ) {
               return process_change( $input_{{ item_id }}, timeText, "{{ entry.type }}" );
             }
           } );

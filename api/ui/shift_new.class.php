@@ -40,7 +40,7 @@ class shift_new extends base_new
     if( !array_key_exists( 'date', $columns ) || 0 == strlen( $columns['date'] ) )
       throw new \sabretooth\exception\notice( 'The date cannot be left blank.', __METHOD__ );
     
-    $exception = NULL;
+    $exceptions = array();
 
     // execute for every selected user
     foreach( $this->get_argument( 'user_id_list' ) as $user_id )
@@ -52,7 +52,7 @@ class shift_new extends base_new
       }
       catch( \sabretooth\exception\base_exception $e )
       {
-        $exception = $e;
+        array_push( $exceptions, $e );
       }
 
       // create a new shift record for the next iteration
@@ -60,7 +60,17 @@ class shift_new extends base_new
     }
 
     // throw an exception if any were caught
-    if( !is_null( $exception ) ) throw $exception;
+    if( 1 == count( $exceptions ) )
+    {
+      $e = current( $exceptions );
+      throw new \sabretooth\exception\notice( $e, __METHOD__, $e );
+    }
+    else if( 1 < count( $exceptions ) )
+    {
+      $message = "The following errors have occured:<br>\n";
+      foreach( $exceptions as $e ) $message .= $e->get_raw_message()."<br>\n";
+      throw new \sabretooth\exception\notice( $message, __METHOD__ );
+    }
   }
 }
 ?>

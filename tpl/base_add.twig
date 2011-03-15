@@ -78,6 +78,21 @@
               showAnim: 'slideDown',
               ampm: false,
               stepMinute: 5
+              {% if "start_time" == item_id %}
+              , onClose: function( timeText, date_inst, time_inst ) {
+                // update end_time
+                end_time_obj =
+                  new Date( "Jan 2, 2000 " + $( "#{{ widget.full }}__end_time" ).val() );
+                old_time_obj = 
+                  new Date( "Jan 2, 2000 " + date_inst.lastVal );
+                new_time_obj = new Date( "Jan 2, 2000 " + timeText );
+                end_time_obj.setTime(
+                  end_time_obj.getTime() + ( new_time_obj.getTime() - old_time_obj.getTime() ) );
+                var hours = ( end_time_obj.getHours() < 10 ? '0' : '' ) + end_time_obj.getHours();
+                var minutes = ( end_time_obj.getMinutes() < 10 ? '0' : '' ) + end_time_obj.getMinutes();
+                $( "#{{ widget.full }}__end_time" ).val( hours + ":" + minutes );
+              }
+              {% endif %}                
             } );
           } );
         </script>

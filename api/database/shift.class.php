@@ -34,30 +34,19 @@ class shift extends record
       return;
     }
     
-    // make sure start time comes after end time
-    $start_obj = new \DateTime( $this->start_time );
-    $end_obj = new \DateTime( $this->end_time );
-    $interval = $start_obj->diff( $end_obj );
-    if( 0 != $interval->invert ||
-        ( 0 == $interval->days && 0 == $interval->h && 0 == $interval->i && 0 == $interval->s ) )
-    {
-      throw new \sabretooth\exception\runtime(
-        'Tried to set end time which is not after the start time in shift record.', __METHOD__ );
-    }
-
-    // convert the start and end times to server time
-    $start_time = \sabretooth\util::to_server_time( $this->start_time );
-    $end_time = \sabretooth\util::to_server_time( $this->end_time );
-    
     // See if the user already has a shift at this time
     $modifier = new modifier();
     $modifier->where( 'id', '!=', $this->id );
     $modifier->where( 'user_id', '=', $this->user_id );
     $modifier->where( 'date', '=', $this->date );
     
+    // convert the start and end times to server time
+    $start_time = \sabretooth\util::to_server_time( $this->start_time );
+    $end_time = \sabretooth\util::to_server_time( $this->end_time );
+
     // (need to use custom SQL)
-    $count = static::db()->get_one( 
-      sprintf( 'SELECT COUNT(*) FROM %s %s '.
+    $overlap_ids = static::db()->get_col( 
+      sprintf( 'SELECT id FROM %s %s '.
                'AND NOT ( ( start_time <= %s AND end_time <= %s ) OR '.
                          '( start_time >= %s AND end_time >= %s ) )',
                static::get_table_name(),
@@ -67,10 +56,20 @@ class shift extends record
                database::format_string( $end_time ),
                database::format_string( $end_time ) ) );
     
-    if( 0 < $count )
+    if( 0 < count( $overlap_ids ) )
     {
+      $overlap_id = current( $overlap_ids );
+      $db_user = new user( $this->user_id );
+      $db_overlap = new static( $overlap_id );
       throw new \sabretooth\exception\runtime(
-        'Tried to create shift which overlaps with another shift\'s time.', __METHOD__ );
+        sprintf( 'Shift time (%s to %s) for user "%s" overlaps '.
+                 'with another shift on the same day (%s to %s).',
+                 $this->start_time,
+                 $this->end_time,
+                 $db_user->name,
+                 substr( $db_overlap->start_time, 0, -3 ),
+                 substr( $db_overlap->end_time, 0, -3 ) ),
+        __METHOD__ );
     }
     
     // all is well, continue with the parent's save method

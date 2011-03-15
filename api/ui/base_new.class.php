@@ -35,10 +35,26 @@ abstract class base_new extends base_record_action
    */
   public function execute()
   {
-    foreach( $this->get_argument( 'columns', array() ) as $column => $value )
-    {
-      $this->get_record()->$column = $value;
-    }
+    $columns = $this->get_argument( 'columns', array() );
+
+    // check for time range validity, if necessary
+    if( array_key_exists( 'start_time', $columns ) && array_key_exists( 'end_time', $columns ) )
+    { 
+      $start_value = $columns['start_time'];
+      $end_value = $columns['end_time'];
+      
+      if( strtotime( $start_value ) >= strtotime( $end_value ) )
+      { 
+        throw new \sabretooth\exception\notice(
+          sprintf( 'Start and end times (%s to %s) are not valid.',
+                   $start_value,
+                   $end_value ),
+          __METHOD__ );
+      }
+    } 
+    
+    // set record column values
+    foreach( $columns as $column => $value ) $this->get_record()->$column = $value;
 
     try
     {
