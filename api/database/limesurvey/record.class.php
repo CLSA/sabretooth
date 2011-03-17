@@ -44,14 +44,14 @@ abstract class record extends \sabretooth\database\record
    */
   public static function select( $modifier = NULL )
   {
-    $records = array();
     $id_list = static::db()->get_col(
       sprintf( 'SELECT %s FROM %s %s',
                static::get_primary_key_name(),
                static::get_table_name(),
                is_null( $modifier ) ? '' : $modifier->get_sql() ) );
 
-    foreach( $id_list as $id ) array_push( $records, new static( $id ) );
+    $records = array();
+    foreach( $id_list as $id ) $records[] = new static( $id );
 
     return $records;
   }

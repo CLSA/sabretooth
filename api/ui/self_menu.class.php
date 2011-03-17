@@ -51,8 +51,8 @@ class self_menu extends widget
     foreach( $widgets as $db_widget )
     {
       if( !in_array( $db_widget->subject, $exclude ) )
-        array_push( $items, array( 'heading' => \sabretooth\util::pluralize( $db_widget->subject ),
-                                   'widget' => $db_widget->subject.'_'.$db_widget->name ) );
+        $items[] = array( 'heading' => \sabretooth\util::pluralize( $db_widget->subject ),
+                          'widget' => $db_widget->subject.'_'.$db_widget->name );
     }
 
     $this->set_variable( 'items', $items );

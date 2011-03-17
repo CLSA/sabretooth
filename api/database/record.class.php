@@ -563,7 +563,7 @@ abstract class record extends \sabretooth\base_object
       {
         $ids = static::db()->get_col( $sql );
         $records = array();
-        foreach( $ids as $id ) array_push( $records, new $foreign_class_name( $id ) );
+        foreach( $ids as $id ) $records[] = new $foreign_class_name( $id );
         return $records;
       }
     }
@@ -800,7 +800,6 @@ abstract class record extends \sabretooth\base_object
    */
   public static function select( $modifier = NULL )
   {
-    $records = array();
     $this_table = static::get_table_name();
     
     // check to see if the modifier is sorting a value in a foreign table
@@ -817,7 +816,7 @@ abstract class record extends \sabretooth\base_object
           if( static::column_exists( $foreign_key_name ) )
           {
             // add the table to the list to select and join it in the modifier
-            array_push( $table_list, $table );
+            $table_list[] = $table;
             $modifier->where(
               $this_table.'.'.$foreign_key_name,
               '=',
@@ -845,7 +844,8 @@ abstract class record extends \sabretooth\base_object
                $select_tables,
                is_null( $modifier ) ? '' : $modifier->get_sql() ) );
 
-    foreach( $id_list as $id ) array_push( $records, new static( $id ) );
+    $records = array();
+    foreach( $id_list as $id ) $records[] = new static( $id );
 
     return $records;
   }
@@ -946,10 +946,8 @@ abstract class record extends \sabretooth\base_object
     // match all strings in single quotes, then cut out the quotes from the match and return them
     preg_match_all( "/'[^']+'/", $type, $matches );
     $values = array();
-    foreach( current( $matches ) as $match )
-    {
-      array_push( $values, substr( $match, 1, -1 ) );
-    }
+    foreach( current( $matches ) as $match ) $values[] = substr( $match, 1, -1 );
+
     return $values;
   }
   

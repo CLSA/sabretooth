@@ -52,7 +52,7 @@ class shift_new extends base_new
       }
       catch( \sabretooth\exception\base_exception $e )
       {
-        array_push( $exceptions, $e );
+        $exceptions[] = $e;
       }
 
       // create a new shift record for the next iteration

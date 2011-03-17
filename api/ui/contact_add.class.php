@@ -61,8 +61,7 @@ class contact_add extends base_view
     // create enum arrays
     $num_contacts = $this->parent->get_record()->get_contact_count();
     $ranks = array();
-    for( $rank = 1; $rank <= ( $num_contacts + 1 ); $rank++ )
-      array_push( $ranks, $rank );
+    for( $rank = 1; $rank <= ( $num_contacts + 1 ); $rank++ ) $ranks[] = $rank;
     $ranks = array_combine( $ranks, $ranks );
     end( $ranks );
     $last_rank_key = key( $ranks );

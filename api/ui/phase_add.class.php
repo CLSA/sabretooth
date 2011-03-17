@@ -55,8 +55,7 @@ class phase_add extends base_view
       $surveys[$db_survey->sid] = $db_survey->get_title();
     $num_phases = $this->parent->get_record()->get_phase_count();
     $stages = array();
-    for( $stage = 1; $stage <= ( $num_phases + 1 ); $stage++ )
-      array_push( $stages, $stage );
+    for( $stage = 1; $stage <= ( $num_phases + 1 ); $stage++ ) $stages[] = $stage;
     $stages = array_combine( $stages, $stages );
     end( $stages );
     $last_stage_key = key( $stages );

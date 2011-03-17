@@ -42,11 +42,11 @@ class modifier extends \sabretooth\base_object
     if( !is_string( $column ) || 0 == strlen( $column ) )
       throw new \sabretooth\exception\argument( 'column', $column, __METHOD__ );
 
-    array_push( $this->where_list, array( 'column' => $column,
-                                          'operator' => strtoupper( $operator ),
-                                          'value' => $value,
-                                          'format' => $format,
-                                          'or' => $or ) );
+    $this->where_list[] = array( 'column' => $column,
+                                 'operator' => strtoupper( $operator ),
+                                 'value' => $value,
+                                 'format' => $format,
+                                 'or' => $or );
   }
   
   /**
@@ -84,7 +84,7 @@ class modifier extends \sabretooth\base_object
     if( !is_string( $column ) || 0 == strlen( $column ) )
       throw new \sabretooth\exception\argument( 'column', $column, __METHOD__ );
 
-    array_push( $this->group_list, $column );
+    $this->group_list[] = $column;
   }
 
   /**
@@ -190,7 +190,7 @@ class modifier extends \sabretooth\base_object
   public function get_where_columns()
   {
     $columns = array();
-    foreach( $this->where_list as $where ) array_push( $columns, $where['column'] );
+    foreach( $this->where_list as $where ) $columns[] = $where['column'];
     return $columns;
   }
 

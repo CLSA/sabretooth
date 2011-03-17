@@ -45,24 +45,18 @@ class self_settings extends widget
     
     $site_names = array();
     $sites = $db_user->get_site_list();
-    foreach( $sites as $site )
-    {
-      array_push( $site_names, $site->name );
-    }
+    foreach( $sites as $site ) $site_names[] = $site->name;
 
     $role_names = array();
     $modifier = new \sabretooth\database\modifier();
     $modifier->where( 'site_id', '=', $db_site->id );
     $roles = $db_user->get_role_list( $modifier );
-    foreach( $roles as $role )
-    {
-      array_push( $role_names, $role->name );
-    }
+    foreach( $roles as $role ) $role_names[] = $role->name;
     
     // themes are found in the jquery-ui 
     $themes = array();
     foreach( new \DirectoryIterator( JQUERY_UI_THEMES_PATH ) as $file )
-      if( !$file->isDot() && $file->isDir() ) array_push( $themes, $file->getFilename() );
+      if( !$file->isDot() && $file->isDir() ) $themes[] = $file->getFilename();
 
     $this->set_variable( 'user_name', $db_user->name );
     $this->set_variable( 'current_site_name', $db_site->name );

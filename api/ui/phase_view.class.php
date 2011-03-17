@@ -47,9 +47,9 @@ class phase_view extends base_view
     // create enum arrays
     foreach( \sabretooth\database\limesurvey\surveys::select() as $db_survey )
       $surveys[$db_survey->sid] = $db_survey->get_title();
+    $num_phases = $this->get_record()->get_qnaire()->get_phase_count();
     $stages = array();
-    for( $stage = 1; $stage <= $this->get_record()->get_qnaire()->get_phase_count(); $stage++ )
-      array_push( $stages, $stage );
+    for( $stage = 1; $stage <= $num_phases; $stage++ ) $stages[] = $stage;
     $stages = array_combine( $stages, $stages );
 
     // set the view's items

@@ -53,9 +53,9 @@ class contact_view extends base_view
     parent::finish();
 
     // create enum arrays
+    $num_contacts = $this->get_record()->get_participant()->get_contact_count();
     $ranks = array();
-    for( $rank = 1; $rank <= $this->get_record()->get_participant()->get_contact_count(); $rank++ )
-      array_push( $ranks, $rank );
+    for( $rank = 1; $rank <= $num_contacts; $rank++ ) $ranks[] = $rank;
     $ranks = array_combine( $ranks, $ranks );
     $types = \sabretooth\database\contact::get_enum_values( 'type' );
     $types = array_combine( $types, $types );

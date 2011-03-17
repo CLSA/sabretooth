@@ -92,7 +92,7 @@ abstract class base_access extends record
                        $modifier->get_sql() ) );
         
             $records = array();
-            foreach( $id_list as $id ) array_push( $records, new static( $id ) );
+            foreach( $id_list as $id ) $records[] = new static( $id );
             return $records;
           }
         }

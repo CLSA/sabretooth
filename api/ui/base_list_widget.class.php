@@ -121,7 +121,7 @@ abstract class base_list_widget extends widget
     foreach( $this->columns as $column )
     {
       $type = strstr( $column['id'], '.', true );
-      if( $type != $this->parent->get_subject() ) array_push( $new_column_array, $column );
+      if( $type != $this->parent->get_subject() ) $new_column_array[] = $column;
     }
     $this->columns = $new_column_array;
     
@@ -284,7 +284,7 @@ abstract class base_list_widget extends widget
     if( $sortable ) $column['sortable'] = $sortable;
     if( $align ) $column['align'] = $align;
     
-    array_push( $this->columns, $column );
+    $this->columns[] = $column;
   }
   
   /**
@@ -301,7 +301,7 @@ abstract class base_list_widget extends widget
     // find and remove the column who's id is equal to the column name
     $new_column_array = array();
     foreach( $this->columns as $column )
-      if( $column_id != $column['id'] ) array_push( $new_column_array, $column );
+      if( $column_id != $column['id'] ) $new_column_array[] = $column;
     
     $this->columns = $new_column_array;
   }
@@ -328,7 +328,7 @@ abstract class base_list_widget extends widget
       }
     }
 
-    array_push( $this->rows, array( 'id' => $row_id, 'columns' => $columns ) );
+    $this->rows[] = array( 'id' => $row_id, 'columns' => $columns );
   }
 
   /**

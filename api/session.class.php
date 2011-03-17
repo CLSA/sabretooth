@@ -362,9 +362,7 @@ final class session extends singleton
     }
     else // no duplicate, add the widget to the end of the stack
     {
-      array_push( $_SESSION['slot'][$slot]['stack']['widgets'],
-                  array( 'name' => $name,
-                         'args' => $args ) );
+      $_SESSION['slot'][$slot]['stack']['widgets'][] = array( 'name' => $name, 'args' => $args );
     }
 
     $total = count( $_SESSION['slot'][$slot]['stack']['widgets'] );
