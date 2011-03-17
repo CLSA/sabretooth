@@ -30,8 +30,10 @@ class queue_list extends base_list_widget
     
     $session = \sabretooth\session::self();
 
-    $this->add_column( 'name', 'name', true );
-    $this->add_column( 'description', 'description', false, 'left' );
+    $this->add_column( 'name', 'Name', false );
+    $this->add_column( 'enabled', 'Enabled', false );
+    $this->add_column( 'participant_count', 'Participants', false );
+    $this->add_column( 'description', 'Description', false, 'left' );
   }
 
   /**
@@ -46,8 +48,11 @@ class queue_list extends base_list_widget
     
     foreach( $this->get_record_list() as $record )
     {
+      $db_setting = \sabretooth\database\setting::get_setting( 'queue state', $record->name );
       $this->add_row( $record->id,
         array( 'name' => $record->name,
+               'enabled' => 'true' == $db_setting->value ? 'yes' : 'no',
+               'participant_count' => $record->get_participant_count(),
                'description' => $record->description ) );
     }
 

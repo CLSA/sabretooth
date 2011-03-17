@@ -1,6 +1,6 @@
 <?php
 /**
- * operation.class.php
+ * setting.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\database
@@ -10,27 +10,25 @@
 namespace sabretooth\database;
 
 /**
- * operation: record
+ * setting: record
  *
  * @package sabretooth\database
  */
-class operation extends record
+class setting extends record
 {
   /**
-   * Get an operation given it's type, subject and name.
+   * Get an setting given it's category and name
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $type "action" or "widget"
-   * @param string $subject
+   * @param string $category
    * @param string $name
    * @static
    * @access public
    */
-  public static function get_operation( $type, $subject, $name )
+  public static function get_setting( $category, $name )
   {
     $modifier = new modifier();
-    $modifier->where( 'type', '=', $type );
-    $modifier->where( 'subject', '=', $subject );
+    $modifier->where( 'category', '=', $category );
     $modifier->where( 'name', '=', $name );
 
     $id = static::db()->get_one(
