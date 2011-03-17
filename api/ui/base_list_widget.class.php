@@ -14,9 +14,9 @@ namespace sabretooth\ui;
  * 
  * This class abstracts all common functionality for lists of records.
  * Concrete child classes represent a particular type of record in the database.
- * If a list is embedded into another widget, then the parent widget must implement similar
- * methods: determine_<subject>_list() and determine_<subject>_count() where <subject> is
- * the record type being listed.
+ * If a list is embedded into another widget, then the parent widget may implement similar
+ * methods: determine_<subject>_list() and determine_<subject>_count(), where <subject> is
+ * the record type being listed, to override the basic functionality performed by this class.
  * @abstract
  * @package sabretooth\ui
  */
