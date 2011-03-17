@@ -56,6 +56,22 @@
           <option{% if 'No' == entry_value %} selected{% endif %} value="0">No</option>
         </select>
       
+      {% elseif 'datetime' == entry.type %}
+      
+        <script type="text/javascript">
+          $( function () {
+            $( "#{{ widget.full }}__{{ item_id }}" ).datetimepicker( {
+              dateFormat: 'yy-mm-dd',
+              timeFormat: 'hh:mm',
+              ampm: false,
+              stepMinute: 5,
+              showAnim: 'slideDown'
+            } );
+          } );
+        </script>
+        <input id="{{ widget.full }}__{{ item_id }}" type="text" style="width:99%"
+               value="{{ entry_value }}" readonly />
+      
       {% elseif 'date' == entry.type %}
       
         <script type="text/javascript">
@@ -104,12 +120,9 @@
         <select id="{{ widget.full }}__{{ item_id }}"
                 style="width: 100%"
                 class="ui-state-default">
-          {% if not entry.required %}
-          <option{{ '' == entry_value ? ' selected' : 'NULL' }} value=""></option>
-          {% endif %}
           {% for value_id, value in entry.enum %}
           <option{{ entry_value == value_id ? ' selected' : '' }}
-                  value="{{ value_id }}">{{ value }}</option>
+                  value="{{ 'NULL' == value_id ? '' : value_id }}">{{ value }}</option>
           {% endfor %}
         </select>
     

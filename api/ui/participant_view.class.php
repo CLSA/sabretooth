@@ -37,6 +37,7 @@ class participant_view extends base_view
     $this->add_item( 'site_id', 'enum', 'Site' );
     $this->add_item( 'samples', 'constant', 'Number of samples' );
     $this->add_item( 'contacts', 'constant', 'Number of contact entries' );
+    $this->add_item( 'appointments', 'constant', 'Number of appointments' );
     $this->add_item( 'availabilities', 'constant', 'Number of availability entries' );
     $this->add_item( 'consents', 'constant', 'Number of consent entries' );
     
@@ -57,7 +58,7 @@ class participant_view extends base_view
       // create the contact sub-list widget
       $this->contact_list = new contact_list( $args );
       $this->contact_list->set_parent( $this );
-      $this->contact_list->set_heading( 'Participant\'s contact information' );
+      $this->contact_list->set_heading( 'Contact information' );
     }
     catch( \sabretooth\exception\permission $e )
     {
@@ -66,10 +67,22 @@ class participant_view extends base_view
 
     try
     {
+      // create the appointment sub-list widget
+      $this->appointment_list = new appointment_list( $args );
+      $this->appointment_list->set_parent( $this );
+      $this->appointment_list->set_heading( 'Appointments' );
+    }
+    catch( \sabretooth\exception\permission $e )
+    {
+      $this->appointment_list = NULL;
+    }
+
+    try
+    {
       // create the availability sub-list widget
       $this->availability_list = new availability_list( $args );
       $this->availability_list->set_parent( $this );
-      $this->availability_list->set_heading( 'Participant availability' );
+      $this->availability_list->set_heading( 'Availability' );
     }
     catch( \sabretooth\exception\permission $e )
     {
@@ -81,7 +94,7 @@ class participant_view extends base_view
       // create the consent sub-list widget
       $this->consent_list = new consent_list( $args );
       $this->consent_list->set_parent( $this );
-      $this->consent_list->set_heading( 'Participant\'s consent information' );
+      $this->consent_list->set_heading( 'Consent information' );
     }
     catch( \sabretooth\exception\permission $e )
     {
@@ -116,6 +129,7 @@ class participant_view extends base_view
     $this->set_item( 'site_id', $this->get_record()->get_site()->name, false, $sites );
     $this->set_item( 'samples', $this->get_record()->get_sample_count() );
     $this->set_item( 'contacts', $this->get_record()->get_contact_count() );
+    $this->set_item( 'appointments', $this->get_record()->get_appointment_count() );
     $this->set_item( 'availabilities', $this->get_record()->get_availability_count() );
     $this->set_item( 'consents', $this->get_record()->get_consent_count() );
 
@@ -131,6 +145,12 @@ class participant_view extends base_view
     {
       $this->contact_list->finish();
       $this->set_variable( 'contact_list', $this->contact_list->get_variables() );
+    }
+
+    if( !is_null( $this->appointment_list ) )
+    {
+      $this->appointment_list->finish();
+      $this->set_variable( 'appointment_list', $this->appointment_list->get_variables() );
     }
 
     if( !is_null( $this->availability_list ) )
@@ -159,6 +179,13 @@ class participant_view extends base_view
    * @access protected
    */
   protected $contact_list = NULL;
+  
+  /**
+   * The participant list widget.
+   * @var appointment_list
+   * @access protected
+   */
+  protected $appointment_list = NULL;
   
   /**
    * The participant list widget.

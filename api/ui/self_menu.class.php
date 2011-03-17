@@ -45,7 +45,7 @@ class self_menu extends widget
     $modifier->where( 'operation.name', '=', 'list' );
     $widgets = \sabretooth\session::self()->get_role()->get_operation_list( $modifier );
     
-    $exclude = array( 'availability', 'consent', 'contact', 'phase' );
+    $exclude = array( 'appointment', 'availability', 'consent', 'contact', 'phase' );
 
     $items = array();
     foreach( $widgets as $db_widget )

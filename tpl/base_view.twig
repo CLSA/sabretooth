@@ -192,6 +192,7 @@
           jeditable_params.placeholder = "&nbsp;";
           
         {% if 'string' == entry.type or 'number' == entry.type %}
+
           {% if 'number' == entry.type %}jeditable_params.placeholder = "0";{% endif %}
           jeditable_params.type = "text";
           $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
@@ -199,6 +200,7 @@
           }, jeditable_params );
         
         {% elseif 'boolean' == entry.type %}
+
           jeditable_params.type = "select";
           jeditable_params.data = '{ ' +
                                   {% if not entry.required %}
@@ -213,11 +215,9 @@
           }, jeditable_params );
         
         {% elseif 'enum' == entry.type %}
+
           jeditable_params.type = "select";
           jeditable_params.data = '{ ' +
-                                  {% if not entry.required %}
-                                  '"NULL":"",' +
-                                  {% endif %}
                                   {% for id, value in entry.enum %}
                                   '"{{ id }}":"{{ value }}",' +
                                   {% endfor %}
@@ -229,7 +229,22 @@
             return data[index];
           }, jeditable_params );
         
+        {% elseif 'datetime' == entry.type %}
+      
+          $input_{{ item_id }} = $( "input.datetimepicker_{{ item_id }}" );
+          $input_{{ item_id }}.datetimepicker( {
+            dateFormat: 'yy-mm-dd',
+            timeFormat: 'hh:mm',
+            ampm: false,
+            stepMinute: 5,
+            showAnim: 'slideDown',
+            onClose: function( dateText, inst ) {
+              return process_change( $input_{{ item_id }}, dateText, "{{ entry.type }}" );
+            }
+          } );
+
         {% elseif 'date' == entry.type %}
+
           $input_{{ item_id }} = $( "input.datepicker_{{ item_id }}" );
           $input_{{ item_id }}.datepicker( {
             dateFormat: 'yy-mm-dd',
@@ -240,6 +255,7 @@
           } );
         
         {% elseif 'time' == entry.type %}
+
           $input_{{ item_id }} = $( "input.timepicker_{{ item_id }}" );
           $input_{{ item_id }}.timepicker( {
             timeFormat: 'hh:mm',
@@ -263,6 +279,15 @@
 
           <div id="{{ widget.full }}__{{ item_id }}"
                class="mutable padded jeditable_{{ item_id }}">{{ entry_value }}</div>
+
+        {% elseif 'datetime' == entry.type %}
+
+          <div class="mutable padded">
+            <input id="{{ widget.full }}__{{ item_id }}" type="text"
+                   class="ui-widget-content datetimepicker_{{ item_id }}"
+                   value="{{ entry_value }}"
+                   style="border: 0px; background: transparent; width: 100%;" readonly />
+          </div>
 
         {% elseif 'date' == entry.type %}
 

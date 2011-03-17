@@ -24,6 +24,20 @@ VALUES( "widget", "access", "list", true, "List system access entries." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "activity", "list", true, "List system activity." );
 
+-- appointment
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "appointment", "delete", true, "Removes a participant's appointment from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "appointment", "edit", true, "Edits the details of a participant's appointment." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "appointment", "new", true, "Creates new appointment enry for a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "appointment", "add", true, "View a form for creating new appointments for a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "appointment", "view", true, "View the details of a participant's particular appointment." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "appointment", "list", true, "Lists a participant's appointments." );
+
 -- availability
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "availability", "delete", true, "Removes a participant's availability entry from the system." );
@@ -89,6 +103,10 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "participant", "new_sample", true, "Adds new samples to a participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "participant", "delete_sample", true, "Remove samples from a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "add_appointment", true, "A form to create a new appointment to add to a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "participant", "delete_appointment", true, "Remove a participant's appointment." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "add_availability", true, "A form to create a new availability entry to add to a participant." );
 INSERT INTO operation( type, subject, name, restricted, description )

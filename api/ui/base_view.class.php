@@ -104,6 +104,7 @@ abstract class base_view extends base_record_widget
    * @param string $item_id The item's id, can be one of the record's column names.
    * @param mixed $value The item's value.
    * @param array $enum For enum item types, all possible values.
+   * @throws exception\argument
    * @access public
    */
   public function set_item( $item_id, $value, $required = false, $enum = NULL )
@@ -136,8 +137,13 @@ abstract class base_view extends base_record_widget
     $this->items[$item_id]['value'] = $value;
     if( !is_null( $enum ) )
     {
-      // add a null entry if the item is not required
-      if( !$required ) $enum['NULL'] = '';
+      // add a null entry (to the front of the array) if the item is not required
+      if( !$required )
+      {
+        $enum = array_reverse( $enum, true );
+        $enum['NULL'] = '';
+        $enum = array_reverse( $enum, true );
+      }
       $this->items[$item_id]['enum'] = $enum;
     }
     else if( 'enum' == $this->items[$item_id]['type'] )
