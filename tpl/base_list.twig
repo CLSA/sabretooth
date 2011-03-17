@@ -341,7 +341,7 @@ $( function() {
           </th>
           {% set number_of_columns = number_of_columns + 1 %}
         {% else %}
-          <th>{{ column.heading }}</th>
+          <th style="padding:0.5em">{{ column.heading }}</th>
           {% set number_of_columns = number_of_columns + 1 %}
         {% endif %}
       {% endfor %}
@@ -368,7 +368,7 @@ $( function() {
       <td {% if column.align|default(false) %}
             align="{{ column.align }}"
           {% endif %}
-          style="font-weight: normal">
+          style="font-weight: normal; padding-top:0.2em; padding-bottom:0.2em;">
         {{ row.columns[column.id] }}
       </td>
       {% endfor %}
