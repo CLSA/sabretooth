@@ -104,6 +104,14 @@ html, body {
   margin-right: 10px;
 }
 
+div.app-widget-content {
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 4px;
+  padding-right: 4px;
+  position: relative;
+}
+
 table {
   width: 100%;
   border-spacing: 0px;
