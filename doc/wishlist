@@ -4,3 +4,4 @@ This is a list of features that would be nice to add once basic functionality is
 
 - Provide shifts in a calendar format (https://github.com/arshaw/fullcalendar)
 - Allow site-specific settings which override global/default settings
+- Manage whether operators can start a shift when they are not scheduled to

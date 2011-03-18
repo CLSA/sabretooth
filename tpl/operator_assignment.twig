@@ -1,0 +1,21 @@
+{% extends "widget.twig" %}
+{% block widget %}
+
+<script type="text/javascript">
+$( function() {
+  $( '#{{ widget.full }}_new_assignment' ).click( function() {
+    if( send_action( 'operator', 'new_assignment' ) ) slot_refresh( get_slot( $(this) ) );
+  } );
+} );
+</script>
+
+<div class="ui-widget ui-widget-content app-widget-content">
+  {% if participant_view|default(false) %}
+    {% include 'participant_view.twig' with participant_view %}
+  {% else %}
+    <p>You currently have no assignment.</p>
+    <button id="{{ widget.full }}_new_assignment">Request new assignment</button>
+    <div class="spacer" />
+  {% endif %}
+</div>
+{% endblock %}

@@ -84,6 +84,10 @@ VALUES( "widget", "contact", "list", true, "Lists a participant's contact entrie
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "operation", "list", true, "List operations in the system." );
 
+-- operator
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "operator", "assignment", true, "Displays the operator's assignment manager." );
+
 -- participant
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "participant", "delete", true, "Removes a participant from the system." );

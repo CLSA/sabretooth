@@ -10,6 +10,13 @@ DELETE FROM role_has_operation;
 -- -----------------------------------------------------
 INSERT INTO role( name ) VALUES( "administrator" );
 
+-- administrator (specific to this role)
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id
+FROM role, operation
+WHERE role.name = "administrator"
+AND operation.subject = "administrator";
+
 -- user/site/role
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
@@ -434,6 +441,14 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 -- -----------------------------------------------------
 -- -----------------------------------------------------
 INSERT INTO role( name ) VALUES( "clerk" );
+
+-- clerk (specific to this role)
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id
+FROM role, operation
+WHERE role.name = "clerk"
+AND operation.subject = "clerk";
+
 -- participant
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
@@ -739,6 +754,13 @@ SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
 -- -----------------------------------------------------
 INSERT INTO role( name ) VALUES( "operator" );
 
+-- operator (specific to this role)
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id
+FROM role, operation
+WHERE role.name = "operator"
+AND operation.subject = "operator";
+
 -- shift
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
@@ -750,10 +772,6 @@ INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "widget" AND subject = "participant" AND name = "view" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "widget" AND subject = "participant" AND name = "list" );
 
 -- appointment
 INSERT INTO role_has_operation
@@ -869,6 +887,13 @@ SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
 -- -----------------------------------------------------
 -- -----------------------------------------------------
 INSERT INTO role( name ) VALUES( "supervisor" );
+
+-- supervisor (specific to this role)
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id
+FROM role, operation
+WHERE role.name = "supervisor"
+AND operation.subject = "supervisor";
 
 -- user/site/role
 INSERT INTO role_has_operation
@@ -1156,6 +1181,13 @@ SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
 -- -----------------------------------------------------
 -- -----------------------------------------------------
 INSERT INTO role( name ) VALUES( "technician" );
+
+-- technician (specific to this role)
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id
+FROM role, operation
+WHERE role.name = "technician"
+AND operation.subject = "technician";
 
 -- user/site/role
 INSERT INTO role_has_operation

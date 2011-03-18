@@ -38,16 +38,24 @@ class self_menu extends widget
   public function finish()
   {
     parent::finish();
+
+    $session = \sabretooth\session::self();
     
+    $items = array();
+    if( 'operator' == $session->get_role()->name )
+    {
+      $items[] = array( 'heading' => 'Assignment',
+                        'widget' => 'operator_assignment' );
+    }
+
     // get all 'list' widgets that the user has access to
     $modifier = new \sabretooth\database\modifier();
     $modifier->where( 'operation.type', '=', 'widget' );
     $modifier->where( 'operation.name', '=', 'list' );
-    $widgets = \sabretooth\session::self()->get_role()->get_operation_list( $modifier );
+    $widgets = $session->get_role()->get_operation_list( $modifier );
     
     $exclude = array( 'appointment', 'availability', 'consent', 'contact', 'phase' );
 
-    $items = array();
     foreach( $widgets as $db_widget )
     {
       if( !in_array( $db_widget->subject, $exclude ) )

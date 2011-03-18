@@ -14,8 +14,8 @@
 $( function() {
   {% for item in items %}
   $( "#{{ widget.full }}_{{ item.widget }}" ).click( function() {
-    $('#left_extruder').closeMbExtruder();
-    slot_load( 'main', '{{ item.widget }}' );
+    $( "#left_extruder" ).closeMbExtruder();
+    slot_load( "main", "{{ item.widget }}" );
   } );
   {% endfor %}
 } );
