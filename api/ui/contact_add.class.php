@@ -37,7 +37,7 @@ class contact_add extends base_view
     $this->add_item( 'address1', 'string', 'Address1' );
     $this->add_item( 'address2', 'string', 'Address2' );
     $this->add_item( 'city', 'string', 'City' );
-    $this->add_item( 'province', 'enum', 'Province' );
+    $this->add_item( 'province_id', 'enum', 'Province' );
     $this->add_item( 'country', 'string', 'Country' );
     $this->add_item( 'postcode', 'string', 'Postcode' );
     $this->add_item( 'note', 'text', 'Note' );
@@ -68,8 +68,9 @@ class contact_add extends base_view
     reset( $ranks );
     $types = \sabretooth\database\contact::get_enum_values( 'type' );
     $types = array_combine( $types, $types );
-    $provinces = \sabretooth\database\contact::get_enum_values( 'province' );
-    $provinces = array_combine( $provinces, $provinces );
+    $provinces = array();
+    foreach( \sabretooth\database\province::select() as $db_province )
+      $provinces[$db_province->id] = $db_province->name;
 
     // set the view's items
     $this->set_item( 'participant_id', $this->parent->get_record()->id );
@@ -80,7 +81,7 @@ class contact_add extends base_view
     $this->set_item( 'address1', '' );
     $this->set_item( 'address2', '' );
     $this->set_item( 'city', '' );
-    $this->set_item( 'province', key( $provinces ), false, $provinces );
+    $this->set_item( 'province_id', '', false, $provinces );
     $this->set_item( 'country', '' );
     $this->set_item( 'postcode', '' );
     $this->set_item( 'note', '' );

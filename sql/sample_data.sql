@@ -10,6 +10,33 @@ INSERT INTO site( name, timezone ) VALUES( 'Manitoba', 'Canada/Central' );
 INSERT INTO site( name, timezone ) VALUES( 'Sherbrooke', 'Canada/Eastern' );
 INSERT INTO site( name, timezone ) VALUES( 'Victoria', 'Canada/Pacific' );
 
+UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Victoria" )
+WHERE abbreviation = "AB";
+UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Victoria" )
+WHERE abbreviation = "BC";
+UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Manitoba" )
+WHERE abbreviation = "MB";
+UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Dalhousie" )
+WHERE abbreviation = "NB";
+UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Dalhousie" )
+WHERE abbreviation = "NL";
+UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Victoria" )
+WHERE abbreviation = "NT";
+UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Dalhousie" )
+WHERE abbreviation = "NS";
+UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Manitoba" )
+WHERE abbreviation = "NU";
+UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "McMaster" )
+WHERE abbreviation = "ON";
+UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Dalhousie" )
+WHERE abbreviation = "PE";
+UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Sherbrooke" )
+WHERE abbreviation = "QC";
+UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Manitoba" )
+WHERE abbreviation = "SK";
+UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Victoria" )
+WHERE abbreviation = "YT";
+
 INSERT INTO user( name ) VALUES( 'patrick' );
 INSERT INTO user( name ) VALUES( 'dipietv' );
 INSERT INTO user( name ) VALUES( 'kamzic' );
@@ -47,37 +74,44 @@ INSERT INTO contact
 SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Ant' ),
     active = true,
     rank = 1,
-    phone = '905-525-9140';
+    phone = '905-525-9140',
+    province_id = ( SELECT id FROM province WHERE abbreviation = 'AB' );
 INSERT INTO contact
 SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Cat' ),
     active = true,
     rank = 1,
-    phone = '905-525-9141';
+    phone = '905-525-9141',
+    province_id = ( SELECT id FROM province WHERE abbreviation = 'MB' );
 INSERT INTO contact
 SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Drake' ),
     active = true,
     rank = 1,
-    phone = '905-525-9142';
+    phone = '905-525-9142',
+    province_id = ( SELECT id FROM province WHERE abbreviation = 'NB' );
 INSERT INTO contact
 SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Eft' ),
     active = true,
     rank = 1,
-    phone = '905-525-9143';
+    phone = '905-525-9143',
+    province_id = ( SELECT id FROM province WHERE abbreviation = 'NT' );
 INSERT INTO contact
 SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Fawn' ),
     active = true,
     rank = 1,
-    phone = '905-525-9144';
+    phone = '905-525-9144',
+    province_id = ( SELECT id FROM province WHERE abbreviation = 'ON' );
 INSERT INTO contact
 SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Fawn' ),
     active = true,
     rank = 2,
-    phone = '905-525-9154';
+    phone = '905-525-9154',
+    province_id = ( SELECT id FROM province WHERE abbreviation = 'QC' );
 INSERT INTO contact
 SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Gibbon' ),
     active = true,
     rank = 1,
-    phone = '905-525-9145';
+    phone = '905-525-9145',
+    province_id = ( SELECT id FROM province WHERE abbreviation = 'ON' );
 
 INSERT INTO availability
 SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Cat' ),

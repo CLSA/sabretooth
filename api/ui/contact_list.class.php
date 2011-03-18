@@ -52,7 +52,7 @@ class contact_list extends base_list_widget
       // get the details (phone or address)
       $details = $record->phone
                ? $record->phone
-               : $record->city.', '.$record->province.' '.$record->postcode;
+               : $record->city.', '.$record->get_province()->abbreviation.' '.$record->postcode;
 
       $this->add_row( $record->id,
         array( 'active' => $record->active ? 'Yes' : 'No',
