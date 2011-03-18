@@ -125,7 +125,7 @@ abstract class base_view extends base_record_widget
     }
     else if( 'constant' == $this->items[$item_id]['type'] &&
              ( ( is_int( $value ) && 0 == $value ) ||
-               ( is_string( $value ) && '' != $value ) ) )
+               ( is_string( $value ) && '0' == $value ) ) )
     {
       $value = ' 0';
     }
