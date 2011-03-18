@@ -29,58 +29,16 @@ class user_list extends base_list_widget
     parent::__construct( 'user', $args );
     
     $session = \sabretooth\session::self();
-    $is_admin = 'administrator' == $session->get_role()->name;
+    $is_supervisor = 'supervisor' == $session->get_role()->name;
 
     // define all template variables for this list
     $this->set_heading( sprintf( 'User list for %s',
-                        $is_admin ? 'all sites' : $session->get_site()->name ) );
+                        $is_supervisor ?  $session->get_site()->name ) : 'all sites' );
 
     $this->add_column( 'name', 'Username', true );
     $this->add_column( 'active', 'Active', true );
     $this->add_column( 'role', 'Role', false );
     $this->add_column( 'last_activity', 'Last activity', false );
-  }
-  
-  /**
-   * Overrides the parent class method since the record count depends on the active role.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the list.
-   * @return int
-   * @access protected
-   */
-  protected function determine_record_count( $modifier = NULL )
-  {
-    // only show users for current site if user is not an administrator
-    $session = \sabretooth\session::self();
-    if( 'administrator' != $session->get_role()->name )
-    {
-      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
-      $modifier->where( 'site_id', '=', $session->get_site()->id );
-    }
-
-    return \sabretooth\database\user::count( $modifier );
-  }
-  
-  /**
-   * Overrides the parent class method since the record list depends on the active role.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the list.
-   * @return array( record )
-   * @access protected
-   */
-  protected function determine_record_list( $modifier = NULL )
-  {
-    // only show users for current site if user is not an administrator
-    $session = \sabretooth\session::self();
-    if( 'administrator' != $session->get_role()->name )
-    {
-      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
-      $modifier->where( 'site_id', '=', $session->get_site()->id );
-    }
-
-    return \sabretooth\database\user::select( $modifier );
   }
 
   /**
@@ -115,6 +73,48 @@ class user_list extends base_list_widget
     }
 
     $this->finish_setting_rows();
+  }
+  
+  /**
+   * Overrides the parent class method since the record count depends on the active role.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return int
+   * @access protected
+   */
+  protected function determine_record_count( $modifier = NULL )
+  {
+    // only show users for current site if user is a supervisor
+    $session = \sabretooth\session::self();
+    if( 'supervisor' == $session->get_role()->name )
+    {
+      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+      $modifier->where( 'site_id', '=', $session->get_site()->id );
+    }
+
+    return parent::determine_record_count( $modifier );
+  }
+  
+  /**
+   * Overrides the parent class method since the record list depends on the active role.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return array( record )
+   * @access protected
+   */
+  protected function determine_record_list( $modifier = NULL )
+  {
+    // only show users for current site if user is a supervisor
+    $session = \sabretooth\session::self();
+    if( 'supervisor' == $session->get_role()->name )
+    {
+      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+      $modifier->where( 'site_id', '=', $session->get_site()->id );
+    }
+
+    return parent::determine_record_list( $modifier );
   }
 }
 ?>
