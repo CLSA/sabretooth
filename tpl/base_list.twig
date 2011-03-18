@@ -101,16 +101,22 @@ $( function() {
         "Remove {{ widget.subject }}?",
         "Are you sure you want to remove the {{ widget.subject }} from the {{ parent.subject }}?",
         function() {
-          send_action( "{{ parent.subject }}", "delete_{{ widget.subject }}", args );
-          slot_refresh( slot );
+          send_action( "{{ parent.subject }}", "delete_{{ widget.subject }}", args )
+          {
+            {% if widget.subject == "access" %}slot_refresh( "settings" );{% endif %}
+            slot_refresh( slot );
+          }
         } );
     {% else %}
       confirm_dialog(
         "Delete {{ widget.subject }}?",
         "Are you sure you want to delete the {{ widget.subject }}?",
         function() {
-          send_action( "{{ widget.subject }}", "delete", { "id": id } );
-          slot_refresh( slot );
+          send_action( "{{ widget.subject }}", "delete", { "id": id } )
+          {
+            {% if widget.subject == "access" %}slot_refresh( "settings" );{% endif %}
+            slot_refresh( slot );
+          }
         } );
     {% endif %}
   } );
