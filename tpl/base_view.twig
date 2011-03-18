@@ -214,7 +214,7 @@
             return data[index];
           }, jeditable_params );
         
-        {% elseif 'enum' == entry.type %}
+        {% elseif 'enum' == entry.type and 1 < entry.enum|count %}
 
           jeditable_params.type = "select";
           jeditable_params.data = '{ ' +
@@ -308,10 +308,18 @@
           </div>
 
         {% elseif 'enum' == entry.type %}
-
+          
           {% set entry_display_value = '' == entry_value ? entry.enum['NULL'] : entry.enum[entry_value] %}
-          <div id="{{ widget.full }}__{{ item_id }}"
-               class="mutable padded jeditable_{{ item_id }}">{{ entry_display_value }}</div>
+          {% if 1 == entry.enum|count %}
+
+            <div id="{{ widget.full }}__{{ item_id }}" class="padded">{{ entry_display_value }}</div>
+
+          {% else %}
+
+            <div id="{{ widget.full }}__{{ item_id }}"
+                 class="mutable padded jeditable_{{ item_id }}">{{ entry_display_value }}</div>
+
+          {% endif %}
 
         {% else %}
 
