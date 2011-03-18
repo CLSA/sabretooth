@@ -95,9 +95,17 @@ class shift_add extends base_view
     else
     {
       // create site enum array
-      $sites = array();
-      foreach( \sabretooth\database\site::select() as $db_site )
-        $sites[$db_site->id] = $db_site->name;
+      $session = \sabretooth\session::self();
+      if( 'supervisor' == $session->get_role()->name )
+      {
+        $sites = array( $session->get_site()->id => $session->get_site()->name );
+      }
+      else
+      {
+        $sites = array();
+        foreach( \sabretooth\database\site::select( $modifier ) as $db_site )
+          $sites[$db_site->id] = $db_site->name;
+      }
 
       if( !is_null( $this->user_list ) )
       {
@@ -129,7 +137,7 @@ class shift_add extends base_view
     $db_role = \sabretooth\database\role::get_unique_record( 'name', 'operator' );
     if( is_null( $modifier ) ) $modifier = new \sabretooth\database\modifier();
     $modifier->where( 'role_id', '=', $db_role->id );
-    if( 'site' == $this->parent->get_subject() )
+    if( $this->parent && 'site' == $this->parent->get_subject() )
       $modifier->where( 'site_id', '=', $this->parent->get_record()->id );
 
     return \sabretooth\database\user::count( $modifier );
@@ -148,7 +156,7 @@ class shift_add extends base_view
     $db_role = \sabretooth\database\role::get_unique_record( 'name', 'operator' );
     if( is_null( $modifier ) ) $modifier = new \sabretooth\database\modifier();
     $modifier->where( 'role_id', '=', $db_role->id );
-    if( 'site' == $this->parent->get_subject() )
+    if( $this->parent && 'site' == $this->parent->get_subject() )
       $modifier->where( 'site_id', '=', $this->parent->get_record()->id );
 
     return \sabretooth\database\user::select( $modifier );

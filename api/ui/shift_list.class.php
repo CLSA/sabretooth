@@ -29,9 +29,13 @@ class shift_list extends base_list_widget
     parent::__construct( 'shift', $args );
     
     $session = \sabretooth\session::self();
+    $is_supervisor = 'supervisor' == $session->get_role()->name;
+    $is_operator = 'operator' == $session->get_role()->name;
+    
+    if( $is_operator || $is_supervisor ) $this->set_heading( 'Shift Schedule' );
 
-    $this->add_column( 'site.name', 'Site', true );
-    $this->add_column( 'user.name', 'User', true );
+    if( !$is_operator ) $this->add_column( 'user.name', 'User', true );
+    if( !$is_supervisor ) $this->add_column( 'site.name', 'Site', true );
     $this->add_column( 'date', 'Date', true );
     $this->add_column( 'start_time', 'Start', true );
     $this->add_column( 'end_time', 'End', true );
@@ -62,6 +66,64 @@ class shift_list extends base_list_widget
     }
 
     $this->finish_setting_rows();
+  }
+
+  /**
+   * Overrides the parent class method since the record count depends on the active role.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return int
+   * @access protected
+   */
+  protected function determine_record_count( $modifier = NULL )
+  {
+    // only show users for current site if user is a supervisor
+    $session = \sabretooth\session::self();
+    $is_supervisor = 'supervisor' == $session->get_role()->name;
+    $is_operator = 'operator' == $session->get_role()->name;
+
+    if( $is_operator )
+    {    
+      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+      $modifier->where( 'user_id', '=', $session->get_user()->id );
+    }
+    else if( $is_supervisor )
+    {
+      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+      $modifier->where( 'site_id', '=', $session->get_site()->id );
+    }
+
+    return parent::determine_record_count( $modifier );
+  }
+
+  /**
+   * Overrides the parent class method since the record list depends on the active role.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return array( record )
+   * @access protected
+   */
+  protected function determine_record_list( $modifier = NULL )
+  {
+    // only show users for current site if user is a supervisor
+    $session = \sabretooth\session::self();
+    $is_supervisor = 'supervisor' == $session->get_role()->name;
+    $is_operator = 'operator' == $session->get_role()->name;
+
+    if( $is_operator )
+    {    
+      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+      $modifier->where( 'user_id', '=', $session->get_user()->id );
+    }
+    else if( $is_supervisor )
+    {
+      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+      $modifier->where( 'site_id', '=', $session->get_site()->id );
+    }
+
+    return parent::determine_record_list( $modifier );
   }
 }
 ?>

@@ -30,7 +30,9 @@ class shift_view extends base_view
     
     // create an associative array with everything we want to display about the shift
     $this->add_item( 'user', 'constant', 'User' );
-    $this->add_item( 'site', 'constant', 'Site' );
+    // hide the site if the current user is a supervisor
+    $type = 'supervisor' == \sabretooth\session::self()->get_role()->name ? 'hidden' : 'constant';
+    $this->add_item( 'site', $type, 'Site' );
     $this->add_item( 'date', 'date', 'Date' );
     $this->add_item( 'start_time', 'time', 'Start Time' );
     $this->add_item( 'end_time', 'time', 'End Time' );
