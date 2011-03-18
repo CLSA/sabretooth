@@ -1,0 +1,6 @@
+Wishlist
+--------
+This is a list of features that would be nice to add once basic functionality is in place.
+
+- Provide shifts in a calendar format (https://github.com/arshaw/fullcalendar)
+- Allow site-specific settings which override global/default settings
