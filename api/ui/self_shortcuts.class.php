@@ -28,5 +28,22 @@ class self_shortcuts extends widget
   {
     parent::__construct( 'self', 'shortcuts', $args );
   }
+
+  /**
+   * Finish setting the variables in a widget.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function finish()
+  {
+    parent::finish();
+    
+    $this->set_variable( 'navigation',
+      'operator' != \sabretooth\session::self()->get_role()->name );
+    $this->set_variable( 'refresh', true );
+    $this->set_variable( 'home', true );
+    $this->set_variable( 'help', true );
+  }
 }
 ?>

@@ -3,84 +3,83 @@
  # 
  # Creates a list of shortcuts which are meant to be used under any circumstance.
  # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @param boolean navigation Whether to include the navigation buttons
+ # @param boolean refresh Whether to include the refresh button
+ # @param boolean home Whether to include the home button
+ # @param boolean help Whether to include the help button
  #}
 {% extends "widget.twig" %}
 {% block widget %}
 <script type="text/javascript">
-// make button icons
 $( function() {
+  // make button icons
+
+{% if navigation %}
+
   $( "#{{ widget.full }}_prev" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-arrowthick-1-w"
     }
-  } )
-} );
-$( function() {
+  } );
+  $( "#{{ widget.full }}_prev" ).click( function() { slot_prev( 'main' ); } );
   $( "#{{ widget.full }}_next" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-arrowthick-1-e"
     }
-  } )
-} );
-$( function() {
+  } );
+  $( "#{{ widget.full }}_next" ).click( function() { slot_next( 'main' ); } );
+
+{% endif %}
+
+{% if refresh %}
+
   $( "#{{ widget.full }}_refresh" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-arrowrefresh-1-e"
     }
-  } )
-} );
-$( function() {
+  } );
+  $( "#{{ widget.full }}_refresh" ).click( function() { slot_refresh( 'main' ); } );
+
+{% endif %}
+
+{% if home %}
+
   $( "#{{ widget.full }}_home" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-home"
     }
-  } )
-} );
-$( function() {
+  } );
+  $( "#{{ widget.full }}_home" ).click( function() { slot_load( 'main', 'self_home' ); } );
+
+{% endif %}
+
+{% if help %}
+
   $( "#{{ widget.full }}_help" ).button( {
     text: false,
     icons: {
       primary: "ui-icon-help"
     }
-  } )
-} );
+  } );
+  $( "#{{ widget.full }}_help" ).click( function() { /*slot_load( 'main', 'help' ); TODO*/ } );
 
-// page button functions
-$( function() {
-  $( "#{{ widget.full }}_prev" ).click( function() {
-    slot_prev( 'main' );
-  } )
-} );
-$( function() {
-  $( "#{{ widget.full }}_next" ).click( function() {
-    slot_next( 'main' );
-  } )
-} );
-$( function() {
-  $( "#{{ widget.full }}_refresh" ).click( function() {
-    slot_refresh( 'main' );
-  } )
-} );
-$( function() {
-  $( "#{{ widget.full }}_home" ).click( function() {
-    slot_load( 'main', 'self_home' );
-  } )
-} );
-$( function() {
-  $( "#{{ widget.full }}_help" ).click( function() {
-    //slot_load( 'main', 'help' ); TODO
-  } )
+{% endif %}
+
 } );
 </script>
+
 <span>
-  <button id="{{ widget.full }}_prev">back</button>
-  <button id="{{ widget.full }}_next">forward</button>
-  <button id="{{ widget.full }}_refresh">refresh</button>
-  <button id="{{ widget.full }}_home">home</button>
-  <button id="{{ widget.full }}_help">help</button>
+  {% if navigation %}
+    <button id="{{ widget.full }}_prev">back</button>
+    <button id="{{ widget.full }}_next">forward</button>
+  {% endif %}
+  {% if refresh %}<button id="{{ widget.full }}_refresh">refresh</button>{% endif %}
+  {% if home %}<button id="{{ widget.full }}_home">home</button>{% endif %}
+  {% if help %}<button id="{{ widget.full }}_help">help</button>{% endif %}
 </span>
+
 {% endblock %}
