@@ -46,7 +46,8 @@
         {# don't display enums where there is only one possible value #}
           <tr><td style="height:0px">
         {% for value_id, value in entry.enum %}
-            <input id="{{ widget.full }}__{{ item_id }}" type="hidden" value="{{ value_id }}" />
+            <input id="{{ widget.full }}__{{ item_id }}" type="hidden"
+                   value="{{ 'NULL' == value_id ? '' : value_id }}" />
         {% endfor %}
           </td></tr>
 
