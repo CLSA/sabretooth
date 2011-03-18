@@ -11,7 +11,7 @@
 {% block widget %}
 
 <script type="text/javascript">
-$( document ).ready( function() {
+$( function() {
   {% for item in items %}
   $( "#{{ widget.full }}_{{ item.widget }}" ).click( function() {
     $('#left_extruder').closeMbExtruder();
@@ -19,7 +19,6 @@ $( document ).ready( function() {
   } );
   {% endfor %}
 } );
-
 </script>
 
 <div>
