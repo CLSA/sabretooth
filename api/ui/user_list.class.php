@@ -32,8 +32,9 @@ class user_list extends base_list_widget
     $is_supervisor = 'supervisor' == $session->get_role()->name;
 
     // define all template variables for this list
-    $this->set_heading( sprintf( 'User list for %s',
-                        $is_supervisor ?  $session->get_site()->name ) : 'all sites' );
+    $this->set_heading(
+      sprintf( 'User list for %s',
+               $is_supervisor ? $session->get_site()->name : 'all sites' ) );
 
     $this->add_column( 'name', 'Username', true );
     $this->add_column( 'active', 'Active', true );
