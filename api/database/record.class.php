@@ -450,8 +450,14 @@ abstract class record extends \sabretooth\base_object
     }
 
     // create the record using the foreign key
-    $class_name = '\\sabretooth\\database\\'.$record_type;
-    return new $class_name( $this->column_values[$foreign_key_name] );
+    $record = NULL;
+    if( !is_null( $this->column_values[$foreign_key_name] ) )
+    {
+      $class_name = '\\sabretooth\\database\\'.$record_type;
+      $record = new $class_name( $this->column_values[$foreign_key_name] );
+    }
+
+    return $record;
   }
 
   /**
@@ -503,7 +509,13 @@ abstract class record extends \sabretooth\base_object
     else if( relationship::ONE_TO_MANY == $relationship )
     {
       if( is_null( $modifier ) ) $modifier = new modifier();
-      $modifier->where( $table_name.'_id', '=', $primary_key_value );
+      if( $inverted )
+      {
+        $modifier->where( $table_name.'_id', '=', NULL );
+        $modifier->or_where( $table_name.'_id', '!=', $primary_key_value );
+      }
+      else $modifier->where( $table_name.'_id', '=', $primary_key_value );
+
       return $count
         ? $foreign_class_name::count( $modifier )
         : $foreign_class_name::select( $modifier );
