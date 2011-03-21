@@ -35,12 +35,32 @@ class operator_new_assignment extends action
    */
   public function execute()
   {
-    // make sure the name column isn't blank
-    $columns = $this->get_argument( 'columns' );
-    if( !array_key_exists( 'first_name', $columns ) || 0 == strlen( $columns['first_name'] ) )
-      throw new \sabretooth\exception\notice( 'The operator\'s first name cannot be left blank.', __METHOD__ );
-    if( !array_key_exists( 'last_name', $columns ) || 0 == strlen( $columns['last_name'] ) )
-      throw new \sabretooth\exception\notice( 'The operator\'s last name cannot be left blank.', __METHOD__ );
+    $modifier = new \sabretooth\database\modifier();
+    $modifier->limit( 1 );
+
+    // create the queues, then go search for a new assignment in each one until one is found
+    $db_participant = NULL;
+    foreach( \sabretooth\database\queue::select() as $db_queue )
+    {
+      $db_queue->set_site( \sabretooth\session::self()->get_site() );
+      $participant_list = $db_queue->get_participant_list( $modifier );
+      if( 1 == count( $participant_list ) )
+      {
+        $db_participant = current( $participant_list );
+        break;
+      }
+    }
+
+    if( is_null( $db_participant ) )
+      throw new \sabretooth\exception\notice(
+        'There are no participants currently available.', __METHOD__ );
+    
+    // assign the participant to this operator
+    /* TODO: finish
+    $db_interview = new \sabretooth\database\interview();
+    $db_interview->participant_id = $db_participant->id;
+    $db_interview->phase_id = 
+   */
 
     parent::execute();
   }

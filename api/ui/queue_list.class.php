@@ -50,19 +50,8 @@ class queue_list extends base_list_widget
 
     foreach( $this->get_record_list() as $record )
     {
-      $modifier = NULL;
-      if( $is_supervisor )
-      {
-        $mod = new \sabretooth\database\modifier();
-        $mod->where( 'site_id', '=', $session->get_site()->id );
-        $province_ids = array();
-        foreach( \sabretooth\database\province::select( $mod ) as $db_province )
-          $province_ids[] = $db_province->id;
-
-        $modifier = new \sabretooth\database\modifier();
-        $modifier->where( 'province_id', 'IN', $province_ids );
-        $modifier->or_where( 'site_id', '=', $session->get_site()->id );
-      }
+      // restrict to the current site if the current user is a supervisor
+      if( $is_supervisor ) $record->set_site( $session->get_site() );
 
       $db_setting = \sabretooth\database\setting::get_setting( 'queue state', $record->name );
       $this->add_row( $record->id,

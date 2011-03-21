@@ -1,6 +1,6 @@
 <?php
 /**
- * operator_assignment.class.php
+ * operator_view_assignment.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,11 +10,11 @@
 namespace sabretooth\ui;
 
 /**
- * widget operator assignment
+ * widget operator view_assignment
  * 
  * @package sabretooth\ui
  */
-class operator_assignment extends widget
+class operator_view_assignment extends widget
 {
   /**
    * Constructor
@@ -26,7 +26,7 @@ class operator_assignment extends widget
    */
   public function __construct( $args )
   {
-    parent::__construct( 'operator', 'assignment', $args );
+    parent::__construct( 'operator', 'view_assignment', $args );
     $this->set_heading( 'Current Assignment' );
     $session = \sabretooth\session::self();
   }
