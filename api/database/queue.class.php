@@ -35,7 +35,7 @@ class queue extends record
       $province_ids = array();
       foreach( province::select( $mod ) as $db_province ) $province_ids[] = $db_province->id;
       $modifier->where( 'site_id', '=', $session->get_site()->id );
-      $modifier->where( 'privince_id', 'IN', $province_ids );
+      $modifier->where( 'province_id', 'IN', $province_ids );
     }
 
     // get the name of the queue-view
@@ -64,7 +64,7 @@ class queue extends record
       $province_ids = array();
       foreach( province::select( $mod ) as $db_province ) $province_ids[] = $db_province->id;
       $modifier->where( 'site_id', '=', $session->get_site()->id );
-      $modifier->where( 'privince_id', 'IN', $province_ids );
+      $modifier->where( 'province_id', 'IN', $province_ids );
     }
 
     // get the name of the queue-view
