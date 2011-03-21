@@ -339,9 +339,12 @@ class database extends \sabretooth\base_object
    */
   public static function format_string( $string )
   {
-    // NULL values are returns as a MySQL NULL value
+    // NULL values are returned as a MySQL NULL value
     if( is_null( $string ) ) return 'NULL';
     
+    // boolean values must be converted to strings (without double-quotes)
+    if( is_bool( $string ) ) return $string ? 'true' : 'false';
+
     // trim whitespace from the begining and end of the string
     if( is_string( $string ) ) $string = trim( $string );
     
