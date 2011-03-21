@@ -126,7 +126,7 @@ class participant_view extends base_view
     $this->set_item( 'language', $this->get_record()->language, false, $languages );
     $this->set_item( 'hin', $this->get_record()->hin );
     $this->set_item( 'status', $this->get_record()->status, false, $statuses );
-    $this->set_item( 'site_id', $this->get_record()->get_site()->name, false, $sites );
+    $this->set_item( 'site_id', $this->get_record()->get_site()->id, false, $sites );
     $this->set_item( 'samples', $this->get_record()->get_sample_count() );
     $this->set_item( 'contacts', $this->get_record()->get_contact_count() );
     $this->set_item( 'appointments', $this->get_record()->get_appointment_count() );
