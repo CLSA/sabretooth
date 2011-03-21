@@ -35,15 +35,14 @@ class shift_edit extends base_edit
    */
   public function execute()
   {
-    $column = $this->get_argument( 'columns', array() );
-
     try
     {
       parent::execute();
     }
     catch( \sabretooth\exception\runtime $e )
-    {
-      throw new \sabretooth\exception\notice( $e, __METHOD__, $e );
+    { // the shift class throws a runtime exception when time conflicts occur
+      throw RUNTIME_SHIFT__SAVE_ERROR_NUMBER == $e->get_number() ?
+        new \sabretooth\exception\notice( $e, __METHOD__, $e ) : $e;
     }
   }
 }
