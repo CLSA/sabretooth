@@ -11,6 +11,5 @@
   {{ parent() }}
   {% from 'macros.twig' import include_list %}
   {{ include_list( 'participant', participant_list|default(false), true ) }}
-  {{ include_list( 'qnaire', qnaire_list|default(false), true ) }}
 
 {% endblock %}

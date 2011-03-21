@@ -392,9 +392,17 @@ DROP TABLE IF EXISTS `sample` ;
 CREATE  TABLE IF NOT EXISTS `sample` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(255) NOT NULL ,
+  `qnaire_id` INT UNSIGNED NULL DEFAULT NULL ,
+  `active` TINYINT(1)  NOT NULL DEFAULT false ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `name_UNIQUE` (`name` ASC) )
+  UNIQUE INDEX `uq_name` (`name` ASC) ,
+  INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
+  CONSTRAINT `fk_sample_qnaire`
+    FOREIGN KEY (`qnaire_id` )
+    REFERENCES `qnaire` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
@@ -444,30 +452,6 @@ CREATE  TABLE IF NOT EXISTS `availability` (
   CONSTRAINT `fk_availability_participant`
     FOREIGN KEY (`participant_id` )
     REFERENCES `participant` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `qnaire_has_sample`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `qnaire_has_sample` ;
-
-CREATE  TABLE IF NOT EXISTS `qnaire_has_sample` (
-  `qnaire_id` INT UNSIGNED NOT NULL ,
-  `sample_id` INT UNSIGNED NOT NULL ,
-  PRIMARY KEY (`qnaire_id`, `sample_id`) ,
-  INDEX `fk_sample_id` (`sample_id` ASC) ,
-  INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
-  CONSTRAINT `fk_qnaire_has_sample_qnaire`
-    FOREIGN KEY (`qnaire_id` )
-    REFERENCES `qnaire` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_qnaire_has_sample_sample`
-    FOREIGN KEY (`sample_id` )
-    REFERENCES `sample` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

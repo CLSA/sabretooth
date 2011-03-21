@@ -31,8 +31,8 @@ class sample_list extends base_list_widget
     $session = \sabretooth\session::self();
 
     $this->add_column( 'name', 'Name', true );
+    $this->add_column( 'qnaire.name', 'Questionnaire', true );
     $this->add_column( 'participants', 'Participants', false );
-    $this->add_column( 'qnaires', 'Questionnaires', false );
   }
   
   /**
@@ -47,11 +47,14 @@ class sample_list extends base_list_widget
     
     foreach( $this->get_record_list() as $record )
     {
+      $db_qnaire = $record->get_qnaire();
+      $qnaire = $db_qnaire ? $db_qnaire->name : '(none)';
+
       // assemble the row for this record
       $this->add_row( $record->id,
         array( 'name' => $record->name,
-               'participants' => $record->get_participant_count(),
-               'qnaires' => $record->get_qnaire_count() ) );
+               'qnaire.name' => $qnaire,
+               'participants' => $record->get_participant_count() ) );
     }
 
     $this->finish_setting_rows();

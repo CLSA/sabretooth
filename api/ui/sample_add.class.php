@@ -30,6 +30,8 @@ class sample_add extends base_view
     
     // define all columns defining this record
     $this->add_item( 'name', 'string', 'Name' );
+    $this->add_item( 'qnaire_id', 'enum', 'Questionnaire' );
+    $this->add_item( 'active', 'hidden' );
     $this->add_item( 'description', 'text', 'Description' );
   }
 
@@ -42,9 +44,16 @@ class sample_add extends base_view
   public function finish()
   {
     parent::finish();
+
+    // create enum arrays
+    $qnaires = array();
+    foreach( \sabretooth\database\qnaire::select() as $db_qnaire )
+      $qnaires[$db_qnaire->id] = $db_qnaire->name;
     
     // set the view's items
     $this->set_item( 'name', '', true );
+    $this->set_item( 'qnaire_id', '', false, $qnaires );
+    $this->set_item( 'active', false, true );
     $this->set_item( 'description', '' );
 
     $this->finish_setting_items();

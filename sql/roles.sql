@@ -409,18 +409,6 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "widget" AND subject = "sample" AND name = "add_qnaire" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "sample" AND name = "new_qnaire" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "sample" AND name = "delete_qnaire" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
-    operation_id = ( SELECT id FROM operation WHERE
       type = "widget" AND subject = "qnaire" AND name = "add_sample" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
@@ -639,18 +627,6 @@ SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "widget" AND subject = "participant" AND name = "add_sample" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "new_sample" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete_sample" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
-    operation_id = ( SELECT id FROM operation WHERE
       type = "widget" AND subject = "sample" AND name = "add_participant" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
@@ -724,18 +700,6 @@ SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
       type = "widget" AND subject = "survey" AND name = "list" );
 
 -- qnaire/sample
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "widget" AND subject = "sample" AND name = "add_qnaire" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "sample" AND name = "new_qnaire" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "sample" AND name = "delete_qnaire" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -1154,10 +1118,6 @@ INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "widget" AND subject = "sample" AND name = "list" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "widget" AND subject = "participant" AND name = "add_sample" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
