@@ -17,7 +17,7 @@ namespace sabretooth\database;
 class phase extends record
 {
   /**
-   * Overrides the parent class so manage stages.
+   * Overrides the parent class to manage stages.
    * 
    * If the record has a stage which already exists it will push the current phase and all that
    * come after it down by one stage to make room for this one.
