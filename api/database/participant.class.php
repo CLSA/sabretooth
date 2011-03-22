@@ -27,6 +27,13 @@ class participant extends record
    */
   protected function add_records( $record_type, $ids )
   {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to query participant with no id.' );
+      return NULL;
+    }
+    
     $removed = 0;
     if( 'sample' == $record_type )
     {
@@ -66,6 +73,13 @@ class participant extends record
    */
   protected function remove_records( $record_type, $id )
   {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to query participant with no id.' );
+      return NULL;
+    }
+    
     $removed = 0;
     if( 'sample' == $record_type )
     {

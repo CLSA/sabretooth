@@ -73,6 +73,13 @@ class sample extends record
    */
   protected function add_records( $record_type, $ids )
   {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to query sample with no id.' );
+      return;
+    }
+    
     if( 'participant' == $record_type && !is_null( $this->qnaire_id ) )
     {
       throw new \sabretooth\exception\runtime(
@@ -92,6 +99,13 @@ class sample extends record
    */
   protected function remove_records( $record_type, $id )
   {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to query sample with no id.' );
+      return;
+    }
+    
     if( 'participant' == $record_type && !is_null( $this->qnaire_id ) )
     {
       throw new \sabretooth\exception\runtime(
