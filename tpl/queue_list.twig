@@ -6,3 +6,34 @@
  # @see base_list.twig for parameters
  #}
 {% extends "base_list.twig" %}
+
+{% block widget %}
+
+{% if sites is defined %}
+  <script type="text/javascript">
+    $( function() {
+      // reload page if site selector is changed
+      $( "#{{ widget.full }}__restrict_site" ).change( function() {
+        var site_id = $( "#{{ widget.full }}__restrict_site option:selected" ).val();
+        slot_load( get_slot( $(this) ),
+                   "{{ widget.full }}",
+                   "{{ widget.full }}",
+                   { "restrict_site_id": site_id } );
+      } );
+    } );
+  </script>
+
+  {% set restrict_site_id = restrict_site_id|default(0) %}
+  <div style="padding-top: 4px; padding-bottom: 4px;">
+    Restrict to site:
+    <select id="{{ widget.full }}__restrict_site" class="ui-state-default">
+    <option {% if 0 == restrict_site_id %}selected {% endif %}value="0">All Sites</option>
+  {% for id, name in sites %}
+      <option {% if id == restrict_site_id %}selected {% endif %}value="{{ id }}">{{ name }}</option>
+  {% endfor %}
+    </select>
+  </div>
+{% endif %}
+
+{{ parent() }}
+{% endblock widget %}
