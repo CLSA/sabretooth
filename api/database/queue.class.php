@@ -26,11 +26,12 @@ class queue extends record
    */
   public function get_participant_count( $modifier = NULL )
   {
+    $session = \sabretooth\session::self();
     if( is_null( $modifier ) ) $modifier = new modifier();
 
     if( !is_null( $this->db_site ) )
     { // restrict to the site
-      $mod = modifier();
+      $mod = new modifier();
       $mod->where( 'site_id', '=', $session->get_site()->id );
       $province_ids = array();
       foreach( province::select( $mod ) as $db_province ) $province_ids[] = $db_province->id;
@@ -55,11 +56,12 @@ class queue extends record
    */
   public function get_participant_list( $modifier = NULL )
   {
+    $session = \sabretooth\session::self();
     if( is_null( $modifier ) ) $modifier = new modifier();
 
     if( !is_null( $this->db_site ) )
     { // restrict to the site
-      $mod = modifier();
+      $mod = new modifier();
       $mod->where( 'site_id', '=', $session->get_site()->id );
       $province_ids = array();
       foreach( province::select( $mod ) as $db_province ) $province_ids[] = $db_province->id;
@@ -82,9 +84,9 @@ class queue extends record
    * The site to restrict the queue to.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param site $db_site
-   * @access protected
+   * @access public
    */
-  protected function set_site( $db_site = NULL )
+  public function set_site( $db_site = NULL )
   {
     $this->db_site = $db_site;
   }

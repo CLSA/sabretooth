@@ -256,14 +256,13 @@ class modifier extends \sabretooth\base_object
         if( is_array( $where['value'] ) )
         {
           $first_value = true;
+          $compare = '';
           foreach( $where['value'] as $value )
           {
             $compare .= $first_value
                       ? sprintf( '%s %s( ', $where['column'], $where['operator'] )
                       : ', ';
-            $compare .= $where['format']
-                      ? database::format_string( $where['value'] )
-                      : $where['value'];
+            $compare .= $where['format'] ? database::format_string( $value ) : $value;
             $first_value = false;
           }
           $compare .= ' )';
