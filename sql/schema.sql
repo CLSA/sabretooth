@@ -902,10 +902,11 @@ DROP VIEW IF EXISTS `queue_general` ;
 DROP TABLE IF EXISTS `queue_general`;
 CREATE  OR REPLACE VIEW `queue_general` AS
 SELECT participant.*
-FROM qnaire_has_sample, sample_has_participant, participant_for_queue AS participant
+FROM sample, sample_has_participant, participant_for_queue AS participant
 LEFT JOIN interview
 ON participant.id = interview.participant_id
-WHERE qnaire_has_sample.sample_id = sample_has_participant.sample_id
+WHERE sample.qnaire_id IS NOT NULL
+AND sample.id = sample_has_participant.sample_id
 AND sample_has_participant.participant_id = participant.id
 AND interview.id IS NULL;
 
@@ -916,8 +917,9 @@ DROP VIEW IF EXISTS `queue_fax` ;
 DROP TABLE IF EXISTS `queue_fax`;
 CREATE  OR REPLACE VIEW `queue_fax` AS
 SELECT participant.*
-FROM qnaire_has_sample, sample_has_participant, participant_for_queue AS participant, interview, assignment
-WHERE qnaire_has_sample.sample_id = sample_has_participant.sample_id
+FROM sample, sample_has_participant, participant_for_queue AS participant, interview, assignment
+WHERE sample.qnaire_id IS NOT NULL
+AND sample.id = sample_has_participant.sample_id
 AND sample_has_participant.participant_id = participant.id
 AND participant.id = interview.participant_id
 AND interview.completed = false
@@ -932,8 +934,9 @@ DROP VIEW IF EXISTS `queue_machine_message` ;
 DROP TABLE IF EXISTS `queue_machine_message`;
 CREATE  OR REPLACE VIEW `queue_machine_message` AS
 SELECT participant.*
-FROM qnaire_has_sample, sample_has_participant, participant_for_queue AS participant, interview, assignment
-WHERE qnaire_has_sample.sample_id = sample_has_participant.sample_id
+FROM sample, sample_has_participant, participant_for_queue AS participant, interview, assignment
+WHERE sample.qnaire_id IS NOT NULL
+AND sample.id = sample_has_participant.sample_id
 AND sample_has_participant.participant_id = participant.id
 AND participant.id = interview.participant_id
 AND interview.completed = false
@@ -948,8 +951,9 @@ DROP VIEW IF EXISTS `queue_no_answer` ;
 DROP TABLE IF EXISTS `queue_no_answer`;
 CREATE  OR REPLACE VIEW `queue_no_answer` AS
 SELECT participant.*
-FROM qnaire_has_sample, sample_has_participant, participant_for_queue AS participant, interview, assignment
-WHERE qnaire_has_sample.sample_id = sample_has_participant.sample_id
+FROM sample, sample_has_participant, participant_for_queue AS participant, interview, assignment
+WHERE sample.qnaire_id IS NOT NULL
+AND sample.id = sample_has_participant.sample_id
 AND sample_has_participant.participant_id = participant.id
 AND participant.id = interview.participant_id
 AND interview.completed = false
@@ -964,8 +968,9 @@ DROP VIEW IF EXISTS `queue_busy` ;
 DROP TABLE IF EXISTS `queue_busy`;
 CREATE  OR REPLACE VIEW `queue_busy` AS
 SELECT participant.*
-FROM qnaire_has_sample, sample_has_participant, participant_for_queue AS participant, interview, assignment
-WHERE qnaire_has_sample.sample_id = sample_has_participant.sample_id
+FROM sample, sample_has_participant, participant_for_queue AS participant, interview, assignment
+WHERE sample.qnaire_id IS NOT NULL
+AND sample.id = sample_has_participant.sample_id
 AND sample_has_participant.participant_id = participant.id
 AND participant.id = interview.participant_id
 AND interview.completed = false
@@ -980,8 +985,9 @@ DROP VIEW IF EXISTS `queue_available` ;
 DROP TABLE IF EXISTS `queue_available`;
 CREATE  OR REPLACE VIEW `queue_available` AS
 SELECT participant.*
-FROM qnaire_has_sample, sample_has_participant, participant_for_queue AS participant, availability, interview, assignment
-WHERE qnaire_has_sample.sample_id = sample_has_participant.sample_id
+FROM sample, sample_has_participant, participant_for_queue AS participant, availability, interview, assignment
+WHERE sample.qnaire_id IS NOT NULL
+AND sample.id = sample_has_participant.sample_id
 AND sample_has_participant.participant_id = participant.id
 AND participant.id = availability.participant_id
 AND participant.id = interview.participant_id
@@ -1008,8 +1014,9 @@ DROP VIEW IF EXISTS `queue_appointment` ;
 DROP TABLE IF EXISTS `queue_appointment`;
 CREATE  OR REPLACE VIEW `queue_appointment` AS
 SELECT participant.*
-FROM qnaire_has_sample, sample_has_participant, participant_for_queue AS participant, appointment, interview, assignment
-WHERE qnaire_has_sample.sample_id = sample_has_participant.sample_id
+FROM sample, sample_has_participant, participant_for_queue AS participant, appointment, interview, assignment
+WHERE sample.qnaire_id IS NOT NULL
+AND sample.id = sample_has_participant.sample_id
 AND sample_has_participant.participant_id = participant.id
 AND participant.id = appointment.participant_id
 AND participant.id = interview.participant_id
@@ -1036,8 +1043,9 @@ DROP VIEW IF EXISTS `queue_missed` ;
 DROP TABLE IF EXISTS `queue_missed`;
 CREATE  OR REPLACE VIEW `queue_missed` AS
 SELECT participant.*
-FROM qnaire_has_sample, sample_has_participant, participant_for_queue AS participant, appointment, interview, assignment
-WHERE qnaire_has_sample.sample_id = sample_has_participant.sample_id
+FROM sample, sample_has_participant, participant_for_queue AS participant, appointment, interview, assignment
+WHERE sample.qnaire_id IS NOT NULL
+AND sample.id = sample_has_participant.sample_id
 AND sample_has_participant.participant_id = participant.id
 AND participant.id = appointment.participant_id
 AND participant.id = interview.participant_id
@@ -1058,8 +1066,9 @@ DROP VIEW IF EXISTS `queue_machine_no_message` ;
 DROP TABLE IF EXISTS `queue_machine_no_message`;
 CREATE  OR REPLACE VIEW `queue_machine_no_message` AS
 SELECT participant.*
-FROM qnaire_has_sample, sample_has_participant, participant_for_queue AS participant, interview, assignment
-WHERE qnaire_has_sample.sample_id = sample_has_participant.sample_id
+FROM sample, sample_has_participant, participant_for_queue AS participant, interview, assignment
+WHERE sample.qnaire_id IS NOT NULL
+AND sample.id = sample_has_participant.sample_id
 AND sample_has_participant.participant_id = participant.id
 AND participant.id = interview.participant_id
 AND interview.completed = false
