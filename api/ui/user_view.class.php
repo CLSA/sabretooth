@@ -178,14 +178,14 @@ class user_view extends base_view
   }
 
   /**
-   * The user list widget.
+   * The shift list widget.
    * @var shift_list
    * @shift protected
    */
   protected $shift_list = NULL;
 
   /**
-   * The user list widget.
+   * The access list widget.
    * @var access_list
    * @access protected
    */
