@@ -117,7 +117,7 @@ final class session extends singleton
     if( !isset( $this->settings[ $category ] ) ||
         !isset( $this->settings[ $category ][ $name ] ) )
     {
-      log::warning(
+      log::err(
         "Tried getting value for setting [$category][$name] which doesn't exist." );
     }
     else

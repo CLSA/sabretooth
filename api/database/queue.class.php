@@ -26,16 +26,16 @@ class queue extends record
    */
   public function get_participant_count( $modifier = NULL )
   {
-    $session = \sabretooth\session::self();
     if( is_null( $modifier ) ) $modifier = new modifier();
 
     if( !is_null( $this->db_site ) )
     { // restrict to the site
       $mod = new modifier();
-      $mod->where( 'site_id', '=', $session->get_site()->id );
+      $mod->where( 'site_id', '=', $this->db_site->id );
       $province_ids = array();
       foreach( province::select( $mod ) as $db_province ) $province_ids[] = $db_province->id;
-      $modifier->where( 'site_id', '=', $session->get_site()->id );
+      $modifier->where( 'site_id', '=', $this->db_site->id );
+      $modifier->or_where( 'site_id', '=', NULL );
       $modifier->where( 'province_id', 'IN', $province_ids );
     }
 
@@ -56,17 +56,16 @@ class queue extends record
    */
   public function get_participant_list( $modifier = NULL )
   {
-    $session = \sabretooth\session::self();
     if( is_null( $modifier ) ) $modifier = new modifier();
 
     if( !is_null( $this->db_site ) )
     { // restrict to the site
       $mod = new modifier();
-      $mod->where( 'site_id', '=', $session->get_site()->id );
+      $mod->where( 'site_id', '=', $this->db_site->id );
       $province_ids = array();
       foreach( province::select( $mod ) as $db_province ) $province_ids[] = $db_province->id;
-      $modifier->where( 'site_id', '=', $session->get_site()->id );
-      $modifier->where( 'province_id', 'IN', $province_ids );
+      $modifier->where( 'site_id', '=', $this->db_site->id );
+      $modifier->or_where( 'province_id', 'IN', $province_ids );
     }
 
     // get the name of the queue-view

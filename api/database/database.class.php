@@ -58,7 +58,12 @@ class database extends \sabretooth\base_object
     $modifier->order( 'COLUMN_NAME' );
 
     $rows = $this->get_all(
-      sprintf( 'SELECT TABLE_NAME AS table_name, COLUMN_NAME AS column_name, DATA_TYPE AS column_type '.
+      sprintf( 'SELECT TABLE_NAME AS table_name, '.
+                      'COLUMN_NAME AS column_name, '.
+                      'COLUMN_TYPE AS column_type, '.
+                      'DATA_TYPE AS data_type, '.
+                      'COLUMN_KEY AS column_key, '.
+                      'COLUMN_DEFAULT AS column_default '.
                'FROM information_schema.COLUMNS %s',
                $modifier->get_sql() ) );
     
@@ -67,7 +72,11 @@ class database extends \sabretooth\base_object
     {
       extract( $row ); // defines $table_name, $column_name and $column_type
       if( !array_key_exists( $table_name, $this->columns ) ) $this->columns[$table_name] = array();
-      $this->columns[$table_name][$column_name] = $column_type;
+      $this->columns[$table_name][$column_name] =
+        array( 'data_type' => $data_type,
+               'type' => $column_type,
+               'default' => $column_default,
+               'key' => $column_key );
     }
   }
 
@@ -134,7 +143,7 @@ class database extends \sabretooth\base_object
   }
 
   /**
-   * Returns a column's data type.
+   * Returns a column's type (int, varchar, enum, etc)
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $table_name The name of the table to check for.
    * @param string $column_name A column name in the record's corresponding table.
@@ -150,7 +159,67 @@ class database extends \sabretooth\base_object
                  $column_name ), __METHOD__ );
 
     $table_name = $this->prefix.$table_name;
-    return $this->columns[$table_name][$column_name];
+    return $this->columns[$table_name][$column_name]['type'];
+  }
+  
+  /**
+   * Returns a column's data type (int(10) unsigned, varchar(45), enum( 'a', 'b', 'c' ), etc)
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $table_name The name of the table to check for.
+   * @param string $column_name A column name in the record's corresponding table.
+   * @return string
+   * @access public
+   */
+  public function get_column_data_type( $table_name, $column_name )
+  {
+    if( !$this->column_exists( $table_name, $column_name ) )
+      throw new \sabretooth\exception\runtime(
+        sprintf( "Tried to get column data type for '%s.%s' which doesn't exist.",
+                 $table_name,
+                 $column_name ), __METHOD__ );
+
+    $table_name = $this->prefix.$table_name;
+    return $this->columns[$table_name][$column_name]['data_type'];
+  }
+  
+  /**
+   * Returns a column's key type.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $table_name The name of the table to check for.
+   * @param string $column_name A column name in the record's corresponding table.
+   * @return string
+   * @access public
+   */
+  public function get_column_key( $table_name, $column_name )
+  {
+    if( !$this->column_exists( $table_name, $column_name ) )
+      throw new \sabretooth\exception\runtime(
+        sprintf( "Tried to get column key for '%s.%s' which doesn't exist.",
+                 $table_name,
+                 $column_name ), __METHOD__ );
+
+    $table_name = $this->prefix.$table_name;
+    return $this->columns[$table_name][$column_name]['key'];
+  }
+  
+  /**
+   * Returns a column's default.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $table_name The name of the table to check for.
+   * @param string $column_name A column name in the record's corresponding table.
+   * @return string
+   * @access public
+   */
+  public function get_column_default( $table_name, $column_name )
+  {
+    if( !$this->column_exists( $table_name, $column_name ) )
+      throw new \sabretooth\exception\runtime(
+        sprintf( "Tried to get column default for '%s.%s' which doesn't exist.",
+                 $table_name,
+                 $column_name ), __METHOD__ );
+
+    $table_name = $this->prefix.$table_name;
+    return $this->columns[$table_name][$column_name]['default'];
   }
   
   /**

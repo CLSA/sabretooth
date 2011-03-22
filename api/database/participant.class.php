@@ -108,5 +108,100 @@ class participant extends record
         __METHOD__ );
     }
   }
+  
+  /**
+   * Returns the currently active sample that the participant belongs to, or NULL if the
+   * participant does not belong to an active sample (ie: is not queued for any interviews)
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return sample
+   * @access public
+   */
+  public function get_active_sample()
+  {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to query participant with no id.' );
+      return NULL;
+    }
+    
+    $modifier = new modifier();
+    $modifier->where( 'qnaire_id', '!=', NULL );
+    $modifier->where( 'sample_has_participant.sample_id', '=', 'sample.id', false );
+    $modifier->where( 'sample_has_participant.participant_id', '=', $this->id );
+    $sample_list = sample::select( $modifier );
+
+    // warn if there are more than one active samples (this should never happen)
+    if( 1 < count( $sample_list ) )
+      \sabretooth\log::crit( 'Participant belongs to more than one active sample!' );
+
+    return 0 < count( $sample_list ) ? current( $sample_list ) : NULL;
+  }
+
+  /**
+   * Get the last phone call to the participant
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return phone_call
+   * @access public
+   */
+  public function get_last_phone_call()
+  {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to query participant with no id.' );
+      return NULL;
+    }
+    
+    // need custom SQL
+    $phone_call_id = static::db()->get_one(
+      sprintf( 'SELECT phone_call_id FROM participant_last_phone_call WHERE participant_id = %s',
+               database::format_string( $this->id ) ) );
+    return $phone_call_id ? new phone_call( $phone_call_id ) : NULL;
+  }
+
+  /**
+   * Get the participant's current defining consent
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return consent
+   * @access public
+   */
+  public function get_current_consent()
+  {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to query participant with no id.' );
+      return NULL;
+    }
+    
+    // need custom SQL
+    $consent_id = static::db()->get_one(
+      sprintf( 'SELECT consent_id FROM participant_current_consent WHERE participant_id = %s',
+               database::format_string( $this->id ) ) );
+    return $consent_id ? new consent( $consent_id ) : NULL;
+  }
+
+  /**
+   * Get the last phone call to the participant
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return contact
+   * @access public
+   */
+  public function get_primary_location()
+  {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to query participant with no id.' );
+      return NULL;
+    }
+    
+    // need custom SQL
+    $contact_id = static::db()->get_one(
+      sprintf( 'SELECT contact_id FROM participant_primary_location WHERE participant_id = %s',
+               database::format_string( $this->id ) ) );
+    return $contact_id ? new contact( $contact_id ) : NULL;
+  }
 }
 ?>

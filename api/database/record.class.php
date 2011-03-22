@@ -37,8 +37,15 @@ abstract class record extends \sabretooth\base_object
     if( !is_array( $columns ) || 0 == count( $columns ) )
       throw new \sabretooth\exception\runtime(
         "No column names returned for table ".static::get_table_name(), __METHOD__ );
-
-    foreach( $columns as $name ) $this->column_values[ $name ] = NULL;
+    
+    // set the default value for all columns
+    foreach( $columns as $name )
+    {
+      $default = static::db()->get_column_default( static::get_table_name(), $name );
+      $this->column_values[$name] = 'CURRENT_TIMESTAMP' == $default
+                                  ? date( "Y-m-d H:i:s" )
+                                  : $default;
+    }
     
     if( NULL != $id )
     {
@@ -109,7 +116,7 @@ abstract class record extends \sabretooth\base_object
       // convert where necessary
       foreach( $this->column_values as $key => $val )
       {
-        $column_type = static::db()->get_column_type( static::get_table_name(), $key );
+        $column_type = static::db()->get_column_data_type( static::get_table_name(), $key );
 
         // convert where necessary
         if( 'datetime' == $column_type || 'timestamp' == $column_type )
@@ -130,6 +137,7 @@ abstract class record extends \sabretooth\base_object
    * If this is a new record then a new row will be inserted, if not then the row with the
    * corresponding id will be updated.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\runtime
    * @access public
    */
   public function save()
@@ -141,8 +149,10 @@ abstract class record extends \sabretooth\base_object
       return;
     }
     
-    // if we have start_time and end_time, make sure end comes after start
-    if( static::column_exists( 'start_time' ) && static::column_exists( 'end_time' ) )
+    // if we have start_time and end_time (which can't be null), make sure end comes after start
+    if( static::column_exists( 'start_time' ) &&
+        static::column_exists( 'end_time' ) &&
+        !is_null( static::db()->get_column_default( static::get_table_name(), 'end_time' ) ) )
     {
       $start_obj = new \DateTime( $this->start_time );
       $end_obj = new \DateTime( $this->end_time );
@@ -162,7 +172,7 @@ abstract class record extends \sabretooth\base_object
     {
       if( static::get_primary_key_name() != $key )
       {
-        $column_type = static::db()->get_column_type( static::get_table_name(), $key );
+        $column_type = static::db()->get_column_data_type( static::get_table_name(), $key );
 
         // convert where necessary
         if( 'text' == $column_type )
@@ -474,7 +484,7 @@ abstract class record extends \sabretooth\base_object
     $relationship = static::get_relationship( $record_type );
     if( relationship::NONE == $relationship )
     {
-      \sabretooth\log::warning(
+      \sabretooth\log::err(
         sprintf( 'Tried to get a %s list from a %s, but there is no relationship between the two.',
                  $record_type,
                  static::get_table_name() ) );
@@ -482,7 +492,7 @@ abstract class record extends \sabretooth\base_object
     }
     else if( relationship::ONE_TO_ONE == $relationship )
     {
-      \sabretooth\log::warning(
+      \sabretooth\log::err(
         sprintf( 'Tried to get a %s list from a %s, but there is a '.
                  'one-to-one relationship between the two.',
                  $record_type,
@@ -564,7 +574,7 @@ abstract class record extends \sabretooth\base_object
     }
     
     // if we get here then the relationship type is unknown
-    \sabretooth\log::warning(
+    \sabretooth\log::crit(
       sprintf( 'Record %s has an unknown relationship to %s.',
                static::get_table_name(),
                $record_type ) );
@@ -619,7 +629,7 @@ abstract class record extends \sabretooth\base_object
     $relationship = static::get_relationship( $record_type );
     if( relationship::MANY_TO_MANY != $relationship )
     {
-      \sabretooth\log::warning(
+      \sabretooth\log::err(
         sprintf( 'Tried to add %s to a %s without a many-to-many relationship between the two.',
                  \sabretooth\util::prulalize( $record_type ),
                  static::get_table_name() ) );
@@ -681,14 +691,14 @@ abstract class record extends \sabretooth\base_object
     $relationship = static::get_relationship( $record_type );
     if( relationship::NONE == $relationship )
     {
-      \sabretooth\log::warning(
+      \sabretooth\log::err(
         sprintf( 'Tried to remove a %s from a %s, but there is no relationship between the two.',
                  $record_type,
                  static::get_table_name() ) );
     }
     else if( relationship::ONE_TO_ONE == $relationship )
     {
-      \sabretooth\log::warning(
+      \sabretooth\log::err(
         sprintf( 'Tried to remove a %s from a %s, but there is a '.
                  'one-to-one relationship between the two.',
                  $record_type,
@@ -716,7 +726,7 @@ abstract class record extends \sabretooth\base_object
     else
     {
       // if we get here then the relationship type is unknown
-      \sabretooth\log::warning(
+      \sabretooth\log::crit(
         sprintf( 'Record %s has an unknown relationship to %s.',
                  static::get_table_name(),
                  $record_type ) );
@@ -897,18 +907,8 @@ abstract class record extends \sabretooth\base_object
   {
     $record = NULL;
 
-    // determine the unique key(s)
-    $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', '=', static::db()->get_name() );
-    $modifier->where( 'TABLE_NAME', '=', static::get_table_name() );
-    $modifier->where( 'COLUMN_KEY', '=', 'UNI' );
-
-    $unique_keys = static::db()->get_col( 
-      sprintf( 'SELECT COLUMN_NAME FROM information_schema.COLUMNS %s',
-               $modifier->get_sql() ) );
-    
     // make sure the column is unique
-    if( in_array( $column, $unique_keys ) )
+    if( static::db()->get_column_key( static::get_table_name(), $column ) )
     {
       // this returns null if no records are found
       $modifier = new modifier();
@@ -961,21 +961,8 @@ abstract class record extends \sabretooth\base_object
    */
   public static function get_enum_values( $column_name )
   {
-    $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', '=', static::db()->get_name() );
-    $modifier->where( 'TABLE_NAME', '=', static::get_table_name() );
-    $modifier->where( 'COLUMN_NAME', '=', $column_name );
-    $modifier->where( 'DATA_TYPE', '=', 'enum' );
-
-    $type = static::db()->get_one(
-      sprintf( 'SELECT COLUMN_TYPE FROM information_schema.COLUMNS %s',
-               $modifier->get_sql() ) );
-
-    if( is_null( $type ) )
-      throw new \sabretooth\exception\argument( 'column_name', $column_name, __METHOD__ );
-
-    
     // match all strings in single quotes, then cut out the quotes from the match and return them
+    $type = static::db()->get_column_type( static::get_table_name(), $column_name );
     preg_match_all( "/'[^']+'/", $type, $matches );
     $values = array();
     foreach( current( $matches ) as $match ) $values[] = substr( $match, 1, -1 );

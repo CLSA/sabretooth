@@ -284,7 +284,7 @@ class modifier extends \sabretooth\base_object
         {
           if( '=' == $where['operator'] ) $compare = $where['column'].' IS NULL';
           else if( '!=' == $where['operator'] ) $compare = $where['column'].' IS NOT NULL';
-          else \sabretooth\log::warning(
+          else \sabretooth\log::err(
                  'Tried to compare to NULL value with "'.$where['operator'].'" operator.' );
         }
         else

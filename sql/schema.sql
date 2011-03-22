@@ -176,20 +176,13 @@ CREATE  TABLE IF NOT EXISTS `interview` (
   `require_supervisor` TINYINT(1)  NOT NULL DEFAULT false ,
   `completed` TINYINT(1)  NOT NULL DEFAULT false ,
   `duplicate_phase_id` INT UNSIGNED NULL DEFAULT NULL ,
-  `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'If not null then force all calls for this interview to the site.' ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
-  INDEX `fk_site_id` (`site_id` ASC) ,
   INDEX `fk_phase_id` (`phase_id` ASC) ,
   INDEX `fk_duplicate_phase_id` (`duplicate_phase_id` ASC) ,
   CONSTRAINT `fk_interview_participant`
     FOREIGN KEY (`participant_id` )
     REFERENCES `participant` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_interview_site`
-    FOREIGN KEY (`site_id` )
-    REFERENCES `site` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_phase_id`

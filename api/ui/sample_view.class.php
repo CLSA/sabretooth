@@ -65,7 +65,7 @@ class sample_view extends base_view
   {
     parent::finish();
     
-    // create enum arrays
+    // create enum array
     $qnaires = array();
     foreach( \sabretooth\database\qnaire::select() as $db_qnaire )
       $qnaires[$db_qnaire->id] = $db_qnaire->name;
