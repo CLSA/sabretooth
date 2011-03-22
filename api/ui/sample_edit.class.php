@@ -27,5 +27,23 @@ class sample_edit extends base_edit
   {
     parent::__construct( 'sample', $args );
   }
+
+  /**
+   * Executes the action.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function execute()
+  {
+    try
+    {
+      parent::execute();
+    }
+    catch( \sabretooth\exception\runtime $e )
+    { // the sample class may throw a runtime exception when sample.qnaire_id is changed
+      throw RUNTIME_SAMPLE__SAVE_ERROR_NUMBER == $e->get_number() ?
+        new \sabretooth\exception\notice( $e, __METHOD__, $e ) : $e;
+    }
+  }
 }
 ?>

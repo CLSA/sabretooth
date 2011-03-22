@@ -233,23 +233,6 @@ abstract class record extends \sabretooth\base_object
   }
 
   /**
-   * Count the total number of rows in the table.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the count.
-   * @return int
-   * @static
-   * @access public
-   */
-  public static function count( $modifier )
-  {
-    return intval( static::db()->get_one(
-      sprintf( 'SELECT COUNT(*) FROM %s %s',
-               static::get_table_name(),
-               is_null( $modifier ) ? '' : $modifier->get_sql() ) ) );
-  }
-
-  /**
    * Magic get method.
    *
    * Magic get method which returns the column value from the record's table
@@ -806,11 +789,12 @@ abstract class record extends \sabretooth\base_object
    * every row being selected, so selecting a very large number of rows (100+) isn't a good idea.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
-   * @return array( record )
+   * @param boolean $count If true the total number of records instead of a list
+   * @return array( record ) | int
    * @static
    * @access public
    */
-  public static function select( $modifier = NULL )
+  public static function select( $modifier = NULL, $count = false )
   {
     $this_table = static::get_table_name();
     
@@ -818,9 +802,15 @@ abstract class record extends \sabretooth\base_object
     $table_list = array( $this_table );
     if( !is_null( $modifier ) )
     {
-      foreach( $modifier->get_order_columns() as $order )
+      // build an array of all foreign tables in the modifier
+      $columns = $modifier->get_where_columns();
+      $columns = array_merge( $columns, $modifier->get_order_columns() );
+      $tables = array();
+      foreach( $columns as $index => $column ) $tables[] = strstr( $column, '.', true );
+      $tables = array_unique( $tables, SORT_STRING );
+
+      foreach( $tables as $table )
       {
-        $table = strstr( $order, '.', true );
         if( $table && 0 < strlen( $table ) && $table != $this_table )
         {
           // check to see if we have a foreign key for this table
@@ -832,7 +822,17 @@ abstract class record extends \sabretooth\base_object
             $modifier->where(
               $this_table.'.'.$foreign_key_name,
               '=',
-              $table.'.'.static::get_primary_key_name(), false );
+              $table.'.'.$table::get_primary_key_name(), false );
+          }
+          // check to see if the foreign table has this table as a foreign key
+          else if( static::db()->column_exists( $table, $this_table.'_id' ) )
+          {
+            // add the table to the list to select and join it in the modifier
+            $table_list[] = $table;
+            $modifier->where(
+              $table.'.'.$this_table.'_id',
+              '=',
+              $this_table.'.'.static::get_primary_key_name(), false );
           }
         }
       }
@@ -849,17 +849,37 @@ abstract class record extends \sabretooth\base_object
       $first = false;
     }
 
-    $id_list = static::db()->get_col(
-      sprintf( 'SELECT %s.%s FROM %s %s',
-               $this_table,
-               static::get_primary_key_name(),
-               $select_tables,
-               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
+    $sql = sprintf( $count ? 'SELECT COUNT( %s.%s ) FROM %s %s' : 'SELECT %s.%s FROM %s %s',
+                    $this_table,
+                    static::get_primary_key_name(),
+                    $select_tables,
+                    is_null( $modifier ) ? '' : $modifier->get_sql() );
 
-    $records = array();
-    foreach( $id_list as $id ) $records[] = new static( $id );
+    if( $count )
+    {
+      return intval( static::db()->get_one( $sql ) );
+    }
+    else
+    {
+      $id_list = static::db()->get_col( $sql );
+      $records = array();
+      foreach( $id_list as $id ) $records[] = new static( $id );
+      return $records;
+    }
+  }
 
-    return $records;
+  /**
+   * Count the total number of rows in the table.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the count.
+   * @return int
+   * @static
+   * @access public
+   */
+  public static function count( $modifier )
+  {
+    return static::select( $modifier, true );
   }
 
   /**

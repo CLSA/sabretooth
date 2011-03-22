@@ -40,6 +40,8 @@ class participant_add_sample extends base_add_list
    */
   public function determine_sample_count( $modifier = NULL )
   {
+    if( is_null( $modifier ) ) $modifier = new \sabretooth\database\modifier();
+    $modifier->where( 'qnaire_id', '=', NULL );
     return $this->get_record()->get_sample_count_inverted( $modifier );
   }
 
@@ -53,6 +55,8 @@ class participant_add_sample extends base_add_list
    */
   public function determine_sample_list( $modifier = NULL )
   {
+    if( is_null( $modifier ) ) $modifier = new \sabretooth\database\modifier();
+    $modifier->where( 'qnaire_id', '=', NULL );
     return $this->get_record()->get_sample_list_inverted( $modifier );
   }
 }

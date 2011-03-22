@@ -1,0 +1,6 @@
+Samples are list of participants.
+Participants may belong to more than one sample.
+Samples can be assigned to a questionnaire.
+Once a sample's questionnaire is set this makes it active.
+Participants cannot be added or removed from an active sample.
+Samples who contain participants who are already part of an active sample cannot be activated.

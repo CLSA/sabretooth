@@ -40,7 +40,10 @@ class qnaire_add_sample extends base_add_list
    */
   public function determine_sample_count( $modifier = NULL )
   {
-    return $this->get_record()->get_sample_count_inverted( $modifier );
+    // only include samples which have no qnaire assigned to them
+    if( is_null( $modifier ) ) $modifier = new \sabretooth\database\modifier();
+    $modifier->where( 'qnaire_id', '=', NULL );
+    return \sabretooth\database\sample::count( $modifier );
   }
 
   /**
@@ -53,7 +56,10 @@ class qnaire_add_sample extends base_add_list
    */
   public function determine_sample_list( $modifier = NULL )
   {
-    return $this->get_record()->get_sample_list_inverted( $modifier );
+    // only include samples which have no qnaire assigned to them
+    if( is_null( $modifier ) ) $modifier = new \sabretooth\database\modifier();
+    $modifier->where( 'qnaire_id', '=', NULL );
+    return \sabretooth\database\sample::select( $modifier );
   }
 }
 ?>

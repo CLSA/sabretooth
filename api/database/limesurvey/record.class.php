@@ -38,22 +38,29 @@ abstract class record extends \sabretooth\database\record
    * Overrides the parent method so that it is compatible with limesurvey tables.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
+   * @param boolean $count If true the total number of records instead of a list
    * @return array( record )
    * @static
    * @access public
    */
-  public static function select( $modifier = NULL )
+  public static function select( $modifier = NULL, $count = false )
   {
-    $id_list = static::db()->get_col(
-      sprintf( 'SELECT %s FROM %s %s',
-               static::get_primary_key_name(),
-               static::get_table_name(),
-               is_null( $modifier ) ? '' : $modifier->get_sql() ) );
-
-    $records = array();
-    foreach( $id_list as $id ) $records[] = new static( $id );
-
-    return $records;
+    $sql = sprintf( 'SELECT %s FROM %s %s',
+                    static::get_primary_key_name(),
+                    static::get_table_name(),
+                    is_null( $modifier ) ? '' : $modifier->get_sql() );
+    
+    if( $count )
+    {
+      return static::db()->get_one( $sql );
+    }
+    else
+    {
+      $id_list = static::db()->get_col( $sql );
+      $records = array();
+      foreach( $id_list as $id ) $records[] = new static( $id );
+      return $records;
+    }
   }
 
   /**

@@ -28,30 +28,7 @@ abstract class base_access extends record
    */
   public static function count( $modifier )
   {
-    $subject_name = static::get_table_name();
-
-    // check to see if the modifier has a where condition in the access table
-    if( !is_null( $modifier ) )
-    {
-      foreach( array( 'user', 'role', 'site' ) as $access_table )
-      {
-        if( $subject_name != $access_table )
-        {
-          if( $modifier->has_where( $access_table.'_id' ) )
-          {
-            $modifier->where( $subject_name.'.id', '=', 'access.'.$subject_name.'_id', false );
-            return static::db()->get_one(
-              sprintf( 'SELECT COUNT( DISTINCT access.%s_id ) FROM %s, access %s',
-                       $subject_name,
-                       $subject_name,
-                       $modifier->get_sql() ) );
-          }
-        }
-      }
-    }
-    
-    // if we get here then the regular parent method is fine
-    return parent::count( $modifier );
+    return static::select( $modifier, true );
   }            
 
   /**
@@ -65,11 +42,12 @@ abstract class base_access extends record
    * need to be expanded.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
+   * @param boolean $count If true the total number of records instead of a list
    * @return array( record )
    * @static
    * @access public
    */
-  public static function select( $modifier = NULL )
+  public static function select( $modifier = NULL, $count = false )
   {
     $subject_name = static::get_table_name();
 
@@ -84,23 +62,30 @@ abstract class base_access extends record
           {
             $modifier->where( $subject_name.'.id', '=', 'access.'.$subject_name.'_id', false );
             $modifier->group( 'access.'.$subject_name.'_id' );
-    
-            $id_list = static::db()->get_col(
-              sprintf( 'SELECT %s.id FROM %s, access %s',
-                       $subject_name,
-                       $subject_name,
-                       $modifier->get_sql() ) );
-        
-            $records = array();
-            foreach( $id_list as $id ) $records[] = new static( $id );
-            return $records;
+            
+            $sql = sprintf( 'SELECT %s.id FROM %s, access %s',
+                            $subject_name,
+                            $subject_name,
+                            $modifier->get_sql() );
+            
+            if( $count )
+            {
+              return intval( static::db()->get_one( $sql ) );
+            }
+            else
+            {
+              $id_list = static::db()->get_col( $sql );
+              $records = array();
+              foreach( $id_list as $id ) $records[] = new static( $id );
+              return $records;
+            }
           }
         }
       }
     }
 
     // if we get here then the regular parent method is fine
-    return parent::select( $modifier );
+    return $count ? parent::count( $modifier ) : parent::select( $modifier );
   }
 
   /**

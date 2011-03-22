@@ -31,8 +31,8 @@ class sample_view extends base_view
     // create an associative array with everything we want to display about the sample
     $this->add_item( 'name', 'string', 'Name' );
     $this->add_item( 'participants', 'constant', 'Number of participants' );
-    $this->add_item( 'qnaire_id', 'enum', 'Questionnaires' );
-    $this->add_item( 'active', 'boolean', 'Activated' );
+    $this->add_item( 'qnaire_id', 'enum', 'Assigned Questionnaire',
+      'Assigning a questionnaire will activate this sample.' );
     $this->add_item( 'description', 'text', 'Description' );
 
     try
@@ -41,6 +41,13 @@ class sample_view extends base_view
       $this->participant_list = new participant_list( $args );
       $this->participant_list->set_parent( $this );
       $this->participant_list->set_heading( 'Participants belonging to this sample' );
+
+      // make the list read-only if the sample is active
+      if( !is_null( $this->get_record()->qnaire_id ) )
+      {
+        $this->participant_list->set_removable( false );
+        $this->participant_list->set_addable( false );
+      }
     }
     catch( \sabretooth\exception\permission $e )
     {
@@ -67,7 +74,6 @@ class sample_view extends base_view
     $this->set_item( 'name', $this->get_record()->name, true );
     $this->set_item( 'participants', $this->get_record()->get_participant_count() );
     $this->set_item( 'qnaire_id', $this->get_record()->qnaire_id, false, $qnaires );
-    $this->set_item( 'active', $this->get_record()->active, true );
     $this->set_item( 'description', $this->get_record()->description );
 
     $this->finish_setting_items();

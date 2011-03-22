@@ -393,7 +393,6 @@ CREATE  TABLE IF NOT EXISTS `sample` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(255) NOT NULL ,
   `qnaire_id` INT UNSIGNED NULL DEFAULT NULL ,
-  `active` TINYINT(1)  NOT NULL DEFAULT false ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) ,

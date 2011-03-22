@@ -154,12 +154,6 @@ VALUES( "widget", "qnaire", "view", true, "View a questionnaire's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "qnaire", "list", true, "List questionnaires in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "qnaire", "add_sample", true, "View samples to add to a questionnaire." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "qnaire", "new_sample", true, "Adds new samples to a questionnaire." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "qnaire", "delete_sample", true, "Remove samples from a questionnaire." );
-INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "qnaire", "add_phase", true, "View surveys to add as a new phase to a questionnaire." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "qnaire", "delete_phase", true, "Remove phases from a questionnaire." );
