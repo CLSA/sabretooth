@@ -109,10 +109,10 @@
       {# make null entries an empty string #}
       {% set entry_value = entry.value is defined ? entry.value : "" %}
       <tr>
-        <td style="white-space: nowrap; padding: 4px;" align="left">
+        <td class="heading">
           <span class="title">{{ entry.heading }}:</span>
         </td>
-        <td style="padding: 4px" width="95%" align="left">
+        <td class="content">
 
       {% if 'constant' == entry.type or not editable %}
     

@@ -118,6 +118,20 @@ table {
   text-align: center;
 }
 
+td.heading {
+  white-space: nowrap;
+  padding: 4px;
+  font-weight: bold;
+  text-align: left;
+}
+
+td.content {
+  padding: 4px;
+  font-weight: normal;
+  text-align: left;
+  width: 95%;
+}
+
 .error_code {
   text-align: right;
   font-style: italic;
