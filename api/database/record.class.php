@@ -43,7 +43,7 @@ abstract class record extends \sabretooth\base_object
     {
       $default = static::db()->get_column_default( static::get_table_name(), $name );
       $this->column_values[$name] = 'CURRENT_TIMESTAMP' == $default
-                                  ? date( "Y-m-d H:i:s" )
+                                  ? date( 'Y-m-d H:i:s' )
                                   : $default;
     }
     
@@ -325,50 +325,21 @@ abstract class record extends \sabretooth\base_object
                $name ), __METHOD__ );
 
     $return_value = NULL;
-
-    // parse the function call name
-    $name_parts = explode( '_', $name );
     
-    // must have between 2 and 4 parts
-    if( 2 > count( $name_parts ) || 4 < count( $name_parts ) ) throw $exception;
+    // set up regular expressions
+    $start = '/^add_|remove_|get_/';
+    $end = '/(_list|_count)(_inverted)?$/';
     
-    // Based on the name of the called function, define what action we're taking using the
-    // $name_parts array
-    $action = $name_parts[0];
-    $foreign_table_name = $name_parts[1];
-    $sub_action = NULL;
-    $inverted = false;
+    // see if the start of the function name is a match
+    if( !preg_match( $start, $name, $match ) ) throw $exception;
+    $action = substr( $match[0], 0, -1 ); // remove underscore
 
-    // make sure action is valid
-    if( 'get' != $action && 'add' != $action && 'remove' != $action ) throw $exception;
-
+    // now get the subject by removing the start and end of the function name
+    $subject = preg_replace( array( $start, $end ), '', $name );
+    
     // make sure the foreign table exists
-    if( !static::db()->table_exists( $foreign_table_name ) ) throw $exception;
+    if( !static::db()->table_exists( $subject ) ) throw $exception;
     
-    // determine the sub-action and modifier argument, if necessary
-    $modifier = NULL;
-    if( 3 <= count( $name_parts ) )
-    {
-      // make sure sub action is valid
-      $sub_action = $name_parts[2];
-      if( 'list' != $sub_action && 'count' != $sub_action ) throw $exception;
-      
-      // define the modifier
-      $modifier = 1 == count( $args ) &&
-                  'sabretooth\\database\\modifier' == get_class( $args[0] )
-                ? $args[0]
-                : new modifier();
-    }
-    
-    // determine whether to invert (if necessary)
-    $inverted = false;
-    if( 4 == count( $name_parts ) )
-    {
-      if( 'inverted' == $name_parts[3] ) $inverted = true;
-      else throw $exception;
-    }
-
-    // once we get here we know for sure that the function name is valid
     if( 'add' == $action )
     { // calling: add_<record>( $ids )
       // make sure the first argument is a non-empty array of ids
@@ -376,7 +347,7 @@ abstract class record extends \sabretooth\base_object
         throw new \sabretooth\exception\argument( 'args', $args, __METHOD__ );
 
       $ids = $args[0];
-      $this->add_records( $foreign_table_name, $ids );
+      $this->add_records( $subject, $ids );
       return;
     }
     else if( 'remove' == $action )
@@ -386,29 +357,56 @@ abstract class record extends \sabretooth\base_object
         throw new \sabretooth\exception\argument( 'args', $args, __METHOD__ );
 
       $id = $args[0];
-      $this->remove_record( $foreign_table_name, $id );
+      $this->remove_record( $subject, $id );
       return;
     }
-    else if( 'get' == $action && is_null( $sub_action ) )
-    { // calling: get_<record>()
-      // make sure this table has the correct foreign key
-      if( !static::column_exists( $foreign_table_name.'_id' ) )
-        throw $exception;
-
-      return $this->get_record( $foreign_table_name );
-    }
-    else if( 'get' == $action && !is_null( $sub_action ) )
-    { // calling one of: get_<record>_list( $modifier = NULL )
-      //                 get_<record>_list_inverted( $modifier = NULL )
-      //                 get_<record>_count( $modifier = NULL )
-      //                 get_<record>_count_inverted( $modifier = NULL )
-      if( 'list' == $sub_action )
+    else if( 'get' == $action )
+    {
+      // get the end of the function name
+      $sub_action = preg_match( $end, $name, $match ) ? substr( $match[0], 1 ) : false;
+      
+      if( !$sub_action )
       {
-        return $this->get_record_list( $foreign_table_name, $modifier, $inverted );
+        // calling: get_<record>()
+        // make sure this table has the correct foreign key
+        if( !static::column_exists( $subject.'_id' ) ) throw $exception;
+        return $this->get_record( $subject );
       }
-      else if( 'count' == $sub_action )
-      {
-        return $this->get_record_count( $foreign_table_name, $modifier, $inverted );
+      else
+      { // calling one of: get_<record>_list( $modifier = NULL )
+        //                 get_<record>_list_inverted( $modifier = NULL )
+        //                 get_<record>_count( $modifier = NULL )
+        //                 get_<record>_count_inverted( $modifier = NULL )
+  
+        // if there is an argument, make sure it is a modifier
+        if( 0 < count( $args ) && 'sabretooth\\database\\modifier' != get_class( $args[0] ) )
+          throw new \sabretooth\exception\argument( 'args', $args, __METHOD );
+        
+        // determine the sub action and whether to invert the result
+        $inverted = false;
+        if( 'list' == $sub_action || 'count' == $sub_action ) {}
+        else if( 'list_inverted' == $sub_action )
+        {
+          $sub_action = 'list';
+          $inverted = true;
+        }
+        else if( 'count_inverted' == $sub_action )
+        {
+          $sub_action = 'count';
+          $inverted = true;
+        }
+        else throw $exception;
+        
+        // execute the function
+        $modifier = 0 == count( $args ) ? NULL : $args[0];
+        if( 'list' == $sub_action )
+        {
+          return $this->get_record_list( $subject, $modifier, $inverted );
+        }
+        else if( 'count' == $sub_action )
+        {
+          return $this->get_record_count( $subject, $modifier, $inverted );
+        }
       }
     }
 
