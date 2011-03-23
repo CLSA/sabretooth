@@ -1,7 +1,6 @@
 <?php
 /**
  * queue_list.class.php
- * TODO: add indivisual site or global selector for admins
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
