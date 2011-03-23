@@ -1093,7 +1093,8 @@ ON participant_primary_location.contact_id = contact.id
 LEFT JOIN participant_last_phone_call
 ON participant.id = participant_last_phone_call.participant_id 
 LEFT JOIN phone_call
-ON participant_last_phone_call.phone_call_id = phone_call.id;
+ON participant_last_phone_call.phone_call_id = phone_call.id
+WHERE participant.status IS NULL;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
