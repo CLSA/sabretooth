@@ -379,7 +379,9 @@ abstract class record extends \sabretooth\base_object
         //                 get_<record>_count_inverted( $modifier = NULL )
   
         // if there is an argument, make sure it is a modifier
-        if( 0 < count( $args ) && 'sabretooth\\database\\modifier' != get_class( $args[0] ) )
+        if( 0 < count( $args ) &&
+            !is_null( $args[0] ) &&
+            'sabretooth\\database\\modifier' != get_class( $args[0] ) )
           throw new \sabretooth\exception\argument( 'args', $args, __METHOD );
         
         // determine the sub action and whether to invert the result
