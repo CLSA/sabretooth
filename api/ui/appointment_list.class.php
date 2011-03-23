@@ -28,8 +28,6 @@ class appointment_list extends base_list_widget
   {
     parent::__construct( 'appointment', $args );
     
-    $session = \sabretooth\session::self();
-
     $this->add_column( 'date', 'Date', true );
     $this->add_column( 'status', 'Status', false );
   }

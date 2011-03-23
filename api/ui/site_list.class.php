@@ -28,8 +28,6 @@ class site_list extends base_list_widget
   {
     parent::__construct( 'site', $args );
     
-    $session = \sabretooth\session::self();
-
     $this->add_column( 'name', 'Name', true );
     $this->add_column( 'users', 'Users', false );
     $this->add_column( 'last', 'Last activity', false );

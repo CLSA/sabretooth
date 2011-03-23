@@ -28,8 +28,6 @@ class survey_list extends base_list_widget
   {
     parent::__construct( 'survey', $args );
     
-    $session = \sabretooth\session::self();
-
     $this->add_column( 'sid', 'Limesurvey ID', false );
     $this->add_column( 'title', 'Title', false );
     $this->add_column( 'language', 'Main Language', false );

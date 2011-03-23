@@ -56,6 +56,8 @@ class shift_add extends base_view
   public function finish()
   {
     parent::finish();
+
+    $session = \sabretooth\session::self();
     
     if( $this->parent )
     {
@@ -71,7 +73,7 @@ class shift_add extends base_view
           $sites[$db_access->site_id] = $db_access->get_site()->name;
 
         $this->set_variable( 'user_id', $this->parent->get_record()->id );
-        $this->set_item( 'site_id', \sabretooth\session::self()->get_site()->id, true, $sites );
+        $this->set_item( 'site_id', $session->get_site()->id, true, $sites );
       }
       else if( 'site' == $this->parent->get_subject() )
       {
@@ -95,7 +97,6 @@ class shift_add extends base_view
     else
     {
       // create site enum array
-      $session = \sabretooth\session::self();
       if( 'supervisor' == $session->get_role()->name )
       {
         $sites = array( $session->get_site()->id => $session->get_site()->name );
@@ -113,7 +114,7 @@ class shift_add extends base_view
         $this->set_variable( 'user_list', $this->user_list->get_variables() );
       }
 
-      $this->set_item( 'site_id', \sabretooth\session::self()->get_site()->id, true, $sites );
+      $this->set_item( 'site_id', $session->get_site()->id, true, $sites );
     }
 
     // set the view's items

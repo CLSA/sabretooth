@@ -32,9 +32,6 @@ abstract class base_record_widget extends widget implements contains_record
   {
     parent::__construct( $subject, $name, $args );
     
-    // determine properties based on the current user's permissions
-    $session = \sabretooth\session::self();
-
     $class_name = '\\sabretooth\\database\\'.$this->get_subject();
     $this->set_record( new $class_name( $this->get_argument( 'id', NULL ) ) );
   }

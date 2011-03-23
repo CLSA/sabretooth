@@ -38,10 +38,11 @@ class self_settings extends widget
   {
     parent::finish();
 
+    $session = \sabretooth\session::self();
     // create and setup the widget
-    $db_user = \sabretooth\session::self()->get_user();
-    $db_site = \sabretooth\session::self()->get_site();
-    $db_role = \sabretooth\session::self()->get_role();
+    $db_user = $session->get_user();
+    $db_site = $session->get_site();
+    $db_role = $session->get_role();
     
     $site_names = array();
     $sites = $db_user->get_site_list();
@@ -61,7 +62,7 @@ class self_settings extends widget
     $this->set_variable( 'user_name', $db_user->name );
     $this->set_variable( 'current_site_name', $db_site->name );
     $this->set_variable( 'current_role_name', $db_role->name );
-    $this->set_variable( 'current_theme_name', \sabretooth\session::self()->get_theme() );
+    $this->set_variable( 'current_theme_name', $session->get_theme() );
     $this->set_variable( 'roles', $role_names );
     $this->set_variable( 'sites', $site_names );
     $this->set_variable( 'themes', $themes );

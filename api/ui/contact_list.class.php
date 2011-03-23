@@ -28,8 +28,6 @@ class contact_list extends base_list_widget
   {
     parent::__construct( 'contact', $args );
     
-    $session = \sabretooth\session::self();
-
     $this->add_column( 'active', 'Active', true );
     $this->add_column( 'rank', 'Rank', true );
     $this->add_column( 'type', 'Type', true );

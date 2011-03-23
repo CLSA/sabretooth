@@ -28,8 +28,6 @@ class availability_list extends base_list_widget
   {
     parent::__construct( 'availability', $args );
     
-    $session = \sabretooth\session::self();
-
     $this->add_column( 'monday', 'Mon', true );
     $this->add_column( 'tuesday', 'Tue', true );
     $this->add_column( 'wednesday', 'Wed', true );

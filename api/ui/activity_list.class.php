@@ -28,8 +28,6 @@ class activity_list extends base_list_widget
   {
     parent::__construct( 'activity', $args );
     
-    $session = \sabretooth\session::self();
-
     $this->add_column( 'user.name', 'User', true );
     $this->add_column( 'site.name', 'Site', true );
     $this->add_column( 'role.name', 'Role', true );
@@ -39,7 +37,7 @@ class activity_list extends base_list_widget
     $this->add_column( 'elapsed_time', 'Elapsed', true );
     $header = sprintf( 'Date (%s)',
                        \sabretooth\util::get_timezone_abbreviation(
-                         $session->get_site()->timezone ) );
+                         \sabretooth\session::self()->get_site()->timezone ) );
     $this->add_column( 'date', $header, true );
   }
 

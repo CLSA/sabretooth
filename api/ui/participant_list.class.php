@@ -28,8 +28,6 @@ class participant_list extends base_list_widget
   {
     parent::__construct( 'participant', $args );
     
-    $session = \sabretooth\session::self();
-
     $this->add_column( 'first_name', 'First Name', true );
     $this->add_column( 'last_name', 'Last Name', true );
     $this->add_column( 'language', 'Language Preference', true );

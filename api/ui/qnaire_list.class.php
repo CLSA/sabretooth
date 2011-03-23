@@ -28,8 +28,6 @@ class qnaire_list extends base_list_widget
   {
     parent::__construct( 'qnaire', $args );
     
-    $session = \sabretooth\session::self();
-
     $this->add_column( 'name', 'Name', true );
     $this->add_column( 'phases', 'Stages', false );
     $this->add_column( 'samples', 'Samples', false );

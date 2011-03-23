@@ -28,8 +28,6 @@ class access_list extends base_list_widget
   {
     parent::__construct( 'access', $args );
     
-    $session = \sabretooth\session::self();
-    
     $this->add_column( 'user.name', 'User', true );
     $this->add_column( 'role.name', 'Role', true );
     $this->add_column( 'site.name', 'Site', true );

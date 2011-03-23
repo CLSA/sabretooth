@@ -28,8 +28,6 @@ class consent_list extends base_list_widget
   {
     parent::__construct( 'consent', $args );
     
-    $session = \sabretooth\session::self();
-
     $this->add_column( 'event', 'Event', true );
     $this->add_column( 'date', 'Date', true );
   }

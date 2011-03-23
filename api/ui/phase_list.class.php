@@ -28,8 +28,6 @@ class phase_list extends base_list_widget
   {
     parent::__construct( 'phase', $args );
     
-    $session = \sabretooth\session::self();
-
     $this->add_column( 'survey', 'Survey', false );
     $this->add_column( 'stage', 'Stage', true );
     $this->add_column( 'repeated', 'Repeated', true );

@@ -28,8 +28,6 @@ class operation_list extends base_list_widget
   {
     parent::__construct( 'operation', $args );
     
-    $session = \sabretooth\session::self();
-
     $this->add_column( 'type', 'type', true );
     $this->add_column( 'subject', 'subject', true );
     $this->add_column( 'name', 'name', true );
