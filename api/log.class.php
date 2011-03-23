@@ -360,14 +360,14 @@ final class log extends singleton
              E_STRICT == $level ||
              E_RECOVERABLE_ERROR == $level )
     {
-      log::warning( $message );
+      log::err( $message );
     }
     else if( E_NOTICE == $level ||
              E_USER_NOTICE == $level ||
              E_DEPRECATED == $level ||
              E_USER_DEPRECATED == $level )
     {
-      log::notice( $message );
+      log::warning( $message );
     }
   
     return false;

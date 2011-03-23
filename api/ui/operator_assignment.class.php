@@ -47,29 +47,28 @@ class operator_assignment extends widget
     { // fill out the participant's details
       $db_participant = $db_assignment->get_interview()->get_participant();
       
-      $name = sprintf( "%s, %s", $db_participant->last_name, $db_participant->first_name );
-      $status = $db_participant->status ? $db_participant->status : 'Normal';
-      $language = 'None';
-      if( 'en' == $db_participant->language ) $language = 'English';
-      else if( 'fr' == $db_participant->language ) $language = 'French';
+      $name = sprintf( $db_participant->first_name.' '.$db_participant->last_name );
 
-      $has_consent = 'No';
+      $language = 'none';
+      if( 'en' == $db_participant->language ) $language = 'english';
+      else if( 'fr' == $db_participant->language ) $language = 'french';
+
+      $consent = 'none';
       $db_consent = $db_participant->get_current_consent();
-      if( !is_null( $db_consent ) )
-      {
-        if( 'verbal accept' == $db_consent->event || 'written accept' == $db_consent->event )
-          $has_consent = 'Yes';
-      }
+      if( !is_null( $db_consent ) ) $consent = $db_consent->event;
       
       $last_call = 'never called';
-      $db_contact = $db_participant->get_last_phone_call();
-      if( !is_null( $db_contact ) ) $last_call = $db_contact->status;
+      $db_phone_call = $db_participant->get_last_phone_call();
+      if( !is_null( $db_phone_call ) )
+        $last_call = sprintf( '%s on %s (%s)',
+                              \sabretooth\util::get_formatted_time( $db_phone_call->start_time ),
+                              \sabretooth\util::get_formatted_date( $db_phone_call->start_time ),
+                              $db_phone_call->status );
 
       $this->set_variable( 'participant_id', $db_participant->id );
       $this->set_variable( 'participant_name', $name );
       $this->set_variable( 'participant_language', $language );
-      $this->set_variable( 'participant_status', $status );
-      $this->set_variable( 'participant_consent', $has_consent );
+      $this->set_variable( 'participant_consent', $consent );
       $this->set_variable( 'participant_last_call', $last_call );
     }
   }

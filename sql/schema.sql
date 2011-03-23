@@ -290,15 +290,13 @@ CREATE  TABLE IF NOT EXISTS `phone_call` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `assignment_id` INT UNSIGNED NOT NULL ,
   `contact_id` INT UNSIGNED NOT NULL ,
-  `status` ENUM('in progress','contacted', 'busy','no answer','machine message','machine no message','fax','disconnected','wrong number','language') NOT NULL DEFAULT 'in progress' ,
+  `appointment_id` INT UNSIGNED NULL DEFAULT NULL ,
   `start_time` TIMESTAMP NOT NULL COMMENT 'The time the call started.' ,
   `end_time` DATETIME NULL DEFAULT NULL COMMENT 'The time the call endede.' ,
-  `phase_id` INT UNSIGNED NOT NULL ,
-  `appointment_id` INT UNSIGNED NULL DEFAULT NULL ,
+  `status` ENUM('contacted', 'busy','no answer','machine message','machine no message','fax','disconnected','wrong number','language') NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_contact_id` (`contact_id` ASC) ,
   INDEX `fk_assignment_id` (`assignment_id` ASC) ,
-  INDEX `fk_phase_id` (`phase_id` ASC) ,
   INDEX `fk_appointment_id` (`appointment_id` ASC) ,
   CONSTRAINT `fk_phone_call_contact`
     FOREIGN KEY (`contact_id` )
@@ -308,11 +306,6 @@ CREATE  TABLE IF NOT EXISTS `phone_call` (
   CONSTRAINT `fk_phone_call_assignment`
     FOREIGN KEY (`assignment_id` )
     REFERENCES `assignment` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_phone_call_phase`
-    FOREIGN KEY (`phase_id` )
-    REFERENCES `phase` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_phone_call_appointment`

@@ -306,14 +306,21 @@ final class session extends singleton
     return $theme;
   }
   
-  // TODO: document
+  /**
+   * Get the user's current assignment.
+   * Should only be called if the user is an operator, otherwise an exception will be thrown.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\assignment
+   * @access public
+   */
   public function get_current_assignment()
   {
     // make sure the user is an operator
     if( 'operator' != $this->get_role()->name )
       throw new exception\runtime( 'Tried to get assignment for non-operator.', __METHOD__ );
     
-    // query for assignments which do not have an end time
+    // query for assignments which do not have a end time
     $modifier = new database\modifier();
     $modifier->where( 'end_time', '=', NULL );
     $assignment_list = $this->get_user()->get_assignment_list( $modifier );
@@ -326,6 +333,35 @@ final class session extends singleton
                  $this->get_user()->name ) );
 
     return 1 == count( $assignment_list ) ? current( $assignment_list ) : NULL;
+  }
+
+  /**
+   * Get the user's current phone call.
+   * Should only be called if the user is an operator, otherwise an exception will be thrown.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\phone_call
+   * @access public
+   */
+  public function get_current_phone_call()
+  {
+    // make sure the user is an operator
+    if( 'operator' != $this->get_role()->name )
+      throw new exception\runtime( 'Tried to get phone call for non-operator.', __METHOD__ );
+    
+    // query for phone calls which do not have a end time
+    $modifier = new database\modifier();
+    $modifier->where( 'end_time', '=', NULL );
+    $phone_call_list = $this->get_user()->get_phone_call_list( $modifier );
+
+    // only one phone call should ever be open at a time, warn if this isn't the case
+    if( 1 < count( $phone_call_list ) )
+      log::crit(
+        sprintf( 'Current operator (id: %d, name: %s), has more than one active phone call!',
+                 $this->get_user()->id,
+                 $this->get_user()->name ) );
+
+    return 1 == count( $phone_call_list ) ? current( $phone_call_list ) : NULL;
   }
 
   /**

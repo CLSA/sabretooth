@@ -54,7 +54,7 @@ class self_menu extends widget
     $modifier->where( 'operation.name', '=', 'list' );
     $widgets = $session->get_role()->get_operation_list( $modifier );
     
-    $exclude = array( 'appointment', 'availability', 'consent', 'contact', 'phase' );
+    $exclude = array( 'appointment', 'availability', 'consent', 'contact', 'phase', 'phone_call' );
 
     foreach( $widgets as $db_widget )
     {

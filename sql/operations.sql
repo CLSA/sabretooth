@@ -40,6 +40,8 @@ VALUES( "widget", "appointment", "list", true, "Lists a participant's appointmen
 
 -- assignment
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "assignment", "view", true, "View assignment details." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "assignment", "list", true, "Lists assignments." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "assignment", "begin", true, "Requests a new assignment." );
@@ -145,6 +147,14 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "phase", "view", true, "View the details of a questionnaire's phases." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "phase", "list", true, "Lists a questionnaire's phases." );
+
+-- phone call
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "phone_call", "list", true, "Lists phone calls." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "phone_call", "begin", true, "Starts a new phone call." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "phone_call", "end", true, "Ends the current phone call." );
 
 -- qnaire
 INSERT INTO operation( type, subject, name, restricted, description )
