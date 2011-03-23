@@ -1,6 +1,6 @@
 <?php
 /**
- * operator_view_assignment.class.php
+ * operator_assignment.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,11 +10,11 @@
 namespace sabretooth\ui;
 
 /**
- * widget operator view_assignment
+ * widget operator assignment
  * 
  * @package sabretooth\ui
  */
-class operator_view_assignment extends widget
+class operator_assignment extends widget
 {
   /**
    * Constructor
@@ -26,7 +26,7 @@ class operator_view_assignment extends widget
    */
   public function __construct( $args )
   {
-    parent::__construct( 'operator', 'view_assignment', $args );
+    parent::__construct( 'operator', 'assignment', $args );
     $this->set_heading( 'Current Assignment' );
   }
 
@@ -40,25 +40,12 @@ class operator_view_assignment extends widget
   {
     parent::finish();
 
-    
     // see if this user has an open assignment
-    $session = \sabretooth\session::self();
-    $modifier = new \sabretooth\database\modifier();
-    $modifier->where( 'end_time', '=', NULL );
-    $assignment_list = $session->get_user()->get_assignment_list( $modifier );
+    $db_assignment = \sabretooth\session::self()->get_current_assignment();
 
-    // sanity check
-    if( 1 < count( $assignment_list ) )
-      \sabretooth\log::crit(
-        sprintf( 'Current operator (id: %d, name: %s), has more than one active assignment!',
-                 $session->get_user()->id,
-                 $session->get_user()->name ) );
-    
-    if( 1 == count( $assignment_list ) )
-    {
-      $db_assignment = current( $assignment_list );
-      $db_participant = new \sabretooth\database\participant(
-        $db_assignment->get_interview()->participant_id );
+    if( !is_null( $db_assignment ) )
+    { // fill out the participant's details
+      $db_participant = $db_assignment->get_interview()->get_participant();
       
       $name = sprintf( "%s, %s", $db_participant->last_name, $db_participant->first_name );
       $status = $db_participant->status ? $db_participant->status : 'Normal';

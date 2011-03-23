@@ -1,6 +1,6 @@
 <?php
 /**
- * operator_new_assignment.class.php
+ * assignment_begin.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,12 +10,12 @@
 namespace sabretooth\ui;
 
 /**
- * action operator new_assignment
+ * action assignment begin
  *
- * Assigns a participant to an operator.
+ * Assigns a participant to an assignment.
  * @package sabretooth\ui
  */
-class operator_new_assignment extends action
+class assignment_begin extends action
 {
   /**
    * Constructor.
@@ -25,7 +25,7 @@ class operator_new_assignment extends action
    */
   public function __construct( $args )
   {
-    parent::__construct( 'operator', 'new_assignment', $args );
+    parent::__construct( 'assignment', 'begin', $args );
   }
 
   /**
@@ -88,6 +88,7 @@ class operator_new_assignment extends action
     // create an assignment for this user
     $db_assignment = new \sabretooth\database\assignment();
     $db_assignment->user_id = $session->get_user()->id;
+    $db_assignment->site_id = $session->get_site()->id;
     $db_assignment->interview_id = $db_interview->id;
     $db_assignment->queue_id = $queue_id;
     $db_assignment->save();

@@ -235,7 +235,7 @@ final class session extends singleton
     }
     else if( !$this->user->active )
     {
-      throw new \sabretooth\exception\notice(
+      throw new exception\notice(
         'Your account has been deactivated.<br>'.
         'Please contact a supervisor to regain access to the system.', __METHOD__ );
     }
@@ -257,7 +257,7 @@ final class session extends singleton
       {
         $db_site_list = $this->user->get_site_list();
         if( 0 == count( $db_site_list ) )
-          throw new \sabretooth\exception\notice(
+          throw new exception\notice(
             'Your account does not have access to any site.<br>'.
             'Please contact a supervisor to be granted access to a site.', __METHOD__ );
 
@@ -306,6 +306,28 @@ final class session extends singleton
     return $theme;
   }
   
+  // TODO: document
+  public function get_current_assignment()
+  {
+    // make sure the user is an operator
+    if( 'operator' != $this->get_role()->name )
+      throw new exception\runtime( 'Tried to get assignment for non-operator.', __METHOD__ );
+    
+    // query for assignments which do not have an end time
+    $modifier = new database\modifier();
+    $modifier->where( 'end_time', '=', NULL );
+    $assignment_list = $this->get_user()->get_assignment_list( $modifier );
+
+    // only one assignment should ever be open at a time, warn if this isn't the case
+    if( 1 < count( $assignment_list ) )
+      log::crit(
+        sprintf( 'Current operator (id: %d, name: %s), has more than one active assignment!',
+                 $this->get_user()->id,
+                 $this->get_user()->name ) );
+
+    return 1 == count( $assignment_list ) ? current( $assignment_list ) : NULL;
+  }
+
   /**
    * Add an operation to this user's activity log.
    * 
@@ -558,9 +580,16 @@ final class session extends singleton
    * @return boolean
    * @access public
    */
-  public function is_survey_enabled()
+  public function get_survey_url()
   {
-    return $this->survey_enabled;
+    if( !$this->survey_enabled ) return false;
+
+    $db_assignment = $this->get_current_assignment();
+    if( is_null( $db_assignment ) ) return false;
+
+    return LIMESURVEY_URL.sprintf( '/index.php?sid=%s&newtest=Y&lang=%s',
+                                   $db_assignment->get_interview()->get_phase()->sid,
+                                   $db_assignment->get_interview()->get_participant()->language );
   }
 
   /**
@@ -571,6 +600,11 @@ final class session extends singleton
    */
   public function enable_survey()
   {
+    // make sure there is an open assignment
+    if( is_null( $this->get_current_assignment() ) )
+      throw new exception\runtime(
+        'The survey cannot be enabled while there is no active assignment.', __METHOD__ );
+
     $this->survey_enabled = true;
     $_SESSION['survey_enabled'] = $this->survey_enabled;
   }

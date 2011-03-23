@@ -39,13 +39,13 @@ try
   $twig_template = $twig->loadTemplate( 'main.twig' );
   
   // Since there is no main widget we need set up the template variables here
-  $theme = session::self()->get_theme();
-  $version = session::self()->get_setting( 'version', 'JQUERY_UI' );
-  $survey_url = session::self()->is_survey_enabled() ? LIMESURVEY_URL : false;
+  $session = session::self();
+  $theme = $session->get_theme();
+  $version = $session->get_setting( 'version', 'JQUERY_UI' );
   $variables = array( 'jquery_ui_css_path' => '/'.$theme.'/jquery-ui-'.$version.'.custom.css',
                       'extruder_flap_color' => util::get_flap_css_color( $theme ),
                       'extruder_flap_background' => util::get_flap_css_background( $theme ),
-                      'survey_url' => $survey_url );
+                      'survey_url' => $session->get_survey_url() );
   
   $result_array['output'] = $twig_template->render( $variables );
 }

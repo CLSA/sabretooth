@@ -222,14 +222,16 @@ DROP TABLE IF EXISTS `assignment` ;
 CREATE  TABLE IF NOT EXISTS `assignment` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `user_id` INT UNSIGNED NOT NULL ,
+  `site_id` INT UNSIGNED NOT NULL COMMENT 'The site from which the user was assigned.' ,
   `interview_id` INT UNSIGNED NOT NULL ,
-  `queue_id` INT UNSIGNED NOT NULL COMMENT 'What queue did the interview get assigned from?' ,
+  `queue_id` INT UNSIGNED NOT NULL COMMENT 'The queue that the assignment came from.' ,
   `start_time` TIMESTAMP NOT NULL ,
   `end_time` DATETIME NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_user_id` (`user_id` ASC) ,
   INDEX `fk_interview_id` (`interview_id` ASC) ,
   INDEX `fk_queue_id` (`queue_id` ASC) ,
+  INDEX `fk_site_id` (`site_id` ASC) ,
   CONSTRAINT `fk_assignment_user`
     FOREIGN KEY (`user_id` )
     REFERENCES `user` (`id` )
@@ -243,6 +245,11 @@ CREATE  TABLE IF NOT EXISTS `assignment` (
   CONSTRAINT `fk_assignment_queue`
     FOREIGN KEY (`queue_id` )
     REFERENCES `queue` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_assignment_site`
+    FOREIGN KEY (`site_id` )
+    REFERENCES `site` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

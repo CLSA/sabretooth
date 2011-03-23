@@ -134,4 +134,30 @@ SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Drake' ),
     start_time = '19:00:00',
     end_time = '22:00:00';
 
+INSERT INTO sample( name, description ) VALUES ( 'First Sample', 'This is a test sample.' );
+INSERT INTO sample( name, description ) VALUES ( 'Second Sample', 'This is another test sample.' );
+
+INSERT INTO sample_has_participant
+SET sample_id = ( SELECT id FROM sample WHERE name = 'First Sample' ),
+    participant_id = ( SELECT id FROM participant WHERE first_name = 'Bob' );
+INSERT INTO sample_has_participant
+SET sample_id = ( SELECT id FROM sample WHERE name = 'First Sample' ),
+    participant_id = ( SELECT id FROM participant WHERE first_name = 'Dan' );
+INSERT INTO sample_has_participant
+SET sample_id = ( SELECT id FROM sample WHERE name = 'First Sample' ),
+    participant_id = ( SELECT id FROM participant WHERE first_name = 'Frank' );
+
+INSERT INTO sample_has_participant
+SET sample_id = ( SELECT id FROM sample WHERE name = 'Second Sample' ),
+    participant_id = ( SELECT id FROM participant WHERE first_name = 'Adam' );
+INSERT INTO sample_has_participant
+SET sample_id = ( SELECT id FROM sample WHERE name = 'Second Sample' ),
+    participant_id = ( SELECT id FROM participant WHERE first_name = 'Carl' );
+INSERT INTO sample_has_participant
+SET sample_id = ( SELECT id FROM sample WHERE name = 'Second Sample' ),
+    participant_id = ( SELECT id FROM participant WHERE first_name = 'Ed' );
+INSERT INTO sample_has_participant
+SET sample_id = ( SELECT id FROM sample WHERE name = 'Second Sample' ),
+    participant_id = ( SELECT id FROM participant WHERE first_name = 'George' );
+
 COMMIT;

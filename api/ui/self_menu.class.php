@@ -45,7 +45,7 @@ class self_menu extends widget
     if( 'operator' == $session->get_role()->name )
     {
       $items[] = array( 'heading' => 'Assignment',
-                        'widget' => 'operator_view_assignment' );
+                        'widget' => 'operator_assignment' );
     }
 
     // get all 'list' widgets that the user has access to

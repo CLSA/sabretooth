@@ -148,7 +148,10 @@ td.content {
 }
 
 .spacer {
-  margin: 16px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  margin-left: 4px;
+  margin-right: 4px;
 }
 
 .padded {

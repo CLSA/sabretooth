@@ -1,6 +1,6 @@
 <?php
 /**
- * survey_disable.class.php
+ * assignment_end.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,12 +10,12 @@
 namespace sabretooth\ui;
 
 /**
- * action survey disable
- * 
- * Disables the survey panel.
+ * action assignment end
+ *
+ * Assigns a participant to an assignment.
  * @package sabretooth\ui
  */
-class survey_disable extends action
+class assignment_end extends action
 {
   /**
    * Constructor.
@@ -25,9 +25,9 @@ class survey_disable extends action
    */
   public function __construct( $args )
   {
-    parent::__construct( 'survey', 'disable', $args );
+    parent::__construct( 'assignment', 'end', $args );
   }
-  
+
   /**
    * Executes the action.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -35,7 +35,12 @@ class survey_disable extends action
    */
   public function execute()
   {
-    \sabretooth\session::self()->disable_survey();
+    $db_assignment = \sabretooth\session::self()->get_current_assignment();
+    if( !is_null( $db_assignment ) )
+    {
+      $db_assignment->end_time = date( 'Y-m-d H:i:s' );
+      $db_assignment->save();
+    }
   }
 }
 ?>

@@ -38,6 +38,14 @@ VALUES( "widget", "appointment", "view", true, "View the details of a participan
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "appointment", "list", true, "Lists a participant's appointments." );
 
+-- assignment
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "assignment", "list", true, "Lists assignments." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "assignment", "begin", true, "Requests a new assignment." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "assignment", "end", true, "Ends the current assignment." );
+
 -- availability
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "availability", "delete", true, "Removes a participant's availability entry from the system." );
@@ -86,9 +94,7 @@ VALUES( "widget", "operation", "list", true, "List operations in the system." );
 
 -- operator
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "operator", "view_assignment", true, "Displays the operator's assignment manager." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "operator", "new_assignment", true, "Requests a new assignment for the operator." );
+VALUES( "widget", "operator", "assignment", true, "Displays the operator's assignment manager." );
 
 -- participant
 INSERT INTO operation( type, subject, name, restricted, description )

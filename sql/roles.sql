@@ -131,6 +131,12 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "action" AND subject = "site" AND name = "delete_access" );
 
+-- assignment
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "assignment" AND name = "list" );
+
 -- participant
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
@@ -703,6 +709,16 @@ SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "widget" AND subject = "shift" AND name = "list" );
 
+-- assignment
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "action" AND subject = "assignment" AND name = "begin" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "action" AND subject = "assignment" AND name = "end" );
+
 -- participant
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
@@ -896,6 +912,12 @@ INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "action" AND subject = "user" AND name = "delete_access" );
+
+-- assignment
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "assignment" AND name = "list" );
 
 -- shift
 INSERT INTO role_has_operation

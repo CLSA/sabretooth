@@ -236,6 +236,24 @@ final class util
   }
 
   /**
+   * Returns the date and time as a user-friendly string.
+   * 
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @param string $date A date string in the format accepted by the DateTime constructor.
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function get_formatted_datetime( $datetime, $include_seconds = true )
+  {
+    if( is_null( $datetime ) || !is_string( $datetime ) ) return 'unknown';
+
+    $user_tz = \sabretooth\session::self()->get_site()->timezone;
+    $time_obj = new \DateTime( $datetime, new \DateTimeZone( $user_tz ) );
+    return $time_obj->format( 'Y-m-d '.( $include_seconds ? 'g:i:s A, T' : 'g:i A, T' ) );
+  }
+
+  /**
    * Returns the date as a user-friendly string.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
