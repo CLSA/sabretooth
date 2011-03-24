@@ -85,7 +85,7 @@ abstract class base_access extends record
     }
 
     // if we get here then the regular parent method is fine
-    return $count ? parent::count( $modifier ) : parent::select( $modifier );
+    return parent::select( $modifier, $count );
   }
 
   /**
