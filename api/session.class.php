@@ -349,10 +349,14 @@ final class session extends singleton
     if( 'operator' != $this->get_role()->name )
       throw new exception\runtime( 'Tried to get phone call for non-operator.', __METHOD__ );
     
+    // without an assignment there can be no current call
+    $db_assignment = $this->get_current_assignment();
+    if( is_null( $db_assignment) ) return NULL;
+
     // query for phone calls which do not have a end time
     $modifier = new database\modifier();
     $modifier->where( 'end_time', '=', NULL );
-    $phone_call_list = $this->get_user()->get_phone_call_list( $modifier );
+    $phone_call_list = $db_assignment->get_phone_call_list( $modifier );
 
     // only one phone call should ever be open at a time, warn if this isn't the case
     if( 1 < count( $phone_call_list ) )

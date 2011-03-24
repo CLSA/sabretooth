@@ -67,12 +67,12 @@ class assignment_view extends base_view
     $this->set_item( 'user', $this->get_record()->get_user()->name );
     $this->set_item( 'site', $this->get_record()->get_site()->name );
     $this->set_item( 'participant', $participant );
-    $this->set_item( 'queue', $this->get_queue()->name );
+    $this->set_item( 'queue', $this->get_record()->get_queue()->name );
     $this->set_item( 'date',
       \sabretooth\util::get_formatted_date( $this->get_record()->start_time ) );
     $this->set_item( 'start_time',
       \sabretooth\util::get_formatted_time( $this->get_record()->start_time ) );
-    $this->set_item( 'end_time',
+    $this->set_item( 'end_time', is_null( $this->get_record()->end_time ) ? 'in progress' :
       \sabretooth\util::get_formatted_time( $this->get_record()->end_time ) );
 
     $this->finish_setting_items();

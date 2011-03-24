@@ -45,7 +45,7 @@ class phone_call_end extends action
       if( !is_null( $db_phone_call ) )
       {
         $db_phone_call->end_time = date( 'Y-m-d H:i:s' );
-        $db_phone_call->status = $this->get_argument( 'status', NULL );
+        $db_phone_call->status = $this->get_argument( 'status' );
         $db_phone_call->save();
       }
     }

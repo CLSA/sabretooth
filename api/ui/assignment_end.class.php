@@ -35,9 +35,15 @@ class assignment_end extends action
    */
   public function execute()
   {
-    $db_assignment = \sabretooth\session::self()->get_current_assignment();
+    $session = \sabretooth\session::self();
+    $db_assignment = $session->get_current_assignment();
     if( !is_null( $db_assignment ) )
     {
+      // make sure the operator isn't on call
+      if( !is_null( $session->get_current_phone_call() ) )
+        throw new \sabretooth\exception\notice(
+          'An assignment cannot be ended while in a call.', __METHOD__ );
+
       $db_assignment->end_time = date( 'Y-m-d H:i:s' );
       $db_assignment->save();
     }

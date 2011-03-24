@@ -38,7 +38,7 @@ class phone_call_begin extends action
     $session = \sabretooth\session::self();
     $is_operator = 'operator' == $session->get_role()->name;
     
-    $db_contact = new \sabretooth\database\phone_call( $this->get_argument( 'contact_id' ) );
+    $db_contact = new \sabretooth\database\contact( $this->get_argument( 'contact_id' ) );
     $appointment_id = $this->get_argument( 'appointment_id', NULL );
     $db_assignment = NULL;
 

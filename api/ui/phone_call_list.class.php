@@ -45,20 +45,20 @@ class phone_call_list extends base_list_widget
   {
     parent::finish();
     
-    $start_time = \sabretooth\util::get_formatted_datetime( $record->start_time );
-    $end_time = $record->end_time
-              ? \sabretooth\util::get_formatted_time( $record->end_time )
-              : '(in progress)';
-
     foreach( $this->get_record_list() as $record )
     {
+      $start_time = \sabretooth\util::get_formatted_datetime( $record->start_time );
+      $end_time = $record->end_time
+                ? \sabretooth\util::get_formatted_time( $record->end_time )
+                : '(in progress)';
+
       // assemble the row for this record
       $this->add_row( $record->id,
         array( 'contact.type' => $record->get_contact()->type,
                'appointment_id' => $record->appointment_id ? 'Yes' : 'No',
                'start_time' => $start_time,
                'end_time' => $end_time,
-               'status' => $record->status ) );
+               'status' => $record->status ? $record->status : 'none' ) );
     }
 
     $this->finish_setting_rows();

@@ -4,14 +4,21 @@
 <script type="text/javascript">
 $( function() {
   {% if participant_id|default(false) %}
+  // called when the dial_contact_widget's call button is pushed
+  $( "#operator_dial__call" ).click( function() {
+    {% if on_call %}
 
-  // start call button
-  $( "#{{ widget.full }}__start_call" ).click( function() {
-    if( send_action( "phone_call", "begin" ) )
-    {
-      send_action( "survey", "enable" );
-      window.location.reload();
-    }
+    if( 'End Call' == $(this).text() )
+      if( send_action( "survey", "disable" ) )
+        window.location.reload();
+    
+    {% else %}
+    
+    if( 'Call' == $(this).text() )
+      if( send_action( "survey", "enable" ) )
+        window.location.reload();
+    
+    {% endif %}
   } );
 
   // view participant button
@@ -67,11 +74,19 @@ $( function() {
       </tr>
     </table>
     
-    <div class="spacer">
-      <button style="width: 180px;" id="{{ widget.full }}__start_call">Start Call</button>
-      <button style="width: 180px;" id="{{ widget.full }}__view_participant">View Details</button>
-      <button style="width: 180px;" id="{{ widget.full }}__end_assignment">End Assignment</button>
-    </div>
+    <table class="spacer">
+      <tr>
+        <td align="left">
+          <button style="width: 180px;" id="{{ widget.full }}__view_participant">View Details</button>
+          <button style="width: 180px;" id="{{ widget.full }}__end_assignment"
+                  {{ on_call or 0 == assignment_calls ? "disabled" : "" }}>End Assignment</button>
+        </td>
+        <td align="right">
+          {% from 'macros.twig' import dial_contact_widget %}
+          {{ dial_contact_widget( "operator_dial", contacts|default(false), statuses|default(false), on_call ) }}
+        </td>
+      </tr>
+    </table>
     
   {% else %}
     

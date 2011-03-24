@@ -10,6 +10,6 @@
 
   {{ parent() }}
   {% from 'macros.twig' import include_list %}
-  {{ include_list( 'phone_call', participant_list|default(false), true ) }}
+  {{ include_list( 'phone_call', phone_call_list|default(false), true ) }}
 
 {% endblock %}
