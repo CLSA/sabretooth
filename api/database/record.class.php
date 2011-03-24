@@ -41,10 +41,21 @@ abstract class record extends \sabretooth\base_object
     // set the default value for all columns
     foreach( $columns as $name )
     {
+      // If the default is CURRENT_TIMESTAMP, or if there is a DATETIME column by the name
+      // 'start_time' then make the default the current date and time.
+      // Because of mysql does not allow setting the default value for a DATETIME column to be
+      // NOW() we need to set the default here manually
       $default = static::db()->get_column_default( static::get_table_name(), $name );
-      $this->column_values[$name] = 'CURRENT_TIMESTAMP' == $default
-                                  ? date( 'Y-m-d H:i:s' )
-                                  : $default;
+      if( 'CURRENT_TIMESTAMP' == $default || 
+          ( 'start_time' == $name &&
+            'datetime' == static::db()->get_column_data_type( static::get_table_name(), $name ) ) )
+      {
+        $this->column_values[$name] = date( 'Y-m-d H:i:s' );
+      }
+      else
+      {
+        $this->column_values[$name] = $default;
+      }
     }
     
     if( NULL != $id )

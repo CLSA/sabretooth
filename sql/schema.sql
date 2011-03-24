@@ -225,7 +225,7 @@ CREATE  TABLE IF NOT EXISTS `assignment` (
   `site_id` INT UNSIGNED NOT NULL COMMENT 'The site from which the user was assigned.' ,
   `interview_id` INT UNSIGNED NOT NULL ,
   `queue_id` INT UNSIGNED NOT NULL COMMENT 'The queue that the assignment came from.' ,
-  `start_time` TIMESTAMP NOT NULL ,
+  `start_time` DATETIME NOT NULL ,
   `end_time` DATETIME NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_user_id` (`user_id` ASC) ,
@@ -291,7 +291,7 @@ CREATE  TABLE IF NOT EXISTS `phone_call` (
   `assignment_id` INT UNSIGNED NOT NULL ,
   `contact_id` INT UNSIGNED NOT NULL ,
   `appointment_id` INT UNSIGNED NULL DEFAULT NULL ,
-  `start_time` TIMESTAMP NOT NULL COMMENT 'The time the call started.' ,
+  `start_time` DATETIME NOT NULL COMMENT 'The time the call started.' ,
   `end_time` DATETIME NULL DEFAULT NULL COMMENT 'The time the call endede.' ,
   `status` ENUM('contacted', 'busy','no answer','machine message','machine no message','fax','disconnected','wrong number','language') NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
@@ -835,6 +835,7 @@ AND phone_call_1.start_time = (
   FROM phone_call AS phone_call_2, contact AS contact_2
   WHERE contact_2.id = phone_call_2.contact_id
   AND contact_1.participant_id = contact_2.participant_id
+  AND phone_call_2.end_time IS NOT NULL
   GROUP BY contact_2.participant_id );
 
 -- -----------------------------------------------------
