@@ -59,12 +59,14 @@ class operator_assignment extends widget
       $db_consent = $db_participant->get_current_consent();
       if( !is_null( $db_consent ) ) $consent = $db_consent->event;
       
+      $previous_call_list = array();
       $db_last_assignment = $db_participant->get_last_assignment();
-      foreach( $db_last_assignment->get_phone_call_list() as $db_phone_call )
-        $previous_call_list[] = sprintf( '%s on %s (%s)',
-          \sabretooth\util::get_formatted_time( $db_phone_call->start_time ),
-          \sabretooth\util::get_formatted_date( $db_phone_call->start_time ),
-          $db_phone_call->status ? $db_phone_call->status : 'unknown' );
+      if( !is_null( $db_last_assignment ) )
+        foreach( $db_last_assignment->get_phone_call_list() as $db_phone_call )
+          $previous_call_list[] = sprintf( '%s on %s (%s)',
+            \sabretooth\util::get_formatted_time( $db_phone_call->start_time ),
+            \sabretooth\util::get_formatted_date( $db_phone_call->start_time ),
+            $db_phone_call->status ? $db_phone_call->status : 'unknown' );
 
       $modifier = new \sabretooth\database\modifier();
       $modifier->where( 'active', '=', true );

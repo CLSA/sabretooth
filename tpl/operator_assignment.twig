@@ -74,9 +74,7 @@ $( function() {
     {% if 0 == previous_call_list|count %}
           new participant (never assigned)
     {% else %}
-      {% for call as previous_call_list %}
-          {{ call }} <br />
-      {% endfor %}
+      {% for call in previous_call_list %}{{ call }} <br />{% endfor %}
     {% endif %}
         </td>
       </tr>
@@ -85,13 +83,18 @@ $( function() {
     <table class="spacer">
       <tr>
         <td align="left">
-          <button style="width: 180px;" id="{{ widget.full }}__view_participant">View Details</button>
-          <button style="width: 180px;" id="{{ widget.full }}__end_assignment"
+          <button style="width: 180px;"
+                  id="{{ widget.full }}__view_participant">View Details</button>
+          <button style="width: 180px;"
+                  id="{{ widget.full }}__end_assignment"
                   {{ on_call or 0 == current_calls ? "disabled" : "" }}>End Assignment</button>
         </td>
         <td align="right">
           {% from 'macros.twig' import dial_contact_widget %}
-          {{ dial_contact_widget( "operator_dial", contacts|default(false), statuses|default(false), on_call ) }}
+          {{ dial_contact_widget( "operator_dial",
+                                  contacts|default(false),
+                                  statuses|default(false),
+                                  on_call ) }}
         </td>
       </tr>
     </table>

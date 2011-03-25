@@ -726,7 +726,7 @@ abstract class record extends \sabretooth\base_object
       $joining_table_name = static::get_joining_table_name( $record_type );
   
       $modifier = new modifier();
-      $modifier->where( static::get_primary_key_name(), '=', $primary_key_value );
+      $modifier->where( static::get_table_name().'_id', '=', $primary_key_value );
       $modifier->where( $record_type.'_id', '=', $id );
   
       static::db()->execute(

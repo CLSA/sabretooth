@@ -105,9 +105,16 @@
 {% block record_items %}
   <table>
   {% for item_id, entry in item %}
+    
     {% if 'hidden' != entry.type %}
       {# make null entries an empty string #}
       {% set entry_value = entry.value is defined ? entry.value : "" %}
+      {% if 'enum' == entry.type %}
+        {% set enum_display_value = '' == entry_value
+                                  ? entry.enum['NULL']
+                                  : entry.enum[entry_value] %}
+      {% endif %}
+
       <tr>
         <td class="heading">
           <span class="title">{{ entry.heading }}:</span>
@@ -115,9 +122,13 @@
         <td class="content">
 
       {% if 'constant' == entry.type or not editable %}
-    
+        
+        {% if 'enum' == entry.type %}
+        <div id="{{ widget.full }}__{{ item_id }}" class="padded">{{ enum_display_value }}</div>
+        {% else %}
         <div id="{{ widget.full }}__{{ item_id }}" class="padded">{{ entry_value }}</div>
-    
+        {% endif %}
+
       {% elseif 'text' == entry.type %}
     
         <script type="text/javascript">
@@ -310,16 +321,11 @@
 
         {% elseif 'enum' == entry.type %}
           
-          {% set entry_display_value = '' == entry_value ? entry.enum['NULL'] : entry.enum[entry_value] %}
           {% if 1 == entry.enum|count %}
-
-            <div id="{{ widget.full }}__{{ item_id }}" class="padded">{{ entry_display_value }}</div>
-
+            <div id="{{ widget.full }}__{{ item_id }}" class="padded">{{ enum_display_value }}</div>
           {% else %}
-
             <div id="{{ widget.full }}__{{ item_id }}"
-                 class="mutable padded jeditable_{{ item_id }}">{{ entry_display_value }}</div>
-
+                 class="mutable padded jeditable_{{ item_id }}">{{ enum_display_value }}</div>
           {% endif %}
 
         {% else %}

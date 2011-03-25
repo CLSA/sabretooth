@@ -9,6 +9,9 @@
 
   {% block record_javascript %}{% endblock %}
   
+  {% block pre_record %}
+  {% endblock pre_record %}
+
   {% block record %}
     <div class="ui-widget ui-widget-content app-widget-content">
     
@@ -24,5 +27,8 @@
 
     </div>
   {% endblock record %}
+
+  {% block post_record %}
+  {% endblock post_record %}
 
 {% endblock widget %}
