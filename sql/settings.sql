@@ -41,6 +41,10 @@ VALUES( "queue state", "machine no message", "true",
 "Whether to select items from the machine no message queue when a new assignment is requested." );
 
 INSERT INTO setting( category, name, value, description )
+VALUES( "queue state", "general available", "true",
+"Whether to select items from the general-available queue when a new assignment is requested." );
+
+INSERT INTO setting( category, name, value, description )
 VALUES( "queue state", "general", "true",
 "Whether to select items from the general queue when a new assignment is requested." );
 

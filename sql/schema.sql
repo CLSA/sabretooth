@@ -789,12 +789,17 @@ CREATE TABLE IF NOT EXISTS `queue_machine_no_message` (`id` INT);
 -- -----------------------------------------------------
 -- Placeholder table for view `participant_for_queue`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT, `province_id` INT, `last_assignment_id` INT);
+CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT, `province_id` INT, `last_assignment_id` INT, `last_phone_call_id` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `queue_general_available`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `queue_general_available` (`id` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `assignment_last_phone_call`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `assignment_last_phone_call` (`assignment_id` INT, `phone_call_id` INT);
 
 -- -----------------------------------------------------
 -- View `participant_primary_location`
@@ -922,7 +927,7 @@ AND sample_has_participant.participant_id = participant.id
 AND participant.last_assignment_id = assignment.id
 AND assignment.interview_id = interview.id
 AND interview.completed = false
-AND assignment.id = phone_call.assignment_id
+AND participant.last_phone_call_id = phone_call.id
 AND phone_call.status = "fax"
 AND NOW() >= phone_call.end_time + INTERVAL (
   SELECT value
@@ -944,7 +949,7 @@ AND sample_has_participant.participant_id = participant.id
 AND participant.last_assignment_id = assignment.id
 AND assignment.interview_id = interview.id
 AND interview.completed = false
-AND assignment.id = phone_call.assignment_id
+AND participant.last_phone_call_id = phone_call.id
 AND phone_call.status = "machine message"
 AND NOW() >= phone_call.end_time + INTERVAL (
   SELECT value
@@ -966,7 +971,7 @@ AND sample_has_participant.participant_id = participant.id
 AND participant.last_assignment_id = assignment.id
 AND assignment.interview_id = interview.id
 AND interview.completed = false
-AND assignment.id = phone_call.assignment_id
+AND participant.last_phone_call_id = phone_call.id
 AND phone_call.status = "no answer"
 AND NOW() >= phone_call.end_time + INTERVAL (
   SELECT value
@@ -988,7 +993,7 @@ AND sample_has_participant.participant_id = participant.id
 AND participant.last_assignment_id = assignment.id
 AND assignment.interview_id = interview.id
 AND interview.completed = false
-AND assignment.id = phone_call.assignment_id
+AND participant.last_phone_call_id = phone_call.id
 AND phone_call.status = "busy"
 AND NOW() >= phone_call.end_time + INTERVAL (
   SELECT value
@@ -1088,7 +1093,7 @@ AND sample_has_participant.participant_id = participant.id
 AND participant.last_assignment_id = assignment.id
 AND assignment.interview_id = interview.id
 AND interview.completed = false
-AND assignment.id = phone_call.assignment_id
+AND participant.last_phone_call_id = phone_call.id
 AND phone_call.status = "machine no message"
 AND NOW() >= phone_call.end_time + INTERVAL (
   SELECT value
@@ -1102,7 +1107,7 @@ AND NOW() >= phone_call.end_time + INTERVAL (
 DROP VIEW IF EXISTS `participant_for_queue` ;
 DROP TABLE IF EXISTS `participant_for_queue`;
 CREATE  OR REPLACE VIEW `participant_for_queue` AS
-SELECT participant.*, contact.province_id, participant_last_assignment.assignment_id AS last_assignment_id
+SELECT participant.*, contact.province_id, participant_last_assignment.assignment_id AS last_assignment_id, assignment_last_phone_call.phone_call_id AS last_phone_call_id
 FROM participant
 LEFT JOIN participant_primary_location
 ON participant.id = participant_primary_location.participant_id 
@@ -1110,6 +1115,8 @@ LEFT JOIN contact
 ON participant_primary_location.contact_id = contact.id
 LEFT JOIN participant_last_assignment
 ON participant.id = participant_last_assignment.participant_id 
+LEFT JOIN assignment_last_phone_call
+ON participant_last_assignment.assignment_id = assignment_last_phone_call.assignment_id
 WHERE participant.status IS NULL;
 
 -- -----------------------------------------------------
@@ -1139,6 +1146,23 @@ AND CASE DAYOFWEEK( NOW() )
 END = 1
 AND availability.start_time < NOW()
 AND availability.end_time > NOW();
+
+-- -----------------------------------------------------
+-- View `assignment_last_phone_call`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `assignment_last_phone_call` ;
+DROP TABLE IF EXISTS `assignment_last_phone_call`;
+CREATE  OR REPLACE VIEW `assignment_last_phone_call` AS
+SELECT assignment_1.id as assignment_id, phone_call_1.id as phone_call_id
+FROM phone_call AS phone_call_1, assignment AS assignment_1
+WHERE assignment_1.id = phone_call_1.assignment_id
+AND phone_call_1.start_time = (
+  SELECT MAX( phone_call_2.start_time )
+  FROM phone_call AS phone_call_2, assignment AS assignment_2
+  WHERE assignment_2.id = phone_call_2.assignment_id
+  AND assignment_1.id = assignment_2.id
+  AND phone_call_2.end_time IS NOT NULL
+  GROUP BY assignment_2.id );
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
