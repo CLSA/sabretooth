@@ -69,8 +69,16 @@ $( function() {
         <td class="content">{{ participant_consent }}</td>
       </tr>
       <tr>
-        <td class="heading">Last Phone Call:</td>
-        <td class="content">{{ participant_last_call }}</td>
+        <td class="heading">Previous Assignment:</td>
+        <td class="content">
+    {% if 0 == previous_call_list|count %}
+          new participant (never assigned)
+    {% else %}
+      {% for call as previous_call_list %}
+          {{ call }} <br />
+      {% endfor %}
+    {% endif %}
+        </td>
       </tr>
     </table>
     
@@ -79,7 +87,7 @@ $( function() {
         <td align="left">
           <button style="width: 180px;" id="{{ widget.full }}__view_participant">View Details</button>
           <button style="width: 180px;" id="{{ widget.full }}__end_assignment"
-                  {{ on_call or 0 == assignment_calls ? "disabled" : "" }}>End Assignment</button>
+                  {{ on_call or 0 == current_calls ? "disabled" : "" }}>End Assignment</button>
         </td>
         <td align="right">
           {% from 'macros.twig' import dial_contact_widget %}

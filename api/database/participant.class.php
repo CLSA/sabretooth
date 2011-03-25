@@ -139,12 +139,12 @@ class participant extends record
   }
 
   /**
-   * Get the last phone call to the participant
+   * Get the participants last (non active) assignment
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return phone_call
+   * @return assignment
    * @access public
    */
-  public function get_last_phone_call()
+  public function get_last_assignment()
   {
     // check the primary key value
     if( is_null( $this->id ) )
@@ -154,10 +154,10 @@ class participant extends record
     }
     
     // need custom SQL
-    $phone_call_id = static::db()->get_one(
-      sprintf( 'SELECT phone_call_id FROM participant_last_phone_call WHERE participant_id = %s',
+    $assignment_id = static::db()->get_one(
+      sprintf( 'SELECT assignment_id FROM participant_last_assignment WHERE participant_id = %s',
                database::format_string( $this->id ) ) );
-    return $phone_call_id ? new phone_call( $phone_call_id ) : NULL;
+    return $assignment_id ? new assignment( $assignment_id ) : NULL;
   }
 
   /**
@@ -183,7 +183,7 @@ class participant extends record
   }
 
   /**
-   * Get the last phone call to the participant
+   * Get the participant's primary location
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return contact
    * @access public

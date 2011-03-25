@@ -59,14 +59,13 @@ class operator_assignment extends widget
       $db_consent = $db_participant->get_current_consent();
       if( !is_null( $db_consent ) ) $consent = $db_consent->event;
       
-      $last_call = 'never called';
-      $db_phone_call = $db_participant->get_last_phone_call();
-      if( !is_null( $db_phone_call ) )
-        $last_call = sprintf( '%s on %s (%s)',
-                              \sabretooth\util::get_formatted_time( $db_phone_call->start_time ),
-                              \sabretooth\util::get_formatted_date( $db_phone_call->start_time ),
-                              $db_phone_call->status ? $db_phone_call->status : 'in progress' );
-      
+      $db_last_assignment = $db_participant->get_last_assignment();
+      foreach( $db_last_assignment->get_phone_call_list() as $db_phone_call )
+        $previous_call_list[] = sprintf( '%s on %s (%s)',
+          \sabretooth\util::get_formatted_time( $db_phone_call->start_time ),
+          \sabretooth\util::get_formatted_date( $db_phone_call->start_time ),
+          $db_phone_call->status ? $db_phone_call->status : 'unknown' );
+
       $modifier = new \sabretooth\database\modifier();
       $modifier->where( 'active', '=', true );
       $modifier->where( 'phone', '!=', NULL );
@@ -75,7 +74,7 @@ class operator_assignment extends widget
       
       $modifier = new \sabretooth\database\modifier();
       $modifier->where( 'end_time', '!=', NULL );
-      $assignment_calls = $db_assignment->get_phone_call_count( $modifier );
+      $current_calls = $db_assignment->get_phone_call_count( $modifier );
 
       if( 0 == count( $contact_list ) )
       {
@@ -96,8 +95,8 @@ class operator_assignment extends widget
       $this->set_variable( 'participant_name', $name );
       $this->set_variable( 'participant_language', $language );
       $this->set_variable( 'participant_consent', $consent );
-      $this->set_variable( 'participant_last_call', $last_call );
-      $this->set_variable( 'assignment_calls', $assignment_calls );
+      $this->set_variable( 'previous_call_list', $previous_call_list );
+      $this->set_variable( 'current_calls', $current_calls );
       $this->set_variable( 'on_call', !is_null( $session->get_current_phone_call() ) );
     }
   }
