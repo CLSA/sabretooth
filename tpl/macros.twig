@@ -5,6 +5,44 @@
  #}
 
 {##
+ # Displays a set of confirm buttons.
+ # For every string in the buttons array a button by that name will be created with their
+ # id set to {{ name }}_{{ button name }}. Button names should always be lower case.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @param string name What to name the widget (used for namespacing)
+ # @param array(string) buttons The names of buttons to add to the set.
+ # @param string back What to label the button which will return to the previous widget.
+                 (leaving this blank will omit the back button).
+ # @param string align How to align the buttons (default is right)
+ # @param boolean spacer Whether to include spacing before including the list.
+ #}
+{% macro confirm_buttons( name, buttons, back, align, spacer ) %}
+  <script type="text/javascript">
+  $( function() {
+    // back button
+    $( "#{{ name }}_back" ).click( function() {
+      slot_prev( get_slot( $(this) ) );
+    } );
+  
+    // create a button set
+    $( "#{{ name }}_confirm_buttons" ).buttonset();
+  } );
+  </script>
+  <div id="{{ name }}_confirm_buttons"
+       {{ spacer|default(false) ? 'class="spacer" ' : ''}}
+       style="text-align: {{ align|default('left') }};">
+
+  {% for button in buttons %}
+    <button id="{{ name }}_{{ button }}" style="width:100px">{{ button|capitalize }}</button>
+  {% endfor %}
+  
+  {% if back|default(false) %}
+    <button id="{{ name }}_back" style="width:100px">{{ back }}</button>
+  {% endif %}
+  </div>
+{% endmacro %}
+
+{##
  # Includes a list widget, if list is set.
  # @author Patrick Emond <emondpd@mcmaster.ca>
  # @param string subject The list's subject.
@@ -12,8 +50,8 @@
  # @param boolean spacer Whether to include spacing before including the list.
  #}
 {% macro include_list( subject, list, spacer ) %}
-  {% if list %}
-    {% if spacer is defined %}<div class="spacer"></div>{% endif %}
+  {% if list|default(false) %}
+    {% if spacer|default(false) %}<div class="spacer" />{% endif %}
     {% include [ subject, "list.twig" ]|join("_") with list %}
   {% endif %}
 {% endmacro %}

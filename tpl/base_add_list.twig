@@ -73,6 +73,6 @@ $( function () {
 {% include list_template with list %}
 {% endblock %}
 
-<div class="spacer"></div>
-{% include "confirm_buttons.twig" with { "align": "right", "buttons": ["add"] } %}
+{% from 'macros.twig' import confirm_buttons %}
+{{ confirm_buttons( widget.compound, [ 'add' ], 'Cancel', 'right', true ) }}
 {% endblock widget %}
