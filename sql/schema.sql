@@ -1109,6 +1109,10 @@ DROP TABLE IF EXISTS `participant_for_queue`;
 CREATE  OR REPLACE VIEW `participant_for_queue` AS
 SELECT participant.*, contact.province_id, participant_last_assignment.assignment_id AS last_assignment_id, assignment_last_phone_call.phone_call_id AS last_phone_call_id
 FROM participant
+LEFT JOIN interview
+ON participant.id = interview.participant_id
+LEFT JOIN assignment
+ON interview.id = assignment.interview_id
 LEFT JOIN participant_primary_location
 ON participant.id = participant_primary_location.participant_id 
 LEFT JOIN contact
@@ -1117,7 +1121,8 @@ LEFT JOIN participant_last_assignment
 ON participant.id = participant_last_assignment.participant_id 
 LEFT JOIN assignment_last_phone_call
 ON participant_last_assignment.assignment_id = assignment_last_phone_call.assignment_id
-WHERE participant.status IS NULL;
+WHERE participant.status IS NULL
+AND ( assignment.id IS NULL OR assignment.end_time IS NOT NULL );
 
 -- -----------------------------------------------------
 -- View `queue_general_available`
