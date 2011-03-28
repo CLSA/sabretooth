@@ -11,6 +11,6 @@
 
   {{ parent() }}
   {% from 'macros.twig' import confirm_buttons %}
-  {{ confirm_buttons( widget.full, '', 'Back', 'right', true ) }}
+  {{ confirm_buttons( slot, widget.full, '', 'Back', 'right', true ) }}
 
 {% endblock post_record %}

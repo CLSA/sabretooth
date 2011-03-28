@@ -3,6 +3,7 @@
  # 
  # Base template for all widgets.
  # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @param string slot The widget's slot name (defined in this template)
  # @param string widget.subject The widget's subject.
  # @param string widget.subjects The widget's subject, pluralized.
  # @param string widget.name The widget's name (action performed on the subject)
@@ -18,13 +19,23 @@
  # @param string widget_heading The widget's heading (can be an empty string).
  #}
 
+{% set slot = [ "window.", widget.compound, "_slot" ]|join("") %}
+
 <script type="text/javascript">
-$( function() { update_shortcuts(); } );
-$( function() { $( "button, input:submit" ).button(); } );
+var {{ widget.compound }}_slot = "";
+$( function() {
+  update_shortcuts();
+  $( "button, input:submit" ).button();
+  var slot_id = $( "#{{ widget.compound }}_slot_id" ).parents( "div[id$='_slot']" ).attr( "id" );
+  {{ slot }} = slot_id.substring( 0, slot_id.lastIndexOf( "_" ) );
+} );
 </script>
+<div id="{{ widget.compound }}_slot_id" />
+
 {% block heading %}
 {% if widget_heading %}<div class="ui-widget-header ui-state-hover">{{ widget_heading }}</div>{% endif %}
 {% endblock %}
+
 {% block widget %}
 {# force an error if this block isn't defined in child tempaltes #}
 <script type="text/javascript">

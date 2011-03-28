@@ -16,12 +16,12 @@
  # @param string align How to align the buttons (default is right)
  # @param boolean spacer Whether to include spacing before including the list.
  #}
-{% macro confirm_buttons( name, buttons, back, align, spacer ) %}
+{% macro confirm_buttons( slot, name, buttons, back, align, spacer ) %}
   <script type="text/javascript">
   $( function() {
     // back button
     $( "#{{ name }}_back" ).click( function() {
-      slot_prev( get_slot( $(this) ) );
+      slot_prev( {{ slot }} );
     } );
   
     // create a button set

@@ -36,14 +36,14 @@ $( function() {
 
   // end assignment button
   $( "#{{ widget.full }}__end_assignment" ).click( function() {
-    if( send_action( "assignment", "end" ) ) slot_refresh( get_slot( $(this) ) );
+    if( send_action( "assignment", "end" ) ) slot_refresh( {{ slot }} );
   } );
 
   {% else %}
   
   // begin assignment button
   $( "#{{ widget.full }}__begin_assignment" ).click( function() {
-    if( send_action( "assignment", "begin" ) ) slot_refresh( get_slot( $(this) ) );
+    if( send_action( "assignment", "begin" ) ) slot_refresh( {{ slot }} );
   } );
 
   {% endif %}

@@ -44,7 +44,6 @@
       else
       {
         // submit the form information as a new action
-        var slot = get_slot( $(this) );
         var args = new Object();
         args.user_id_list = user_ids;
         var columns = new Object();
@@ -59,7 +58,7 @@
         {
           // clear the checked ids object cookie and return to the previous page
           $.cookie( "{{ widget.full }}_user_list_checked_ids", null );
-          slot_prev( get_slot( $(this) ) );
+          slot_prev( {{ slot }} );
         }
       }
     } );

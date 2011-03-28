@@ -87,13 +87,12 @@
   // delete button
   $( function () {
     $( "button.{{ widget.full }}_remove" ).click( function() {
-    var slot = get_slot( $(this) );
     confirm_dialog(
       "Delete {{ widget.subject }}?",
       "Are you sure you want to remove this {{ widget.subject }}?",
       function() {
         if( send_action( "{{ widget.subject }}", "delete", { "id": {{ id|default(0) }} } ) )
-          slot_prev( slot );
+          slot_prev( {{ slot }} );
       } );
   
     } );
@@ -137,7 +136,6 @@
           var $div = $( "#{{ widget.full }}__{{ item_id }}" );
           var $textedit = $( "#test" );
           var text = $div.html();
-          var slot = get_slot( $div );
         
           // convert end-of-lines to <br>'s so that the text displays properly
           $div.html( text.replace( /(\r\n|\r|\n)/g, "<br />" ) );
@@ -164,7 +162,7 @@
         
                 // send the action, reload the record on success
                 if( send_action( "{{ widget.subject }}", "edit", args ) )
-                  slot_refresh( slot );
+                  slot_refresh( {{ slot }} );
     
                 $(this).dialog( "close" );
               },

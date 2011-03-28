@@ -58,7 +58,6 @@ $( function () {
     }
     else
     {
-      var slot = get_slot( $(this) );
       var args = new Object();
       args.id = {{ id }};
       args.{{ access_child }}_id_list = child_ids;
@@ -77,7 +76,7 @@ $( function () {
             $.cookie( "{{ widget.full }}_{{ access_child }}_list_checked_ids", null );
             $.cookie( "{{ widget.full }}_role_list_checked_ids", null );
             slot_refresh( "settings" ); // in case the current user has new access
-            slot_prev( slot );
+            slot_prev( {{ slot }} );
           }
         } );
     }

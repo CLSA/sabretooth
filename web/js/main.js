@@ -252,17 +252,6 @@ function ajax_complete( request, code ) {
   }
 }
 
-/**
- * Get the name of the slot that an element belongs to.
- * 
- * @author Patrick Emond <emondpd@mcmaster.ca>
- * @param jQuery element
- */
-function get_slot( element ) {
-  var slot_id = element.parents( 'div[id$="_slot"]' ).attr('id');
-  return slot_id.substring( 0, slot_id.lastIndexOf( "_" ) );
-}
-
 // refresh all slots
 $( document ).ready( function() { slot_refresh( "settings" ); } );
 $( document ).ready( function() { slot_refresh( "menu" ); } );

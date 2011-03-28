@@ -21,7 +21,7 @@
       } );
       args.columns = columns;
 
-      if( send_action( "{{ widget.subject }}", "new", args ) ) slot_prev( get_slot( $(this) ) );
+      if( send_action( "{{ widget.subject }}", "new", args ) ) slot_prev( {{ slot }} );
     } );
   } );
   </script>
@@ -32,7 +32,7 @@
   {{ parent() }}
   </div>
   {% from 'macros.twig' import confirm_buttons %}
-  {{ confirm_buttons( widget.compound, [ 'add' ], 'Cancel', 'right', true ) }}
+  {{ confirm_buttons( slot, widget.compound, [ 'add' ], 'Cancel', 'right', true ) }}
 {% endblock record %}
 
 {% block record_items %}

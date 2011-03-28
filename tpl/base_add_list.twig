@@ -36,7 +36,6 @@ $( function () {
     }
     else
     {
-      var slot = get_slot( $(this) );
       var args = new Object();
       args.id = {{ id }};
       args.id_list = ids;
@@ -51,7 +50,7 @@ $( function () {
           {
             // clear the checked ids object cookie and return to the previous page
             $.cookie( "{{ widget.full }}_{{ list_widget_name }}_checked_ids", null );
-            slot_prev( slot );
+            slot_prev( {{ slot }} );
           }
         } );
     }
@@ -74,5 +73,5 @@ $( function () {
 {% endblock %}
 
 {% from 'macros.twig' import confirm_buttons %}
-{{ confirm_buttons( widget.compound, [ 'add' ], 'Cancel', 'right', true ) }}
+{{ confirm_buttons( slot, widget.compound, [ 'add' ], 'Cancel', 'right', true ) }}
 {% endblock widget %}

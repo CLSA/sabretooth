@@ -15,7 +15,7 @@
       // reload page if site selector is changed
       $( "#{{ widget.full }}__restrict_site" ).change( function() {
         var site_id = $( "#{{ widget.full }}__restrict_site option:selected" ).val();
-        slot_load( get_slot( $(this) ),
+        slot_load( {{ slot }},
                    "{{ widget.full }}",
                    "{{ widget.full }}",
                    { "restrict_site_id": site_id } );
