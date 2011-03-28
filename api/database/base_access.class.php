@@ -61,10 +61,9 @@ abstract class base_access extends record
           if( $modifier->has_where( $access_table.'_id' ) )
           {
             $modifier->where( $subject_name.'.id', '=', 'access.'.$subject_name.'_id', false );
-            $modifier->group( 'access.'.$access_table.'_id' );
             
-            $sql = sprintf( $count ? 'SELECT COUNT( %s.id ) FROM %s, access %s'
-                                   : 'SELECT %s.id FROM %s, access %s',
+            $sql = sprintf( $count ? 'SELECT COUNT( DISTINCT %s.id ) FROM %s, access %s'
+                                   : 'SELECT DISTINCT %s.id FROM %s, access %s',
                             $subject_name,
                             $subject_name,
                             $modifier->get_sql() );
