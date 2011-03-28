@@ -71,7 +71,8 @@ $SETTINGS[ 'url' ][ 'JQUERY_JEDITABLE_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/jeditable.js';
 $SETTINGS[ 'url' ][ 'JQUERY_TIMEPICKER_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/timepicker.js';
-
+$SETTINGS[ 'url' ][ 'JQUERY_RIGHTCLICK_JS' ] =
+  $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/rightClick.js';
 
 // css files
 $SETTINGS[ 'url' ][ 'JQUERY_UI_THEMES' ] = $SETTINGS[ 'url' ][ 'JQUERY_UI' ].'/css';

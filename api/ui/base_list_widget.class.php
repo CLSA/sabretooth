@@ -40,7 +40,8 @@ abstract class base_list_widget extends widget
     $this->sort_column = $this->get_argument( 'sort_column', $this->sort_column );
     $this->sort_desc = 0 != $this->get_argument( 'sort_desc', $this->sort_desc );
     $this->set_heading( ucfirst( $subject ).' list' );
-
+    $this->restrictions = $this->get_argument( 'restrictions', $this->restrictions );
+    
     // determine properties based on the current user's permissions
     $session = \sabretooth\session::self();
     $this->viewable = $session->is_allowed(
@@ -79,6 +80,18 @@ abstract class base_list_widget extends widget
     $modifier = new \sabretooth\database\modifier();
     if( strlen( $this->sort_column ) ) $modifier->order( $this->sort_column, $this->sort_desc );
     $modifier->limit( $this->items_per_page, ( $this->page - 1 ) * $this->items_per_page );
+    
+    foreach( $this->restrictions as $column => $restrict )
+    {
+      $operator = '';
+      if( 'is' == $restrict['compare'] ) $operator = '=';
+      else if( 'is not' == $restrict['compare'] ) $operator = '!=';
+      else if( 'like' == $restrict['compare'] ) $operator = 'LIKE';
+      else if( 'not like' == $restrict['compare'] ) $operator = 'NOT LIKE';
+      else \sabretooth\log::error( 'Invalid comparison in list restriction.' );
+
+      if( 0 < strlen( $operator ) ) $modifier->where( $column, $operator, $restrict['value'] );
+    }
 
     $method_name = 'determine_'.$this->get_subject().'_list';
     $this->record_list =
@@ -97,6 +110,7 @@ abstract class base_list_widget extends widget
     $this->set_variable( 'page', $this->page );
     $this->set_variable( 'sort_column', $this->sort_column );
     $this->set_variable( 'sort_desc', $this->sort_desc );
+    $this->set_variable( 'restrictions', $this->restrictions );
     $this->set_variable( 'max_page', $max_page );
   }
   
@@ -364,6 +378,13 @@ abstract class base_list_widget extends widget
   private $sort_desc = true;
   
   /**
+   * An associative array of restrictions to apply to the list.
+   * @var array
+   * @access private
+   */
+  private $restrictions = array();
+  
+  /**
    * How many items should appear per page.
    * @var int
    * @access private
@@ -407,7 +428,7 @@ abstract class base_list_widget extends widget
    * The following are optional:
    *   'sortable' => whether or not the list can be sorted by the column
    *   'align' => Which way to align the column
-   * This member should only be set in the {@link set_columns} function.
+   * This member can only be set in the {@link add_column} and {@link remove_column} functions.
    * @var array
    * @access private
    */
