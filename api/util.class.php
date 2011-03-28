@@ -302,7 +302,7 @@ final class util
     if( is_null( $date ) || !is_string( $date ) ) return 'never';
     
     // we need to convert to server time since we will compare to the server's "now" time
-    $date = new \DateTime( self::to_server_time( $date ) );
+    $date = new \DateTime( self::to_server_date( $date ) );
     $interval = $date->diff( new \DateTime() );
     
     if( 0 != $interval->invert )
