@@ -74,7 +74,7 @@ $( function() {
     {% if 0 == previous_call_list|count %}
           new participant (never assigned)
     {% else %}
-      {% for call in previous_call_list %}{{ call }} <br />{% endfor %}
+      {% for call in previous_call_list %}{{ call|raw }} <br />{% endfor %}
     {% endif %}
         </td>
       </tr>

@@ -63,7 +63,7 @@ $( function() {
 {% endif %}
 {% if addable %}
   $( "#{{ widget.full }}_add" ).button( {
-    text: {{ rows|count ? 'false' : 'true' }},
+    text: false,
     icons: { primary: "ui-icon-plusthick" }
   } );
 {% endif %}

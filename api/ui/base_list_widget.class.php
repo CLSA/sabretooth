@@ -81,7 +81,7 @@ abstract class base_list_widget extends widget
     if( strlen( $this->sort_column ) ) $modifier->order( $this->sort_column, $this->sort_desc );
     $modifier->limit( $this->items_per_page, ( $this->page - 1 ) * $this->items_per_page );
     
-    foreach( $this->restrictions as $column => $restrict )
+    if( is_array( $this->restrictions ) ) foreach( $this->restrictions as $column => $restrict )
     {
       $operator = '';
       if( 'is' == $restrict['compare'] ) $operator = '=';

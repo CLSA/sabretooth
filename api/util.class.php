@@ -289,6 +289,22 @@ final class util
   }
 
   /**
+   * Returns the interval between the date and "now"
+   * 
+   * @author Patrick Emond <emondpd@mcamster.ca>
+   * @param string $date A date string in the format accepted by the DateTime constructor.
+   * @return \DateInterval
+   * @static
+   * @access public
+   */
+  public static function get_interval( $date )
+  {
+    // we need to convert to server time since we will compare to the server's "now" time
+    $date_obj = new \DateTime( self::to_server_date( $date ) );
+    return $date_obj->diff( new \DateTime() );
+  }
+
+  /**
    * Returns a fuzzy description of how long ago a certain date occured.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
@@ -301,9 +317,7 @@ final class util
   {
     if( is_null( $date ) || !is_string( $date ) ) return 'never';
     
-    // we need to convert to server time since we will compare to the server's "now" time
-    $date = new \DateTime( self::to_server_date( $date ) );
-    $interval = $date->diff( new \DateTime() );
+    $interval = self::get_interval( $date );
     
     if( 0 != $interval->invert )
     {
@@ -327,7 +341,8 @@ final class util
     }
     else if( 7 > $interval->days )
     {
-      $result = 'last '.$date->format( 'l' );
+      $date_obj = new \DateTime( self::to_server_date( $date ) );
+      $result = 'last '.$date_obj->format( 'l' );
     }
     else if( 1 > $interval->m && 0 == $interval->y )
     {
@@ -335,7 +350,8 @@ final class util
     }
     else if( 1 > $interval->y )
     {
-      $result = 'last '.$date->format( 'F' );
+      $date_obj = new \DateTime( self::to_server_date( $date ) );
+      $result = 'last '.$date_obj->format( 'F' );
     }
     else
     {

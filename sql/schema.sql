@@ -1131,13 +1131,14 @@ DROP VIEW IF EXISTS `queue_general_available` ;
 DROP TABLE IF EXISTS `queue_general_available`;
 CREATE  OR REPLACE VIEW `queue_general_available` AS
 SELECT participant.*
-FROM sample, sample_has_participant, participant_for_queue AS participant, availability, interview
+FROM sample, sample_has_participant, availability, participant_for_queue AS participant
+LEFT JOIN interview
+ON interview.participant_id = participant.id
 WHERE sample.qnaire_id IS NOT NULL
+AND interview.id IS NULL
 AND sample.id = sample_has_participant.sample_id
 AND sample_has_participant.participant_id = participant.id
 AND participant.last_assignment_id IS NULL
-AND participant.id = interview.participant_id
-AND interview.completed = false
 AND participant.id = availability.participant_id
 AND CASE DAYOFWEEK( NOW() )
   WHEN 1 THEN availability.sunday

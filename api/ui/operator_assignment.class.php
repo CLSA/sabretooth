@@ -62,11 +62,20 @@ class operator_assignment extends widget
       $previous_call_list = array();
       $db_last_assignment = $db_participant->get_last_assignment();
       if( !is_null( $db_last_assignment ) )
+      {
         foreach( $db_last_assignment->get_phone_call_list() as $db_phone_call )
-          $previous_call_list[] = sprintf( '%s on %s (%s)',
-            \sabretooth\util::get_formatted_time( $db_phone_call->start_time ),
-            \sabretooth\util::get_formatted_date( $db_phone_call->start_time ),
+        {
+          $interval = \sabretooth\util::get_interval( $db_phone_call->start_time );
+          $db_contact = $db_phone_call->get_contact();
+          $previous_call_list[] = sprintf( 'Called contact #%d (%s) %s %s (%s)',
+            $db_contact->rank,
+            $db_contact->type,
+            \sabretooth\util::get_fuzzy_period_ago( $db_phone_call->start_time ),
+            0 < $interval->days ?
+              'at '.\sabretooth\util::get_formatted_time( $db_phone_call->start_time, false ) : '',
             $db_phone_call->status ? $db_phone_call->status : 'unknown' );
+        }
+      }
 
       $modifier = new \sabretooth\database\modifier();
       $modifier->where( 'active', '=', true );
