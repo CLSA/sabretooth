@@ -838,12 +838,13 @@ abstract class record extends \sabretooth\base_object
           $foreign_key_name = $table.'_id';
           if( static::column_exists( $foreign_key_name ) )
           {
+            $class_name = '\\sabretooth\\database\\'.$table;
             // add the table to the list to select and join it in the modifier
             $table_list[] = $table;
             $modifier->where(
               $this_table.'.'.$foreign_key_name,
               '=',
-              $table.'.'.$table::get_primary_key_name(), false );
+              $table.'.'.$class_name::get_primary_key_name(), false );
           }
           // check to see if the foreign table has this table as a foreign key
           else if( static::db()->column_exists( $table, $this_table.'_id' ) )
