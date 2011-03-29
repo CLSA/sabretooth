@@ -27,8 +27,8 @@ class missing extends base_exception
    */
   public function __construct( $file, $context, $previous = NULL )
   {
-    $this->raw_message = sprintf( 'missing file: "%s"', $file );
-    parent::__construct( $this->raw_message, $context, $previous );
+    $message = sprintf( 'missing file: "%s"', $file );
+    parent::__construct( $message, $context, $previous );
   }
 }
 ?>

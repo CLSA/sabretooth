@@ -27,8 +27,9 @@ class base_exception extends \Exception
    */
   public function __construct( $message, $context, $previous = NULL )
   {
-    $who = 'unknown';
+    $this->raw_message = $message;
 
+    $who = 'unknown';
     if( class_exists( 'sabretooth\session' ) && \sabretooth\session::self()->is_initialized() )
     {
       $user_name = \sabretooth\session::self()->get_user()->name;
@@ -136,6 +137,6 @@ class base_exception extends \Exception
    * @var string
    * @access protected
    */
-  protected $raw_message;
+  private $raw_message;
 }
 ?>

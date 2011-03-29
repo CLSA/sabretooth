@@ -30,10 +30,10 @@ class notice extends base_exception
    */
   public function __construct( $message, $context, $previous = NULL )
   {
-    $this->raw_message = is_object( $message ) &&
-                         is_a( $message, '\\sabretooth\\exception\\base_exception' )
-                       ? $message->get_raw_message()
-                       : $message;
+    $message = is_object( $message ) &&
+               is_a( $message, '\\sabretooth\\exception\\base_exception' )
+             ? $message->get_raw_message()
+             : $message;
     parent::__construct( $message, $context, $previous );
   }
 
