@@ -235,10 +235,10 @@ $( function() {
   $header_buttons.rightClick( function( event ) {
     var column = $(this).parent( "th" ).attr( "id" );
     var column_name = $(this).button().text();
-    $( "#restrict_dialog_label" ).html( column_name );
-    $( "#restrict_dialog_id" ).val( column );
-    $( "#restrict_dialog_value" ).val( "" );
-    $( "#restrict_dialog" ).dialog( "open" );
+    $( "#{{ widget.full }}_restrict_dialog_label" ).html( column_name );
+    $( "#{{ widget.full }}_restrict_dialog_id" ).val( column );
+    $( "#{{ widget.full }}_restrict_dialog_value" ).val( "" );
+    $( "#{{ widget.full }}_restrict_dialog" ).dialog( "open" );
   } );
   
   // left-clicking a restriction button removes it
@@ -263,7 +263,7 @@ $( function() {
   } );
 
   // the add-restriction dialog
-  $( "#restrict_dialog" ).dialog( {
+  $( "#{{ widget.full }}_restrict_dialog" ).dialog( {
     title: "Restrict list",
     autoOpen: false,
     height: 150,
@@ -279,11 +279,10 @@ $( function() {
           value: "{{ restrict.value }}"
         };
 {% endfor %}
-        restrictions[$( "#restrict_dialog_id" ).val()] = {
-          compare: $( "#restrict_dialog_compare" ).val(),
-          value: $( "#restrict_dialog_value" ).val()
+        restrictions[$( "#{{ widget.full }}_restrict_dialog_id" ).val()] = {
+          compare: $( "#{{ widget.full }}_restrict_dialog_compare" ).val(),
+          value: $( "#{{ widget.full }}_restrict_dialog_value" ).val()
         };
-        console.log( restrictions );
 
         var args = new Object();
         args.restrictions = restrictions;
@@ -330,16 +329,16 @@ $( function() {
 
 </script>
 
-<div id="restrict_dialog">
+<div id="{{ widget.full }}_restrict_dialog">
   <form>
-    <input type="hidden" id="restrict_dialog_id" value="" />
+    <input type="hidden" id="{{ widget.full }}_restrict_dialog_id" value="" />
     <table>
       <tr>
         <td style="white-space:nowrap;">
-          <div id="restrict_dialog_label">Value</div>
+          <div id="{{ widget.full }}_restrict_dialog_label">Value</div>
         </td>
         <td>
-          <select id="restrict_dialog_compare">
+          <select id="{{ widget.full }}_restrict_dialog_compare">
             <option selected>is</option>
             <option>is not</option>
             <option>like</option>
@@ -347,7 +346,7 @@ $( function() {
           </select>
         </td>
         <td width="95%">
-          <input type="text" id="restrict_dialog_value" value=""
+          <input type="text" id="{{ widget.full }}_restrict_dialog_value" value=""
                  class="text ui-widget-content ui-corner-all" style="width:100%" />
         </td>
       </tr>
