@@ -41,18 +41,18 @@
   <script type="text/javascript" src="{{ constant('JQUERY_RIGHTCLICK_JS_URL') }}"></script>
   <script type="text/javascript" src="js/main.js"></script>
   <script type="text/javascript">
-  // set button styles
-  $( function() { $( "button, input:submit" ).button(); } );
-
-  // apply jquery-ui theme to the extruders
-  $( function() { $( "div.content" ).addClass( "ui-widget-content" ); } );
-  $( function() { $( ".flap" ).addClass( "ui-widget-header" ); } );
+  $( function() {
+    // set button styles
+    $( "button, input:submit" ).button();
+  
+    // apply jquery-ui theme to the extruders
+    $( "div.content" ).addClass( "ui-widget-content" );
+    $( ".flap" ).addClass( "ui-widget-header" );
 
   {% if survey_url %}
   // Defines the layout when showing the survey pane.
   // Should only be visible when there is an active survey.
-  $( document ).ready( function() {
-      var layout = $('body').layout( {
+    var layout = $( "body" ).layout( {
       defaults: {
         applyDefaultStyles: true,
         spacing_open: 8,
@@ -61,10 +61,9 @@
         slidable: true,
         size: 500,
         initClosed: false }
-      } );
-    }
-  );
+    } );
   {% endif %}
+  } );
   </script>
 </head>
 

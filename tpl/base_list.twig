@@ -362,18 +362,18 @@ $( function() {
       <th align="center"><div class="ui-icon ui-icon-check" style="padding:2px"></div></th>
       {% set number_of_columns = number_of_columns + 1 %}
       {% endif %}
-      {% for column in columns %}
+      {% for column_id, column in columns %}
         {% if column.sortable|default(false) %}
-          <th id="{{ column.id }}" style="vertical-align:top;">
-            {% if column.id == sort_column %}
+          <th id="{{ column_id }}" style="vertical-align:top;">
+            {% if column_id == sort_column %}
             <button class="{{ widget.full }}_sortable {{ widget.full }}_sorted{{ sort_desc ? '_desc' : '' }}">
             {% else %}
             <button class="{{ widget.full }}_sortable {{ widget.full }}_unsorted">
             {% endif %}
               {{ column.heading }}
             </button>
-          {% for id, restrict in restrictions %}
-            {% if id == column.id %}
+          {% for restrict_id, restrict in restrictions %}
+            {% if restrict_id == column_id %}
             <br />
             <button class="{{ widget.full }}_remove_restriction">
               {{ restrict.compare }} {{ restrict.value }}
@@ -407,12 +407,14 @@ $( function() {
                id="{{ widget.compound }}_check_{{ row.id }}" />
       </td>
       {% endif %}
-      {% for column in columns %}
-      <td {% if column.align|default(false) %}
-            align="{{ column.align }}"
-          {% endif %}
+      {% for column_id, column in columns %}
+      <td {% if column.align|default(false) %}align="{{ column.align }}"{% endif %}
           style="font-weight: normal; padding-top:0.2em; padding-bottom:0.2em;">
-        {{ row.columns[column.id] }}
+        {% if 'text' == column.type %}
+        {% autoescape false %}{{ row.columns[column_id] }}{% endautoescape %}
+        {% else %} {# no other column types require special formatting #}
+        {{ row.columns[column_id] }}
+        {% endif %}
       </td>
       {% endfor %}
       {% if viewable %}

@@ -28,10 +28,10 @@ class queue_list extends base_list_widget
   {
     parent::__construct( 'queue', $args );
     
-    $this->add_column( 'name', 'Name', false );
-    $this->add_column( 'enabled', 'Enabled', false );
-    $this->add_column( 'participant_count', 'Participants', false );
-    $this->add_column( 'description', 'Description', false, 'left' );
+    $this->add_column( 'name', 'string', 'Name', false );
+    $this->add_column( 'enabled', 'boolean', 'Enabled', false );
+    $this->add_column( 'participant_count', 'number', 'Participants', false );
+    $this->add_column( 'description', 'text', 'Description', false, 'left' );
   }
 
   /**
@@ -72,7 +72,7 @@ class queue_list extends base_list_widget
       $db_setting = \sabretooth\database\setting::get_setting( 'queue state', $record->name );
       $this->add_row( $record->id,
         array( 'name' => $record->name,
-               'enabled' => 'true' == $db_setting->value ? 'yes' : 'no',
+               'enabled' => 'true' == $db_setting->value,
                'participant_count' => $record->get_participant_count(),
                'description' => $record->description ) );
     }

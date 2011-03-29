@@ -131,13 +131,11 @@ abstract class base_list_widget extends widget
     parent::set_parent( $parent );
 
     // remove any columns which belong to the parent's record
-    $new_column_array = array();
-    foreach( $this->columns as $column )
+    foreach( $this->columns as $column_id => $column )
     {
-      $type = strstr( $column['id'], '.', true );
-      if( $type != $this->parent->get_subject() ) $new_column_array[] = $column;
+      $subject = strstr( $column_id, '.', true );
+      if( $subject == $this->parent->get_subject() ) $this->remove_column( $column_id );
     }
-    $this->columns = $new_column_array;
     
     if( 'edit' == $mode )
     {
@@ -289,16 +287,21 @@ abstract class base_list_widget extends widget
    * @param string $align Which way to align the column (left, right or center)
    * @access public
    */
-  public function add_column( $column_id, $heading, $sortable = false, $align = '' )
+  public function add_column( $column_id, $type, $heading, $sortable = false, $align = '' )
   {
     // if there is no "table." before the column name, add this widget's subject
     if( false === strpos( $column_id, '.' ) ) $column_id = $this->get_subject().'.'.$column_id;
     
-    $column = array( 'id' => $column_id, 'heading' => $heading );
+    // specify column timezone for datetime columns
+    if( 'datetime' == $type ) $heading .=
+      sprintf( ' (%s)', \sabretooth\util::get_timezone_abbreviation(
+                         \sabretooth\session::self()->get_site()->timezone ) );
+
+    $column = array( 'id' => $column_id, 'type' => $type, 'heading' => $heading );
     if( $sortable ) $column['sortable'] = $sortable;
     if( $align ) $column['align'] = $align;
     
-    $this->columns[] = $column;
+    $this->columns[$column_id] = $column;
   }
   
   /**
@@ -311,13 +314,7 @@ abstract class base_list_widget extends widget
   {
     // if there is no "table." before the column name, add this widget's subject
     if( false === strpos( $column_id, '.' ) ) $column_id = $this->get_subject().'.'.$column_id;
-
-    // find and remove the column who's id is equal to the column name
-    $new_column_array = array();
-    foreach( $this->columns as $column )
-      if( $column_id != $column['id'] ) $new_column_array[] = $column;
-    
-    $this->columns = $new_column_array;
+    if( array_key_exists( $column_id, $this->columns ) ) unset( $this->columns[$column_id] );
   }
   
   /**
@@ -331,14 +328,33 @@ abstract class base_list_widget extends widget
    */
   public function add_row( $row_id, $columns )
   {
-    // if there is no "table." before the column name, add this widget's subject
     foreach( array_keys( $columns ) as $column_id )
     {
+      // if there is no "table." before the column name, add this widget's subject
       if( false === strpos( $column_id, '.' ) )
       {
         $new_column_id = $this->get_subject().'.'.$column_id;
         $columns[$new_column_id] = $columns[$column_id];
         unset( $columns[$column_id] );
+        $column_id = $new_column_id;
+      }
+
+      // format value based on the column type, if necessary
+      if( 'time' == $this->columns[$column_id]['type'] )
+      {
+        $columns[$column_id] = \sabretooth\util::get_formatted_time( $columns[$column_id], false );
+      }
+      else if( 'date' == $this->columns[$column_id]['type'] )
+      {
+        $columns[$column_id] = \sabretooth\util::get_formatted_date( $columns[$column_id] );
+      }
+      else if( 'fuzzy' == $this->columns[$column_id]['type'] )
+      {
+        $columns[$column_id] = \sabretooth\util::get_fuzzy_period_ago( $columns[$column_id] );
+      }
+      else if( 'boolean' == $this->columns[$column_id]['type'] )
+      {
+        $columns[$column_id] = $columns[$column_id] ? 'Yes' : 'No';
       }
     }
 
@@ -423,8 +439,9 @@ abstract class base_list_widget extends widget
    * An array of columns.
    * 
    * Every item in the array must have the following:
-   *   'id'       => a unique id identifying the column
-   *   'heading'  => the name to display in in the column header
+   *   'id' => a unique id identifying the column
+   *   'type' => one of 'string', 'text', 'number', 'boolean', 'time', 'date', 'datetime' or 'fuzzy'
+   *   'heading' => the name to display in in the column header
    * The following are optional:
    *   'sortable' => whether or not the list can be sorted by the column
    *   'align' => Which way to align the column

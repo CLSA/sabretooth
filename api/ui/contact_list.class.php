@@ -28,10 +28,10 @@ class contact_list extends base_list_widget
   {
     parent::__construct( 'contact', $args );
     
-    $this->add_column( 'active', 'Active', true );
-    $this->add_column( 'rank', 'Rank', true );
-    $this->add_column( 'type', 'Type', true );
-    $this->add_column( 'details', 'Details', false );
+    $this->add_column( 'active', 'boolean', 'Active', true );
+    $this->add_column( 'rank', 'number', 'Rank', true );
+    $this->add_column( 'type', 'string', 'Type', true );
+    $this->add_column( 'details', 'string', 'Details', false );
 
   }
   
@@ -53,7 +53,7 @@ class contact_list extends base_list_widget
                : $record->city.', '.$record->get_province()->abbreviation.' '.$record->postcode;
 
       $this->add_row( $record->id,
-        array( 'active' => $record->active ? 'Yes' : 'No',
+        array( 'active' => $record->active,
                'rank' => $record->rank,
                'type' => $record->type,
                'details' => $details ) );

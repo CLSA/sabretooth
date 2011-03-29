@@ -28,10 +28,10 @@ class survey_list extends base_list_widget
   {
     parent::__construct( 'survey', $args );
     
-    $this->add_column( 'sid', 'Limesurvey ID', false );
-    $this->add_column( 'title', 'Title', false );
-    $this->add_column( 'language', 'Main Language', false );
-    $this->add_column( 'additional_languages', 'Other Languages', false );
+    $this->add_column( 'sid', 'number', 'Limesurvey ID', false );
+    $this->add_column( 'title', 'string', 'Title', false );
+    $this->add_column( 'language', 'string', 'Main Language', false );
+    $this->add_column( 'additional_languages', 'string', 'Other Languages', false );
   }
 
   /**

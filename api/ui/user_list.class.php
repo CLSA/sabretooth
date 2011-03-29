@@ -36,10 +36,10 @@ class user_list extends base_list_widget
       sprintf( 'User list for %s',
                $is_supervisor ? $session->get_site()->name : 'all sites' ) );
 
-    $this->add_column( 'name', 'Username', true );
-    $this->add_column( 'active', 'Active', true );
-    $this->add_column( 'role', 'Role', false );
-    $this->add_column( 'last_activity', 'Last activity', false );
+    $this->add_column( 'name', 'string', 'Username', true );
+    $this->add_column( 'active', 'boolean', 'Active', true );
+    $this->add_column( 'role', 'string', 'Role', false );
+    $this->add_column( 'last_activity', 'fuzzy', 'Last activity', false );
   }
 
   /**
@@ -62,13 +62,12 @@ class user_list extends base_list_widget
       
       // determine the last activity
       $db_activity = $record->get_last_activity();
-      $last = \sabretooth\util::get_fuzzy_period_ago(
-        is_null( $db_activity ) ? null : $db_activity->date );
+      $last = is_null( $db_activity ) ? null : $db_activity->date;
 
       // assemble the row for this record
       $this->add_row( $record->id,
         array( 'name' => $record->name,
-               'active' => $record->active ? 'Yes' : 'No',
+               'active' => $record->active,
                'role' => $role,
                'last_activity' => $last ) );
     }

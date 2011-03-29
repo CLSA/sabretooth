@@ -28,11 +28,11 @@ class operation_list extends base_list_widget
   {
     parent::__construct( 'operation', $args );
     
-    $this->add_column( 'type', 'type', true );
-    $this->add_column( 'subject', 'subject', true );
-    $this->add_column( 'name', 'name', true );
-    $this->add_column( 'restricted', 'restricted', false );
-    $this->add_column( 'description', 'description', false, 'left' );
+    $this->add_column( 'type', 'string', 'type', true );
+    $this->add_column( 'subject', 'string', 'subject', true );
+    $this->add_column( 'name', 'string', 'name', true );
+    $this->add_column( 'restricted', 'boolean', 'restricted', false );
+    $this->add_column( 'description', 'text', 'description', false, 'left' );
   }
 
   /**
@@ -51,7 +51,7 @@ class operation_list extends base_list_widget
         array( 'type' => $record->type,
                'subject' => $record->subject,
                'name' => $record->name,
-               'restricted' => $record->restricted ? 'yes' : 'no',
+               'restricted' => $record->restricted,
                'description' => $record->description ) );
     }
 

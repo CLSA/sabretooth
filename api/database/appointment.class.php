@@ -28,11 +28,60 @@ class appointment extends record
     // appointments are not to the second, so remove the :00 at the end of the date field
     $this->date = substr( $this->date, 0, -3 );
   }
+  
+  /**
+   * Get the status of the appointment as a string (upcoming, missed, completed, in progress or
+   * assigned)
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_status()
+  {
+    $status = 'unknown';
+
+    // get the status of the appointment
+    if( strtotime( $this->date ) > time() )
+    {
+      $status = 'upcoming';
+    }
+    else
+    { // not in the future
+      $db_assignment = $this->get_assignment();
+      if( is_null( $db_assignment ) )
+      { // not assigned
+        $status = 'missed';
+      }
+      else // assigned
+      {
+        if( !is_null( $db_assignment->end_time ) )
+        { // assignment closed
+          $status = 'completed';
+        }
+        else // assignment active
+        { 
+          $modifier = new modifier();
+          $modifier->where( 'end_time', '=', NULL );
+          $open_phone_calls = $db_assignment->get_phone_call_count( $modifier );
+          if( 0 < $open_phone_calls )
+          { // assignment currently on call
+            $status = "in progress";
+          }
+          else
+          { // not on call
+            $status = "assigned";
+          }
+        }
+      }
+    }
+
+    return $status;
+  }
 
   /**
    * Returns the assignment associated with this appointment.  If this appointment has not been
    * assigned then NULL is returned.
-   * @author Patrick Emond
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return assignment
    * @access public
    */

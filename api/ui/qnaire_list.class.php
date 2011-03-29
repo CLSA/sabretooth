@@ -28,9 +28,9 @@ class qnaire_list extends base_list_widget
   {
     parent::__construct( 'qnaire', $args );
     
-    $this->add_column( 'name', 'Name', true );
-    $this->add_column( 'phases', 'Stages', false );
-    $this->add_column( 'samples', 'Samples', false );
+    $this->add_column( 'name', 'string', 'Name', true );
+    $this->add_column( 'phases', 'number', 'Stages', false );
+    $this->add_column( 'samples', 'number', 'Samples', false );
   }
   
   /**

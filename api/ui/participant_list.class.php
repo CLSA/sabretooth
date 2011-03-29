@@ -28,10 +28,10 @@ class participant_list extends base_list_widget
   {
     parent::__construct( 'participant', $args );
     
-    $this->add_column( 'first_name', 'First Name', true );
-    $this->add_column( 'last_name', 'Last Name', true );
-    $this->add_column( 'language', 'Language Preference', true );
-    $this->add_column( 'status', 'Condition', true );
+    $this->add_column( 'first_name', 'string', 'First Name', true );
+    $this->add_column( 'last_name', 'string', 'Last Name', true );
+    $this->add_column( 'language', 'string', 'Language Preference', true );
+    $this->add_column( 'status', 'string', 'Condition', true );
   }
   
   /**

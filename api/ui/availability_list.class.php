@@ -28,15 +28,15 @@ class availability_list extends base_list_widget
   {
     parent::__construct( 'availability', $args );
     
-    $this->add_column( 'monday', 'Mon', true );
-    $this->add_column( 'tuesday', 'Tue', true );
-    $this->add_column( 'wednesday', 'Wed', true );
-    $this->add_column( 'thursday', 'Thu', true );
-    $this->add_column( 'friday', 'Fri', true );
-    $this->add_column( 'saturday', 'Sat', true );
-    $this->add_column( 'sunday', 'Sun', true );
-    $this->add_column( 'start_time', 'Start', true );
-    $this->add_column( 'end_time', 'End', true );
+    $this->add_column( 'monday', 'boolean', 'Mon', true );
+    $this->add_column( 'tuesday', 'boolean', 'Tue', true );
+    $this->add_column( 'wednesday', 'boolean', 'Wed', true );
+    $this->add_column( 'thursday', 'boolean', 'Thu', true );
+    $this->add_column( 'friday', 'boolean', 'Fri', true );
+    $this->add_column( 'saturday', 'boolean', 'Sat', true );
+    $this->add_column( 'sunday', 'boolean', 'Sun', true );
+    $this->add_column( 'start_time', 'time', 'Start', true );
+    $this->add_column( 'end_time', 'time', 'End', true );
   }
   
   /**
@@ -51,19 +51,16 @@ class availability_list extends base_list_widget
 
     foreach( $this->get_record_list() as $record )
     {
-      $start_time = \sabretooth\util::get_formatted_time( $record->start_time, false );
-      $end_time = \sabretooth\util::get_formatted_time( $record->end_time, false );
-
       $this->add_row( $record->id,
-        array( 'monday' => $record->monday ? 'Yes' : 'No',
-               'tuesday' => $record->tuesday ? 'Yes' : 'No',
-               'wednesday' => $record->wednesday ? 'Yes' : 'No',
-               'thursday' => $record->thursday ? 'Yes' : 'No',
-               'friday' => $record->friday ? 'Yes' : 'No',
-               'saturday' => $record->saturday ? 'Yes' : 'No',
-               'sunday' => $record->sunday ? 'Yes' : 'No',
-               'start_time' => $start_time,
-               'end_time' => $end_time ) );
+        array( 'monday' => $record->monday,
+               'tuesday' => $record->tuesday,
+               'wednesday' => $record->wednesday,
+               'thursday' => $record->thursday,
+               'friday' => $record->friday,
+               'saturday' => $record->saturday,
+               'sunday' => $record->sunday,
+               'start_time' => $record->start_time,
+               'end_time' => $record->end_time ) );
     }
 
     $this->finish_setting_rows();

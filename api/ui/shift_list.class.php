@@ -34,11 +34,11 @@ class shift_list extends base_list_widget
     
     if( $is_operator || $is_supervisor ) $this->set_heading( 'Shift Schedule' );
 
-    if( !$is_operator ) $this->add_column( 'user.name', 'User', true );
-    if( !$is_supervisor ) $this->add_column( 'site.name', 'Site', true );
-    $this->add_column( 'date', 'Date', true );
-    $this->add_column( 'start_time', 'Start', true );
-    $this->add_column( 'end_time', 'End', true );
+    if( !$is_operator ) $this->add_column( 'user.name', 'string', 'User', true );
+    if( !$is_supervisor ) $this->add_column( 'site.name', 'string', 'Site', true );
+    $this->add_column( 'date', 'date', 'Date', true );
+    $this->add_column( 'start_time', 'time', 'Start', true );
+    $this->add_column( 'end_time', 'time', 'End', true );
   }
   
   /**
@@ -53,16 +53,12 @@ class shift_list extends base_list_widget
 
     foreach( $this->get_record_list() as $record )
     {
-      $start_time = \sabretooth\util::get_formatted_time( $record->start_time, false );
-      $end_time = \sabretooth\util::get_formatted_time( $record->end_time, false );
-      $date = \sabretooth\util::get_formatted_date( $record->date );
-
       $this->add_row( $record->id,
         array( 'site.name' => $record->get_site()->name,
                'user.name' => $record->get_user()->name,
-               'date' => $date,
-               'start_time' => $start_time,
-               'end_time' => $end_time ) );
+               'date' => $record->date,
+               'start_time' => $record->start_time,
+               'end_time' => $record->end_time ) );
     }
 
     $this->finish_setting_rows();

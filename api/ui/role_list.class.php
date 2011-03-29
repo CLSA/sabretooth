@@ -28,8 +28,8 @@ class role_list extends base_list_widget
   {
     parent::__construct( 'role', $args );
     
-    $this->add_column( 'name', 'Name', true );
-    $this->add_column( 'users', 'Users', false );
+    $this->add_column( 'name', 'string', 'Name', true );
+    $this->add_column( 'users', 'number', 'Users', false );
   }
 
   /**

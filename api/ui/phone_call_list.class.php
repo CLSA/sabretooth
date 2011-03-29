@@ -28,11 +28,12 @@ class phone_call_list extends base_list_widget
   {
     parent::__construct( 'phone_call', $args );
     
-    $this->add_column( 'contact.type', 'Contact', true );
-    $this->add_column( 'appointment_id', 'Appointment', true );
-    $this->add_column( 'start_time', 'Start Time', true );
-    $this->add_column( 'end_time', 'End Time', true );
-    $this->add_column( 'status', 'Status', true );
+    $this->add_column( 'contact.type', 'string', 'Contact', true );
+    $this->add_column( 'appointment_id', 'boolean', 'Appointment', true );
+    $this->add_column( 'date', 'datetime', 'Date', true );
+    $this->add_column( 'start_time', 'time', 'Start Time', false );
+    $this->add_column( 'end_time', 'time', 'End Time', false );
+    $this->add_column( 'status', 'string', 'Status', true );
   }
   
   /**
@@ -47,17 +48,13 @@ class phone_call_list extends base_list_widget
     
     foreach( $this->get_record_list() as $record )
     {
-      $start_time = \sabretooth\util::get_formatted_datetime( $record->start_time );
-      $end_time = $record->end_time
-                ? \sabretooth\util::get_formatted_time( $record->end_time )
-                : '(in progress)';
-
       // assemble the row for this record
       $this->add_row( $record->id,
         array( 'contact.type' => $record->get_contact()->type,
                'appointment_id' => $record->appointment_id ? 'Yes' : 'No',
-               'start_time' => $start_time,
-               'end_time' => $end_time,
+               'date' => $this->start_time,
+               'start_time' => $this->start_time,
+               'end_time' => $this->end_time ? $this->end_time : '(in progress)',
                'status' => $record->status ? $record->status : 'none' ) );
     }
 

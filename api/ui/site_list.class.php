@@ -28,9 +28,9 @@ class site_list extends base_list_widget
   {
     parent::__construct( 'site', $args );
     
-    $this->add_column( 'name', 'Name', true );
-    $this->add_column( 'users', 'Users', false );
-    $this->add_column( 'last', 'Last activity', false );
+    $this->add_column( 'name', 'string', 'Name', true );
+    $this->add_column( 'users', 'number', 'Users', false );
+    $this->add_column( 'last', 'fuzzy', 'Last activity', false );
   }
 
   /**
@@ -48,8 +48,7 @@ class site_list extends base_list_widget
     {
       // determine the last activity
       $db_activity = $record->get_last_activity();
-      $last = \sabretooth\util::get_fuzzy_period_ago(
-                is_null( $db_activity ) ? null : $db_activity->date );
+      $last = is_null( $db_activity ) ? null : $db_activity->date;
 
       $this->add_row( $record->id,
         array( 'name' => $record->name,

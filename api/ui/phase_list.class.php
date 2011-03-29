@@ -28,9 +28,9 @@ class phase_list extends base_list_widget
   {
     parent::__construct( 'phase', $args );
     
-    $this->add_column( 'survey', 'Survey', false );
-    $this->add_column( 'stage', 'Stage', true );
-    $this->add_column( 'repeated', 'Repeated', true );
+    $this->add_column( 'survey', 'string', 'Survey', false );
+    $this->add_column( 'stage', 'string', 'Stage', true );
+    $this->add_column( 'repeated', 'boolean', 'Repeated', true );
   }
   
   /**
@@ -51,7 +51,7 @@ class phase_list extends base_list_widget
       $this->add_row( $record->id,
         array( 'survey' => $db_survey->get_title(),
                'stage' => $record->stage,
-               'repeated' => $record->repeated ? 'Yes' : 'No' ) );
+               'repeated' => $record->repeated ) );
     }
 
     $this->finish_setting_rows();

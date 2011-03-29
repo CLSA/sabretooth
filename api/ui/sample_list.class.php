@@ -28,9 +28,9 @@ class sample_list extends base_list_widget
   {
     parent::__construct( 'sample', $args );
     
-    $this->add_column( 'name', 'Name', true );
-    $this->add_column( 'qnaire.name', 'Questionnaire', true );
-    $this->add_column( 'participants', 'Participants', false );
+    $this->add_column( 'name', 'string', 'Name', true );
+    $this->add_column( 'qnaire.name', 'string', 'Questionnaire', true );
+    $this->add_column( 'participants', 'number', 'Participants', false );
   }
   
   /**

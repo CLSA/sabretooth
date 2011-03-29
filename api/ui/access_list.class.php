@@ -28,10 +28,10 @@ class access_list extends base_list_widget
   {
     parent::__construct( 'access', $args );
     
-    $this->add_column( 'user.name', 'User', true );
-    $this->add_column( 'role.name', 'Role', true );
-    $this->add_column( 'site.name', 'Site', true );
-    $this->add_column( 'date', 'Granted', true );
+    $this->add_column( 'user.name', 'string', 'User', true );
+    $this->add_column( 'role.name', 'string', 'Role', true );
+    $this->add_column( 'site.name', 'string', 'Site', true );
+    $this->add_column( 'date', 'fuzzy', 'Granted', true );
   }
 
   /**
@@ -50,7 +50,7 @@ class access_list extends base_list_widget
         array( 'user.name' => $record->get_user()->name,
                'role.name' => $record->get_role()->name,
                'site.name' => $record->get_site()->name,
-               'date' => \sabretooth\util::get_fuzzy_period_ago( $record->date ) ) );
+               'date' => $record->date ) );
     }
 
     $this->finish_setting_rows();

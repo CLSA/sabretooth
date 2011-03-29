@@ -28,17 +28,14 @@ class activity_list extends base_list_widget
   {
     parent::__construct( 'activity', $args );
     
-    $this->add_column( 'user.name', 'User', true );
-    $this->add_column( 'site.name', 'Site', true );
-    $this->add_column( 'role.name', 'Role', true );
-    $this->add_column( 'operation.type', 'Type', true );
-    $this->add_column( 'operation.subject', 'Subject', true );
-    $this->add_column( 'operation.name', 'Name', true );
-    $this->add_column( 'elapsed_time', 'Elapsed', true );
-    $header = sprintf( 'Date (%s)',
-                       \sabretooth\util::get_timezone_abbreviation(
-                         \sabretooth\session::self()->get_site()->timezone ) );
-    $this->add_column( 'date', $header, true );
+    $this->add_column( 'user.name', 'string', 'User', true );
+    $this->add_column( 'site.name', 'string', 'Site', true );
+    $this->add_column( 'role.name', 'string', 'Role', true );
+    $this->add_column( 'operation.type', 'string', 'Type', true );
+    $this->add_column( 'operation.subject', 'string', 'Subject', true );
+    $this->add_column( 'operation.name', 'string', 'Name', true );
+    $this->add_column( 'elapsed_time', 'string', 'Elapsed', true );
+    $this->add_column( 'date', 'datetime', 'Date', true );
   }
 
   /**
