@@ -4,6 +4,8 @@
 <script type="text/javascript">
 $( function() {
   {% if participant_id|default(false) %}
+    {% from 'macros.twig' import notes_widget, dial_contact_widget %}
+
   // called when the dial_contact_widget's call button is pushed
   $( "#operator_dial__call" ).click( function() {
     {% if on_call %}
@@ -26,7 +28,7 @@ $( function() {
     var args = new Object();
     args.id = {{ participant_id }};
     slot_load( "{{ widget.full }}", "participant_view", "participant_view", args );
-    $( "#{{ widget.full}}_slot" ).dialog( {
+    $( "#{{ widget.full }}_slot" ).dialog( {
       title: "Viewing details for {{ participant_name }}",
       modal: true,
       width: 800,
@@ -50,7 +52,7 @@ $( function() {
 } );
 </script>
 
-<div id="{{ widget.full }}_slot"></div>
+<div id="{{ widget.full }}_slot" />
 
 <div class="ui-widget ui-widget-content app-widget-content">
   {% if participant_id|default(false) %}
@@ -58,7 +60,10 @@ $( function() {
     <table style="margin-top: 8px;">
       <tr>
         <td class="heading">Participant:</td>
-        <td class="content">{{ participant_name }}</td>
+        <td class="content" style="position:relative">
+          {{ participant_name }}
+          {{ notes_widget( widget.full, note_list|default([]) ) }}
+        </td>
       </tr>
       <tr>
         <td class="heading">Prefered Language:</td>
@@ -90,8 +95,7 @@ $( function() {
                   {{ on_call or 0 == current_calls ? "disabled" : "" }}>End Assignment</button>
         </td>
         <td align="right">
-          {% from 'macros.twig' import dial_contact_widget %}
-          {{ dial_contact_widget( "operator_dial",
+          {{ dial_contact_widget( widget.full,
                                   contacts|default(false),
                                   statuses|default(false),
                                   on_call ) }}

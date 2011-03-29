@@ -57,11 +57,52 @@
 {% endmacro %}
 
 {##
+ # This widget displays an icon/button which pops up a list of notes.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @param string name What to name the widget (used for namespacing)
+ # @param array note_list An array of notes
+ #}
+{% macro notes_widget( name, note_list, on_call ) %}
+  
+  <script type="text/javascript">
+  $( function() {
+    // identify a note by changing classes on mouse over/out
+    $( "#{{ name }}_notes" ).mouseover( function() {
+      $(this).removeClass( "padded" );
+      $(this).addClass( "ui-widget-content" );
+    } )
+    $( "#{{ name }}_notes" ).mouseout( function() {
+      $(this).removeClass( "ui-widget-content" );
+      $(this).addClass( "padded" );
+    } )
+
+    // note click callback
+    $( "#{{ name }}_notes" ).click( function() {
+      var args = new Object();
+      // TODO: implement: slot_load( "{{ name }}_notes", "note_display", "", args );
+      $( "#{{ name }}_notes_slot" ).dialog( {
+        title: "Notes",
+        modal: true,
+        width: 500,
+        height: 600
+      } );
+    } );
+  } );
+  </script>
+  
+  <div id="{{ name }}_notes" class="ui-icon ui-icon-comment padded" style="float:left" />
+  <div id="{{ name }}_notes_slot" />
+
+{% endmacro %}
+
+{##
  # Given a contact list this creates a widget for dialing phone numbers in that list.
  # @author Patrick Emond <emondpd@mcmaster.ca>
  # @param string name What to name the widget (used for namespacing)
- # @param array list An array of contacts where the key is a contact_id and the value is the
- #                   display text.
+ # @param array contact_list An array of contacts where the key is a contact_id and the value
+ #              is the display text.
+ # @param array status_list An array of all possible status results for after a call has been
+ #              completed.
  # @param bool on_call Whether the client is currently in a call.
  #}
 {% macro dial_contact_widget( name, contact_list, status_list, on_call ) %}
