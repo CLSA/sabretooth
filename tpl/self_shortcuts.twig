@@ -6,80 +6,72 @@
  # @param boolean navigation Whether to include the navigation buttons
  # @param boolean refresh Whether to include the refresh button
  # @param boolean home Whether to include the home button
- # @param boolean help Whether to include the help button
  #}
 {% extends "widget.twig" %}
+
+{% block javascript %}
+
+  <script type="text/javascript">
+    $( function() {
+      // make button icons
+      {% if navigation %}
+        $( "#{{ widget.full }}_prev" ).button( {
+          text: false,
+          icons: {
+            primary: "ui-icon-arrowthick-1-w"
+          }
+        } );
+        $( "#{{ widget.full }}_prev" ).click( function() {
+          slot_prev( 'main' );
+        } );
+        $( "#{{ widget.full }}_next" ).button( {
+          text: false,
+          icons: {
+            primary: "ui-icon-arrowthick-1-e"
+          }
+        } );
+        $( "#{{ widget.full }}_next" ).click( function() {
+          slot_next( 'main' );
+        } );
+      {% endif %}
+      
+      {% if refresh %}
+        $( "#{{ widget.full }}_refresh" ).button( {
+          text: false,
+          icons: {
+            primary: "ui-icon-arrowrefresh-1-e"
+          }
+        } );
+        $( "#{{ widget.full }}_refresh" ).click( function() {
+          slot_refresh( 'main' );
+        } );
+      {% endif %}
+      
+      {% if home %}
+        $( "#{{ widget.full }}_home" ).button( {
+          text: false,
+          icons: {
+            primary: "ui-icon-home"
+          }
+        } );
+        $( "#{{ widget.full }}_home" ).click( function() {
+          slot_load( 'main', 'self_home' );
+        } );
+      {% endif %}
+    } );
+  </script>
+
+{% endblock javascript %}
+
 {% block widget %}
-<script type="text/javascript">
-$( function() {
-  // make button icons
 
-{% if navigation %}
+  <span>
+    {% if navigation %}
+      <button id="{{ widget.full }}_prev">back</button>
+      <button id="{{ widget.full }}_next">forward</button>
+    {% endif %}
+    {% if refresh %}<button id="{{ widget.full }}_refresh">refresh</button>{% endif %}
+    {% if home %}<button id="{{ widget.full }}_home">home</button>{% endif %}
+  </span>
 
-  $( "#{{ widget.full }}_prev" ).button( {
-    text: false,
-    icons: {
-      primary: "ui-icon-arrowthick-1-w"
-    }
-  } );
-  $( "#{{ widget.full }}_prev" ).click( function() { slot_prev( 'main' ); } );
-  $( "#{{ widget.full }}_next" ).button( {
-    text: false,
-    icons: {
-      primary: "ui-icon-arrowthick-1-e"
-    }
-  } );
-  $( "#{{ widget.full }}_next" ).click( function() { slot_next( 'main' ); } );
-
-{% endif %}
-
-{% if refresh %}
-
-  $( "#{{ widget.full }}_refresh" ).button( {
-    text: false,
-    icons: {
-      primary: "ui-icon-arrowrefresh-1-e"
-    }
-  } );
-  $( "#{{ widget.full }}_refresh" ).click( function() { slot_refresh( 'main' ); } );
-
-{% endif %}
-
-{% if home %}
-
-  $( "#{{ widget.full }}_home" ).button( {
-    text: false,
-    icons: {
-      primary: "ui-icon-home"
-    }
-  } );
-  $( "#{{ widget.full }}_home" ).click( function() { slot_load( 'main', 'self_home' ); } );
-
-{% endif %}
-
-{% if help %}
-
-  $( "#{{ widget.full }}_help" ).button( {
-    text: false,
-    icons: {
-      primary: "ui-icon-help"
-    }
-  } );
-  $( "#{{ widget.full }}_help" ).click( function() { /*slot_load( 'main', 'help' ); TODO*/ } );
-
-{% endif %}
-
-} );
-</script>
-
-<span>
-  {% if navigation %}
-    <button id="{{ widget.full }}_prev">back</button>
-    <button id="{{ widget.full }}_next">forward</button>
-  {% endif %}
-  {% if refresh %}<button id="{{ widget.full }}_refresh">refresh</button>{% endif %}
-  {% if home %}<button id="{{ widget.full }}_home">home</button>{% endif %}
-  {% if help %}<button id="{{ widget.full }}_help">help</button>{% endif %}
-</span>
-
-{% endblock %}
+{% endblock widget %}

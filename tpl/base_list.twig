@@ -27,452 +27,443 @@
  # @param int max_page The maximum number of pages possible given the total number of items.
  #}
 {% extends "widget.twig" %}
-{% block widget %}
 
-<script type="text/javascript">
+{% block javascript %}
 
-// make button icons
-$( function() {
-  $( "button.{{ widget.full }}_sortable.{{ widget.full }}_unsorted" ).button( {
-    text: true,
-    icons: { primary: "ui-icon-triangle-2-n-s" }
-  } );
-  $( "button.{{ widget.full }}_sortable.{{ widget.full }}_sorted" ).button( {
-    text: true,
-    icons: { primary: "ui-icon-triangle-1-s" }
-  } );
-  $( "button.{{ widget.full }}_sortable.{{ widget.full }}_sorted_desc" ).button( {
-    text: true,
-    icons: { primary: "ui-icon-triangle-1-n" }
-  } );
-  $( "button.{{ widget.full }}_remove_restriction" ).button( {
-    text: true,
-    icons: { primary: "ui-icon-closethick" }
-  } );
-{% if viewable %}
-  $( "button.{{ widget.full }}_view" ).button( {
-    text: false,
-    icons: { primary: "ui-icon-document" }
-  } );
-{% endif %}
-{% if removable %}
-  $( "button.{{ widget.full }}_remove" ).button( {
-    text: false,
-    icons: { primary: "ui-icon-closethick" }
-  } );
-{% endif %}
-{% if addable %}
-  $( "#{{ widget.full }}_add" ).button( {
-    text: false,
-    icons: { primary: "ui-icon-plusthick" }
-  } );
-{% endif %}
-} );
+  <script type="text/javascript">
+    $( function() {
+      // make button icons
+      $( "button.{{ widget.full }}_sortable.{{ widget.full }}_unsorted" ).button( {
+        text: true,
+        icons: { primary: "ui-icon-triangle-2-n-s" }
+      } );
+      $( "button.{{ widget.full }}_sortable.{{ widget.full }}_sorted" ).button( {
+        text: true,
+        icons: { primary: "ui-icon-triangle-1-s" }
+      } );
+      $( "button.{{ widget.full }}_sortable.{{ widget.full }}_sorted_desc" ).button( {
+        text: true,
+        icons: { primary: "ui-icon-triangle-1-n" }
+      } );
+      $( "button.{{ widget.full }}_remove_restriction" ).button( {
+        text: true,
+        icons: { primary: "ui-icon-closethick" }
+      } );
 
-// highlight the row the mouse is over
-$( function() {
-  $(".{{ widget.full }}_table tbody tr").mouseover( function() {
-    $(this).addClass( "ui-widget-header" );
-  } );
-  $(".{{ widget.full }}_table tbody tr").mouseout( function() {
-    $(this).removeClass( "ui-widget-header" );
-  } );
-} );
-
-{% if viewable %}
-// view buttons
-$( function() {
-  $( ".{{ widget.full }}_view" ).click( function() {
-    var id_string = $(this).attr( 'id' );
-    var id = parseInt( id_string.substring( id_string.lastIndexOf('_') + 1 ) );
-    slot_load( {{ slot }},
-               "{{ widget.subject }}_view",
-               "{{ widget.subject }}_view",
-               { "id": id } );
-  } );
-} );
-{% endif %}
-
-{% if removable %}
-// remove buttons
-$( function() {
-  $( ".{{ widget.full }}_remove" ).click( function() {
-    var id_string = $(this).attr( 'id' );
-    var id = parseInt( id_string.substring( id_string.lastIndexOf('_') + 1 ) );
-    
-    {% if parent.exists %}
-      var args = new Object();
-      args.id = {{ parent.id }};
-      args.remove_id = id;
-      confirm_dialog(
-        "Remove {{ widget.subject }}?",
-        "Are you sure you want to remove the {{ widget.subject }} from the {{ parent.subject }}?",
-        function() {
-          if( send_action( "{{ parent.subject }}", "delete_{{ widget.subject }}", args ) )
-          {
-            {% if widget.subject == "access" %}slot_refresh( "settings" );{% endif %}
-            slot_refresh( {{ slot }} );
-          }
+      {% if viewable %}
+        $( "button.{{ widget.full }}_view" ).button( {
+          text: false,
+          icons: { primary: "ui-icon-document" }
         } );
-    {% else %}
-      confirm_dialog(
-        "Delete {{ widget.subject }}?",
-        "Are you sure you want to delete the {{ widget.subject }}?",
-        function() {
-          if( send_action( "{{ widget.subject }}", "delete", { "id": id } ) )
-          {
-            {% if widget.subject == "access" %}slot_refresh( "settings" );{% endif %}
-            slot_refresh( {{ slot }} );
-          }
+      {% endif %}
+
+      {% if removable %}
+        $( "button.{{ widget.full }}_remove" ).button( {
+          text: false,
+          icons: { primary: "ui-icon-closethick" }
         } );
-    {% endif %}
-  } );
-} );
-{% endif %}
+      {% endif %}
 
-{% if addable %}
-{% block add_button_js %}
-// add button
-$( function() {
-  $( "#{{ widget.full }}_add" ).click( function() {
-    {% if parent.exists %}
-      slot_load( {{ slot }},
-                 "{{ parent.subject }}_add_{{ widget.subject }}",
-                 "{{ parent.subject }}_add_{{ widget.subject }}",
-                 { "id": {{ parent.id }} } );
-    {% else %}
-      slot_load( {{ slot }}, "{{ widget.subject }}_add" );
-    {% endif %}
-  } );
-} );
-{% endblock add_button_js %}
-{% endif %}
-
-{% if checkable %}
-{# TODO: need to create a library for these kinds of cookie operations #}
-$( function() {
-  // get the checked id object from the cookies
-  var json_checked_ids =
-    $.cookie( "{{ widget.compound }}_checked_ids" );
-  var checked_ids = undefined == json_checked_ids
-                  ? new Object()
-                  : jQuery.parseJSON( json_checked_ids );
+      {% if addable %}
+        $( "#{{ widget.full }}_add" ).button( {
+          text: false,
+          icons: { primary: "ui-icon-plusthick" }
+        } );
+      {% endif %}
     
-  // on page load, set check button states based on its cookie
-  $( ".{{ widget.full }}_check" ).each( function() {
-    if( checked_ids[ $(this).attr( "id" ) ] ) $(this).attr( "checked", "checked" );
-  } );
-
-  // on change to a checkbox, set check button cookie
-  $( ".{{ widget.full }}_check" ).change( function() {
-    // add or remove the checkbox id to the object and replace the old cookie
-    if( $(this).attr( "checked" ) ) checked_ids[ $(this).attr( "id" ) ] = true;
-    else delete checked_ids[ $(this).attr( "id" ) ];
-    $.cookie( "{{ widget.compound }}_checked_ids",
-              JSON.stringify( checked_ids ) );
-  } );
-
-  // on clicking the "check all" button, check all (visible) checkboxes and set their cookies
-  $( "#{{ widget.full }}_check_all" ).click( function() {
-    $( ".{{ widget.full }}_check" ).each( function() {
-      $(this).attr( "checked", true );
-      checked_ids[ $(this).attr( "id" ) ] = true;
-    } );
-
-    // replace the old cookie
-    $.cookie( "{{ widget.compound }}_checked_ids",
-              JSON.stringify( checked_ids ) );
-  } );
-
-  // uncheck all (visible) checkboxes and set their cookies as well
-  $( "#{{ widget.full }}_check_none" ).click( function() {
-    $( ".{{ widget.full }}_check" ).each( function() {
-      $(this).attr( "checked", false );
-      delete checked_ids[ $(this).attr( "id" ) ];
-    } );
+      // highlight the row the mouse is over
+      $(".{{ widget.full }}_table tbody tr").mouseover( function() {
+        $(this).addClass( "ui-widget-header" );
+      } );
+      $(".{{ widget.full }}_table tbody tr").mouseout( function() {
+        $(this).removeClass( "ui-widget-header" );
+      } );
     
-    // replace the old cookie
-    $.cookie( "{{ widget.compound }}_checked_ids",
-              JSON.stringify( checked_ids ) );
-  } );
+      {% if viewable %}
+        // view buttons
+        $( ".{{ widget.full }}_view" ).click( function() {
+          var id_string = $(this).attr( 'id' );
+          var id = parseInt( id_string.substring( id_string.lastIndexOf('_') + 1 ) );
+          slot_load( {{ slot }},
+                     "{{ widget.subject }}_view",
+                     "{{ widget.subject }}_view",
+                     { "id": id } );
+        } );
+      {% endif %}
+    
+      {% if removable %}
+        // remove buttons
+        $( ".{{ widget.full }}_remove" ).click( function() {
+          var id_string = $(this).attr( 'id' );
+          var id = parseInt( id_string.substring( id_string.lastIndexOf('_') + 1 ) );
+          
+          {% if parent.exists %}
+            var args = new Object();
+            args.id = {{ parent.id }};
+            args.remove_id = id;
+            confirm_dialog(
+              "Remove {{ widget.subject }}?",
+              "Are you sure you want to remove the {{ widget.subject }} " +
+              "from the {{ parent.subject }}?",
+              function() {
+                if( send_action( "{{ parent.subject }}", "delete_{{ widget.subject }}", args ) ) {
+                  {% if widget.subject == "access" %}slot_refresh( "settings" );{% endif %}
+                  slot_refresh( {{ slot }} );
+                }
+              }
+            );
+          {% else %}
+            confirm_dialog(
+              "Delete {{ widget.subject }}?",
+              "Are you sure you want to delete the {{ widget.subject }}?",
+              function() {
+                if( send_action( "{{ widget.subject }}", "delete", { "id": id } ) ) {
+                  {% if widget.subject == "access" %}slot_refresh( "settings" );{% endif %}
+                  slot_refresh( {{ slot }} );
+                }
+              }
+            );
+          {% endif %}
+        } );
+      {% endif %}
 
-  // uncheck all (visible) checkboxes and set their cookies as well
-  $( "#{{ widget.full }}_check_invert" ).click( function() {
-    $( ".{{ widget.full }}_check" ).each( function() {
-      var old = $(this).attr( "checked" );
-      $(this).attr( "checked", !old );
-      if( !old ) checked_ids[ $(this).attr( "id" ) ] = true;
-      else delete checked_ids[ $(this).attr( "id" ) ];
-    } );
-
-    // replace the old cookie
-    $.cookie( "{{ widget.compound }}_checked_ids",
-              JSON.stringify( checked_ids ) );
-  } );
-
-  // create button set
-  $( "#{{ widget.full }}_check_none" ).button().parent().buttonset();
-} );
-{% endif %}
-
-// column sorting and restricting
-$( function() {
-  $header_buttons = $( "button.{{ widget.full }}_sortable" );
-  $header_buttons.noContext();
-
-  // left-clicking a header button sorts by that column
-  $header_buttons.click( function() {
-    var args = new Object();
-    args.sort_column = $(this).parent( "th" ).attr("id");
-    args.sort_desc = "{{ sort_column }}" == args.sort_column ? {{ sort_desc ? 0 : 1 }} : 0;
-    slot_load( {{ slot }},
-               "{{ parent.exists ? parent.full : widget.full }}",
-               "{{ widget.full }}",
-               args );
-  } );
-
-  // right-clicking a header button adds a new restriction
-  $header_buttons.rightClick( function( event ) {
-    var column = $(this).parent( "th" ).attr( "id" );
-    var column_name = $(this).button().text();
-    $( "#{{ widget.full }}_restrict_dialog_label" ).html( column_name );
-    $( "#{{ widget.full }}_restrict_dialog_id" ).val( column );
-    $( "#{{ widget.full }}_restrict_dialog_value" ).val( "" );
-    $( "#{{ widget.full }}_restrict_dialog" ).dialog( "open" );
-  } );
-  
-  // left-clicking a restriction button removes it
-  $( "button.{{ widget.full }}_remove_restriction" ).click( function() {
-    // create the restrictions array
-    var restrictions = new Object();
-{% for id, restrict in restrictions %}
-    var column = $(this).parent( "th" ).attr( "id" );
-    if( "{{ id }}" != column )
-      restrictions["{{ id }}"] = {
-        compare: "{{ restrict.compare }}",
-        value: "{{ restrict.value }}"
-      };
-{% endfor %}
-
-    var args = new Object();
-    args.restrictions = restrictions;
-    slot_load( {{ slot }},
-               "{{ parent.exists ? parent.full : widget.full }}",
-               "{{ widget.full }}",
-               args );
-  } );
-
-  // the add-restriction dialog
-  $( "#{{ widget.full }}_restrict_dialog" ).dialog( {
-    title: "Restrict list",
-    autoOpen: false,
-    height: 150,
-    width: 450,
-    modal: true,
-    buttons: {
-      Ok: function() {
+      {% if addable %}
+        // add button
+        $( "#{{ widget.full }}_add" ).click( function() {
+          {% if parent.exists %}
+            slot_load( {{ slot }},
+                       "{{ parent.subject }}_add_{{ widget.subject }}",
+                       "{{ parent.subject }}_add_{{ widget.subject }}",
+                       { "id": {{ parent.id }} } );
+          {% else %}
+            slot_load( {{ slot }}, "{{ widget.subject }}_add" );
+          {% endif %}
+        } );
+      {% endif %}
+    
+      {% if checkable %}
+        // get the checked id object from the cookies
+        var json_checked_ids = $.cookie( "{{ widget.compound }}_checked_ids" );
+        var checked_ids = undefined == json_checked_ids
+                        ? new Object()
+                        : jQuery.parseJSON( json_checked_ids );
+          
+        // on page load, set check button states based on its cookie
+        $( ".{{ widget.full }}_check" ).each( function() {
+          if( checked_ids[ $(this).attr( "id" ) ] ) $(this).attr( "checked", "checked" );
+        } );
+      
+        // on change to a checkbox, set check button cookie
+        $( ".{{ widget.full }}_check" ).change( function() {
+          // add or remove the checkbox id to the object and replace the old cookie
+          if( $(this).attr( "checked" ) ) checked_ids[ $(this).attr( "id" ) ] = true;
+          else delete checked_ids[ $(this).attr( "id" ) ];
+          $.cookie( "{{ widget.compound }}_checked_ids", JSON.stringify( checked_ids ) );
+        } );
+      
+        // on clicking the "check all" button, check all (visible) checkboxes and set their cookies
+        $( "#{{ widget.full }}_check_all" ).click( function() {
+          $( ".{{ widget.full }}_check" ).each( function() {
+            $(this).attr( "checked", true );
+            checked_ids[ $(this).attr( "id" ) ] = true;
+          } );
+      
+          // replace the old cookie
+          $.cookie( "{{ widget.compound }}_checked_ids", JSON.stringify( checked_ids ) );
+        } );
+      
+        // uncheck all (visible) checkboxes and set their cookies as well
+        $( "#{{ widget.full }}_check_none" ).click( function() {
+          $( ".{{ widget.full }}_check" ).each( function() {
+            $(this).attr( "checked", false );
+            delete checked_ids[ $(this).attr( "id" ) ];
+          } );
+          
+          // replace the old cookie
+          $.cookie( "{{ widget.compound }}_checked_ids", JSON.stringify( checked_ids ) );
+        } );
+      
+        // uncheck all (visible) checkboxes and set their cookies as well
+        $( "#{{ widget.full }}_check_invert" ).click( function() {
+          $( ".{{ widget.full }}_check" ).each( function() {
+            var old = $(this).attr( "checked" );
+            $(this).attr( "checked", !old );
+            if( !old ) checked_ids[ $(this).attr( "id" ) ] = true;
+            else delete checked_ids[ $(this).attr( "id" ) ];
+          } );
+      
+          // replace the old cookie
+          $.cookie( "{{ widget.compound }}_checked_ids", JSON.stringify( checked_ids ) );
+        } );
+      
+        // create button set
+        $( "#{{ widget.full }}_check_none" ).button().parent().buttonset();
+      {% endif %}
+    
+      // column sorting and restricting
+      $header_buttons = $( "button.{{ widget.full }}_sortable" );
+      $header_buttons.noContext();
+    
+      // left-clicking a header button sorts by that column
+      $header_buttons.click( function() {
+        var args = new Object();
+        args.sort_column = $(this).parent( "th" ).attr("id");
+        args.sort_desc = "{{ sort_column }}" == args.sort_column ? {{ sort_desc ? 0 : 1 }} : 0;
+        slot_load( {{ slot }},
+                   "{{ parent.exists ? parent.full : widget.full }}",
+                   "{{ widget.full }}",
+                   args );
+      } );
+    
+      // right-clicking a header button adds a new restriction
+      $header_buttons.rightClick( function( event ) {
+        var column = $(this).parent( "th" ).attr( "id" );
+        var column_name = $(this).button().text();
+        $( "#{{ widget.full }}_restrict_dialog_label" ).html( column_name );
+        $( "#{{ widget.full }}_restrict_dialog_id" ).val( column );
+        $( "#{{ widget.full }}_restrict_dialog_value" ).val( "" );
+        $( "#{{ widget.full }}_restrict_dialog" ).dialog( "open" );
+      } );
+      
+      // left-clicking a restriction button removes it
+      $( "button.{{ widget.full }}_remove_restriction" ).click( function() {
         // create the restrictions array
         var restrictions = new Object();
-{% for id, restrict in restrictions %}
-        restrictions["{{ id }}"] = {
-          compare: "{{ restrict.compare }}",
-          value: "{{ restrict.value }}"
-        };
-{% endfor %}
-        restrictions[$( "#{{ widget.full }}_restrict_dialog_id" ).val()] = {
-          compare: $( "#{{ widget.full }}_restrict_dialog_compare" ).val(),
-          value: $( "#{{ widget.full }}_restrict_dialog_value" ).val()
-        };
-
+        {% for id, restrict in restrictions %}
+          var column = $(this).parent( "th" ).attr( "id" );
+          if( "{{ id }}" != column )
+            restrictions["{{ id }}"] = {
+              compare: "{{ restrict.compare }}",
+              value: "{{ restrict.value }}"
+            };
+        {% endfor %}
+    
         var args = new Object();
         args.restrictions = restrictions;
         slot_load( {{ slot }},
                    "{{ parent.exists ? parent.full : widget.full }}",
                    "{{ widget.full }}",
                    args );
+      } );
 
-        $(this).dialog( "close" );
-      },
-      Cancel: function() {
-        $(this).dialog( "close" );
-      }
-    }
-  } );
-} );
+      // the add-restriction dialog
+      $( "#{{ widget.full }}_restrict_dialog" ).dialog( {
+        title: "Restrict list",
+        autoOpen: false,
+        height: 150,
+        width: 450,
+        modal: true,
+        buttons: {
+          Ok: function() {
+            // create the restrictions array
+            var restrictions = new Object();
+            {% for id, restrict in restrictions %}
+              restrictions["{{ id }}"] = {
+                compare: "{{ restrict.compare }}",
+                value: "{{ restrict.value }}"
+              };
+            {% endfor %}
+            restrictions[$( "#{{ widget.full }}_restrict_dialog_id" ).val()] = {
+              compare: $( "#{{ widget.full }}_restrict_dialog_compare" ).val(),
+              value: $( "#{{ widget.full }}_restrict_dialog_value" ).val()
+            };
+    
+            var args = new Object();
+            args.restrictions = restrictions;
+            slot_load( {{ slot }},
+                       "{{ parent.exists ? parent.full : widget.full }}",
+                       "{{ widget.full }}",
+                       args );
+    
+            $(this).dialog( "close" );
+          },
+          Cancel: function() {
+            $(this).dialog( "close" );
+          }
+        }
+      } );
+    
+      {% if items_per_page < number_of_items %}
+        // previous page button
+        $( "#{{ widget.full }}_page_prev" ).click( function() {
+          var args = new Object();
+          args.page = {{ page - 1 }};
+          slot_load( {{ slot }},
+                     "{{ parent.exists ? parent.full : widget.full }}",
+                     "{{ widget.full }}",
+                     args );
+        } );
+      
+        // next page button
+        $( "#{{ widget.full }}_page_next" ).click( function() {
+          var args = new Object();
+          args.page = {{ page + 1 }};
+          slot_load( {{ slot }},
+                     "{{ parent.exists ? parent.full : widget.full }}",
+                     "{{ widget.full }}",
+                     args );
+        } );
+      
+        // create a button set
+        $( "#{{ widget.full }}_page_next" ).button().parent().buttonset();
+      {% endif %}
+    } );
+  </script>
 
-{% if items_per_page < number_of_items %}
-$( function() {
-  // previous page button
-  $( "#{{ widget.full }}_page_prev" ).click( function() {
-    var args = new Object();
-    args.page = {{ page - 1 }};
-    slot_load( {{ slot }},
-               "{{ parent.exists ? parent.full : widget.full }}",
-               "{{ widget.full }}",
-               args );
-  } );
+{% endblock javascript %}
 
-  // next page button
-  $( "#{{ widget.full }}_page_next" ).click( function() {
-    var args = new Object();
-    args.page = {{ page + 1 }};
-    slot_load( {{ slot }},
-               "{{ parent.exists ? parent.full : widget.full }}",
-               "{{ widget.full }}",
-               args );
-  } );
+{% block widget %}
 
-  // create a button set
-  $( "#{{ widget.full }}_page_next" ).button().parent().buttonset();
-} );
-{% endif %}
-
-</script>
-
-<div id="{{ widget.full }}_restrict_dialog">
-  <form>
-    <input type="hidden" id="{{ widget.full }}_restrict_dialog_id" value="" />
-    <table>
-      <tr>
-        <td style="white-space:nowrap;">
-          <div id="{{ widget.full }}_restrict_dialog_label">Value</div>
-        </td>
-        <td>
-          <select id="{{ widget.full }}_restrict_dialog_compare">
-            <option selected>is</option>
-            <option>is not</option>
-            <option>like</option>
-            <option>not like</option>
-          </select>
-        </td>
-        <td width="95%">
-          <input type="text" id="{{ widget.full }}_restrict_dialog_value" value=""
-                 class="text ui-widget-content ui-corner-all" style="width:100%" />
-        </td>
-      </tr>
-    </table>
-  </form>
-</div>
-
-<table class="{{ widget.full }}_table">
+  <div id="{{ widget.full }}_restrict_dialog">
+    <form>
+      <input type="hidden" id="{{ widget.full }}_restrict_dialog_id" value="" />
+      <table>
+        <tr>
+          <td style="white-space:nowrap;">
+            <div id="{{ widget.full }}_restrict_dialog_label">Value</div>
+          </td>
+          <td>
+            <select id="{{ widget.full }}_restrict_dialog_compare">
+              <option selected>is</option>
+              <option>is not</option>
+              <option>like</option>
+              <option>not like</option>
+            </select>
+          </td>
+          <td width="95%">
+            <input type="text" id="{{ widget.full }}_restrict_dialog_value" value=""
+                   class="text ui-widget-content ui-corner-all" style="width:100%" />
+          </td>
+        </tr>
+      </table>
+    </form>
+  </div>
+  
   {% set number_of_columns = 0 %}
-  <thead class="ui-widget-header">
-    <tr>
-      {% if checkable %}
-      <th align="center"><div class="ui-icon ui-icon-check" style="padding:2px"></div></th>
-      {% set number_of_columns = number_of_columns + 1 %}
-      {% endif %}
-      {% for column_id, column in columns %}
-        {% if column.sortable|default(false) %}
-          <th id="{{ column_id }}" style="vertical-align:top;">
-            {% if column_id == sort_column %}
-            <button class="{{ widget.full }}_sortable {{ widget.full }}_sorted{{ sort_desc ? '_desc' : '' }}">
-            {% else %}
-            <button class="{{ widget.full }}_sortable {{ widget.full }}_unsorted">
-            {% endif %}
-              {{ column.heading }}
-            </button>
-          {% for restrict_id, restrict in restrictions %}
-            {% if restrict_id == column_id %}
-            <br />
-            <button class="{{ widget.full }}_remove_restriction">
-              {{ restrict.compare }} {{ restrict.value }}
-            </button>
-            {% endif %}
-          {% endfor %}
-          </th>
-          {% set number_of_columns = number_of_columns + 1 %}
-        {% else %}
-          <th style="padding:0.5em">{{ column.heading }}</th>
-          {% set number_of_columns = number_of_columns + 1 %}
-        {% endif %}
-      {% endfor %}
-      {% if viewable %}
-      <th width="1%"></th>
-      {% set number_of_columns = number_of_columns + 1 %}
-      {% endif %}
-      {% if removable %}
-      <th width="1%"></th>
-      {% set number_of_columns = number_of_columns + 1 %}
-      {% endif %}
-  </thead>
-  {% if rows|count %}
-  <tbody>
-    {% for row in rows %}
-    <tr>
-      {% if checkable %}
-      <td>
-        <input type="checkbox"
-               class="{{ widget.full }}_check"
-               id="{{ widget.compound }}_check_{{ row.id }}" />
-      </td>
-      {% endif %}
-      {% for column_id, column in columns %}
-      <td {% if column.align|default(false) %}align="{{ column.align }}"{% endif %}
-          style="font-weight: normal; padding-top:0.2em; padding-bottom:0.2em;">
-        {% if 'text' == column.type %}
-        {% autoescape false %}{{ row.columns[column_id] }}{% endautoescape %}
-        {% else %} {# no other column types require special formatting #}
-        {{ row.columns[column_id] }}
-        {% endif %}
-      </td>
-      {% endfor %}
-      {% if viewable %}
-      <td>
-        <button class="{{ widget.full }}_view"
-                id="{{ widget.full }}_view_{{ row.id }}">view</button>
-      </td>
-      {% endif %}
-      {% if removable %}
-      <td>
-        <button class="{{ widget.full }}_remove"
-                id="{{ widget.full }}_remove_{{ row.id }}">
-          remove{% if parent.exists %} from {{ parent.subject }}{% endif %}
-        </button>
-      </td>
-      {% endif %}
-    </tr>
-    {% endfor %}
-  </tbody>
-  {% endif %}
-  <tfoot class="ui-widget-header">
-    <tr>
-      <th colspan="{{ addable ? number_of_columns - 1 : 0 }}">
+  <table class="{{ widget.full }}_table">
+    <thead class="ui-widget-header">
+      <tr>
         {% if checkable %}
-        <span>
-          Check boxes:
-          <button style="width:80px" id="{{ widget.full }}_check_all">all</button>
-          <button style="width:80px" id="{{ widget.full }}_check_none">none</button>
-          <button style="width:80px" id="{{ widget.full }}_check_invert">invert</button>
-        </span>
-        <span style="margin-left:20px"></span>
+          <th align="center"><div class="ui-icon ui-icon-check" style="padding:2px"></div></th>
+          {% set number_of_columns = number_of_columns + 1 %}
         {% endif %}
-        {% if rows|count %}
-        {% set item_from = ( page - 1 ) * items_per_page + 1 %}
-        {% set item_to = item_from + rows|count - 1 %}
-        Viewing: {{ item_from }} to {{ item_to }} of {{ number_of_items }}
-        {% else %}
-        No {{ widget.subjects }} found.
+        {% for column_id, column in columns %}
+          {% if column.sortable|default(false) %}
+            <th id="{{ column_id }}" style="vertical-align:top;">
+              <button class="{{ widget.full }}_sortable
+                {% if column_id == sort_column %}
+                  {{ widget.full }}_sorted{{ sort_desc ? '_desc' : '' }}
+                {% else %}
+                  {{ widget.full }}_unsorted
+                {% endif %}
+              ">{{ column.heading }}</button>
+              {% for restrict_id, restrict in restrictions %}
+                {% if restrict_id == column_id %}
+                  <br />
+                  <button class="{{ widget.full }}_remove_restriction">
+                    {{ restrict.compare }} {{ restrict.value }}
+                  </button>
+                {% endif %}
+              {% endfor %}
+            </th>
+            {% set number_of_columns = number_of_columns + 1 %}
+          {% else %}
+            <th style="padding:0.5em">{{ column.heading }}</th>
+            {% set number_of_columns = number_of_columns + 1 %}
+          {% endif %}
+        {% endfor %}
+
+        {% if viewable %}
+          <th width="1%"></th>
+          {% set number_of_columns = number_of_columns + 1 %}
         {% endif %}
-        {% if items_per_page < number_of_items %}
-        <span style="margin-left:20px"></span>
-        <span>
-          Page:
-          <button style="width:80px"
-                  id="{{ widget.full }}_page_prev"
-                  {{ 1 == page ? 'disabled' : '' }}>prev</button>
-          <button style="width:80px"
-                  id="{{ widget.full }}_page_next"
-                  {{ max_page == page ? 'disabled' : '' }}>next</button>
-        </span>
+  
+        {% if removable %}
+          <th width="1%"></th>
+          {% set number_of_columns = number_of_columns + 1 %}
         {% endif %}
-      </th>
-      {% if addable %}
-      <th><button id="{{ widget.full }}_add">
-        add {{ widget.subject }}{% if parent.exists %} to {{ parent.subject }}{% endif %}
-      </button></th>
-      {% endif %}
-    </tr>
-  </tfoot>
-</table>
-{% endblock %}
+      </tr>
+    </thead>
+    {% if rows|count %}
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            {% if checkable %}
+              <td>
+                <input type="checkbox"
+                       class="{{ widget.full }}_check"
+                       id="{{ widget.compound }}_check_{{ row.id }}" />
+              </td>
+            {% endif %}
+            {% for column_id, column in columns %}
+              <td {% if column.align|default(false) %}align="{{ column.align }}"{% endif %}
+                  style="font-weight: normal; padding-top:0.2em; padding-bottom:0.2em;">
+              {% if 'text' == column.type %}
+                {% autoescape false %}{{ row.columns[column_id] }}{% endautoescape %}
+              {% else %} {# no other column types require special formatting #}
+                {{ row.columns[column_id] }}
+              {% endif %}
+              </td>
+            {% endfor %}
+            {% if viewable %}
+              <td>
+                <button class="{{ widget.full }}_view"
+                        id="{{ widget.full }}_view_{{ row.id }}">view</button>
+              </td>
+            {% endif %}
+            {% if removable %}
+              <td>
+                <button class="{{ widget.full }}_remove"
+                        id="{{ widget.full }}_remove_{{ row.id }}">
+                  remove{% if parent.exists %} from {{ parent.subject }}{% endif %}
+                </button>
+              </td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    {% endif %}
+    <tfoot class="ui-widget-header">
+      <tr>
+        <th colspan="{{ addable ? number_of_columns - 1 : 0 }}">
+          {% if checkable %}
+            <span>
+              Check boxes:
+              <button style="width:80px" id="{{ widget.full }}_check_all">all</button>
+              <button style="width:80px" id="{{ widget.full }}_check_none">none</button>
+              <button style="width:80px" id="{{ widget.full }}_check_invert">invert</button>
+            </span>
+            <span style="margin-left:20px"></span>
+          {% endif %}
+
+          {% if rows|count %}
+            {% set item_from = ( page - 1 ) * items_per_page + 1 %}
+            {% set item_to = item_from + rows|count - 1 %}
+            Viewing: {{ item_from }} to {{ item_to }} of {{ number_of_items }}
+          {% else %}
+            No {{ widget.subjects }} found.
+          {% endif %}
+
+          {% if items_per_page < number_of_items %}
+            <span style="margin-left:20px"></span>
+            <span>
+              Page:
+              <button style="width:80px"
+                      id="{{ widget.full }}_page_prev"
+                      {{ 1 == page ? 'disabled' : '' }}>prev</button>
+              <button style="width:80px"
+                      id="{{ widget.full }}_page_next"
+                      {{ max_page == page ? 'disabled' : '' }}>next</button>
+            </span>
+          {% endif %}
+        </th>
+        {% if addable %}
+          <th><button id="{{ widget.full }}_add">
+            add {{ widget.subject }}{% if parent.exists %} to {{ parent.subject }}{% endif %}
+          </button></th>
+        {% endif %}
+      </tr>
+    </tfoot>
+  </table>
+
+{% endblock widget %}

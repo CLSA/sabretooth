@@ -6,346 +6,345 @@
  #}
 {% extends "base_record.twig" %}
 
-{% block record_javascript %}
+{% block javascript %}
+
+  {{ parent() }}
   <script type="text/javascript">
-  // make mutable elements
-  $( function () {
-    // identify a mutable element by changing classes on mouse over/out
-    $( "div.mutable" ).mouseover( function() {
-      $(this).removeClass( "padded" );
-      $(this).addClass( "ui-widget-content" );
-    } )
-    $( "div.mutable" ).mouseout( function() {
-      $(this).removeClass( "ui-widget-content" );
-      $(this).addClass( "padded" );
-    } )
-  } );
-  
-  /**
-   * Processes jeditable value changes.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string new_value The elements new value.
-   * @param string type The type of element being edited.
-   */
-  function process_change( element, new_value, type )
-  {
-    // don't do anything if there hasn't been any change to the value
-    var old_value = $( "#old_" + element.attr( 'id' ) ).val();
-    if( new_value == old_value ) return old_value;
-  
-    // build the args object
-    var id_string = element.attr( 'id' );
-    var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
-    var args = new Object();
-    args.id = {{ id|default(0) }};
-    var columns = new Object();
-    
-    // when changing start_time, also adjust end_time
-    if( 'time' == type && 'start_time' == column_name )
-    {
-      // determine the time difference between the old and new time
-      end_time_obj = new Date( "Jan 2, 2000 " + $( "#old_{{ widget.full }}__end_time" ).val() );
-      old_time_obj = new Date( "Jan 2, 2000 " + old_value );
-      new_time_obj = new Date( "Jan 2, 2000 " + new_value );
-      end_time_obj.setTime(
-        end_time_obj.getTime() + ( new_time_obj.getTime() - old_time_obj.getTime() ) );
-      var hours = ( end_time_obj.getHours() < 10 ? '0' : '' ) + end_time_obj.getHours();
-      var minutes = ( end_time_obj.getMinutes() < 10 ? '0' : '' ) + end_time_obj.getMinutes();
-      columns.end_time = hours + ":" + minutes;
-    }
-
-    // make sure to change empty strings for boolean and enum values to NULL
-    if( 'boolean' == type || 'enum' == type )
-      columns[column_name] = 'NULL' == new_value ? '' : new_value;
-    else columns[column_name] = new_value;
-    args.columns = columns;
-
-    // send the action, updating the hidden "old" input upon success
-    if( send_action( "{{ widget.subject }}", "edit", args ) )
-    {
-      // if we are setting start_time, then update end_time
-      if( 'time' == type && 'start_time' == column_name )
-      {
-        $( "#old_{{ widget.full }}__end_time" ).val( columns.end_time );
-        $( "#{{ widget.full }}__end_time" ).val( columns.end_time );
-      }
-
-      if( 'boolean' != type && 'enum' != type )
-        $( "#old_" + element.attr( 'id' ) ).val( new_value );
-      return new_value;
-    }
-    else
-    {
-      // put the old value back
-      element.val( old_value );
-    }
-  
-    return old_value;
-  }
-  
-  {% if removable %}
-  // delete button
-  $( function () {
-    $( "button.{{ widget.full }}_remove" ).click( function() {
-    confirm_dialog(
-      "Delete {{ widget.subject }}?",
-      "Are you sure you want to remove this {{ widget.subject }}?",
-      function() {
-        if( send_action( "{{ widget.subject }}", "delete", { "id": {{ id|default(0) }} } ) )
-          slot_prev( {{ slot }} );
-      } );
-  
+    // make mutable elements
+    $( function () {
+      // identify a mutable element by changing classes on mouse over/out
+      $( "div.mutable" ).mouseover( function() {
+        $(this).removeClass( "padded" );
+        $(this).addClass( "ui-widget-content" );
+      } )
+      $( "div.mutable" ).mouseout( function() {
+        $(this).removeClass( "ui-widget-content" );
+        $(this).addClass( "padded" );
+      } )
     } );
-  } );
-  {% endif %}
+    
+    /**
+     * Processes jeditable value changes.
+     * @author Patrick Emond <emondpd@mcmaster.ca>
+     * @param string new_value The elements new value.
+     * @param string type The type of element being edited.
+     */
+    function process_change( element, new_value, type ) {
+      // don't do anything if there hasn't been any change to the value
+      var old_value = $( "#old_" + element.attr( 'id' ) ).val();
+      if( new_value == old_value ) return old_value;
+    
+      // build the args object
+      var id_string = element.attr( 'id' );
+      var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
+      var args = new Object();
+      args.id = {{ id|default(0) }};
+      var columns = new Object();
+      
+      // when changing start_time, also adjust end_time
+      if( 'time' == type && 'start_time' == column_name ) {
+        // determine the time difference between the old and new time
+        end_time_obj = new Date( "Jan 2, 2000 " + $( "#old_{{ widget.full }}__end_time" ).val() );
+        old_time_obj = new Date( "Jan 2, 2000 " + old_value );
+        new_time_obj = new Date( "Jan 2, 2000 " + new_value );
+        end_time_obj.setTime(
+          end_time_obj.getTime() + ( new_time_obj.getTime() - old_time_obj.getTime() ) );
+        var hours = ( end_time_obj.getHours() < 10 ? '0' : '' ) + end_time_obj.getHours();
+        var minutes = ( end_time_obj.getMinutes() < 10 ? '0' : '' ) + end_time_obj.getMinutes();
+        columns.end_time = hours + ":" + minutes;
+      }
+    
+      // make sure to change empty strings for boolean and enum values to NULL
+      if( 'boolean' == type || 'enum' == type )
+        columns[column_name] = 'NULL' == new_value ? '' : new_value;
+      else columns[column_name] = new_value;
+      args.columns = columns;
+    
+      // send the action, updating the hidden "old" input upon success
+      if( send_action( "{{ widget.subject }}", "edit", args ) ) {
+        // if we are setting start_time, then update end_time
+        if( 'time' == type && 'start_time' == column_name ) {
+          $( "#old_{{ widget.full }}__end_time" ).val( columns.end_time );
+          $( "#{{ widget.full }}__end_time" ).val( columns.end_time );
+        }
+    
+        if( 'boolean' != type && 'enum' != type )
+          $( "#old_" + element.attr( 'id' ) ).val( new_value );
+        return new_value;
+      } else {
+        // put the old value back
+        element.val( old_value );
+      }
+    
+      return old_value;
+    }
+    
+    {% if removable %}
+      // delete button
+      $( function () {
+        $( "button.{{ widget.full }}_remove" ).click( function() {
+        confirm_dialog(
+          "Delete {{ widget.subject }}?",
+          "Are you sure you want to remove this {{ widget.subject }}?",
+          function() {
+            if( send_action( "{{ widget.subject }}", "delete", { "id": {{ id|default(0) }} } ) )
+              slot_prev( {{ slot }} );
+          } );
+        } );
+      } );
+    {% endif %}
   </script>
-{% endblock record_javascript %}
+
+{% endblock javascript %}
 
 {% block record_items %}
   <table>
-  {% for item_id, entry in item %}
+    {% for item_id, entry in item %}
     
-    {% if 'hidden' != entry.type %}
-      {# make null entries an empty string #}
-      {% set entry_value = entry.value is defined ? entry.value : "" %}
-      {% if 'enum' == entry.type %}
-        {% set enum_display_value = '' == entry_value
-                                  ? entry.enum['NULL']
-                                  : entry.enum[entry_value] %}
-      {% endif %}
-
-      <tr>
-        <td class="heading">
-          <span class="title">{{ entry.heading }}:</span>
-        </td>
-        <td class="content">
-
-      {% if 'constant' == entry.type or not editable %}
-        
+      {% if 'hidden' != entry.type %}
+        {# make null entries an empty string #}
+        {% set entry_value = entry.value is defined ? entry.value : "" %}
         {% if 'enum' == entry.type %}
-        <div id="{{ widget.full }}__{{ item_id }}" class="padded">{{ enum_display_value }}</div>
-        {% else %}
-        <div id="{{ widget.full }}__{{ item_id }}" class="padded">{{ entry_value }}</div>
+          {% set enum_display_value = '' == entry_value
+                                    ? entry.enum['NULL']
+                                    : entry.enum[entry_value] %}
         {% endif %}
-
-      {% elseif 'text' == entry.type %}
+  
+        <tr>
+          <td class="heading">
+            <span class="title">{{ entry.heading }}:</span>
+          </td>
+          <td class="content">
     
-        <script type="text/javascript">
-        $( function () {
-          var $dialog = $( "#{{ widget.full }}_dialog__{{ item_id }}" );
-          var $div = $( "#{{ widget.full }}__{{ item_id }}" );
-          var $textedit = $( "#test" );
-          var text = $div.html();
-        
-          // convert end-of-lines to <br>'s so that the text displays properly
-          $div.html( text.replace( /(\r\n|\r|\n)/g, "<br />" ) );
-        
-          // set the dialog's text area with the (unedited) value
-          $textedit.html( text );
-        
-          // create the dialog
-          $dialog.dialog( {
-            title: "Edit {{ item_id }}",
-            modal: true,
-            width: 450,
-            autoOpen: false,
-            buttons: {
-              Ok: function() {
-                // build the args object
-                var id_string = $dialog.attr( 'id' );
-                var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
-                var args = new Object();
-                args.id = {{ id|default(0) }};
-                var columns = new Object();
-                columns[column_name] = $textedit.val();
-                args.columns = columns;
-        
-                // send the action, reload the record on success
-                if( send_action( "{{ widget.subject }}", "edit", args ) )
-                  slot_refresh( {{ slot }} );
-    
-                $(this).dialog( "close" );
-              },
-              Cancel: function() {
-                $(this).dialog( "close" );
-              }
-            }
-          } );
-        
-          // open the dialog when the text is clicked
-          $( "div.editable_text" ).click( function () {
-            $( "#{{ widget.full }}_dialog__{{ item_id }}" ).dialog( "open" );
-          } );
-        } );
-        </script>
-    
-        <hr class="ui-widget ui-widget-content">
-        <div id="{{ widget.full }}_dialog__{{ item_id }}">
-          <textarea id="test" rows="5" style="width:99%;">{{ entry_value }}</textarea>
-        </div>
-        {% autoescape false %}
-          <div class="mutable padded editable_text"
-               style="height: 4em;"
-               id="{{ widget.full }}__{{ item_id }}">{{ entry_value }}</div>
-        {% endautoescape %}
-    
-      {% else %} {# not a text or constant entry type #}
-    
-        <script type="text/javascript">
-        $( function () {
-          // set up jeditable element
-          var jeditable_params = Object();
-          jeditable_params.tooltop = "click to edit";
-          jeditable_params.cssclass = "ui-state-default";
-          jeditable_params.event = "click";
-          jeditable_params.onblur = "cancel";
-          jeditable_params.placeholder = "&nbsp;";
+            {% if 'constant' == entry.type or not editable %}
           
-        {% if 'string' == entry.type or 'number' == entry.type %}
-
-          {% if 'number' == entry.type %}jeditable_params.placeholder = "0";{% endif %}
-          jeditable_params.type = "text";
-          $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
-            return process_change( $(this), value, "{{ entry.type }}" );
-          }, jeditable_params );
-        
-        {% elseif 'boolean' == entry.type %}
-
-          jeditable_params.type = "select";
-          jeditable_params.data = '{ ' +
-                                  {% if not entry.required %}
-                                  '"NULL":"",' +
-                                  {% endif %}
-                                  '"1":"Yes", "0":"No", "selected":"Yes" }';
-          jeditable_params.submit = "ok";
-          $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
-            var index = process_change( $(this), value, "{{ entry.type }}" );
-            var data = jQuery.parseJSON( jeditable_params.data );
-            return data[index];
-          }, jeditable_params );
-        
-        {% elseif 'enum' == entry.type and 1 < entry.enum|count %}
-
-          jeditable_params.type = "select";
-          jeditable_params.data = '{ ' +
-                                  {% for id, value in entry.enum %}
-                                  '"{{ id }}":"{{ value }}",' +
-                                  {% endfor %}
-                                  '"selected":"{{ entry_value }}" }';
-          jeditable_params.submit = "ok";
-          $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
-            var index = process_change( $(this), value, "{{ entry.type }}" );
-            var data = jQuery.parseJSON( jeditable_params.data );
-            return data[index];
-          }, jeditable_params );
-        
-        {% elseif 'datetime' == entry.type %}
+              {% if 'enum' == entry.type %}
+                <div id="{{ widget.full }}__{{ item_id }}"
+                     class="padded">{{ enum_display_value }}</div>
+              {% else %}
+                <div id="{{ widget.full }}__{{ item_id }}"
+                     class="padded">{{ entry_value }}</div>
+              {% endif %}
       
-          $input_{{ item_id }} = $( "input.datetimepicker_{{ item_id }}" );
-          $input_{{ item_id }}.datetimepicker( {
-            dateFormat: 'yy-mm-dd',
-            timeFormat: 'hh:mm',
-            ampm: false,
-            stepMinute: 5,
-            showAnim: 'slideDown',
-            onClose: function( dateText, inst ) {
-              return process_change( $input_{{ item_id }}, dateText, "{{ entry.type }}" );
-            }
-          } );
-
-        {% elseif 'date' == entry.type %}
-
-          $input_{{ item_id }} = $( "input.datepicker_{{ item_id }}" );
-          $input_{{ item_id }}.datepicker( {
-            dateFormat: 'yy-mm-dd',
-            showAnim: 'slideDown',
-            onClose: function( dateText, inst ) {
-              return process_change( $input_{{ item_id }}, dateText, "{{ entry.type }}" );
-            }
-          } );
-        
-        {% elseif 'time' == entry.type %}
-
-          $input_{{ item_id }} = $( "input.timepicker_{{ item_id }}" );
-          $input_{{ item_id }}.timepicker( {
-            timeFormat: 'hh:mm',
-            showAnim: 'slideDown',
-            ampm: false,
-            stepMinute: 5,
-            onClose: function( timeText, date_inst, time_inst ) {
-              return process_change( $input_{{ item_id }}, timeText, "{{ entry.type }}" );
-            }
-          } );
-
-        {% endif %}
-        
-        } );
-        </script>
-    
-        <input id="old_{{ widget.full }}__{{ item_id }}"
-               value="{{ entry_value }}"
-               type="hidden" />
-        {% if 'boolean' == entry.type %}
-
-          <div id="{{ widget.full }}__{{ item_id }}"
-               class="mutable padded jeditable_{{ item_id }}">{{ entry_value }}</div>
-
-        {% elseif 'datetime' == entry.type %}
-
-          <div class="mutable padded">
-            <input id="{{ widget.full }}__{{ item_id }}" type="text"
-                   class="ui-widget-content datetimepicker_{{ item_id }}"
-                   value="{{ entry_value }}"
-                   style="border: 0px; background: transparent; width: 100%;" readonly />
-          </div>
-
-        {% elseif 'date' == entry.type %}
-
-          <div class="mutable padded">
-            <input id="{{ widget.full }}__{{ item_id }}" type="text"
-                   class="ui-widget-content datepicker_{{ item_id }}"
-                   value="{{ entry_value }}"
-                   style="border: 0px; background: transparent; width: 100%;" readonly />
-          </div>
-
-        {% elseif 'time' == entry.type %}
-
-          <div class="mutable padded">
-            <input id="{{ widget.full }}__{{ item_id }}" type="text"
-                   class="ui-widget-content timepicker_{{ item_id }}"
-                   value="{{ entry_value }}"
-                   style="border: 0px; background: transparent; width: 100%;" />
-          </div>
-
-        {% elseif 'enum' == entry.type %}
+            {% elseif 'text' == entry.type %}
           
-          {% if 1 == entry.enum|count %}
-            <div id="{{ widget.full }}__{{ item_id }}" class="padded">{{ enum_display_value }}</div>
-          {% else %}
-            <div id="{{ widget.full }}__{{ item_id }}"
-                 class="mutable padded jeditable_{{ item_id }}">{{ enum_display_value }}</div>
-          {% endif %}
-
-        {% else %}
-
-          <div id="{{ widget.full }}__{{ item_id }}"
-               class="mutable padded jeditable_{{ item_id }}">{{ entry_value }}</div>
-
-        {% endif %}
-    
-      {% endif %}
+              <script type="text/javascript">
+                $( function () {
+                  var $dialog = $( "#{{ widget.full }}_dialog__{{ item_id }}" );
+                  var $div = $( "#{{ widget.full }}__{{ item_id }}" );
+                  var $textedit = $( "#test" );
+                  var text = $div.html();
+              
+                  // convert end-of-lines to <br>'s so that the text displays properly
+                  $div.html( text.replace( /(\r\n|\r|\n)/g, "<br />" ) );
+            
+                  // set the dialog's text area with the (unedited) value
+                  $textedit.html( text );
+                
+                  // create the dialog
+                  $dialog.dialog( {
+                    title: "Edit {{ item_id }}",
+                    modal: true,
+                    width: 450,
+                    autoOpen: false,
+                    buttons: {
+                      Ok: function() {
+                        // build the args object
+                        var id_string = $dialog.attr( 'id' );
+                        var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
+                        var args = new Object();
+                        args.id = {{ id|default(0) }};
+                        var columns = new Object();
+                        columns[column_name] = $textedit.val();
+                        args.columns = columns;
+            
+                        // send the action, reload the record on success
+                        if( send_action( "{{ widget.subject }}", "edit", args ) )
+                          slot_refresh( {{ slot }} );
+            
+                        $(this).dialog( "close" );
+                      },
+                      Cancel: function() {
+                        $(this).dialog( "close" );
+                      }
+                    }
+                  } );
+                
+                  // open the dialog when the text is clicked
+                  $( "div.editable_text" ).click( function () {
+                    $( "#{{ widget.full }}_dialog__{{ item_id }}" ).dialog( "open" );
+                  } );
+                } );
+              </script>
+        
+              <hr class="ui-widget ui-widget-content">
+              <div id="{{ widget.full }}_dialog__{{ item_id }}">
+                <textarea id="test" rows="5" style="width:99%;">{{ entry_value }}</textarea>
+              </div>
+              {% autoescape false %}
+                <div class="mutable padded editable_text"
+                     style="height: 4em;"
+                     id="{{ widget.full }}__{{ item_id }}">{{ entry_value }}</div>
+              {% endautoescape %}
+          
+            {% else %} {# not a text or constant entry type #}
+        
+              <script type="text/javascript">
+                $( function () {
+                  // set up jeditable element
+                  var jeditable_params = Object();
+                  jeditable_params.tooltop = "click to edit";
+                  jeditable_params.cssclass = "ui-state-default";
+                  jeditable_params.event = "click";
+                  jeditable_params.onblur = "cancel";
+                  jeditable_params.placeholder = "&nbsp;";
+                  
+                  {% if 'string' == entry.type or 'number' == entry.type %}
+        
+                    {% if 'number' == entry.type %}jeditable_params.placeholder = "0";{% endif %}
+                    jeditable_params.type = "text";
+                    $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
+                      return process_change( $(this), value, "{{ entry.type }}" );
+                    }, jeditable_params );
+                  
+                  {% elseif 'boolean' == entry.type %}
+        
+                    jeditable_params.type = "select";
+                    jeditable_params.data = '{ ' +
+                                            {% if not entry.required %}
+                                            '"NULL":"",' +
+                                            {% endif %}
+                                            '"1":"Yes", "0":"No", "selected":"Yes" }';
+                    jeditable_params.submit = "ok";
+                    $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
+                      var index = process_change( $(this), value, "{{ entry.type }}" );
+                      var data = jQuery.parseJSON( jeditable_params.data );
+                      return data[index];
+                    }, jeditable_params );
+                  
+                  {% elseif 'enum' == entry.type and 1 < entry.enum|count %}
+          
+                    jeditable_params.type = "select";
+                    jeditable_params.data = '{ ' +
+                                            {% for id, value in entry.enum %}
+                                            '"{{ id }}":"{{ value }}",' +
+                                            {% endfor %}
+                                            '"selected":"{{ entry_value }}" }';
+                    jeditable_params.submit = "ok";
+                    $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
+                      var index = process_change( $(this), value, "{{ entry.type }}" );
+                      var data = jQuery.parseJSON( jeditable_params.data );
+                      return data[index];
+                    }, jeditable_params );
+                  
+                  {% elseif 'datetime' == entry.type %}
+                
+                    $input_{{ item_id }} = $( "input.datetimepicker_{{ item_id }}" );
+                    $input_{{ item_id }}.datetimepicker( {
+                      dateFormat: 'yy-mm-dd',
+                      timeFormat: 'hh:mm',
+                      ampm: false,
+                      stepMinute: 5,
+                      showAnim: 'slideDown',
+                      onClose: function( dateText, inst ) {
+                        return process_change( $input_{{ item_id }}, dateText, "{{ entry.type }}" );
+                      }
+                    } );
+          
+                  {% elseif 'date' == entry.type %}
+          
+                    $input_{{ item_id }} = $( "input.datepicker_{{ item_id }}" );
+                    $input_{{ item_id }}.datepicker( {
+                      dateFormat: 'yy-mm-dd',
+                      showAnim: 'slideDown',
+                      onClose: function( dateText, inst ) {
+                        return process_change( $input_{{ item_id }}, dateText, "{{ entry.type }}" );
+                      }
+                    } );
+                  
+                  {% elseif 'time' == entry.type %}
+          
+                    $input_{{ item_id }} = $( "input.timepicker_{{ item_id }}" );
+                    $input_{{ item_id }}.timepicker( {
+                      timeFormat: 'hh:mm',
+                      showAnim: 'slideDown',
+                      ampm: false,
+                      stepMinute: 5,
+                      onClose: function( timeText, date_inst, time_inst ) {
+                        return process_change( $input_{{ item_id }}, timeText, "{{ entry.type }}" );
+                      }
+                    } );
+          
+                  {% endif %}
+                } );
+              </script>
+          
+              <input id="old_{{ widget.full }}__{{ item_id }}"
+                     value="{{ entry_value }}"
+                     type="hidden" />
+              {% if 'boolean' == entry.type %}
       
-      {% if entry.note is defined %}
-        <div class="help_note">{{ entry.note }}</div>
+                <div id="{{ widget.full }}__{{ item_id }}"
+                     class="mutable padded jeditable_{{ item_id }}">{{ entry_value }}</div>
+        
+              {% elseif 'datetime' == entry.type %}
+      
+                <div class="mutable padded">
+                  <input id="{{ widget.full }}__{{ item_id }}" type="text"
+                         class="ui-widget-content datetimepicker_{{ item_id }}"
+                         value="{{ entry_value }}"
+                         style="border: 0px; background: transparent; width: 100%;" readonly />
+                </div>
+      
+              {% elseif 'date' == entry.type %}
+    
+                <div class="mutable padded">
+                  <input id="{{ widget.full }}__{{ item_id }}" type="text"
+                         class="ui-widget-content datepicker_{{ item_id }}"
+                         value="{{ entry_value }}"
+                         style="border: 0px; background: transparent; width: 100%;" readonly />
+                </div>
+      
+              {% elseif 'time' == entry.type %}
+      
+                <div class="mutable padded">
+                  <input id="{{ widget.full }}__{{ item_id }}" type="text"
+                         class="ui-widget-content timepicker_{{ item_id }}"
+                         value="{{ entry_value }}"
+                         style="border: 0px; background: transparent; width: 100%;" />
+                </div>
+      
+              {% elseif 'enum' == entry.type %}
+                
+                {% if 1 == entry.enum|count %}
+                  <div id="{{ widget.full }}__{{ item_id }}"
+                       class="padded">{{ enum_display_value }}</div>
+                {% else %}
+                  <div id="{{ widget.full }}__{{ item_id }}"
+                       class="mutable padded jeditable_{{ item_id }}">{{ enum_display_value }}</div>
+                {% endif %}
+      
+              {% else %}
+      
+                <div id="{{ widget.full }}__{{ item_id }}"
+                     class="mutable padded jeditable_{{ item_id }}">{{ entry_value }}</div>
+    
+              {% endif %}
+          
+            {% endif %}
+        
+            {% if entry.note is defined %}
+              <div class="help_note">{{ entry.note }}</div>
+            {% endif %}
+          </td>
+        </tr>
       {% endif %}
-
-        </td>
-      </tr>
-    {% endif %}
-  {% endfor %}
+    {% endfor %}
   </table>
+
   {% if removable %}
     <button class="{{ widget.full }}_remove"
             style="position: absolute; top: 0.2em; right: 0.1em;">remove</button>
   {% endif %}
+
 {% endblock record_items %}

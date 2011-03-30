@@ -15,97 +15,99 @@
                        user has access to.
  #}
 {% extends "widget.twig" %}
+
+{% block javascript %}
+
+  <script type="text/javascript">
+    $( document ).ready( function() {
+      // changes the active site
+      $( "#{{ widget.full }}_set_site" ).change( function() {
+        var selected = $( "#{{ widget.full }}_set_site option:selected" );
+        if( 0 != selected.val() ) {
+          if( send_action( 'self', 'set_site', { "site": selected.text() } ) ) {
+            window.location.reload();
+          }
+        }
+      } );
+    
+      // changes the active role
+      $( "#{{ widget.full }}_set_role" ).change( function() {
+        var selected = $( "#{{ widget.full }}_set_role option:selected" );
+        if( 0 != selected.val() ) {
+          if( send_action( 'self', 'set_role', { "role": selected.text() } ) ) {
+            window.location.reload();
+          }
+        }
+      } );
+    
+      // changes the active theme
+      $( "#{{ widget.full }}_set_theme" ).change( function() {
+        var selected = $( "#{{ widget.full }}_set_theme option:selected" );
+        if( 0 != selected.val() ) {
+          if( send_action( 'self', 'set_theme', { "theme": selected.text() } ) )
+            window.location.reload();
+        }
+      } );
+    } );
+  </script>
+
+{% endblock javascript %}
+
 {% block widget %}
-<script type="text/javascript">
 
-// changes the active site
-$( document ).ready( function() {
-  $( "#{{ widget.full }}_set_site" ).change( function() {
-    var selected = $( "#{{ widget.full }}_set_site option:selected" );
-    if( 0 != selected.val() ) {
-      if( send_action( 'self', 'set_site', { "site": selected.text() } ) ) {
-        window.location.reload();
-      }
-    }
-  } );
-} );
+  <table>
+    <tr>
+      <td align="left">
+        Welcome {{ user_name }}
+      </td>
+      <td align="right">
+        <button onclick="jQuery.post( 'index.php', { logout: 'logout' } );">logout</button>
+      </td>
+    </tr>
+  </table>
+  <hr class="ui-widget ui-widget-content">
+  <table>
+    <tr>
+      <td align="left" width="50%">
+        <span class="title">Site:</span>
+        {% if 1 < sites|count %}
+          <select id="{{ widget.full }}_set_site" style="width: 140px" class="ui-state-default">
+            {% for site in sites %}
+              <option{{ current_site_name == site ? ' selected' : '' }}>{{ site }}</option>
+            {% endfor %}
+          </select>
+        {% else %}
+          {{ current_site_name }}
+        {% endif %}
+      </td>
+      <td align="left" width="50%">
+        <span class="title">Role:</span>
+        {% if 1 < roles|count %}
+          <select id="{{ widget.full }}_set_role" style="width: 140px" class="ui-state-default">
+            {% for role in roles %}
+              <option{{ current_role_name == role ? ' selected' : '' }}>{{ role }}</option>
+            {% endfor %}
+          </select>
+        {% else %}
+          {{ current_role_name }}
+        {% endif %}
+      </td>
+    </tr>
+  </table>
+  <hr class="ui-widget ui-widget-content">
+  <table>
+    <tr>
+      <td align="left">
+        <span class="title">Theme:&nbsp;</span>
+      </td>
+      <td align="right" width="95%">
+        <select id="{{ widget.full }}_set_theme" style="width: 100%" class="ui-state-default">
+          {% for theme in themes %}
+            <option{{ current_theme_name == theme ? ' selected' : '' }}>{{ theme }}</option>
+          {% endfor %}
+        </select>
+      </td>
+    </tr>
+  </table>
 
-// changes the active role
-$( document ).ready( function() {
-  $( "#{{ widget.full }}_set_role" ).change( function() {
-    var selected = $( "#{{ widget.full }}_set_role option:selected" );
-    if( 0 != selected.val() ) {
-      if( send_action( 'self', 'set_role', { "role": selected.text() } ) ) {
-        window.location.reload();
-      }
-    }
-  } );
-} );
-
-// changes the active theme
-$( document ).ready( function() {
-  $( "#{{ widget.full }}_set_theme" ).change( function() {
-    var selected = $( "#{{ widget.full }}_set_theme option:selected" );
-    if( 0 != selected.val() ) {
-      if( send_action( 'self', 'set_theme', { "theme": selected.text() } ) )
-        window.location.reload();
-    }
-  } );
-} );
-
-</script>
-<table>
-  <tr>
-    <td align="left">
-      Welcome {{ user_name }}
-    </td>
-    <td align="right">
-      <button onclick="jQuery.post( 'index.php', { logout: 'logout' } );">logout</button>
-    </td>
-  </tr>
-</table>
-<hr class="ui-widget ui-widget-content">
-<table>
-  <tr>
-    <td align="left" width="50%">
-      <span class="title">Site:</span>
-      {% if 1 < sites|count %}
-      <select id="{{ widget.full }}_set_site" style="width: 140px" class="ui-state-default">
-        {% for site in sites %}
-        <option{{ current_site_name == site ? ' selected' : '' }}>{{ site }}</option>
-        {% endfor %}
-      </select>
-      {% else %}
-      {{ current_site_name }}
-      {% endif %}
-    </td>
-    <td align="left" width="50%">
-      <span class="title">Role:</span>
-      {% if 1 < roles|count %}
-      <select id="{{ widget.full }}_set_role" style="width: 140px" class="ui-state-default">
-        {% for role in roles %}
-        <option{{ current_role_name == role ? ' selected' : '' }}>{{ role }}</option>
-        {% endfor %}
-      </select>
-      {% else %}
-      {{ current_role_name }}
-      {% endif %}
-    </td>
-  </tr>
-</table>
-<hr class="ui-widget ui-widget-content">
-<table>
-  <tr>
-    <td align="left">
-      <span class="title">Theme:&nbsp;</span>
-    </td>
-    <td align="right" width="95%">
-      <select id="{{ widget.full }}_set_theme" style="width: 100%" class="ui-state-default">
-        {% for theme in themes %}
-        <option{{ current_theme_name == theme ? ' selected' : '' }}>{{ theme }}</option>
-        {% endfor %}
-      </select>
-    </td>
-  </tr>
-</table>
-{% endblock %}
+{% endblock widget %}

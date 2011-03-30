@@ -1,114 +1,122 @@
+{##
+ # operator_assignment.twig
+ # 
+ # The operator's view of their current assignment.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @see widget.twig for parameters
+ #}
 {% extends "widget.twig" %}
+
+{% block javascript %}
+  <script type="text/javascript">
+    $( function() {
+      {% if participant_id|default(false) %}
+        {% from 'macros.twig' import notes_widget, dial_contact_widget %}
+    
+        // called when the dial_contact_widget's call button is pushed
+        $( "#operator_dial__call" ).click( function() {
+          {% if on_call %}
+            if( 'End Call' == $(this).text() )
+              if( send_action( "survey", "disable" ) )
+                window.location.reload();
+          {% else %}
+            if( 'Call' == $(this).text() )
+              if( send_action( "survey", "enable" ) )
+                window.location.reload();
+          {% endif %}
+        } );
+      
+        // view participant button
+        $( "#{{ widget.full }}__view_participant" ).click( function() {
+          var args = new Object();
+          args.id = {{ participant_id }};
+          slot_load( "{{ widget.full }}", "participant_view", "participant_view", args );
+          $( "#{{ widget.full }}_slot" ).dialog( {
+            title: "Viewing details for {{ participant_name }}",
+            modal: true,
+            width: 800,
+            height: 600
+          } );
+        } );
+      
+        // end assignment button
+        $( "#{{ widget.full }}__end_assignment" ).click( function() {
+          if( send_action( "assignment", "end" ) ) slot_refresh( {{ slot }} );
+        } );
+    
+      {% else %}
+      
+        // begin assignment button
+        $( "#{{ widget.full }}__begin_assignment" ).click( function() {
+          if( send_action( "assignment", "begin" ) ) slot_refresh( {{ slot }} );
+        } );
+    
+      {% endif %}
+    } );
+  </script>
+
+{% endblock javascript %}
+
 {% block widget %}
 
-<script type="text/javascript">
-$( function() {
-  {% if participant_id|default(false) %}
-    {% from 'macros.twig' import notes_widget, dial_contact_widget %}
-
-  // called when the dial_contact_widget's call button is pushed
-  $( "#operator_dial__call" ).click( function() {
-    {% if on_call %}
-
-    if( 'End Call' == $(this).text() )
-      if( send_action( "survey", "disable" ) )
-        window.location.reload();
-    
-    {% else %}
-    
-    if( 'Call' == $(this).text() )
-      if( send_action( "survey", "enable" ) )
-        window.location.reload();
-    
-    {% endif %}
-  } );
-
-  // view participant button
-  $( "#{{ widget.full }}__view_participant" ).click( function() {
-    var args = new Object();
-    args.id = {{ participant_id }};
-    slot_load( "{{ widget.full }}", "participant_view", "participant_view", args );
-    $( "#{{ widget.full }}_slot" ).dialog( {
-      title: "Viewing details for {{ participant_name }}",
-      modal: true,
-      width: 800,
-      height: 600
-    } );
-  } );
-
-  // end assignment button
-  $( "#{{ widget.full }}__end_assignment" ).click( function() {
-    if( send_action( "assignment", "end" ) ) slot_refresh( {{ slot }} );
-  } );
-
-  {% else %}
+  <div id="{{ widget.full }}_slot" />
   
-  // begin assignment button
-  $( "#{{ widget.full }}__begin_assignment" ).click( function() {
-    if( send_action( "assignment", "begin" ) ) slot_refresh( {{ slot }} );
-  } );
+  <div class="ui-widget ui-widget-content app-widget-content">
+    {% if participant_id|default(false) %}
 
-  {% endif %}
-} );
-</script>
-
-<div id="{{ widget.full }}_slot" />
-
-<div class="ui-widget ui-widget-content app-widget-content">
-  {% if participant_id|default(false) %}
-
-    <table style="margin-top: 8px;">
-      <tr>
-        <td class="heading">Participant:</td>
-        <td class="content" style="position:relative">
-          {{ participant_name }}
-          {{ notes_widget( widget.full, note_list|default([]) ) }}
-        </td>
-      </tr>
-      <tr>
-        <td class="heading">Prefered Language:</td>
-        <td class="content">{{ participant_language }}</td>
-      </tr>
-      <tr>
-        <td class="heading">Current Consent:</td>
-        <td class="content">{{ participant_consent }}</td>
-      </tr>
-      <tr>
-        <td class="heading">Previous Assignment:</td>
-        <td class="content">
-    {% if 0 == previous_call_list|count %}
-          new participant (never assigned)
+      <table style="margin-top: 8px;">
+        <tr>
+          <td class="heading">Participant:</td>
+          <td class="content" style="position:relative">
+            {{ participant_name }}
+            {{ notes_widget( widget.full, note_list|default([]) ) }}
+          </td>
+        </tr>
+        <tr>
+          <td class="heading">Prefered Language:</td>
+          <td class="content">{{ participant_language }}</td>
+        </tr>
+        <tr>
+          <td class="heading">Current Consent:</td>
+          <td class="content">{{ participant_consent }}</td>
+        </tr>
+        <tr>
+          <td class="heading">Previous Assignment:</td>
+          <td class="content">
+            {% if 0 == previous_call_list|count %}
+              new participant (never assigned)
+            {% else %}
+              {% for call in previous_call_list %}{{ call|raw }} <br />{% endfor %}
+            {% endif %}
+          </td>
+        </tr>
+      </table>
+      
+      <table class="spacer">
+        <tr>
+          <td align="left">
+            <button style="width: 180px;"
+                    id="{{ widget.full }}__view_participant">View Details</button>
+            <button style="width: 180px;"
+                    id="{{ widget.full }}__end_assignment"
+                    {{ on_call or 0 == current_calls ? "disabled" : "" }}>End Assignment</button>
+          </td>
+          <td align="right">
+            {{ dial_contact_widget( widget.full,
+                                    contacts|default(false),
+                                    statuses|default(false),
+                                    on_call ) }}
+          </td>
+        </tr>
+      </table>
+      
     {% else %}
-      {% for call in previous_call_list %}{{ call|raw }} <br />{% endfor %}
+      
+      <p>You currently have no assignment.</p>
+      <button id="{{ widget.full }}__begin_assignment">Request new assignment</button>
+      <div class="spacer" />
+  
     {% endif %}
-        </td>
-      </tr>
-    </table>
-    
-    <table class="spacer">
-      <tr>
-        <td align="left">
-          <button style="width: 180px;"
-                  id="{{ widget.full }}__view_participant">View Details</button>
-          <button style="width: 180px;"
-                  id="{{ widget.full }}__end_assignment"
-                  {{ on_call or 0 == current_calls ? "disabled" : "" }}>End Assignment</button>
-        </td>
-        <td align="right">
-          {{ dial_contact_widget( widget.full,
-                                  contacts|default(false),
-                                  statuses|default(false),
-                                  on_call ) }}
-        </td>
-      </tr>
-    </table>
-    
-  {% else %}
-    
-    <p>You currently have no assignment.</p>
-    <button id="{{ widget.full }}__begin_assignment">Request new assignment</button>
-    <div class="spacer" />
+  </div>
 
-  {% endif %}
-</div>
-{% endblock %}
+{% endblock widget %}

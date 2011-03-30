@@ -6,6 +6,7 @@
  # @see base_view.twig for parameters
  #}
 {% extends "base_view.twig" %}
+
 {% block record %}
 
   {{ parent() }}
@@ -16,4 +17,4 @@
   {{ include_list( 'availability', availability_list|default(false), true ) }}
   {{ include_list( 'consent', consent_list|default(false), true ) }}
 
-{% endblock %}
+{% endblock record %}

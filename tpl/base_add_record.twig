@@ -5,12 +5,15 @@
  # @author Patrick Emond <emondpd@mcmaster.ca>
  #}
 {% extends "widget.twig" %}
+
 {% block widget %}
 
-{% block record %}
-{# Add the record using the record's add widget name to determine which template to use #}
-{% set add_template = [ add_widget_name, "twig" ]|join(".") %}
-{% include add_template with record %}
-{% endblock %}
+  {% block record %}
+  
+    {# Add the record using the record's add widget name to determine which template to use #}
+    {% set add_template = [ add_widget_name, "twig" ]|join(".") %}
+    {% include add_template with record %}
+  
+  {% endblock record %}
 
 {% endblock widget %}

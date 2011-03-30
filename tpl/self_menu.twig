@@ -8,24 +8,31 @@
  #                    'widget' => the widget to load when the item is selected
  #}
 {% extends "widget.twig" %}
+
+{% block javascript %}
+
+  <script type="text/javascript">
+    $( function() {
+      {% for item in items %}
+        $( "#{{ widget.full }}_{{ item.widget }}" ).click( function() {
+          $( "#left_extruder" ).closeMbExtruder();
+          slot_load( "main", "{{ item.widget }}" );
+        } );
+      {% endfor %}
+    } );
+  </script>
+
+{% endblock javascript %}
+
 {% block widget %}
 
-<script type="text/javascript">
-$( function() {
-  {% for item in items %}
-  $( "#{{ widget.full }}_{{ item.widget }}" ).click( function() {
-    $( "#left_extruder" ).closeMbExtruder();
-    slot_load( "main", "{{ item.widget }}" );
-  } );
-  {% endfor %}
-} );
-</script>
-
-<div>
-  {% for item in items %}
-  <div style="padding: 2px;">
-    <button style="width: 100%;" id="{{ widget.full }}_{{ item.widget }}">{{ item.heading|capitalize }}</button>
+  <div>
+    {% for item in items %}
+      <div style="padding: 2px;">
+        <button style="width: 100%;" 
+                id="{{ widget.full }}_{{ item.widget }}">{{ item.heading|capitalize }}</button>
+      </div>
+    {% endfor %}
   </div>
-  {% endfor %}
-</div>
-{% endblock %}
+
+{% endblock widget %}

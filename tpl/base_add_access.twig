@@ -7,91 +7,91 @@
  #}
 {% extends "base_add_list.twig" %}
 
-{% block js %}
-<script type="text/javascript">
+{% block javascript %}
 
-$( function () {
-  // add button
-  $( "#{{ widget.compound }}_add" ).click( function() {
-    // get the list of checked children from the cookies
-    var json_checked_child_ids =
-      $.cookie( "{{ widget.full }}_{{ access_child }}_list_checked_ids" );
-    var checked_child_ids = undefined == json_checked_child_ids
-                         ? new Object()
-                         : jQuery.parseJSON( json_checked_child_ids );
+  <script type="text/javascript">
+    $( function () {
+      // add button
+      $( "#{{ widget.compound }}_add" ).click( function() {
+        // get the list of checked children from the cookies
+        var json_checked_child_ids =
+          $.cookie( "{{ widget.full }}_{{ access_child }}_list_checked_ids" );
+        var checked_child_ids = undefined == json_checked_child_ids
+                             ? new Object()
+                             : jQuery.parseJSON( json_checked_child_ids );
+        
+        var child_ids = new Array();
+        for( id_string in checked_child_ids ) {
+          child_ids.push( parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) ) );
+        }
+        
+        // get the list of checked roles from the cookies
+        var json_checked_role_ids =
+          $.cookie( "{{ widget.full }}_role_list_checked_ids" );
+        var checked_role_ids = undefined == json_checked_role_ids
+                             ? new Object()
+                             : jQuery.parseJSON( json_checked_role_ids );
     
-    var child_ids = new Array();
-    for( id_string in checked_child_ids )
-    {
-      child_ids.push( parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) ) );
-    }
+        var role_ids = new Array();
+        for( id_string in checked_role_ids ) {
+          role_ids.push( parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) ) );
+        }
+        
+        if( 0 == child_ids.length ) {
+          error_dialog(
+            "Error: No {{ access_child }}s selected",
+            "<p>You must select at least one {{ access_child }}.<br>" +
+            "Please select {{ access_child }}s to add to the {{ access_parent }}, " +
+            "or click cancel.</p>" );
+        } else if( 0 == role_ids.length ) {
+          error_dialog(
+            "Error: No roles selected",
+            "<p>You must select at least one role.<br>" +
+            "Please select which roles to grant " +
+            {% if 'site' == access_parent %}
+              "the users"
+            {% else %}
+              "to the {{ access_parent }}s"
+            {% endif %} +
+            ", or click cancel.</p>"
+          );
+        } else {
+          var args = new Object();
+          args.id = {{ id }};
+          args.{{ access_child }}_id_list = child_ids;
+          args.role_id_list = role_ids;
+          confirm_dialog(
+            "Add {{ access_child }}s to the {{ access_parent }}?",
+            "<p>You have selected " +
+            ( 1 == child_ids.length
+              ? "one {{ access_child }}"
+              : child_ids.length + " {{ access_child }}s" ) +
+            " to be added to the {{ access_parent }} with " +
+            ( 1 == role_ids.length ? "one role" : role_ids.length + " roles" ) + ".<br>" +
+            "Are you sure you want to continue?</p>",
+            function() {
+              if( send_action( "{{ widget.subject }}", "new_access", args ) ) {
+                // clear the checked ids cookies
+                $.cookie( "{{ widget.full }}_{{ access_child }}_list_checked_ids", null );
+                $.cookie( "{{ widget.full }}_role_list_checked_ids", null );
+                slot_refresh( "settings" ); // in case the current user has new access
+                slot_prev( {{ slot }} );
+              }
+            }
+          );
+        }
+      } );
     
-    // get the list of checked roles from the cookies
-    var json_checked_role_ids =
-      $.cookie( "{{ widget.full }}_role_list_checked_ids" );
-    var checked_role_ids = undefined == json_checked_role_ids
-                         ? new Object()
-                         : jQuery.parseJSON( json_checked_role_ids );
+      // cancel button
+      $( "#{{ widget.compound }}_cancel" ).click( function() {
+        // clear the checked ids cookies
+        $.cookie( "{{ widget.full }}_{{ access_child }}_list_checked_ids", null );
+        $.cookie( "{{ widget.full }}_role_list_checked_ids", null );
+      } );
+    } );
+  </script>
 
-    var role_ids = new Array();
-    for( id_string in checked_role_ids )
-    {
-      role_ids.push( parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) ) );
-    }
-    
-    if( 0 == child_ids.length )
-    {
-      error_dialog(
-        "Error: No {{ access_child }}s selected",
-        "<p>You must select at least one {{ access_child }}.<br>" +
-        "Please select {{ access_child }}s to add to the {{ access_parent }}, or click cancel.</p>" );
-    }
-    else if( 0 == role_ids.length )
-    {
-      error_dialog(
-        "Error: No roles selected",
-        "<p>You must select at least one role.<br>" +
-        "Please select which roles to grant " +
-        {% if 'site' == access_parent %}"the users"{% else %}"to the {{ access_parent }}s"{% endif %} +
-        ", or click cancel.</p>"
-      );
-    }
-    else
-    {
-      var args = new Object();
-      args.id = {{ id }};
-      args.{{ access_child }}_id_list = child_ids;
-      args.role_id_list = role_ids;
-      confirm_dialog(
-        "Add {{ access_child }}s to the {{ access_parent }}?",
-        "<p>You have selected " +
-        ( 1 == child_ids.length ? "one {{ access_child }}" : child_ids.length + " {{ access_child }}s" ) +
-        " to be added to the {{ access_parent }} with " +
-        ( 1 == role_ids.length ? "one role" : role_ids.length + " roles" ) + ".<br>" +
-        "Are you sure you want to continue?</p>",
-        function() {
-          if( send_action( "{{ widget.subject }}", "new_access", args ) )
-          {
-            // clear the checked ids cookies
-            $.cookie( "{{ widget.full }}_{{ access_child }}_list_checked_ids", null );
-            $.cookie( "{{ widget.full }}_role_list_checked_ids", null );
-            slot_refresh( "settings" ); // in case the current user has new access
-            slot_prev( {{ slot }} );
-          }
-        } );
-    }
-  } );
-
-  // cancel button
-  $( "#{{ widget.compound }}_cancel" ).click( function() {
-    // clear the checked ids cookies
-    $.cookie( "{{ widget.full }}_{{ access_child }}_list_checked_ids", null );
-    $.cookie( "{{ widget.full }}_role_list_checked_ids", null );
-  } );
-} );
-
-</script>
-{% endblock %}
+{% endblock javascript %}
 
 {% block listing %}
 
@@ -99,4 +99,4 @@ $( function () {
   {% from 'macros.twig' import include_list %}
   {{ include_list( 'role', role_list|default(false) ) }}
 
-{% endblock %}
+{% endblock listing %}

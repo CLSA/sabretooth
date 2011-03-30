@@ -6,6 +6,7 @@
  # @see base_view.twig for parameters
  #}
 {% extends "base_view.twig" %}
+
 {% block record %}
 
   {{ parent() }}
@@ -14,4 +15,4 @@
   {{ include_list( 'access', access_list|default(false), true ) }}
   {{ include_list( 'activity', activity_list|default(false), true ) }}
 
-{% endblock %}
+{% endblock record %}

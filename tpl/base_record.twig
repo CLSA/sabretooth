@@ -5,12 +5,10 @@
  # @author Patrick Emond <emondpd@mcmaster.ca>
  #}
 {% extends "widget.twig" %}
+
 {% block widget %}
 
-  {% block record_javascript %}{% endblock %}
-  
-  {% block pre_record %}
-  {% endblock pre_record %}
+  {% block pre_record %}{% endblock pre_record %}
 
   {% block record %}
     <div class="ui-widget ui-widget-content app-widget-content">
@@ -18,8 +16,8 @@
     {# put in all hidden variables #}
     {% for item_id, entry in item %}
       {% if 'hidden' == entry.type %}
-      {% set entry_value = entry.value is defined ? entry.value : "" %}
-      <input id="{{ widget.full }}__{{ item_id }}" type="hidden" value="{{ entry_value }}"/>
+        {% set entry_value = entry.value is defined ? entry.value : "" %}
+        <input id="{{ widget.full }}__{{ item_id }}" type="hidden" value="{{ entry_value }}"/>
       {% endif %}
     {% endfor %}
     
@@ -28,7 +26,6 @@
     </div>
   {% endblock record %}
 
-  {% block post_record %}
-  {% endblock post_record %}
+  {% block post_record %}{% endblock post_record %}
 
 {% endblock widget %}

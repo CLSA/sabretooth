@@ -22,31 +22,42 @@
 {% set slot = [ "window.", widget.compound, "_slot" ]|join("") %}
 
 <script type="text/javascript">
-var {{ widget.compound }}_slot = "";
-$( function() {
-  update_shortcuts();
-  $( "button, input:submit" ).button();
-  var slot_id = $( "#{{ widget.compound }}_slot_id" ).parents( "div[id$='_slot']" ).attr( "id" );
-  {{ slot }} = slot_id.substring( 0, slot_id.lastIndexOf( "_" ) );
-} );
+  // initial 
+  var {{ widget.compound }}_slot = "";
+  $( function() {
+    update_shortcuts();
+    $( "button, input:submit" ).button();
+    var slot_id = $( "#{{ widget.compound }}_slot_id" ).parents( "div[id$='_slot']" ).attr( "id" );
+    {{ slot }} = slot_id.substring( 0, slot_id.lastIndexOf( "_" ) );
+  } );
 </script>
+  
+{% block javascript %}{% endblock %}
+  
 <div id="{{ widget.compound }}_slot_id" />
-
+  
 {% block heading %}
-{% if widget_heading %}<div class="ui-widget-header ui-state-hover">{{ widget_heading }}</div>{% endif %}
-{% endblock %}
+  
+  {% if widget_heading %}
+    <div class="ui-widget-header ui-state-hover">{{ widget_heading }}</div>
+  {% endif %}
+
+{% endblock heading %}
 
 {% block widget %}
-{# force an error if this block isn't defined in child tempaltes #}
-<script type="text/javascript">
-$( function() {
-  error_dialog(
-    'Interface Error',
-    '<p>' +
-    '  The interface was unable to complete your request.<br>' +
-    '  Please notify a supervisor with the error code.' +
-    '</p>' +
-    '<p class="error_code">Error code: W.T.M.</p>' );
-} );
-</script>
-{% endblock %}
+
+  {# force an error if this block isn't defined in child tempaltes #}
+  <script type="text/javascript">
+    $( function() {
+      error_dialog(
+        'Interface Error',
+        '<p>' +
+        '  The interface was unable to complete your request.<br>' +
+        '  Please notify a supervisor with the error code.' +
+        '</p>' +
+        '<p class="error_code">Error code: W.T.M.</p>'
+      );
+    } );
+  </script>
+
+{% endblock widget %}
