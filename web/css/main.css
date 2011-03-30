@@ -158,6 +158,11 @@ td.content {
   padding: 1px;
 }
 
+.note {
+  float: left;
+  cursor: help;
+}
+
 /* css for timepicker */
 .ui-timepicker-div .ui-widget-header{ margin-bottom: 8px; }
 .ui-timepicker-div dl{ text-align: left; }

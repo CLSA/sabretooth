@@ -90,7 +90,14 @@
   } );
   </script>
   
-  <div id="{{ name }}_notes" class="ui-icon ui-icon-comment padded" style="float:left" />
+  <div id="{{ name }}_notes" class="note padded">
+    <div class="note ui-icon ui-icon-comment" />
+    {% if note_list|count %}
+    <div class="note" style="font-size:0.6em; position:relative; bottom:2px; right:2px">
+      {{ note_list|count }}
+    </div>
+    {% endif %}
+  </div>
   <div id="{{ name }}_notes_slot" />
 
 {% endmacro %}
