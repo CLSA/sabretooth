@@ -41,19 +41,20 @@ class database extends \sabretooth\base_object
     $this->server = $server;
     $this->username = $username;
     $this->password = $password;
-    $this->database = $database;
+    $this->name = $database;
     $this->prefix = $prefix;
     
     // set up the database connection
-    $this->connection = ADONewConnection( $driver );
+    $this->connection = ADONewConnection( $this->driver );
     $this->connection->SetFetchMode( ADODB_FETCH_ASSOC );
     
-    if( false == $this->connection->Connect( $server, $username, $password, $database ) )
+    if( false == $this->connection->Connect(
+                   $this->server, $this->username, $this->password, $this->name ) )
       throw new \sabretooth\exception\runtime(
-        "Unable to connect to the '$database' database.", __METHOD__ );
+        sprintf( "Unable to connect to the '%s' database.", $this->name ), __METHOD__ );
 
     $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', '=', $this->database );
+    $modifier->where( 'TABLE_SCHEMA', '=', $this->name );
     $modifier->order( 'TABLE_NAME' );
     $modifier->order( 'COLUMN_NAME' );
 
@@ -86,7 +87,7 @@ class database extends \sabretooth\base_object
    * @return string
    * @access public
    */
-  public function get_name() { return $this->database; }
+  public function get_name() { return $this->name; }
 
   /**
    * Get's the prefix of the database.
@@ -431,13 +432,13 @@ class database extends \sabretooth\base_object
    */
   private function connect()
   {
-    if( $this->database != static::$current_database )
+    if( $this->name != static::$current_database )
     {
       if( false == $this->connection->Connect(
-        $this->server, $this->username, $this->password, $this->database ) )
+        $this->server, $this->username, $this->password, $this->name ) )
         throw new \sabretooth\exception\runtime(
           "Unable to connect to the '$database' database.", __METHOD__ );
-      static::$current_database = $this->database;
+      static::$current_database = $this->name;
     }
   }
 
@@ -449,20 +450,6 @@ class database extends \sabretooth\base_object
    * @access private
    */
   private $columns = array();
-
-  /**
-   * The name of the database.
-   * @var string
-   * @access private
-   */
-  private $name;
-
-  /**
-   * The table name prefix.
-   * @var string
-   * @access private
-   */
-  private $prefix;
 
   /**
    * A reference to the ADODB resource.
@@ -478,5 +465,47 @@ class database extends \sabretooth\base_object
    * @access private
    */
   private static $current_database = '';
+
+  /**
+   * The database driver (see ADODB for possible values)
+   * @var string
+   * @access private
+   */
+  private $driver;
+
+  /**
+   * The server that the database is located
+   * @var string
+   * @access private
+   */
+  private $server;
+  
+  /**
+   * Which username to use when connecting to the database
+   * @var string
+   * @access private
+   */
+  private $username;
+  
+  /**
+   * Which password to use when connecting to the database
+   * @var string
+   * @access private
+   */
+  private $password;
+
+  /**
+   * The name of the database.
+   * @var string
+   * @access private
+   */
+  private $name;
+
+  /**
+   * The table name prefix.
+   * @var string
+   * @access private
+   */
+  private $prefix;
 }
 ?>

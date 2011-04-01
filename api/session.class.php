@@ -1,6 +1,7 @@
 <?php
 /**
  * session.class.php
+ * TODO: move to the business namespace
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth
@@ -45,7 +46,8 @@ final class session extends singleton
                          'survey_db',
                          'general',
                          'interface',
-                         'version' );
+                         'version',
+                         'voip' );
     foreach( $categories as $category )
     {
       // make sure the category exists
@@ -68,7 +70,7 @@ final class session extends singleton
   /**
    * Initializes the session.
    * 
-   * This method should be called immediately after constructing the session.
+   * This method should be called immediately after initial construct of the session.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\runtime
    * @access public
@@ -566,7 +568,13 @@ final class session extends singleton
       $_SESSION['slot'][$slot]['stack']['widgets'] =
         array( array( 'name' => 'self_menu', 'args' => NULL ) );
     }
-    else if( 'header' == $slot )
+    else if( 'header_left' == $slot )
+    {
+      $_SESSION['slot'][$slot]['stack']['index'] = 0;
+      $_SESSION['slot'][$slot]['stack']['widgets'] =
+        array( array( 'name' => 'self_status', 'args' => NULL ) );
+    }
+    else if( 'header_right' == $slot )
     {
       $_SESSION['slot'][$slot]['stack']['index'] = 0;
       $_SESSION['slot'][$slot]['stack']['widgets'] =

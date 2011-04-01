@@ -18,10 +18,8 @@
         $( "#{{ widget.full }}_prev" ).button( {
           text: false,
           icons: {
-            primary: "ui-icon-arrowthick-1-w"
-          }
-        } );
-        $( "#{{ widget.full }}_prev" ).click( function() {
+            primary: "ui-icon-arrowthick-1-w" }
+        } ).click( function() {
           slot_prev( 'main' );
         } );
         $( "#{{ widget.full }}_next" ).button( {
@@ -29,8 +27,7 @@
           icons: {
             primary: "ui-icon-arrowthick-1-e"
           }
-        } );
-        $( "#{{ widget.full }}_next" ).click( function() {
+        } ).click( function() {
           slot_next( 'main' );
         } );
       {% endif %}
@@ -41,8 +38,7 @@
           icons: {
             primary: "ui-icon-arrowrefresh-1-e"
           }
-        } );
-        $( "#{{ widget.full }}_refresh" ).click( function() {
+        } ).click( function() {
           slot_refresh( 'main' );
         } );
       {% endif %}
@@ -53,8 +49,7 @@
           icons: {
             primary: "ui-icon-home"
           }
-        } );
-        $( "#{{ widget.full }}_home" ).click( function() {
+        } ).click( function() {
           slot_load( 'main', 'self_home' );
         } );
       {% endif %}

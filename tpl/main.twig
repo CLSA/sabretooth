@@ -45,16 +45,13 @@
 
   <script type="text/javascript">
     $( function() {
-      // set button styles
-      $( "button, input:submit" ).button();
-    
       // apply jquery-ui theme to the extruders
       $( "div.content" ).addClass( "ui-widget-content" );
       $( ".flap" ).addClass( "ui-widget-header" );
   
       {% if survey_url %}
-      // Defines the layout when showing the survey pane.
-      // Should only be visible when there is an active survey.
+        // Defines the layout when showing the survey pane.
+        // Should only be visible when there is an active survey.
         var layout = $( "body" ).layout( {
           defaults: {
             applyDefaultStyles: true,
@@ -83,7 +80,12 @@
       <div id="menu_slot"></div>
     </div>
     <div class="ui-widget-content" id="app_ui">
-      <div id="header_slot"></div>
+      <table>
+        <tr>
+          <td><div id="header_left_slot"></div></td>
+          <td><div id="header_right_slot"></div></td>
+        </tr>
+      </table>
       <div id="main_slot"></div>
     </div>
   {% if survey_url %}

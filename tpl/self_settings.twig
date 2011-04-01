@@ -19,7 +19,9 @@
 {% block javascript %}
 
   <script type="text/javascript">
-    $( document ).ready( function() {
+    $( function() {
+      $( "#{{ widget.full }}_logout" ).button();
+
       // changes the active site
       $( "#{{ widget.full }}_set_site" ).change( function() {
         var selected = $( "#{{ widget.full }}_set_site option:selected" );
@@ -61,7 +63,8 @@
         Welcome {{ user_name }}
       </td>
       <td align="right">
-        <button onclick="jQuery.post( 'index.php', { logout: 'logout' } );">logout</button>
+        <button id="{{ widget.full }}_logout"
+                onclick="jQuery.post( 'index.php', { logout: 'logout' } );">logout</button>
       </td>
     </tr>
   </table>

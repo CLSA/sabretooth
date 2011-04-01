@@ -28,4 +28,10 @@ $SETTINGS[ 'db' ][ 'username' ] = 'put your database username here';
 $SETTINGS[ 'db' ][ 'password' ] = 'put your database password here';
 $SETTINGS[ 'db' ][ 'prefix' ] = 'put your table prefix here';
 
+// The Asterisk AJAM url, username and password
+$SETTINGS[ 'voip' ][ 'enabled' ] = true;
+$SETTINGS[ 'voip' ][ 'url' ] = 'put your AJAM url here';
+$SETTINGS[ 'voip' ][ 'username' ] = 'put your asterisk admin username here';
+$SETTINGS[ 'voip' ][ 'password' ] = 'put your asterisk admin password here';
+$SETTINGS[ 'voip' ][ 'prefix' ] = 'put your dialing prefix here';
 ?>

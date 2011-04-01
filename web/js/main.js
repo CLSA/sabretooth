@@ -1,35 +1,3 @@
-// setup the top extruder
-$( document ).ready( function() {
-  $( "#top_extruder" ).buildMbExtruder( {
-    position: "top",
-    positionFixed: true,
-    width: 400,
-    sensibility: 500,
-    extruderOpacity: 1,
-    autoCloseTime: 0,
-    hidePanelsOnClose: true,
-    onExtOpen: function() {},
-    onExtContentLoad: function() {},
-    onExtClose: function() {}
-  } );
-} );
-
-// setup the left extruder
-$( document ).ready( function() {
-  $( "#left_extruder" ).buildMbExtruder( {
-    position: "left",
-    positionFixed: true,
-    width: 200,
-    sensibility: 500,
-    extruderOpacity: 1,
-    autoCloseTime: 0,
-    hidePanelsOnClose: true,
-    onExtOpen: function() {},
-    onExtContentLoad: function() {},
-    onExtClose: function() {}
-  } );
-} );
-
 /**
  * Updates the shortcut buttons based on cookies
  * 
@@ -252,8 +220,39 @@ function ajax_complete( request, code ) {
   }
 }
 
-// refresh all slots
-$( document ).ready( function() { slot_refresh( "settings" ); } );
-$( document ).ready( function() { slot_refresh( "menu" ); } );
-$( document ).ready( function() { slot_refresh( "header" ); } );
-$( document ).ready( function() { slot_refresh( "main" ); } );
+$( function() {
+  // setup the top extruder
+  $( "#top_extruder" ).buildMbExtruder( {
+    position: "top",
+    positionFixed: true,
+    width: 400,
+    sensibility: 500,
+    extruderOpacity: 1,
+    autoCloseTime: 0,
+    hidePanelsOnClose: true,
+    onExtOpen: function() {},
+    onExtContentLoad: function() {},
+    onExtClose: function() {}
+  } );
+
+  // setup the left extruder
+  $( "#left_extruder" ).buildMbExtruder( {
+    position: "left",
+    positionFixed: true,
+    width: 200,
+    sensibility: 500,
+    extruderOpacity: 1,
+    autoCloseTime: 0,
+    hidePanelsOnClose: true,
+    onExtOpen: function() {},
+    onExtContentLoad: function() {},
+    onExtClose: function() {}
+  } );
+
+  // refresh all slots
+  slot_refresh( "header_left" );
+  slot_refresh( "header_right" );
+  slot_refresh( "settings" );
+  slot_refresh( "menu" );
+  slot_refresh( "main" );
+} );

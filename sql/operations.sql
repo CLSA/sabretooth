@@ -228,6 +228,8 @@ VALUES( "widget", "self", "settings", false, "The current user's settings manage
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "shortcuts", false, "The current user's shortcut icon set." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "self", "status", false, "The current user's status." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "self", "set_site", false, "Change the current user's active site." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "self", "set_role", false, "Change the current user's active role." );

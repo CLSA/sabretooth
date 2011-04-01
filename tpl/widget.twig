@@ -22,7 +22,7 @@
 {% set slot = [ "window.", widget.compound, "_slot" ]|join("") %}
 
 <script type="text/javascript">
-  // initial 
+  // determine this widget's slot
   var {{ widget.compound }}_slot = "";
   $( function() {
     update_shortcuts();

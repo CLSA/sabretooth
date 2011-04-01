@@ -69,8 +69,12 @@
           text: false,
           icons: { primary: "ui-icon-plusthick" }
         } );
+      
+        // set the correct colspan in the table's footer
+        var colspan = $( ".{{ widget.full }}_table > thead > tr > th" ).length;
+        $( "#{{ widget.full }}_footer_cell" ).attr( "colspan", colspan - 1 );
       {% endif %}
-    
+
       // highlight the row the mouse is over
       $(".{{ widget.full }}_table tbody tr").mouseover( function() {
         $(this).addClass( "ui-widget-header" );
@@ -339,13 +343,11 @@
     </form>
   </div>
   
-  {% set number_of_columns = 0 %}
   <table class="{{ widget.full }}_table">
     <thead class="ui-widget-header">
-      <tr>
+      <tr id="#{{ widget.full }}_header_row">
         {% if checkable %}
           <th align="center"><div class="ui-icon ui-icon-check" style="padding:2px"></div></th>
-          {% set number_of_columns = number_of_columns + 1 %}
         {% endif %}
         {% for column_id, column in columns %}
           {% if column.sortable|default(false) %}
@@ -366,21 +368,19 @@
                 {% endif %}
               {% endfor %}
             </th>
-            {% set number_of_columns = number_of_columns + 1 %}
           {% else %}
             <th style="padding:0.5em">{{ column.heading }}</th>
-            {% set number_of_columns = number_of_columns + 1 %}
           {% endif %}
         {% endfor %}
+        
+        {% block header_button_columns %}{% endblock %}
 
         {% if viewable %}
           <th width="1%"></th>
-          {% set number_of_columns = number_of_columns + 1 %}
         {% endif %}
   
         {% if removable %}
           <th width="1%"></th>
-          {% set number_of_columns = number_of_columns + 1 %}
         {% endif %}
       </tr>
     </thead>
@@ -405,6 +405,9 @@
               {% endif %}
               </td>
             {% endfor %}
+
+            {% block button_columns %}{% endblock %}
+
             {% if viewable %}
               <td>
                 <button class="{{ widget.full }}_view"
@@ -425,7 +428,7 @@
     {% endif %}
     <tfoot class="ui-widget-header">
       <tr>
-        <th colspan="{{ addable ? number_of_columns - 1 : 0 }}">
+        <th id="{{ widget.full }}_footer_cell" colspan="0">
           {% if checkable %}
             <span>
               Check boxes:

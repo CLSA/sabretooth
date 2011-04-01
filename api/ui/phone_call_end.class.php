@@ -37,7 +37,8 @@ class phone_call_end extends action
   {
     $is_operator = 'operator' == \sabretooth\session::self()->get_role()->name;
 
-    // TODO: PHPAGI code to disconnect goes here
+    // disconnect voip
+    \sabretooth\business\voip_manager::self()->hang_up();
 
     if( $is_operator )
     { // set the end time and status of the call

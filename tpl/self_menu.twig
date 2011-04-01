@@ -14,7 +14,7 @@
   <script type="text/javascript">
     $( function() {
       {% for item in items %}
-        $( "#{{ widget.full }}_{{ item.widget }}" ).click( function() {
+        $( "#{{ widget.full }}_{{ item.widget }}" ).button().click( function() {
           $( "#left_extruder" ).closeMbExtruder();
           slot_load( "main", "{{ item.widget }}" );
         } );

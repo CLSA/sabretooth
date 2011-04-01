@@ -11,8 +11,6 @@
   <script type="text/javascript">
     $( function() {
       {% if participant_id|default(false) %}
-        {% from 'macros.twig' import notes_widget, dial_contact_widget %}
-    
         // called when the dial_contact_widget's call button is pushed
         $( "#operator_dial__call" ).click( function() {
           {% if on_call %}
@@ -63,6 +61,7 @@
   
   <div class="ui-widget ui-widget-content app-widget-content">
     {% if participant_id|default(false) %}
+      {% from 'macros.twig' import notes_widget, dial_contact_widget %}
 
       <table style="margin-top: 8px;">
         <tr>

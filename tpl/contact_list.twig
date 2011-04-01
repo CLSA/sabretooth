@@ -6,3 +6,49 @@
  # @see base_list.twig for parameters
  #}
 {% extends "base_list.twig" %}
+
+{% block javascript %}
+
+  {{ parent() }}
+  {% if allow_connect %}
+    <script type="text/javascript">
+      $( function() {
+        // make connect button icon
+        $( "button.{{ widget.full }}_connect" ).button( {
+          text: false,
+          icons: { primary: "ui-icon-person" }
+        } ).click( function() {
+          var args = new Object();
+          var id_string = $(this).attr( 'id' );
+          args.contact_id = parseInt( id_string.substring( id_string.lastIndexOf('_') + 1 ) );
+          // place the call and refresh the status widget
+          if( send_action( "phone_call", "begin", args ) ) slot_refresh( "header_left" );
+        } );
+      } );
+    </script>
+  {% endif %}
+
+{% endblock javascript %}
+
+{# if needed, add an extra column for connecting to the contact #}
+{% block header_button_columns %}
+  
+  {% if allow_connect %}
+    <th width="1%"></th>
+  {% endif %}
+
+{% endblock header_button_columns %}
+
+{% block button_columns %}
+
+  {% if allow_connect %}
+    <td>
+      {% if row.columns['contact.has_phone'] %}
+        <button class="{{ widget.full}}_connect"
+                {{ SIP_ENABLED ? '' : 'disabled' }}
+                id="{{ widget.full }}_connect_{{ row.id }}">call</button>
+      {% endif %}
+    </td>
+  {% endif %}
+
+{% endblock button_columns %}

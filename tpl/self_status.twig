@@ -1,0 +1,40 @@
+{##
+ # self_status.twig
+ # 
+ # Shows status details.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ #}
+{% extends "widget.twig" %}
+
+{% block javascript %}
+
+  <script type="text/javascript">
+    $( function() {
+      $( "#{{ widget.full }}_sip" ).button( {
+        text: false,
+        icons: {
+          primary: "ui-icon-power{{ SIP_ENABLED ? '' : ' dimmed' }}"
+        }
+      } );
+      $( "#{{ widget.full }}_call" ).button( {
+        text: false,
+        icons: {
+          primary: "ui-icon-person"
+        }
+      } ).click( function() {
+        // place the call and refresh the status widget
+        if( send_action( "phone_call", "end" ) ) slot_refresh( "header_left" );
+      } );
+    } );
+  </script>
+
+{% endblock javascript %}
+
+{% block widget %}
+
+  <span>
+    <button disabled style="opacity: 1.0" id="{{ widget.full }}_sip">&nbsp;</button>
+    <button{{ on_call ? '' : ' disabled' }} id="{{ widget.full }}_call">hang up</button>
+  </span>
+
+{% endblock widget %}

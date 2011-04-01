@@ -35,6 +35,7 @@ try
                                                  'strict_variables' => util::in_devel_mode(),
                                                  'cache' => TEMPLATE_CACHE_PATH ) );
   $twig->addFilter( 'count', new \Twig_Filter_Function( 'count' ) );
+  $twig->addGlobal( 'SIP_ENABLED', \sabretooth\business\voip_manager::self()->get_sip_enabled() );
   
   $twig_template = $twig->loadTemplate( 'main.twig' );
   

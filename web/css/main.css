@@ -89,7 +89,15 @@ html, body {
   min-height: 100%;
 }
 
-#header_slot {
+#header_left_slot {
+  text-align: left;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  margin-left: 35px;
+  margin-right: 10px;
+}
+
+#header_right_slot {
   text-align: right;
   margin-top: 4px;
   margin-bottom: 4px;
@@ -156,6 +164,10 @@ td.content {
 
 .padded {
   padding: 1px;
+}
+
+.dimmed {
+  opacity: 0.15;
 }
 
 .note_icon {

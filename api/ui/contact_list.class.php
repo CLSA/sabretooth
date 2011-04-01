@@ -32,7 +32,6 @@ class contact_list extends base_list_widget
     $this->add_column( 'rank', 'number', 'Rank', true );
     $this->add_column( 'type', 'string', 'Type', true );
     $this->add_column( 'details', 'string', 'Details', false );
-
   }
   
   /**
@@ -44,6 +43,11 @@ class contact_list extends base_list_widget
   public function finish()
   {
     parent::finish();
+    
+    // only allow admins and supervisors to make direct calls
+    $role_name = \sabretooth\session::self()->get_role()->name;
+    $this->set_variable( 'allow_connect',
+                         'administrator' == $role_name || 'supervisor' == $role_name );
 
     foreach( $this->get_record_list() as $record )
     {
@@ -56,7 +60,10 @@ class contact_list extends base_list_widget
         array( 'active' => $record->active,
                'rank' => $record->rank,
                'type' => $record->type,
-               'details' => $details ) );
+               'details' => $details,
+               // This last item isn't actually a column, it's a hack to make sure only contacts
+               // that have phone numbers in them get the call button (see tpl/contact_list.twig)
+               'has_phone' => !is_null( $record->phone ) ) );
     }
 
     $this->finish_setting_rows();

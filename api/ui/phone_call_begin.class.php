@@ -55,7 +55,8 @@ class phone_call_begin extends action
           'Operator tried to make call to participant who is not currently assigned.', __METHOD__ );
     }
     
-    // TODO: PHPAGI code to connect a call $db_contact->phone goes here
+    // connect voip to contact
+    \sabretooth\business\voip_manager::self()->call( $db_contact );
 
     if( $is_operator )
     { // create a record of the phone call

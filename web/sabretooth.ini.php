@@ -28,7 +28,7 @@ $SETTINGS[ 'path' ][ 'SABRETOOTH' ] = '/usr/local/lib/sabretooth';
 
 // the location of libraries
 $SETTINGS[ 'path' ][ 'ADODB' ] = '/usr/local/lib/adodb';
-$SETTINGS[ 'path' ][ 'PHPAGI' ] = '/usr/local/lib/phpagi';
+$SETTINGS[ 'path' ][ 'SHIFT8' ] = '/usr/local/lib/shift8';
 $SETTINGS[ 'path' ][ 'PHPEXCEL' ] = '/usr/local/lib/phpexcel';
 $SETTINGS[ 'path' ][ 'JS' ] = 'js';
 $SETTINGS[ 'path' ][ 'CSS' ] = 'css';
@@ -91,6 +91,13 @@ $SETTINGS[ 'db' ][ 'username' ] = 'sabretooth';
 $SETTINGS[ 'db' ][ 'password' ] = '';
 $SETTINGS[ 'db' ][ 'database' ] = 'sabretooth';
 $SETTINGS[ 'db' ][ 'prefix' ] = '';
+
+// voip settings
+$SETTINGS[ 'voip' ][ 'enabled' ] = false;
+$SETTINGS[ 'voip' ][ 'url' ] = 'http://localhost:8088/mxml';
+$SETTINGS[ 'voip' ][ 'username' ] = '';
+$SETTINGS[ 'voip' ][ 'password' ] = '';
+$SETTINGS[ 'voip' ][ 'prefix' ] = '';
 
 // themes
 $SETTINGS[ 'interface' ][ 'default_theme' ] = 'humanity';

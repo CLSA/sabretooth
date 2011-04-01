@@ -340,21 +340,24 @@ abstract class base_list_widget extends widget
       }
 
       // format value based on the column type, if necessary
-      if( 'time' == $this->columns[$column_id]['type'] )
+      if( array_key_exists( $column_id, $this->columns ) )
       {
-        $columns[$column_id] = \sabretooth\util::get_formatted_time( $columns[$column_id], false );
-      }
-      else if( 'date' == $this->columns[$column_id]['type'] )
-      {
-        $columns[$column_id] = \sabretooth\util::get_formatted_date( $columns[$column_id] );
-      }
-      else if( 'fuzzy' == $this->columns[$column_id]['type'] )
-      {
-        $columns[$column_id] = \sabretooth\util::get_fuzzy_period_ago( $columns[$column_id] );
-      }
-      else if( 'boolean' == $this->columns[$column_id]['type'] )
-      {
-        $columns[$column_id] = $columns[$column_id] ? 'Yes' : 'No';
+        if( 'time' == $this->columns[$column_id]['type'] )
+        {
+          $columns[$column_id] = \sabretooth\util::get_formatted_time( $columns[$column_id], false );
+        }
+        else if( 'date' == $this->columns[$column_id]['type'] )
+        {
+          $columns[$column_id] = \sabretooth\util::get_formatted_date( $columns[$column_id] );
+        }
+        else if( 'fuzzy' == $this->columns[$column_id]['type'] )
+        {
+          $columns[$column_id] = \sabretooth\util::get_fuzzy_period_ago( $columns[$column_id] );
+        }
+        else if( 'boolean' == $this->columns[$column_id]['type'] )
+        {
+          $columns[$column_id] = $columns[$column_id] ? 'Yes' : 'No';
+        }
       }
     }
 
