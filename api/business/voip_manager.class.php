@@ -57,11 +57,9 @@ class voip_manager extends \sabretooth\singleton
       // get the current SIP info
       $peer = \sabretooth\session::self()->get_user()->name;
       $s8_event = $this->manager->getSIPPeer( $peer );
-      if( is_null( $s8_event ) )
-        throw new \sabretooth\exception\voip(
-          $this->manager->getLastError(), __METHOD__ );
       
-      if( $peer == $s8_event->get( 'objectname' ) &&
+      if( !is_null( $s8_event ) &&
+          $peer == $s8_event->get( 'objectname' ) &&
           'OK' == substr( $s8_event->get( 'status' ), 0, 2 ) )
       {
         $this->sip_info = array(

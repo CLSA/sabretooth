@@ -250,8 +250,8 @@ $( function() {
   } );
 
   // refresh all slots
-  slot_refresh( "header_left" );
-  slot_refresh( "header_right" );
+  slot_refresh( "status" );
+  slot_refresh( "shortcuts" );
   slot_refresh( "settings" );
   slot_refresh( "menu" );
   slot_refresh( "main" );

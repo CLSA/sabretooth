@@ -10,21 +10,7 @@
 
   <script type="text/javascript">
     $( function() {
-      $( "#{{ widget.full }}_sip" ).button( {
-        text: false,
-        icons: {
-          primary: "ui-icon-power{{ SIP_ENABLED ? '' : ' dimmed' }}"
-        }
-      } );
-      $( "#{{ widget.full }}_call" ).button( {
-        text: false,
-        icons: {
-          primary: "ui-icon-person"
-        }
-      } ).click( function() {
-        // place the call and refresh the status widget
-        if( send_action( "phone_call", "end" ) ) slot_refresh( "header_left" );
-      } );
+      $( "#{{ widget.full }}_icons" ).children().tooltip();
     } );
   </script>
 
@@ -32,9 +18,15 @@
 
 {% block widget %}
 
-  <span>
-    <button disabled style="opacity: 1.0" id="{{ widget.full }}_sip">&nbsp;</button>
-    <button{{ on_call ? '' : ' disabled' }} id="{{ widget.full }}_call">hang up</button>
+  <span id="{{ widget.full }}_icons" class="status_icons ui-widget ui-state-default ui-corner-all">
+    <span id="{{ widget.full }}_sip"
+          title="VoIP is {{ SIP_ENABLED ? 'enabled' : 'disabled' }}"
+          class="ui-button-icon-primary ui-icon ui-icon-power {{ SIP_ENABLED ? '' : 'dimmed' }}"
+          style="float: left" /> </label>
+    <span id="{{ widget.full }}_on_call"
+          title="{{ on_call ? 'call active' : 'no active call' }}"
+          class="ui-button-icon-primary ui-icon ui-icon-person {{ on_call ? '' : 'dimmed' }}"
+          style="float: left" />
   </span>
 
 {% endblock widget %}

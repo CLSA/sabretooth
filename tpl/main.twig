@@ -22,10 +22,6 @@
       color: {{ extruder_flap_color }};
       background: {{ extruder_flap_background }};
     }
-    .AnytTime-win {
-      color: {{ extruder_flap_color }};
-      background: {{ extruder_flap_background }};
-    }
   </style>
 
   <script type="text/javascript" src="{{ constant('JQUERY_JS_URL') }}"></script>
@@ -41,6 +37,7 @@
   <script type="text/javascript" src="{{ constant('JQUERY_JEDITABLE_JS_URL') }}"></script>
   <script type="text/javascript" src="{{ constant('JQUERY_TIMEPICKER_JS_URL') }}"></script>
   <script type="text/javascript" src="{{ constant('JQUERY_RIGHTCLICK_JS_URL') }}"></script>
+  <script type="text/javascript" src="{{ constant('JQUERY_TOOLTIP_JS_URL') }}"></script>
   <script type="text/javascript" src="js/main.js"></script>
 
   <script type="text/javascript">
@@ -48,6 +45,7 @@
       // apply jquery-ui theme to the extruders
       $( "div.content" ).addClass( "ui-widget-content" );
       $( ".flap" ).addClass( "ui-widget-header" );
+      $( ".tooltop" ).addClass( "ui-widget ui-widget-content ui-state-default ui-corner-all" );
   
       {% if survey_url %}
         // Defines the layout when showing the survey pane.
@@ -82,8 +80,8 @@
     <div class="ui-widget-content" id="app_ui">
       <table>
         <tr>
-          <td><div id="header_left_slot"></div></td>
-          <td><div id="header_right_slot"></div></td>
+          <td><div id="status_slot"></div></td>
+          <td><div id="shortcuts_slot"></div></td>
         </tr>
       </table>
       <div id="main_slot"></div>

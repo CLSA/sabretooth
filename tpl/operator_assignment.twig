@@ -12,16 +12,13 @@
     $( function() {
       {% if participant_id|default(false) %}
         // called when the dial_contact_widget's call button is pushed
-        $( "#operator_dial__call" ).click( function() {
-          {% if on_call %}
-            if( 'End Call' == $(this).text() )
-              if( send_action( "survey", "disable" ) )
-                window.location.reload();
-          {% else %}
-            if( 'Call' == $(this).text() )
-              if( send_action( "survey", "enable" ) )
-                window.location.reload();
-          {% endif %}
+        $( "#{{ widget.full }}__call" ).click( function() {
+          if( 'End Call' == $(this).text() )
+            if( send_action( "survey", "disable" ) )
+              window.location.reload();
+          if( 'Call' == $(this).text() )
+            if( send_action( "survey", "enable" ) )
+              window.location.reload();
         } );
       
         // view participant button

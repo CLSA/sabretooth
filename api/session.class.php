@@ -568,13 +568,13 @@ final class session extends singleton
       $_SESSION['slot'][$slot]['stack']['widgets'] =
         array( array( 'name' => 'self_menu', 'args' => NULL ) );
     }
-    else if( 'header_left' == $slot )
+    else if( 'status' == $slot )
     {
       $_SESSION['slot'][$slot]['stack']['index'] = 0;
       $_SESSION['slot'][$slot]['stack']['widgets'] =
         array( array( 'name' => 'self_status', 'args' => NULL ) );
     }
-    else if( 'header_right' == $slot )
+    else if( 'shortcuts' == $slot )
     {
       $_SESSION['slot'][$slot]['stack']['index'] = 0;
       $_SESSION['slot'][$slot]['stack']['widgets'] =

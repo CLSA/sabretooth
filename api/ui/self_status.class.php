@@ -38,11 +38,11 @@ class self_status extends widget
   public function finish()
   {
     parent::finish();
-    
-    $this->set_variable(
-      'on_call',
+
+    $this->set_variable( 'on_call',
       0 < count( \sabretooth\business\voip_manager::self()->get_calls(
                    \sabretooth\session::self()->get_user()->name ) ) );
+
   }
 }
 ?>

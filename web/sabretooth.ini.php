@@ -73,6 +73,8 @@ $SETTINGS[ 'url' ][ 'JQUERY_TIMEPICKER_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/timepicker.js';
 $SETTINGS[ 'url' ][ 'JQUERY_RIGHTCLICK_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/rightClick.js';
+$SETTINGS[ 'url' ][ 'JQUERY_TOOLTIP_JS' ] =
+  $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/tooltip.js';
 
 // css files
 $SETTINGS[ 'url' ][ 'JQUERY_UI_THEMES' ] = $SETTINGS[ 'url' ][ 'JQUERY_UI' ].'/css';

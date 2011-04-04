@@ -14,6 +14,22 @@
   <script type="text/javascript">
     $( function() {
       // make button icons
+      {% if hangup %}
+        $( "#{{ widget.full }}_hangup" ).button( {
+          text: false,
+          icons: {
+            primary: "ui-icon-person"
+          }
+        } ).click( function() {
+          // place the call and refresh the status and shortcut widgets
+          if( send_action( "phone_call", "end" ) )
+          {
+            slot_refresh( "status" );
+            slot_refresh( "shortcuts" );
+          }
+        } );
+      {% endif %}
+      
       {% if navigation %}
         $( "#{{ widget.full }}_prev" ).button( {
           text: false,
@@ -61,6 +77,9 @@
 {% block widget %}
 
   <span>
+    {% if hangup %}
+      <button id="{{ widget.full }}_hangup">hang up</button>
+    {% endif %}
     {% if navigation %}
       <button id="{{ widget.full }}_prev">back</button>
       <button id="{{ widget.full }}_next">forward</button>
