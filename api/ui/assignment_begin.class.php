@@ -58,7 +58,6 @@ class assignment_begin extends action
       throw new \sabretooth\exception\notice(
         'There are no participants currently available.', __METHOD__ );
     
-    // get the first phase of the participant's active qnaire
     $db_sample = $db_participant->get_active_sample();
     
     if( is_null( $db_sample ) )
@@ -68,17 +67,11 @@ class assignment_begin extends action
     $modifier = new \sabretooth\database\modifier();
     $modifier->order( 'stage' );
     $modifier->limit( 1 );
-    $phase_list = $db_sample->get_qnaire()->get_phase_list( $modifier );
-    $db_phase = current( $phase_list );
-
-    if( !$db_phase )
-      throw new \sabretooth\exception\runtime(
-        'Participant\'s active sample is linked to qnaire with no phases.', __METHOD__ );
 
     // create an interview for the participant
     $db_interview = new \sabretooth\database\interview();
     $db_interview->participant_id = $db_participant->id;
-    $db_interview->phase_id = $db_phase->id;
+    $db_interview->qnaire_id = $db_sample->qnaire_id;
     $db_interview->save();
 
     if( is_null( $db_interview->id ) )

@@ -172,27 +172,27 @@ DROP TABLE IF EXISTS `interview` ;
 CREATE  TABLE IF NOT EXISTS `interview` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `participant_id` INT UNSIGNED NOT NULL ,
-  `phase_id` INT UNSIGNED NOT NULL COMMENT 'What phase is the interview currently in?' ,
+  `qnaire_id` INT UNSIGNED NOT NULL ,
   `require_supervisor` TINYINT(1)  NOT NULL DEFAULT false ,
   `completed` TINYINT(1)  NOT NULL DEFAULT false ,
-  `duplicate_phase_id` INT UNSIGNED NULL DEFAULT NULL ,
+  `duplicate_qnaire_id` INT UNSIGNED NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
-  INDEX `fk_phase_id` (`phase_id` ASC) ,
-  INDEX `fk_duplicate_phase_id` (`duplicate_phase_id` ASC) ,
+  INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
+  INDEX `fk_duplicate_qnaire_id` (`qnaire_id` ASC) ,
   CONSTRAINT `fk_interview_participant`
     FOREIGN KEY (`participant_id` )
     REFERENCES `participant` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_phase_id`
-    FOREIGN KEY (`phase_id` )
-    REFERENCES `phase` (`id` )
+  CONSTRAINT `fk_interview_qnaire_id`
+    FOREIGN KEY (`qnaire_id` )
+    REFERENCES `qnaire` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_duplicate_phase_id`
-    FOREIGN KEY (`duplicate_phase_id` )
-    REFERENCES `phase` (`id` )
+  CONSTRAINT `fk_interiew_duplicate_qnaire_id`
+    FOREIGN KEY (`qnaire_id` )
+    REFERENCES `qnaire` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB, 

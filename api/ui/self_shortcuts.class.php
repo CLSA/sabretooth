@@ -39,12 +39,13 @@ class self_shortcuts extends widget
   {
     parent::finish();
     
-    $session = \sabretooth\session::self();
+    $db_user = \sabretooth\session::self()->get_user();
+    $db_role = \sabretooth\session::self()->get_role();
 
     $this->set_variable( 'hangup',
-      0 < count( \sabretooth\business\voip_manager::self()->get_calls(
-                   $session->get_user()->name ) ) );
-    $this->set_variable( 'navigation', 'operator' != $session->get_role()->name );
+      'operator' != $db_role->name &&
+      0 < count( \sabretooth\business\voip_manager::self()->get_calls( $db_user->name ) ) );
+    $this->set_variable( 'navigation', 'operator' != $db_role->name );
     $this->set_variable( 'refresh', true );
     $this->set_variable( 'home', true );
   }

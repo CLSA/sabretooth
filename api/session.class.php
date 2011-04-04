@@ -630,14 +630,14 @@ final class session extends singleton
    */
   public function get_survey_url()
   {
-    if( !$this->survey_enabled ) return false;
+    if( 'operator' != $this->role->name || !$this->survey_enabled ) return false;
 
     $db_assignment = $this->get_current_assignment();
     if( is_null( $db_assignment ) ) return false;
-
-    return LIMESURVEY_URL.sprintf( '/index.php?sid=%s&newtest=Y&lang=%s',
-                                   $db_assignment->get_interview()->get_phase()->sid,
-                                   $db_assignment->get_interview()->get_participant()->language );
+    
+    return LIMESURVEY_URL.sprintf( '/index.php?sid=%s&token=%s',
+                                   $db_assignment->get_current_phase()->sid,
+                                   $db_assignment->get_current_token() );
   }
 
   /**
