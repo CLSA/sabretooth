@@ -18,9 +18,13 @@
   
   {# need to dynamically specify left flap colors #}
   <style media="screen" type="text/css">
-    .extruder.left .flap{
+    .extruder.left .flap {
       color: {{ extruder_flap_color }};
       background: {{ extruder_flap_background }};
+    }
+    #tooltip {
+      color: {{ extruder_flap_background }};
+      background: {{ extruder_flap_color }};
     }
   </style>
 
@@ -90,7 +94,7 @@
   </div>
   <div class="ui-layout-south" id="survey_ui">
     <object style="width:100%; height: 100%; position: absolute;"
-            data="{{ survey_url }}"
+            data="{% autoescape false %}{{ survey_url }}{% endautoescape %}"
             id="survey_object">
       <p>Your browser is not supported, try with Firefox 3.6+</p>
     </object>

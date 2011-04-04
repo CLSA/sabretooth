@@ -88,8 +88,6 @@ html, body {
 #tooltip {
   position: absolute;
   z-index: 3000;
-  border: 1px solid #111;
-  background-color: #eee;
   padding: 5px;
   opacity: 1.0;
   -moz-border-radius: 5px;
