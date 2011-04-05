@@ -57,7 +57,7 @@ class shift_add extends base_view
   {
     parent::finish();
 
-    $session = \sabretooth\session::self();
+    $session = \sabretooth\business\session::self();
     
     if( $this->parent )
     {

@@ -72,7 +72,7 @@ abstract class record extends \sabretooth\database\record
    */
   public static function db()
   {
-    return \sabretooth\session::self()->get_survey_database();
+    return \sabretooth\business\session::self()->get_survey_database();
   }
 }
 ?>

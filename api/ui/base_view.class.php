@@ -38,7 +38,7 @@ abstract class base_view extends base_record_widget
       $this->get_argument( 'id' );
 
       // determine properties based on the current user's permissions
-      $session = \sabretooth\session::self();
+      $session = \sabretooth\business\session::self();
       $this->editable = $session->is_allowed(
         \sabretooth\database\operation::get_operation( 'action', $subject, 'edit' ) );
       $this->removable = $session->is_allowed( 
@@ -89,7 +89,7 @@ abstract class base_view extends base_record_widget
     else if( 'time' == $type )
     {
       // build time time zone help text
-      $session = \sabretooth\session::self();
+      $session = \sabretooth\business\session::self();
       $date_obj = new \DateTime( "now", new \DateTimeZone( $session->get_site()->timezone ) );
       $time_note = sprintf( 'Time is in %s\'s time zone (%s)',
                             $session->get_site()->name,

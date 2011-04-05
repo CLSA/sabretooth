@@ -32,11 +32,12 @@ try
   $twig->addGlobal( 'SIP_ENABLED', \sabretooth\business\voip_manager::self()->get_sip_enabled() );
   
   // determine which widget to render based on the GET variables
+  $session = business\session::self();
   if( !isset( $_GET['slot'] ) || !is_string( $_GET['slot'] ) )
     throw new exception\argument( 'slot', NULL, 'WIDGET_SCRIPT' );
   $slot_name = isset( $_GET['slot'] ) ? $_GET['slot'] : NULL;
   $widget['name'] = isset( $_GET['widget'] ) ? $_GET['widget'] : NULL;
-  $current_widget = session::self()->slot_current( $slot_name );
+  $current_widget = $session->slot_current( $slot_name );
 
   // if we are loading the same widget as last time then merge the arguments
   $widget['args'] = $_GET;
@@ -62,11 +63,11 @@ try
   // if the prev, next or refresh buttons were invoked, adjust the widget appropriately
   if( $go_prev )
   {
-    $widget = session::self()->slot_prev( $slot_name );
+    $widget = $session->slot_prev( $slot_name );
   }
   else if( $go_next )
   {
-    $widget = session::self()->slot_next( $slot_name );
+    $widget = $session->slot_next( $slot_name );
   }
   else if( $refresh )
   {
@@ -93,8 +94,8 @@ try
   // don't push or log prev/next/refresh requests
   if( !( $go_prev || $go_next || $refresh ) )
   {
-    session::self()->slot_push( $slot_name, $widget['name'], $widget['args'] );
-    session::self()->log_activity( $operation, $widget['args'] );
+    $session->slot_push( $slot_name, $widget['name'], $widget['args'] );
+    $session->log_activity( $operation, $widget['args'] );
   }
 
   log::notice(

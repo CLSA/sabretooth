@@ -34,7 +34,7 @@ try
       'Invoked operation "'.$action_class.'" is invalid.', 'ACTION_SCRIPT' );
   
   $operation->execute();
-  session::self()->log_activity( $operation, $action_args );
+  business\session::self()->log_activity( $operation, $action_args );
   log::notice(
     sprintf( 'finished script: executed action "%s", processing time %0.2f seconds',
              $action_class,
@@ -51,7 +51,7 @@ catch( exception\base_exception $e )
 }
 catch( \Exception $e )
 {
-  $code = \sabretooth\util::convert_number_to_code( SYSTEM_BASE_ERROR_NUMBER );
+  $code = util::convert_number_to_code( SYSTEM_BASE_ERROR_NUMBER );
   log::err( "Last minute ".$e );
   $result_array['success'] = false;
   $result_array['error_type'] = 'System';

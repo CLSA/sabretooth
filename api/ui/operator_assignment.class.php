@@ -40,7 +40,7 @@ class operator_assignment extends widget
   {
     parent::finish();
     
-    $session = \sabretooth\session::self();
+    $session = \sabretooth\business\session::self();
 
     // see if this user has an open assignment
     $db_assignment = $session->get_current_assignment();

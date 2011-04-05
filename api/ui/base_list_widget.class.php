@@ -43,7 +43,7 @@ abstract class base_list_widget extends widget
     $this->restrictions = $this->get_argument( 'restrictions', $this->restrictions );
     
     // determine properties based on the current user's permissions
-    $session = \sabretooth\session::self();
+    $session = \sabretooth\business\session::self();
     $this->viewable = $session->is_allowed(
       \sabretooth\database\operation::get_operation( 'widget', $this->get_subject(), 'view' ) );
     $this->addable = $session->is_allowed(
@@ -148,7 +148,7 @@ abstract class base_list_widget extends widget
     else // 'view' == $mode
     {
       // add/remove operations are relative to the parent
-      $session = \sabretooth\session::self();
+      $session = \sabretooth\business\session::self();
       $this->addable = $session->is_allowed( 
         \sabretooth\database\operation::get_operation(
           'widget', $this->parent->get_subject(), 'add_'.$this->get_subject() ) );
@@ -295,7 +295,7 @@ abstract class base_list_widget extends widget
     // specify column timezone for datetime columns
     if( 'datetime' == $type ) $heading .=
       sprintf( ' (%s)', \sabretooth\util::get_timezone_abbreviation(
-                         \sabretooth\session::self()->get_site()->timezone ) );
+                         \sabretooth\business\session::self()->get_site()->timezone ) );
 
     $column = array( 'id' => $column_id, 'type' => $type, 'heading' => $heading );
     if( $sortable ) $column['sortable'] = $sortable;

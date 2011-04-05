@@ -44,7 +44,7 @@ abstract class operation extends \sabretooth\base_object
     if( is_array( $args ) ) $this->arguments = $args;
     
     // throw a permission exception if the user is not allowed to perform this operation
-    if( !\sabretooth\session::self()->is_allowed( $this->operation_record ) )
+    if( !\sabretooth\business\session::self()->is_allowed( $this->operation_record ) )
       throw new \sabretooth\exception\permission( $this->operation_record, __METHOD__ );
   }
 

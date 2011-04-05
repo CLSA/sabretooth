@@ -38,7 +38,7 @@ final class util
    */
   public static function in_devel_mode()
   {
-    return true == session::self()->get_setting( 'general', 'development_mode' );
+    return true == business\session::self()->get_setting( 'general', 'development_mode' );
   }
 
   /**
@@ -52,7 +52,8 @@ final class util
   public static function in_action_mode()
   {
     if( is_null( self::$action_mode ) )
-      self::$action_mode = 'action.php' == session::self()->get_setting( 'general', 'script_name' );
+      self::$action_mode =
+        'action.php' == business\session::self()->get_setting( 'general', 'script_name' );
     
     return self::$action_mode;
   }
@@ -68,7 +69,8 @@ final class util
   public static function in_widget_mode()
   {
     if( is_null( self::$widget_mode ) )
-      self::$widget_mode = 'widget.php' == session::self()->get_setting( 'general', 'script_name' );
+      self::$widget_mode =
+        'widget.php' == business\session::self()->get_setting( 'general', 'script_name' );
     
     return self::$widget_mode;
   }
@@ -164,7 +166,7 @@ final class util
   {
     if( is_null( $date ) || !is_string( $date ) ) return $date;
 
-    $user_tz = \sabretooth\session::self()->get_site()->timezone;
+    $user_tz = business\session::self()->get_site()->timezone;
     $server_tz = date( 'e' );
 
     $date_obj = new \DateTime( $date, new \DateTimeZone( $server_tz ) );
@@ -185,7 +187,7 @@ final class util
   {
     if( is_null( $date ) || !is_string( $date ) ) return $date;
 
-    $user_tz = \sabretooth\session::self()->get_site()->timezone;
+    $user_tz = business\session::self()->get_site()->timezone;
     $server_tz = date( 'e' );
 
     $date_obj = new \DateTime( $date, new \DateTimeZone( $user_tz ) );
@@ -206,7 +208,7 @@ final class util
   {
     if( is_null( $time ) || !is_string( $time ) ) return $time;
 
-    $user_tz = \sabretooth\session::self()->get_site()->timezone;
+    $user_tz = business\session::self()->get_site()->timezone;
     $server_tz = date( 'e' );
 
     $time_obj = new \DateTime( $time, new \DateTimeZone( $server_tz ) );
@@ -227,7 +229,7 @@ final class util
   {
     if( is_null( $time ) || !is_string( $time ) ) return $time;
 
-    $user_tz = \sabretooth\session::self()->get_site()->timezone;
+    $user_tz = business\session::self()->get_site()->timezone;
     $server_tz = date( 'e' );
 
     $time_obj = new \DateTime( $time, new \DateTimeZone( $user_tz ) );
@@ -248,7 +250,7 @@ final class util
   {
     if( is_null( $datetime ) || !is_string( $datetime ) ) return 'unknown';
 
-    $user_tz = \sabretooth\session::self()->get_site()->timezone;
+    $user_tz = business\session::self()->get_site()->timezone;
     $time_obj = new \DateTime( $datetime, new \DateTimeZone( $user_tz ) );
     return $time_obj->format( 'Y-m-d '.( $include_seconds ? 'g:i:s A, T' : 'g:i A, T' ) );
   }
@@ -283,7 +285,7 @@ final class util
   {
     if( is_null( $time ) || !is_string( $time ) ) return 'unknown';
 
-    $user_tz = \sabretooth\session::self()->get_site()->timezone;
+    $user_tz = business\session::self()->get_site()->timezone;
     $time_obj = new \DateTime( $time, new \DateTimeZone( $user_tz ) );
     return $time_obj->format( $include_seconds ? 'g:i:s A, T' : 'g:i A, T' );
   }

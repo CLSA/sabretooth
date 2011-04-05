@@ -35,7 +35,7 @@ class assignment_begin extends action
    */
   public function execute()
   {
-    $session = \sabretooth\session::self();
+    $session = \sabretooth\business\session::self();
 
     // search through every queue for a new assignment until one is found
     $queue_id = NULL;

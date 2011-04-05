@@ -35,7 +35,7 @@ class survey_disable extends action
    */
   public function execute()
   {
-    \sabretooth\session::self()->disable_survey();
+    \sabretooth\business\session::self()->disable_survey();
   }
 }
 ?>

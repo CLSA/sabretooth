@@ -1,14 +1,13 @@
 <?php
 /**
  * session.class.php
- * TODO: move to the business namespace
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth
  * @filesource
  */
 
-namespace sabretooth;
+namespace sabretooth\business;
 
 /**
  * session: handles all session-based information
@@ -18,7 +17,7 @@ namespace sabretooth;
  * This class is a singleton, instead of using the new operator call {@singleton() 
  * @package sabretooth
  */
-final class session extends singleton
+final class session extends \sabretooth\singleton
 {
   /**
    * Constructor.
@@ -36,7 +35,7 @@ final class session extends singleton
     
     // one and only one argument should be past to the constructor
     if( is_null( $arguments ) || !is_array( $arguments ) || 1 != count( $arguments ) )
-      throw new exception\argument( 'arguments', $arguments, __METHOD__ );
+      throw new \sabretooth\exception\argument( 'arguments', $arguments, __METHOD__ );
 
     // the first argument is the settings array from an .ini file
     $settings = $arguments[0];
@@ -52,7 +51,7 @@ final class session extends singleton
     {
       // make sure the category exists
       if( !array_key_exists( $category, $settings ) )
-        throw new exception\argument( 'arguments['.$category.']', NULL, __METHOD__ );
+        throw new \sabretooth\exception\argument( 'arguments['.$category.']', NULL, __METHOD__ );
 
       $this->settings[ $category ] = $settings[ $category ];
     }
@@ -82,25 +81,25 @@ final class session extends singleton
 
     // create the databases
     $this->database = new \sabretooth\database\database(
-      session::self()->get_setting( 'db', 'driver' ),
-      session::self()->get_setting( 'db', 'server' ),
-      session::self()->get_setting( 'db', 'username' ),
-      session::self()->get_setting( 'db', 'password' ),
-      session::self()->get_setting( 'db', 'database' ),
-      session::self()->get_setting( 'db', 'prefix' ) );
+      $this->get_setting( 'db', 'driver' ),
+      $this->get_setting( 'db', 'server' ),
+      $this->get_setting( 'db', 'username' ),
+      $this->get_setting( 'db', 'password' ),
+      $this->get_setting( 'db', 'database' ),
+      $this->get_setting( 'db', 'prefix' ) );
     $this->survey_database = new \sabretooth\database\database(
-      session::self()->get_setting( 'survey_db', 'driver' ),
-      session::self()->get_setting( 'survey_db', 'server' ),
-      session::self()->get_setting( 'survey_db', 'username' ),
-      session::self()->get_setting( 'survey_db', 'password' ),
-      session::self()->get_setting( 'survey_db', 'database' ),
-      session::self()->get_setting( 'survey_db', 'prefix' ) );
+      $this->get_setting( 'survey_db', 'driver' ),
+      $this->get_setting( 'survey_db', 'server' ),
+      $this->get_setting( 'survey_db', 'username' ),
+      $this->get_setting( 'survey_db', 'password' ),
+      $this->get_setting( 'survey_db', 'database' ),
+      $this->get_setting( 'survey_db', 'prefix' ) );
     
     // determine the user (setting the user will also set the site and role)
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
     $this->set_user( \sabretooth\database\user::get_unique_record( 'name', $user_name ) );
     if( NULL == $this->user )
-      throw new exception\runtime( 'User "'.$user_name.'" not found.', __METHOD__ );
+      throw new \sabretooth\exception\runtime( 'User "'.$user_name.'" not found.', __METHOD__ );
 
     $this->initialized = true;
   }
@@ -119,7 +118,7 @@ final class session extends singleton
     if( !isset( $this->settings[ $category ] ) ||
         !isset( $this->settings[ $category ][ $name ] ) )
     {
-      log::err(
+      \sabretooth\log::err(
         "Tried getting value for setting [$category][$name] which doesn't exist." );
     }
     else
@@ -237,7 +236,7 @@ final class session extends singleton
     }
     else if( !$this->user->active )
     {
-      throw new exception\notice(
+      throw new \sabretooth\exception\notice(
         'Your account has been deactivated.<br>'.
         'Please contact a supervisor to regain access to the system.', __METHOD__ );
     }
@@ -259,7 +258,7 @@ final class session extends singleton
       {
         $db_site_list = $this->user->get_site_list();
         if( 0 == count( $db_site_list ) )
-          throw new exception\notice(
+          throw new \sabretooth\exception\notice(
             'Your account does not have access to any site.<br>'.
             'Please contact a supervisor to be granted access to a site.', __METHOD__ );
 
@@ -310,7 +309,7 @@ final class session extends singleton
   
   /**
    * Get the user's current assignment.
-   * Should only be called if the user is an operator, otherwise an exception will be thrown.
+   * Should only be called if the user is an operator, otherwise an \sabretooth\exception will be thrown.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\assignment
@@ -320,16 +319,16 @@ final class session extends singleton
   {
     // make sure the user is an operator
     if( 'operator' != $this->get_role()->name )
-      throw new exception\runtime( 'Tried to get assignment for non-operator.', __METHOD__ );
+      throw new \sabretooth\exception\runtime( 'Tried to get assignment for non-operator.', __METHOD__ );
     
     // query for assignments which do not have a end time
-    $modifier = new database\modifier();
+    $modifier = new \sabretooth\database\modifier();
     $modifier->where( 'end_time', '=', NULL );
     $assignment_list = $this->get_user()->get_assignment_list( $modifier );
 
     // only one assignment should ever be open at a time, warn if this isn't the case
     if( 1 < count( $assignment_list ) )
-      log::crit(
+      \sabretooth\log::crit(
         sprintf( 'Current operator (id: %d, name: %s), has more than one active assignment!',
                  $this->get_user()->id,
                  $this->get_user()->name ) );
@@ -339,7 +338,7 @@ final class session extends singleton
 
   /**
    * Get the user's current phone call.
-   * Should only be called if the user is an operator, otherwise an exception will be thrown.
+   * Should only be called if the user is an operator, otherwise an \sabretooth\exception will be thrown.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\phone_call
@@ -349,20 +348,20 @@ final class session extends singleton
   {
     // make sure the user is an operator
     if( 'operator' != $this->get_role()->name )
-      throw new exception\runtime( 'Tried to get phone call for non-operator.', __METHOD__ );
+      throw new \sabretooth\exception\runtime( 'Tried to get phone call for non-operator.', __METHOD__ );
     
     // without an assignment there can be no current call
     $db_assignment = $this->get_current_assignment();
     if( is_null( $db_assignment) ) return NULL;
 
     // query for phone calls which do not have a end time
-    $modifier = new database\modifier();
+    $modifier = new \sabretooth\database\modifier();
     $modifier->where( 'end_time', '=', NULL );
     $phone_call_list = $db_assignment->get_phone_call_list( $modifier );
 
     // only one phone call should ever be open at a time, warn if this isn't the case
     if( 1 < count( $phone_call_list ) )
-      log::crit(
+      \sabretooth\log::crit(
         sprintf( 'Current operator (id: %d, name: %s), has more than one active phone call!',
                  $this->get_user()->id,
                  $this->get_user()->name ) );
@@ -387,7 +386,7 @@ final class session extends singleton
     $activity->role_id = $this->role->id;
     $activity->operation_id = $operation->get_id();
     $activity->query = serialize( $args );
-    $activity->elapsed_time = util::get_elapsed_time();
+    $activity->elapsed_time = \sabretooth\util::get_elapsed_time();
     $activity->save();
   }
 
@@ -635,8 +634,11 @@ final class session extends singleton
     $db_assignment = $this->get_current_assignment();
     if( is_null( $db_assignment ) ) return false;
     
+    $db_phase = $db_assignment->get_current_phase();
+    if( is_null( $db_phase ) ) return false;
+    
     return LIMESURVEY_URL.sprintf( '/index.php?sid=%s&token=%s',
-                                   $db_assignment->get_current_phase()->sid,
+                                   $db_phase->sid,
                                    $db_assignment->get_current_token() );
   }
 
@@ -650,7 +652,7 @@ final class session extends singleton
   {
     // make sure there is an open assignment
     if( is_null( $this->get_current_assignment() ) )
-      throw new exception\runtime(
+      throw new \sabretooth\exception\runtime(
         'The survey cannot be enabled while there is no active assignment.', __METHOD__ );
 
     $this->survey_enabled = true;

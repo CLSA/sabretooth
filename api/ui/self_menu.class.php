@@ -39,7 +39,7 @@ class self_menu extends widget
   {
     parent::finish();
 
-    $session = \sabretooth\session::self();
+    $session = \sabretooth\business\session::self();
     
     $items = array();
     if( 'operator' == $session->get_role()->name )

@@ -26,7 +26,7 @@ class voip_manager extends \sabretooth\singleton
    */
   public function __construct()
   {
-    $session = \sabretooth\session::self();
+    $session = \sabretooth\business\session::self();
     $this->enabled = true === $session->get_setting( 'voip', 'enabled' );
     $this->url = $session->get_setting( 'voip', 'url' );
     $this->username = $session->get_setting( 'voip', 'username' );
@@ -55,7 +55,7 @@ class voip_manager extends \sabretooth\singleton
           'Unable to connect to the Asterisk server.', __METHOD__ );
 
       // get the current SIP info
-      $peer = \sabretooth\session::self()->get_user()->name;
+      $peer = \sabretooth\business\session::self()->get_user()->name;
       $s8_event = $this->manager->getSIPPeer( $peer );
       
       if( !is_null( $s8_event ) &&
@@ -148,7 +148,7 @@ class voip_manager extends \sabretooth\singleton
       throw \sabretooth\exception\runtime(
         'Tried to connect to phone number which does not have exactly 10 digits.', __METHOD__ );
 
-    $peer = \sabretooth\session::self()->get_user()->name;
+    $peer = \sabretooth\business\session::self()->get_user()->name;
     
     // make sure the user isn't already in a call
     if( 0 < count( $this->get_calls( $peer ) ) )
@@ -184,7 +184,7 @@ class voip_manager extends \sabretooth\singleton
 
     if( is_null( $voip_call ) )
     {
-      $peer = \sabretooth\session::self()->get_user()->name;
+      $peer = \sabretooth\business\session::self()->get_user()->name;
       foreach( $this->get_calls( $peer ) as $voip_call )
         $rebuild_list = $rebuild_list || $this->manager->hangup( $voip_call->get_channel() );
     }

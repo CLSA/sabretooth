@@ -44,7 +44,7 @@ class queue_list extends base_list_widget
   {
     parent::finish();
     
-    $session = \sabretooth\session::self();
+    $session = \sabretooth\business\session::self();
     $is_administrator = 'administrator' == $session->get_role()->name;
     $is_supervisor = 'supervisor' == $session->get_role()->name;
     

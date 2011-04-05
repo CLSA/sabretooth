@@ -28,7 +28,7 @@ class user_list extends base_list_widget
   {
     parent::__construct( 'user', $args );
     
-    $session = \sabretooth\session::self();
+    $session = \sabretooth\business\session::self();
     $is_supervisor = 'supervisor' == $session->get_role()->name;
 
     // define all template variables for this list
@@ -86,7 +86,7 @@ class user_list extends base_list_widget
   protected function determine_record_count( $modifier = NULL )
   {
     // only show users for current site if user is a supervisor
-    $session = \sabretooth\session::self();
+    $session = \sabretooth\business\session::self();
     if( 'supervisor' == $session->get_role()->name )
     {
       if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
@@ -107,7 +107,7 @@ class user_list extends base_list_widget
   protected function determine_record_list( $modifier = NULL )
   {
     // only show users for current site if user is a supervisor
-    $session = \sabretooth\session::self();
+    $session = \sabretooth\business\session::self();
     if( 'supervisor' == $session->get_role()->name )
     {
       if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();

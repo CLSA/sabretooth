@@ -28,7 +28,7 @@ class shift_list extends base_list_widget
   {
     parent::__construct( 'shift', $args );
     
-    $session = \sabretooth\session::self();
+    $session = \sabretooth\business\session::self();
     $is_supervisor = 'supervisor' == $session->get_role()->name;
     $is_operator = 'operator' == $session->get_role()->name;
     
@@ -75,7 +75,7 @@ class shift_list extends base_list_widget
   protected function determine_record_count( $modifier = NULL )
   {
     // only show users for current site if user is a supervisor
-    $session = \sabretooth\session::self();
+    $session = \sabretooth\business\session::self();
     $is_supervisor = 'supervisor' == $session->get_role()->name;
     $is_operator = 'operator' == $session->get_role()->name;
 
@@ -104,7 +104,7 @@ class shift_list extends base_list_widget
   protected function determine_record_list( $modifier = NULL )
   {
     // only show users for current site if user is a supervisor
-    $session = \sabretooth\session::self();
+    $session = \sabretooth\business\session::self();
     $is_supervisor = 'supervisor' == $session->get_role()->name;
     $is_operator = 'operator' == $session->get_role()->name;
 

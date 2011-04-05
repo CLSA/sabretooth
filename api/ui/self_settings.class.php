@@ -38,7 +38,7 @@ class self_settings extends widget
   {
     parent::finish();
 
-    $session = \sabretooth\session::self();
+    $session = \sabretooth\business\session::self();
     // create and setup the widget
     $db_user = $session->get_user();
     $db_site = $session->get_site();

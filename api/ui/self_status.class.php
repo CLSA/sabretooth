@@ -41,7 +41,7 @@ class self_status extends widget
 
     $this->set_variable( 'on_call',
       0 < count( \sabretooth\business\voip_manager::self()->get_calls(
-                   \sabretooth\session::self()->get_user()->name ) ) );
+                   \sabretooth\business\session::self()->get_user()->name ) ) );
 
   }
 }

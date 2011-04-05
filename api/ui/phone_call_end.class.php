@@ -35,14 +35,15 @@ class phone_call_end extends action
    */
   public function execute()
   {
-    $is_operator = 'operator' == \sabretooth\session::self()->get_role()->name;
+    $session = \sabretooth\business\session::self();
+    $is_operator = 'operator' == $session->get_role()->name;
 
     // disconnect voip
     \sabretooth\business\voip_manager::self()->hang_up();
 
     if( $is_operator )
     { // set the end time and status of the call
-      $db_phone_call = \sabretooth\session::self()->get_current_phone_call();
+      $db_phone_call = $session->get_current_phone_call();
       if( !is_null( $db_phone_call ) )
       {
         $db_phone_call->end_time = date( 'Y-m-d H:i:s' );

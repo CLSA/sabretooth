@@ -44,7 +44,7 @@ class self_set_role extends action
         'Invalid role name "'.$this->role_name.'"', __METHOD__ );
 
     // get the first role associated with the role
-    $session = \sabretooth\session::self();
+    $session = \sabretooth\business\session::self();
     $db_site = $session->get_site();
     $modifier = new \sabretooth\database\modifier();
     $modifier->where( 'site_id', '=', $db_site->id );

@@ -35,7 +35,7 @@ class assignment_end extends action
    */
   public function execute()
   {
-    $session = \sabretooth\session::self();
+    $session = \sabretooth\business\session::self();
     $db_assignment = $session->get_current_assignment();
     if( !is_null( $db_assignment ) )
     {

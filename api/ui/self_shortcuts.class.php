@@ -39,8 +39,8 @@ class self_shortcuts extends widget
   {
     parent::finish();
     
-    $db_user = \sabretooth\session::self()->get_user();
-    $db_role = \sabretooth\session::self()->get_role();
+    $db_user = \sabretooth\business\session::self()->get_user();
+    $db_role = \sabretooth\business\session::self()->get_role();
 
     $this->set_variable( 'hangup',
       'operator' != $db_role->name &&

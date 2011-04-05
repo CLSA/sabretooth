@@ -29,7 +29,7 @@ class self_home extends widget
     parent::__construct( 'self', 'home', $args );
     $this->set_heading( 'Home' );
     
-    $session = \sabretooth\session::self();
+    $session = \sabretooth\business\session::self();
 
     // determine the user's last activity
     $db_activity = $session->get_user()->get_last_activity();

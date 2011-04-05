@@ -192,7 +192,7 @@ final class log extends singleton
   private function send( $message, $type )
   {
     // make sure we have a session
-    if( !class_exists( 'sabretooth\session' ) || !session::exists() ) return;
+    if( !class_exists( 'sabretooth\business\session' ) || !business\session::exists() ) return;
 
     // if in devel mode log everything to firephp
     if( util::in_devel_mode() )

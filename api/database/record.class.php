@@ -1005,7 +1005,7 @@ abstract class record extends \sabretooth\base_object
    */
   public static function db()
   {
-    return \sabretooth\session::self()->get_database();
+    return \sabretooth\business\session::self()->get_database();
   }
 
   /**

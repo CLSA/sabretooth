@@ -35,7 +35,7 @@ class survey_enable extends action
    */
   public function execute()
   {
-    \sabretooth\session::self()->enable_survey();
+    \sabretooth\business\session::self()->enable_survey();
   }
 }
 ?>

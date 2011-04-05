@@ -68,8 +68,9 @@ class assignment extends record
 
       if( is_null( $this->current_phase ) )
       { // all phases are complete
-        $this->completed = true;
-        $this->save();
+        $db_interview = $this->get_interview();
+        $db_interview->completed = true;
+        $db_interview->save();
       }
     }
 

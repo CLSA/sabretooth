@@ -27,14 +27,15 @@ class base_exception extends \Exception
    */
   public function __construct( $message, $context, $previous = NULL )
   {
+    $session = \sabretooth\business\session::self();
     $this->raw_message = $message;
 
     $who = 'unknown';
-    if( class_exists( 'sabretooth\session' ) && \sabretooth\session::self()->is_initialized() )
+    if( class_exists( 'sabretooth\business\session' ) && $session->is_initialized() )
     {
-      $user_name = \sabretooth\session::self()->get_user()->name;
-      $role_name = \sabretooth\session::self()->get_role()->name;
-      $site_name = \sabretooth\session::self()->get_site()->name;
+      $user_name = $session->get_user()->name;
+      $role_name = $session->get_role()->name;
+      $site_name = $session->get_site()->name;
       $who = "$user_name:$role_name@$site_name";
     }
     

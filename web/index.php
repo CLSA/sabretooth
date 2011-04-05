@@ -40,7 +40,7 @@ try
   $twig_template = $twig->loadTemplate( 'main.twig' );
   
   // Since there is no main widget we need set up the template variables here
-  $session = session::self();
+  $session = business\session::self();
   $theme = $session->get_theme();
   $version = $session->get_setting( 'version', 'JQUERY_UI' );
   $variables = array( 'jquery_ui_css_path' => '/'.$theme.'/jquery-ui-'.$version.'.custom.css',

@@ -45,7 +45,7 @@ class contact_list extends base_list_widget
     parent::finish();
     
     // only allow admins and supervisors to make direct calls
-    $role_name = \sabretooth\session::self()->get_role()->name;
+    $role_name = \sabretooth\business\session::self()->get_role()->name;
     $this->set_variable( 'allow_connect',
                          'administrator' == $role_name || 'supervisor' == $role_name );
 
