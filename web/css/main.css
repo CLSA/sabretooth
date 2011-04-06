@@ -101,6 +101,17 @@ html, body {
   margin: 0;
 }
 
+a.tree {
+  padding: 4px !important;
+  border: 0px !important;
+  background: none !important;
+}
+
+ins.no_icon {
+  width: 0px !important;
+  height: 0px !important;
+}
+
 #app_ui {
   min-height: 100%;
 }

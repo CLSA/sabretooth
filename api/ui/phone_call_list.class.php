@@ -30,7 +30,7 @@ class phone_call_list extends base_list_widget
     
     $this->add_column( 'contact.type', 'string', 'Contact', true );
     $this->add_column( 'appointment_id', 'boolean', 'Appointment', true );
-    $this->add_column( 'date', 'datetime', 'Date', true );
+    $this->add_column( 'date', 'date', 'Date', true );
     $this->add_column( 'start_time', 'time', 'Start Time', false );
     $this->add_column( 'end_time', 'time', 'End Time', false );
     $this->add_column( 'status', 'string', 'Status', true );
@@ -52,10 +52,10 @@ class phone_call_list extends base_list_widget
       $this->add_row( $record->id,
         array( 'contact.type' => $record->get_contact()->type,
                'appointment_id' => $record->appointment_id ? 'Yes' : 'No',
-               'date' => $this->start_time,
-               'start_time' => $this->start_time,
-               'end_time' => $this->end_time ? $this->end_time : '(in progress)',
-               'status' => $record->status ? $record->status : 'none' ) );
+               'date' => $record->start_time,
+               'start_time' => $record->start_time,
+               'end_time' => $record->end_time,
+               'status' => $record->status ? $record->status : 'in progress' ) );
     }
 
     $this->finish_setting_rows();

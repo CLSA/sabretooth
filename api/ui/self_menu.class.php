@@ -61,6 +61,11 @@ class self_menu extends widget
       if( !in_array( $db_widget->subject, $exclude ) )
         $items[] = array( 'heading' => \sabretooth\util::pluralize( $db_widget->subject ),
                           'widget' => $db_widget->subject.'_'.$db_widget->name );
+
+      // insert the participant tree after participant list
+      if( 'participant' == $db_widget->subject )
+        $items[] = array( 'heading' => 'Participant Tree',
+                          'widget' => 'participant_tree' );
     }
 
     $this->set_variable( 'items', $items );

@@ -133,6 +133,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "add_contact", true, "A form to create a new contact entry to add to a participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "participant", "delete_contact", true, "Remove a participant's contact entry." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "tree", true, "Displays participants in a tree format, revealing which queue the belong to." );
 
 -- phase
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -235,6 +237,14 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "self", "set_role", false, "Change the current user's active role." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "self", "set_theme", false, "Change the current user's web interface theme." );
+
+-- setting
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "setting", "edit", true, "Edits a setting's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "setting", "view", true, "View a setting's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "setting", "list", true, "List settings in the system." );
 
 -- shift
 INSERT INTO operation( type, subject, name, restricted, description )

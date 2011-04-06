@@ -75,6 +75,8 @@ $SETTINGS[ 'url' ][ 'JQUERY_RIGHTCLICK_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/rightClick.js';
 $SETTINGS[ 'url' ][ 'JQUERY_TOOLTIP_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/tooltip.js';
+$SETTINGS[ 'url' ][ 'JQUERY_JSTREE_JS' ] =
+  $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/jsTree.js';
 
 // css files
 $SETTINGS[ 'url' ][ 'JQUERY_UI_THEMES' ] = $SETTINGS[ 'url' ][ 'JQUERY_UI' ].'/css';

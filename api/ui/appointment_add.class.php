@@ -52,6 +52,7 @@ class appointment_add extends base_view
     // create enum arrays
     $db_participant = new \sabretooth\database\participant( $this->parent->get_record()->id );
     $modifier = new \sabretooth\database\modifier();
+    $modifier->where( 'phone', '!=', NULL );
     $modifier->order( 'rank' );
     $contacts = array();
     foreach( $db_participant->get_contact_list( $modifier ) as $db_contact )
@@ -59,7 +60,7 @@ class appointment_add extends base_view
 
     // set the view's items
     $this->set_item( 'participant_id', $this->parent->get_record()->id );
-    $this->set_item( 'contact_id', '', false, $contacts );
+    $this->set_item( 'contact_id', '', true, $contacts );
     $this->set_item( 'date', '', true );
 
     $this->finish_setting_items();

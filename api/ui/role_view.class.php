@@ -21,7 +21,6 @@ class role_view extends base_view
    * 
    * Defines all variables which need to be set for the associated template.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $name The name of the operation.
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
@@ -31,7 +30,7 @@ class role_view extends base_view
 
     // create an associative array with everything we want to display about the role
     $this->add_item( 'name', 'string', 'Name' );
-    $this->add_item( 'operation_count', 'constant', 'Operations' );
+    $this->add_item( 'users', 'constant', 'Number of users' );
 
     try
     {
@@ -59,7 +58,7 @@ class role_view extends base_view
 
     // set the view's items
     $this->set_item( 'name', $this->get_record()->name, true );
-    $this->set_item( 'operation_count', $this->get_record()->get_operation_count() );
+    $this->set_item( 'users', $this->get_record()->get_user_count() );
 
     $this->finish_setting_items();
 

@@ -344,7 +344,9 @@ abstract class base_list_widget extends widget
       {
         if( 'time' == $this->columns[$column_id]['type'] )
         {
-          $columns[$column_id] = \sabretooth\util::get_formatted_time( $columns[$column_id], false );
+          $columns[$column_id] =
+            is_null( $columns[$column_id] ) ?
+            'none' : \sabretooth\util::get_formatted_time( $columns[$column_id], false );
         }
         else if( 'date' == $this->columns[$column_id]['type'] )
         {

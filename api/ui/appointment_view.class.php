@@ -46,13 +46,14 @@ class appointment_view extends base_view
     // create enum arrays
     $db_participant = new \sabretooth\database\participant( $this->get_record()->participant_id );
     $modifier = new \sabretooth\database\modifier();
+    $modifier->where( 'phone', '!=', NULL );
     $modifier->order( 'rank' );
     $contacts = array();
     foreach( $db_participant->get_contact_list( $modifier ) as $db_contact )
       $contacts[$db_contact->id] = $db_contact->rank.". ".$db_contact->phone;
-
+    
     // set the view's items
-    $this->set_item( 'contact_id', $this->get_record()->contact_id, false, $contacts );
+    $this->set_item( 'contact_id', $this->get_record()->contact_id, true, $contacts );
     $this->set_item( 'date', $this->get_record()->date, true );
 
     $this->finish_setting_items();

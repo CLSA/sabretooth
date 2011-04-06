@@ -39,11 +39,23 @@ class appointment extends record
   public function get_status()
   {
     $status = 'unknown';
+    
+    // settings are in minutes, time() is in seconds, so multiply by 60
+    $pre_window_time = 60 *
+      \sabretooth\database\setting::get_setting( 'appointment', 'call pre-window' )->value;
+    $post_window_time = 60 *
+      \sabretooth\database\setting::get_setting( 'appointment', 'call post-window' )->value;
+    $now = time();
+    $appointment = strtotime( $this->date );
 
     // get the status of the appointment
-    if( strtotime( $this->date ) > time() )
+    if( $now < $appointment - $pre_window_time )
     {
       $status = 'upcoming';
+    }
+    else if( $now < $appointment + $post_window_time )
+    {
+      $status = 'ready for assignment';
     }
     else
     { // not in the future

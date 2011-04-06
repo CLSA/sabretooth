@@ -242,13 +242,15 @@ final class util
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
    * @param string $date A date string in the format accepted by the DateTime constructor.
+   * @param boolean $include_seconds Whether to include the seconds in the output
+   * @param string $invalid What to return if the input is invalid.
    * @return string
    * @static
    * @access public
    */
-  public static function get_formatted_datetime( $datetime, $include_seconds = true )
+  public static function get_formatted_datetime( $datetime, $include_seconds = true, $invalid = 'unknown' )
   {
-    if( is_null( $datetime ) || !is_string( $datetime ) ) return 'unknown';
+    if( is_null( $datetime ) || !is_string( $datetime ) ) return $invalid;
 
     $user_tz = business\session::self()->get_site()->timezone;
     $time_obj = new \DateTime( $datetime, new \DateTimeZone( $user_tz ) );
@@ -260,13 +262,14 @@ final class util
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
    * @param string $date A date string in the format accepted by the DateTime constructor.
+   * @param string $invalid What to return if the input is invalid.
    * @return string
    * @static
    * @access public
    */
-  public static function get_formatted_date( $date )
+  public static function get_formatted_date( $date, $invalid = 'unknown' )
   {
-    if( is_null( $date ) || !is_string( $date ) ) return 'unknown';
+    if( is_null( $date ) || !is_string( $date ) ) return $invalid;
 
     $date_obj = new \DateTime( $date );
     return $date_obj->format( 'l, F jS, Y' );
@@ -277,13 +280,15 @@ final class util
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
    * @param string $date A date string in the format accepted by the DateTime constructor.
+   * @param boolean $include_seconds Whether to include the seconds in the output
+   * @param string $invalid What to return if the input is invalid.
    * @return string
    * @static
    * @access public
    */
-  public static function get_formatted_time( $time, $include_seconds = true )
+  public static function get_formatted_time( $time, $include_seconds = true, $invalid = 'unknown' )
   {
-    if( is_null( $time ) || !is_string( $time ) ) return 'unknown';
+    if( is_null( $time ) || !is_string( $time ) ) return $invalid;
 
     $user_tz = business\session::self()->get_site()->timezone;
     $time_obj = new \DateTime( $time, new \DateTimeZone( $user_tz ) );

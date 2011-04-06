@@ -35,11 +35,6 @@ class participant_view extends base_view
     $this->add_item( 'hin', 'string', 'Health Insurance Number' );
     $this->add_item( 'status', 'enum', 'Condition' );
     $this->add_item( 'site_id', 'enum', 'Site' );
-    $this->add_item( 'samples', 'constant', 'Number of samples' );
-    $this->add_item( 'contacts', 'constant', 'Number of contact entries' );
-    $this->add_item( 'appointments', 'constant', 'Number of appointments' );
-    $this->add_item( 'availabilities', 'constant', 'Number of availability entries' );
-    $this->add_item( 'consents', 'constant', 'Number of consent entries' );
     
     try
     {
@@ -129,11 +124,6 @@ class participant_view extends base_view
     $this->set_item( 'hin', $this->get_record()->hin );
     $this->set_item( 'status', $this->get_record()->status, false, $statuses );
     $this->set_item( 'site_id', $site_id, false, $sites );
-    $this->set_item( 'samples', $this->get_record()->get_sample_count() );
-    $this->set_item( 'contacts', $this->get_record()->get_contact_count() );
-    $this->set_item( 'appointments', $this->get_record()->get_appointment_count() );
-    $this->set_item( 'availabilities', $this->get_record()->get_availability_count() );
-    $this->set_item( 'consents', $this->get_record()->get_consent_count() );
 
     $this->finish_setting_items();
 

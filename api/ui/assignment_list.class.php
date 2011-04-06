@@ -62,7 +62,7 @@ class assignment_list extends base_list_widget
                'calls' => $record->get_phone_call_count(),
                'date' => $record->start_time,
                'start_time' => $record->start_time,
-               'end_time' => $record->end_time ? $record->end_time : '(in progress)' ) );
+               'end_time' => $record->end_time ) );
     }
 
     $this->finish_setting_rows();
