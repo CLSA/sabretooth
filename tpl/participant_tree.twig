@@ -26,12 +26,10 @@
       $( "#{{ widget.full }}_tree" ).jstree( {
         plugins: [ "html_data", "ui", "themeroller" ],
         core: {
+          animation: 200,
+          html_titles: true,
           initially_open: [
-            "all",
-            "1_incomplete",
-            "1_no_appointment",
-            "1_old_participant",
-            "1_machine"
+            "{{ widget.full }}_0_1"
           ]
         },
         themeroller: {
@@ -70,168 +68,12 @@
       </select>
     </div>
   {% endif %}
-
+  
   <div id="{{ widget.full }}_tree">
     <ul>
-      <li id="all">
-        <a class="tree">All Participants (###)</a>
-        <ul>
-          <li id="0">
-            <a class="tree">No questionnaire (###)</a>
-          </li>
-          <li id="1">
-            <a class="tree">Pilot questionnaire (###)</a>
-            <ul>
-              <li id="1_complete"><a class="tree">Complete (###)</a></li>
-              <li id="1_incomplete">
-                <a class="tree">Incomplete (###)</a>
-                <ul>
-                  <li id="1_ineligible"><a class="tree">Ineligible (###)</a></li>
-                  <li>
-                    <a class="tree">Eligible (###)</a>
-                    <ul>
-                      <li id="1_appointment">
-                        <a class="tree">Have an appointment (###)</a>
-                        <ul>
-                          <li id="1_future_appointment"><a class="tree">Upcomming Appointments (###)</a></li>
-                          <li id="1_current_appointment">
-                            <a class="tree"><ins class="no_icon"></ins><ins><span class="ui-icon ui-icon-script" /></ins>
-                            Assignable Appointments (###) </a>
-                            <button id="{{ widget.full }}__1_1" class="{{ widget.full }}_button">Queue 1</button>
-                          </li>
-                          <li id="1_missed_appointment">
-                            <a class="tree"><ins class="no_icon"></ins><ins><span class="ui-icon ui-icon-script" /></ins>
-                            Missed Appointments (###) </a>
-                            <button id="{{ widget.full }}__1_2" class="{{ widget.full }}_button">Queue 2</button>
-                          </li>
-                        </ul>
-                      </li>
-                      <li id="1_no_appointment">
-                        <a class="tree">Do not have an appointment (###)</a>
-                        <ul>
-                          <li id="1_availability">
-                            <a class="tree">Have availability (###)</a>
-                            <ul>
-                              <li id="1_not_available"><a class="tree">Are not currently available (###)</a></li>
-                              <li id="1_available">
-                                <a class="tree">Are currently available (###)</a>
-                                <ul>
-                                  <li id="1_available_old">
-                                    <a class="tree"><ins class="no_icon"></ins><ins><span class="ui-icon ui-icon-script" /></ins>
-                                    Previously assigned (###)</a>
-                                    <button id="{{ widget.full }}__1_3" class="{{ widget.full }}_button">Queue 3</button>
-                                  </li>
-                                  <li id="1_available_new">
-                                    <a class="tree"><ins class="no_icon"></ins><ins><span class="ui-icon ui-icon-script" /></ins>
-                                    Never assigned (###)</a>
-                                    <button id="{{ widget.full }}__1_10" class="{{ widget.full }}_button">Queue 10</button>
-                                  </li>
-                                </ul>
-                              </li>
-                            </ul>
-                          </li>
-                          <li id="1_no_availability">
-                            <a class="tree">Do not have availability (###)</a>
-                            <ul>
-                              <li id="1_new_participant">
-                                <a class="tree"><ins class="no_icon"></ins><ins><span class="ui-icon ui-icon-script" /></ins>
-                                Never Assigned (###) </a>
-                                <button id="{{ widget.full }}__1_11" class="{{ widget.full }}_button">Queue 11</button>
-                              </li>
-                              <li id="1_old_participant">
-                                <a class="tree">Previously assigned (###)</a>
-                                <ul>
-                                  <li id="1_contacted">
-                                    <a class="tree">Contacted (###)</a>
-                                    <ul>
-                                      <li id="1_contacted_waiting"><a class="tree">Waiting for call-back delay (###)</a></li>
-                                      </li>
-                                      <li id="1_contacted_ready">
-                                        <a class="tree"><ins class="no_icon"></ins><ins><span class="ui-icon ui-icon-script" /></ins>
-                                        Ready for call-back (###) </a>
-                                        <button id="{{ widget.full }}__1_4" class="{{ widget.full }}_button">Queue 4</button>
-                                      </li>
-                                    </ul>
-                                  </li>
-                                  <li id="1_busy">
-                                    <a class="tree">Busy line (###)</a>
-                                    <ul>
-                                      <li id="1_busy_waiting"><a class="tree">Waiting for call-back delay (###)</a></li>
-                                      </li>
-                                      <li id="1_busy_ready">
-                                        <a class="tree"><ins class="no_icon"></ins><ins><span class="ui-icon ui-icon-script" /></ins>
-                                        Ready for call-back (###) </a>
-                                        <button id="{{ widget.full }}__1_5" class="{{ widget.full }}_button">Queue 5</button>
-                                      </li>
-                                    </ul>
-                                  </li>
-                                  <li id="1_fax">
-                                    <a class="tree">Fax line (###)</a>
-                                    <ul>
-                                      <li id="1_fax_waiting"><a class="tree">Waiting for call-back delay (###)</a></li>
-                                      </li>
-                                      <li id="1_fax_ready">
-                                        <a class="tree"><ins class="no_icon"></ins><ins><span class="ui-icon ui-icon-script" /></ins>
-                                        Ready for call-back (###) </a>
-                                        <button id="{{ widget.full }}__1_6" class="{{ widget.full }}_button">Queue 6</button>
-                                      </li>
-                                    </ul>
-                                  </li>
-                                  <li id="1_no_answer">
-                                    <a class="tree">No answer (###)</a>
-                                    <ul>
-                                      <li id="1_no_answer_waiting"><a class="tree">Waiting for call-back delay (###)</a></li>
-                                      </li>
-                                      <li id="1_no_answer_ready">
-                                        <a class="tree"><ins class="no_icon"></ins><ins><span class="ui-icon ui-icon-script" /></ins>
-                                        Ready for call-back (###) </a>
-                                        <button id="{{ widget.full }}__1_7" class="{{ widget.full }}_button">Queue 7</button>
-                                      </li>
-                                    </ul>
-                                  </li>
-                                  <li id="1_machine">
-                                    <a class="tree">Answering machine (###)</a>
-                                    <ul>
-                                      <li id="1_machine_message">
-                                        <a class="tree">Message was left (###)</a>
-                                        <ul>
-                                          <li id="1_machine_message_waiting"><a class="tree">Waiting for call-back delay (###)</a></li>
-                                          </li>
-                                          <li id="1_machine_message_ready">
-                                            <a class="tree"><ins class="no_icon"></ins><ins><span class="ui-icon ui-icon-script" /></ins>
-                                            Ready for call-back (###) </a>
-                                            <button id="{{ widget.full }}__1_8" class="{{ widget.full }}_button">Queue 8</button>
-                                          </li>
-                                        </ul>
-                                      </li>
-                                      <li id="1_machine_no_message">
-                                        <a class="tree">Message was not left (###)</a>
-                                        <ul>
-                                          <li id="1_machine_no_message_waiting"><a class="tree">Waiting for call-back delay (###)</a></li>
-                                          </li>
-                                          <li id="1_machine_no_message_ready">
-                                            <a class="tree"><ins class="no_icon"></ins><ins><span class="ui-icon ui-icon-script" /></ins>
-                                            Ready for call-back (###) </a>
-                                            <button id="{{ widget.full }}__1_9" class="{{ widget.full }}_button">Queue 9</button>
-                                          </li>
-                                        </ul>
-                                      </li>
-                                    </ul>
-                                  </li>
-                                </ul>
-                              </li>
-                            </ul>
-                          </li>
-                        </ul>
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </li>
+      {% for node in tree %}
+        {% include "tree_widget.twig" with node %}
+      {% endfor %}
     </ul>
   </div>
 

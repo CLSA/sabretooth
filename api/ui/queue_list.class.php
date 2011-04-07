@@ -28,8 +28,8 @@ class queue_list extends base_list_widget
   {
     parent::__construct( 'queue', $args );
     
-    $this->add_column( 'name', 'string', 'Name', false );
-    $this->add_column( 'enabled', 'boolean', 'Enabled', false );
+    $this->add_column( 'rank', 'number', 'Rank', true );
+    $this->add_column( 'enabled', 'boolean', 'Enabled', true );
     $this->add_column( 'participant_count', 'number', 'Participants', false );
     $this->add_column( 'description', 'text', 'Description', false, 'left' );
   }
@@ -56,28 +56,79 @@ class queue_list extends base_list_widget
         $sites[$db_site->id] = $db_site->name;
       $this->set_variable( 'sites', $sites );
     }
-    
+
     $restrict_site_id = $this->get_argument( "restrict_site_id", 0 );
     $this->set_variable( 'restrict_site_id', $restrict_site_id );
     $db_restrict_site = $restrict_site_id
                       ? new \sabretooth\database\site( $restrict_site_id )
                       : NULL;
 
+    $qnaires = array();
+    foreach( \sabretooth\database\qnaire::select() as $db_qnaire )
+      $qnaires[$db_qnaire->id] = $db_qnaire->name;
+    $this->set_variable( 'qnaires', $qnaires );
+    
+    $restrict_qnaire_id = $this->get_argument( "restrict_qnaire_id", 0 );
+    $this->set_variable( 'restrict_qnaire_id', $restrict_qnaire_id );
+    $db_restrict_qnaire = $restrict_qnaire_id
+                        ? new \sabretooth\database\qnaire( $restrict_qnaire_id )
+                        : NULL;
+
     foreach( $this->get_record_list() as $record )
     {
       // restrict to the current site if the current user is a supervisor
       if( $is_supervisor ) $record->set_site( $session->get_site() );
       else if( !is_null( $db_restrict_site ) ) $record->set_site( $db_restrict_site );
+      
+      // restrict to the current qnaire
+      $record->set_qnaire( $db_restrict_qnaire );
 
       $db_setting = \sabretooth\database\setting::get_setting( 'queue state', $record->name );
       $this->add_row( $record->id,
-        array( 'name' => $record->name,
+        array( 'rank' => $record->rank,
                'enabled' => 'true' == $db_setting->value,
                'participant_count' => $record->get_participant_count(),
-               'description' => $record->description ) );
+               // I hate to put html here, but the alternative is to implement code in the
+               // parent class for this ONLY instance of where we need this functionality.
+               'description' => '<div class="title">'.$record->title.'</div>'.
+                                '<div>'.$record->description.'</div>' ) );
     }
 
     $this->finish_setting_rows();
+  }
+  
+  /**
+   * Overrides the parent class method to only include ranked queues
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return int
+   * @access protected
+   */
+  protected function determine_record_count( $modifier = NULL )
+  {
+    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    $modifier->where( 'rank', '!=', NULL );
+    $modifier->order( 'rank' );
+
+    return parent::determine_record_count( $modifier );
+  }
+  
+  /**
+   * Overrides the parent class method since the record list depends on the active role.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return array( record )
+   * @access protected
+   */
+  protected function determine_record_list( $modifier = NULL )
+  {
+    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    $modifier->where( 'rank', '!=', NULL );
+    $modifier->order( 'rank' );
+
+    return parent::determine_record_list( $modifier );
   }
 }
 ?>

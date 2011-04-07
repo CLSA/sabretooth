@@ -9,11 +9,9 @@
 
 {% block javascript %}
   
+  {{ parent() }}
   <script type="text/javascript">
     $( function() {
-      // hide the restrict dialog
-      $( "#{{ widget.full }}_restrict_dialog" ).dialog( { autoOpen: false } );
-
       {% if sites is defined %}
         // reload page if site selector is changed
         $( "#{{ widget.full }}__restrict_site" ).change( function() {
@@ -24,6 +22,15 @@
                      { "restrict_site_id": site_id } );
         } );
       {% endif %}
+
+      // reload page if qnaire selector is changed
+      $( "#{{ widget.full }}__restrict_qnaire" ).change( function() {
+        var qnaire_id = $( "#{{ widget.full }}__restrict_qnaire option:selected" ).val();
+        slot_load( {{ slot }},
+                   "{{ widget.full }}",
+                   "{{ widget.full }}",
+                   { "restrict_qnaire_id": qnaire_id } );
+      } );
     } );
   </script>
 
@@ -31,20 +38,36 @@
 
 {% block widget %}
 
-  {% if sites is defined %}
-    {% set restrict_site_id = restrict_site_id|default(0) %}
-    <div style="padding-top: 4px; padding-bottom: 4px;">
-      Restrict to site:
-      <select id="{{ widget.full }}__restrict_site" class="ui-state-default">
-        <option {% if 0 == restrict_site_id %}selected{% endif %}
-                value="0">All Sites</option>
-        {% for id, name in sites %}
-          <option {% if id == restrict_site_id %}selected{% endif %}
+  <div style="padding-top: 4px; padding-bottom: 4px;">
+    {% if sites is defined %}
+      <span class="spacer">
+        {% set restrict_site_id = restrict_site_id|default(0) %}
+        Restrict to site:
+        <select id="{{ widget.full }}__restrict_site" class="ui-state-default">
+          <option {% if 0 == restrict_site_id %}selected{% endif %}
+                  value="0">All Sites</option>
+          {% for id, name in sites %}
+            <option {% if id == restrict_site_id %}selected{% endif %}
+                    value="{{ id }}">{{ name }}</option>
+          {% endfor %}
+        </select>
+      </span>
+    {% endif %}
+  
+    {% set restrict_qnaire_id = restrict_qnaire_id|default(0) %}
+    <span>
+      Restrict to questionnaire:
+      <select id="{{ widget.full }}__restrict_qnaire" class="ui-state-default">
+        <option {% if 0 == restrict_qnaire_id %}selected{% endif %}
+                value="0">All Questionnaires</option>
+        {% for id, name in qnaires %}
+          <option {% if id == restrict_qnaire_id %}selected{% endif %}
                   value="{{ id }}">{{ name }}</option>
         {% endfor %}
       </select>
-    </div>
-  {% endif %}
+    </span>
+  </div>
+
   {{ parent() }}
 
 {% endblock widget %}

@@ -28,37 +28,35 @@ class queue extends record
     {
       // all participants
       self::$query_list['all'] =
-        ' SELECT participant.id'.
-        ' FROM participant';
+        ' SELECT <SELECT_PARTICIPANT>'.
+        ' FROM participant_for_queue AS participant';
       
       // all participants not assigned to any qnaire
       self::$query_list['no_qnaire'] =
-        ' SELECT participant.id'.
-        ' FROM participant'.
+        ' SELECT <SELECT_PARTICIPANT>'.
+        ' FROM participant_for_queue AS participant'.
         ' WHERE id NOT IN ('.
         '   SELECT participant.id'.
-        '   FROM participant, sample_has_participant, sample'.
+        '   FROM participant_for_queue AS participant, sample_has_participant, sample'.
         '   WHERE participant.id = sample_has_participant.participant_id'.
         '   AND sample_has_participant.sample_id = sample.id'.
         '   AND sample.qnaire_id IS NOT NULL'.
         ' )';
       
-      // the following are all for $db_qnaire:
-      
       // Questionnaire
       self::$query_list['qnaire'] =
-        ' SELECT participant.id'.
-        ' FROM participant, sample_has_participant, sample'.
+        ' SELECT <SELECT_PARTICIPANT>'.
+        ' FROM participant_for_queue AS participant, sample_has_participant, sample'.
         ' WHERE participant.id = sample_has_participant.participant_id'.
         ' AND sample_has_participant.sample_id = sample.id'.
-        ' AND sample.qnaire_id QNAIRE_ID_TEST';
+        ' AND sample.qnaire_id <QNAIRE_TEST>';
       
       // Complete
       self::$query_list['complete'] =
-        ' SELECT participant.id'.
-        ' FROM participant, interview'.
+        ' SELECT <SELECT_PARTICIPANT>'.
+        ' FROM participant_for_queue AS participant, interview'.
         ' WHERE participant.id = interview.participant_id'.
-        ' AND interview.qnaire_id QNAIRE_ID_TEST'.
+        ' AND interview.qnaire_id <QNAIRE_TEST>'.
         ' AND interview.completed = true';
       
       // Incomplete
@@ -68,31 +66,43 @@ class queue extends record
         self::$query_list['qnaire'],
         self::$query_list['complete'] );
       
-      //   Ineligible
+      // Ineligible
       self::$query_list['ineligible'] = sprintf(
         ' %s'.
         ' AND participant.status IS NOT NULL',
         self::$query_list['incomplete'] );
       
-      //   Eligible
+      // Eligible
       self::$query_list['eligible'] = sprintf(
         ' %s'.
         ' AND participant.status IS NULL',
         self::$query_list['incomplete'] );
+
+      // Currently assigned
+      self::$query_list['assigned'] = sprintf(
+        ' %s'.
+        ' AND participant.assigned = true',
+        self::$query_list['eligible'] );
       
-      //     Have an appointment
+      // Not currently assigned
+      self::$query_list['not_assigned'] = sprintf(
+        ' %s'.
+        ' AND participant.assigned = false',
+        self::$query_list['eligible'] );
+      
+      // Have an appointment
       self::$query_list['appointment'] = sprintf(
-        ' SELECT participant.id'.
-        ' FROM participant, appointment, sample_has_participant, sample'.
+        ' SELECT <SELECT_PARTICIPANT>'.
+        ' FROM participant_for_queue AS participant, appointment, sample_has_participant, sample'.
         ' WHERE participant.id = appointment.participant_id'.
         ' AND participant.id = sample_has_participant.participant_id'.
         ' AND sample_has_participant.sample_id = sample.id'.
-        ' AND sample.qnaire_id QNAIRE_ID_TEST'.
+        ' AND sample.qnaire_id <QNAIRE_TEST>'.
         ' AND participant.id IN ( %s )',
-        self::$query_list['eligible'] );
+        self::$query_list['not_assigned'] );
       
-      //       Upcomming Appointments
-      self::$query_list['upcomming'] = sprintf(
+      // Upcoming Appointments
+      self::$query_list['upcoming_appointment'] = sprintf(
         ' %s'.
         ' AND NOW() < appointment.date - INTERVAL ('.
         '   SELECT value'.
@@ -102,8 +112,8 @@ class queue extends record
         ' MINUTE',
         self::$query_list['appointment'] );
       
-      //       Assignable Appointments
-      self::$query_list['assignable'] = sprintf(
+      // Assignable Appointments
+      self::$query_list['assignable_appointment'] = sprintf(
         ' %s'.
         ' AND NOW() >= appointment.date - INTERVAL ('.
         '   SELECT value'.
@@ -119,8 +129,8 @@ class queue extends record
         ' MINUTE',
         self::$query_list['appointment'] );
       
-      //       Missed Appointments
-      self::$query_list['missed'] = sprintf(
+      // Missed Appointments
+      self::$query_list['missed_appointment'] = sprintf(
         ' %s'.
         ' AND NOW() > appointment.date + INTERVAL ('.
         '   SELECT value'.
@@ -130,22 +140,22 @@ class queue extends record
         ' MINUTE',
         self::$query_list['appointment'] );
       
-      //     Do not have an appointment
+      // Do not have an appointment
       self::$query_list['no_appointment'] = sprintf(
         ' %s'.
         ' AND participant.id NOT IN ( %s )',
-        self::$query_list['eligible'],
+        self::$query_list['not_assigned'],
         self::$query_list['appointment'] );
       
-      //       Have availability
+      // Have availability
       self::$query_list['availability'] = sprintf(
-        ' SELECT participant.id'.
-        ' FROM participant, availability'.
+        ' SELECT <SELECT_PARTICIPANT>'.
+        ' FROM participant_for_queue AS participant, availability'.
         ' WHERE participant.id = availability.participant_id'.
         ' AND participant.id IN ( %s )',
         self::$query_list['no_appointment'] );
       
-      //         Are not currently available
+      // Are not currently available
       self::$query_list['not_available'] = sprintf(
         ' %s'.
         ' AND NOT( '.
@@ -164,7 +174,7 @@ class queue extends record
         ' )',
         self::$query_list['availability'] );
       
-      //         Are currently available
+      // Are currently available
       self::$query_list['available'] = sprintf(
         ' %s'.
         ' AND ('.
@@ -183,61 +193,51 @@ class queue extends record
         ' )',
         self::$query_list['availability'] );
       
-      //           Previously assigned
+      // Previously assigned
       self::$query_list['available_old'] = sprintf(
-        ' SELECT participant.id'.
-        ' FROM participant, interview'.
-        ' WHERE participant.id = interview.participant_id'.
+        ' SELECT <SELECT_PARTICIPANT>'.
+        ' FROM participant_for_queue AS participant'.
+        ' WHERE participant.last_assignment_id IS NOT NULL'.
         ' AND participant.id IN ( %s )',
         self::$query_list['available'] );
       
-      //           Never assigned
-      self::$query_list['available_old'] = sprintf(
-        ' SELECT participant.id'.
-        ' FROM participant'.
-        ' LEFT JOIN interview'.
-        ' ON participant.id = interview.participant_id'.
-        ' WHERE interview.id IS NULL'.
+      // Never assigned
+      self::$query_list['available_new'] = sprintf(
+        ' SELECT <SELECT_PARTICIPANT>'.
+        ' FROM participant_for_queue AS participant'.
+        ' WHERE participant.last_assignment_id IS NULL'.
         ' AND participant.id IN ( %s )',
         self::$query_list['available'] );
       
-      //       Do not have availability
+      // Do not have availability
       self::$query_list['no_availability'] = sprintf(
         ' %s'.
         ' AND participant.id NOT IN ( %s )',
         self::$query_list['no_appointment'],
         self::$query_list['availability'] );
       
-      //         Never Assigned
+      // No availability, never assigned
       self::$query_list['new_participant'] = sprintf(
-        ' SELECT participant.id'.
-        ' FROM participant, interview'.
-        ' WHERE participant.id = interview.participant_id'.
-        ' AND participant.id IN ( %s )',
+        ' %s'.
+        ' AND participant.last_assignment_id IS NULL',
         self::$query_list['no_availability'] );
       
-      //         Previously assigned
+      // No availability, previously assigned
       self::$query_list['old_participant'] = sprintf(
-        ' SELECT participant.id'.
-        ' FROM participant'.
-        ' LEFT JOIN interview'.
-        ' ON participant.id = interview.participant_id'.
-        ' WHERE interview.id IS NULL'.
-        ' AND participant.id IN ( %s )',
+        ' SELECT <SELECT_PARTICIPANT>'.
+        ' FROM participant_for_queue AS participant, assignment_last_phone_call, phone_call'.
+        ' WHERE participant.last_assignment_id = assignment_last_phone_call.assignment_id'.
+        ' AND assignment_last_phone_call.phone_call_id = phone_call.id'.
+        ' AND participant.id IN( %s )',
         self::$query_list['no_availability'] );
       
-      //           Contacted
+      // Contacted
       self::$query_list['contacted'] = sprintf(
-        ' SELECT participant_last_assignment.participant_id'.
-        ' FROM participant_last_assignment, assignment_last_phone_call, phone_call'.
-        ' WHERE participant_last_assignment.assignment_id ='.
-        '       assignment_last_phone_call.assignment_id'.
-        ' AND assignment_last_phone_call.phone_call_id = phone_call.id'.
-        ' AND phone_call.status = "contacted"'.
-        ' AND participant_id IN ( %s )',
+        ' %s'.
+        ' AND phone_call.status = "contacted"',
         self::$query_list['old_participant'] );
       
-      //             Waiting for call-back delay
+      // Waiting for call-back delay
       self::$query_list['contacted_waiting'] = sprintf(
         ' %s'.
         ' AND NOW() < phone_call.end_time + INTERVAL ('.
@@ -247,7 +247,7 @@ class queue extends record
         '   AND name = "contacted" ) MINUTE',
         self::$query_list['contacted'] );
       
-      //             Ready for call-back
+      // Ready for call-back
       self::$query_list['contacted_ready'] = sprintf(
         ' %s'.
         ' AND NOW() >= phone_call.end_time + INTERVAL ('.
@@ -257,18 +257,13 @@ class queue extends record
         '   AND name = "contacted" ) MINUTE',
         self::$query_list['contacted'] );
       
-      //           Busy line
+      // Busy line
       self::$query_list['busy'] = sprintf(
-        ' SELECT participant_last_assignment.participant_id'.
-        ' FROM participant_last_assignment, assignment_last_phone_call, phone_call'.
-        ' WHERE participant_last_assignment.assignment_id ='.
-        '       assignment_last_phone_call.assignment_id'.
-        ' AND assignment_last_phone_call.phone_call_id = phone_call.id'.
-        ' AND phone_call.status = "busy"'.
-        ' AND participant_id IN ( %s )',
+        ' %s'.
+        ' AND phone_call.status = "busy"',
         self::$query_list['old_participant'] );
       
-      //             Waiting for call-back delay
+      // Waiting for call-back delay
       self::$query_list['busy_waiting'] = sprintf(
         ' %s'.
         ' AND NOW() >= phone_call.end_time + INTERVAL ('.
@@ -278,7 +273,7 @@ class queue extends record
         '   AND name = "busy" ) MINUTE',
         self::$query_list['busy'] );
       
-      //             Ready for call-back
+      // Ready for call-back
       self::$query_list['busy_ready'] = sprintf(
         ' %s'.
         ' AND NOW() >= phone_call.end_time + INTERVAL ('.
@@ -288,18 +283,13 @@ class queue extends record
         '   AND name = "busy" ) MINUTE',
         self::$query_list['busy'] );
       
-      //           Fax line
+      // Fax line
       self::$query_list['fax'] = sprintf(
-        ' SELECT participant_last_assignment.participant_id'.
-        ' FROM participant_last_assignment, assignment_last_phone_call, phone_call'.
-        ' WHERE participant_last_assignment.assignment_id ='.
-        '       assignment_last_phone_call.assignment_id'.
-        ' AND assignment_last_phone_call.phone_call_id = phone_call.id'.
-        ' AND phone_call.status = "fax"'.
-        ' AND participant_id IN ( %s )',
+        ' %s'.
+        ' AND phone_call.status = "fax"',
         self::$query_list['old_participant'] );
       
-      //             Waiting for call-back delay
+      // Waiting for call-back delay
       self::$query_list['fax_waiting'] = sprintf(
         ' %s'.
         ' AND NOW() >= phone_call.end_time + INTERVAL ('.
@@ -309,7 +299,7 @@ class queue extends record
         '   AND name = "fax" ) MINUTE',
         self::$query_list['fax'] );
       
-      //             Ready for call-back
+      // Ready for call-back
       self::$query_list['fax_ready'] = sprintf(
         ' %s'.
         ' AND NOW() >= phone_call.end_time + INTERVAL ('.
@@ -319,18 +309,13 @@ class queue extends record
         '   AND name = "fax" ) MINUTE',
         self::$query_list['fax'] );
       
-      //           No answer
+      // No answer
       self::$query_list['no_answer'] = sprintf(
-        ' SELECT participant_last_assignment.participant_id'.
-        ' FROM participant_last_assignment, assignment_last_phone_call, phone_call'.
-        ' WHERE participant_last_assignment.assignment_id ='.
-        '       assignment_last_phone_call.assignment_id'.
-        ' AND assignment_last_phone_call.phone_call_id = phone_call.id'.
-        ' AND phone_call.status = "no answer"'.
-        ' AND participant_id IN ( %s )',
+        ' %s'.
+        ' AND phone_call.status = "no answer"',
         self::$query_list['old_participant'] );
       
-      //             Waiting for call-back delay
+      // Waiting for call-back delay
       self::$query_list['no_answer_waiting'] = sprintf(
         ' %s'.
         ' AND NOW() >= phone_call.end_time + INTERVAL ('.
@@ -340,7 +325,7 @@ class queue extends record
         '   AND name = "no answer" ) MINUTE',
         self::$query_list['no_answer'] );
       
-      //             Ready for call-back
+      // Ready for call-back
       self::$query_list['no_answer_ready'] = sprintf(
         ' %s'.
         ' AND NOW() >= phone_call.end_time + INTERVAL ('.
@@ -350,31 +335,21 @@ class queue extends record
         '   AND name = "no answer" ) MINUTE',
         self::$query_list['no_answer'] );
       
-      //           Answering machine
+      // Answering machine
       self::$query_list['machine'] = sprintf(
-        ' SELECT participant_last_assignment.participant_id'.
-        ' FROM participant_last_assignment, assignment_last_phone_call, phone_call'.
-        ' WHERE participant_last_assignment.assignment_id ='.
-        '       assignment_last_phone_call.assignment_id'.
-        ' AND assignment_last_phone_call.phone_call_id = phone_call.id'.
+        ' %s'.
         ' AND ('.
         '      phone_call.status = "machine message"'.
-        '   OR phone_call.status = "machine no message" )'.
-        ' AND participant_id IN ( %s )',
+        '   OR phone_call.status = "machine no message" )',
         self::$query_list['old_participant'] );
       
-      //             Message was left
+      // Message was left
       self::$query_list['machine_message'] = sprintf(
-        ' SELECT participant_last_assignment.participant_id'.
-        ' FROM participant_last_assignment, assignment_last_phone_call, phone_call'.
-        ' WHERE participant_last_assignment.assignment_id ='.
-        '       assignment_last_phone_call.assignment_id'.
-        ' AND assignment_last_phone_call.phone_call_id = phone_call.id'.
-        ' AND phone_call.status = "machine message"'.
-        ' AND participant_id IN ( %s )',
+        ' %s'.
+        ' AND phone_call.status = "machine message"',
         self::$query_list['old_participant'] );
       
-      //               Waiting for call-back delay
+      // Waiting for call-back delay
       self::$query_list['machine_message_waiting'] = sprintf(
         ' %s'.
         ' AND NOW() >= phone_call.end_time + INTERVAL ('.
@@ -384,7 +359,7 @@ class queue extends record
         '   AND name = "machine message" ) MINUTE',
         self::$query_list['machine_message'] );
       
-      //               Ready for call-back
+      // Ready for call-back
       self::$query_list['machine_message_ready'] = sprintf(
         ' %s'.
         ' AND NOW() >= phone_call.end_time + INTERVAL ('.
@@ -394,18 +369,13 @@ class queue extends record
         '   AND name = "machine message" ) MINUTE',
         self::$query_list['machine_message'] );
       
-      //             Message was not left
+      // Message was not left
       self::$query_list['machine_no_message'] = sprintf(
-        ' SELECT participant_last_assignment.participant_id'.
-        ' FROM participant_last_assignment, assignment_last_phone_call, phone_call'.
-        ' WHERE participant_last_assignment.assignment_id ='.
-        '       assignment_last_phone_call.assignment_id'.
-        ' AND assignment_last_phone_call.phone_call_id = phone_call.id'.
-        ' AND phone_call.status = "machine no message"'.
-        ' AND participant_id IN ( %s )',
+        ' %s'.
+        ' AND phone_call.status = "machine no message"',
         self::$query_list['old_participant'] );
       
-      //               Waiting for call-back delay
+      // Waiting for call-back delay
       self::$query_list['machine_no_message_waiting'] = sprintf(
         ' %s'.
         ' AND NOW() >= phone_call.end_time + INTERVAL ('.
@@ -415,7 +385,7 @@ class queue extends record
         '   AND name = "machine no message" ) MINUTE',
         self::$query_list['machine_no_message'] );
       
-      //               Ready for call-back 
+      // Ready for call-back 
       self::$query_list['machine_no_message_ready'] = sprintf(
         ' %s'.
         ' AND NOW() >= phone_call.end_time + INTERVAL ('.
@@ -439,18 +409,6 @@ class queue extends record
   {
     if( is_null( $modifier ) ) $modifier = new modifier();
 
-Appointment
-Available
-Busy
-Contacted
-Fax
-General
-General Available
-Machine Message
-Machine No Message
-Missed
-No Answer
-
     if( !is_null( $this->db_site ) )
     { // restrict to the site
       $mod = new modifier();
@@ -462,10 +420,10 @@ No Answer
       $modifier->where( 'province_id', 'IN', $province_ids );
     }
 
-    // get the name of the queue-view
+    $qnaire_test_sql = is_null( $this->db_qnaire ) ? 'IS NOT NULL' : '= '.$this->db_qnaire->id;
     return static::db()->get_one(
-      sprintf( "SELECT COUNT(*) FROM %s %s",
-               $this->view,
+      sprintf( '%s %s',
+               $this->get_sql( 'COUNT(*)', $qnaire_test_sql ),
                $modifier->get_sql() ) );
   }
 
@@ -488,13 +446,14 @@ No Answer
       $province_ids = array();
       foreach( province::select( $mod ) as $db_province ) $province_ids[] = $db_province->id;
       $modifier->where( 'site_id', '=', $this->db_site->id );
-      $modifier->or_where( 'province_id', 'IN', $province_ids );
+      $modifier->or_where( 'site_id', '=', NULL );
+      $modifier->where( 'province_id', 'IN', $province_ids );
     }
-
-    // get the name of the queue-view
+    
+    $qnaire_test_sql = is_null( $this->db_qnaire ) ? 'IS NOT NULL' : '= '.$this->db_qnaire->id;
     $participant_ids = static::db()->get_col(
-      sprintf( "SELECT id FROM %s %s",
-               $this->view,
+      sprintf( '%s %s',
+               $this->get_sql( 'DISTINCT participant.id', $qnaire_test_sql ),
                $modifier->get_sql() ) );
 
     $participants = array();
@@ -523,7 +482,26 @@ No Answer
   {
     $this->db_site = $db_site;
   }
-
+  
+  /**
+   * Get the query for this queue.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $select_participant_sql The text to put in place of the first occurance of
+   *               <SELECT_PARTICIPANT>
+   * @param string $qnaire_test_sql The text to put in place of <QNAIRE_TEST>
+   * @return string
+   * @access protected
+   */
+  public function get_sql( $select_participant_sql, $qnaire_test_sql )
+  {
+    $count = 1;
+    $sql = self::$query_list[ $this->name ];
+    $sql = str_replace( '<SELECT_PARTICIPANT>', $select_participant_sql, $sql, $count );
+    $sql = str_replace( '<SELECT_PARTICIPANT>', 'participant.id', $sql );
+    $sql = str_replace( '<QNAIRE_TEST>', $qnaire_test_sql, $sql );
+    return $sql;
+  }
+  
   /**
    * The qnaire to restrict the queue to.
    * @author Patrick Emond <emondpd@mcmaster.ca>

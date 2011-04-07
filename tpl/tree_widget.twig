@@ -1,0 +1,16 @@
+{##
+ # tree_widget.twig
+ # 
+ # A recursive template which builds a tree widget.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ #}
+<li id="{{ widget.full }}_{{ node.id }}">
+  <a class="tree">{{ node.title }}</a><span class="title">({{ node.count }})</span></a>
+  {% if node.children|count %}
+    <ul>
+      {% for child in node.children %}
+        {% include "tree_widget.twig" with { 'node': child } %}
+      {% endfor %}
+    </ul>
+  {% endif %}
+</li>

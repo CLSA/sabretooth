@@ -207,10 +207,19 @@ DROP TABLE IF EXISTS `queue` ;
 CREATE  TABLE IF NOT EXISTS `queue` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(45) NOT NULL ,
-  `view` VARCHAR(45) NOT NULL ,
+  `title` VARCHAR(255) NOT NULL ,
+  `rank` INT UNSIGNED NULL DEFAULT NULL ,
+  `parent_queue_id` INT UNSIGNED NULL DEFAULT NULL ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_name` (`name` ASC) )
+  UNIQUE INDEX `uq_rank` (`rank` ASC) ,
+  UNIQUE INDEX `uq_title` (`title` ASC) ,
+  INDEX `fk_parent_queue_id` (`parent_queue_id` ASC) ,
+  CONSTRAINT `fk_queue_parent_queue_id`
+    FOREIGN KEY (`parent_queue_id` )
+    REFERENCES `queue` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
@@ -742,59 +751,9 @@ CREATE TABLE IF NOT EXISTS `site_last_activity` (`activity_id` INT, `site_id` IN
 CREATE TABLE IF NOT EXISTS `role_last_activity` (`activity_id` INT, `role_id` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `queue_general`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `queue_general` (`id` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `queue_fax`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `queue_fax` (`id` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `queue_machine_message`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `queue_machine_message` (`id` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `queue_no_answer`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `queue_no_answer` (`id` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `queue_busy`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `queue_busy` (`id` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `queue_available`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `queue_available` (`id` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `queue_appointment`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `queue_appointment` (`id` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `queue_missed`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `queue_missed` (`id` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `queue_machine_no_message`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `queue_machine_no_message` (`id` INT);
-
--- -----------------------------------------------------
 -- Placeholder table for view `participant_for_queue`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT, `province_id` INT, `last_assignment_id` INT, `last_phone_call_id` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `queue_general_available`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `queue_general_available` (`id` INT);
+CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT, `province_id` INT, `last_assignment_id` INT, `assigned` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `assignment_last_phone_call`
@@ -901,257 +860,22 @@ AND activity_1.date = (
 GROUP BY activity_1.date;
 
 -- -----------------------------------------------------
--- View `queue_general`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `queue_general` ;
-DROP TABLE IF EXISTS `queue_general`;
-CREATE  OR REPLACE VIEW `queue_general` AS
-SELECT participant.*
-FROM sample, sample_has_participant, participant_for_queue AS participant
-WHERE sample.qnaire_id IS NOT NULL
-AND sample.id = sample_has_participant.sample_id
-AND sample_has_participant.participant_id = participant.id
-AND participant.last_assignment_id IS NULL;
-
--- -----------------------------------------------------
--- View `queue_fax`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `queue_fax` ;
-DROP TABLE IF EXISTS `queue_fax`;
-CREATE  OR REPLACE VIEW `queue_fax` AS
-SELECT participant.*
-FROM sample, sample_has_participant, participant_for_queue AS participant, phone_call, interview, assignment
-WHERE sample.qnaire_id IS NOT NULL
-AND sample.id = sample_has_participant.sample_id
-AND sample_has_participant.participant_id = participant.id
-AND participant.last_assignment_id = assignment.id
-AND assignment.interview_id = interview.id
-AND interview.completed = false
-AND participant.last_phone_call_id = phone_call.id
-AND phone_call.status = "fax"
-AND NOW() >= phone_call.end_time + INTERVAL (
-  SELECT value
-  FROM setting
-  WHERE category = "callback timing"
-  AND name = "fax" ) MINUTE;
-
--- -----------------------------------------------------
--- View `queue_machine_message`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `queue_machine_message` ;
-DROP TABLE IF EXISTS `queue_machine_message`;
-CREATE  OR REPLACE VIEW `queue_machine_message` AS
-SELECT participant.*
-FROM sample, sample_has_participant, participant_for_queue AS participant, phone_call, interview, assignment
-WHERE sample.qnaire_id IS NOT NULL
-AND sample.id = sample_has_participant.sample_id
-AND sample_has_participant.participant_id = participant.id
-AND participant.last_assignment_id = assignment.id
-AND assignment.interview_id = interview.id
-AND interview.completed = false
-AND participant.last_phone_call_id = phone_call.id
-AND phone_call.status = "machine message"
-AND NOW() >= phone_call.end_time + INTERVAL (
-  SELECT value
-  FROM setting
-  WHERE category = "callback timing"
-  AND name = "machine message" ) MINUTE;
-
--- -----------------------------------------------------
--- View `queue_no_answer`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `queue_no_answer` ;
-DROP TABLE IF EXISTS `queue_no_answer`;
-CREATE  OR REPLACE VIEW `queue_no_answer` AS
-SELECT participant.*
-FROM sample, sample_has_participant, participant_for_queue AS participant, phone_call, interview, assignment
-WHERE sample.qnaire_id IS NOT NULL
-AND sample.id = sample_has_participant.sample_id
-AND sample_has_participant.participant_id = participant.id
-AND participant.last_assignment_id = assignment.id
-AND assignment.interview_id = interview.id
-AND interview.completed = false
-AND participant.last_phone_call_id = phone_call.id
-AND phone_call.status = "no answer"
-AND NOW() >= phone_call.end_time + INTERVAL (
-  SELECT value
-  FROM setting
-  WHERE category = "callback timing"
-  AND name = "no answer" ) MINUTE;
-
--- -----------------------------------------------------
--- View `queue_busy`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `queue_busy` ;
-DROP TABLE IF EXISTS `queue_busy`;
-CREATE  OR REPLACE VIEW `queue_busy` AS
-SELECT participant.*
-FROM sample, sample_has_participant, participant_for_queue AS participant, phone_call, interview, assignment
-WHERE sample.qnaire_id IS NOT NULL
-AND sample.id = sample_has_participant.sample_id
-AND sample_has_participant.participant_id = participant.id
-AND participant.last_assignment_id = assignment.id
-AND assignment.interview_id = interview.id
-AND interview.completed = false
-AND participant.last_phone_call_id = phone_call.id
-AND phone_call.status = "busy"
-AND NOW() >= phone_call.end_time + INTERVAL (
-  SELECT value
-  FROM setting
-  WHERE category = "callback timing"
-  AND name = "busy" ) MINUTE;
-
--- -----------------------------------------------------
--- View `queue_available`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `queue_available` ;
-DROP TABLE IF EXISTS `queue_available`;
-CREATE  OR REPLACE VIEW `queue_available` AS
-SELECT participant.*
-FROM sample, sample_has_participant, participant_for_queue AS participant, availability, interview
-WHERE sample.qnaire_id IS NOT NULL
-AND sample.id = sample_has_participant.sample_id
-AND sample_has_participant.participant_id = participant.id
-AND participant.last_assignment_id IS NOT NULL
-AND participant.id = interview.participant_id
-AND interview.completed = false
-AND participant.id = availability.participant_id
-AND CASE DAYOFWEEK( NOW() )
-  WHEN 1 THEN availability.sunday
-  WHEN 2 THEN availability.monday
-  WHEN 3 THEN availability.tuesday
-  WHEN 4 THEN availability.wednesday
-  WHEN 5 THEN availability.thursday
-  WHEN 6 THEN availability.friday
-  WHEN 7 THEN availability.saturday
-  ELSE 0
-END = 1
-AND availability.start_time < NOW()
-AND availability.end_time > NOW();
-
--- -----------------------------------------------------
--- View `queue_appointment`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `queue_appointment` ;
-DROP TABLE IF EXISTS `queue_appointment`;
-CREATE  OR REPLACE VIEW `queue_appointment` AS
-SELECT participant.*
-FROM sample, sample_has_participant, participant_for_queue AS participant, appointment, interview
-WHERE sample.qnaire_id IS NOT NULL
-AND sample.id = sample_has_participant.sample_id
-AND sample_has_participant.participant_id = participant.id
-AND participant.id = interview.participant_id
-AND interview.completed = false
-AND participant.id = appointment.participant_id
-AND appointment.completed = false
-AND appointment.date >= NOW() - INTERVAL (
-  SELECT value
-  FROM setting
-  WHERE category = "appointment"
-  AND name = "call pre-window" )
-  MINUTE
-AND appointment.date <= NOW() + INTERVAL (
-  SELECT value
-  FROM setting
-  WHERE category = "appointment"
-  AND name = "call post-window" )
-  MINUTE;
-
--- -----------------------------------------------------
--- View `queue_missed`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `queue_missed` ;
-DROP TABLE IF EXISTS `queue_missed`;
-CREATE  OR REPLACE VIEW `queue_missed` AS
-SELECT participant.*
-FROM sample, sample_has_participant, participant_for_queue AS participant, appointment, interview
-WHERE sample.qnaire_id IS NOT NULL
-AND sample.id = sample_has_participant.sample_id
-AND sample_has_participant.participant_id = participant.id
-AND participant.id = interview.participant_id
-AND interview.completed = false
-AND participant.id = appointment.participant_id
-AND appointment.completed = false
-AND appointment.date > NOW() + INTERVAL (
-  SELECT value
-  FROM setting
-  WHERE category = "appointment"
-  AND name = "call post-window" )
-  MINUTE;
-
--- -----------------------------------------------------
--- View `queue_machine_no_message`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `queue_machine_no_message` ;
-DROP TABLE IF EXISTS `queue_machine_no_message`;
-CREATE  OR REPLACE VIEW `queue_machine_no_message` AS
-SELECT participant.*
-FROM sample, sample_has_participant, participant_for_queue AS participant, phone_call, interview, assignment
-WHERE sample.qnaire_id IS NOT NULL
-AND sample.id = sample_has_participant.sample_id
-AND sample_has_participant.participant_id = participant.id
-AND participant.last_assignment_id = assignment.id
-AND assignment.interview_id = interview.id
-AND interview.completed = false
-AND participant.last_phone_call_id = phone_call.id
-AND phone_call.status = "machine no message"
-AND NOW() >= phone_call.end_time + INTERVAL (
-  SELECT value
-  FROM setting
-  WHERE category = "callback timing"
-  AND name = "machine no message" ) MINUTE;
-
--- -----------------------------------------------------
 -- View `participant_for_queue`
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `participant_for_queue` ;
 DROP TABLE IF EXISTS `participant_for_queue`;
 CREATE  OR REPLACE VIEW `participant_for_queue` AS
-SELECT participant.*, contact.province_id, participant_last_assignment.assignment_id AS last_assignment_id, assignment_last_phone_call.phone_call_id AS last_phone_call_id
+SELECT participant.*, contact.province_id, assignment.id AS last_assignment_id,
+       assignment.id IS NOT NULL AND assignment.end_time IS NULL assigned
 FROM participant
-LEFT JOIN interview
-ON participant.id = interview.participant_id
-LEFT JOIN assignment
-ON interview.id = assignment.interview_id
 LEFT JOIN participant_primary_location
 ON participant.id = participant_primary_location.participant_id 
 LEFT JOIN contact
 ON participant_primary_location.contact_id = contact.id
 LEFT JOIN participant_last_assignment
 ON participant.id = participant_last_assignment.participant_id 
-LEFT JOIN assignment_last_phone_call
-ON participant_last_assignment.assignment_id = assignment_last_phone_call.assignment_id
-WHERE participant.status IS NULL
-AND ( assignment.id IS NULL OR assignment.end_time IS NOT NULL );
-
--- -----------------------------------------------------
--- View `queue_general_available`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `queue_general_available` ;
-DROP TABLE IF EXISTS `queue_general_available`;
-CREATE  OR REPLACE VIEW `queue_general_available` AS
-SELECT participant.*
-FROM sample, sample_has_participant, availability, participant_for_queue AS participant
-LEFT JOIN interview
-ON interview.participant_id = participant.id
-WHERE sample.qnaire_id IS NOT NULL
-AND interview.id IS NULL
-AND sample.id = sample_has_participant.sample_id
-AND sample_has_participant.participant_id = participant.id
-AND participant.last_assignment_id IS NULL
-AND participant.id = availability.participant_id
-AND CASE DAYOFWEEK( NOW() )
-  WHEN 1 THEN availability.sunday
-  WHEN 2 THEN availability.monday
-  WHEN 3 THEN availability.tuesday
-  WHEN 4 THEN availability.wednesday
-  WHEN 5 THEN availability.thursday
-  WHEN 6 THEN availability.friday
-  WHEN 7 THEN availability.saturday
-  ELSE 0
-END = 1
-AND availability.start_time < NOW()
-AND availability.end_time > NOW();
+LEFT JOIN assignment
+ON participant_last_assignment.assignment_id = assignment.id;
 
 -- -----------------------------------------------------
 -- View `assignment_last_phone_call`

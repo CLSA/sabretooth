@@ -9,44 +9,11 @@ DELETE FROM setting;
 
 -- queue state
 INSERT INTO setting( category, name, value, description )
-VALUES( "queue state", "missed", "true",
-"Whether to select items from the missed queue when a new assignment is requested." );
-
-INSERT INTO setting( category, name, value, description )
-VALUES( "queue state", "appointment", "true",
-"Whether to select items from the appointment queue when a new assignment is requested." );
-
-INSERT INTO setting( category, name, value, description )
-VALUES( "queue state", "available", "true",
-"Whether to select items from the available queue when a new assignment is requested." );
-
-INSERT INTO setting( category, name, value, description )
-VALUES( "queue state", "busy", "true",
-"Whether to select items from the busy queue when a new assignment is requested." );
-
-INSERT INTO setting( category, name, value, description )
-VALUES( "queue state", "fax", "true",
-"Whether to select items from the fax queue when a new assignment is requested." );
-
-INSERT INTO setting( category, name, value, description )
-VALUES( "queue state", "no answer", "true",
-"Whether to select items from the no answer queue when a new assignment is requested." );
-
-INSERT INTO setting( category, name, value, description )
-VALUES( "queue state", "machine message", "true",
-"Whether to select items from the machine message queue when a new assignment is requested." );
-
-INSERT INTO setting( category, name, value, description )
-VALUES( "queue state", "machine no message", "true",
-"Whether to select items from the machine no message queue when a new assignment is requested." );
-
-INSERT INTO setting( category, name, value, description )
-VALUES( "queue state", "general available", "true",
-"Whether to select items from the general-available queue when a new assignment is requested." );
-
-INSERT INTO setting( category, name, value, description )
-VALUES( "queue state", "general", "true",
-"Whether to select items from the general queue when a new assignment is requested." );
+SELECT "queue state", name, "true",
+       CONCAT( "Whether to assign participants from the \"", title, "\" queue." )
+FROM queue
+WHERE rank IS NOT NULL
+ORDER BY rank;
 
 -- appointment
 INSERT INTO setting( category, name, value, description )
@@ -64,6 +31,11 @@ VALUES( "appointment", "allow overflow", "true",
 and scheduled shifts" );
 
 -- callback timing
+INSERT INTO setting( category, name, value, description )
+VALUES( "callback timing", "contacted", "10080",
+"Number of minutes to wait before calling back a participant where the previous call resulted in
+direct contact." );
+
 INSERT INTO setting( category, name, value, description )
 VALUES( "callback timing", "busy", "15",
 "Number of minutes to wait before calling back a participant where the previous call was a busy
