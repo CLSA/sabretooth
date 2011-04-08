@@ -29,6 +29,9 @@ try
   require_once 'Twig/Autoloader.php';
   \Twig_Autoloader::register();
 
+  $session = business\session::self();
+  $theme = $session->get_theme();
+
   // set up the template engine
   $loader = new \Twig_Loader_Filesystem( TPL_PATH );
   $twig = new \Twig_Environment( $loader, array( 'debug' => util::in_devel_mode(),
@@ -36,16 +39,14 @@ try
                                                  'cache' => TEMPLATE_CACHE_PATH ) );
   $twig->addFilter( 'count', new \Twig_Filter_Function( 'count' ) );
   $twig->addGlobal( 'SIP_ENABLED', \sabretooth\business\voip_manager::self()->get_sip_enabled() );
+  $twig->addGlobal( 'FOREGROUND_COLOR', util::get_foreground_color( $theme ) );
+  $twig->addGlobal( 'BACKGROUND_COLOR', util::get_background_color( $theme ) );
   
   $twig_template = $twig->loadTemplate( 'main.twig' );
   
   // Since there is no main widget we need set up the template variables here
-  $session = business\session::self();
-  $theme = $session->get_theme();
   $version = $session->get_setting( 'version', 'JQUERY_UI' );
   $variables = array( 'jquery_ui_css_path' => '/'.$theme.'/jquery-ui-'.$version.'.custom.css',
-                      'extruder_flap_color' => util::get_flap_css_color( $theme ),
-                      'extruder_flap_background' => util::get_flap_css_background( $theme ),
                       'survey_url' => $session->get_survey_url() );
   
   $result_array['output'] = $twig_template->render( $variables );

@@ -51,8 +51,9 @@ class participant_tree extends widget
       if( 1 == $db_queue->id || 2 == $db_queue->id )
       {
         $index = implode( '_', array(0, $db_queue->id ) );
-        $nodes[$index] = array( 'id' => $db_queue->id,
+        $nodes[$index] = array( 'id' => $index,
                                 'title' => $db_queue->title,
+                                'open' => 1 == $db_queue->id,
                                 'count' => $db_queue->get_participant_count(),
                                 'children' => array() );
         if( is_null( $db_queue->parent_queue_id ) )
@@ -73,8 +74,10 @@ class participant_tree extends widget
           
           $index = implode( '_', array( $db_qnaire->id, $db_queue->id ) );
           $title = 'qnaire' == $db_queue->name ? $db_qnaire->name : $db_queue->title;
-          $nodes[$index] = array( 'id' => $db_queue->id,
+          $nodes[$index] = array( 'id' => $index,
                                   'title' => $title,
+                                  'open' => 'qnaire' == $db_queue->name,
+                                  'rank' => $db_queue->rank,
                                   'count' => $db_queue->get_participant_count(),
                                   'children' => array() );
           if( is_null( $db_queue->parent_queue_id ) )
@@ -87,6 +90,11 @@ class participant_tree extends widget
                             ? implode( '_', array( 0, $db_queue->parent_queue_id ) )
                             : implode( '_', array( $db_qnaire->id, $db_queue->parent_queue_id ) );
             $nodes[$parent_index]['children'][] = &$nodes[$index];
+
+            if( !is_null( $nodes[$index]['rank'] ) )
+            { // open the parent branch if this branch is a queue
+              $nodes[$parent_index]['open'] = true;
+            }
           }
         }
       }

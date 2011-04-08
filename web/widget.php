@@ -23,6 +23,9 @@ try
   require_once 'Twig/Autoloader.php';
   \Twig_Autoloader::register();
   
+  $session = business\session::self();
+  $theme = $session->get_theme();
+
   // set up the template engine
   $loader = new \Twig_Loader_Filesystem( TPL_PATH );
   $twig = new \Twig_Environment( $loader, array( 'debug' => util::in_devel_mode(),
@@ -30,6 +33,8 @@ try
                                                  'cache' => TEMPLATE_CACHE_PATH ) );
   $twig->addFilter( 'count', new \Twig_Filter_Function( 'count' ) );
   $twig->addGlobal( 'SIP_ENABLED', \sabretooth\business\voip_manager::self()->get_sip_enabled() );
+  $twig->addGlobal( 'FOREGROUND_COLOR', util::get_foreground_color( $theme ) );
+  $twig->addGlobal( 'BACKGROUND_COLOR', util::get_background_color( $theme ) );
   
   // determine which widget to render based on the GET variables
   $session = business\session::self();

@@ -440,14 +440,14 @@ final class util
   }
   
   /**
-   * Get the foreground color of the flap given a jquery-ui theme.
+   * Get the foreground color of a jquery-ui theme.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $theme The name of a jquery theme.
    * @static
    * @access public
    */
-  public static function get_flap_css_color( $theme )
+  public static function get_foreground_color( $theme )
   {
     if( 'black-tie' == $theme ) $color = '#eeeeee';
     else if( 'blitzer' == $theme ) $color = '#ffffff';
@@ -479,14 +479,14 @@ final class util
   }
 
   /**
-   * Get the background color of the flap given a jquery-ui theme.
+   * Get the background color of a jquery-ui theme.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $theme The name of a jquery theme.
    * @static
    * @access public
    */
-  public static function get_flap_css_background( $theme )
+  public static function get_background_color( $theme )
   {
     if( 'black-tie' == $theme ) $background = '#333333';
     else if( 'blitzer' == $theme ) $background = '#cc0000';

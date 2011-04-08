@@ -24,13 +24,10 @@
       
       // tree widget
       $( "#{{ widget.full }}_tree" ).jstree( {
-        plugins: [ "html_data", "ui", "themeroller" ],
+        plugins: [ "html_data", "themeroller" ],
         core: {
           animation: 200,
-          html_titles: true,
-          initially_open: [
-            "{{ widget.full }}_0_1"
-          ]
+          html_titles: true
         },
         themeroller: {
           opened: "ui-icon-circle-triangle-s",
@@ -38,13 +35,11 @@
           item_icon: "ui-icon-radio-on"
         }
       } );
-
-      // queue buttons
-      $( "button.{{ widget.full }}_button" ).button( {
-        text: true,
-        icons: { secondary: "ui-icon-document" }
-      } ).click( function() {
-        alert( $(this).attr( "id" ) );
+      
+      // clicking on tree text
+      $( "a.tree" ).click( function() {
+        var node_id = $(this).parent().attr( "id" );
+        $( "#{{ widget.full }}_tree" ).jstree( "toggle_node", "#" + node_id );
       } );
       
     } );
@@ -53,6 +48,8 @@
 {% endblock javascript %}
 
 {% block widget %}
+  
+  <div id="{{ widget.full }}_slot" />
 
   {% if sites is defined %}
     {% set restrict_site_id = restrict_site_id|default(0) %}

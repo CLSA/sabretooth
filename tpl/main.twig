@@ -19,12 +19,12 @@
   {# need to dynamically specify left flap colors #}
   <style media="screen" type="text/css">
     .extruder.left .flap {
-      color: {{ extruder_flap_color }};
-      background: {{ extruder_flap_background }};
+      color: {{ FOREGROUND_COLOR }};
+      background: {{ BACKGROUND_COLOR }};
     }
     #tooltip {
-      color: {{ extruder_flap_background }};
-      background: {{ extruder_flap_color }};
+      color: {{ BACKGROUND_COLOR }};
+      background: {{ FOREGROUND_COLOR }};
     }
   </style>
 

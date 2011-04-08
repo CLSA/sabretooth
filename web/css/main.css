@@ -102,6 +102,7 @@ html, body {
 }
 
 a.tree {
+  line-height: 18px !important;
   padding: 4px !important;
   border: 0px !important;
   background: none !important;
