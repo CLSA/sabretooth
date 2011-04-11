@@ -224,13 +224,14 @@ class modifier extends \sabretooth\base_object
    * Returns the modifier as an SQL statement (same as calling each individual get_*() method.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $appending Whether this modifier is being appended to an existing where clause
    * @return string
    * @access public
    */
-  public function get_sql()
+  public function get_sql( $appending = false )
   {
     return sprintf( '%s %s %s %s',
-                    $this->get_where(),
+                    $this->get_where( $appending ),
                     $this->get_group(),
                     $this->get_order(),
                     $this->get_limit() );
@@ -242,10 +243,11 @@ class modifier extends \sabretooth\base_object
    * This method should only be called by an record class and only after all modifications
    * have been set.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $appending Whether this modifier is being appended to an existing where clause
    * @return string
    * @access public
    */
-  public function get_where()
+  public function get_where( $appending = false )
   {
     $sql = '';
     $first_item = true;
@@ -297,7 +299,7 @@ class modifier extends \sabretooth\base_object
       }
       
       $logic_type = $where['or'] ? ' OR' : ' AND';
-      $sql .= ( $first_item ? 'WHERE' : $logic_type ).' '.$compare;
+      $sql .= ( $first_item && !$appending ? 'WHERE' : $logic_type ).' '.$compare;
       $first_item = false;
     }
 

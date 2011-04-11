@@ -178,7 +178,7 @@
       <option value="{{ id }}">{{ contact }}</option>
     {% endfor %}
     </select>
-    <button style="width:125px" id="{{ name }}__call"></button>
+    <button style="width:125px" id="{{ name }}__call" {{ SIP_ENABLED ? '' : 'disabled' }} />
 
   {% else %}
     

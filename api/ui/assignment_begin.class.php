@@ -38,14 +38,17 @@ class assignment_begin extends action
     $session = \sabretooth\business\session::self();
 
     // search through every queue for a new assignment until one is found
+    $modifier = new \sabretooth\database\modifier();
+    $modifier->where( 'rank', '!=', NULL );
+    $modifier->order( 'rank' );
     $queue_id = NULL;
     $db_participant = NULL;
-    foreach( \sabretooth\database\queue::select() as $db_queue )
+    foreach( \sabretooth\database\queue::select( $modifier ) as $db_queue )
     {
-      $modifier = new \sabretooth\database\modifier();
-      $modifier->limit( 1 );
+      $mod = new \sabretooth\database\modifier();
+      $mod->limit( 1 );
       $db_queue->set_site( $session->get_site() );
-      $participant_list = $db_queue->get_participant_list( $modifier );
+      $participant_list = $db_queue->get_participant_list( $mod );
       if( 1 == count( $participant_list ) )
       {
         $queue_id = $db_queue->id;
@@ -63,10 +66,6 @@ class assignment_begin extends action
     if( is_null( $db_sample ) )
       throw new \sabretooth\exception\runtime(
         'Participant in queue has no active sample.', __METHOD__ );
-
-    $modifier = new \sabretooth\database\modifier();
-    $modifier->order( 'stage' );
-    $modifier->limit( 1 );
 
     // create an interview for the participant
     $db_interview = new \sabretooth\database\interview();

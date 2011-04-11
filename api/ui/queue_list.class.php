@@ -29,9 +29,9 @@ class queue_list extends base_list_widget
     parent::__construct( 'queue', $args );
     
     $this->add_column( 'rank', 'number', 'Rank', true );
-    $this->add_column( 'enabled', 'boolean', 'Enabled', true );
+    $this->add_column( 'enabled', 'boolean', 'Enabled', false );
     $this->add_column( 'participant_count', 'number', 'Participants', false );
-    $this->add_column( 'description', 'text', 'Description', false, 'left' );
+    $this->add_column( 'description', 'text', 'Description', true, 'left' );
   }
 
   /**

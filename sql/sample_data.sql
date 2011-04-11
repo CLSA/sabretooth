@@ -77,40 +77,46 @@ SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Ant' ),
     phone = '905-525-9140',
     province_id = ( SELECT id FROM province WHERE abbreviation = 'AB' );
 INSERT INTO contact
+SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Badger' ),
+    active = true,
+    rank = 1,
+    phone = '905-525-9140',
+    province_id = ( SELECT id FROM province WHERE abbreviation = 'ON' );
+INSERT INTO contact
 SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Cat' ),
     active = true,
     rank = 1,
-    phone = '905-525-9141',
+    phone = '905-525-9140',
     province_id = ( SELECT id FROM province WHERE abbreviation = 'MB' );
 INSERT INTO contact
 SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Drake' ),
     active = true,
     rank = 1,
-    phone = '905-525-9142',
+    phone = '905-525-9140',
     province_id = ( SELECT id FROM province WHERE abbreviation = 'NB' );
 INSERT INTO contact
 SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Eft' ),
     active = true,
     rank = 1,
-    phone = '905-525-9143',
+    phone = '905-525-9140',
     province_id = ( SELECT id FROM province WHERE abbreviation = 'NT' );
 INSERT INTO contact
 SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Fawn' ),
     active = true,
     rank = 1,
-    phone = '905-525-9144',
+    phone = '905-525-9140',
     province_id = ( SELECT id FROM province WHERE abbreviation = 'ON' );
 INSERT INTO contact
 SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Fawn' ),
     active = true,
     rank = 2,
-    phone = '905-525-9154',
+    phone = '905-525-9150',
     province_id = ( SELECT id FROM province WHERE abbreviation = 'QC' );
 INSERT INTO contact
 SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Gibbon' ),
     active = true,
     rank = 1,
-    phone = '905-525-9145',
+    phone = '905-525-9140',
     province_id = ( SELECT id FROM province WHERE abbreviation = 'ON' );
 
 INSERT INTO availability

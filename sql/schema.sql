@@ -753,7 +753,7 @@ CREATE TABLE IF NOT EXISTS `role_last_activity` (`activity_id` INT, `role_id` IN
 -- -----------------------------------------------------
 -- Placeholder table for view `participant_for_queue`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT, `province_id` INT, `last_assignment_id` INT, `assigned` INT);
+CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `assignment_last_phone_call`
@@ -805,7 +805,6 @@ AND assignment_1.start_time = (
   FROM assignment AS assignment_2, interview AS interview_2
   WHERE interview_2.id = assignment_2.interview_id
   AND interview_1.participant_id = interview_2.participant_id
-  AND assignment_2.end_time IS NOT NULL
   GROUP BY interview_2.participant_id );
 
 -- -----------------------------------------------------
@@ -865,13 +864,17 @@ GROUP BY activity_1.date;
 DROP VIEW IF EXISTS `participant_for_queue` ;
 DROP TABLE IF EXISTS `participant_for_queue`;
 CREATE  OR REPLACE VIEW `participant_for_queue` AS
-SELECT participant.*, contact.province_id, assignment.id AS last_assignment_id,
-       assignment.id IS NOT NULL AND assignment.end_time IS NULL assigned
+SELECT participant.*,
+       assignment.id AS last_assignment_id,
+       IFNULL( participant.site_id, province.site_id ) AS base_site_id,
+       assignment.id IS NOT NULL AND assignment.end_time IS NULL AS assigned
 FROM participant
 LEFT JOIN participant_primary_location
 ON participant.id = participant_primary_location.participant_id 
 LEFT JOIN contact
 ON participant_primary_location.contact_id = contact.id
+LEFT JOIN province
+ON contact.province_id = province.id
 LEFT JOIN participant_last_assignment
 ON participant.id = participant_last_assignment.participant_id 
 LEFT JOIN assignment

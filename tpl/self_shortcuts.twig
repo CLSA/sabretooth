@@ -36,7 +36,7 @@
           icons: {
             primary: "ui-icon-arrowthick-1-w" }
         } ).click( function() {
-          slot_prev( 'main' );
+          slot_prev( "main" );
         } );
         $( "#{{ widget.full }}_next" ).button( {
           text: false,
@@ -44,7 +44,7 @@
             primary: "ui-icon-arrowthick-1-e"
           }
         } ).click( function() {
-          slot_next( 'main' );
+          slot_next( "main" );
         } );
       {% endif %}
       
@@ -55,7 +55,9 @@
             primary: "ui-icon-arrowrefresh-1-e"
           }
         } ).click( function() {
-          slot_refresh( 'main' );
+          slot_refresh( "status" );
+          slot_refresh( "shortcuts" );
+          slot_refresh( "main" );
         } );
       {% endif %}
       
@@ -66,7 +68,7 @@
             primary: "ui-icon-home"
           }
         } ).click( function() {
-          slot_load( 'main', 'self_home' );
+          slot_load( "main", "self_home" );
         } );
       {% endif %}
     } );
