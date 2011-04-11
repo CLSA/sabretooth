@@ -148,6 +148,10 @@ div.app-widget-content {
   position: relative;
 }
 
+ul {
+  margin: 0px;
+}
+
 table {
   width: 100%;
   border-spacing: 0px;

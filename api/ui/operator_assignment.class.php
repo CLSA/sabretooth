@@ -65,14 +65,10 @@ class operator_assignment extends widget
       {
         foreach( $db_last_assignment->get_phone_call_list() as $db_phone_call )
         {
-          $interval = \sabretooth\util::get_interval( $db_phone_call->start_time );
           $db_contact = $db_phone_call->get_contact();
-          $previous_call_list[] = sprintf( 'Called contact #%d (%s) %s %s (%s)',
+          $previous_call_list[] = sprintf( 'Called contact #%d (%s): %s',
             $db_contact->rank,
             $db_contact->type,
-            \sabretooth\util::get_fuzzy_period_ago( $db_phone_call->start_time ),
-            0 < $interval->days ?
-              'at '.\sabretooth\util::get_formatted_time( $db_phone_call->start_time, false ) : '',
             $db_phone_call->status ? $db_phone_call->status : 'unknown' );
         }
       }
@@ -107,6 +103,10 @@ class operator_assignment extends widget
       $this->set_variable( 'participant_name', $name );
       $this->set_variable( 'participant_language', $language );
       $this->set_variable( 'participant_consent', $consent );
+      $this->set_variable( 'previous_assignment_date',
+        \sabretooth\util::get_formatted_date( $db_last_assignment->start_time ) );
+      $this->set_variable( 'previous_assignment_time',
+        \sabretooth\util::get_formatted_time( $db_last_assignment->start_time ) );
       $this->set_variable( 'previous_call_list', $previous_call_list );
       $this->set_variable( 'current_calls', $current_calls );
       $this->set_variable( 'allow_call', $session->get_allow_call() );

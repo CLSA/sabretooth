@@ -91,7 +91,10 @@
             {% if 0 == previous_call_list|count %}
               new participant (never assigned)
             {% else %}
-              {% for call in previous_call_list %}{{ call|raw }} <br />{% endfor %}
+              Last assigned on {{ previous_assignment_date }} at {{ previous_assignment_time }}
+              <ul>
+                {% for call in previous_call_list %}<li>{{ call }}</li>{% endfor %}
+              </ul>
             {% endif %}
           </td>
         </tr>

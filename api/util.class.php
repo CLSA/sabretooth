@@ -300,15 +300,16 @@ final class util
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
    * @param string $date A date string in the format accepted by the DateTime constructor.
+   * @param string $date2 A second string to compare to instead of "now"
    * @return \DateInterval
    * @static
    * @access public
    */
-  public static function get_interval( $date )
+  public static function get_interval( $date, $date2 = NULL )
   {
     // we need to convert to server time since we will compare to the server's "now" time
     $date_obj = new \DateTime( self::to_server_date( $date ) );
-    return $date_obj->diff( new \DateTime() );
+    return $date_obj->diff( new \DateTime( $date2 ) );
   }
 
   /**
