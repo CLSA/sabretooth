@@ -55,3 +55,6 @@ ln -s /path/to/sabretooth/web sabretooth
 
 Sabretooth uses HTTP authentication to manage the logging in/out of users.  Make sure that your
 webserver is configured to require HTTP authentication for the root web directory.
+
+Copy the tpl/reload.html file to the root of your web server.  This is necessary in order to
+automatically proceed to the next phase of a questionnaire when a current phase is completed.
