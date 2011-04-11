@@ -103,7 +103,7 @@ function slot_url( slot, url ) {
     onAjax: true,
     mask: true,
     img: "img/loading.gif",
-    delay: 500, // ms
+    delay: 300, // ms
     align: "center"
   } );
 

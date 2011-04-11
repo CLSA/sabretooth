@@ -27,7 +27,9 @@ class participant_tree extends widget
   public function __construct( $args )
   {
     parent::__construct( 'participant', 'tree', $args );
-    $this->set_heading( 'Participant Tree' );
+    $session = \sabretooth\business\session::self();
+    $this->set_heading( 'supervisor' == $session->get_role()->name ?
+      'Participant tree for '.$session->get_site()->name : 'Participant tree' );
   }
 
   /**

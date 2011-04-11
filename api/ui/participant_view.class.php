@@ -34,7 +34,7 @@ class participant_view extends base_view
     $this->add_item( 'language', 'enum', 'Language' );
     $this->add_item( 'hin', 'string', 'Health Insurance Number' );
     $this->add_item( 'status', 'enum', 'Condition' );
-    $this->add_item( 'site_id', 'enum', 'Site' );
+    $this->add_item( 'site_id', 'enum', 'Prefered Site' );
     
     try
     {

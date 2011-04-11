@@ -32,6 +32,9 @@ class queue_list extends base_list_widget
     $this->add_column( 'enabled', 'boolean', 'Enabled', false );
     $this->add_column( 'participant_count', 'number', 'Participants', false );
     $this->add_column( 'description', 'text', 'Description', true, 'left' );
+    $session = \sabretooth\business\session::self();
+    if( 'supervisor' == $session->get_role()->name )
+      $this->set_heading( 'Queue list for '.$session->get_site()->name );
   }
 
   /**
