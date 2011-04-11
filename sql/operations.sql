@@ -284,10 +284,6 @@ VALUES( "action", "site", "delete_access", true, "Remove accesss from a site." )
 
 -- survey
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "survey", "enable", true, "Enable the survey panel for Limesurvey." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "survey", "disable", true, "Disable the survey panel for Limesurvey." );
-INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "survey", "list", true, "List surveys in the system." );
 
 -- user

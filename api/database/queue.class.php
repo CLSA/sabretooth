@@ -633,13 +633,6 @@ class queue extends record
     if( !is_null( $this->db_site ) ) $modifier->where( 'base_site_id', '=', $this->db_site->id );
     
     $qnaire_test_sql = is_null( $this->db_qnaire ) ? 'IS NOT NULL' : '= '.$this->db_qnaire->id;
-    // TODO: remove me
-    if( false !== strpos( $this->name, 'busy' ) )
-      \sabretooth\log::print_r( 
-          sprintf( '%s %s',
-                   $this->get_sql( 'COUNT( DISTINCT participant.id )', $qnaire_test_sql ),
-                   $modifier->get_sql( true ) ), $this->name );
-    /////////////////////////////////////
     return static::db()->get_one(
       sprintf( '%s %s',
                $this->get_sql( 'COUNT( DISTINCT participant.id )', $qnaire_test_sql ),

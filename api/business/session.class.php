@@ -62,8 +62,6 @@ final class session extends \sabretooth\singleton
 
     // setup the session variables
     if( !isset( $_SESSION['slot'] ) ) $_SESSION['slot'] = array();
-    if( !isset( $_SESSION['survey_enabled'] ) ) $_SESSION['survey_enabled'] = $this->survey_enabled;
-    else $this->survey_enabled = $_SESSION['survey_enabled'];
   }
   
   /**
@@ -390,7 +388,6 @@ final class session extends \sabretooth\singleton
     else
     { // check to see if we can call without a SIP connection
       $db_setting = \sabretooth\database\setting::get_setting( 'voip', 'survey without sip' );
-      \sabretooth\log::debug( $db_setting->value );
       $allow = 'true' == $db_setting->value;
     }
 
@@ -657,48 +654,28 @@ final class session extends \sabretooth\singleton
    */
   public function get_survey_url()
   {
-    if( 'operator' != $this->role->name || !$this->survey_enabled ) return false;
-
+    // only operators can fill out surveys
+    if( 'operator' != $this->role->name ) return false;
+    
+    // must have an assignment
     $db_assignment = $this->get_current_assignment();
     if( is_null( $db_assignment ) ) return false;
     
+    // the assignment's must be in a phase
     $db_phase = $db_assignment->get_current_phase();
     if( is_null( $db_phase ) ) return false;
     
+    // the assignment must have an open call
+    $modifier = new \sabretooth\database\modifier();
+    $modifier->where( 'end_time', '=', NULL );
+    $call_list = $db_assignment->get_phone_call_list( $modifier );
+    if( 0 == count( $call_list ) ) return false;
+
     return LIMESURVEY_URL.sprintf( '/index.php?sid=%s&token=%s',
                                    $db_phase->sid,
                                    $db_assignment->get_current_token() );
   }
 
-  /**
-   * Enables the survey panel.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function enable_survey()
-  {
-    // make sure there is an open assignment
-    if( is_null( $this->get_current_assignment() ) )
-      throw new \sabretooth\exception\runtime(
-        'The survey cannot be enabled while there is no active assignment.', __METHOD__ );
-
-    $this->survey_enabled = true;
-    $_SESSION['survey_enabled'] = $this->survey_enabled;
-  }
-
-  /**
-   * Disables the survey panel.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function disable_survey()
-  {
-    $this->survey_enabled = false;
-    $_SESSION['survey_enabled'] = $this->survey_enabled;
-  }
-  
   /**
    * Returns whether the session has been initialized or not.
    * 
@@ -759,12 +736,5 @@ final class session extends \sabretooth\singleton
    * @access private
    */
   private $site = NULL;
-
-  /**
-   * Whether the survey is enabled or not.
-   * @var bool
-   * @access private
-   */
-  private $survey_enabled = false;
 }
 ?>

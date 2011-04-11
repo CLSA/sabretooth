@@ -11,16 +11,6 @@
   <script type="text/javascript">
     $( function() {
       {% if participant_id|default(false) %}
-        // called when the dial_contact_widget's call button is pushed
-        $( "#{{ widget.full }}__call" ).click( function() {
-          if( 'End Call' == $(this).text() )
-            if( send_action( "survey", "disable" ) )
-              window.location.reload();
-          if( 'Call' == $(this).text() )
-            if( send_action( "survey", "enable" ) )
-              window.location.reload();
-        } );
-      
         // view participant button
         $( "#{{ widget.full }}__view_participant" ).click( function() {
           var args = new Object();
@@ -37,6 +27,25 @@
         // end assignment button
         $( "#{{ widget.full }}__end_assignment" ).click( function() {
           if( send_action( "assignment", "end" ) ) slot_refresh( {{ slot }} );
+        } );
+        
+        // call/end-call button
+        $( "#{{ widget.full }}__call" ).button( {
+          text: true,
+          label: "{{ on_call ? 'End Call' : 'Call' }}",
+          icons: { primary: "ui-icon-person" }
+        } ).click( function() {
+          {% if on_call %}
+            args.status = $( "#{{ widget.full }}__parameter" ).val();
+            if( send_action( "phone_call", "end", args ) ) {
+              window.location.reload();
+            }
+          {% else %}
+            args.contact_id = $( "#{{ widget.full }}__parameter" ).val();
+            if( send_action( "phone_call", "begin", args ) ) {
+              window.location.reload();
+            }
+          {% endif %}
         } );
     
       {% else %}
@@ -58,7 +67,7 @@
   
   <div class="ui-widget ui-widget-content app-widget-content">
     {% if participant_id|default(false) %}
-      {% from 'macros.twig' import notes_widget, dial_contact_widget %}
+      {% from 'macros.twig' import notes_widget %}
 
       <table style="margin-top: 8px;">
         <tr>
@@ -98,21 +107,31 @@
                     {{ on_call or 0 == current_calls ? "disabled" : "" }}>End Assignment</button>
           </td>
           <td align="right">
-            {{ dial_contact_widget( widget.full,
-                                    contacts|default(false),
-                                    statuses|default(false),
-                                    allow_call,
-                                    on_call ) }}
+            {% if contact_list %}
+              <select class="ui-state-default" id="{{ widget.full }}__parameter">
+                {% if on_call %}
+                  {% for status in status_list %}
+                    <option value="{{ status }}">{{ status }}</option>
+                  {% endfor %}
+                {% else %}
+                  {% for id, contact in contact_list %}
+                    <option value="{{ id }}">{{ contact }}</option>
+                  {% endfor %}
+                {% endif %}
+              </select>
+              <button style="width:125px"
+                      id="{{ widget.full }}__call" {{ allow_call ? '' : 'disabled' }} />
+            {% else %}
+              (no numbers to dial)
+              <button style="width:125px" id="{{ widget.full }}__call" disabled />
+            {% endif %}
           </td>
         </tr>
       </table>
-      
     {% else %}
-      
       <p>You currently have no assignment.</p>
       <button id="{{ widget.full }}__begin_assignment">Request new assignment</button>
       <div class="spacer" />
-  
     {% endif %}
   </div>
 

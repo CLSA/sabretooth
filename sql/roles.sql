@@ -867,16 +867,6 @@ SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "widget" AND subject = "participant" AND name = "add_contact" );
 
--- survey
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "survey" AND name = "enable" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "survey" AND name = "disable" );
-
 
 -- -----------------------------------------------------
 -- -----------------------------------------------------

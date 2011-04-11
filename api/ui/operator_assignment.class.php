@@ -81,25 +81,26 @@ class operator_assignment extends widget
       $modifier->where( 'active', '=', true );
       $modifier->where( 'phone', '!=', NULL );
       $modifier->order( 'rank' );
-      $contact_list = $db_participant->get_contact_list( $modifier );
+      $db_contact_list = $db_participant->get_contact_list( $modifier );
       
       $modifier = new \sabretooth\database\modifier();
       $modifier->where( 'end_time', '!=', NULL );
       $current_calls = $db_assignment->get_phone_call_count( $modifier );
 
-      if( 0 == count( $contact_list ) )
+      if( 0 == count( $db_contact_list ) )
       {
         \sabretooth\log::crit(
           'An operator has been assigned a participant with no callable contacts' );
       }
       else
       {
-        $contacts = array();
-        foreach( $contact_list as $db_contact )
-          $contacts[$db_contact->id] =
+        $contact_list = array();
+        foreach( $db_contact_list as $db_contact )
+          $contact_list[$db_contact->id] =
             sprintf( '%d. %s (%s)', $db_contact->rank, $db_contact->type, $db_contact->phone );
-        $this->set_variable( 'contacts', $contacts );
-        $this->set_variable( 'statuses', \sabretooth\database\phone_call::get_enum_values( 'status' ) );
+        $this->set_variable( 'contact_list', $contact_list );
+        $this->set_variable( 'status_list',
+          \sabretooth\database\phone_call::get_enum_values( 'status' ) );
       }
 
       $this->set_variable( 'participant_id', $db_participant->id );
