@@ -20,8 +20,8 @@
 
   <span id="{{ widget.full }}_icons" class="status_icons ui-widget ui-state-default ui-corner-all">
     <span id="{{ widget.full }}_sip"
-          title="VoIP is {{ SIP_ENABLED ? 'enabled' : 'disabled' }}"
-          class="ui-button-icon-primary ui-icon ui-icon-power {{ SIP_ENABLED ? '' : 'dimmed' }}"
+          title="VoIP is {{ sip_enabled ? 'enabled' : 'disabled' }}"
+          class="ui-button-icon-primary ui-icon ui-icon-power {{ sip_enabled ? '' : 'dimmed' }}"
           style="float: left" /> </label>
     <span id="{{ widget.full }}_on_call"
           title="{{ on_call ? 'call active' : 'no active call' }}"

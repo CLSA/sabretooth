@@ -155,7 +155,33 @@ class participant extends record
     
     // need custom SQL
     $assignment_id = static::db()->get_one(
-      sprintf( 'SELECT assignment_id FROM participant_last_assignment WHERE participant_id = %s',
+      sprintf( 'SELECT assignment_id '.
+               'FROM participant_last_assignment '.
+               'WHERE participant_id = %s',
+               database::format_string( $this->id ) ) );
+    return $assignment_id ? new assignment( $assignment_id ) : NULL;
+  }
+
+  /**
+   * Get the participants last (non active) assignment
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return assignment
+   * @access public
+   */
+  public function get_last_finished_assignment()
+  {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to query participant with no id.' );
+      return NULL;
+    }
+    
+    // need custom SQL
+    $assignment_id = static::db()->get_one(
+      sprintf( 'SELECT assignment_id '.
+               'FROM participant_last_finished_assignment '.
+               'WHERE participant_id = %s',
                database::format_string( $this->id ) ) );
     return $assignment_id ? new assignment( $assignment_id ) : NULL;
   }

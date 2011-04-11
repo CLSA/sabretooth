@@ -39,10 +39,11 @@ class self_status extends widget
   {
     parent::finish();
 
+    $this->set_variable( 'sip_enabled',
+      \sabretooth\business\voip_manager::self()->get_sip_enabled() );
     $this->set_variable( 'on_call',
       0 < count( \sabretooth\business\voip_manager::self()->get_calls(
                    \sabretooth\business\session::self()->get_user()->name ) ) );
-
   }
 }
 ?>

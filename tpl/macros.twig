@@ -112,7 +112,7 @@
  #              completed.
  # @param bool on_call Whether the client is currently in a call.
  #}
-{% macro dial_contact_widget( name, contact_list, status_list, on_call ) %}
+{% macro dial_contact_widget( name, contact_list, status_list, allow_call, on_call ) %}
   
   <script type="text/javascript">
   function {{ name }}__update_interface( on_call ) {
@@ -178,7 +178,7 @@
       <option value="{{ id }}">{{ contact }}</option>
     {% endfor %}
     </select>
-    <button style="width:125px" id="{{ name }}__call" {{ SIP_ENABLED ? '' : 'disabled' }} />
+    <button style="width:125px" id="{{ name }}__call" {{ allow_call ? '' : 'disabled' }} />
 
   {% else %}
     

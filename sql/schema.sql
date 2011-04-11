@@ -761,6 +761,11 @@ CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `first_name` INT, 
 CREATE TABLE IF NOT EXISTS `assignment_last_phone_call` (`assignment_id` INT, `phone_call_id` INT);
 
 -- -----------------------------------------------------
+-- Placeholder table for view `participant_last_finished_assignment`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `participant_last_finished_assignment` (`participant_id` INT, `assignment_id` INT);
+
+-- -----------------------------------------------------
 -- View `participant_primary_location`
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `participant_primary_location` ;
@@ -896,6 +901,23 @@ AND phone_call_1.start_time = (
   AND assignment_1.id = assignment_2.id
   AND phone_call_2.end_time IS NOT NULL
   GROUP BY assignment_2.id );
+
+-- -----------------------------------------------------
+-- View `participant_last_finished_assignment`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `participant_last_finished_assignment` ;
+DROP TABLE IF EXISTS `participant_last_finished_assignment`;
+CREATE  OR REPLACE VIEW `participant_last_finished_assignment` AS
+SELECT interview_1.participant_id, assignment_1.id as assignment_id
+FROM assignment AS assignment_1, interview AS interview_1
+WHERE interview_1.id = assignment_1.interview_id
+AND assignment_1.start_time = (
+  SELECT MAX( assignment_2.start_time )
+  FROM assignment AS assignment_2, interview AS interview_2
+  WHERE interview_2.id = assignment_2.interview_id
+  AND interview_1.participant_id = interview_2.participant_id
+  AND assignment_2.end_time IS NOT NULL
+  GROUP BY interview_2.participant_id );
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

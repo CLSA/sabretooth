@@ -289,7 +289,7 @@ class queue extends record
       // Waiting for call-back delay
       self::$query_list['busy_waiting'] = sprintf(
         ' %s'.
-        ' AND NOW() >= phone_call.end_time + INTERVAL ('.
+        ' AND NOW() < phone_call.end_time + INTERVAL ('.
         '   SELECT value'.
         '   FROM setting'.
         '   WHERE category = "callback timing"'.
@@ -356,7 +356,7 @@ class queue extends record
       // Waiting for call-back delay
       self::$query_list['fax_waiting'] = sprintf(
         ' %s'.
-        ' AND NOW() >= phone_call.end_time + INTERVAL ('.
+        ' AND NOW() < phone_call.end_time + INTERVAL ('.
         '   SELECT value'.
         '   FROM setting'.
         '   WHERE category = "callback timing"'.
@@ -423,7 +423,7 @@ class queue extends record
       // Waiting for call-back delay
       self::$query_list['no_answer_waiting'] = sprintf(
         ' %s'.
-        ' AND NOW() >= phone_call.end_time + INTERVAL ('.
+        ' AND NOW() < phone_call.end_time + INTERVAL ('.
         '   SELECT value'.
         '   FROM setting'.
         '   WHERE category = "callback timing"'.
@@ -490,7 +490,7 @@ class queue extends record
       // Waiting for call-back delay
       self::$query_list['machine_message_waiting'] = sprintf(
         ' %s'.
-        ' AND NOW() >= phone_call.end_time + INTERVAL ('.
+        ' AND NOW() < phone_call.end_time + INTERVAL ('.
         '   SELECT value'.
         '   FROM setting'.
         '   WHERE category = "callback timing"'.
@@ -557,7 +557,7 @@ class queue extends record
       // Waiting for call-back delay
       self::$query_list['machine_no_message_waiting'] = sprintf(
         ' %s'.
-        ' AND NOW() >= phone_call.end_time + INTERVAL ('.
+        ' AND NOW() < phone_call.end_time + INTERVAL ('.
         '   SELECT value'.
         '   FROM setting'.
         '   WHERE category = "callback timing"'.
@@ -633,6 +633,13 @@ class queue extends record
     if( !is_null( $this->db_site ) ) $modifier->where( 'base_site_id', '=', $this->db_site->id );
     
     $qnaire_test_sql = is_null( $this->db_qnaire ) ? 'IS NOT NULL' : '= '.$this->db_qnaire->id;
+    // TODO: remove me
+    if( false !== strpos( $this->name, 'busy' ) )
+      \sabretooth\log::print_r( 
+          sprintf( '%s %s',
+                   $this->get_sql( 'COUNT( DISTINCT participant.id )', $qnaire_test_sql ),
+                   $modifier->get_sql( true ) ), $this->name );
+    /////////////////////////////////////
     return static::db()->get_one(
       sprintf( '%s %s',
                $this->get_sql( 'COUNT( DISTINCT participant.id )', $qnaire_test_sql ),

@@ -49,7 +49,7 @@
     <td>
       {% if row.columns['contact.has_phone'] %}
         <button class="{{ widget.full}}_connect"
-                {{ SIP_ENABLED ? '' : 'disabled' }}
+                {{ sip_enabled ? '' : 'disabled' }}
                 id="{{ widget.full }}_connect_{{ row.id }}">call</button>
       {% endif %}
     </td>

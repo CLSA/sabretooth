@@ -60,7 +60,7 @@ class operator_assignment extends widget
       if( !is_null( $db_consent ) ) $consent = $db_consent->event;
       
       $previous_call_list = array();
-      $db_last_assignment = $db_participant->get_last_assignment();
+      $db_last_assignment = $db_participant->get_last_finished_assignment();
       if( !is_null( $db_last_assignment ) )
       {
         foreach( $db_last_assignment->get_phone_call_list() as $db_phone_call )
@@ -108,6 +108,7 @@ class operator_assignment extends widget
       $this->set_variable( 'participant_consent', $consent );
       $this->set_variable( 'previous_call_list', $previous_call_list );
       $this->set_variable( 'current_calls', $current_calls );
+      $this->set_variable( 'allow_call', $session->get_allow_call() );
       $this->set_variable( 'on_call', !is_null( $session->get_current_phone_call() ) );
     }
   }

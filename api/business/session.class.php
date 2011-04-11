@@ -370,6 +370,34 @@ final class session extends \sabretooth\singleton
   }
 
   /**
+   * Determines whether the user is allowed to make calls.  This depends on whether a SIP
+   * is detected and whether or not operators are allowed to make calls without using VoIP
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function get_allow_call()
+  {
+    $allow = false;
+    if( !$this->get_setting( 'voip', 'enabled' ) )
+    { // if voip is not enabled then allow calls
+      $allow = true;
+    }
+    else if( voip_manager::self()->get_sip_enabled() )
+    { // voip is enabled, so make sure sip is also enabled
+      $allow = true;
+    }
+    else
+    { // check to see if we can call without a SIP connection
+      $db_setting = \sabretooth\database\setting::get_setting( 'voip', 'survey without sip' );
+      \sabretooth\log::debug( $db_setting->value );
+      $allow = 'true' == $db_setting->value;
+    }
+
+    return $allow;
+  }
+
+  /**
    * Add an operation to this user's activity log.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

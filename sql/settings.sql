@@ -5,7 +5,12 @@
 SET AUTOCOMMIT=0;
 
 -- settings
-DELETE FROM setting;
+INSERT INTO setting( category, name, value, description )
+VALUES( "voip", "survey without sip", "false",
+"Whether to allow operators to fill out surveys without an active SIP connection." );
+
+-- general
+INSERT INTO 
 
 -- queue state
 INSERT INTO setting( category, name, value, description )
