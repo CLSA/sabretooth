@@ -19,7 +19,7 @@ html, body {
 .extruder.top .flap {
   display: block;
   font: 16px/24px Arial, Helvetica, sans-serif;
-  font-weight: bold;
+  font-weight: normal;
   text-align: center;
   margin: auto;
   padding: 0 5px 5px 5px;
