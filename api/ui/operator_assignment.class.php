@@ -103,10 +103,13 @@ class operator_assignment extends widget
       $this->set_variable( 'participant_name', $name );
       $this->set_variable( 'participant_language', $language );
       $this->set_variable( 'participant_consent', $consent );
-      $this->set_variable( 'previous_assignment_date',
-        \sabretooth\util::get_formatted_date( $db_last_assignment->start_time ) );
-      $this->set_variable( 'previous_assignment_time',
-        \sabretooth\util::get_formatted_time( $db_last_assignment->start_time ) );
+      if( !is_null( $db_last_assignment ) )
+      {
+        $this->set_variable( 'previous_assignment_date',
+          \sabretooth\util::get_formatted_date( $db_last_assignment->start_time ) );
+        $this->set_variable( 'previous_assignment_time',
+          \sabretooth\util::get_formatted_time( $db_last_assignment->start_time ) );
+      }
       $this->set_variable( 'previous_call_list', $previous_call_list );
       $this->set_variable( 'current_calls', $current_calls );
       $this->set_variable( 'allow_call', $session->get_allow_call() );

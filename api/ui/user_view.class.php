@@ -30,6 +30,8 @@ class user_view extends base_view
 
     // create an associative array with everything we want to display about the user
     $this->add_item( 'name', 'string', 'Username' );
+    $this->add_item( 'first_name', 'string', 'First name' );
+    $this->add_item( 'last_name', 'string', 'Last name' );
     $this->add_item( 'active', 'boolean', 'Active' );
     $this->add_item( 'last_activity', 'constant', 'Last activity' );
     
@@ -82,6 +84,8 @@ class user_view extends base_view
 
     // set the view's items
     $this->set_item( 'name', $this->get_record()->name, true );
+    $this->set_item( 'first_name', $this->get_record()->first_name, true );
+    $this->set_item( 'last_name', $this->get_record()->last_name, true );
     $this->set_item( 'active', $this->get_record()->active, true );
     
     $db_activity = $this->get_record()->get_last_activity();

@@ -78,12 +78,12 @@ function get_datum( subject, name, args ) {
   args.subject = subject;
   args.name = name;
   var request = jQuery.ajax( {
-    "url": "datum.php",
-    "async": false,
-    "type": "POST",
-    "data": jQuery.param( args ),
-    "complete": function( request, result ) { ajax_complete( request, 'D' ) },
-    "dataType": "json"
+    url: "datum.php",
+    async: false,
+    type: "GET",
+    data: jQuery.param( args ),
+    complete: function( request, result ) { ajax_complete( request, 'D' ) },
+    dataType: "json"
   } );
   var response = jQuery.parseJSON( request.responseText );
   return response.success ? response.data : false;
@@ -103,12 +103,12 @@ function send_action( subject, name, args ) {
   args.subject = subject;
   args.name = name;
   var request = jQuery.ajax( {
-    "url": "action.php",
-    "async": false,
-    "type": "POST",
-    "data": jQuery.param( args ),
-    "complete": function( request, result ) { ajax_complete( request, 'A' ) },
-    "dataType": "json"
+    url: "action.php",
+    async: false,
+    type: "POST",
+    data: jQuery.param( args ),
+    complete: function( request, result ) { ajax_complete( request, 'A' ) },
+    dataType: "json"
   } );
   var response = jQuery.parseJSON( request.responseText );
   return response.success;

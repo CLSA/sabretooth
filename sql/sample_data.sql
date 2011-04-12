@@ -37,7 +37,7 @@ WHERE abbreviation = "SK";
 UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Victoria" )
 WHERE abbreviation = "YT";
 
-INSERT INTO user( name ) VALUES( 'patrick' );
+INSERT INTO user( name, first_name, last_name ) VALUES( 'patrick', 'Patrick', 'Emond' );
 INSERT INTO user( name ) VALUES( 'dipietv' );
 INSERT INTO user( name ) VALUES( 'kamzic' );
 

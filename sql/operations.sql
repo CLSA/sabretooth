@@ -263,6 +263,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "self", "set_role", false, "Change the current user's active role." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "self", "set_theme", false, "Change the current user's web interface theme." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "datum", "self", "primary", false, "Retrieves the current user's information." );
 
 -- setting
 INSERT INTO operation( type, subject, name, restricted, description )

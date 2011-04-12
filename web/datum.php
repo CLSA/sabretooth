@@ -20,18 +20,18 @@ try
   require_once 'sabretooth.inc.php';
   
   // Try creating an operation and calling the datum provided by the post.
-  if( !isset( $_POST['subject'] ) ) throw new exception\argument( 'subject', NULL, 'DATUM::SCRIPT' );
-  if( !isset( $_POST['name'] ) ) throw new exception\argument( 'name', NULL, 'DATUM::SCRIPT' );
+  if( !isset( $_GET['subject'] ) ) throw new exception\argument( 'subject', NULL, 'DATUM__SCRIPT' );
+  if( !isset( $_GET['name'] ) ) throw new exception\argument( 'name', NULL, 'DATUM__SCRIPT' );
 
-  $datum_name = $_POST['subject'].'_'.$_POST['name'];
+  $datum_name = $_GET['subject'].'_'.$_GET['name'];
   $datum_class = 'sabretooth\\ui\\'.$datum_name;
-  $datum_args = isset( $_POST ) ? $_POST : NULL;
+  $datum_args = isset( $_GET ) ? $_GET : NULL;
 
   // create the operation using the provided args then execute it
   $operation = new $datum_class( $datum_args );
   if( !is_subclass_of( $operation, 'sabretooth\\ui\\datum' ) )
     throw new exception\runtime(
-      'Invoked operation "'.$datum_class.'" is invalid.', 'DATUM::SCRIPT' );
+      'Invoked operation "'.$datum_class.'" is invalid.', 'DATUM__SCRIPT' );
   
   $result_array['data'] = $operation->get_data();
   business\session::self()->log_activity( $operation, $datum_args );
