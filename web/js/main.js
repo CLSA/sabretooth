@@ -22,6 +22,7 @@ function update_shortcuts() {
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @param string title The title of the dialog
  * @param string message The message to put in the dialog
+ * @param callback on_confirm A function to execute if the "ok" button is pushed.
  */
 function confirm_dialog( title, message, on_confirm ) {
   $( "#confirm_slot" ).html( message );
@@ -64,11 +65,36 @@ function error_dialog( title, message ) {
 }
 
 /**
+ * Request information from the server.
+ * 
+ * @author Patrick Emond <emondpd@mcmaster.ca>
+ * @param string subject The datum's subject.
+ * @param string name The datum's name.
+ * @param JSON-array args The arguments to pass to the operation object
+ * @return bool Whether or not the operation completed successfully
+ */
+function get_datum( subject, name, args ) {
+  if( undefined == args ) args = new Object();
+  args.subject = subject;
+  args.name = name;
+  var request = jQuery.ajax( {
+    "url": "datum.php",
+    "async": false,
+    "type": "POST",
+    "data": jQuery.param( args ),
+    "complete": function( request, result ) { ajax_complete( request, 'D' ) },
+    "dataType": "json"
+  } );
+  var response = jQuery.parseJSON( request.responseText );
+  return response.success ? response.data : false;
+}
+
+/**
  * Request an operation be performed to the server.
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @param string operation The name of the operation (must be the name of a business class)
- * @param string action The name of the operation's action (must be one of the operation's methods)
+ * @param string subject The action's subject.
+ * @param string name The action's name.
  * @param JSON-array args The arguments to pass to the operation object
  * @return bool Whether or not the operation completed successfully
  */
@@ -94,9 +120,8 @@ function send_action( subject, name, args ) {
  * This function is used by slot_load, slot_prev, slot_next and slot_refresh.
  * It should not be used directly anywhere else.
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @param string slot The slot to place the widget into.
- * @param string widget The widget's name (must be the name of a ui class)
- * @param JSON-array $args The arguments to pass to the widget object
+ * @param string slot The slot to place the loaded content into.
+ * @param string url The url to load.
  */
 function slot_url( slot, url ) {
   $.loading( {
@@ -136,7 +161,6 @@ function slot_load( slot, widget, namespace, args ) {
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @param string slot The slot to affect.
- * @param string slot arguments to pass along to the widget.
  */
 function slot_prev( slot ) {
   var url = "widget.php?prev=1&slot=" + slot;
@@ -148,7 +172,6 @@ function slot_prev( slot ) {
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @param string slot The slot to rewind.
- * @param string slot arguments to pass along to the widget.
  */
 function slot_next( slot ) {
   var url = "widget.php?next=1&slot=" + slot;
@@ -160,7 +183,6 @@ function slot_next( slot ) {
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @param string slot The slot to rewind.
- * @param string slot arguments to pass along to the widget.
  */
 function slot_refresh( slot ) {
   args = new Object();
@@ -189,7 +211,7 @@ function ajax_complete( request, code ) {
     if( 'Permission' == response.error_type ) {
       error_dialog(
         'Access Denied',
-        '<p>You do not have permission to perform the selected action.</p>' +
+        '<p>You do not have permission to perform the selected operation.</p>' +
         '<p class="error_code">Error code: ' + error_code + '</p>' );
     }
     else if( 'Notice' == response.error_type ) {

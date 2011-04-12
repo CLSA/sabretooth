@@ -23,7 +23,6 @@ abstract class base_primary extends base_record_datum
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $subject The subject to retrieve the primary information from.
    * @param array $args An associative array of arguments to be processed by the datum
-   * @throws exception\argument
    * @access public
    */
   public function __construct( $subject, $args )

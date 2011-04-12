@@ -64,7 +64,7 @@ ob_end_clean();
 
 if( true == $result_array['success'] )
 {
-  print json_encode( $result_array['data'] );
+  print json_encode( $result_array );
 }
 else
 {

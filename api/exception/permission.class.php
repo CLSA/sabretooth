@@ -32,7 +32,8 @@ class permission extends base_exception
                !is_object( $db_operation ) ||
                !is_a( $db_operation, 'sabretooth\\database\\operation' )
              ? 'operation (unknown) denied'
-             : sprintf( 'operation "%s %s" denied.',
+             : sprintf( 'operation "%s %s %s" denied.',
+                        $db_operation->type,
                         $db_operation->subject,
                         $db_operation->name );
     parent::__construct( $message, $context, $previous );
