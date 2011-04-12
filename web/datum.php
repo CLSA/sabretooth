@@ -1,9 +1,9 @@
 <?php
 /**
- * action.php
+ * datum.php
  * 
- * Web script which can be called to perform operations on the system.
- * This script should only ever be called by an AJAX POST request.
+ * Web script which can be called to retrieve data from the system.
+ * This script returns data in JSON format.
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @throws exception\argument, exception\runtime
@@ -19,25 +19,25 @@ try
   // load web-script common code
   require_once 'sabretooth.inc.php';
   
-  // Try creating an operation and calling the action provided by the post.
-  if( !isset( $_POST['subject'] ) ) throw new exception\argument( 'subject', NULL, 'ACTION__SCRIPT' );
-  if( !isset( $_POST['name'] ) ) throw new exception\argument( 'name', NULL, 'ACTION__SCRIPT' );
+  // Try creating an operation and calling the datum provided by the post.
+  if( !isset( $_POST['subject'] ) ) throw new exception\argument( 'subject', NULL, 'DATUM::SCRIPT' );
+  if( !isset( $_POST['name'] ) ) throw new exception\argument( 'name', NULL, 'DATUM::SCRIPT' );
 
-  $action_name = $_POST['subject'].'_'.$_POST['name'];
-  $action_class = 'sabretooth\\ui\\'.$action_name;
-  $action_args = isset( $_POST ) ? $_POST : NULL;
+  $datum_name = $_POST['subject'].'_'.$_POST['name'];
+  $datum_class = 'sabretooth\\ui\\'.$datum_name;
+  $datum_args = isset( $_POST ) ? $_POST : NULL;
 
   // create the operation using the provided args then execute it
-  $operation = new $action_class( $action_args );
-  if( !is_subclass_of( $operation, 'sabretooth\\ui\\action' ) )
+  $operation = new $datum_class( $datum_args );
+  if( !is_subclass_of( $operation, 'sabretooth\\ui\\datum' ) )
     throw new exception\runtime(
-      'Invoked operation "'.$action_class.'" is invalid.', 'ACTION__SCRIPT' );
+      'Invoked operation "'.$datum_class.'" is invalid.', 'DATUM::SCRIPT' );
   
-  $operation->execute();
-  business\session::self()->log_activity( $operation, $action_args );
+  $result_array['data'] = $operation->get_data();
+  business\session::self()->log_activity( $operation, $datum_args );
   log::notice(
-    sprintf( 'finished script: executed action "%s", processing time %0.2f seconds',
-             $action_class,
+    sprintf( 'finished script: executed datum "%s", processing time %0.2f seconds',
+             $datum_class,
              util::get_elapsed_time() ) );
 }
 catch( exception\base_exception $e )
@@ -64,7 +64,7 @@ ob_end_clean();
 
 if( true == $result_array['success'] )
 {
-  print json_encode( $result_array );
+  print json_encode( $result_array['data'] );
 }
 else
 {

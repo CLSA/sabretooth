@@ -35,7 +35,7 @@ abstract class operation extends \sabretooth\base_object
   public function __construct( $type, $subject, $name, $args )
   {
     // type must either be an action or widget
-    if( 'action' != $type && 'widget' != $type )
+    if( 'action' != $type && 'datum' != $type && 'widget' != $type )
       throw new \sabretooth\exception\argument( 'type', $type, __METHOD__ );
     
     $this->operation_record =

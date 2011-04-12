@@ -333,7 +333,7 @@ DROP TABLE IF EXISTS `operation` ;
 
 CREATE  TABLE IF NOT EXISTS `operation` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `type` ENUM('action','widget') NOT NULL ,
+  `type` ENUM('action','datum','widget') NOT NULL ,
   `subject` VARCHAR(45) NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   `restricted` TINYINT(1)  NOT NULL DEFAULT true ,

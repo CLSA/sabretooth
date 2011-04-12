@@ -38,7 +38,7 @@ try
   // determine which widget to render based on the GET variables
   $session = business\session::self();
   if( !isset( $_GET['slot'] ) || !is_string( $_GET['slot'] ) )
-    throw new exception\argument( 'slot', NULL, 'WIDGET_SCRIPT' );
+    throw new exception\argument( 'slot', NULL, 'WIDGET__SCRIPT' );
   $slot_name = isset( $_GET['slot'] ) ? $_GET['slot'] : NULL;
   $widget['name'] = isset( $_GET['widget'] ) ? $_GET['widget'] : NULL;
   $current_widget = $session->slot_current( $slot_name );
@@ -79,7 +79,7 @@ try
   }
 
   if( is_null( $widget['name'] ) )
-    throw new exception\runtime( 'Unable to determine widget name.', 'WIDGET_SCRIPT' );
+    throw new exception\runtime( 'Unable to determine widget name.', 'WIDGET__SCRIPT' );
   
   $widget_class = '\\sabretooth\\ui\\'.$widget['name'];
   
@@ -87,7 +87,7 @@ try
   $operation = new $widget_class( $widget['args'] );
   if( !is_subclass_of( $operation, 'sabretooth\\ui\\widget' ) )
     throw new exception\runtime(
-      'Invoked widget "'.$widget_class.'" is invalid.', 'WIDGET_SCRIPT' );
+      'Invoked widget "'.$widget_class.'" is invalid.', 'WIDGET__SCRIPT' );
 
   $operation->finish();
   $twig_template = $twig->loadTemplate( $widget['name'].'.twig' );

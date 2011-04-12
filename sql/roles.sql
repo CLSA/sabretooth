@@ -770,6 +770,10 @@ INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "action" AND subject = "participant" AND name = "edit" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "datum" AND subject = "participant" AND name = "primary" );
 
 -- appointment
 INSERT INTO role_has_operation
@@ -870,6 +874,10 @@ INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "widget" AND subject = "participant" AND name = "add_contact" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "datum" AND subject = "contact" AND name = "primary" );
 
 
 -- -----------------------------------------------------
@@ -1201,15 +1209,15 @@ AND operation.subject = "technician";
 
 -- setting
 INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+SET role_id = ( SELECT id FROM role WHERE name = "technician" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "action" AND subject = "setting" AND name = "edit" );
 INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+SET role_id = ( SELECT id FROM role WHERE name = "technician" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "widget" AND subject = "setting" AND name = "view" );
 INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+SET role_id = ( SELECT id FROM role WHERE name = "technician" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "widget" AND subject = "setting" AND name = "list" );
 

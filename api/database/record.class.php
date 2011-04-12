@@ -32,7 +32,7 @@ abstract class record extends \sabretooth\base_object
   public function __construct( $id = NULL )
   {
     // determine the columns for this table
-    $columns = static::db()->get_column_names( static::get_table_name() );
+    $columns = $this->get_column_names();
 
     if( !is_array( $columns ) || 0 == count( $columns ) )
       throw new \sabretooth\exception\runtime(
@@ -952,6 +952,17 @@ abstract class record extends \sabretooth\base_object
     return $prefix.substr( strrchr( get_called_class(), '\\' ), 1 );
   }
   
+  /**
+   * Returns an array of column names for this table.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return array( string )
+   * @access public
+   */
+  public function get_column_names()
+  {
+    return static::db()->get_column_names( static::get_table_name() );
+  }
+
   /**
    * Returns the name of this record's primary key.
    * The schema does not currently support multiple-column primary keys, so this method always

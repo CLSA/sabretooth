@@ -204,7 +204,9 @@ final class session extends \sabretooth\singleton
         $this->site = $db_site;
         $this->role = $db_role;
 
-        if( $_SESSION['current_site_id'] != $this->site->id ||
+        if( !isset( $_SESSION['current_site_id'] ) ||
+            $_SESSION['current_site_id'] != $this->site->id ||
+            !isset( $_SESSION['current_role_id'] ) ||
             $_SESSION['current_role_id'] != $this->role->id )
         {
           // clean out the slot stacks
