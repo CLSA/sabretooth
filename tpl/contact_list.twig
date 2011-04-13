@@ -19,8 +19,8 @@
           icons: { primary: "ui-icon-person" }
         } ).click( function() {
           var args = new Object();
-          var id_string = $(this).attr( 'id' );
-          args.contact_id = parseInt( id_string.substring( id_string.lastIndexOf('_') + 1 ) );
+          var id_string = $(this).attr( "id" );
+          args.contact_id = parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) );
           // place the call and refresh the status widget
           if( send_action( "phone_call", "begin", args ) )
           {
@@ -48,7 +48,7 @@
   {% if allow_connect %}
     <td>
       {% if row.columns['contact.has_phone'] %}
-        <button class="{{ widget.full}}_connect"
+        <button class="{{ widget.full }}_connect"
                 {{ sip_enabled ? '' : 'disabled' }}
                 id="{{ widget.full }}_connect_{{ row.id }}">call</button>
       {% endif %}

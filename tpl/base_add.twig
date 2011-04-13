@@ -159,8 +159,7 @@
           
             {% elseif 'text' == entry.type %}
           
-              <textarea id="{{ widget.full }}__{{ item_id }}" rows="5"
-                        style="width:99%;" />{{ entry_value }}</textarea>
+              <textarea id="{{ widget.full }}__{{ item_id }}">{{ entry_value }}</textarea>
           
             {% endif %}
         

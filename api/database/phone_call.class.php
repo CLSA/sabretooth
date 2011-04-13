@@ -14,5 +14,5 @@ namespace sabretooth\database;
  *
  * @package sabretooth\database
  */
-class phone_call extends record {}
+class phone_call extends has_note {}
 ?>

@@ -14,7 +14,7 @@ namespace sabretooth\database;
  *
  * @package sabretooth\database
  */
-class participant extends record
+class participant extends has_note
 {
   /**
    * Overrides the parent class to prevent the participant from being added to an active sample.

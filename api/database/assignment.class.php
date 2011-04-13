@@ -14,7 +14,7 @@ namespace sabretooth\database;
  *
  * @package sabretooth\database
  */
-class assignment extends record
+class assignment extends has_note
 {
   /**
    * Gets the assignment's current phase.

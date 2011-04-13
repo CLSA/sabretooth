@@ -462,34 +462,6 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `qnaire_note`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `qnaire_note` ;
-
-CREATE  TABLE IF NOT EXISTS `qnaire_note` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `user_id` INT UNSIGNED NOT NULL ,
-  `qnaire_id` INT UNSIGNED NOT NULL ,
-  `sticky` TINYINT(1)  NOT NULL DEFAULT false ,
-  `date` TIMESTAMP NOT NULL ,
-  `note` TEXT NOT NULL ,
-  PRIMARY KEY (`id`) ,
-  INDEX `fk_user_id` (`user_id` ASC) ,
-  INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
-  CONSTRAINT `fk_qnaire_note_user`
-    FOREIGN KEY (`user_id` )
-    REFERENCES `user` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_qnaire_note_qnaire`
-    FOREIGN KEY (`qnaire_id` )
-    REFERENCES `qnaire` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `shift`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `shift` ;
@@ -561,7 +533,7 @@ CREATE  TABLE IF NOT EXISTS `participant_note` (
   `user_id` INT UNSIGNED NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `sticky` TINYINT(1)  NOT NULL DEFAULT false ,
-  `date` TIMESTAMP NOT NULL ,
+  `date` DATETIME NOT NULL ,
   `note` TEXT NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_user_id` (`user_id` ASC) ,
@@ -580,56 +552,28 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `interview_note`
+-- Table `assignment_note`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `interview_note` ;
+DROP TABLE IF EXISTS `assignment_note` ;
 
-CREATE  TABLE IF NOT EXISTS `interview_note` (
+CREATE  TABLE IF NOT EXISTS `assignment_note` (
   `id` INT NOT NULL AUTO_INCREMENT ,
   `user_id` INT UNSIGNED NOT NULL ,
-  `interview_id` INT UNSIGNED NOT NULL ,
+  `assignment_id` INT UNSIGNED NOT NULL ,
   `sticky` TINYINT(1)  NOT NULL DEFAULT false ,
-  `date` TIMESTAMP NOT NULL ,
+  `date` DATETIME NOT NULL ,
   `note` TEXT NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_user_id` (`user_id` ASC) ,
-  INDEX `fk_interview_id` (`interview_id` ASC) ,
-  CONSTRAINT `fk_interview_note_user`
+  INDEX `fk_assignment_id` (`assignment_id` ASC) ,
+  CONSTRAINT `fk_assignment_note_user`
     FOREIGN KEY (`user_id` )
     REFERENCES `user` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_interview_note_interview`
-    FOREIGN KEY (`interview_id` )
-    REFERENCES `interview` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `phone_call_note`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `phone_call_note` ;
-
-CREATE  TABLE IF NOT EXISTS `phone_call_note` (
-  `id` INT NOT NULL AUTO_INCREMENT ,
-  `user_id` INT UNSIGNED NOT NULL ,
-  `phone_call_id` INT UNSIGNED NOT NULL ,
-  `sticky` TINYINT(1)  NOT NULL DEFAULT false ,
-  `date` TIMESTAMP NOT NULL ,
-  `note` TEXT NOT NULL ,
-  PRIMARY KEY (`id`) ,
-  INDEX `fk_user_id` (`user_id` ASC) ,
-  INDEX `fk_phone_call_id` (`phone_call_id` ASC) ,
-  CONSTRAINT `fk_phone_call_note_user`
-    FOREIGN KEY (`user_id` )
-    REFERENCES `user` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_phone_call_note_phone_call`
-    FOREIGN KEY (`phone_call_id` )
-    REFERENCES `phone_call` (`id` )
+  CONSTRAINT `fk_assignment_note_assignment`
+    FOREIGN KEY (`assignment_id` )
+    REFERENCES `assignment` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

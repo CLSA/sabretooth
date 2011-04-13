@@ -132,7 +132,7 @@
                 $( function () {
                   var $dialog = $( "#{{ widget.full }}_dialog__{{ item_id }}" );
                   var $div = $( "#{{ widget.full }}__{{ item_id }}" );
-                  var $textedit = $( "#test" );
+                  var $textedit = $( "#{{ widget.full }}__{{ item_id }}" );
                   var text = $div.html();
               
                   // convert end-of-lines to <br>'s so that the text displays properly
@@ -179,12 +179,12 @@
         
               <hr class="ui-widget ui-widget-content">
               <div id="{{ widget.full }}_dialog__{{ item_id }}">
-                <textarea id="test" rows="5" style="width:99%;">{{ entry_value }}</textarea>
+                <textarea id="{{ widget.full }}__{{ item_id }}">{{ entry_value }}</textarea>
               </div>
               {% autoescape false %}
                 <div class="mutable padded editable_text"
-                     style="height: 4em;"
-                     id="{{ widget.full }}__{{ item_id }}">{{ entry_value }}</div>
+                     style="min-height: 6em;"
+                     id="{{ widget.full }}__{{ item_id }}">{{ entry_value|nl2br }}</div>
               {% endautoescape %}
           
             {% else %} {# not a text or constant entry type #}
@@ -192,7 +192,7 @@
               <script type="text/javascript">
                 $( function () {
                   // set up jeditable element
-                  var jeditable_params = Object();
+                  var jeditable_params = new Object();
                   jeditable_params.tooltop = "click to edit";
                   jeditable_params.cssclass = "ui-state-default";
                   jeditable_params.event = "click";

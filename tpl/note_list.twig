@@ -1,0 +1,77 @@
+{##
+ # note_list.twig
+ # 
+ # Note list widget.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ #}
+{% extends "widget.twig" %}
+
+{% block javascript %}
+
+  <script type="text/javascript">
+    $( function() {
+      {% if allow_sticking %}
+        // pin icon
+        $( ".ui-icon-pin-s, .ui-icon-pin-w" ).mouseover( function() {
+          $(this).removeClass( "padded" );
+          $(this).addClass( "ui-widget-header" );
+        } ).mouseout( function() {
+          $(this).removeClass( "ui-widget-header" );
+          $(this).addClass( "padded" );
+        } ).click( function() {
+          var args = new Object();
+          var id_string = $(this).attr( "id" );
+          args.id = parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) );
+          args.category = "{{ category }}";
+          send_action( "note", "stick", args );
+          slot_refresh( {{ slot }} );
+        } );
+      {% endif %}
+
+      // post button
+      $( "#{{ category }}_{{ widget.full }}_post" ).click( function() {
+        var args = new Object();
+        args.category = "{{ category }}";
+        args.category_id = "{{ category_id }}";
+        args.note = $( "#{{ category }}_{{ widget.full }}_text" ).val();
+        send_action( "note", "new", args );
+        slot_refresh( {{ slot }} );
+      } );
+    } );
+  </script>
+
+{% endblock javascript %}
+
+{% block widget %}
+
+  <div id="{{ category }}_{{ widget.full }}_div">
+    {% for note in note_list %}
+      <div class="ui-widget ui-widget-header
+                  {{ note.sticky ? "ui-state-hover ui-priority-primary" : "" }}">
+        <table>
+          <tr>
+            <td align="left">{{ note.user }}</td>
+            <td align="right">
+              {{ note.date }}
+            </td>
+            <td align="right">
+              <div id="{{ category}}_{{ widget.full }}_{{ note.id }}"
+                   class="padded ui-icon ui-icon-pin-{{ note.sticky ? "s" : "w" }}" />
+            </td>
+          </tr>
+        </table>
+      </div>
+      {% autoescape false %}
+        <div class="ui-widget ui-widget-content app-widget-content">{{ note.note|nl2br }}</div>
+      {% endautoescape %}
+      <div class="spacer" />
+    {% endfor %}
+    <div class="ui-widget ui-widget-header">Add a note:</div>
+    <div class="ui-widget ui-widget-content app-widget-content">
+      <textarea id="{{ category }}_{{ widget.full }}_text"></textarea>
+      {% from 'macros.twig' import confirm_buttons %}
+      {{ confirm_buttons( slot, [category, widget.full]|join('_'), [ 'post' ], false, 'right' ) }}
+    </div>
+  </div>
+
+{% endblock widget %}

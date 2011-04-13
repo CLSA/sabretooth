@@ -99,12 +99,17 @@ class operator_assignment extends widget
           \sabretooth\database\phone_call::get_enum_values( 'status' ) );
       }
 
+      $this->set_variable( 'assignment_id', $db_assignment->id );
       $this->set_variable( 'participant_id', $db_participant->id );
+      $this->set_variable( 'participant_note_count', $db_participant->get_note_count() );
       $this->set_variable( 'participant_name', $name );
       $this->set_variable( 'participant_language', $language );
       $this->set_variable( 'participant_consent', $consent );
       if( !is_null( $db_last_assignment ) )
       {
+        $this->set_variable( 'previous_assignment_id', $db_last_assignment->id );
+        $this->set_variable( 'previous_assignment_note_count',
+          $db_last_assignment->get_note_count() );
         $this->set_variable( 'previous_assignment_date',
           \sabretooth\util::get_formatted_date( $db_last_assignment->start_time ) );
         $this->set_variable( 'previous_assignment_time',

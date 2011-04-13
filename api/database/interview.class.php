@@ -14,5 +14,5 @@ namespace sabretooth\database;
  *
  * @package sabretooth\database
  */
-class interview extends record {}
+class interview extends has_note {}
 ?>

@@ -94,7 +94,7 @@ VALUES( "action", "contact", "delete", true, "Removes a participant's contact en
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "contact", "edit", true, "Edits the details of a participant's contact entry." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "contact", "new", true, "Creates new contact enry for a participant." );
+VALUES( "action", "contact", "new", true, "Creates a new contact entry for a participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "contact", "add", true, "View a form for creating new contact entry for a participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -103,6 +103,18 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "contact", "list", true, "Lists a participant's contact entries." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "datum", "contact", "primary", true, "Retrieves base contact information." );
+
+-- notes
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "note", "delete", true, "Removes a note from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "note", "edit", true, "Edits the details of a note." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "note", "new", false, "Creates a new note." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "note", "list", false, "Lists a participant's note entries." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "note", "stick", true, "Toggles whether a note is sticky (top of list)." );
 
 -- operation
 INSERT INTO operation( type, subject, name, restricted, description )

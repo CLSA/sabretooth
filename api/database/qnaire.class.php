@@ -14,5 +14,5 @@ namespace sabretooth\database;
  *
  * @package sabretooth\database
  */
-class qnaire extends record {}
+class qnaire extends has_note {}
 ?>

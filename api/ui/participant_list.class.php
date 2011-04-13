@@ -50,7 +50,9 @@ class participant_list extends base_list_widget
         array( 'first_name' => $record->first_name,
                'last_name' => $record->last_name,
                'language' => $record->language ? $record->language : '(none)',
-               'status' => $record->status ? $record->status : '(none)' ) );
+               'status' => $record->status ? $record->status : '(none)',
+               // note count isn't a column, it's used for the note button
+               'note_count' => $record->get_note_count() ) );
     }
 
     $this->finish_setting_rows();

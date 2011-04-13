@@ -172,6 +172,11 @@ td.content {
   width: 95%;
 }
 
+textarea {
+  width: 99%;
+  height: 8em;
+}
+
 .error_code {
   text-align: right;
   font-style: italic;

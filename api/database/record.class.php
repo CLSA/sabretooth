@@ -499,7 +499,7 @@ abstract class record extends \sabretooth\base_object
       \sabretooth\log::err(
         sprintf( 'Tried to get a %s list from a %s, but there is no relationship between the two.',
                  $record_type,
-                 static::get_table_name() ) );
+                 $table_name() ) );
       return $count ? 0 : array();
     }
     else if( relationship::ONE_TO_ONE == $relationship )
@@ -508,7 +508,7 @@ abstract class record extends \sabretooth\base_object
         sprintf( 'Tried to get a %s list from a %s, but there is a '.
                  'one-to-one relationship between the two.',
                  $record_type,
-                 static::get_table_name() ) );
+                 $table_name() ) );
       return $count ? 0 : array();
     }
     else if( relationship::ONE_TO_MANY == $relationship )
@@ -588,7 +588,7 @@ abstract class record extends \sabretooth\base_object
     // if we get here then the relationship type is unknown
     \sabretooth\log::crit(
       sprintf( 'Record %s has an unknown relationship to %s.',
-               static::get_table_name(),
+               $table_name(),
                $record_type ) );
     return $count ? 0 : array();
   }

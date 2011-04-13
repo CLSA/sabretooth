@@ -67,14 +67,14 @@
   
   <div class="ui-widget ui-widget-content app-widget-content">
     {% if participant_id|default(false) %}
-      {% from 'macros.twig' import notes_widget %}
+      {% from 'macros.twig' import note_widget %}
 
       <table style="margin-top: 8px;">
         <tr>
           <td class="heading">Participant:</td>
           <td class="content" style="position:relative">
             {{ participant_name }}
-            {{ notes_widget( widget.full, note_list|default([]) ) }}
+            {{ note_widget( true, "participant", participant_id, participant_note_count ) }}
           </td>
         </tr>
         <tr>
@@ -92,6 +92,8 @@
               new participant (never assigned)
             {% else %}
               Last assigned on {{ previous_assignment_date }} at {{ previous_assignment_time }}
+              {{ note_widget( true, "assignment", previous_assignment_id,
+                              previous_assignment_note_count ) }}
               <ul>
                 {% for call in previous_call_list %}<li>{{ call }}</li>{% endfor %}
               </ul>
@@ -108,6 +110,7 @@
             <button style="width: 180px;"
                     id="{{ widget.full }}__end_assignment"
                     {{ on_call or 0 == current_calls ? "disabled" : "" }}>End Assignment</button>
+            {{ note_widget( false, "Assignment Notes", "assignment", assignment_id ) }}
           </td>
           <td align="right">
             {% if contact_list %}
