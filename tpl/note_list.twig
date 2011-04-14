@@ -138,7 +138,9 @@
           </tr>
         </table>
       </div>
-      <div id="{{ namespace }}_dialog__{{ note.id }}"><textarea>{{ note.note|e }}</textarea></div>
+      {% if editable %}
+        <div id="{{ namespace }}_dialog__{{ note.id }}"><textarea>{{ note.note|e }}</textarea></div>
+      {% endif %}
       {% autoescape false %}
         <div id="{{ namespace }}_note__{{ note.id }}"
              class="ui-widget ui-widget-content app-widget-content">{{ note.note|e|nl2br }}</div>

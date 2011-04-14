@@ -1,6 +1,6 @@
 <?php
 /**
- * qnaire_note.class.php
+ * assignment_note.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\database
@@ -10,9 +10,9 @@
 namespace sabretooth\database;
 
 /**
- * qnaire_note: record
+ * assignment_note: record
  *
  * @package sabretooth\database
  */
-class qnaire_note extends record {}
+class assignment_note extends record {}
 ?>

@@ -74,7 +74,7 @@
           <td class="heading">Participant:</td>
           <td class="content" style="position:relative">
             {{ participant_name }}
-            {{ note_widget( true, "participant", participant_id, participant_note_count ) }}
+            {{ note_widget( true, "", "participant", participant_id, participant_note_count ) }}
           </td>
         </tr>
         <tr>
@@ -92,7 +92,7 @@
               new participant (never assigned)
             {% else %}
               Last assigned on {{ previous_assignment_date }} at {{ previous_assignment_time }}
-              {{ note_widget( true, "assignment", previous_assignment_id,
+              {{ note_widget( true, "", "assignment", previous_assignment_id,
                               previous_assignment_note_count ) }}
               <ul>
                 {% for call in previous_call_list %}<li>{{ call }}</li>{% endfor %}
