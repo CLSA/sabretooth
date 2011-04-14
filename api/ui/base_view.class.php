@@ -127,8 +127,7 @@ abstract class base_view extends base_record_widget
     {
       if( is_bool( $value ) ) $value = $value ? 'true' : 'false';
     }
-    else if( ( 'constant' == $this->items[$item_id]['type'] ||
-               'hidden' == $this->items[$item_id]['type'] ) &&
+    else if( 'constant' == $this->items[$item_id]['type'] &&
              ( ( is_int( $value ) && 0 == $value ) ||
                ( is_string( $value ) && '0' == $value ) ) )
     {

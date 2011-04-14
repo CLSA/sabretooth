@@ -1,6 +1,6 @@
 <?php
 /**
- * note_stick.class.php
+ * note_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,12 +10,12 @@
 namespace sabretooth\ui;
 
 /**
- * action note stick
+ * action note edit
  * 
- * Add a stick note to the provided category.
+ * Add a edit note to the provided category.
  * @package sabretooth\ui
  */
-class note_stick extends action
+class note_edit extends action
 {
   /**
    * Constructor.
@@ -25,7 +25,7 @@ class note_stick extends action
    */
   public function __construct( $args )
   {
-    parent::__construct( 'note', 'stick', $args );
+    parent::__construct( 'note', 'edit', $args );
   }
   
   /**
@@ -41,7 +41,13 @@ class note_stick extends action
     $id = $this->get_argument( 'id' );
     $note_class = '\\sabretooth\\database\\'.$category.'_note';
     $db_note = new $note_class( $id );
-    $db_note->sticky = !$db_note->sticky;
+    
+    $sticky = $this->get_argument( 'sticky', NULL );
+    if( !is_null( $sticky ) ) $db_note->sticky = 'true' == $sticky;
+    
+    $note = $this->get_argument( 'note', NULL );
+    if( !is_null( $note ) ) $db_note->note = $note;
+
     $db_note->save();
   }
 }

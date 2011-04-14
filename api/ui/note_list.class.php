@@ -53,20 +53,35 @@ class note_list extends widget
     // get the record's note list
     $note_list = array();
     foreach( $db_record->get_note_list() as $db_note )
+    {
+      $date = 7 > \sabretooth\util::get_interval( $db_note->date )->days
+            ? \sabretooth\util::get_fuzzy_period_ago( $db_note->date )
+            : \sabretooth\util::get_formatted_date( $db_note->date );
       $note_list[] = array( 'id' => $db_note->id,
                             'sticky' => $db_note->sticky,
                             'user' => $db_note->get_user()->name,
-                            'date' => \sabretooth\util::get_formatted_datetime( $db_note->date ),
+                            'date' => $date,
                             'note' => $db_note->note );
-    
+    }
+
     $this->set_variable( 'category', $category );
     $this->set_variable( 'category_id', $category_id );
     $this->set_variable( 'note_list', $note_list );
 
-    // allow supervisers and admins to stick notes
+    // allow supervisers and admins to modify notes
     $role_name = \sabretooth\business\session::self()->get_role()->name;
-    $this->set_variable( 'allow_sticking', 'administrator' == $role_name ||
-                                           'supervisor' == $role_name );
+    if( 'administrator' == $role_name || 'supervisor' == $role_name )
+    {
+      $this->set_variable( 'stickable', true );
+      $this->set_variable( 'removable', true );
+      $this->set_variable( 'editable', true );
+    }
+    else
+    {
+      $this->set_variable( 'stickable', false );
+      $this->set_variable( 'removable', false );
+      $this->set_variable( 'editable', false );
+    }
   }
 }
 ?>

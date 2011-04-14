@@ -130,19 +130,8 @@
           
               <script type="text/javascript">
                 $( function () {
-                  var $dialog = $( "#{{ widget.full }}_dialog__{{ item_id }}" );
-                  var $div = $( "#{{ widget.full }}__{{ item_id }}" );
-                  var $textedit = $( "#{{ widget.full }}__{{ item_id }}" );
-                  var text = $div.html();
-              
-                  // convert end-of-lines to <br>'s so that the text displays properly
-                  $div.html( text.replace( /(\r\n|\r|\n)/g, "<br />" ) );
-            
-                  // set the dialog's text area with the (unedited) value
-                  $textedit.html( text );
-                
                   // create the dialog
-                  $dialog.dialog( {
+                  $( "#{{ widget.full }}_dialog__{{ item_id }}" ).dialog( {
                     title: "Edit {{ item_id }}",
                     modal: true,
                     width: 450,
@@ -150,12 +139,12 @@
                     buttons: {
                       Ok: function() {
                         // build the args object
-                        var id_string = $dialog.attr( 'id' );
-                        var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
+                        var id_string = $(this).attr( "id" );
+                        var column_name = id_string.substring( id_string.lastIndexOf("__") + 2 );
                         var args = new Object();
                         args.id = {{ id|default(0) }};
                         var columns = new Object();
-                        columns[column_name] = $textedit.val();
+                        columns[column_name] = $(this).children( "textarea" ).val();
                         args.columns = columns;
             
                         // send the action, reload the record on success
@@ -179,12 +168,12 @@
         
               <hr class="ui-widget ui-widget-content">
               <div id="{{ widget.full }}_dialog__{{ item_id }}">
-                <textarea id="{{ widget.full }}__{{ item_id }}">{{ entry_value }}</textarea>
+                <textarea id="{{ widget.full }}__{{ item_id }}">{{ entry_value|e }}</textarea>
               </div>
               {% autoescape false %}
                 <div class="mutable padded editable_text"
                      style="min-height: 6em;"
-                     id="{{ widget.full }}__{{ item_id }}">{{ entry_value|nl2br }}</div>
+                     id="{{ widget.full }}__{{ item_id }}">{{ entry_value|e|nl2br }}</div>
               {% endautoescape %}
           
             {% else %} {# not a text or constant entry type #}

@@ -186,11 +186,7 @@ abstract class record extends \sabretooth\base_object
         $column_type = static::db()->get_column_data_type( static::get_table_name(), $key );
 
         // convert where necessary
-        if( 'text' == $column_type )
-        { // html-escape text types
-          $val = htmlentities( $val );
-        }
-        elseif( 'datetime' == $column_type || 'timestamp' == $column_type )
+        if( 'datetime' == $column_type || 'timestamp' == $column_type )
         { // convert datetime to server date and time
           $val = \sabretooth\util::to_server_date( $val );
         }

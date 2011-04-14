@@ -113,8 +113,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "note", "new", false, "Creates a new note." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "note", "list", false, "Lists a participant's note entries." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "note", "stick", true, "Toggles whether a note is sticky (top of list)." );
 
 -- operation
 INSERT INTO operation( type, subject, name, restricted, description )

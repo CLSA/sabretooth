@@ -6,12 +6,14 @@
  #}
 {% extends "widget.twig" %}
 
+{% set namespace = [ category, widget.full ]|join("_") %}
+
 {% block javascript %}
 
   <script type="text/javascript">
     $( function() {
-      {% if allow_sticking %}
-        // pin icon
+      {% if stickable %}
+        // sticky icon
         $( ".ui-icon-pin-s, .ui-icon-pin-w" ).mouseover( function() {
           $(this).removeClass( "padded" );
           $(this).addClass( "ui-widget-header" );
@@ -21,21 +23,84 @@
         } ).click( function() {
           var args = new Object();
           var id_string = $(this).attr( "id" );
-          args.id = parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) );
+          args.id = parseInt( id_string.substring( id_string.lastIndexOf("__") + 2 ) );
           args.category = "{{ category }}";
-          send_action( "note", "stick", args );
+          args.sticky = $(this).hasClass( "ui-icon-pin-w" );
+          if( send_action( "note", "edit", args ) )
+            slot_refresh( {{ slot }} );
+        } );
+      {% endif %}
+
+      {% if editable %}
+        // edit icon
+        $( ".ui-icon-pencil" ).mouseover( function() {
+          $(this).removeClass( "padded" );
+          $(this).addClass( "ui-widget-header" );
+        } ).mouseout( function() {
+          $(this).removeClass( "ui-widget-header" );
+          $(this).addClass( "padded" );
+        } ).click( function() {
+          var id_string = $(this).attr( "id" );
+          var id = parseInt( id_string.substring( id_string.lastIndexOf("__") + 2 ) );
+          $( "#{{ namespace }}_dialog__" + id ).dialog( "open" );
+        } );
+        
+        // create the edit dialogs
+        $( "div[id^='{{ namespace }}_dialog__']" ).dialog( {
+          title: "Edit note",
+          modal: true,
+          width: 550,
+          height: 248,
+          autoOpen: false,
+          buttons: {
+            Ok: function() {
+              // build the args object
+              var args = new Object();
+              var id_string = $(this).attr( "id" );
+              args.id = parseInt( id_string.substring( id_string.lastIndexOf("__") + 2 ) );
+              args.category = "{{ category }}";
+              args.note = $(this).children( "textarea" ).val();
+
+              if( send_action( "note", "edit", args ) )
+                slot_refresh( {{ slot }} );
+              $(this).dialog( "close" );
+            },
+            Cancel: function() {
+              $(this).dialog( "close" );
+            }
+          }
+        } );
+      {% endif %}
+
+      {% if removable %}
+        // remove icon
+        $( ".ui-icon-close" ).mouseover( function() {
+          $(this).removeClass( "padded" );
+          $(this).addClass( "ui-widget-header" );
+        } ).mouseout( function() {
+          $(this).removeClass( "ui-widget-header" );
+          $(this).addClass( "padded" );
+        } ).click( function() {
+          var args = new Object();
+          var id_string = $(this).attr( "id" );
+          args.id = parseInt( id_string.substring( id_string.lastIndexOf("__") + 2 ) );
+          args.category = "{{ category }}";
+          send_action( "note", "delete", args );
           slot_refresh( {{ slot }} );
         } );
       {% endif %}
 
       // post button
-      $( "#{{ category }}_{{ widget.full }}_post" ).click( function() {
+      $( "#{{ namespace }}_post" ).click( function() {
         var args = new Object();
         args.category = "{{ category }}";
         args.category_id = "{{ category_id }}";
-        args.note = $( "#{{ category }}_{{ widget.full }}_text" ).val();
-        send_action( "note", "new", args );
-        slot_refresh( {{ slot }} );
+        args.note = $( "#{{ namespace }}_text" ).val();
+        if( args.note )
+        {
+          send_action( "note", "new", args );
+          slot_refresh( {{ slot }} );
+        }
       } );
     } );
   </script>
@@ -44,31 +109,45 @@
 
 {% block widget %}
 
-  <div id="{{ category }}_{{ widget.full }}_div">
+  <div id="{{ namespace }}_div">
     {% for note in note_list %}
       <div class="ui-widget ui-widget-header
                   {{ note.sticky ? "ui-state-hover ui-priority-primary" : "" }}">
         <table>
           <tr>
-            <td align="left">{{ note.user }}</td>
-            <td align="right">
-              {{ note.date }}
-            </td>
-            <td align="right">
-              <div id="{{ category}}_{{ widget.full }}_{{ note.id }}"
-                   class="padded ui-icon ui-icon-pin-{{ note.sticky ? "s" : "w" }}" />
-            </td>
+            <td width="40%" align="left">{{ note.user }}</td>
+            <td width="60%" align="right">{{ note.date }}&nbsp;</td>
+            {% if stickable %}
+              <td align="right">
+                <div id="{{ namespace }}_stick__{{ note.id }}"
+                     class="padded ui-icon ui-icon-pin-{{ note.sticky ? "s" : "w" }}" />
+              </td>
+            {% endif %}
+            {% if editable %}
+              <td align="right">
+                <div id="{{ namespace }}_edit__{{ note.id }}"
+                     class="padded ui-icon ui-icon-pencil" />
+              </td>
+            {% endif %}
+            {% if removable %}
+              <td align="right">
+                <div id="{{ namespace }}_remove__{{ note.id }}"
+                     class="padded ui-icon ui-icon-close" />
+              </td>
+            {% endif %}
           </tr>
         </table>
       </div>
+      <div id="{{ namespace }}_dialog__{{ note.id }}"><textarea>{{ note.note|e }}</textarea></div>
       {% autoescape false %}
-        <div class="ui-widget ui-widget-content app-widget-content">{{ note.note|nl2br }}</div>
+        <div id="{{ namespace }}_note__{{ note.id }}"
+             class="ui-widget ui-widget-content app-widget-content">{{ note.note|e|nl2br }}</div>
       {% endautoescape %}
       <div class="spacer" />
     {% endfor %}
     <div class="ui-widget ui-widget-header">Add a note:</div>
     <div class="ui-widget ui-widget-content app-widget-content">
-      <textarea id="{{ category }}_{{ widget.full }}_text"></textarea>
+      <textarea id="{{ namespace }}_text"></textarea>
       {% from 'macros.twig' import confirm_buttons %}
       {{ confirm_buttons( slot, [category, widget.full]|join('_'), [ 'post' ], false, 'right' ) }}
     </div>
