@@ -140,19 +140,19 @@ class voip_manager extends \sabretooth\singleton
     if( is_null( $db_contact ) ||
         !is_object( $db_contact ) ||
         'sabretooth\\database\\contact' != get_class( $db_contact ) )
-      throw \sabretooth\exception\argument( 'db_contact', $db_contact, __METHOD__ );
+      throw new \sabretooth\exception\argument( 'db_contact', $db_contact, __METHOD__ );
 
     // check that the phone number has exactly 10 digits
     $digits = preg_replace( '/[^0-9]/', '', $db_contact->phone );
     if( 10 != strlen( $digits ) )
-      throw \sabretooth\exception\runtime(
+      throw new \sabretooth\exception\runtime(
         'Tried to connect to phone number which does not have exactly 10 digits.', __METHOD__ );
 
     $peer = \sabretooth\business\session::self()->get_user()->name;
     
     // make sure the user isn't already in a call
     if( 0 < count( $this->get_calls( $peer ) ) )
-      throw \sabretooth\exception\notice(
+      throw new \sabretooth\exception\notice(
         'Unable to connect call since you already appear to be in a call.', __METHOD__ );
 
     // originate call (careful, the online API has the arguments in the wrong order)
@@ -166,6 +166,30 @@ class voip_manager extends \sabretooth\singleton
 
     // rebuild the call list
     $this->get_calls_from_server();
+  }
+
+  /**
+   * Play a DTMF tone.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $tone Which tone to play (one of 0123456789abcdgs)
+   * @throws exception\notice, exception\voip
+   * @access public
+   */
+  public function dtmf( $tone )
+  {
+    $peer = \sabretooth\business\session::self()->get_user()->name;
+    
+    // make sure the user is already in a call
+    if( 0 == count( $this->get_calls( $peer ) ) )
+      throw new \sabretooth\exception\notice(
+        'Cannot send tones while not in a call.', __METHOD__ );
+
+    // send the DTMF
+    $channel = 'SIP/'.$peer;
+    if( !$this->manager->playDTMF( $tone, $channel ) )
+      throw new \sabretooth\exception\voip(
+        $this->manager->getLastError(), __METHOD__ );
   }
 
   /**

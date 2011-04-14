@@ -1,6 +1,6 @@
 <?php
 /**
- * self_shortcuts.class.php
+ * self_dialing_pad.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -10,11 +10,11 @@
 namespace sabretooth\ui;
 
 /**
- * widget self shortcuts
+ * widget self dialing_pad
  * 
  * @package sabretooth\ui
  */
-class self_shortcuts extends widget
+class self_dialing_pad extends widget
 {
   /**
    * Constructor
@@ -26,7 +26,7 @@ class self_shortcuts extends widget
    */
   public function __construct( $args )
   {
-    parent::__construct( 'self', 'shortcuts', $args );
+    parent::__construct( 'self', 'dialing_pad', $args );
   }
 
   /**
@@ -39,15 +39,8 @@ class self_shortcuts extends widget
   {
     parent::finish();
     
-    $db_user = \sabretooth\business\session::self()->get_user();
-    $db_role = \sabretooth\business\session::self()->get_role();
-
-    $this->set_variable( 'dialpad',
-      0 < count( \sabretooth\business\voip_manager::self()->get_calls( $db_user->name ) ) );
-    $this->set_variable( 'calculator', true );
-    $this->set_variable( 'navigation', 'operator' != $db_role->name );
-    $this->set_variable( 'refresh', true );
-    $this->set_variable( 'home', true );
+    $role_name = \sabretooth\business\session::self()->get_role()->name;
+    $this->set_variable( 'allow_hangup', 'operator' != $role_name );
   }
 }
 ?>

@@ -13,6 +13,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "voip", "halt", true, "Disconnects all VOIP sessions." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "voip", "suspend", true, "Prevents any new VOIP sessions from connecting." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "voip", "dtmf", false, "Sends DTMF tones." );
 
 -- access
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -267,6 +269,10 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "shortcuts", false, "The current user's shortcut icon set." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "status", false, "The current user's status." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "self", "dialing_pad", false, "A telephone dialing pad widget." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "self", "calculator", false, "A calculator widget." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "self", "set_site", false, "Change the current user's active site." );
 INSERT INTO operation( type, subject, name, restricted, description )

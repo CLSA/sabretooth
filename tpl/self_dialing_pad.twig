@@ -1,0 +1,65 @@
+{##
+ # self_dialing_pad.twig
+ # 
+ # Creates a dialing pad widget.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ #}
+{% extends "widget.twig" %}
+
+{% block javascript %}
+
+  <script type="text/javascript">
+    $( function() {
+      $( "#{{ widget.full }}_widget" ).find( "button" ).click( function() {
+        var id = $(this).attr( "id" );
+        var file = "img/dtmf" + id;
+        
+        if( "hangup" == id ) {
+          send_action( "phone_call", "end" );
+        } else {
+          // play the dual-tone
+          $( "embed" ).remove();
+          $( "body" ).append( '<embed src="' + file +
+                              '" autostart="true" hidden="true" loop="false" />' );
+  
+          // send the dual-tone
+          send_action( "voip", "dtmf", { tone: id } );
+        }
+      } );
+    } );
+  </script>
+
+{% endblock javascript %}
+
+{% block widget %}
+
+  <table id="{{ widget.full }}_widget">
+    <tr>
+      <td><button style="width: 100%; height: 2em;" id="1">1</button></td>
+      <td><button style="width: 100%; height: 2em;" id="2">2</button></td>
+      <td><button style="width: 100%; height: 2em;" id="3">3</button></td>
+    </tr>
+    <tr>
+      <td><button style="width: 100%; height: 2em;" id="4">4</button></td>
+      <td><button style="width: 100%; height: 2em;" id="5">5</button></td>
+      <td><button style="width: 100%; height: 2em;" id="6">6</button></td>
+    </tr>
+    <tr>
+      <td><button style="width: 100%; height: 2em;" id="7">7</button></td>
+      <td><button style="width: 100%; height: 2em;" id="8">8</button></td>
+      <td><button style="width: 100%; height: 2em;" id="9">9</button></td>
+    </tr>
+    <tr>
+      <td><button style="width: 100%; height: 2em;" id="s">*</button></td>
+      <td><button style="width: 100%; height: 2em;" id="0">0</button></td>
+      <td><button style="width: 100%; height: 2em;" id="g">#</button></td>
+    </tr>
+    <tr>
+      <td colspan="3">
+        <button {{ allow_hangup ? "" : "disabled" }}
+                style="width: 100%; height: 2em;" id="hangup">hang up</button>
+      </td>
+    </tr>
+  </table>
+
+{% endblock widget %}

@@ -14,19 +14,40 @@
   <script type="text/javascript">
     $( function() {
       // make button icons
-      {% if hangup %}
-        $( "#{{ widget.full }}_hangup" ).button( {
+      {% if dialpad %}
+        $( "#{{ widget.full }}_dialpad" ).button( {
           text: false,
           icons: {
             primary: "ui-icon-person"
           }
         } ).click( function() {
-          // place the call and refresh the status and shortcut widgets
-          if( send_action( "phone_call", "end" ) )
-          {
-            slot_refresh( "status" );
-            slot_refresh( "shortcuts" );
+          // open the dialing-pad dialog
+          $( "#dialing_pad_slot" ).dialog( {
+            title: "Dialing pad",
+            modal: false,
+            width: 180,
+            height: 225,
+            autoOpen: true
+          } );
+          slot_load( "dialing_pad", "self_dialing_pad" );
+        } );
+      {% endif %}
+      
+      {% if calculator %}
+        $( "#{{ widget.full }}_calculator" ).button( {
+          text: false,
+          icons: {
+            primary: "ui-icon-calculator"
           }
+        } ).click( function() {
+          $( "#calculator_slot" ).dialog( {
+            title: "Calculator",
+            modal: false,
+            width: 225,
+            height: 300,
+            autoOpen: true
+          } );
+          slot_load( "calculator", "self_calculator" );
         } );
       {% endif %}
       
@@ -79,9 +100,10 @@
 {% block widget %}
 
   <span>
-    {% if hangup %}
-      <button id="{{ widget.full }}_hangup">hang up</button>
+    {% if dialpad %}
+      <button id="{{ widget.full }}_dialpad">dialing pad</button>
     {% endif %}
+    {% if calculator %}<button id="{{ widget.full }}_calculator">calculator</button>{% endif %}
     {% if navigation %}
       <button id="{{ widget.full }}_prev">back</button>
       <button id="{{ widget.full }}_next">forward</button>
