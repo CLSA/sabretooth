@@ -46,7 +46,7 @@ class appointment_list extends base_list_widget
     {
       $this->add_row( $record->id,
         array( 'date' => $record->date,
-               'status' => $record->get_status() ) );
+               'status' => $record->get_state() ) );
     }
 
     $this->finish_setting_rows();

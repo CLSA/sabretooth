@@ -31,6 +31,7 @@ class appointment_view extends base_view
     // add items to the view
     $this->add_item( 'contact_id', 'enum', 'Phone Number' );
     $this->add_item( 'date', 'datetime', 'Date' );
+    $this->add_item( 'completed', 'boolean', 'Completed' );
   }
 
   /**
@@ -55,6 +56,7 @@ class appointment_view extends base_view
     // set the view's items
     $this->set_item( 'contact_id', $this->get_record()->contact_id, true, $contacts );
     $this->set_item( 'date', $this->get_record()->date, true );
+    $this->set_item( 'completed', $this->get_record()->completed, true );
 
     $this->finish_setting_items();
   }

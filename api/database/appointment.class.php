@@ -36,8 +36,17 @@ class appointment extends record
    * @return string
    * @access public
    */
-  public function get_status()
+  public function get_state()
   {
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to determine state for appointment with no id.' );
+      return NULL;
+    } 
+    
+    // if the appointment has a status, nothing else matters
+    if( !is_null( $this->status ) ) return $this->status;
+
     $status = 'unknown';
     
     // settings are in minutes, time() is in seconds, so multiply by 60
@@ -55,23 +64,26 @@ class appointment extends record
     }
     else if( $now < $appointment + $post_window_time )
     {
-      $status = 'ready for assignment';
+      $status = 'assignable';
     }
     else
     { // not in the future
-      $db_assignment = $this->get_assignment();
-      if( is_null( $db_assignment ) )
+      if( is_null( $this->assignment_id ) )
       { // not assigned
         $status = 'missed';
       }
       else // assigned
       {
+        $db_assignment = $this->get_assignment();
         if( !is_null( $db_assignment->end_time ) )
-        { // assignment closed
-          $status = 'completed';
+        { // assignment closed but appointment never completed
+          \sabretooth\log::crit(
+            sprintf( 'Appointment %d has assignment which is closed but no status was set.',
+                     $this->id ) );
+          $status = 'incomplete';
         }
         else // assignment active
-        { 
+        {
           $modifier = new modifier();
           $modifier->where( 'end_time', '=', NULL );
           $open_phone_calls = $db_assignment->get_phone_call_count( $modifier );
@@ -88,35 +100,6 @@ class appointment extends record
     }
 
     return $status;
-  }
-
-  /**
-   * Returns the assignment associated with this appointment.  If this appointment has not been
-   * assigned then NULL is returned.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return assignment
-   * @access public
-   */
-  public function get_assignment()
-  {
-    if( is_null( $this->id ) )
-    {
-      \sabretooth\log::warning( 'Tried to determine access for user with no id.' );
-      return NULL;
-    } 
-    
-    // requires custom SQL
-    $id = static::db()->get_one(
-      sprintf( "SELECT assignment.id
-                FROM appointment, interview, assignment, queue
-                WHERE appointment.id = %s
-                AND appointment.participant_id = interview.participant_id
-                AND interview.id = assignment.interview_id
-                AND assignment.queue_id = queue.id
-                AND ( queue.name = 'Missed' OR queue.name = 'Appointments' )",
-                $this->id ) );
-    
-    return is_null( $id ) ? NULL : new assignment( $id );
   }
 }
 ?>

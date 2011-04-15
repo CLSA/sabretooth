@@ -267,33 +267,6 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `appointment`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `appointment` ;
-
-CREATE  TABLE IF NOT EXISTS `appointment` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `participant_id` INT UNSIGNED NOT NULL ,
-  `contact_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'Which contact to use.' ,
-  `date` DATETIME NOT NULL ,
-  `completed` TINYINT(1)  NOT NULL DEFAULT false COMMENT 'Whether the appointment has been met.' ,
-  PRIMARY KEY (`id`) ,
-  INDEX `fk_contact_id` (`contact_id` ASC) ,
-  INDEX `fk_participant_id` (`participant_id` ASC) ,
-  CONSTRAINT `fk_appointment_contact`
-    FOREIGN KEY (`contact_id` )
-    REFERENCES `contact` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_appointment_participant`
-    FOREIGN KEY (`participant_id` )
-    REFERENCES `participant` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `phone_call`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `phone_call` ;
@@ -302,14 +275,12 @@ CREATE  TABLE IF NOT EXISTS `phone_call` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `assignment_id` INT UNSIGNED NOT NULL ,
   `contact_id` INT UNSIGNED NOT NULL ,
-  `appointment_id` INT UNSIGNED NULL DEFAULT NULL ,
   `start_time` DATETIME NOT NULL COMMENT 'The time the call started.' ,
   `end_time` DATETIME NULL DEFAULT NULL COMMENT 'The time the call endede.' ,
   `status` ENUM('contacted', 'busy','no answer','machine message','machine no message','fax','disconnected','wrong number','language') NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_contact_id` (`contact_id` ASC) ,
   INDEX `fk_assignment_id` (`assignment_id` ASC) ,
-  INDEX `fk_appointment_id` (`appointment_id` ASC) ,
   CONSTRAINT `fk_phone_call_contact`
     FOREIGN KEY (`contact_id` )
     REFERENCES `contact` (`id` )
@@ -318,11 +289,6 @@ CREATE  TABLE IF NOT EXISTS `phone_call` (
   CONSTRAINT `fk_phone_call_assignment`
     FOREIGN KEY (`assignment_id` )
     REFERENCES `assignment` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_phone_call_appointment`
-    FOREIGN KEY (`appointment_id` )
-    REFERENCES `appointment` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -635,6 +601,40 @@ CREATE  TABLE IF NOT EXISTS `setting` (
   UNIQUE INDEX `uq_category_name` (`category` ASC, `name` ASC) ,
   INDEX `category` (`category` ASC) ,
   INDEX `name` (`name` ASC) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `appointment`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `appointment` ;
+
+CREATE  TABLE IF NOT EXISTS `appointment` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `participant_id` INT UNSIGNED NOT NULL ,
+  `contact_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'Which contact to use.' ,
+  `assignment_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'This appointment\'s assignment.' ,
+  `date` DATETIME NOT NULL ,
+  `status` ENUM('complete','incomplete') NULL DEFAULT NULL COMMENT 'If the appointment was met, whether the participant was reached.' ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_contact_id` (`contact_id` ASC) ,
+  INDEX `fk_participant_id` (`participant_id` ASC) ,
+  INDEX `fk_assignment_id` (`assignment_id` ASC) ,
+  CONSTRAINT `fk_appointment_contact`
+    FOREIGN KEY (`contact_id` )
+    REFERENCES `contact` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_appointment_participant`
+    FOREIGN KEY (`participant_id` )
+    REFERENCES `participant` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_appointment_assignment`
+    FOREIGN KEY (`assignment_id` )
+    REFERENCES `assignment` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 

@@ -113,7 +113,7 @@ parent_queue_id = (
     SELECT id
     FROM queue
     WHERE name = "not_assigned" ) AS tmp ),
-description = "Eligible participants who have an appointment.
+description = "Eligible participants who have an (unassigned) appointment.
 This list only includes participants who have not finished the questionnaire and are not currently
 assigned to an operator.";
 

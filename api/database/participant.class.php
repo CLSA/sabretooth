@@ -133,7 +133,9 @@ class participant extends has_note
 
     // warn if there are more than one active samples (this should never happen)
     if( 1 < count( $sample_list ) )
-      \sabretooth\log::crit( 'Participant belongs to more than one active sample!' );
+      \sabretooth\log::crit(
+        sprintf( 'Participant %d belongs to more than one active sample!',
+                  $this->id ) );
 
     return 0 < count( $sample_list ) ? current( $sample_list ) : NULL;
   }

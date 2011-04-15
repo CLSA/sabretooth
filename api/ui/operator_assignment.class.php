@@ -86,7 +86,8 @@ class operator_assignment extends widget
       if( 0 == count( $db_contact_list ) )
       {
         \sabretooth\log::crit(
-          'An operator has been assigned a participant with no callable contacts' );
+          sprintf( 'An operator has been assigned participant %d who has no callable contacts',
+          $db_participant->id ) );
       }
       else
       {

@@ -105,6 +105,7 @@ class queue extends record
         ' SELECT <SELECT_PARTICIPANT>'.
         ' FROM participant_for_queue AS participant, appointment, sample_has_participant, sample'.
         ' WHERE participant.id = appointment.participant_id'.
+        ' AND appointment.assignment_id IS NULL'.
         ' AND participant.id = sample_has_participant.participant_id'.
         ' AND sample_has_participant.sample_id = sample.id'.
         ' AND sample.qnaire_id <QNAIRE_TEST>'.
@@ -687,6 +688,20 @@ class queue extends record
     $this->db_site = $db_site;
   }
   
+  /**
+   * Get whether this queue is related to an appointment
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function from_appointment()
+  {
+    return in_array( $this->name, array( 'appointment',
+                                         'upcoming_appointment',
+                                         'assignable_appointment',
+                                         'missed_appointment' ) );
+  }
+
   /**
    * Get the query for this queue.
    * @author Patrick Emond <emondpd@mcmaster.ca>

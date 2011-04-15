@@ -43,7 +43,28 @@ class assignment_end extends action
       if( !is_null( $session->get_current_phone_call() ) )
         throw new \sabretooth\exception\notice(
           'An assignment cannot be ended while in a call.', __METHOD__ );
+      
+      // if there is an appointment associated with this assignment, set the status
+      $appointment_list = $db_assignment->get_appointment_list();
+      if( 0 < count( $appointment_list ) )
+      {
+        // there should always only be one appointment per assignment
+        if( 1 < count( $appointment_list ) )
+          \sabretooth\log::crit(
+            sprintf( 'Assignment %d has more than one associated appointment!',
+                     $db_assignment->id ) );
 
+        $db_appointment = current( $appointment_list );
+
+        // set the appointment status based on whether any calls reached the participant
+        $modifier = new \sabretooth\database\modifier();
+        $modifier->where( 'status', '=', 'contacted' );
+        $db_appointment->status = 
+          0 < $db_assignment->get_phone_call_count( $modifier ) ? 'complete' : 'incomplete';
+        $db_appointment->save();
+      }
+
+      // save the assignment's end time
       $db_assignment->end_time = date( 'Y-m-d H:i:s' );
       $db_assignment->save();
     }

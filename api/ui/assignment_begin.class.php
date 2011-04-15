@@ -41,8 +41,9 @@ class assignment_begin extends action
     $modifier = new \sabretooth\database\modifier();
     $modifier->where( 'rank', '!=', NULL );
     $modifier->order( 'rank' );
-    $queue_id = NULL;
+    $db_origin_queue = NULL;
     $db_participant = NULL;
+    $db_appointment_id = NULL;
     foreach( \sabretooth\database\queue::select( $modifier ) as $db_queue )
     {
       $mod = new \sabretooth\database\modifier();
@@ -51,8 +52,9 @@ class assignment_begin extends action
       $participant_list = $db_queue->get_participant_list( $mod );
       if( 1 == count( $participant_list ) )
       {
-        $queue_id = $db_queue->id;
+        $db_origin_queue = $db_queue;
         $db_participant = current( $participant_list );
+
         break;
       }
     }
@@ -73,21 +75,35 @@ class assignment_begin extends action
     $db_interview->qnaire_id = $db_sample->qnaire_id;
     $db_interview->save();
 
-    if( is_null( $db_interview->id ) )
-      throw new \sabretooth\exception\runtime(
-        'Failed to create new interview.', __METHOD__ );
-    
     // create an assignment for this user
     $db_assignment = new \sabretooth\database\assignment();
     $db_assignment->user_id = $session->get_user()->id;
     $db_assignment->site_id = $session->get_site()->id;
     $db_assignment->interview_id = $db_interview->id;
-    $db_assignment->queue_id = $queue_id;
+    $db_assignment->queue_id = $db_origin_queue->id;
     $db_assignment->save();
 
-    if( is_null( $db_assignment->id ) )
-      throw new \sabretooth\exception\runtime(
-        'Failed to create new assignment.', __METHOD__ );
+    if( $db_origin_queue->from_appointment() )
+    { // if this is an appointment queue, mark the appointment now associated with the appointment
+      // this should always be the appointment with the earliest date
+      $mod = new \sabretooth\database\modifier();
+      $mod->where( 'assignment_id', '=', NULL );
+      $mod->order( 'date' );
+      $mod->limit( 1 );
+      $appointment_list = $db_participant->get_appointment_list( $mod );
+
+      if( 0 == count( $appointment_list ) )
+      {
+        \sabretooth\log::crit(
+          'Participant queue is from an appointment but no appointment is found.', __METHOD__ );
+      }
+      else
+      {
+        $db_appointment = current( $appointment_list );
+        $db_appointment->assignment_id = $db_assignment->id;
+        $db_appointment->save();
+      }
+    }
   }
 }
 ?>
