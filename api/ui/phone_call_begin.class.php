@@ -65,10 +65,6 @@ class phone_call_begin extends action
       $db_phone_call->contact_id = $db_contact->id;
       $db_phone_call->appointment_id = $appointment_id;
       $db_phone_call->save();
-  
-      if( is_null( $db_phone_call->id ) )
-        throw new \sabretooth\exception\runtime(
-          'Failed to create new phone_call.', __METHOD__ );
     }
   }
 }

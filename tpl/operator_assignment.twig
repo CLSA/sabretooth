@@ -51,8 +51,21 @@
       {% else %}
       
         // begin assignment button
-        $( "#{{ widget.full }}__begin_assignment" ).click( function() {
+        $( "#{{ widget.full }}__assignment" ).click( function() {
           if( send_action( "assignment", "begin" ) ) slot_refresh( {{ slot }} );
+        } );
+
+        // go on break button
+        $( "#{{ widget.full }}__break" ).click( function() {
+          if( send_action( "operator", "begin_break" ) )
+            confirm_dialog(
+              "On a break",
+              "<p>Close this window when you wish to end your break.</p>",
+              function() {
+                send_action( "operator", "end_break" );
+              },
+              false
+            );
         } );
     
       {% endif %}
@@ -136,7 +149,10 @@
       </table>
     {% else %}
       <p>You currently have no assignment.</p>
-      <button id="{{ widget.full }}__begin_assignment">Request new assignment</button>
+      <button id="{{ widget.full }}__assignment"
+              style="width: 200px;">Request assignment</button>
+      <button id="{{ widget.full }}__break"
+              style="width: 200px;">Go on break</button>
       <div class="spacer" />
     {% endif %}
   </div>

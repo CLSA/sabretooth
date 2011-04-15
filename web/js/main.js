@@ -24,22 +24,26 @@ function update_shortcuts() {
  * @param string message The message to put in the dialog
  * @param callback on_confirm A function to execute if the "ok" button is pushed.
  */
-function confirm_dialog( title, message, on_confirm ) {
-  $( "#confirm_slot" ).html( message );
-  $( "#confirm_slot" ).dialog( {
+function confirm_dialog( title, message, on_confirm, cancel_button ) {
+  if( undefined == cancel_button ) cancel_button = true;
+
+  $dialog = $( "#confirm_slot" );
+  var buttons = new Object;
+  buttons.Ok = function() {
+    on_confirm();
+    $dialog.dialog( "close" );
+  };
+  if( cancel_button ) buttons.Cancel = function() { $dialog.dialog( "close" ); };
+
+  $dialog.html( message );
+  $dialog.dialog( {
+    closeOnEscape: cancel_button,
     title: title,
     modal: true,
     dialogClass: "alert",
     width: 450,
-    buttons: {
-      Ok: function() {
-        on_confirm();
-        $(this).dialog( "close" );
-      },
-      Cancel: function() {
-        $(this).dialog( "close" );
-      }
-    }
+    buttons: buttons,
+    open: function( event, ui ) { $( ".ui-dialog-titlebar-close" ).hide(); }
   } );
 }
 

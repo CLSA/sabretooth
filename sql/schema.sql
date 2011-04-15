@@ -667,6 +667,26 @@ COMMENT = 'Site-specific setting overriding the default.' ;
 
 
 -- -----------------------------------------------------
+-- Table `away_time`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `away_time` ;
+
+CREATE  TABLE IF NOT EXISTS `away_time` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `user_id` INT UNSIGNED NOT NULL ,
+  `start_time` DATETIME NOT NULL ,
+  `end_time` DATETIME NULL DEFAULT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_user_id` (`user_id` ASC) ,
+  CONSTRAINT `fk_away_time_user`
+    FOREIGN KEY (`user_id` )
+    REFERENCES `user` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Placeholder table for view `participant_primary_location`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `participant_primary_location` (`participant_id` INT, `contact_id` INT);

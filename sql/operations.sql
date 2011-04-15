@@ -123,6 +123,10 @@ VALUES( "widget", "operation", "list", true, "List operations in the system." );
 -- operator
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "operator", "assignment", true, "Displays the operator's assignment manager." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "operator", "begin_break", true, "Register the start of a break." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "operator", "end_break", true, "Register the end of a break." );
 
 -- participant
 INSERT INTO operation( type, subject, name, restricted, description )

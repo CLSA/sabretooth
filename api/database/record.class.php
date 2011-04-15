@@ -214,7 +214,7 @@ abstract class record extends \sabretooth\base_object
 
     static::db()->execute( $sql );
     
-    // get the new new primary key
+    // get the new primary key
     if( is_null( $this->column_values[static::get_primary_key_name()] ) )
       $this->column_values[static::get_primary_key_name()] = static::db()->insert_id();
   }
