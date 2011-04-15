@@ -12,10 +12,15 @@
     $( function() {
       $( "#{{ widget.full }}_widget" ).find( "button" ).click( function() {
         var id = $(this).attr( "id" );
-        var file = "img/dtmf" + id;
+        var file = "/images/dtmf" + id;
         
         if( "hangup" == id ) {
-          send_action( "phone_call", "end" );
+          if( send_action( "phone_call", "end" ) )
+          {
+            $( "#" + {{ slot }} + "_slot" ).dialog( "close" );
+            slot_refresh( "status" );
+            slot_refresh( "shortcuts" );
+          }
         } else {
           // play the dual-tone
           $( "embed" ).remove();

@@ -34,6 +34,7 @@ class voip_call extends \sabretooth\base_object
       throw \sabretooth\exception\argument( 'connect to invalid contact.', __METHOD__ );
 
     $this->channel = $s8_event->get( 'channel' );
+    $this->bridge = $s8_event->get( 'bridgedchannel' );
     $this->state = $s8_event->get( 'channelstatedesc' );
     $this->time = intval( $s8_event->get( 'seconds' ) );
 
@@ -74,7 +75,7 @@ class voip_call extends \sabretooth\base_object
   public function get_peer() { return $this->peer; }
 
   /**
-   * Get the call's peer
+   * Get the call's channel
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
@@ -82,7 +83,15 @@ class voip_call extends \sabretooth\base_object
   public function get_channel() { return $this->channel; }
 
   /**
-   * Get the call's peer
+   * Get the call's bridged channel
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_bridge() { return $this->bridge; }
+
+  /**
+   * Get the call's state (Up, Ring, etc)
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
@@ -90,7 +99,7 @@ class voip_call extends \sabretooth\base_object
   public function get_state() { return $this->state; }
 
   /**
-   * Get the call's peer
+   * Get the number called (the extension without dialing prefix)
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
@@ -98,7 +107,7 @@ class voip_call extends \sabretooth\base_object
   public function get_number() { return $this->number; }
 
   /**
-   * Get the call's peer
+   * Get the call's time in seconds
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @access public
@@ -120,6 +129,14 @@ class voip_call extends \sabretooth\base_object
    * @access private
    */
   private $channel = NULL;
+
+  /**
+   * The call's bridged channel.
+   * 
+   * @var string
+   * @access private
+   */
+  private $bridge = NULL;
 
   /**
    * The state of the call (Up, Ring, etc)

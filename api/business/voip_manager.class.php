@@ -56,7 +56,7 @@ class voip_manager extends \sabretooth\singleton
 
       // get the current SIP info
       $peer = \sabretooth\business\session::self()->get_user()->name;
-      $s8_event = $this->manager->getSIPPeer( $peer );
+      $s8_event = $this->manager->getSipPeer( $peer );
       
       if( !is_null( $s8_event ) &&
           $peer == $s8_event->get( 'objectname' ) &&
@@ -111,16 +111,17 @@ class voip_manager extends \sabretooth\singleton
    */
   private function get_calls_from_server()
   {
-      $this->call_list = array();
-      $events = $this->manager->getStatus();
+    $this->call_list = array();
+    $events = $this->manager->getStatus();
 
-      if( is_null( $events ) )
-        throw new \sabretooth\exception\voip(
-          $this->manager->getLastError(), __METHOD__ );
+    if( is_null( $events ) )
+      throw new \sabretooth\exception\voip(
+        $this->manager->getLastError(), __METHOD__ );
 
-      foreach( $events as $s8_event )
-        if( 'Status' == $s8_event->get( 'event' ) )
-          $this->call_list[] = new voip_call( $s8_event );
+    foreach( $events as $s8_event )
+      if( 'Status' == $s8_event->get( 'event' ) )
+        $this->call_list[] = new voip_call( $s8_event );
+    
   }
   
   /**
@@ -180,13 +181,20 @@ class voip_manager extends \sabretooth\singleton
   {
     $peer = \sabretooth\business\session::self()->get_user()->name;
     
+    $calls = $this->get_calls( $peer );
     // make sure the user is already in a call
     if( 0 == count( $this->get_calls( $peer ) ) )
       throw new \sabretooth\exception\notice(
         'Cannot send tones while not in a call.', __METHOD__ );
+    
+    // get the bridged channel of the first call
+    foreach( $calls as $voip_call )
+    {
+      $channel = $voip_call->get_bridge();
+      break;
+    }
 
     // send the DTMF
-    $channel = 'SIP/'.$peer;
     if( !$this->manager->playDTMF( $tone, $channel ) )
       throw new \sabretooth\exception\voip(
         $this->manager->getLastError(), __METHOD__ );
