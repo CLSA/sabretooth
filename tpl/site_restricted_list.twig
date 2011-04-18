@@ -1,0 +1,51 @@
+{##
+ # site_restricted_list.twig
+ # 
+ # Adds the site restriction dropdown, if necessary
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @see base_list.twig for parameters
+ #}
+{% extends "base_list.twig" %}
+
+{% block javascript %}
+  {{ parent() }}
+
+  {% if sites is defined %}
+    <script type="text/javascript">
+      $( function() {
+        // reload page if site selector is changed
+        $( "#{{ widget.full }}__restrict_site" ).change( function() {
+          var site_id = $( "#{{ widget.full }}__restrict_site option:selected" ).val();
+          slot_load( {{ slot }},
+                     "{{ widget.full }}",
+                     "{{ widget.full }}",
+                     { "restrict_site_id": site_id } );
+        } );
+      } );
+    </script>
+  {% endif %}
+
+{% endblock javascript %}
+
+{% block widget %}
+
+  {% if sites is defined %}
+    <div style="padding-top: 4px; padding-bottom: 4px;">
+      <span class="spacer">
+        {% set restrict_site_id = restrict_site_id|default(0) %}
+        Restrict to site:
+        <select id="{{ widget.full }}__restrict_site" class="ui-state-default">
+          <option {% if 0 == restrict_site_id %}selected{% endif %}
+                  value="0">All Sites</option>
+          {% for id, name in sites %}
+            <option {% if id == restrict_site_id %}selected{% endif %}
+                    value="{{ id }}">{{ name }}</option>
+          {% endfor %}
+        </select>
+      </span>
+    </div>
+  {% endif %}
+
+  {{ parent() }}
+
+{% endblock widget %}

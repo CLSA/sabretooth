@@ -14,7 +14,7 @@ namespace sabretooth\ui;
  * 
  * @package sabretooth\ui
  */
-class access_list extends base_list_widget
+class access_list extends site_restricted_list
 {
   /**
    * Constructor

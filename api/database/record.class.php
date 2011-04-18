@@ -896,7 +896,7 @@ abstract class record extends \sabretooth\base_object
    * @static
    * @access public
    */
-  public static function count( $modifier )
+  public static function count( $modifier = NULL )
   {
     return static::select( $modifier, true );
   }

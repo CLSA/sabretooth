@@ -14,7 +14,7 @@ namespace sabretooth\ui;
  * 
  * @package sabretooth\ui
  */
-class user_list extends base_list_widget
+class user_list extends site_restricted_list
 {
   /**
    * Constructor
@@ -29,12 +29,6 @@ class user_list extends base_list_widget
     parent::__construct( 'user', $args );
     
     $session = \sabretooth\business\session::self();
-    $is_supervisor = 'supervisor' == $session->get_role()->name;
-
-    // define all template variables for this list
-    $this->set_heading(
-      sprintf( 'User list for %s',
-               $is_supervisor ? $session->get_site()->name : 'all sites' ) );
 
     $this->add_column( 'name', 'string', 'Username', true );
     $this->add_column( 'active', 'boolean', 'Active', true );
@@ -76,7 +70,7 @@ class user_list extends base_list_widget
   }
   
   /**
-   * Overrides the parent class method since the record count depends on the active role.
+   * Overrides the parent class method since the record count depends on the site restriction
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
@@ -85,12 +79,10 @@ class user_list extends base_list_widget
    */
   protected function determine_record_count( $modifier = NULL )
   {
-    // only show users for current site if user is a supervisor
-    $session = \sabretooth\business\session::self();
-    if( 'supervisor' == $session->get_role()->name )
+    if( !is_null( $this->db_restrict_site ) )
     {
       if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
-      $modifier->where( 'site_id', '=', $session->get_site()->id );
+      $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
     }
 
     return parent::determine_record_count( $modifier );
@@ -106,12 +98,10 @@ class user_list extends base_list_widget
    */
   protected function determine_record_list( $modifier = NULL )
   {
-    // only show users for current site if user is a supervisor
-    $session = \sabretooth\business\session::self();
-    if( 'supervisor' == $session->get_role()->name )
+    if( !is_null( $this->db_restrict_site ) )
     {
       if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
-      $modifier->where( 'site_id', '=', $session->get_site()->id );
+      $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
     }
 
     return parent::determine_record_list( $modifier );

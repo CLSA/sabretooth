@@ -161,6 +161,13 @@ abstract class widget extends operation
   }
   
   /**
+   * Get the widget's heading.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function get_heading() { return $this->heading; }
+
+  /**
    * Set the widget's heading.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $heading

@@ -73,15 +73,5 @@ abstract class has_note extends record
     $db_note->note = $note;
     $db_note->save();
   }
-
-  /**
-   * Gets the number of notes associated with this record.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function remove_note()
-  {
-    // TODO: implement
-  }
 }
 ?>

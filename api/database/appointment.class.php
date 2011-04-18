@@ -30,6 +30,69 @@ class appointment extends record
   }
   
   /**
+   * Identical to the parent's select method but restrict to a particular site.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the selection.
+   * @param boolean $count If true the total number of records instead of a list
+   * @return array( record ) | int
+   * @static
+   * @access public
+   */
+  public static function select_for_site( $db_site, $modifier = NULL, $count = false )
+  {
+    // if there is no site restriction then just use the parent method
+    if( is_null( $db_site ) ) return parent::select( $modifier, $count );
+    
+    $select_tables = 'appointment, participant_primary_location, participant, contact';
+    
+    // straight join the tables
+    if( is_null( $modifier ) ) $modifier = new modifier();
+    $modifier->where(
+      'appointment.participant_id', '=', 'participant_primary_location.participant_id', false );
+    $modifier->where( 'participant_primary_location.contact_id', '=', 'contact.id', false );
+    $modifier->where( 'appointment.participant_id', '=', 'participant.id', false );
+
+    $sql = sprintf( ( $count ? 'SELECT COUNT( %s.%s ) ' : 'SELECT %s.%s ' ).
+                    'FROM %s '.
+                    'WHERE ( participant.site_id = %d '.
+                    '  OR contact.province_id IN ( SELECT id FROM province WHERE site_id = %d ) ) %s',
+                    static::get_table_name(),
+                    static::get_primary_key_name(),
+                    $select_tables,
+                    $db_site->id,
+                    $db_site->id,
+                    $modifier->get_sql( true ) );
+
+    if( $count )
+    {
+      return intval( static::db()->get_one( $sql ) );
+    }
+    else
+    {
+      $id_list = static::db()->get_col( $sql );
+      $records = array();
+      foreach( $id_list as $id ) $records[] = new static( $id );
+      return $records;
+    }
+  }
+
+  /**
+   * Identical to the parent's count method but restrict to a particular site.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the count.
+   * @return int
+   * @static
+   * @access public
+   */
+  public static function count_for_site( $db_site, $modifier = NULL )
+  {
+    return static::select_for_site( $db_site, $modifier, true );
+  }
+
+
+  /**
    * Get the status of the appointment as a string (upcoming, missed, completed, in progress or
    * assigned)
    * @author Patrick Emond <emondpd@mcmaster.ca>

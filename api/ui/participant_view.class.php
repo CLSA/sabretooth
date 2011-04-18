@@ -41,7 +41,7 @@ class participant_view extends base_view
       // create the sample sub-list widget
       $this->sample_list = new sample_list( $args );
       $this->sample_list->set_parent( $this );
-      $this->sample_list->set_heading( 'Samples the participant belongs to' );
+      $this->sample_list->set_heading( 'Samples' );
     }
     catch( \sabretooth\exception\permission $e )
     {

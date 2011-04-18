@@ -14,7 +14,7 @@ namespace sabretooth\ui;
  * 
  * @package sabretooth\ui
  */
-class shift_list extends base_list_widget
+class shift_list extends site_restricted_list
 {
   /**
    * Constructor

@@ -26,7 +26,7 @@ abstract class base_access extends record
    * @static
    * @access public
    */
-  public static function count( $modifier )
+  public static function count( $modifier = NULL )
   {
     return static::select( $modifier, true );
   }            
