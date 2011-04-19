@@ -33,7 +33,8 @@ class appointment extends record
    * Identical to the parent's select method but restrict to a particular site.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the selection.
+   * @param site $db_site The site to restrict the selection to.
+   * @param modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
    * @return array( record ) | int
    * @static
@@ -56,7 +57,8 @@ class appointment extends record
     $sql = sprintf( ( $count ? 'SELECT COUNT( %s.%s ) ' : 'SELECT %s.%s ' ).
                     'FROM %s '.
                     'WHERE ( participant.site_id = %d '.
-                    '  OR contact.province_id IN ( SELECT id FROM province WHERE site_id = %d ) ) %s',
+                    '  OR contact.province_id IN '.
+                    '  ( SELECT id FROM province WHERE site_id = %d ) ) %s',
                     static::get_table_name(),
                     static::get_primary_key_name(),
                     $select_tables,
@@ -81,7 +83,8 @@ class appointment extends record
    * Identical to the parent's count method but restrict to a particular site.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the count.
+   * @param site $db_site The site to restrict the count to.
+   * @param modifier $modifier Modifications to the count.
    * @return int
    * @static
    * @access public

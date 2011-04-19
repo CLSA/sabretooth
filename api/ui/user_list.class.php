@@ -49,8 +49,14 @@ class user_list extends site_restricted_list
     foreach( $this->get_record_list() as $record )
     {
       // determine the role
+      $modifier = new \sabretooth\database\modifier();
+      if( !is_null( $this->db_restrict_site ) )
+      {
+        $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
+      }
+
       $role = 'none';
-      $db_roles = $record->get_role_list();
+      $db_roles = $record->get_role_list( $modifier );
       if( 1 == count( $db_roles ) ) $role = $db_roles[0]->name; // only one roll?
       else if( 1 < count( $db_roles ) ) $role = 'multiple'; // multiple roles?
       

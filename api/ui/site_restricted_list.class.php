@@ -29,12 +29,10 @@ abstract class site_restricted_list extends base_list_widget
   {
     parent::__construct( $subject, $args );
     
-    $session = \sabretooth\business\session::self();
-
     // if this list has a parent don't allow restricting (the parent already does)
     if( !is_null( $this->parent ) ) {}
-    else if( 'administrator' == $session->get_role()->name )
-    { // the administrator may restrict by any site
+    else if( $this->may_restrict() )
+    {
       $restrict_site_id = $this->get_argument( "restrict_site_id", 0 );
       $this->db_restrict_site = $restrict_site_id
                               ? new \sabretooth\database\site( $restrict_site_id )
@@ -42,7 +40,7 @@ abstract class site_restricted_list extends base_list_widget
     }
     else // anyone else is restricted to their own site
     {
-      $this->db_restrict_site = $session->get_site();
+      $this->db_restrict_site = \sabretooth\business\session::self()->get_site();
     }
     
     // if restricted, show the site's name in the heading
@@ -58,27 +56,83 @@ abstract class site_restricted_list extends base_list_widget
    */
   public function finish()
   {
-    parent::finish();
 
-    $session = \sabretooth\business\session::self();
-    
     // if this is an admin, give them a list of sites to choose from
     // (for lists with no parent only!)
-    if( is_null( $this->parent ) && 'administrator' == $session->get_role()->name )
+    if( is_null( $this->parent ) && $this->may_restrict() )
     {
       $sites = array();
       foreach( \sabretooth\database\site::select() as $db_site )
         $sites[$db_site->id] = $db_site->name;
       $this->set_variable( 'sites', $sites );
     }
+    else
+    {
+      // we're restricting to the user's site, so remove the site column
+      $this->remove_column( 'site.name' );
+    }
+    
+    // this has to be done AFTER the remove_column() call above
+    parent::finish();
 
     $this->set_variable( 'restrict_site_id',
       is_null( $this->db_restrict_site ) ? 0 : $this->db_restrict_site->id );
   }
 
   /**
-   * The site to restrict to (for all but administrators this is automatically set to the current
-   * site).
+   * Overrides the parent class method based on the restrict site member.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return int
+   * @access protected
+   */
+  protected function determine_record_count( $modifier = NULL )
+  {
+    if( !is_null( $this->db_restrict_site ) )
+    {
+      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+      $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
+    }
+
+    return parent::determine_record_count( $modifier );
+  }
+
+  /**
+   * Overrides the parent class method based on the restrict site member.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return array( record )
+   * @access protected
+   */
+  protected function determine_record_list( $modifier = NULL )
+  {
+    if( !is_null( $this->db_restrict_site ) )
+    {
+      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+      $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
+    }
+
+    return parent::determine_record_list( $modifier );
+  }
+  
+  /**
+   * Determines whether the current user may choose which site to restrict by.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access protected
+   */
+  protected function may_restrict()
+  {
+    $role_name = \sabretooth\business\session::self()->get_role()->name;
+    return 'administrator' == $role_name || 'technician' == $role_name;
+  }
+
+  /**
+   * The site to restrict to (for all but administrators and technicians this is automatically set
+   * to the current site).
    * @var database\site
    * @access private
    */

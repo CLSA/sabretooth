@@ -17,6 +17,69 @@ namespace sabretooth\database;
 class participant extends has_note
 {
   /**
+   * Identical to the parent's select method but restrict to a particular site.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param site $db_site The site to restrict the selection to.
+   * @param modifier $modifier Modifications to the selection.
+   * @param boolean $count If true the total number of records instead of a list
+   * @return array( record ) | int
+   * @static
+   * @access public
+   */
+  public static function select_for_site( $db_site, $modifier = NULL, $count = false )
+  {
+    // if there is no site restriction then just use the parent method
+    if( is_null( $db_site ) ) return parent::select( $modifier, $count );
+
+    $select_tables = 'participant, participant_primary_location, contact';
+
+    // straight join the tables
+    if( is_null( $modifier ) ) $modifier = new modifier();
+    $modifier->where( 'participant.id', '=', 'participant_primary_location.participant_id', false );
+    $modifier->where( 'participant_primary_location.contact_id', '=', 'contact.id', false );
+
+    $sql = sprintf( ( $count ? 'SELECT COUNT( %s.%s ) ' : 'SELECT %s.%s ' ).
+                    'FROM %s '.
+                    'WHERE ( participant.site_id = %d '.
+                    '  OR contact.province_id IN '.
+                    '  ( SELECT id FROM province WHERE site_id = %d ) ) %s',
+                    static::get_table_name(),
+                    static::get_primary_key_name(),
+                    $select_tables,
+                    $db_site->id,
+                    $db_site->id,
+                    $modifier->get_sql( true ) );
+
+    if( $count )
+    {
+      return intval( static::db()->get_one( $sql ) );
+    }
+    else
+    {
+      $id_list = static::db()->get_col( $sql );
+      $records = array();
+      foreach( $id_list as $id ) $records[] = new static( $id );
+      return $records;
+    }
+  }
+
+  /**
+   * Identical to the parent's count method but restrict to a particular site.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param site $db_site The site to restrict the count to.
+   * @param modifier $modifier Modifications to the count.
+   * @return int
+   * @static
+   * @access public
+   */
+  public static function count_for_site( $db_site, $modifier = NULL )
+  {
+    return static::select_for_site( $db_site, $modifier, true );
+  }
+  
+  /**
    * Overrides the parent class to prevent the participant from being added to an active sample.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
