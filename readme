@@ -4,6 +4,9 @@ api/
   This is where the programming interface belongs.  This includes all packages, classes, functions,
   settings, etc.
 
+aux/
+  Any auxiliary files which are needed by the software go here.
+
 tpl/
   This is where display templates belong.  This includes twig templates, xslt, etc.
 
