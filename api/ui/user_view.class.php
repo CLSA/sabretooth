@@ -137,8 +137,9 @@ class user_view extends base_view
   {
     if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
     $modifier->where( 'user_id', '=', $this->get_record()->id );
+    if( !site_restricted_list::may_restrict() )
+      $modifier->where( 'site_id', '=', \sabretooth\business\session::self()->get_site()->id );
     return \sabretooth\database\access::count( $modifier );
-
   }
 
   /**
@@ -153,6 +154,8 @@ class user_view extends base_view
   {
     if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
     $modifier->where( 'user_id', '=', $this->get_record()->id );
+    if( !site_restricted_list::may_restrict() )
+      $modifier->where( 'site_id', '=', \sabretooth\business\session::self()->get_site()->id );
     return \sabretooth\database\access::select( $modifier );
   }
 
@@ -165,6 +168,12 @@ class user_view extends base_view
    */
   public function determine_activity_count( $modifier = NULL )
   {
+    if( !site_restricted_list::may_restrict() )
+    {
+      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+      $modifier->where( 'site_id', '=', \sabretooth\business\session::self()->get_site()->id );
+    }
+
     return $this->get_record()->get_activity_count( $modifier );
   }
 
@@ -178,6 +187,12 @@ class user_view extends base_view
    */
   public function determine_activity_list( $modifier = NULL )
   {
+    if( !site_restricted_list::may_restrict() )
+    {
+      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+      $modifier->where( 'site_id', '=', \sabretooth\business\session::self()->get_site()->id );
+    }
+
     return $this->get_record()->get_activity_list( $modifier );
   }
 

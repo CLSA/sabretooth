@@ -30,8 +30,7 @@ abstract class site_restricted_list extends base_list_widget
     parent::__construct( $subject, $args );
     
     // if this list has a parent don't allow restricting (the parent already does)
-    if( !is_null( $this->parent ) ) {}
-    else if( $this->may_restrict() )
+    if( static::may_restrict() )
     {
       $restrict_site_id = $this->get_argument( "restrict_site_id", 0 );
       $this->db_restrict_site = $restrict_site_id
@@ -57,14 +56,17 @@ abstract class site_restricted_list extends base_list_widget
   public function finish()
   {
 
-    // if this is an admin, give them a list of sites to choose from
-    // (for lists with no parent only!)
-    if( is_null( $this->parent ) && $this->may_restrict() )
+    if( static::may_restrict() )
     {
-      $sites = array();
-      foreach( \sabretooth\database\site::select() as $db_site )
-        $sites[$db_site->id] = $db_site->name;
-      $this->set_variable( 'sites', $sites );
+      // if this is an admin, give them a list of sites to choose from
+      // (for lists with no parent only!)
+      if( is_null( $this->parent ) )
+      {
+        $sites = array();
+        foreach( \sabretooth\database\site::select() as $db_site )
+          $sites[$db_site->id] = $db_site->name;
+        $this->set_variable( 'sites', $sites );
+      }
     }
     else
     {
@@ -122,9 +124,10 @@ abstract class site_restricted_list extends base_list_widget
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
-   * @access protected
+   * @static
+   * @access public
    */
-  protected function may_restrict()
+  public static function may_restrict()
   {
     $role_name = \sabretooth\business\session::self()->get_role()->name;
     return 'administrator' == $role_name || 'technician' == $role_name;
