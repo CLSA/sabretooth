@@ -69,7 +69,11 @@ class base_add_access extends base_add_list
    */
   public function determine_role_count( $modifier = NULL )
   {
-    // we want to display all roles
+    if( 'administrator' != \sabretooth\business\session::self()->get_role()->name )
+    { // make sure that only admins can grant admin access
+      if( is_null( $modifier ) ) $modifier = new \sabretooth\database\modifier();
+      $modifier->where( 'name', '!=', 'administrator' );
+    }
     return \sabretooth\database\role::count( $modifier );
   }
 
@@ -83,7 +87,11 @@ class base_add_access extends base_add_list
    */
   public function determine_role_list( $modifier = NULL )
   {
-    // we want to display all roles
+    if( 'administrator' != \sabretooth\business\session::self()->get_role()->name )
+    { // make sure that only admins can grant admin access
+      if( is_null( $modifier ) ) $modifier = new \sabretooth\database\modifier();
+      $modifier->where( 'name', '!=', 'administrator' );
+    }
     return \sabretooth\database\role::select( $modifier );
   }
 

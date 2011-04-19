@@ -32,7 +32,8 @@ class user_list extends site_restricted_list
 
     $this->add_column( 'name', 'string', 'Username', true );
     $this->add_column( 'active', 'boolean', 'Active', true );
-    $this->add_column( 'role', 'string', 'Role', false );
+    $this->add_column( 'site.name', 'string', 'Site', false );
+    $this->add_column( 'role.name', 'string', 'Role', false );
     $this->add_column( 'last_activity', 'fuzzy', 'Last activity', false );
   }
 
@@ -51,13 +52,16 @@ class user_list extends site_restricted_list
       // determine the role
       $modifier = new \sabretooth\database\modifier();
       if( !is_null( $this->db_restrict_site ) )
-      {
         $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
-      }
 
+      $site = 'none';
+      $db_sites = $record->get_site_list();
+      if( 1 == count( $db_sites ) ) $site = $db_sites[0]->name; // only one site?
+      else if( 1 < count( $db_sites ) ) $site = 'multiple'; // multiple sites?
+      
       $role = 'none';
       $db_roles = $record->get_role_list( $modifier );
-      if( 1 == count( $db_roles ) ) $role = $db_roles[0]->name; // only one roll?
+      if( 1 == count( $db_roles ) ) $role = $db_roles[0]->name; // only one role?
       else if( 1 < count( $db_roles ) ) $role = 'multiple'; // multiple roles?
       
       // determine the last activity
@@ -68,7 +72,8 @@ class user_list extends site_restricted_list
       $this->add_row( $record->id,
         array( 'name' => $record->name,
                'active' => $record->active,
-               'role' => $role,
+               'site.name' => $site,
+               'role.name' => $role,
                'last_activity' => $last ) );
     }
 

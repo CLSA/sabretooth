@@ -54,5 +54,42 @@ class access extends record
 
     return !is_null( $id );
   }
+  
+  /**
+   * Override parent save method by making sure that only admins can create admins
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\permission
+   * @access public
+   */
+  public function save()
+  {
+    if( 'administrator' != \sabretooth\business\session::self()->get_role()->name &&
+        // we can't use $this->get_role() here since the record may not exist yet
+        role::get_unique_record( 'name', 'administrator' )->id == $this->role_id )
+      throw new \sabretooth\exception\permission(
+        // fake the operation
+        \sabretooth\database\operation::get_operation( 'action', 'user', 'new_access' ), __METHOD__ );
+
+    parent::save();
+  }
+  
+  /**
+   * Override parent delete method by making sure that only admins can remove admins
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\permission
+   * @access public
+   */
+  public function delete()
+  {
+    if( 'administrator' != \sabretooth\business\session::self()->get_role()->name &&
+        'administrator' == $this->get_role()->name )
+      throw new \sabretooth\exception\permission(
+        // fake the operation
+        operation::get_operation( 'action', 'access', 'delete' ), __METHOD__ );
+
+    parent::delete();
+  }
 }
 ?>

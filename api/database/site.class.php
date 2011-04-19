@@ -73,14 +73,8 @@ class site extends base_access
       return;
     }
 
-    $modifier = new modifier();
-    $modifier->where( 'id', '=', $access_id );
-    // this just to make sure the access belongs to this site
-    $modifier->where( 'site_id', '=', $this->id );
-
-    static::db()->execute(
-      sprintf( 'DELETE FROM access %s',
-               $modifier->get_sql() ) );
+    $db_access = new access( $access_id );
+    $db_access->delete();
   }
 }
 ?>

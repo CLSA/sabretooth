@@ -81,14 +81,14 @@ class user extends base_access
    */
   public function remove_access( $access_id )
   {
-    $modifier = new modifier();
-    $modifier->where( 'id', '=', $access_id );
-    // this just to make sure the access belongs to this user
-    $modifier->where( 'user_id', '=', $this->id );
+    if( is_null( $this->id ) )
+    {
+      \sabretooth\log::warning( 'Tried to remove access from user with no id.' );
+      return;
+    }
 
-    static::db()->execute(
-      sprintf( 'DELETE FROM access %s',
-               $modifier->get_sql() ) );
+    $db_access = new access( $access_id );
+    $db_access->delete();
   }
 }
 ?>

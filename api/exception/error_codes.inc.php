@@ -90,6 +90,7 @@ define( 'NOTICE_CONTACT_EDIT__EXECUTE_ERROR_NUMBER',            NOTICE_BASE_ERRO
  * "permission" error codes
  */
 define( 'PERMISSION_OPERATION____CONSTRUCT_ERROR_NUMBER', PERMISSION_BASE_ERROR_NUMBER + 1 );
+define( 'PERMISSION_ACCESS__SAVE_ERROR_NUMBER',           PERMISSION_BASE_ERROR_NUMBER + 2 );
 
 /**
  * "runtime" error codes
