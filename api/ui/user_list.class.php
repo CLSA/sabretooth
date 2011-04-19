@@ -100,7 +100,7 @@ class user_list extends site_restricted_list
   }
   
   /**
-   * Overrides the parent class method since the record list depends on the active role.
+   * Overrides the parent class method since the record count depends on the site restriction
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.

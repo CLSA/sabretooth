@@ -61,7 +61,9 @@ class self_menu extends widget
     foreach( $widgets as $db_widget )
     {
       // don't include the appointment list in the operator's menu
-      if( $is_operator && 'appointment' == $db_widget->subject ) continue;
+      if( $is_operator &&
+          ( 'appointment' == $db_widget->subject ||
+            'assignment' == $db_widget->subject ) ) continue;
 
       if( !in_array( $db_widget->subject, $exclude ) )
         $items[] = array( 'heading' => \sabretooth\util::pluralize( $db_widget->subject ),

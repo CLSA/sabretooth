@@ -24,6 +24,19 @@
           } );
         } );
       
+        // view call history button
+        $( "#{{ widget.full }}__view_history" ).click( function() {
+          var args = new Object();
+          args.id = {{ participant_id }};
+          slot_load( "{{ widget.full }}", "assignment_list", "assignment_view", args );
+          $( "#{{ widget.full }}_slot" ).dialog( {
+            title: "Viewing call history for {{ participant_name }}",
+            modal: true,
+            width: 800,
+            height: 600
+          } );
+        } );
+      
         // end assignment button
         $( "#{{ widget.full }}__end_assignment" ).click( function() {
           if( send_action( "assignment", "end" ) ) slot_refresh( {{ slot }} );
@@ -115,15 +128,11 @@
         </tr>
       </table>
       
-      <table class="spacer">
+      <table class="spacer" cellpadding="4">
         <tr>
           <td align="left">
             <button style="width: 180px;"
-                    id="{{ widget.full }}__view_participant">View Details</button>
-            <button style="width: 180px;"
-                    id="{{ widget.full }}__end_assignment"
-                    {{ on_call or 0 == current_calls ? "disabled" : "" }}>End Assignment</button>
-            {{ note_widget( false, "Assignment Notes", "assignment", assignment_id ) }}
+                    id="{{ widget.full }}__view_participant">View Details</button><br>
           </td>
           <td align="right">
             {% if contact_list %}
@@ -144,7 +153,25 @@
               (no numbers to dial)
               <button style="width:125px" id="{{ widget.full }}__call" disabled />
             {% endif %}
+            <br>
           </td>
+        </tr>
+        <tr>
+          <td align="left">
+            <button style="width: 180px;"
+                    id="{{ widget.full }}__view_history">View Call History</button><br>
+          </td>
+          <td align="right">
+            <button style="width: 180px;"
+                    id="{{ widget.full }}__end_assignment"
+                    {{ on_call or 0 == current_calls ? "disabled" : "" }}>End Assignment</button>
+          </td>
+        </tr>
+        <tr>
+          <td align="left">
+            {{ note_widget( false, "Assignment Notes", "assignment", assignment_id ) }}
+          </td>
+          <td align="right"></td>
         </tr>
       </table>
     {% else %}
