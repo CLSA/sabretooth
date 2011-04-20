@@ -7,11 +7,38 @@
  #}
 {% extends "base_view.twig" %}
 
+{% block javascript %}
+
+  <script type="text/javascript">
+    $( function() {
+      $( "#{{ widget.full }}_calendar" ).click( function() {
+        slot_load( "{{ widget.full }}", "shift_list", "shift_list", { user_id: {{ id }} } );
+        $( "#{{ widget.full }}_slot" ).dialog( "open" );
+      } );
+
+      $( "#{{ widget.full }}_slot" ).dialog( { 
+        autoOpen: false,
+        title: "Shift calendar",
+        modal: true,
+        width: 800,
+        height: 600
+      } );
+    } );
+  </script>
+
+{% endblock javascript %}
+
+
 {% block record %}
 
   {{ parent() }}
   {% from 'macros.twig' import include_list %}
-  {{ include_list( 'shift', shift_list|default(false), true ) }}
+  {% if view_shifts %}
+    <div class="spacer">
+      <button id="{{ widget.full }}_calendar">Open Shift Calendar</button>
+    </div>
+    <div id="{{ widget.full }}_slot" />
+  {% endif %}
   {{ include_list( 'access', access_list|default(false), true ) }}
   {{ include_list( 'activity', activity_list|default(false), true ) }}
 

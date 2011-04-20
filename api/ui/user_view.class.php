@@ -37,18 +37,6 @@ class user_view extends base_view
     
     try
     {
-      // create the shift sub-list widget
-      $this->shift_list = new shift_list( $args );
-      $this->shift_list->set_parent( $this );
-      $this->shift_list->set_heading( 'User\'s shift list' );
-    }
-    catch( \sabretooth\exception\permission $e )
-    {
-      $this->shift_list = NULL;
-    }
-
-    try
-    {
       // create the access sub-list widget
       $this->access_list = new access_list( $args );
       $this->access_list->set_parent( $this );
@@ -95,22 +83,8 @@ class user_view extends base_view
 
     $this->finish_setting_items();
     
-    if( !is_null( $this->shift_list ) )
-    {
-      // determine if the user has the operator role at any sites
-      $db_role = \sabretooth\database\role::get_unique_record( 'name', 'operator' );
-      $modifier = new \sabretooth\database\modifier();
-      $modifier->where( 'user_id', '=', $this->get_record()->id );
-      $modifier->where( 'role_id', '=', $db_role->id );
-      $is_operator = 0 < count( \sabretooth\database\access::select( $modifier ) );
-  
-      // finish the child widgets
-      if( $is_operator )
-      { // only add the shift list if the user has an operator role
-        $this->shift_list->finish();
-        $this->set_variable( 'shift_list', $this->shift_list->get_variables() );
-      }
-    }
+    $this->set_variable( 'view_shifts',
+      'supervisor' == \sabretooth\business\session::self()->get_role()->name );
 
     if( !is_null( $this->access_list ) )
     {
@@ -195,13 +169,6 @@ class user_view extends base_view
 
     return $this->get_record()->get_activity_list( $modifier );
   }
-
-  /**
-   * The shift list widget.
-   * @var shift_list
-   * @shift protected
-   */
-  protected $shift_list = NULL;
 
   /**
    * The access list widget.

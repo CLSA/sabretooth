@@ -77,9 +77,13 @@ $SETTINGS[ 'url' ][ 'JQUERY_TOOLTIP_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/tooltip.js';
 $SETTINGS[ 'url' ][ 'JQUERY_JSTREE_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/jsTree.js';
+$SETTINGS[ 'url' ][ 'JQUERY_FULLCALENDAR_JS' ] =
+  $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/fullcalendar.js';
 
 // css files
 $SETTINGS[ 'url' ][ 'JQUERY_UI_THEMES' ] = $SETTINGS[ 'url' ][ 'JQUERY_UI' ].'/css';
+$SETTINGS[ 'url' ][ 'JQUERY_FULLCALENDAR_CSS' ] =
+  $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/fullcalendar.css';
 
 // the location of log files
 $SETTINGS[ 'path' ][ 'LOG_FILE' ] = '/var/local/sabretooth/log';

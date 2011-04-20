@@ -28,17 +28,16 @@ class shift_list extends site_restricted_list
   {
     parent::__construct( 'shift', $args );
     
-    $session = \sabretooth\business\session::self();
-    $is_supervisor = 'supervisor' == $session->get_role()->name;
-    $is_operator = 'operator' == $session->get_role()->name;
-    
-    if( $is_operator || $is_supervisor ) $this->set_heading( 'Shift Schedule' );
+    $this->user_id = $this->get_argument( 'user_id', NULL );
+    $this->add_column( 'user.name', 'string', 'User', true );
+    $this->add_column( 'start_time', 'number', 'Start', true );
+    $this->add_column( 'end_time', 'number', 'End', true );
 
-    if( !$is_operator ) $this->add_column( 'user.name', 'string', 'User', true );
-    if( !$is_supervisor ) $this->add_column( 'site.name', 'string', 'Site', true );
-    $this->add_column( 'date', 'date', 'Date', true );
-    $this->add_column( 'start_time', 'time', 'Start', true );
-    $this->add_column( 'end_time', 'time', 'End', true );
+    if( !is_null( $this->user_id ) )
+    {
+      $db_user = new \sabretooth\database\user( $this->user_id );
+      $this->set_heading( 'Shift list for '.$db_user->name );
+    }
   }
   
   /**
@@ -53,12 +52,12 @@ class shift_list extends site_restricted_list
 
     foreach( $this->get_record_list() as $record )
     {
+      $start_time = strtotime( $record->date.' '.$record->start_time ) * 1000;
+      $end_time = strtotime( $record->date.' '.$record->end_time ) * 1000;
       $this->add_row( $record->id,
-        array( 'site.name' => $record->get_site()->name,
-               'user.name' => $record->get_user()->name,
-               'date' => $record->date,
-               'start_time' => $record->start_time,
-               'end_time' => $record->end_time ) );
+        array( 'user.name' => $record->get_user()->name,
+               'start_time' => $start_time,
+               'end_time' => $end_time ) );
     }
 
     $this->finish_setting_rows();
@@ -74,21 +73,13 @@ class shift_list extends site_restricted_list
    */
   protected function determine_record_count( $modifier = NULL )
   {
-    // only show users for current site if user is a supervisor
     $session = \sabretooth\business\session::self();
-    $is_supervisor = 'supervisor' == $session->get_role()->name;
-    $is_operator = 'operator' == $session->get_role()->name;
 
-    if( $is_operator )
-    {    
-      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    if( 'operator' == $session->get_role()->name )
       $modifier->where( 'user_id', '=', $session->get_user()->id );
-    }
-    else if( $is_supervisor )
-    {
-      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
-      $modifier->where( 'site_id', '=', $session->get_site()->id );
-    }
+    else if( !is_null( $this->user_id ) )
+      $modifier->where( 'user_id', '=', $this->user_id );
 
     return parent::determine_record_count( $modifier );
   }
@@ -103,23 +94,22 @@ class shift_list extends site_restricted_list
    */
   protected function determine_record_list( $modifier = NULL )
   {
-    // only show users for current site if user is a supervisor
     $session = \sabretooth\business\session::self();
-    $is_supervisor = 'supervisor' == $session->get_role()->name;
-    $is_operator = 'operator' == $session->get_role()->name;
 
-    if( $is_operator )
-    {    
-      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    if( 'operator' == $session->get_role()->name )
       $modifier->where( 'user_id', '=', $session->get_user()->id );
-    }
-    else if( $is_supervisor )
-    {
-      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
-      $modifier->where( 'site_id', '=', $session->get_site()->id );
-    }
+    else if( !is_null( $this->user_id ) )
+      $modifier->where( 'user_id', '=', $this->user_id );
 
     return parent::determine_record_list( $modifier );
   }
+
+  /**
+   * The user to restrict the list to.
+   * @var int
+   * @access protected
+   */
+  protected $user_id = NULL;
 }
 ?>
