@@ -63,22 +63,21 @@
  # @param int id The primary id of the subject to get notes for.
  # @param int note_count The current number of notes.
  #}
-{% macro note_widget( icon, text, subject, id, note_count ) %}
+{% macro note_widget( namespace, subject, id, icon, text ) %}
   
   <script type="text/javascript">
   $( function() {
     {% if icon %}
       // identify a note by changing classes on mouse over/out
-      $( "#{{ subject }}_{{ id }}_note" ).mouseover( function() {
+      $( "#{{ namespace }}_{{ subject }}_{{ id }}_note" ).mouseover( function() {
         $(this).removeClass( "padded" );
         $(this).addClass( "ui-widget-content" );
-      } );
-      $( "#{{ subject }}_{{ id }}_note" ).mouseout( function() {
+      } ).mouseout( function() {
         $(this).removeClass( "ui-widget-content" );
         $(this).addClass( "padded" );
       } );
     {% else %}
-      $( "#{{ subject }}_{{ id }}_note" ).button( {
+      $( "#{{ namespace }}_{{ subject }}_{{ id }}_note" ).button( {
         {% if text %}
           text: true,
           label: "{{ text }}",
@@ -90,7 +89,7 @@
     {% endif %}
 
     // note click callback
-    $( "#{{ subject }}_{{ id }}_note" ).click( function() {
+    $( "#{{ namespace }}_{{ subject }}_{{ id }}_note" ).click( function() {
       var args = new Object();
       args.category = "{{ subject }}";
       args.category_id = {{ id }};
@@ -106,15 +105,15 @@
   </script>
   
   {% if icon %}
-    <div id="{{ subject }}_{{ id }}_note" class="note_icon padded">
+    <div id="{{ namespace }}_{{ subject }}_{{ id }}_note" class="note_icon padded">
       <div class="note_icon ui-icon ui-icon-comment" />
-      {% if note_count|default(0) %}
+      {% if text|default(0) %}
         <div style="font-size:0.6em; position:relative; bottom:2px; right:2px"
-             class="note_icon">{{ note_count }}</div>
+             class="note_icon">{{ text }}</div>
       {% endif %}
     </div>
   {% else %}
-    <button id="{{ subject }}_{{ id }}_note">&nbsp;</button>
+    <button id="{{ namespace }}_{{ subject }}_{{ id }}_note">&nbsp;</button>
   {% endif %}
 
 {% endmacro %}

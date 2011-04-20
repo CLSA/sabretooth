@@ -274,7 +274,7 @@ $( function() {
     onExtContentLoad: function() {},
     onExtClose: function() {}
   } );
-
+  
   // refresh all slots
   slot_refresh( "status" );
   slot_refresh( "shortcuts" );

@@ -14,5 +14,9 @@
 {% endblock header_button_columns %}
 
 {% block button_columns %}
-  <td>{{ note_widget( false, row.columns['assignment.note_count'], "assignment", row.id ) }}</td>
+  <td>{{ note_widget( widget.full,
+                      "assignment",
+                      row.id,
+                      false,
+                      row.columns['assignment.note_count'] ) }}</td>
 {% endblock button_columns %}
