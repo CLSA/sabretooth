@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget user add_access
@@ -29,7 +33,7 @@ class user_add_access extends base_add_access
   {
     parent::__construct( 'user', $args );
     
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
     if( 'administrator' == $session->get_role()->name )
     {
       // This widget is special.  We need a list of sites and roles, not an access list, so we
@@ -61,7 +65,7 @@ class user_add_access extends base_add_access
   public function determine_site_count( $modifier = NULL )
   {
     // we want to display all sites
-    return \sabretooth\database\site::count( $modifier );
+    return db\site::count( $modifier );
   }
 
   /**
@@ -75,7 +79,7 @@ class user_add_access extends base_add_access
   public function determine_site_list( $modifier = NULL )
   {
     // we want to display all sites
-    return \sabretooth\database\site::select( $modifier );
+    return db\site::select( $modifier );
   }
 }
 ?>

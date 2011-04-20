@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget sample view
@@ -49,7 +53,7 @@ class sample_view extends base_view
         $this->participant_list->set_addable( false );
       }
     }
-    catch( \sabretooth\exception\permission $e )
+    catch( exc\permission $e )
     {
       $this->participant_list = NULL;
     }
@@ -67,7 +71,7 @@ class sample_view extends base_view
     
     // create enum array
     $qnaires = array();
-    foreach( \sabretooth\database\qnaire::select() as $db_qnaire )
+    foreach( db\qnaire::select() as $db_qnaire )
       $qnaires[$db_qnaire->id] = $db_qnaire->name;
 
     // set the view's items

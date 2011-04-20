@@ -8,6 +8,9 @@
  */
 
 namespace sabretooth\database;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\exception as exc;
 
 /**
  * appointment: record
@@ -106,7 +109,7 @@ class appointment extends record
   {
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to determine state for appointment with no id.' );
+      log::warning( 'Tried to determine state for appointment with no id.' );
       return NULL;
     } 
     
@@ -116,10 +119,8 @@ class appointment extends record
     $status = 'unknown';
     
     // settings are in minutes, time() is in seconds, so multiply by 60
-    $pre_window_time = 60 *
-      \sabretooth\database\setting::get_setting( 'appointment', 'call pre-window' )->value;
-    $post_window_time = 60 *
-      \sabretooth\database\setting::get_setting( 'appointment', 'call post-window' )->value;
+    $pre_window_time = 60 * setting::get_setting( 'appointment', 'call pre-window' )->value;
+    $post_window_time = 60 * setting::get_setting( 'appointment', 'call post-window' )->value;
     $now = time();
     $appointment = strtotime( $this->date );
 
@@ -143,7 +144,7 @@ class appointment extends record
         $db_assignment = $this->get_assignment();
         if( !is_null( $db_assignment->end_time ) )
         { // assignment closed but appointment never completed
-          \sabretooth\log::crit(
+          log::crit(
             sprintf( 'Appointment %d has assignment which is closed but no status was set.',
                      $this->id ) );
           $status = 'incomplete';

@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * action assignment end
@@ -35,13 +39,13 @@ class assignment_end extends action
    */
   public function execute()
   {
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
     $db_assignment = $session->get_current_assignment();
     if( !is_null( $db_assignment ) )
     {
       // make sure the operator isn't on call
       if( !is_null( $session->get_current_phone_call() ) )
-        throw new \sabretooth\exception\notice(
+        throw new exc\notice(
           'An assignment cannot be ended while in a call.', __METHOD__ );
       
       // if there is an appointment associated with this assignment, set the status
@@ -50,14 +54,14 @@ class assignment_end extends action
       {
         // there should always only be one appointment per assignment
         if( 1 < count( $appointment_list ) )
-          \sabretooth\log::crit(
+          log::crit(
             sprintf( 'Assignment %d has more than one associated appointment!',
                      $db_assignment->id ) );
 
         $db_appointment = current( $appointment_list );
 
         // set the appointment status based on whether any calls reached the participant
-        $modifier = new \sabretooth\database\modifier();
+        $modifier = new db\modifier();
         $modifier->where( 'status', '=', 'contacted' );
         $db_appointment->status = 
           0 < $db_assignment->get_phone_call_count( $modifier ) ? 'complete' : 'incomplete';

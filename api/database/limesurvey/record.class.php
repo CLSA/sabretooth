@@ -8,13 +8,18 @@
  */
 
 namespace sabretooth\database\limesurvey;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
+
 
 /**
  * This is the abstract database table object for all limesurvey tables.
  * 
  * @package sabretooth\database
  */
-abstract class record extends \sabretooth\database\record
+abstract class record extends db\record
 {
   /**
    * Magic call method.
@@ -26,7 +31,7 @@ abstract class record extends \sabretooth\database\record
    */
   public function __call( $name, $args )
   {
-    throw new \sabretooth\exception\runtime(
+    throw new exc\runtime(
       sprintf( 'Call to undefined function: %s::%s().',
                get_called_class(),
                $name ), __METHOD__ );
@@ -72,7 +77,7 @@ abstract class record extends \sabretooth\database\record
    */
   public static function db()
   {
-    return \sabretooth\business\session::self()->get_survey_database();
+    return bus\session::self()->get_survey_database();
   }
 }
 ?>

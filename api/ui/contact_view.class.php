@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget contact view
@@ -57,10 +61,10 @@ class contact_view extends base_view
     $ranks = array();
     for( $rank = 1; $rank <= $num_contacts; $rank++ ) $ranks[] = $rank;
     $ranks = array_combine( $ranks, $ranks );
-    $types = \sabretooth\database\contact::get_enum_values( 'type' );
+    $types = db\contact::get_enum_values( 'type' );
     $types = array_combine( $types, $types );
     $provinces = array();
-    foreach( \sabretooth\database\province::select() as $db_province )
+    foreach( db\province::select() as $db_province )
       $provinces[$db_province->id] = $db_province->name;
 
     // set the view's items

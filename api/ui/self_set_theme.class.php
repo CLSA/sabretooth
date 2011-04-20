@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * action self set_theme
@@ -37,7 +41,7 @@ class self_set_theme extends action
    */
   public function execute()
   {
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
     $session->get_user()->theme = $this->theme_name;
     $session->get_user()->save();
   }

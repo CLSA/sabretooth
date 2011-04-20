@@ -8,6 +8,8 @@
  */
 
 namespace sabretooth\exception;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
 
 /**
  * base_exception: base exception class
@@ -27,7 +29,7 @@ class base_exception extends \Exception
    */
   public function __construct( $message, $context, $previous = NULL )
   {
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
     $this->raw_message = $message;
 
     $who = 'unknown';
@@ -100,7 +102,7 @@ class base_exception extends \Exception
    * @access public
    */
   public function get_code()
-  { return \sabretooth\util::convert_number_to_code( $this->get_number() ); }
+  { return util::convert_number_to_code( $this->get_number() ); }
 
   /**
    * Get the exception message.

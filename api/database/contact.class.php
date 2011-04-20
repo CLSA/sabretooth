@@ -8,6 +8,9 @@
  */
 
 namespace sabretooth\database;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\exception as exc;
 
 /**
  * contact: record
@@ -30,7 +33,7 @@ class contact extends record
     // warn if we are in read-only mode
     if( $this->read_only )
     {
-      \sabretooth\log::warning( 'Tried to save read-only record.' );
+      log::warning( 'Tried to save read-only record.' );
       return;
     }
     
@@ -115,7 +118,7 @@ class contact extends record
     // warn if we are in read-only mode
     if( $this->read_only )
     {
-      \sabretooth\log::warning( 'Tried to delete read-only record.' );
+      log::warning( 'Tried to delete read-only record.' );
       return;
     }
     

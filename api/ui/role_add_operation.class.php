@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget role add_operation
@@ -40,7 +44,7 @@ class role_add_operation extends base_add_list
    */
   public function determine_operation_count( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    if( NULL == $modifier ) $modifier = new db\modifier();
     $modifier->where( 'restricted', '=', true );
     return $this->get_record()->get_operation_count_inverted( $modifier );
   }
@@ -55,7 +59,7 @@ class role_add_operation extends base_add_list
    */
   public function determine_operation_list( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    if( NULL == $modifier ) $modifier = new db\modifier();
     $modifier->where( 'restricted', '=', true );
     return $this->get_record()->get_operation_list_inverted( $modifier );
   }

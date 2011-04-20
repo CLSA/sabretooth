@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget survey list
@@ -66,9 +70,9 @@ class survey_list extends base_list_widget
    */
   protected function determine_record_count( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    if( NULL == $modifier ) $modifier = new db\modifier();
     $modifier->where( 'active', '=', 'Y' );
-    return \sabretooth\database\limesurvey\surveys::count( $modifier );
+    return db\limesurvey\surveys::count( $modifier );
   }
 
   /**
@@ -80,9 +84,9 @@ class survey_list extends base_list_widget
    */
   protected function determine_record_list( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    if( NULL == $modifier ) $modifier = new db\modifier();
     $modifier->where( 'active', '=', 'Y' );
-    return \sabretooth\database\limesurvey\surveys::select( $modifier );
+    return db\limesurvey\surveys::select( $modifier );
   }
 }
 ?>

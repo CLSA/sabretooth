@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget phase view
@@ -45,7 +49,7 @@ class phase_view extends base_view
     parent::finish();
 
     // create enum arrays
-    foreach( \sabretooth\database\limesurvey\surveys::select() as $db_survey )
+    foreach( db\limesurvey\surveys::select() as $db_survey )
       $surveys[$db_survey->sid] = $db_survey->get_title();
     $num_phases = $this->get_record()->get_qnaire()->get_phase_count();
     $stages = array();

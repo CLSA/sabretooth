@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * action voip dtmf
@@ -36,7 +40,7 @@ class voip_dtmf extends action
    */
   public function execute()
   {
-    \sabretooth\business\voip_manager::self()->dtmf( $this->get_argument( 'tone' ) );
+    bus\voip_manager::self()->dtmf( $this->get_argument( 'tone' ) );
   }
 }
 ?>

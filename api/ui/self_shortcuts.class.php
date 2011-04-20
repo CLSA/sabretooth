@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget self shortcuts
@@ -39,11 +43,11 @@ class self_shortcuts extends widget
   {
     parent::finish();
     
-    $db_user = \sabretooth\business\session::self()->get_user();
-    $db_role = \sabretooth\business\session::self()->get_role();
+    $db_user = bus\session::self()->get_user();
+    $db_role = bus\session::self()->get_role();
 
     $this->set_variable( 'dialpad',
-      0 < count( \sabretooth\business\voip_manager::self()->get_calls( $db_user->name ) ) );
+      0 < count( bus\voip_manager::self()->get_calls( $db_user->name ) ) );
     $this->set_variable( 'calculator', true );
     $this->set_variable( 'navigation', 'operator' != $db_role->name );
     $this->set_variable( 'refresh', true );

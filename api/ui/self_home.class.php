@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget self home
@@ -29,7 +33,7 @@ class self_home extends widget
     parent::__construct( 'self', 'home', $args );
     $this->set_heading( 'Home' );
     
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
 
     // determine the user's last activity
     $db_activity = $session->get_user()->get_last_activity();
@@ -39,9 +43,9 @@ class self_home extends widget
     $this->set_variable( 'site_name', $session->get_site()->name );
     if( $db_activity )
     {
-      $date = \sabretooth\util::get_formatted_date( $db_activity->date );
+      $date = util::get_formatted_date( $db_activity->date );
       $this->set_variable( 'last_day', $date );
-      $time = \sabretooth\util::get_formatted_time( $db_activity->date );
+      $time = util::get_formatted_time( $db_activity->date );
       $this->set_variable( 'last_time', $time );
     }
   }

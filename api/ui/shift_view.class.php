@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget shift view
@@ -31,7 +35,7 @@ class shift_view extends base_view
     // create an associative array with everything we want to display about the shift
     $this->add_item( 'user', 'constant', 'User' );
     // hide the site if the current user is a supervisor
-    $type = 'supervisor' == \sabretooth\business\session::self()->get_role()->name
+    $type = 'supervisor' == bus\session::self()->get_role()->name
           ? 'hidden'
           : 'constant';
     $this->add_item( 'site', $type, 'Site' );

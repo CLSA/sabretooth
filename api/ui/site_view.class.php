@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget site view
@@ -42,7 +46,7 @@ class site_view extends base_view
       $this->shift_list->set_parent( $this );
       $this->shift_list->set_heading( 'Site shifts' );
     }
-    catch( \sabretooth\exception\permission $e )
+    catch( exc\permission $e )
     {
       $this->shift_list = NULL;
     }
@@ -54,7 +58,7 @@ class site_view extends base_view
       $this->access_list->set_parent( $this );
       $this->access_list->set_heading( 'Site access list' );
     }
-    catch( \sabretooth\exception\permission $e )
+    catch( exc\permission $e )
     {
       $this->access_list = NULL;
     }
@@ -66,7 +70,7 @@ class site_view extends base_view
       $this->activity_list->set_parent( $this );
       $this->activity_list->set_heading( 'Site activity' );
     }
-    catch( \sabretooth\exception\permission $e )
+    catch( exc\permission $e )
     {
       $this->activity_list = NULL;
     }
@@ -83,7 +87,7 @@ class site_view extends base_view
     parent::finish();
     
     // create enum arrays
-    $timezones = \sabretooth\database\site::get_enum_values( 'timezone' );
+    $timezones = db\site::get_enum_values( 'timezone' );
     $timezones = array_combine( $timezones, $timezones );
 
     // set the view's items
@@ -93,7 +97,7 @@ class site_view extends base_view
     $this->set_item( 'users', $this->get_record()->get_user_count() );
 
     $db_activity = $this->get_record()->get_last_activity();
-    $last = \sabretooth\util::get_fuzzy_period_ago(
+    $last = util::get_fuzzy_period_ago(
               is_null( $db_activity ) ? null : $db_activity->date );
     $this->set_item( 'last_activity', $last );
 
@@ -129,9 +133,9 @@ class site_view extends base_view
    */
   public function determine_access_count( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    if( NULL == $modifier ) $modifier = new db\modifier();
     $modifier->where( 'site_id', '=', $this->get_record()->id );
-    return \sabretooth\database\access::count( $modifier );
+    return db\access::count( $modifier );
   }
 
   /**
@@ -144,9 +148,9 @@ class site_view extends base_view
    */
   public function determine_access_list( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    if( NULL == $modifier ) $modifier = new db\modifier();
     $modifier->where( 'site_id', '=', $this->get_record()->id );
-    return \sabretooth\database\access::select( $modifier );
+    return db\access::select( $modifier );
   }
 
   /**

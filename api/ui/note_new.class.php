@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * action note new
@@ -43,11 +47,11 @@ class note_new extends action
     $category_class = '\\sabretooth\\database\\'.$category;
     $db_record = new $category_class( $category_id );
     if( !is_a( $db_record, '\\sabretooth\\database\\has_note' ) )
-      throw new \sabretooth\exception\runtime(
+      throw new exc\runtime(
         sprintf( 'Tried to create new note to %s which cannot have notes.', $category ),
         __METHOD__ );
 
-    $db_record->add_note( \sabretooth\business\session::self()->get_user(), $note );
+    $db_record->add_note( bus\session::self()->get_user(), $note );
   }
 }
 ?>

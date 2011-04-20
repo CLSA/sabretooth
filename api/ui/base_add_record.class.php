@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * Base class for all "add record" to record widgets
@@ -42,7 +46,7 @@ abstract class base_add_record extends base_record_widget
 
     $this->add_widget->set_heading(
       sprintf( 'Choose %s to add to the %s',
-               \sabretooth\util::pluralize( $child ),
+               util::pluralize( $child ),
                $subject ) );
   }
   
@@ -59,7 +63,7 @@ abstract class base_add_record extends base_record_widget
     // define all template variables for this widget
     $this->set_variable( 'record_subject', $this->add_widget->get_subject() );
     $this->set_variable( 'record_subjects',
-                         \sabretooth\util::pluralize( $this->add_widget->get_subject() ) );
+                         util::pluralize( $this->add_widget->get_subject() ) );
     $this->set_variable( 'add_widget_name', $this->add_widget->get_class_name() );
 
     $this->add_widget->finish();

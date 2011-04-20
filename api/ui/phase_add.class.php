@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget phase add
@@ -47,11 +51,11 @@ class phase_add extends base_view
     
     // this widget must have a parent, and it's subject must be a qnaire
     if( is_null( $this->parent ) || 'qnaire' != $this->parent->get_subject() )
-      throw new \sabretooth\exception\runtime(
+      throw new exc\runtime(
         'Phase widget must have a parent with qnaire as the subject.', __METHOD__ );
     
     // create enum arrays
-    foreach( \sabretooth\database\limesurvey\surveys::select() as $db_survey )
+    foreach( db\limesurvey\surveys::select() as $db_survey )
       $surveys[$db_survey->sid] = $db_survey->get_title();
     $num_phases = $this->parent->get_record()->get_phase_count();
     $stages = array();

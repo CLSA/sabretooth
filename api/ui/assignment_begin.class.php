@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * action assignment begin
@@ -35,18 +39,18 @@ class assignment_begin extends action
    */
   public function execute()
   {
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
 
     // search through every queue for a new assignment until one is found
-    $modifier = new \sabretooth\database\modifier();
+    $modifier = new db\modifier();
     $modifier->where( 'rank', '!=', NULL );
     $modifier->order( 'rank' );
     $db_origin_queue = NULL;
     $db_participant = NULL;
     $db_appointment_id = NULL;
-    foreach( \sabretooth\database\queue::select( $modifier ) as $db_queue )
+    foreach( db\queue::select( $modifier ) as $db_queue )
     {
-      $mod = new \sabretooth\database\modifier();
+      $mod = new db\modifier();
       $mod->limit( 1 );
       $db_queue->set_site( $session->get_site() );
       $participant_list = $db_queue->get_participant_list( $mod );
@@ -60,23 +64,23 @@ class assignment_begin extends action
     }
 
     if( is_null( $db_participant ) )
-      throw new \sabretooth\exception\notice(
+      throw new exc\notice(
         'There are no participants currently available.', __METHOD__ );
     
     $db_sample = $db_participant->get_active_sample();
     
     if( is_null( $db_sample ) )
-      throw new \sabretooth\exception\runtime(
+      throw new exc\runtime(
         'Participant in queue has no active sample.', __METHOD__ );
 
     // create an interview for the participant
-    $db_interview = new \sabretooth\database\interview();
+    $db_interview = new db\interview();
     $db_interview->participant_id = $db_participant->id;
     $db_interview->qnaire_id = $db_sample->qnaire_id;
     $db_interview->save();
 
     // create an assignment for this user
-    $db_assignment = new \sabretooth\database\assignment();
+    $db_assignment = new db\assignment();
     $db_assignment->user_id = $session->get_user()->id;
     $db_assignment->site_id = $session->get_site()->id;
     $db_assignment->interview_id = $db_interview->id;
@@ -86,7 +90,7 @@ class assignment_begin extends action
     if( $db_origin_queue->from_appointment() )
     { // if this is an appointment queue, mark the appointment now associated with the appointment
       // this should always be the appointment with the earliest date
-      $mod = new \sabretooth\database\modifier();
+      $mod = new db\modifier();
       $mod->where( 'assignment_id', '=', NULL );
       $mod->order( 'date' );
       $mod->limit( 1 );
@@ -94,7 +98,7 @@ class assignment_begin extends action
 
       if( 0 == count( $appointment_list ) )
       {
-        \sabretooth\log::crit(
+        log::crit(
           'Participant queue is from an appointment but no appointment is found.', __METHOD__ );
       }
       else

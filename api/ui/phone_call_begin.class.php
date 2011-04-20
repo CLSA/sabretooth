@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * action phone_call begin
@@ -35,10 +39,10 @@ class phone_call_begin extends action
    */
   public function execute()
   {
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
     $is_operator = 'operator' == $session->get_role()->name;
     
-    $db_contact = new \sabretooth\database\contact( $this->get_argument( 'contact_id' ) );
+    $db_contact = new db\contact( $this->get_argument( 'contact_id' ) );
     $db_assignment = NULL;
 
     if( $is_operator )
@@ -46,20 +50,20 @@ class phone_call_begin extends action
       $db_assignment = $session->get_current_assignment();
   
       if( is_null( $db_assignment ) )
-        throw new \sabretooth\exception\runtime(
+        throw new exc\runtime(
           'Operator tried to make call without an assignment.', __METHOD__ );
 
       if( $db_contact->participant_id != $db_assignment->get_interview()->participant_id )
-        throw new \sabretooth\exception\runtime(
+        throw new exc\runtime(
           'Operator tried to make call to participant who is not currently assigned.', __METHOD__ );
     }
     
     // connect voip to contact
-    \sabretooth\business\voip_manager::self()->call( $db_contact );
+    bus\voip_manager::self()->call( $db_contact );
 
     if( $is_operator )
     { // create a record of the phone call
-      $db_phone_call = new \sabretooth\database\phone_call();
+      $db_phone_call = new db\phone_call();
       $db_phone_call->assignment_id = $db_assignment->id;
       $db_phone_call->contact_id = $db_contact->id;
       $db_phone_call->save();

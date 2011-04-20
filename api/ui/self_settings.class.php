@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget self settings
@@ -38,7 +42,7 @@ class self_settings extends widget
   {
     parent::finish();
 
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
     // create and setup the widget
     $db_user = $session->get_user();
     $db_site = $session->get_site();
@@ -49,7 +53,7 @@ class self_settings extends widget
     foreach( $sites as $site ) $site_names[] = $site->name;
 
     $role_names = array();
-    $modifier = new \sabretooth\database\modifier();
+    $modifier = new db\modifier();
     $modifier->where( 'site_id', '=', $db_site->id );
     $roles = $db_user->get_role_list( $modifier );
     foreach( $roles as $role ) $role_names[] = $role->name;

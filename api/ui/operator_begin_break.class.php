@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * action operator begin_break
@@ -35,8 +39,8 @@ class operator_begin_break extends action
    */
   public function execute()
   {
-    $session = \sabretooth\business\session::self();
-    $db_away_time = new \sabretooth\database\away_time();
+    $session = bus\session::self();
+    $db_away_time = new db\away_time();
     $db_away_time->user_id = $session->get_user()->id;
     $db_away_time->save();
   }

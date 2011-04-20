@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * Base class for all record "delete" actions.
@@ -43,11 +47,11 @@ abstract class base_delete extends base_record_action
     {
       $this->get_record()->delete();
     }
-    catch( \sabretooth\exception\database $e )
+    catch( exc\database $e )
     { // help describe exceptions to the user
       if( $e->is_constrained() )
       {
-        throw new \sabretooth\exception\notice(
+        throw new exc\notice(
           'Unable to delete the '.$this->get_subject().
           ' because it is being referenced by the database.', __METHOD__, $e );
       }

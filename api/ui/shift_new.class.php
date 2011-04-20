@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * action shift new
@@ -38,7 +42,7 @@ class shift_new extends base_new
     // make sure the date column isn't blank
     $columns = $this->get_argument( 'columns' );
     if( !array_key_exists( 'date', $columns ) || 0 == strlen( $columns['date'] ) )
-      throw new \sabretooth\exception\notice( 'The date cannot be left blank.', __METHOD__ );
+      throw new exc\notice( 'The date cannot be left blank.', __METHOD__ );
     
     $exceptions = array();
 
@@ -50,13 +54,13 @@ class shift_new extends base_new
       {
         parent::execute();
       }
-      catch( \sabretooth\exception\base_exception $e )
+      catch( exc\base_exception $e )
       {
         $exceptions[] = $e;
       }
 
       // create a new shift record for the next iteration
-      $this->set_record( new \sabretooth\database\shift() );
+      $this->set_record( new db\shift() );
     }
 
     // throw an exception if any were caught
@@ -65,7 +69,7 @@ class shift_new extends base_new
       // test the exception type to decide what type of exception to throw
       $e = current( $exceptions );
       throw RUNTIME_SHIFT__SAVE_ERROR_NUMBER == $e->get_number() ?
-        new \sabretooth\exception\notice( $e, __METHOD__, $e ) : $e;
+        new exc\notice( $e, __METHOD__, $e ) : $e;
     }
     else if( 1 < count( $exceptions ) )
     {
@@ -76,7 +80,7 @@ class shift_new extends base_new
         if( RUNTIME_SHIFT__SAVE_ERROR_NUMBER != $e->get_number() ) throw $e;
         $message .= $e->get_raw_message()."<br>\n";
       }
-      throw new \sabretooth\exception\notice( $message, __METHOD__ );
+      throw new exc\notice( $message, __METHOD__ );
     }
   }
 }

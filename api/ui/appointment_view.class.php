@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget appointment view
@@ -49,8 +53,8 @@ class appointment_view extends base_view
     parent::finish();
     
     // create enum arrays
-    $db_participant = new \sabretooth\database\participant( $this->get_record()->participant_id );
-    $modifier = new \sabretooth\database\modifier();
+    $db_participant = new db\participant( $this->get_record()->participant_id );
+    $modifier = new db\modifier();
     $modifier->where( 'phone', '!=', NULL );
     $modifier->order( 'rank' );
     $contacts = array();
@@ -64,9 +68,9 @@ class appointment_view extends base_view
     $this->set_item( 'date', $this->get_record()->date, true );
     $this->set_item( 'assignment.user', $db_assignment->get_user()->name, false );
     $this->set_item( 'assignment.start_time',
-      \sabretooth\util::get_formatted_time( $db_assignment->start_time ), false );
+      util::get_formatted_time( $db_assignment->start_time ), false );
     $this->set_item( 'assignment.end_time',
-      \sabretooth\util::get_formatted_time( $db_assignment->end_time ), false );
+      util::get_formatted_time( $db_assignment->end_time ), false );
     $this->set_item( 'state', $this->get_record()->get_state(), false );
 
     $this->finish_setting_items();

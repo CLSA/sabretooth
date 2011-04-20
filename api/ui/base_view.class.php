@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * Base class for widgets which view current or new records.
@@ -38,11 +42,11 @@ abstract class base_view extends base_record_widget
       $this->get_argument( 'id' );
 
       // determine properties based on the current user's permissions
-      $session = \sabretooth\business\session::self();
+      $session = bus\session::self();
       $this->editable = $session->is_allowed(
-        \sabretooth\database\operation::get_operation( 'action', $subject, 'edit' ) );
+        db\operation::get_operation( 'action', $subject, 'edit' ) );
       $this->removable = $session->is_allowed( 
-        \sabretooth\database\operation::get_operation( 'action', $subject, 'delete' ) );
+        db\operation::get_operation( 'action', $subject, 'delete' ) );
 
       $this->set_heading( 'Viewing '.$this->get_subject().' details' );
     }
@@ -89,7 +93,7 @@ abstract class base_view extends base_record_widget
     else if( 'time' == $type )
     {
       // build time time zone help text
-      $session = \sabretooth\business\session::self();
+      $session = bus\session::self();
       $date_obj = new \DateTime( "now", new \DateTimeZone( $session->get_site()->timezone ) );
       $time_note = sprintf( 'Time is in %s\'s time zone (%s)',
                             $session->get_site()->name,
@@ -111,7 +115,7 @@ abstract class base_view extends base_record_widget
   {
     // make sure the item exists
     if( !array_key_exists( $item_id, $this->items ) )
-      throw new \sabretooth\exception\argument( 'item_id', $item_id, __METHOD__ );
+      throw new exc\argument( 'item_id', $item_id, __METHOD__ );
 
     // process the value so that it displays correctly
     if( 'boolean' == $this->items[$item_id]['type'] )
@@ -152,7 +156,7 @@ abstract class base_view extends base_record_widget
     }
     else if( 'enum' == $this->items[$item_id]['type'] )
     { // make sure the type isn't an enum (since enum values aren't provided)
-      throw new \sabretooth\exception\runtime(
+      throw new exc\runtime(
         'Trying to set enum item without enum values.', __METHOD__ );
     }
 

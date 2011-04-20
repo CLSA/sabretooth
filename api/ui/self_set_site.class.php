@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * action self set_site
@@ -38,18 +42,18 @@ class self_set_site extends action
    */
   public function execute()
   {
-    $db_site = \sabretooth\database\site::get_unique_record( 'name', $this->site_name );
+    $db_site = db\site::get_unique_record( 'name', $this->site_name );
     if( NULL == $db_site )
-      throw new \sabretooth\exception\runtime(
+      throw new exc\runtime(
         'Invalid site name "'.$this->site_name.'"', __METHOD__ );
 
     // get the first role associated with the site
-    $modifier = new \sabretooth\database\modifier();
+    $modifier = new db\modifier();
     $modifier->where( 'site_id', '=', $db_site->id );
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
     $db_role_list = $session->get_user()->get_role_list( $modifier );
     if( 0 == count( $db_role_list ) )
-      throw new \sabretooth\exception\runtime(
+      throw new exc\runtime(
         'User has no access to site name "'.$this->site_name.'"', __METHOD__ );
 
     $session::self()->set_site_and_role( $db_site, $db_role_list[0] );

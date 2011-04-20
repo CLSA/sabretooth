@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * action operator end_break
@@ -35,16 +39,16 @@ class operator_end_break extends action
    */
   public function execute()
   {
-    $db_user = \sabretooth\business\session::self()->get_user();
+    $db_user = bus\session::self()->get_user();
 
     // find this user's open break and record the end time
-    $modifier = new \sabretooth\database\modifier();
+    $modifier = new db\modifier();
     $modifier->where( 'end_time', '=', NULL );
     $away_time_list = $db_user->get_away_time_list( $modifier );
     
     // report an error of there isn't exactly 1 one open away time
     if( 1 != count( $away_time_list ) )
-      \sabretooth\log::alert( sprintf(
+      log::alert( sprintf(
         'When attempting to close away time, user "%s" has %d instead of 1 open away times!',
         $db_user->name,
         count( $away_time_list ) ) );

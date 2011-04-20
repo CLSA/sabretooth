@@ -8,6 +8,8 @@
  */
 
 namespace sabretooth\exception;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
 
 /**
  * argument: bad or missing argument exception
@@ -32,7 +34,7 @@ class argument extends base_exception
     $this->argument_name = $argument_name;
     $message = sprintf( 'Invalid argument "%s" with value "%s".',
                         $this->argument_name,
-                        \sabretooth\util::var_dump( $value ) );
+                        util::var_dump( $value ) );
     parent::__construct( $message, $context, $previous );
   }
   

@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget self status
@@ -40,10 +44,10 @@ class self_status extends widget
     parent::finish();
 
     $this->set_variable( 'sip_enabled',
-      \sabretooth\business\voip_manager::self()->get_sip_enabled() );
+      bus\voip_manager::self()->get_sip_enabled() );
     $this->set_variable( 'on_call',
-      0 < count( \sabretooth\business\voip_manager::self()->get_calls(
-                   \sabretooth\business\session::self()->get_user()->name ) ) );
+      0 < count( bus\voip_manager::self()->get_calls(
+                   bus\session::self()->get_user()->name ) ) );
   }
 }
 ?>

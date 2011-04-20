@@ -8,6 +8,8 @@
  */
 
 namespace sabretooth\exception;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
 
 /**
  * database: database/sql exceptions

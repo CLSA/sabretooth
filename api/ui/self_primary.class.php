@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * datum self primary
@@ -37,7 +41,7 @@ class self_primary extends datum
    */
   public function get_data()
   {
-    $db_user = \sabretooth\business\session::self()->get_user();
+    $db_user = bus\session::self()->get_user();
     $data = array();
     foreach( $db_user->get_column_names() as $column ) $data[ $column ] = $db_user->$column;
     return $data;

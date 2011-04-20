@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget shift list
@@ -35,7 +39,7 @@ class shift_list extends site_restricted_list
 
     if( !is_null( $this->user_id ) )
     {
-      $db_user = new \sabretooth\database\user( $this->user_id );
+      $db_user = new db\user( $this->user_id );
       $this->set_heading( 'Shift list for '.$db_user->name );
     }
   }
@@ -73,9 +77,9 @@ class shift_list extends site_restricted_list
    */
   protected function determine_record_count( $modifier = NULL )
   {
-    $session = \sabretooth\business\session::self();
+    $session = bs\session::self();
 
-    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    if( NULL == $modifier ) $modifier = new db\modifier();
     if( 'operator' == $session->get_role()->name )
       $modifier->where( 'user_id', '=', $session->get_user()->id );
     else if( !is_null( $this->user_id ) )
@@ -94,9 +98,9 @@ class shift_list extends site_restricted_list
    */
   protected function determine_record_list( $modifier = NULL )
   {
-    $session = \sabretooth\business\session::self();
+    $session = bs\session::self();
 
-    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    if( NULL == $modifier ) $modifier = new db\modifier();
     if( 'operator' == $session->get_role()->name )
       $modifier->where( 'user_id', '=', $session->get_user()->id );
     else if( !is_null( $this->user_id ) )

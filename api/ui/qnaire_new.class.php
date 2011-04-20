@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * action qnaire new
@@ -38,7 +42,7 @@ class qnaire_new extends base_new
     // make sure the name column isn't blank
     $columns = $this->get_argument( 'columns' );
     if( !array_key_exists( 'name', $columns ) || 0 == strlen( $columns['name'] ) )
-      throw new \sabretooth\exception\notice(
+      throw new exc\notice(
         'The questionnaire\'s name cannot be left blank.', __METHOD__ );
 
     parent::execute();

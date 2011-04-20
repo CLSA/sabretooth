@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget operator assignment
@@ -40,7 +44,7 @@ class operator_assignment extends widget
   {
     parent::finish();
     
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
 
     // see if this user has an open assignment
     $db_assignment = $session->get_current_assignment();
@@ -73,19 +77,19 @@ class operator_assignment extends widget
         }
       }
 
-      $modifier = new \sabretooth\database\modifier();
+      $modifier = new db\modifier();
       $modifier->where( 'active', '=', true );
       $modifier->where( 'phone', '!=', NULL );
       $modifier->order( 'rank' );
       $db_contact_list = $db_participant->get_contact_list( $modifier );
       
-      $modifier = new \sabretooth\database\modifier();
+      $modifier = new db\modifier();
       $modifier->where( 'end_time', '!=', NULL );
       $current_calls = $db_assignment->get_phone_call_count( $modifier );
 
       if( 0 == count( $db_contact_list ) )
       {
-        \sabretooth\log::crit(
+        log::crit(
           sprintf( 'An operator has been assigned participant %d who has no callable contacts',
           $db_participant->id ) );
       }
@@ -97,7 +101,7 @@ class operator_assignment extends widget
             sprintf( '%d. %s (%s)', $db_contact->rank, $db_contact->type, $db_contact->phone );
         $this->set_variable( 'contact_list', $contact_list );
         $this->set_variable( 'status_list',
-          \sabretooth\database\phone_call::get_enum_values( 'status' ) );
+          db\phone_call::get_enum_values( 'status' ) );
       }
 
       $this->set_variable( 'assignment_id', $db_assignment->id );
@@ -112,9 +116,9 @@ class operator_assignment extends widget
         $this->set_variable( 'previous_assignment_note_count',
           $db_last_assignment->get_note_count() );
         $this->set_variable( 'previous_assignment_date',
-          \sabretooth\util::get_formatted_date( $db_last_assignment->start_time ) );
+          util::get_formatted_date( $db_last_assignment->start_time ) );
         $this->set_variable( 'previous_assignment_time',
-          \sabretooth\util::get_formatted_time( $db_last_assignment->start_time ) );
+          util::get_formatted_time( $db_last_assignment->start_time ) );
       }
       $this->set_variable( 'previous_call_list', $previous_call_list );
       $this->set_variable( 'current_calls', $current_calls );

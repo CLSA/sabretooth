@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget user add
@@ -34,7 +38,7 @@ class user_add extends base_view
     $this->add_item( 'last_name', 'string', 'Last name' );
     $this->add_item( 'active', 'boolean', 'Active' );
 
-    $type = 'administrator' == \sabretooth\business\session::self()->get_role()->name
+    $type = 'administrator' == bus\session::self()->get_role()->name
           ? 'enum'
           : 'hidden';
     $this->add_item( 'site_id', $type, 'Site' );
@@ -51,20 +55,20 @@ class user_add extends base_view
   {
     parent::finish();
     
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
     $is_administrator = 'administrator' == $session->get_role()->name;
 
     // create enum arrays
-    $modifier = new \sabretooth\database\modifier();
+    $modifier = new db\modifier();
     if( !$is_administrator ) $modifier->where( 'name', '!=', 'administrator' );
     $roles = array();
-    foreach( \sabretooth\database\role::select( $modifier ) as $db_role )
+    foreach( db\role::select( $modifier ) as $db_role )
       $roles[$db_role->id] = $db_role->name;
     
     $sites = array();
     if( $is_administrator )
     {
-      foreach( \sabretooth\database\site::select( $modifier ) as $db_site )
+      foreach( db\site::select( $modifier ) as $db_site )
         $sites[$db_site->id] = $db_site->name;
     }
 

@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget qnaire view
@@ -41,7 +45,7 @@ class qnaire_view extends base_view
       $this->phase_list->set_parent( $this );
       $this->phase_list->set_heading( 'Questionnaire phases' );
     }
-    catch( \sabretooth\exception\permission $e )
+    catch( exc\permission $e )
     {
       $this->phase_list = NULL;
     }
@@ -53,7 +57,7 @@ class qnaire_view extends base_view
       $this->sample_list->set_parent( $this );
       $this->sample_list->set_heading( 'Samples this questionnaire has been assigned to' );
     }
-    catch( \sabretooth\exception\permission $e )
+    catch( exc\permission $e )
     {
       $this->sample_list = NULL;
     }

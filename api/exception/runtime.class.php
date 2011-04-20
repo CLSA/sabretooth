@@ -8,6 +8,8 @@
  */
 
 namespace sabretooth\exception;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
 
 /**
  * runtime: runtime exceptions

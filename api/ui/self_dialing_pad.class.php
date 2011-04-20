@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget self dialing_pad
@@ -39,7 +43,7 @@ class self_dialing_pad extends widget
   {
     parent::finish();
     
-    $role_name = \sabretooth\business\session::self()->get_role()->name;
+    $role_name = bus\session::self()->get_role()->name;
     $this->set_variable( 'allow_hangup', 'operator' != $role_name );
   }
 }

@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget participant add
@@ -48,12 +52,12 @@ class participant_add extends base_view
     parent::finish();
     
     // create enum arrays
-    $languages = \sabretooth\database\participant::get_enum_values( 'language' );
+    $languages = db\participant::get_enum_values( 'language' );
     $languages = array_combine( $languages, $languages );
-    $statuses = \sabretooth\database\participant::get_enum_values( 'status' );
+    $statuses = db\participant::get_enum_values( 'status' );
     $statuses = array_combine( $statuses, $statuses );
     $sites = array();
-    foreach( \sabretooth\database\site::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
+    foreach( db\site::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
 
     // set the view's items
     $this->set_item( 'first_name', '', true );

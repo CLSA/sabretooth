@@ -8,6 +8,9 @@
  */
 
 namespace sabretooth\business;
+use sabretooth\log, sabretooth\util;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * session: handles all session-based information
@@ -35,7 +38,7 @@ final class session extends \sabretooth\singleton
     
     // one and only one argument should be past to the constructor
     if( is_null( $arguments ) || !is_array( $arguments ) || 1 != count( $arguments ) )
-      throw new \sabretooth\exception\argument( 'arguments', $arguments, __METHOD__ );
+      throw new exc\argument( 'arguments', $arguments, __METHOD__ );
 
     // the first argument is the settings array from an .ini file
     $settings = $arguments[0];
@@ -51,7 +54,7 @@ final class session extends \sabretooth\singleton
     {
       // make sure the category exists
       if( !array_key_exists( $category, $settings ) )
-        throw new \sabretooth\exception\argument( 'arguments['.$category.']', NULL, __METHOD__ );
+        throw new exc\argument( 'arguments['.$category.']', NULL, __METHOD__ );
 
       $this->settings[ $category ] = $settings[ $category ];
     }
@@ -78,14 +81,14 @@ final class session extends \sabretooth\singleton
     if( $this->initialized ) return;
 
     // create the databases
-    $this->database = new \sabretooth\database\database(
+    $this->database = new db\database(
       $this->get_setting( 'db', 'driver' ),
       $this->get_setting( 'db', 'server' ),
       $this->get_setting( 'db', 'username' ),
       $this->get_setting( 'db', 'password' ),
       $this->get_setting( 'db', 'database' ),
       $this->get_setting( 'db', 'prefix' ) );
-    $this->survey_database = new \sabretooth\database\database(
+    $this->survey_database = new db\database(
       $this->get_setting( 'survey_db', 'driver' ),
       $this->get_setting( 'survey_db', 'server' ),
       $this->get_setting( 'survey_db', 'username' ),
@@ -95,9 +98,9 @@ final class session extends \sabretooth\singleton
     
     // determine the user (setting the user will also set the site and role)
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
-    $this->set_user( \sabretooth\database\user::get_unique_record( 'name', $user_name ) );
+    $this->set_user( db\user::get_unique_record( 'name', $user_name ) );
     if( NULL == $this->user )
-      throw new \sabretooth\exception\runtime( 'User "'.$user_name.'" not found.', __METHOD__ );
+      throw new exc\runtime( 'User "'.$user_name.'" not found.', __METHOD__ );
 
     $this->initialized = true;
   }
@@ -116,7 +119,7 @@ final class session extends \sabretooth\singleton
     if( !isset( $this->settings[ $category ] ) ||
         !isset( $this->settings[ $category ][ $name ] ) )
     {
-      \sabretooth\log::err(
+      log::err(
         "Tried getting value for setting [$category][$name] which doesn't exist." );
     }
     else
@@ -236,7 +239,7 @@ final class session extends \sabretooth\singleton
     }
     else if( !$this->user->active )
     {
-      throw new \sabretooth\exception\notice(
+      throw new exc\notice(
         'Your account has been deactivated.<br>'.
         'Please contact a supervisor to regain access to the system.', __METHOD__ );
     }
@@ -249,8 +252,8 @@ final class session extends \sabretooth\singleton
       // see if we already have the current site stored in the php session
       if( isset( $_SESSION['current_site_id'] ) && isset( $_SESSION['current_role_id'] ) )
       {
-        $this->set_site_and_role( new \sabretooth\database\site( $_SESSION['current_site_id'] ),
-                                  new \sabretooth\database\role( $_SESSION['current_role_id'] ) );
+        $this->set_site_and_role( new db\site( $_SESSION['current_site_id'] ),
+                                  new db\role( $_SESSION['current_role_id'] ) );
       }
       
       // if we still don't have a site and role then pick the first one we can find
@@ -258,12 +261,12 @@ final class session extends \sabretooth\singleton
       {
         $db_site_list = $this->user->get_site_list();
         if( 0 == count( $db_site_list ) )
-          throw new \sabretooth\exception\notice(
+          throw new exc\notice(
             'Your account does not have access to any site.<br>'.
             'Please contact a supervisor to be granted access to a site.', __METHOD__ );
 
         $db_site = $db_site_list[0];
-        $modifier = new \sabretooth\database\modifier();
+        $modifier = new db\modifier();
         $modifier->where( 'site_id', '=', $db_site->id );
         $db_role_list = $this->user->get_role_list( $modifier );
         $db_role = $db_role_list[0];
@@ -319,16 +322,16 @@ final class session extends \sabretooth\singleton
   {
     // make sure the user is an operator
     if( 'operator' != $this->get_role()->name )
-      throw new \sabretooth\exception\runtime( 'Tried to get assignment for non-operator.', __METHOD__ );
+      throw new exc\runtime( 'Tried to get assignment for non-operator.', __METHOD__ );
     
     // query for assignments which do not have a end time
-    $modifier = new \sabretooth\database\modifier();
+    $modifier = new db\modifier();
     $modifier->where( 'end_time', '=', NULL );
     $assignment_list = $this->get_user()->get_assignment_list( $modifier );
 
     // only one assignment should ever be open at a time, warn if this isn't the case
     if( 1 < count( $assignment_list ) )
-      \sabretooth\log::crit(
+      log::crit(
         sprintf( 'Current operator (id: %d, name: %s), has more than one active assignment!',
                  $this->get_user()->id,
                  $this->get_user()->name ) );
@@ -348,20 +351,20 @@ final class session extends \sabretooth\singleton
   {
     // make sure the user is an operator
     if( 'operator' != $this->get_role()->name )
-      throw new \sabretooth\exception\runtime( 'Tried to get phone call for non-operator.', __METHOD__ );
+      throw new exc\runtime( 'Tried to get phone call for non-operator.', __METHOD__ );
     
     // without an assignment there can be no current call
     $db_assignment = $this->get_current_assignment();
     if( is_null( $db_assignment) ) return NULL;
 
     // query for phone calls which do not have a end time
-    $modifier = new \sabretooth\database\modifier();
+    $modifier = new db\modifier();
     $modifier->where( 'end_time', '=', NULL );
     $phone_call_list = $db_assignment->get_phone_call_list( $modifier );
 
     // only one phone call should ever be open at a time, warn if this isn't the case
     if( 1 < count( $phone_call_list ) )
-      \sabretooth\log::crit(
+      log::crit(
         sprintf( 'Current operator (id: %d, name: %s), has more than one active phone call!',
                  $this->get_user()->id,
                  $this->get_user()->name ) );
@@ -389,7 +392,7 @@ final class session extends \sabretooth\singleton
     }
     else
     { // check to see if we can call without a SIP connection
-      $db_setting = \sabretooth\database\setting::get_setting( 'voip', 'survey without sip' );
+      $db_setting = db\setting::get_setting( 'voip', 'survey without sip' );
       $allow = 'true' == $db_setting->value;
     }
 
@@ -407,13 +410,13 @@ final class session extends \sabretooth\singleton
   public function log_activity( $operation, $args )
   {
     // add the operation as activity
-    $activity = new \sabretooth\database\activity();
+    $activity = new db\activity();
     $activity->user_id = $this->user->id;
     $activity->site_id = $this->site->id;
     $activity->role_id = $this->role->id;
     $activity->operation_id = $operation->get_id();
     $activity->query = serialize( $args );
-    $activity->elapsed_time = \sabretooth\util::get_elapsed_time();
+    $activity->elapsed_time = util::get_elapsed_time();
     $activity->save();
   }
 
@@ -668,7 +671,7 @@ final class session extends \sabretooth\singleton
     if( is_null( $db_phase ) ) return false;
     
     // the assignment must have an open call
-    $modifier = new \sabretooth\database\modifier();
+    $modifier = new db\modifier();
     $modifier->where( 'end_time', '=', NULL );
     $call_list = $db_assignment->get_phone_call_list( $modifier );
     if( 0 == count( $call_list ) ) return false;

@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget qnaire add_sample
@@ -41,9 +45,9 @@ class qnaire_add_sample extends base_add_list
   public function determine_sample_count( $modifier = NULL )
   {
     // only include samples which have no qnaire assigned to them
-    if( is_null( $modifier ) ) $modifier = new \sabretooth\database\modifier();
+    if( is_null( $modifier ) ) $modifier = new db\modifier();
     $modifier->where( 'qnaire_id', '=', NULL );
-    return \sabretooth\database\sample::count( $modifier );
+    return db\sample::count( $modifier );
   }
 
   /**
@@ -57,9 +61,9 @@ class qnaire_add_sample extends base_add_list
   public function determine_sample_list( $modifier = NULL )
   {
     // only include samples which have no qnaire assigned to them
-    if( is_null( $modifier ) ) $modifier = new \sabretooth\database\modifier();
+    if( is_null( $modifier ) ) $modifier = new db\modifier();
     $modifier->where( 'qnaire_id', '=', NULL );
-    return \sabretooth\database\sample::select( $modifier );
+    return db\sample::select( $modifier );
   }
 }
 ?>

@@ -321,7 +321,7 @@ final class log extends singleton
   /**
    * A error handling function that uses the log class as the error handler
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\system
+   * @throws exception\base_exception
    * @ignore
    */
   static public function error_handler( $level, $message, $file, $line )
@@ -338,7 +338,7 @@ final class log extends singleton
       // throw an exception.  Instead we can build the exception and emulate what is done in
       // the index/widget/action scripts.
       // just as is done in the widget and action scripts.
-      $e = new \sabretooth\exception\system( $message, $level );
+      $e = new exception\base_exception( $message, $level );
       $result_array = array(
         'error_type' => ucfirst( $e->get_type() ),
         'error_code' => $e->get_code(),
@@ -352,6 +352,7 @@ final class log extends singleton
       { // output the error using the basic php template
         include TPL_PATH.'/index_error.php';
       }
+      exit;
     }
     else if( E_COMPILE_WARNING == $level ||
              E_CORE_WARNING == $level ||

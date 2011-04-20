@@ -8,6 +8,9 @@
  */
 
 namespace sabretooth\database;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\exception as exc;
 
 /**
  * record: abstract database table object
@@ -35,7 +38,7 @@ abstract class record extends \sabretooth\base_object
     $columns = $this->get_column_names();
 
     if( !is_array( $columns ) || 0 == count( $columns ) )
-      throw new \sabretooth\exception\runtime(
+      throw new exc\runtime(
         "No column names returned for table ".static::get_table_name(), __METHOD__ );
     
     // set the default value for all columns
@@ -65,7 +68,7 @@ abstract class record extends \sabretooth\base_object
       if( 1 != count( $primary_key_names ) ||
           static::get_primary_key_name() != $primary_key_names[0] )
       {
-        throw new \sabretooth\exception\runtime(
+        throw new exc\runtime(
           'Unable to create record, single-column primary key "'.
           static::get_primary_key_name().'" does not exist.', __METHOD__ );
       }
@@ -115,7 +118,7 @@ abstract class record extends \sabretooth\base_object
       $row = static::db()->get_row( $sql );
 
       if( 0 == count( $row ) )
-        throw new \sabretooth\exception\runtime(
+        throw new exc\runtime(
           sprintf( 'Load failed to find record for %s with %s = %d.',
                    static::get_table_name(),
                    static::get_primary_key_name(),
@@ -132,11 +135,11 @@ abstract class record extends \sabretooth\base_object
         // convert where necessary
         if( 'datetime' == $column_type || 'timestamp' == $column_type )
         { // convert datetime to server date and time
-          $this->column_values[$key] = \sabretooth\util::from_server_date( $val );
+          $this->column_values[$key] = util::from_server_date( $val );
         }
         elseif( 'time' == $column_type )
         { // convert time to server time
-          $this->column_values[$key] = \sabretooth\util::from_server_time( $val );
+          $this->column_values[$key] = util::from_server_time( $val );
         }
       }
     }
@@ -156,7 +159,7 @@ abstract class record extends \sabretooth\base_object
     // warn if we are in read-only mode
     if( $this->read_only )
     {
-      \sabretooth\log::warning( 'Tried to save read-only record.' );
+      log::warning( 'Tried to save read-only record.' );
       return;
     }
     
@@ -171,7 +174,7 @@ abstract class record extends \sabretooth\base_object
       if( 0 != $interval->invert ||
         ( 0 == $interval->days && 0 == $interval->h && 0 == $interval->i && 0 == $interval->s ) )
       {
-        throw new \sabretooth\exception\runtime(
+        throw new exc\runtime(
           'Tried to set end time which is not after the start time.', __METHOD__ );
       }
     }
@@ -188,11 +191,11 @@ abstract class record extends \sabretooth\base_object
         // convert where necessary
         if( 'datetime' == $column_type || 'timestamp' == $column_type )
         { // convert datetime to server date and time
-          $val = \sabretooth\util::to_server_date( $val );
+          $val = util::to_server_date( $val );
         }
         elseif( 'time' == $column_type )
         { // convert time to server time
-          $val = \sabretooth\util::to_server_time( $val );
+          $val = util::to_server_time( $val );
         }
         
         $sets .= sprintf( '%s %s = %s',
@@ -230,14 +233,14 @@ abstract class record extends \sabretooth\base_object
     // warn if we are in read-only mode
     if( $this->read_only )
     {
-      \sabretooth\log::warning( 'Tried to delete read-only record.' );
+      log::warning( 'Tried to delete read-only record.' );
       return;
     }
 
     // check the primary key value
     if( is_null( $this->column_values[static::get_primary_key_name()] ) )
     {
-      \sabretooth\log::warning( 'Tried to delete record with no id.' );
+      log::warning( 'Tried to delete record with no id.' );
       return;
     }
     
@@ -263,7 +266,7 @@ abstract class record extends \sabretooth\base_object
   {
     // make sure the column exists
     if( !static::column_exists( $column_name ) )
-      throw new \sabretooth\exception\argument( 'column_name', $column_name, __METHOD__ );
+      throw new exc\argument( 'column_name', $column_name, __METHOD__ );
     
     return isset( $this->column_values[ $column_name ] ) ?
       $this->column_values[ $column_name ] : NULL;
@@ -284,7 +287,7 @@ abstract class record extends \sabretooth\base_object
   {
     // make sure the column exists
     if( !static::column_exists( $column_name ) )
-      throw new \sabretooth\exception\argument( 'column_name', $column_name, __METHOD__ );
+      throw new exc\argument( 'column_name', $column_name, __METHOD__ );
     
     $this->column_values[ $column_name ] = $value;
   }
@@ -326,7 +329,7 @@ abstract class record extends \sabretooth\base_object
   public function __call( $name, $args )
   {
     // create an exception which will be thrown if anything bad happens
-    $exception = new \sabretooth\exception\runtime(
+    $exception = new exc\runtime(
       sprintf( 'Call to undefined function: %s::%s().',
                get_called_class(),
                $name ), __METHOD__ );
@@ -351,7 +354,7 @@ abstract class record extends \sabretooth\base_object
     { // calling: add_<record>( $ids )
       // make sure the first argument is a non-empty array of ids
       if( 1 != count( $args ) || !is_array( $args[0] ) || 0 == count( $args[0] ) )
-        throw new \sabretooth\exception\argument( 'args', $args, __METHOD__ );
+        throw new exc\argument( 'args', $args, __METHOD__ );
 
       $ids = $args[0];
       $this->add_records( $subject, $ids );
@@ -361,7 +364,7 @@ abstract class record extends \sabretooth\base_object
     { // calling: remove_<record>( $ids )
       // make sure the first argument is a non-empty array of ids
       if( 1 != count( $args ) || 0 >= $args[0] )
-        throw new \sabretooth\exception\argument( 'args', $args, __METHOD__ );
+        throw new exc\argument( 'args', $args, __METHOD__ );
 
       $id = $args[0];
       $this->remove_record( $subject, $id );
@@ -390,7 +393,7 @@ abstract class record extends \sabretooth\base_object
             !is_null( $args[0] ) &&
             is_object( $args[0] ) &&
             'sabretooth\\database\\modifier' != get_class( $args[0] ) )
-          throw new \sabretooth\exception\argument( 'args', $args, __METHOD );
+          throw new exc\argument( 'args', $args, __METHOD );
         
         // determine the sub action and whether to invert the result
         $inverted = false;
@@ -437,7 +440,7 @@ abstract class record extends \sabretooth\base_object
     // check the primary key value
     if( is_null( $this->column_values[ static::get_primary_key_name() ] ) )
     { 
-      \sabretooth\log::warning( 'Tried to query record with no id.' );
+      log::warning( 'Tried to query record with no id.' );
       return NULL;
     }
     
@@ -446,7 +449,7 @@ abstract class record extends \sabretooth\base_object
     // make sure this table has the correct foreign key
     if( !static::column_exists( $foreign_key_name ) )
     { 
-      \sabretooth\log::warning( 'Tried to get invalid record type: '.$record_type );
+      log::warning( 'Tried to get invalid record type: '.$record_type );
       return NULL;
     }
 
@@ -484,7 +487,7 @@ abstract class record extends \sabretooth\base_object
     $primary_key_value = $this->column_values[ static::get_primary_key_name() ];
     if( is_null( $primary_key_value ) )
     { 
-      \sabretooth\log::warning( 'Tried to query record with no id.' );
+      log::warning( 'Tried to query record with no id.' );
       return $count ? 0 : array();
     }
       
@@ -492,7 +495,7 @@ abstract class record extends \sabretooth\base_object
     $relationship = static::get_relationship( $record_type );
     if( relationship::NONE == $relationship )
     {
-      \sabretooth\log::err(
+      log::err(
         sprintf( 'Tried to get a %s list from a %s, but there is no relationship between the two.',
                  $record_type,
                  $table_name() ) );
@@ -500,7 +503,7 @@ abstract class record extends \sabretooth\base_object
     }
     else if( relationship::ONE_TO_ONE == $relationship )
     {
-      \sabretooth\log::err(
+      log::err(
         sprintf( 'Tried to get a %s list from a %s, but there is a '.
                  'one-to-one relationship between the two.',
                  $record_type,
@@ -582,7 +585,7 @@ abstract class record extends \sabretooth\base_object
     }
     
     // if we get here then the relationship type is unknown
-    \sabretooth\log::crit(
+    log::crit(
       sprintf( 'Record %s has an unknown relationship to %s.',
                $table_name(),
                $record_type ) );
@@ -620,7 +623,7 @@ abstract class record extends \sabretooth\base_object
     // warn if we are in read-only mode
     if( $this->read_only )
     {
-      \sabretooth\log::warning(
+      log::warning(
         'Tried to add '.$record_type.' records to read-only record.' );
       return;
     }
@@ -629,7 +632,7 @@ abstract class record extends \sabretooth\base_object
     $primary_key_value = $this->column_values[ static::get_primary_key_name() ];
     if( is_null( $primary_key_value ) )
     { 
-      \sabretooth\log::warning( 'Tried to query record with no id.' );
+      log::warning( 'Tried to query record with no id.' );
       return;
     }
 
@@ -637,9 +640,9 @@ abstract class record extends \sabretooth\base_object
     $relationship = static::get_relationship( $record_type );
     if( relationship::MANY_TO_MANY != $relationship )
     {
-      \sabretooth\log::err(
+      log::err(
         sprintf( 'Tried to add %s to a %s without a many-to-many relationship between the two.',
-                 \sabretooth\util::prulalize( $record_type ),
+                 util::prulalize( $record_type ),
                  static::get_table_name() ) );
       return;
     }
@@ -682,7 +685,7 @@ abstract class record extends \sabretooth\base_object
     // warn if we are in read-only mode
     if( $this->read_only )
     {
-      \sabretooth\log::warning(
+      log::warning(
         'Tried to remove '.$foreign_table_name.' records to read-only record.' );
       return;
     }
@@ -691,7 +694,7 @@ abstract class record extends \sabretooth\base_object
     $primary_key_value = $this->column_values[ static::get_primary_key_name() ];
     if( is_null( $primary_key_value ) )
     { 
-      \sabretooth\log::warning( 'Tried to query record with no id.' );
+      log::warning( 'Tried to query record with no id.' );
       return;
     }
 
@@ -699,14 +702,14 @@ abstract class record extends \sabretooth\base_object
     $relationship = static::get_relationship( $record_type );
     if( relationship::NONE == $relationship )
     {
-      \sabretooth\log::err(
+      log::err(
         sprintf( 'Tried to remove a %s from a %s, but there is no relationship between the two.',
                  $record_type,
                  static::get_table_name() ) );
     }
     else if( relationship::ONE_TO_ONE == $relationship )
     {
-      \sabretooth\log::err(
+      log::err(
         sprintf( 'Tried to remove a %s from a %s, but there is a '.
                  'one-to-one relationship between the two.',
                  $record_type,
@@ -734,7 +737,7 @@ abstract class record extends \sabretooth\base_object
     else
     {
       // if we get here then the relationship type is unknown
-      \sabretooth\log::crit(
+      log::crit(
         sprintf( 'Record %s has an unknown relationship to %s.',
                  static::get_table_name(),
                  $record_type ) );
@@ -1012,7 +1015,7 @@ abstract class record extends \sabretooth\base_object
    */
   public static function db()
   {
-    return \sabretooth\business\session::self()->get_database();
+    return bus\session::self()->get_database();
   }
 
   /**

@@ -8,6 +8,9 @@
  */
 
 namespace sabretooth\business;
+use sabretooth\log, sabretooth\util;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 require_once SHIFT8_PATH.'/library/Shift8.php';
 
@@ -31,7 +34,7 @@ class voip_call extends \sabretooth\base_object
     if( is_null( $s8_event ) ||
         !is_object( $s8_event ) ||
         'Shift8_Event' != get_class( $s8_event ) )
-      throw \sabretooth\exception\argument( 'connect to invalid contact.', __METHOD__ );
+      throw exc\argument( 'connect to invalid contact.', __METHOD__ );
 
     $this->channel = $s8_event->get( 'channel' );
     $this->bridge = $s8_event->get( 'bridgedchannel' );

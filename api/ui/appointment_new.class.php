@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * action appointment new
@@ -38,7 +42,7 @@ class appointment_new extends base_new
     // make sure the date column isn't blank
     $columns = $this->get_argument( 'columns' );
     if( !array_key_exists( 'date', $columns ) || 0 == strlen( $columns['date'] ) )
-      throw new \sabretooth\exception\notice( 'The date cannot be left blank.', __METHOD__ );
+      throw new exc\notice( 'The date cannot be left blank.', __METHOD__ );
 
     parent::execute();
   }

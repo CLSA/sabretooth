@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget contact list
@@ -45,11 +49,11 @@ class contact_list extends base_list_widget
     parent::finish();
     
     // only allow admins and supervisors to make direct calls
-    $role_name = \sabretooth\business\session::self()->get_role()->name;
+    $role_name = bus\session::self()->get_role()->name;
     $this->set_variable( 'allow_connect',
                          'administrator' == $role_name || 'supervisor' == $role_name );
     $this->set_variable( 'sip_enabled',
-      \sabretooth\business\voip_manager::self()->get_sip_enabled() );
+      bus\voip_manager::self()->get_sip_enabled() );
 
     foreach( $this->get_record_list() as $record )
     {

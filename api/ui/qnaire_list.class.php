@@ -8,6 +8,7 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
 
 /**
  * widget qnaire list

@@ -8,6 +8,9 @@
  */
 
 namespace sabretooth\database;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\exception as exc;
 
 /**
  * phase: record
@@ -29,7 +32,7 @@ class phase extends record
     // warn if we are in read-only mode
     if( $this->read_only )
     {
-      \sabretooth\log::warning( 'Tried to save read-only record.' );
+      log::warning( 'Tried to save read-only record.' );
       return;
     }
     
@@ -113,7 +116,7 @@ class phase extends record
     // warn if we are in read-only mode
     if( $this->read_only )
     {
-      \sabretooth\log::warning( 'Tried to delete read-only record.' );
+      log::warning( 'Tried to delete read-only record.' );
       return;
     }
     
@@ -148,7 +151,7 @@ class phase extends record
     $primary_key_name = static::get_primary_key_name();
     if( is_null( $this->$primary_key_name ) )
     {
-      \sabretooth\log::warning( 'Tried to delete record with no id.' );
+      log::warning( 'Tried to delete record with no id.' );
       return;
     }
     

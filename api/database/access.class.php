@@ -8,6 +8,9 @@
  */
 
 namespace sabretooth\database;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\exception as exc;
 
 /**
  * access: record
@@ -32,15 +35,15 @@ class access extends record
     // validate arguments
     if( !is_object( $db_user ) || !is_a( $db_user, '\\sabretooth\\database\\user' ) )
     {
-      throw new \sabretooth\exception\argument( 'user', $db_user, __METHOD__ );
+      throw new exc\argument( 'user', $db_user, __METHOD__ );
     }
     else if( !is_object( $db_role ) || !is_a( $db_role, '\\sabretooth\\database\\role' ) )
     {
-      throw new \sabretooth\exception\argument( 'role', $db_role, __METHOD__ );
+      throw new exc\argument( 'role', $db_role, __METHOD__ );
     }
     else if( !is_object( $db_site ) || !is_a( $db_site, '\\sabretooth\\database\\site' ) )
     {
-      throw new \sabretooth\exception\argument( 'site', $db_site, __METHOD__ );
+      throw new exc\argument( 'site', $db_site, __METHOD__ );
     }
 
     $modifier = new modifier();
@@ -64,12 +67,12 @@ class access extends record
    */
   public function save()
   {
-    if( 'administrator' != \sabretooth\business\session::self()->get_role()->name &&
+    if( 'administrator' != bus\session::self()->get_role()->name &&
         // we can't use $this->get_role() here since the record may not exist yet
         role::get_unique_record( 'name', 'administrator' )->id == $this->role_id )
-      throw new \sabretooth\exception\permission(
+      throw new exc\permission(
         // fake the operation
-        \sabretooth\database\operation::get_operation( 'action', 'user', 'new_access' ), __METHOD__ );
+        operation::get_operation( 'action', 'user', 'new_access' ), __METHOD__ );
 
     parent::save();
   }
@@ -83,9 +86,9 @@ class access extends record
    */
   public function delete()
   {
-    if( 'administrator' != \sabretooth\business\session::self()->get_role()->name &&
+    if( 'administrator' != bus\session::self()->get_role()->name &&
         'administrator' == $this->get_role()->name )
-      throw new \sabretooth\exception\permission(
+      throw new exc\permission(
         // fake the operation
         operation::get_operation( 'action', 'access', 'delete' ), __METHOD__ );
 

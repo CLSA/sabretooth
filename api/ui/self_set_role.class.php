@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * action self set_role
@@ -38,19 +42,19 @@ class self_set_role extends action
    */
   public function execute()
   {
-    $db_role = \sabretooth\database\role::get_unique_record( 'name', $this->role_name );
+    $db_role = db\role::get_unique_record( 'name', $this->role_name );
     if( NULL == $db_role )
-      throw new \sabretooth\exception\runtime(
+      throw new exc\runtime(
         'Invalid role name "'.$this->role_name.'"', __METHOD__ );
 
     // get the first role associated with the role
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
     $db_site = $session->get_site();
-    $modifier = new \sabretooth\database\modifier();
+    $modifier = new db\modifier();
     $modifier->where( 'site_id', '=', $db_site->id );
     $db_role_list = $session->get_user()->get_role_list( $modifier );
     if( !in_array( $db_role, $db_role_list ) )
-      \sabretooth\log::error( 'User has no access to role name "'.$this->role_name. '"' );
+      log::error( 'User has no access to role name "'.$this->role_name. '"' );
 
     $session::self()->set_site_and_role( $db_site, $db_role );
   }

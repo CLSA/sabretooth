@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget contact add
@@ -55,7 +59,7 @@ class contact_add extends base_view
     
     // this widget must have a parent, and it's subject must be a participant
     if( is_null( $this->parent ) || 'participant' != $this->parent->get_subject() )
-      throw new \sabretooth\exception\runtime(
+      throw new exc\runtime(
         'Contact widget must have a parent with participant as the subject.', __METHOD__ );
     
     // create enum arrays
@@ -66,10 +70,10 @@ class contact_add extends base_view
     end( $ranks );
     $last_rank_key = key( $ranks );
     reset( $ranks );
-    $types = \sabretooth\database\contact::get_enum_values( 'type' );
+    $types = db\contact::get_enum_values( 'type' );
     $types = array_combine( $types, $types );
     $provinces = array();
-    foreach( \sabretooth\database\province::select() as $db_province )
+    foreach( db\province::select() as $db_province )
       $provinces[$db_province->id] = $db_province->name;
 
     // set the view's items

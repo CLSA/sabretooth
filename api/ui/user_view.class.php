@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget user view
@@ -42,7 +46,7 @@ class user_view extends base_view
       $this->access_list->set_parent( $this );
       $this->access_list->set_heading( 'User\'s site access list' );
     }
-    catch( \sabretooth\exception\permission $e )
+    catch( exc\permission $e )
     {
       $this->access_list = NULL;
     }
@@ -54,7 +58,7 @@ class user_view extends base_view
       $this->activity_list->set_parent( $this );
       $this->activity_list->set_heading( 'User activity' );
     }
-    catch( \sabretooth\exception\permission $e )
+    catch( exc\permission $e )
     {
       $this->activity_list = NULL;
     }
@@ -77,14 +81,14 @@ class user_view extends base_view
     $this->set_item( 'active', $this->get_record()->active, true );
     
     $db_activity = $this->get_record()->get_last_activity();
-    $last = \sabretooth\util::get_fuzzy_period_ago(
+    $last = util::get_fuzzy_period_ago(
               is_null( $db_activity ) ? null : $db_activity->date );
     $this->set_item( 'last_activity', $last );
 
     $this->finish_setting_items();
     
     $this->set_variable( 'view_shifts',
-      'supervisor' == \sabretooth\business\session::self()->get_role()->name );
+      'supervisor' == bus\session::self()->get_role()->name );
 
     if( !is_null( $this->access_list ) )
     {
@@ -109,11 +113,11 @@ class user_view extends base_view
    */
   public function determine_access_count( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    if( NULL == $modifier ) $modifier = new db\modifier();
     $modifier->where( 'user_id', '=', $this->get_record()->id );
     if( !site_restricted_list::may_restrict() )
-      $modifier->where( 'site_id', '=', \sabretooth\business\session::self()->get_site()->id );
-    return \sabretooth\database\access::count( $modifier );
+      $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );
+    return db\access::count( $modifier );
   }
 
   /**
@@ -126,11 +130,11 @@ class user_view extends base_view
    */
   public function determine_access_list( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    if( NULL == $modifier ) $modifier = new db\modifier();
     $modifier->where( 'user_id', '=', $this->get_record()->id );
     if( !site_restricted_list::may_restrict() )
-      $modifier->where( 'site_id', '=', \sabretooth\business\session::self()->get_site()->id );
-    return \sabretooth\database\access::select( $modifier );
+      $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );
+    return db\access::select( $modifier );
   }
 
   /**
@@ -144,8 +148,8 @@ class user_view extends base_view
   {
     if( !site_restricted_list::may_restrict() )
     {
-      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
-      $modifier->where( 'site_id', '=', \sabretooth\business\session::self()->get_site()->id );
+      if( NULL == $modifier ) $modifier = new db\modifier();
+      $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );
     }
 
     return $this->get_record()->get_activity_count( $modifier );
@@ -163,8 +167,8 @@ class user_view extends base_view
   {
     if( !site_restricted_list::may_restrict() )
     {
-      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
-      $modifier->where( 'site_id', '=', \sabretooth\business\session::self()->get_site()->id );
+      if( NULL == $modifier ) $modifier = new db\modifier();
+      $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );
     }
 
     return $this->get_record()->get_activity_list( $modifier );

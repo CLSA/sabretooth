@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget note list
@@ -46,7 +50,7 @@ class note_list extends widget
     $category_class = '\\sabretooth\\database\\'.$category;
     $db_record = new $category_class( $category_id );
     if( !is_a( $db_record, '\\sabretooth\\database\\has_note' ) )
-      throw new \sabretooth\exception\runtime(
+      throw new exc\runtime(
         sprintf( 'Tried to list notes for %s which cannot have notes.', $category ),
         __METHOD__ );
     
@@ -54,9 +58,9 @@ class note_list extends widget
     $note_list = array();
     foreach( $db_record->get_note_list() as $db_note )
     {
-      $date = 7 > \sabretooth\util::get_interval( $db_note->date )->days
-            ? \sabretooth\util::get_fuzzy_period_ago( $db_note->date )
-            : \sabretooth\util::get_formatted_date( $db_note->date );
+      $date = 7 > util::get_interval( $db_note->date )->days
+            ? util::get_fuzzy_period_ago( $db_note->date )
+            : util::get_formatted_date( $db_note->date );
       $note_list[] = array( 'id' => $db_note->id,
                             'sticky' => $db_note->sticky,
                             'user' => $db_note->get_user()->name,
@@ -69,7 +73,7 @@ class note_list extends widget
     $this->set_variable( 'note_list', $note_list );
 
     // allow supervisers and admins to modify notes
-    $role_name = \sabretooth\business\session::self()->get_role()->name;
+    $role_name = bus\session::self()->get_role()->name;
     if( 'administrator' == $role_name || 'supervisor' == $role_name )
     {
       $this->set_variable( 'stickable', true );

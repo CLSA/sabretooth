@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget shift add
@@ -41,7 +45,7 @@ class shift_add extends base_view
       $this->user_list->set_parent( $this, 'edit' );
       $this->user_list->set_heading( 'Choose users to add to this shift' );
     }
-    catch( \sabretooth\exception\permission $e )
+    catch( exc\permission $e )
     {
       $this->user_list = NULL;
     }
@@ -57,7 +61,7 @@ class shift_add extends base_view
   {
     parent::finish();
 
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
     
     if( $this->parent )
     {
@@ -65,11 +69,11 @@ class shift_add extends base_view
       {
         // create site enum array (for sites that user has operator access to only)
         $sites = array();
-        $db_role = \sabretooth\database\role::get_unique_record( 'name', 'operator' );
-        $modifier = new \sabretooth\database\modifier();
+        $db_role = db\role::get_unique_record( 'name', 'operator' );
+        $modifier = new db\modifier();
         $modifier->where( 'user_id', '=', $this->parent->get_record()->id );
         $modifier->where( 'role_id', '=', $db_role->id );
-        foreach( \sabretooth\database\access::select( $modifier ) as $db_access )
+        foreach( db\access::select( $modifier ) as $db_access )
           $sites[$db_access->site_id] = $db_access->get_site()->name;
 
         $this->set_variable( 'user_id', $this->parent->get_record()->id );
@@ -88,7 +92,7 @@ class shift_add extends base_view
       }
       else
       {
-        throw new \sabretooth\exception\runtime(
+        throw new exc\runtime(
           'Shift widget has an invalid parent "'.$this->parent->get_subject().
           '", which should be "user" or "site".', __METHOD__ );
         
@@ -104,7 +108,7 @@ class shift_add extends base_view
       else
       {
         $sites = array();
-        foreach( \sabretooth\database\site::select( $modifier ) as $db_site )
+        foreach( db\site::select( $modifier ) as $db_site )
           $sites[$db_site->id] = $db_site->name;
       }
 
@@ -135,13 +139,13 @@ class shift_add extends base_view
    */
   public function determine_user_count( $modifier = NULL )
   {
-    $db_role = \sabretooth\database\role::get_unique_record( 'name', 'operator' );
-    if( is_null( $modifier ) ) $modifier = new \sabretooth\database\modifier();
+    $db_role = db\role::get_unique_record( 'name', 'operator' );
+    if( is_null( $modifier ) ) $modifier = new db\modifier();
     $modifier->where( 'role_id', '=', $db_role->id );
     if( $this->parent && 'site' == $this->parent->get_subject() )
       $modifier->where( 'site_id', '=', $this->parent->get_record()->id );
 
-    return \sabretooth\database\user::count( $modifier );
+    return db\user::count( $modifier );
   }
 
   /**
@@ -154,13 +158,13 @@ class shift_add extends base_view
    */
   public function determine_user_list( $modifier = NULL )
   {
-    $db_role = \sabretooth\database\role::get_unique_record( 'name', 'operator' );
-    if( is_null( $modifier ) ) $modifier = new \sabretooth\database\modifier();
+    $db_role = db\role::get_unique_record( 'name', 'operator' );
+    if( is_null( $modifier ) ) $modifier = new db\modifier();
     $modifier->where( 'role_id', '=', $db_role->id );
     if( $this->parent && 'site' == $this->parent->get_subject() )
       $modifier->where( 'site_id', '=', $this->parent->get_record()->id );
 
-    return \sabretooth\database\user::select( $modifier );
+    return db\user::select( $modifier );
   }
 
   /**

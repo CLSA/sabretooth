@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget site add
@@ -45,7 +49,7 @@ class site_add extends base_view
     parent::finish();
     
     // create enum arrays
-    $timezones = \sabretooth\database\site::get_enum_values( 'timezone' );
+    $timezones = db\site::get_enum_values( 'timezone' );
     $timezones = array_combine( $timezones, $timezones );
 
     // set the view's items

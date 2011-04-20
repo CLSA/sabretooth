@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * Base class for all listing widgets.
@@ -43,13 +47,13 @@ abstract class base_list_widget extends widget
     $this->restrictions = $this->get_argument( 'restrictions', $this->restrictions );
     
     // determine properties based on the current user's permissions
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
     $this->viewable = $session->is_allowed(
-      \sabretooth\database\operation::get_operation( 'widget', $this->get_subject(), 'view' ) );
+      db\operation::get_operation( 'widget', $this->get_subject(), 'view' ) );
     $this->addable = $session->is_allowed(
-      \sabretooth\database\operation::get_operation( 'widget', $this->get_subject(), 'add' ) );
+      db\operation::get_operation( 'widget', $this->get_subject(), 'add' ) );
     $this->removable = $session->is_allowed(
-      \sabretooth\database\operation::get_operation( 'action', $this->get_subject(), 'delete' ) );
+      db\operation::get_operation( 'action', $this->get_subject(), 'delete' ) );
   }
   
   /**
@@ -77,7 +81,7 @@ abstract class base_list_widget extends widget
     if( $this->page > $max_page ) $this->page = $max_page; // upper limit
     
     // build the sql modifier
-    $modifier = new \sabretooth\database\modifier();
+    $modifier = new db\modifier();
     if( strlen( $this->sort_column ) ) $modifier->order( $this->sort_column, $this->sort_desc );
     $modifier->limit( $this->items_per_page, ( $this->page - 1 ) * $this->items_per_page );
     
@@ -88,7 +92,7 @@ abstract class base_list_widget extends widget
       else if( 'is not' == $restrict['compare'] ) $operator = '!=';
       else if( 'like' == $restrict['compare'] ) $operator = 'LIKE';
       else if( 'not like' == $restrict['compare'] ) $operator = 'NOT LIKE';
-      else \sabretooth\log::error( 'Invalid comparison in list restriction.' );
+      else log::error( 'Invalid comparison in list restriction.' );
 
       if( 0 < strlen( $operator ) ) $modifier->where( $column, $operator, $restrict['value'] );
     }
@@ -148,12 +152,12 @@ abstract class base_list_widget extends widget
     else // 'view' == $mode
     {
       // add/remove operations are relative to the parent
-      $session = \sabretooth\business\session::self();
+      $session = bus\session::self();
       $this->addable = $session->is_allowed( 
-        \sabretooth\database\operation::get_operation(
+        db\operation::get_operation(
           'widget', $this->parent->get_subject(), 'add_'.$this->get_subject() ) );
       $this->removable = $session->is_allowed(
-        \sabretooth\database\operation::get_operation(
+        db\operation::get_operation(
           'action', $this->parent->get_subject(), 'delete_'.$this->get_subject() ) );
     }
   }
@@ -294,8 +298,8 @@ abstract class base_list_widget extends widget
     
     // specify column timezone for datetime columns
     if( 'datetime' == $type ) $heading .=
-      sprintf( ' (%s)', \sabretooth\util::get_timezone_abbreviation(
-                         \sabretooth\business\session::self()->get_site()->timezone ) );
+      sprintf( ' (%s)', util::get_timezone_abbreviation(
+                         bus\session::self()->get_site()->timezone ) );
 
     $column = array( 'id' => $column_id, 'type' => $type, 'heading' => $heading );
     if( $sortable ) $column['sortable'] = $sortable;
@@ -346,15 +350,15 @@ abstract class base_list_widget extends widget
         {
           $columns[$column_id] =
             is_null( $columns[$column_id] ) ?
-            'none' : \sabretooth\util::get_formatted_time( $columns[$column_id], false );
+            'none' : util::get_formatted_time( $columns[$column_id], false );
         }
         else if( 'date' == $this->columns[$column_id]['type'] )
         {
-          $columns[$column_id] = \sabretooth\util::get_formatted_date( $columns[$column_id] );
+          $columns[$column_id] = util::get_formatted_date( $columns[$column_id] );
         }
         else if( 'fuzzy' == $this->columns[$column_id]['type'] )
         {
-          $columns[$column_id] = \sabretooth\util::get_fuzzy_period_ago( $columns[$column_id] );
+          $columns[$column_id] = util::get_fuzzy_period_ago( $columns[$column_id] );
         }
         else if( 'boolean' == $this->columns[$column_id]['type'] )
         {

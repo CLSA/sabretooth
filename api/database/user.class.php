@@ -8,6 +8,9 @@
  */
 
 namespace sabretooth\database;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\exception as exc;
 
 /**
  * user: record
@@ -29,7 +32,7 @@ class user extends base_access
   {
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to determine access for user with no id.' );
+      log::warning( 'Tried to determine access for user with no id.' );
       return 0;
     } 
     
@@ -49,11 +52,11 @@ class user extends base_access
   {
     // make sure the site id list argument is a non-empty array of ids
     if( !is_array( $site_id_list ) || 0 == count( $site_id_list ) )
-      throw new \sabretooth\exception\argument( 'site_id_list', $site_id_list, __METHOD__ );
+      throw new exc\argument( 'site_id_list', $site_id_list, __METHOD__ );
 
     // make sure the role id argument is valid
     if( 0 >= $role_id )
-      throw new \sabretooth\exception\argument( 'role_id', $role_id, __METHOD__ );
+      throw new exc\argument( 'role_id', $role_id, __METHOD__ );
 
     $values = '';
     $first = true;
@@ -83,7 +86,7 @@ class user extends base_access
   {
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to remove access from user with no id.' );
+      log::warning( 'Tried to remove access from user with no id.' );
       return;
     }
 

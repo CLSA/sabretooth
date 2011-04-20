@@ -8,6 +8,9 @@
  */
 
 namespace sabretooth\database;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\exception as exc;
 
 /**
  * assignment: record
@@ -29,7 +32,7 @@ class assignment extends has_note
   {
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to determine token for interview with no id.' );
+      log::warning( 'Tried to determine token for interview with no id.' );
       return NULL;
     } 
     

@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * action phone_call end
@@ -35,11 +39,11 @@ class phone_call_end extends action
    */
   public function execute()
   {
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
     $is_operator = 'operator' == $session->get_role()->name;
 
     // disconnect voip
-    \sabretooth\business\voip_manager::self()->hang_up();
+    bus\voip_manager::self()->hang_up();
 
     if( $is_operator )
     { // set the end time and status of the call

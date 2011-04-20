@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * Base class for all list widgets which may be restricted by site.
@@ -34,12 +38,12 @@ abstract class site_restricted_list extends base_list_widget
     {
       $restrict_site_id = $this->get_argument( "restrict_site_id", 0 );
       $this->db_restrict_site = $restrict_site_id
-                              ? new \sabretooth\database\site( $restrict_site_id )
+                              ? new db\site( $restrict_site_id )
                               : NULL;
     }
     else // anyone else is restricted to their own site
     {
-      $this->db_restrict_site = \sabretooth\business\session::self()->get_site();
+      $this->db_restrict_site = bus\session::self()->get_site();
     }
     
     // if restricted, show the site's name in the heading
@@ -63,7 +67,7 @@ abstract class site_restricted_list extends base_list_widget
       if( is_null( $this->parent ) )
       {
         $sites = array();
-        foreach( \sabretooth\database\site::select() as $db_site )
+        foreach( db\site::select() as $db_site )
           $sites[$db_site->id] = $db_site->name;
         $this->set_variable( 'sites', $sites );
       }
@@ -93,7 +97,7 @@ abstract class site_restricted_list extends base_list_widget
   {
     if( !is_null( $this->db_restrict_site ) )
     {
-      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+      if( NULL == $modifier ) $modifier = new db\modifier();
       $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
     }
 
@@ -112,7 +116,7 @@ abstract class site_restricted_list extends base_list_widget
   {
     if( !is_null( $this->db_restrict_site ) )
     {
-      if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+      if( NULL == $modifier ) $modifier = new db\modifier();
       $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
     }
 
@@ -129,7 +133,7 @@ abstract class site_restricted_list extends base_list_widget
    */
   public static function may_restrict()
   {
-    $role_name = \sabretooth\business\session::self()->get_role()->name;
+    $role_name = bus\session::self()->get_role()->name;
     return 'administrator' == $role_name || 'technician' == $role_name;
   }
 

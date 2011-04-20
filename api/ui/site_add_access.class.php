@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget site add_access
@@ -47,7 +51,7 @@ class site_add_access extends base_add_access
   public function determine_user_count( $modifier = NULL )
   {
     // we want to display all users
-    return \sabretooth\database\user::count( $modifier );
+    return db\user::count( $modifier );
   }
 
   /**
@@ -61,7 +65,7 @@ class site_add_access extends base_add_access
   public function determine_user_list( $modifier = NULL )
   {
     // we want to display all users
-    return \sabretooth\database\user::select( $modifier );
+    return db\user::select( $modifier );
   }
 }
 ?>

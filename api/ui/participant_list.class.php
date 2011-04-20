@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget participant list
@@ -70,7 +74,7 @@ class participant_list extends site_restricted_list
   {
     return is_null( $this->db_restrict_site )
          ? parent::determine_record_count( $modifier )
-         : \sabretooth\database\participant::count_for_site( $this->db_restrict_site, $modifier );
+         : db\participant::count_for_site( $this->db_restrict_site, $modifier );
   }
   
   /**
@@ -85,7 +89,7 @@ class participant_list extends site_restricted_list
   {
     return is_null( $this->db_restrict_site )
          ? parent::determine_record_list( $modifier )
-         : \sabretooth\database\participant::select_for_site( $this->db_restrict_site, $modifier );
+         : db\participant::select_for_site( $this->db_restrict_site, $modifier );
   }
 }
 ?>

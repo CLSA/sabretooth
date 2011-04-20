@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * The base class of all widgets.
@@ -44,7 +48,7 @@ abstract class widget extends operation
   public function finish()
   {
     $widget_variable = array( 'subject' => $this->get_subject(),
-                              'subjects' => \sabretooth\util::pluralize( $this->get_subject() ),
+                              'subjects' => util::pluralize( $this->get_subject() ),
                               'name' => $this->get_name(),
                               'full' => $this->get_full_name(),
                               'compound' => $this->get_full_name() );
@@ -56,7 +60,7 @@ abstract class widget extends operation
         array( 'exists' => true,
                'id' => $this->parent->get_record()->id,
                'subject' => $this->parent->get_subject(),
-               'subjects' => \sabretooth\util::pluralize( $this->parent->get_subject() ),
+               'subjects' => util::pluralize( $this->parent->get_subject() ),
                'name' => $this->parent->get_name(),
                'full' => $this->parent->get_full_name() ) );
     }
@@ -98,7 +102,7 @@ abstract class widget extends operation
     { // the argument is missing
       if( 1 == func_num_args() )
       { // if only one argument was passed to this method then the argument is required
-        throw new \sabretooth\exception\argument( $name, NULL, __METHOD__ );
+        throw new exc\argument( $name, NULL, __METHOD__ );
       }
 
       // if the argument was not required, then use the default instead
@@ -124,7 +128,7 @@ abstract class widget extends operation
   {
     // warn if overwriting a variable
     if( array_key_exists( $name, $this->variables ) )
-      \sabretooth\log::warning(
+      log::warning(
         sprintf( 'Overwriting existing template variable "%s" which was "%s" and is now "%s"',
                  $name,
                  $this->variables[$name],

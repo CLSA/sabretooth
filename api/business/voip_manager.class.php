@@ -8,6 +8,9 @@
  */
 
 namespace sabretooth\business;
+use sabretooth\log, sabretooth\util;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 require_once SHIFT8_PATH.'/library/Shift8.php';
 
@@ -26,7 +29,7 @@ class voip_manager extends \sabretooth\singleton
    */
   public function __construct()
   {
-    $session = \sabretooth\business\session::self();
+    $session = session::self();
     $this->enabled = true === $session->get_setting( 'voip', 'enabled' );
     $this->url = $session->get_setting( 'voip', 'url' );
     $this->username = $session->get_setting( 'voip', 'username' );
@@ -51,11 +54,11 @@ class voip_manager extends \sabretooth\singleton
       // create and connect to the shift8 AJAM interface
       $this->manager = new \Shift8( $this->url, $this->username, $this->password );
       if( !$this->manager->login() )
-        throw new \sabretooth\exception\runtime(
+        throw new exc\runtime(
           'Unable to connect to the Asterisk server.', __METHOD__ );
 
       // get the current SIP info
-      $peer = \sabretooth\business\session::self()->get_user()->name;
+      $peer = session::self()->get_user()->name;
       $s8_event = $this->manager->getSipPeer( $peer );
       
       if( !is_null( $s8_event ) &&
@@ -72,7 +75,7 @@ class voip_manager extends \sabretooth\singleton
     }
     catch( \Shift8_Exception $e )
     {
-      throw new \sabretooth\exception\voip(
+      throw new exc\voip(
         'Failed to initialize Asterisk AJAM interface.', __METHOD__, $e );
     }
   }
@@ -115,7 +118,7 @@ class voip_manager extends \sabretooth\singleton
     $events = $this->manager->getStatus();
 
     if( is_null( $events ) )
-      throw new \sabretooth\exception\voip(
+      throw new exc\voip(
         $this->manager->getLastError(), __METHOD__ );
 
     foreach( $events as $s8_event )
@@ -141,19 +144,19 @@ class voip_manager extends \sabretooth\singleton
     if( is_null( $db_contact ) ||
         !is_object( $db_contact ) ||
         'sabretooth\\database\\contact' != get_class( $db_contact ) )
-      throw new \sabretooth\exception\argument( 'db_contact', $db_contact, __METHOD__ );
+      throw new exc\argument( 'db_contact', $db_contact, __METHOD__ );
 
     // check that the phone number has exactly 10 digits
     $digits = preg_replace( '/[^0-9]/', '', $db_contact->phone );
     if( 10 != strlen( $digits ) )
-      throw new \sabretooth\exception\runtime(
+      throw new exc\runtime(
         'Tried to connect to phone number which does not have exactly 10 digits.', __METHOD__ );
 
-    $peer = \sabretooth\business\session::self()->get_user()->name;
+    $peer = session::self()->get_user()->name;
     
     // make sure the user isn't already in a call
     if( 0 < count( $this->get_calls( $peer ) ) )
-      throw new \sabretooth\exception\notice(
+      throw new exc\notice(
         'Unable to connect call since you already appear to be in a call.', __METHOD__ );
 
     // originate call (careful, the online API has the arguments in the wrong order)
@@ -162,7 +165,7 @@ class voip_manager extends \sabretooth\singleton
     $extension = $this->prefix.$digits;
     $priority = 1;
     if( !$this->manager->originate( $channel, $context, $extension, $priority ) )
-      throw new \sabretooth\exception\voip(
+      throw new exc\voip(
         $this->manager->getLastError(), __METHOD__ );
 
     // rebuild the call list
@@ -179,12 +182,12 @@ class voip_manager extends \sabretooth\singleton
    */
   public function dtmf( $tone )
   {
-    $peer = \sabretooth\business\session::self()->get_user()->name;
+    $peer = session::self()->get_user()->name;
     
     $calls = $this->get_calls( $peer );
     // make sure the user is already in a call
     if( 0 == count( $this->get_calls( $peer ) ) )
-      throw new \sabretooth\exception\notice(
+      throw new exc\notice(
         'Cannot send tones while not in a call.', __METHOD__ );
     
     // get the bridged channel of the first call
@@ -196,7 +199,7 @@ class voip_manager extends \sabretooth\singleton
 
     // send the DTMF
     if( !$this->manager->playDTMF( $tone, $channel ) )
-      throw new \sabretooth\exception\voip(
+      throw new exc\voip(
         $this->manager->getLastError(), __METHOD__ );
   }
 
@@ -216,7 +219,7 @@ class voip_manager extends \sabretooth\singleton
 
     if( is_null( $voip_call ) )
     {
-      $peer = \sabretooth\business\session::self()->get_user()->name;
+      $peer = session::self()->get_user()->name;
       foreach( $this->get_calls( $peer ) as $voip_call )
         $rebuild_list = $rebuild_list || $this->manager->hangup( $voip_call->get_channel() );
     }

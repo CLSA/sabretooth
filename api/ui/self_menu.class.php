@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget self menu
@@ -39,7 +43,7 @@ class self_menu extends widget
   {
     parent::finish();
 
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
     $db_role = $session->get_role();
     $is_operator = 'operator' == $db_role->name;
 
@@ -51,7 +55,7 @@ class self_menu extends widget
     }
 
     // get all 'list' widgets that the user has access to
-    $modifier = new \sabretooth\database\modifier();
+    $modifier = new db\modifier();
     $modifier->where( 'operation.type', '=', 'widget' );
     $modifier->where( 'operation.name', '=', 'list' );
     $widgets = $db_role->get_operation_list( $modifier );
@@ -66,7 +70,7 @@ class self_menu extends widget
             'assignment' == $db_widget->subject ) ) continue;
 
       if( !in_array( $db_widget->subject, $exclude ) )
-        $items[] = array( 'heading' => \sabretooth\util::pluralize( $db_widget->subject ),
+        $items[] = array( 'heading' => util::pluralize( $db_widget->subject ),
                           'widget' => $db_widget->subject.'_'.$db_widget->name );
 
       // insert the participant tree after participant list

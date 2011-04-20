@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * action participant new
@@ -38,9 +42,9 @@ class participant_new extends base_new
     // make sure the name column isn't blank
     $columns = $this->get_argument( 'columns' );
     if( !array_key_exists( 'first_name', $columns ) || 0 == strlen( $columns['first_name'] ) )
-      throw new \sabretooth\exception\notice( 'The participant\'s first name cannot be left blank.', __METHOD__ );
+      throw new exc\notice( 'The participant\'s first name cannot be left blank.', __METHOD__ );
     if( !array_key_exists( 'last_name', $columns ) || 0 == strlen( $columns['last_name'] ) )
-      throw new \sabretooth\exception\notice( 'The participant\'s last name cannot be left blank.', __METHOD__ );
+      throw new exc\notice( 'The participant\'s last name cannot be left blank.', __METHOD__ );
 
     parent::execute();
   }

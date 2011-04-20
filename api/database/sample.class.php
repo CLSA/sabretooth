@@ -8,6 +8,9 @@
  */
 
 namespace sabretooth\database;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\exception as exc;
 
 /**
  * sample: record
@@ -28,7 +31,7 @@ class sample extends record
     // warn if we are in read-only mode
     if( $this->read_only )
     {
-      \sabretooth\log::warning( 'Tried to save read-only record.' );
+      log::warning( 'Tried to save read-only record.' );
       return;
     }
     
@@ -51,7 +54,7 @@ class sample extends record
         $duplicates = sample::count( $modifier );
         if( $duplicates )
         { // a participant in the sample is already part of another sample which is active
-          throw new \sabretooth\exception\runtime(
+          throw new exc\runtime(
             sprintf( 'Tried to assign a questionnaire to a sample which has %d participants who '.
                      'are already in active samples.',
                      $duplicates ), __METHOD__ );
@@ -76,13 +79,13 @@ class sample extends record
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to query sample with no id.' );
+      log::warning( 'Tried to query sample with no id.' );
       return;
     }
     
     if( 'participant' == $record_type && !is_null( $this->qnaire_id ) )
     {
-      throw new \sabretooth\exception\runtime(
+      throw new exc\runtime(
         'Tried to add new participants to an active sample.', __METHOD__ );
     }
 
@@ -102,13 +105,13 @@ class sample extends record
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to query sample with no id.' );
+      log::warning( 'Tried to query sample with no id.' );
       return;
     }
     
     if( 'participant' == $record_type && !is_null( $this->qnaire_id ) )
     {
-      throw new \sabretooth\exception\runtime(
+      throw new exc\runtime(
         'Tried to remove participants from an active sample.', __METHOD__ );
     }
 

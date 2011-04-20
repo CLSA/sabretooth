@@ -8,6 +8,9 @@
  */
 
 namespace sabretooth\database;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\exception as exc;
 
 /**
  * A base class for all classes joined together by the access table.
@@ -100,7 +103,7 @@ abstract class base_access extends record
     $subject_name = static::get_table_name();
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to query '.$subject_name.' with no id.' );
+      log::warning( 'Tried to query '.$subject_name.' with no id.' );
       return NULL;
     }
     
@@ -127,7 +130,7 @@ abstract class base_access extends record
     $subject_name = static::get_table_name();
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to query '.$subject_name.' with no id.' );
+      log::warning( 'Tried to query '.$subject_name.' with no id.' );
       return 0;
     }
     
@@ -150,7 +153,7 @@ abstract class base_access extends record
     $activity_list = array();
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to query '.$subject_name.' with no id.' );
+      log::warning( 'Tried to query '.$subject_name.' with no id.' );
       return $activity_list;
     }
     
@@ -197,7 +200,7 @@ abstract class base_access extends record
     // now that we are relatively sure the method name is valid, make sure we have a valid record
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to query user with no id.' );
+      log::warning( 'Tried to query user with no id.' );
       return 0;
     }
     

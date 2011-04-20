@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget queue list
@@ -32,7 +36,7 @@ class queue_list extends base_list_widget
     $this->add_column( 'enabled', 'boolean', 'Enabled', false );
     $this->add_column( 'participant_count', 'number', 'Participants', false );
     $this->add_column( 'description', 'text', 'Description', true, 'left' );
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
     if( 'supervisor' == $session->get_role()->name )
       $this->set_heading( 'Queue list for '.$session->get_site()->name );
   }
@@ -47,7 +51,7 @@ class queue_list extends base_list_widget
   {
     parent::finish();
     
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
     $is_administrator = 'administrator' == $session->get_role()->name;
     $is_supervisor = 'supervisor' == $session->get_role()->name;
     
@@ -55,7 +59,7 @@ class queue_list extends base_list_widget
     if( $is_administrator )
     {
       $sites = array();
-      foreach( \sabretooth\database\site::select() as $db_site )
+      foreach( db\site::select() as $db_site )
         $sites[$db_site->id] = $db_site->name;
       $this->set_variable( 'sites', $sites );
     }
@@ -63,18 +67,18 @@ class queue_list extends base_list_widget
     $restrict_site_id = $this->get_argument( "restrict_site_id", 0 );
     $this->set_variable( 'restrict_site_id', $restrict_site_id );
     $db_restrict_site = $restrict_site_id
-                      ? new \sabretooth\database\site( $restrict_site_id )
+                      ? new db\site( $restrict_site_id )
                       : NULL;
 
     $qnaires = array();
-    foreach( \sabretooth\database\qnaire::select() as $db_qnaire )
+    foreach( db\qnaire::select() as $db_qnaire )
       $qnaires[$db_qnaire->id] = $db_qnaire->name;
     $this->set_variable( 'qnaires', $qnaires );
     
     $restrict_qnaire_id = $this->get_argument( "restrict_qnaire_id", 0 );
     $this->set_variable( 'restrict_qnaire_id', $restrict_qnaire_id );
     $db_restrict_qnaire = $restrict_qnaire_id
-                        ? new \sabretooth\database\qnaire( $restrict_qnaire_id )
+                        ? new db\qnaire( $restrict_qnaire_id )
                         : NULL;
 
     foreach( $this->get_record_list() as $record )
@@ -86,7 +90,7 @@ class queue_list extends base_list_widget
       // restrict to the current qnaire
       $record->set_qnaire( $db_restrict_qnaire );
 
-      $db_setting = \sabretooth\database\setting::get_setting( 'queue state', $record->name );
+      $db_setting = db\setting::get_setting( 'queue state', $record->name );
       $this->add_row( $record->id,
         array( 'rank' => $record->rank,
                'enabled' => 'true' == $db_setting->value,
@@ -110,7 +114,7 @@ class queue_list extends base_list_widget
    */
   protected function determine_record_count( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    if( NULL == $modifier ) $modifier = new db\modifier();
     $modifier->where( 'rank', '!=', NULL );
     $modifier->order( 'rank' );
 
@@ -127,7 +131,7 @@ class queue_list extends base_list_widget
    */
   protected function determine_record_list( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = new \sabretooth\database\modifier();
+    if( NULL == $modifier ) $modifier = new db\modifier();
     $modifier->where( 'rank', '!=', NULL );
     $modifier->order( 'rank' );
 

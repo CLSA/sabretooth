@@ -8,6 +8,9 @@
  */
 
 namespace sabretooth\database;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\exception as exc;
 
 /**
  * participant: record
@@ -93,7 +96,7 @@ class participant extends has_note
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to query participant with no id.' );
+      log::warning( 'Tried to query participant with no id.' );
       return NULL;
     }
     
@@ -103,7 +106,7 @@ class participant extends has_note
       foreach( $ids as $index => $id )
       {
         // remove ids of active samples
-        $db_sample = new \sabretooth\database\sample( $id );
+        $db_sample = new sample( $id );
         if( !is_null( $db_sample->qnaire_id ) )
         {
           unset( $ids[$index] );
@@ -118,7 +121,7 @@ class participant extends has_note
     // report if any were not added
     if( 0 < $removed )
     {
-      throw new \sabretooth\exception\runtime(
+      throw new exc\runtime(
         sprintf( 'Tried to add participant to %s active sample%s.',
                  1 == $removed ? 'an' : $removed,
                  1 == $removed ? '' : 's' ),
@@ -139,7 +142,7 @@ class participant extends has_note
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to query participant with no id.' );
+      log::warning( 'Tried to query participant with no id.' );
       return NULL;
     }
     
@@ -149,7 +152,7 @@ class participant extends has_note
       foreach( $ids as $index => $id )
       {
         // remove ids of active samples
-        $db_sample = new \sabretooth\database\sample( $id );
+        $db_sample = new sample( $id );
         if( !is_null( $db_sample->qnaire_id ) )
         {
           unset( $ids[$index] );
@@ -164,7 +167,7 @@ class participant extends has_note
     // report if any were not added
     if( 0 < $removed )
     {
-      throw new \sabretooth\exception\runtime(
+      throw new exc\runtime(
         sprintf( 'Tried to remove participant from %s active sample%s.',
                  1 == $removed ? 'an' : $removed,
                  1 == $removed ? '' : 's' ),
@@ -184,7 +187,7 @@ class participant extends has_note
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to query participant with no id.' );
+      log::warning( 'Tried to query participant with no id.' );
       return NULL;
     }
     
@@ -196,7 +199,7 @@ class participant extends has_note
 
     // warn if there are more than one active samples (this should never happen)
     if( 1 < count( $sample_list ) )
-      \sabretooth\log::crit(
+      log::crit(
         sprintf( 'Participant %d belongs to more than one active sample!',
                   $this->id ) );
 
@@ -214,7 +217,7 @@ class participant extends has_note
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to query participant with no id.' );
+      log::warning( 'Tried to query participant with no id.' );
       return NULL;
     }
     
@@ -238,7 +241,7 @@ class participant extends has_note
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to query participant with no id.' );
+      log::warning( 'Tried to query participant with no id.' );
       return NULL;
     }
     
@@ -262,7 +265,7 @@ class participant extends has_note
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to query participant with no id.' );
+      log::warning( 'Tried to query participant with no id.' );
       return NULL;
     }
     
@@ -284,7 +287,7 @@ class participant extends has_note
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      \sabretooth\log::warning( 'Tried to query participant with no id.' );
+      log::warning( 'Tried to query participant with no id.' );
       return NULL;
     }
     

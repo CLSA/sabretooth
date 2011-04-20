@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * Base class for all operation.
@@ -36,16 +40,16 @@ abstract class operation extends \sabretooth\base_object
   {
     // type must either be an action or widget
     if( 'action' != $type && 'datum' != $type && 'widget' != $type )
-      throw new \sabretooth\exception\argument( 'type', $type, __METHOD__ );
+      throw new exc\argument( 'type', $type, __METHOD__ );
     
     $this->operation_record =
-      \sabretooth\database\operation::get_operation( $type, $subject, $name );
+      db\operation::get_operation( $type, $subject, $name );
     
     if( is_array( $args ) ) $this->arguments = $args;
     
     // throw a permission exception if the user is not allowed to perform this operation
-    if( !\sabretooth\business\session::self()->is_allowed( $this->operation_record ) )
-      throw new \sabretooth\exception\permission( $this->operation_record, __METHOD__ );
+    if( !bus\session::self()->is_allowed( $this->operation_record ) )
+      throw new exc\permission( $this->operation_record, __METHOD__ );
   }
 
   /**
@@ -106,7 +110,7 @@ abstract class operation extends \sabretooth\base_object
     $argument = NULL;
     if( !array_key_exists( $name, $this->arguments ) )
     {
-      if( 1 == func_num_args() ) throw new \sabretooth\exception\argument( $name, NULL, __METHOD__ );
+      if( 1 == func_num_args() ) throw new exc\argument( $name, NULL, __METHOD__ );
       $argument = $default;
     }
     else

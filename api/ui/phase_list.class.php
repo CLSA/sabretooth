@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget phase list
@@ -46,7 +50,7 @@ class phase_list extends base_list_widget
     foreach( $this->get_record_list() as $record )
     {
       // get the survey
-      $db_survey = new \sabretooth\database\limesurvey\surveys( $record->sid );
+      $db_survey = new db\limesurvey\surveys( $record->sid );
 
       $this->add_row( $record->id,
         array( 'survey' => $db_survey->get_title(),

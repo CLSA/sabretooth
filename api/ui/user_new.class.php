@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * action user new
@@ -50,8 +54,8 @@ class user_new extends base_new
     if( !is_null( $this->site_id ) && !is_null( $this->role_id ) )
     { // add the initial role to the new user
       $columns = $this->get_argument( 'columns' );
-      $db_user = \sabretooth\database\user::get_unique_record( 'name', $columns['name'] );
-      $db_access = new \sabretooth\database\access();
+      $db_user = db\user::get_unique_record( 'name', $columns['name'] );
+      $db_access = new db\access();
       $db_access->user_id = $db_user->id;
       $db_access->site_id = $this->site_id;
       $db_access->role_id = $this->role_id;

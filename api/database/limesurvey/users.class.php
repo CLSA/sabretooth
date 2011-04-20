@@ -8,6 +8,9 @@
  */
 
 namespace sabretooth\database\limesurveys;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * users: record

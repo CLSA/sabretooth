@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget role view
@@ -40,7 +44,7 @@ class role_view extends base_view
       $this->operation_list->remove_column( 'restricted' );
       $this->operation_list->set_heading( 'Operations belonging to this role' );
     }
-    catch( \sabretooth\exception\permission $e )
+    catch( exc\permission $e )
     {
       $this->operation_list = NULL;
     }

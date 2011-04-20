@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget assignment view
@@ -44,7 +48,7 @@ class assignment_view extends base_view
       $this->phone_call_list->set_parent( $this );
       $this->phone_call_list->set_heading( 'Phone calls made during this assignment' );
     }
-    catch( \sabretooth\exception\permission $e )
+    catch( exc\permission $e )
     {
       $this->phone_call_list = NULL;
     }
@@ -69,11 +73,11 @@ class assignment_view extends base_view
     $this->set_item( 'participant', $participant );
     $this->set_item( 'queue', $this->get_record()->get_queue()->name );
     $this->set_item( 'date',
-      \sabretooth\util::get_formatted_date( $this->get_record()->start_time ) );
+      util::get_formatted_date( $this->get_record()->start_time ) );
     $this->set_item( 'start_time',
-      \sabretooth\util::get_formatted_time( $this->get_record()->start_time, false ) );
+      util::get_formatted_time( $this->get_record()->start_time, false ) );
     $this->set_item( 'end_time',
-      \sabretooth\util::get_formatted_time( $this->get_record()->end_time, false, 'none' ) );
+      util::get_formatted_time( $this->get_record()->end_time, false, 'none' ) );
 
     $this->finish_setting_items();
 

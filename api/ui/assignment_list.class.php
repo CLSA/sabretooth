@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget assignment list
@@ -78,10 +82,10 @@ class assignment_list extends site_restricted_list
    */
   protected function determine_record_count( $modifier = NULL )
   {
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
     if( 'operator' == $session->get_role()->name )
     {
-      if( is_null( $modifier ) ) $modifier = new \sabretooth\database\modifier();
+      if( is_null( $modifier ) ) $modifier = new db\modifier();
       $db_assignment = $session->get_current_assignment();
       $participant_id = is_null( $db_assignment )
                       ? 0
@@ -103,10 +107,10 @@ class assignment_list extends site_restricted_list
    */
   protected function determine_record_list( $modifier = NULL )
   {
-    $session = \sabretooth\business\session::self();
+    $session = bus\session::self();
     if( 'operator' == $session->get_role()->name )
     {
-      if( is_null( $modifier ) ) $modifier = new \sabretooth\database\modifier();
+      if( is_null( $modifier ) ) $modifier = new db\modifier();
       $db_assignment = $session->get_current_assignment();
       $participant_id = is_null( $db_assignment )
                       ? 0

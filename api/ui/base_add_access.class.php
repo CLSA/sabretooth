@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * Base class for adding access to sites and users.
@@ -36,7 +40,7 @@ class base_add_access extends base_add_list
       $this->role_list->set_parent( $this, 'edit' );
       $this->role_list->set_heading( 'Select roles to grant' );
     }
-    catch( \sabretooth\exception\permission $e )
+    catch( exc\permission $e )
     {
       $this->role_list = NULL;
     }
@@ -69,12 +73,12 @@ class base_add_access extends base_add_list
    */
   public function determine_role_count( $modifier = NULL )
   {
-    if( 'administrator' != \sabretooth\business\session::self()->get_role()->name )
+    if( 'administrator' != bus\session::self()->get_role()->name )
     { // make sure that only admins can grant admin access
-      if( is_null( $modifier ) ) $modifier = new \sabretooth\database\modifier();
+      if( is_null( $modifier ) ) $modifier = new db\modifier();
       $modifier->where( 'name', '!=', 'administrator' );
     }
-    return \sabretooth\database\role::count( $modifier );
+    return db\role::count( $modifier );
   }
 
   /**
@@ -87,12 +91,12 @@ class base_add_access extends base_add_list
    */
   public function determine_role_list( $modifier = NULL )
   {
-    if( 'administrator' != \sabretooth\business\session::self()->get_role()->name )
+    if( 'administrator' != bus\session::self()->get_role()->name )
     { // make sure that only admins can grant admin access
-      if( is_null( $modifier ) ) $modifier = new \sabretooth\database\modifier();
+      if( is_null( $modifier ) ) $modifier = new db\modifier();
       $modifier->where( 'name', '!=', 'administrator' );
     }
-    return \sabretooth\database\role::select( $modifier );
+    return db\role::select( $modifier );
   }
 
   /**

@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget participant view
@@ -43,7 +47,7 @@ class participant_view extends base_view
       $this->sample_list->set_parent( $this );
       $this->sample_list->set_heading( 'Samples' );
     }
-    catch( \sabretooth\exception\permission $e )
+    catch( exc\permission $e )
     {
       $this->sample_list = NULL;
     }
@@ -55,7 +59,7 @@ class participant_view extends base_view
       $this->contact_list->set_parent( $this );
       $this->contact_list->set_heading( 'Contact information' );
     }
-    catch( \sabretooth\exception\permission $e )
+    catch( exc\permission $e )
     {
       $this->contact_list = NULL;
     }
@@ -67,7 +71,7 @@ class participant_view extends base_view
       $this->appointment_list->set_parent( $this );
       $this->appointment_list->set_heading( 'Appointments' );
     }
-    catch( \sabretooth\exception\permission $e )
+    catch( exc\permission $e )
     {
       $this->appointment_list = NULL;
     }
@@ -79,7 +83,7 @@ class participant_view extends base_view
       $this->availability_list->set_parent( $this );
       $this->availability_list->set_heading( 'Availability' );
     }
-    catch( \sabretooth\exception\permission $e )
+    catch( exc\permission $e )
     {
       $this->availability_list = NULL;
     }
@@ -91,7 +95,7 @@ class participant_view extends base_view
       $this->consent_list->set_parent( $this );
       $this->consent_list->set_heading( 'Consent information' );
     }
-    catch( \sabretooth\exception\permission $e )
+    catch( exc\permission $e )
     {
       $this->consent_list = NULL;
     }
@@ -108,12 +112,12 @@ class participant_view extends base_view
     parent::finish();
 
     // create enum arrays
-    $languages = \sabretooth\database\participant::get_enum_values( 'language' );
+    $languages = db\participant::get_enum_values( 'language' );
     $languages = array_combine( $languages, $languages );
-    $statuses = \sabretooth\database\participant::get_enum_values( 'status' );
+    $statuses = db\participant::get_enum_values( 'status' );
     $statuses = array_combine( $statuses, $statuses );
     $sites = array();
-    foreach( \sabretooth\database\site::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
+    foreach( db\site::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
     $db_site = $this->get_record()->get_site();
     $site_id = is_null( $db_site ) ? '' : $db_site->id;
     

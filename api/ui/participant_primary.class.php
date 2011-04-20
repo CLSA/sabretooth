@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * datum participant primary
@@ -28,9 +32,9 @@ class participant_primary extends base_primary
     // if the id is "assignment", then fetch the participant id based on the current assignment
     if( isset( $args['id'] ) && 'assignment' == $args['id'] )
     {
-      $db_assignment = \sabretooth\business\session::self()->get_current_assignment();
+      $db_assignment = bus\session::self()->get_current_assignment();
       if( is_null( $db_assignment ) )
-        throw new \sabretooth\exception\runtime(
+        throw new exc\runtime(
           'Cannot get the current participant, there is no active assignment.', __METHOD__ );
       $args['id'] = $db_participant = $db_assignment->get_interview()->get_participant()->id;
     }

@@ -8,6 +8,9 @@
  */
 
 namespace sabretooth\database;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\exception as exc;
 
 /**
  * shift: record
@@ -30,7 +33,7 @@ class shift extends record
     // warn if we are in read-only mode
     if( $this->read_only )
     {
-      \sabretooth\log::warning( 'Tried to save read-only record.' );
+      log::warning( 'Tried to save read-only record.' );
       return;
     }
 
@@ -41,7 +44,7 @@ class shift extends record
     // Make sure the user has the operator role at the site
     if( !$db_user->has_access( $db_site, $db_role ) )
     {
-      throw new \sabretooth\exception\runtime(
+      throw new exc\runtime(
         sprintf( 'Cannot assign shift to "%s", user does not have operator access to %s',
                  $db_user->name,
                  $db_site->name ), __METHOD__ );
@@ -54,8 +57,8 @@ class shift extends record
     $modifier->where( 'date', '=', $this->date );
     
     // convert the start and end times to server time
-    $start_time = \sabretooth\util::to_server_time( $this->start_time );
-    $end_time = \sabretooth\util::to_server_time( $this->end_time );
+    $start_time = util::to_server_time( $this->start_time );
+    $end_time = util::to_server_time( $this->end_time );
 
     // (need to use custom SQL)
     $overlap_ids = static::db()->get_col( 
@@ -73,7 +76,7 @@ class shift extends record
     {
       $overlap_id = current( $overlap_ids );
       $db_overlap = new static( $overlap_id );
-      throw new \sabretooth\exception\runtime(
+      throw new exc\runtime(
         sprintf( 'Shift time (%s to %s) for user "%s" overlaps '.
                  'with another shift on the same day (%s to %s).',
                  $this->start_time,

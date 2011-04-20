@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * Base class for all actions creating a new record.
@@ -45,7 +49,7 @@ abstract class base_new extends base_record_action
       
       if( strtotime( $start_value ) >= strtotime( $end_value ) )
       { 
-        throw new \sabretooth\exception\notice(
+        throw new exc\notice(
           sprintf( 'Start and end times (%s to %s) are not valid.',
                    $start_value,
                    $end_value ),
@@ -60,11 +64,11 @@ abstract class base_new extends base_record_action
     {
       $this->get_record()->save();
     }
-    catch( \sabretooth\exception\database $e )
+    catch( exc\database $e )
     { // help describe exceptions to the user
       if( $e->is_duplicate_entry() )
       {
-        throw new \sabretooth\exception\notice(
+        throw new exc\notice(
           'Unable to create the new '.$this->get_subject().' because it is not unique.',
           __METHOD__, $e );
       }

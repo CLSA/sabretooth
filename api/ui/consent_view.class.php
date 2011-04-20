@@ -8,6 +8,10 @@
  */
 
 namespace sabretooth\ui;
+use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget consent view
@@ -44,7 +48,7 @@ class consent_view extends base_view
     parent::finish();
 
     // create enum arrays
-    $events = \sabretooth\database\consent::get_enum_values( 'event' );
+    $events = db\consent::get_enum_values( 'event' );
     $events = array_combine( $events, $events );
 
     // set the view's items
