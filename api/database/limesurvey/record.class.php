@@ -50,7 +50,7 @@ abstract class record extends db\record
    */
   public static function select( $modifier = NULL, $count = false )
   {
-    $sql = sprintf( 'SELECT %s FROM %s %s',
+    $sql = sprintf( $count ? 'SELECT COUNT( %s ) FROM %s %s' : 'SELECT %s FROM %s %s',
                     static::get_primary_key_name(),
                     static::get_table_name(),
                     is_null( $modifier ) ? '' : $modifier->get_sql() );
