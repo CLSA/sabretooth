@@ -3,9 +3,12 @@
  # 
  # Menu widget that displays buttons to common operations.
  # @author Patrick Emond <emondpd@mcmaster.ca>
- # @param array items A list of operations with each element having:
+ # @param array calendars An array of calendar operations with each element having:
+ #                       'heading' => the name to show to the user
+ #                       'widget' => the widget to load when the calendar is selected
+ # @param array lists An array of list operations with each element having:
  #                    'heading' => the name to show to the user
- #                    'widget' => the widget to load when the item is selected
+ #                    'widget' => the widget to load when the list is selected
  #}
 {% extends "widget.twig" %}
 
@@ -13,10 +16,16 @@
 
   <script type="text/javascript">
     $( function() {
-      {% for item in items %}
-        $( "#{{ widget.full }}_{{ item.widget }}" ).button().click( function() {
+      {% for calendar in calendars %}
+        $( "#{{ widget.full }}_{{ calendar.widget }}" ).button().click( function() {
           $( "#left_extruder" ).closeMbExtruder();
-          slot_load( "main", "{{ item.widget }}" );
+          slot_load( "main", "{{ calendar.widget }}" );
+        } );
+      {% endfor %}
+      {% for list in lists %}
+        $( "#{{ widget.full }}_{{ list.widget }}" ).button().click( function() {
+          $( "#left_extruder" ).closeMbExtruder();
+          slot_load( "main", "{{ list.widget }}" );
         } );
       {% endfor %}
     } );
@@ -27,12 +36,26 @@
 {% block widget %}
 
   <div>
-    {% for item in items %}
-      <div style="padding: 2px;">
-        <button style="width: 100%;" 
-                id="{{ widget.full }}_{{ item.widget }}">{{ item.heading|capitalize }}</button>
-      </div>
-    {% endfor %}
+    {% if calendars|count %}
+      <div class="title" style="text-align: center">Calendars</div>
+      {% for calendar in calendars %}
+        <div style="padding: 2px;">
+          <button style="width: 100%;" 
+                  id="{{ widget.full }}_{{ calendar.widget }}">{{ calendar.heading|capitalize }}</button>
+        </div>
+      {% endfor %}
+      <div class="spacer" />
+    {% endif %}
+
+    {% if lists|count %}
+      <div class="title" style="text-align: center">Lists</div>
+      {% for list in lists %}
+        <div style="padding: 2px;">
+          <button style="width: 100%;" 
+                  id="{{ widget.full }}_{{ list.widget }}">{{ list.heading|capitalize }}</button>
+        </div>
+      {% endfor %}
+    {% endif %}
   </div>
 
 {% endblock widget %}

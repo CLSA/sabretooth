@@ -76,8 +76,8 @@ function error_dialog( title, message ) {
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @param string subject The datum's subject.
  * @param string name The datum's name.
- * @param JSON-array args The arguments to pass to the operation object
- * @return bool Whether or not the operation completed successfully
+ * @param array args The arguments to pass to the operation object
+ * @return mixed The requested data or null if there was an error.
  */
 function get_datum( subject, name, args ) {
   if( undefined == args ) args = new Object();
@@ -92,7 +92,7 @@ function get_datum( subject, name, args ) {
     dataType: "json"
   } );
   var response = jQuery.parseJSON( request.responseText );
-  return response.success ? response.data : false;
+  return response.success ? response.data : null;
 }
 
 /**
@@ -247,40 +247,3 @@ function ajax_complete( request, code ) {
       '<p class="error_code">Error code: ' + code + '.200</p>' );
   }
 }
-
-$( function() {
-  // setup the top extruder
-  $( "#top_extruder" ).buildMbExtruder( {
-    position: "top",
-    positionFixed: true,
-    width: 400,
-    sensibility: 500,
-    extruderOpacity: 1,
-    autoCloseTime: 0,
-    hidePanelsOnClose: true,
-    onExtOpen: function() {},
-    onExtContentLoad: function() {},
-    onExtClose: function() {}
-  } );
-
-  // setup the left extruder
-  $( "#left_extruder" ).buildMbExtruder( {
-    position: "left",
-    positionFixed: true,
-    width: 200,
-    sensibility: 500,
-    extruderOpacity: 1,
-    autoCloseTime: 0,
-    hidePanelsOnClose: true,
-    onExtOpen: function() {},
-    onExtContentLoad: function() {},
-    onExtClose: function() {}
-  } );
-  
-  // refresh all slots
-  slot_refresh( "status" );
-  slot_refresh( "shortcuts" );
-  slot_refresh( "settings" );
-  slot_refresh( "menu" );
-  slot_refresh( "main" );
-} );

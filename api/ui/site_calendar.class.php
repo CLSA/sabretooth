@@ -1,6 +1,6 @@
 <?php
 /**
- * self_shortcuts.class.php
+ * site_calendar.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -14,27 +14,28 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * widget self shortcuts
+ * widget site calendar
  * 
  * @package sabretooth\ui
  */
-class self_shortcuts extends widget
+class site_calendar extends base_calendar
 {
   /**
    * Constructor
    * 
-   * Defines all variables which need to be set for the associated template.
+   * Defines all variables required by the site calendar.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'self', 'shortcuts', $args );
+    parent::__construct( 'site', $args );
+    $this->set_heading( 'Open appointment slots for '.bus\session::self()->get_site()->name );
   }
-
+  
   /**
-   * Finish setting the variables in a widget.
+   * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
@@ -42,16 +43,8 @@ class self_shortcuts extends widget
   public function finish()
   {
     parent::finish();
-    
-    $db_user = bus\session::self()->get_user();
-    $db_role = bus\session::self()->get_role();
-
-    $this->set_variable( 'dialpad',
-      0 < count( bus\voip_manager::self()->get_calls( $db_user->name ) ) );
-    $this->set_variable( 'calculator', true );
-    $this->set_variable( 'navigation', 'operator' != $db_role->name );
-    $this->set_variable( 'refresh', true );
-    $this->set_variable( 'home', false );
+    $this->set_variable( 'allow_all_day', true );
+    $this->set_variable( 'editable', false );
   }
 }
 ?>

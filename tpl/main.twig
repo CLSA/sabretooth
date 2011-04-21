@@ -49,6 +49,44 @@
 
   <script type="text/javascript">
     $( function() {
+
+      // setup the top extruder
+      $( "#top_extruder" ).buildMbExtruder( {
+        position: "top",
+        positionFixed: true,
+        width: 400,
+        sensibility: 500,
+        extruderOpacity: 1,
+        autoCloseTime: 0,
+        hidePanelsOnClose: true,
+        onExtOpen: function() {},
+        onExtContentLoad: function() {},
+        onExtClose: function() {}
+      } );
+    
+      {% if not is_operator %}
+        // setup the left extruder
+        $( "#left_extruder" ).buildMbExtruder( {
+          position: "left",
+          positionFixed: true,
+          width: 200,
+          sensibility: 500,
+          extruderOpacity: 1,
+          autoCloseTime: 0,
+          hidePanelsOnClose: true,
+          onExtOpen: function() {},
+          onExtContentLoad: function() {},
+          onExtClose: function() {}
+        } );
+      {% endif %}
+  
+      // refresh all slots
+      slot_refresh( "status" );
+      slot_refresh( "shortcuts" );
+      slot_refresh( "settings" );
+      {% if not is_operator %}slot_refresh( "menu" );{% endif %}
+      slot_refresh( "main" );
+
       // apply jquery-ui theme to the extruders
       $( "div.content" ).addClass( "ui-widget-content" );
       $( ".flap" ).addClass( "ui-widget-header" );
@@ -84,9 +122,11 @@
     <div id="top_extruder" class="{title:'settings'}">
       <div id="settings_slot"></div>
     </div>
-    <div id="left_extruder" class="{title:'menu'}">
-      <div id="menu_slot"></div>
-    </div>
+    {% if not is_operator %}
+      <div id="left_extruder" class="{title:'menu'}">
+        <div id="menu_slot"></div>
+      </div>
+    {% endif %}
     <div class="ui-widget-content" id="app_ui">
       <table>
         <tr>

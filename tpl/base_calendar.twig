@@ -1,0 +1,55 @@
+{##
+ # base_calendar.twig
+ # 
+ # Base template for all calendars.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ #}
+{% extends "widget.twig" %}
+
+{% block javascript %}
+
+  <script type="text/javascript">
+    $( function() {
+      $( "#{{ widget.full }}_calendar" ).fullCalendar( {
+        {% if editable %}
+          editable: true,
+          // TODO: enable drag/resize using AJAX
+          disableDragging: true,
+          disableResizing: true,
+        {% else %}
+          editable: false,
+        {% endif %}
+        theme: true,
+        allDaySlot: {{ allow_all_day ? "true" : "false" }},
+        slotMinutes: 30,
+        defaultEventMinutes: 60,
+        firstHour: 8,
+        header: {
+          left: "prev,next today",
+          center: "title",
+          right: "month,agendaWeek,agendaDay"
+        },
+        {% block callbacks %}{% endblock callbacks %}
+      } );
+      
+      {% if editable %}
+        $( "#{{ widget.full }}_slot" ).dialog( {
+          autoOpen: false,
+          title: "Edit event",
+          modal: true,
+          width: 800,
+          height: 600,
+          close: function( event, ui ) { slot_refresh( {{ slot }} ); }
+        } );
+      {% endif %}
+    });
+  </script>
+
+{% endblock javascript %}
+
+{% block widget %}
+  
+  {% if editable %}<div id="{{ widget.full }}_slot" />{% endif %}
+  <div class="spacer" id="{{ widget.full }}_calendar"></div>
+
+{% endblock widget %}

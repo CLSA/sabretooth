@@ -44,7 +44,9 @@ VALUES( "widget", "appointment", "view", true, "View the details of a participan
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "appointment", "list", true, "Lists a participant's appointments." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "appointment", "calendar", true, "Displays a calendar listing the number of operators free for an appointment." );
+VALUES( "widget", "appointment", "calendar", true, "Shows appointments in a calendar format." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "datum", "appointment", "feed", true, "Retrieves a list of shifts for a given time-span." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "datum", "appointment", "primary", true, "Retrieves base appointment information." );
 
@@ -312,6 +314,8 @@ VALUES( "widget", "shift", "view", true, "View a shift's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "shift", "calendar", true, "Shows shifts in a calendar format." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "datum", "shift", "feed", true, "Retrieves a list of shifts for a given time-span." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "datum", "shift", "primary", true, "Retrieves base shift information." );
 
 -- site
@@ -332,9 +336,13 @@ VALUES( "action", "site", "delete_shift", true, "Remove shifts from a site." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "site", "add_access", true, "View users to grant access to the site." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "site", "calendar", true, "A calendar listing the number of operators free for an appointment." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "site", "new_access", true, "Grant access to a site." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "site", "delete_access", true, "Remove accesss from a site." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "datum", "site", "feed", true, "Retrieves a list of site free appointment times for a given time-span." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "datum", "site", "primary", true, "Retrieves base site information." );
 

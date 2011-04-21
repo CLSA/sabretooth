@@ -580,10 +580,19 @@ final class session extends \sabretooth\singleton
   public function slot_reset( $slot )
   {
     if( 'main' == $slot )
-    { // by default, if there is no widget in the main slot then start with home
-      $_SESSION['slot'][$slot]['stack']['index'] = 0;
-      $_SESSION['slot'][$slot]['stack']['widgets'] =
-        array( array( 'name' => 'self_home', 'args' => NULL ) );
+    {
+      if( 'operator' == $this->get_role()->name )
+      { // operators always start at the assignment widget
+        $_SESSION['slot'][$slot]['stack']['index'] = 0;
+        $_SESSION['slot'][$slot]['stack']['widgets'] =
+          array( array( 'name' => 'operator_assignment', 'args' => NULL ) );
+      }
+      else
+      { // by default, if there is no widget in the main slot then start with home
+        $_SESSION['slot'][$slot]['stack']['index'] = 0;
+        $_SESSION['slot'][$slot]['stack']['widgets'] =
+          array( array( 'name' => 'self_home', 'args' => NULL ) );
+      }
     }
     else if( 'settings' == $slot )
     {

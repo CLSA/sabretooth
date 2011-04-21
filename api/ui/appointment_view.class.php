@@ -36,8 +36,6 @@ class appointment_view extends base_view
     $this->add_item( 'contact_id', 'enum', 'Phone Number' );
     $this->add_item( 'date', 'datetime', 'Date' );
     $this->add_item( 'assignment.user', 'constant', 'Assigned to' );
-    $this->add_item( 'assignment.start_time', 'constant', 'Start time' );
-    $this->add_item( 'assignment.end_time', 'constant', 'End time' );
     $this->add_item( 'state', 'constant', 'State',
       '(One of upcoming, assignable, missed, assigned, in progress, complete or incomplete)' );
   }
@@ -61,16 +59,31 @@ class appointment_view extends base_view
     foreach( $db_participant->get_contact_list( $modifier ) as $db_contact )
       $contacts[$db_contact->id] = $db_contact->rank.". ".$db_contact->phone;
     
+    $name = 'unassigned';
+    $start_time = '';
+    $end_time = '';
+
     $db_assignment = $this->get_record()->get_assignment();
+    if( !is_null( $db_assignment ) )
+    {
+      $this->set_item( 'assignment.user', $db_assignment->get_user()->name, false );
+
+      $this->add_item( 'assignment.start_time', 'constant', 'Started' );
+      $this->set_item( 'assignment.start_time',
+        util::get_formatted_time( $db_assignment->start_time ), false );
+      
+      $this->add_item( 'assignment.end_time', 'constant', 'Finished' );
+      $this->set_item( 'assignment.end_time',
+        util::get_formatted_time( $db_assignment->end_time ), false );
+    }
+    else
+    {
+      $this->set_item( 'assignment.user', 'unassigned', false );
+    }
 
     // set the view's items
     $this->set_item( 'contact_id', $this->get_record()->contact_id, true, $contacts );
     $this->set_item( 'date', $this->get_record()->date, true );
-    $this->set_item( 'assignment.user', $db_assignment->get_user()->name, false );
-    $this->set_item( 'assignment.start_time',
-      util::get_formatted_time( $db_assignment->start_time ), false );
-    $this->set_item( 'assignment.end_time',
-      util::get_formatted_time( $db_assignment->end_time ), false );
     $this->set_item( 'state', $this->get_record()->get_state(), false );
 
     $this->finish_setting_items();

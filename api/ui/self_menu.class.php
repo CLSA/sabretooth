@@ -43,43 +43,46 @@ class self_menu extends widget
   {
     parent::finish();
 
-    $session = bus\session::self();
-    $db_role = $session->get_role();
-    $is_operator = 'operator' == $db_role->name;
+    $db_role = bus\session::self()->$session->get_role();
 
-    $items = array();
-    if( $is_operator )
-    {
-      $items[] = array( 'heading' => 'Assignment',
-                        'widget' => 'operator_assignment' );
-    }
+    // get all calendar widgets that the user has access to
+    $calendars = array();
 
-    // get all 'list' widgets that the user has access to
     $modifier = new db\modifier();
     $modifier->where( 'operation.type', '=', 'widget' );
-    $modifier->where( 'operation.name', 'in', array( 'calendar', 'list' ) );
+    $modifier->where( 'operation.name', '=', 'calendar' );
     $widgets = $db_role->get_operation_list( $modifier );
     
-    $exclude = array( 'availability', 'consent', 'contact', 'phase', 'phone_call' );
+    foreach( $widgets as $db_widget )
+    {
+      $calendars[] = array( 'heading' => $db_widget->subject,
+                            'widget' => $db_widget->subject.'_'.$db_widget->name );
+    }
+
+    // get all list widgets that the user has access to
+    $lists = array();
+
+    $modifier = new db\modifier();
+    $modifier->where( 'operation.type', '=', 'widget' );
+    $modifier->where( 'operation.name', '=', 'list' );
+    $widgets = $db_role->get_operation_list( $modifier );
+    
+    $exclude = array( 'appointment', 'availability', 'consent', 'contact', 'phase', 'phone_call' );
 
     foreach( $widgets as $db_widget )
     {
-      // don't include the appointment list in the operator's menu
-      if( $is_operator &&
-          ( 'appointment' == $db_widget->subject ||
-            'assignment' == $db_widget->subject ) ) continue;
-
       if( !in_array( $db_widget->subject, $exclude ) )
-        $items[] = array( 'heading' => util::pluralize( $db_widget->subject ),
+        $lists[] = array( 'heading' => util::pluralize( $db_widget->subject ),
                           'widget' => $db_widget->subject.'_'.$db_widget->name );
-
+      
       // insert the participant tree after participant list
       if( 'participant' == $db_widget->subject )
-        $items[] = array( 'heading' => 'Participant Tree',
+        $lists[] = array( 'heading' => 'Participant Tree',
                           'widget' => 'participant_tree' );
     }
 
-    $this->set_variable( 'items', $items );
+    $this->set_variable( 'calendars', $calendars );
+    $this->set_variable( 'lists', $lists );
   }
 }
 ?>

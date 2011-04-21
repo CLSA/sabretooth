@@ -752,6 +752,10 @@ INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "widget" AND subject = "shift" AND name = "calendar" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "datum" AND subject = "shift" AND name = "feed" );
 
 -- assignment and calling
 INSERT INTO role_has_operation
@@ -782,6 +786,14 @@ INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "action" AND subject = "phone_call" AND name = "end" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "site" AND name = "calendar" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "datum" AND subject = "site" AND name = "feed" );
 
 -- participant
 INSERT INTO role_has_operation
@@ -813,7 +825,7 @@ SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "widget" AND subject = "appointment" AND name = "calendar" );
+      type = "widget" AND subject = "appointment" AND name = "list" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -946,6 +958,14 @@ INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "widget" AND subject = "role" AND name = "list" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "site" AND name = "calendar" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "datum" AND subject = "site" AND name = "feed" );
 
 -- operation
 INSERT INTO role_has_operation
@@ -1034,6 +1054,10 @@ INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "widget" AND subject = "shift" AND name = "calendar" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "datum" AND subject = "shift" AND name = "feed" );
 
 -- participant
 INSERT INTO role_has_operation
@@ -1078,6 +1102,10 @@ INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "widget" AND subject = "appointment" AND name = "calendar" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "datum" AND subject = "appointment" AND name = "feed" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE

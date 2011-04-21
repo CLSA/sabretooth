@@ -47,7 +47,8 @@ try
   // Since there is no main widget we need set up the template variables here
   $version = $session->get_setting( 'version', 'JQUERY_UI' );
   $variables = array( 'jquery_ui_css_path' => '/'.$theme.'/jquery-ui-'.$version.'.custom.css',
-                      'survey_url' => $session->get_survey_url() );
+                      'survey_url' => $session->get_survey_url(),
+                      'is_operator' => 'operator' == $session->get_role()->name );
   
   $result_array['output'] = $twig_template->render( $variables );
 }

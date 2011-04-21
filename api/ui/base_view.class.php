@@ -90,7 +90,7 @@ abstract class base_view extends base_record_widget
     $this->items[$item_id] = array( 'type' => $type );
     if( !is_null( $heading ) ) $this->items[$item_id]['heading'] = $heading;
     if( !is_null( $note ) ) $this->items[$item_id]['note'] = $note;
-    else if( 'time' == $type )
+    else if( 'time' == $type || 'datetime' == $type )
     {
       // build time time zone help text
       $session = bus\session::self();

@@ -1,0 +1,26 @@
+{##
+ # site_calendar.twig
+ # 
+ # Displays the number of open appointment slots for a particular site.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ #}
+{% extends "base_calendar.twig" %}
+
+{% block callbacks %}
+
+        events: function( start, end, callback ) {
+          var args = new Object();
+          args.start = start.getFullYear() + "-" + ( start.getMonth() + 1 ) + "-" + start.getDate();
+          args.end = end.getFullYear() + "-" + ( end.getMonth() + 1 ) + "-" + end.getDate();
+
+          var data = get_datum( "site", "feed", args );
+          if( undefined != data ) {
+            var events = new Array();
+            for( var index = 0; index < data.length; index++ ) {
+              events.push( data[index] );
+            }
+            callback( events );
+          }
+        }
+
+{% endblock callbacks %}

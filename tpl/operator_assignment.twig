@@ -67,6 +67,17 @@
           if( send_action( "assignment", "begin" ) ) slot_refresh( {{ slot }} );
         } );
 
+        // view schedule button
+        $( "#{{ widget.full }}__schedule" ).click( function() {
+          slot_load( "{{ widget.full }}", "shift_calendar", "shift_calendar" );
+          $( "#{{ widget.full }}_slot" ).dialog( {
+            title: "Schedule",
+            modal: true,
+            width: 800,
+            height: 600
+          } );
+        } );
+
         // go on break button
         $( "#{{ widget.full }}__break" ).click( function() {
           if( send_action( "operator", "begin_break" ) )
@@ -176,9 +187,11 @@
         </tr>
       </table>
     {% else %}
-      <p>You currently have no assignment.</p>
+      <p>You currently do not have an assignment.</p>
       <button id="{{ widget.full }}__assignment"
               style="width: 200px;">Request assignment</button>
+      <button id="{{ widget.full }}__schedule"
+              style="width: 200px;">View schedule</button>
       <button id="{{ widget.full }}__break"
               style="width: 200px;">Go on break</button>
       <div class="spacer" />
