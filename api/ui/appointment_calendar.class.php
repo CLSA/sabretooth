@@ -1,6 +1,6 @@
 <?php
 /**
- * shift_list.class.php
+ * appointment_calendar.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -14,23 +14,23 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * widget shift list
+ * widget appointment calendar
  * 
  * @package sabretooth\ui
  */
-class shift_list extends site_restricted_list
+class appointment_calendar extends widget
 {
   /**
    * Constructor
    * 
-   * Defines all variables required by the shift list.
+   * Defines all variables required by the appointment calendar.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'shift', $args );
+    parent::__construct( 'appointment', 'calendar', $args );
     
     $this->user_id = $this->get_argument( 'user_id', NULL );
     $this->add_column( 'user.name', 'string', 'User', true );
@@ -40,7 +40,7 @@ class shift_list extends site_restricted_list
     if( !is_null( $this->user_id ) )
     {
       $db_user = new db\user( $this->user_id );
-      $this->set_heading( 'Shift list for '.$db_user->name );
+      $this->set_heading( 'Appointment availability calendar for ' );
     }
   }
   

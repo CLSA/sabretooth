@@ -21,7 +21,9 @@
   $( function() {
     // back button
     $( "#{{ name }}_back" ).click( function() {
-      slot_prev( {{ slot }} );
+      $slot = $( "#" + {{ slot }} + "_slot" );
+      if( "#main_slot" == $slot.selector ) slot_prev( {{ slot }} );
+      else $slot.dialog( "close" ); // assume we're in a popup dialog
     } );
   
     // create a button set

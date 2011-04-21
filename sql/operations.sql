@@ -44,6 +44,8 @@ VALUES( "widget", "appointment", "view", true, "View the details of a participan
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "appointment", "list", true, "Lists a participant's appointments." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "appointment", "calendar", true, "Displays a calendar listing the number of operators free for an appointment." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "datum", "appointment", "primary", true, "Retrieves base appointment information." );
 
 -- assignment
@@ -308,7 +310,7 @@ VALUES( "widget", "shift", "add", true, "View a form for creating a new shift." 
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "shift", "view", true, "View a shift's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "shift", "list", true, "List shifts in the system." );
+VALUES( "widget", "shift", "calendar", true, "Shows shifts in a calendar format." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "datum", "shift", "primary", true, "Retrieves base shift information." );
 

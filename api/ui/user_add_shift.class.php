@@ -33,6 +33,16 @@ class user_add_shift extends base_add_record
   {
     parent::__construct( 'user', 'shift', $args );
     $this->add_widget->set_heading( "Create a new shift" );
+
+    // set the child widget's properties, if they exist
+    $date = $this->get_argument( 'date', NULL );
+    if( !is_null( $date ) ) $this->add_widget->date = $date;
+
+    $start_time = $this->get_argument( 'start_time', NULL );
+    if( !is_null( $start_time ) ) $this->add_widget->start_time = $start_time;
+
+    $end_time = $this->get_argument( 'end_time', NULL );
+    if( !is_null( $end_time ) ) $this->add_widget->end_time = $end_time;
   }
 }
 ?>

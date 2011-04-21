@@ -57,7 +57,7 @@ class self_menu extends widget
     // get all 'list' widgets that the user has access to
     $modifier = new db\modifier();
     $modifier->where( 'operation.type', '=', 'widget' );
-    $modifier->where( 'operation.name', '=', 'list' );
+    $modifier->where( 'operation.name', 'in', array( 'calendar', 'list' ) );
     $widgets = $db_role->get_operation_list( $modifier );
     
     $exclude = array( 'availability', 'consent', 'contact', 'phase', 'phone_call' );

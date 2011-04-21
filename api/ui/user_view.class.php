@@ -87,7 +87,12 @@ class user_view extends base_view
 
     $this->finish_setting_items();
     
+    // only show shift calendar if the current user is a supervisor and the viewed user is an
+    // operator at this site
     $this->set_variable( 'view_shifts',
+      $this->get_record()->has_access(
+        bus\session::self()->get_site(),
+        db\role::get_unique_record( 'name', 'operator' ) ) &&
       'supervisor' == bus\session::self()->get_role()->name );
 
     if( !is_null( $this->access_list ) )

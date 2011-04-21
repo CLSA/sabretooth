@@ -12,7 +12,7 @@
   <script type="text/javascript">
     $( function() {
       $( "#{{ widget.full }}_calendar" ).click( function() {
-        slot_load( "{{ widget.full }}", "shift_list", "shift_list", { user_id: {{ id }} } );
+        slot_load( "{{ widget.full }}", "shift_calendar", "shift_calendar", { user_id: {{ id }} } );
         $( "#{{ widget.full }}_slot" ).dialog( "open" );
       } );
 

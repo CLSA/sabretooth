@@ -43,7 +43,7 @@ function confirm_dialog( title, message, on_confirm, cancel_button ) {
     dialogClass: "alert",
     width: 450,
     buttons: buttons,
-    open: function( event, ui ) { $( ".ui-dialog-titlebar-close" ).hide(); }
+    open: function( event, ui ) { $( ".ui-dialog-titlebar-close", $(this).parent() ).hide(); }
   } );
 }
 
@@ -62,7 +62,9 @@ function error_dialog( title, message ) {
     dialogClass: "error",
     width: 450,
     open: function () {
-      $(this).parents( ".ui-dialog:first" ).find( ".ui-dialog-titlebar" ).addClass( "ui-state-error" );
+      $(this).parents( ".ui-dialog:first" )
+             .find( ".ui-dialog-titlebar" )
+             .addClass( "ui-state-error" );
     },
     buttons: { Ok: function() { $(this).dialog( "close" ); } }
   } );

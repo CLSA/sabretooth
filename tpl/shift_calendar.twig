@@ -1,0 +1,85 @@
+{##
+ # shift_calendar.twig
+ # 
+ # Lists shifts.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ #}
+{% extends "widget.twig" %}
+
+{% block javascript %}
+
+  <script type="text/javascript">
+    $( function() {
+      $( "#{{ widget.full }}_calendar" ).fullCalendar( {
+        editable: {{ editable ? "true" : "false" }},
+        // TODO: enable drag/resize using AJAX
+        disableDragging: true,
+        disableResizing: true,
+        theme: true,
+        allDaySlot: false,
+        slotMinutes: 30,
+        defaultEventMinutes: 60,
+        firstHour: 8,
+        header: {
+          left: "prev,next today",
+          center: "title",
+          right: "month,agendaWeek,agendaDay"
+        },
+        dayClick: function( date, allDay, jsEvent, view ) {
+          // add a new shift
+          var args = new Object();
+          args.date = date.getFullYear() + "-" + ( date.getMonth() + 1 ) + "-" + date.getDate();
+          if( !allDay ) {
+            args.start_time = date.getHours() + ":" + date.getMinutes();
+            args.end_time = ( date.getHours() + 4 ) + ":" + date.getMinutes();
+          } else {
+            args.start_time = "9:00";
+            args.end_time = "13:00";
+          }
+
+          {% if user_id|default(false) %}
+            // TODO-NEXT: figure out date/id strangeness (one or other, not both!)
+            args.id = {{ user_id }};
+            slot_load( "{{ widget.full }}", "user_add_shift", "user_add_shift", args );
+          {% else %}
+            slot_load( "{{ widget.full }}", "shift_add", "shift_add", args );
+          {% endif %}
+          $( "#{{ widget.full }}_slot" ).dialog( "open" );
+        },
+        eventClick: function( event, jsEvent, view ) {
+          // edit the shift
+          slot_load( "{{ widget.full }}", "shift_view", "shift_view", { id: event.id } );
+          $( "#{{ widget.full }}_slot" ).dialog( "open" );
+        },
+        events: [
+          {% for shift in shift_list %}
+          {
+            id: {{ shift.id }},
+            title: "{{ shift.name }}",
+            start: new Date( {{ shift.start }} ),
+            end: new Date( {{ shift.end }} ),
+            allDay: false
+          }{{ loop.last ? "" : "," }}
+          {% endfor %}
+        ]
+      } );
+
+      $( "#{{ widget.full }}_slot" ).dialog( {
+        autoOpen: false,
+        title: "Add shift",
+        modal: true,
+        width: 800,
+        height: 600,
+        close: function(event, ui) { slot_refresh( {{ slot }} ); }
+      } );
+    });
+  </script>
+
+{% endblock javascript %}
+
+{% block widget %}
+
+  <div id="{{ widget.full }}_slot" />
+  <div class="spacer" id="{{ widget.full }}_calendar"></div>
+
+{% endblock widget %}
