@@ -14,7 +14,7 @@ namespace sabretooth;
 global $SETTINGS;
 
 // tagged version
-$SETTINGS[ 'general' ][ 'version' ] = '0.1.1';
+$SETTINGS[ 'general' ][ 'version' ] = '0.1.2';
 
 // always leave as false when running as production server
 $SETTINGS[ 'general' ][ 'development_mode' ] = false;
