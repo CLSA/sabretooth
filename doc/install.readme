@@ -59,9 +59,18 @@ webserver is configured to require HTTP authentication for the root web director
 Copy the aux/reload.html file to the root of your web server.  This is necessary in order to
 automatically proceed to the next phase of a questionnaire when a current phase is completed.
 
+Also, when running in production mode (development_mode is false) all errors are appended to a
+log file.  Make sure that the webserver has write access to the file pointed to by the LOG_FILE
+setting found in sabretooth.local.ini.php
+
 E) SETUP LIMESURVEY
 ===================
 Add all of the text in aux/survey_runtime.js to limesurvey's scripts/survey_runtime.js file.
 This change to limesurvey assused that sabretooth is installed in the same parent directory
 as limesurvey (ie: ../sabretooth)  If this is not the case be sure to change the sabretooth_url
 variable in aux/survey_runtime.js
+
+WARNING: Some limesurvey templates are not compatible with the javascript which is added by this
+step.  When filling out surveys if pop-up messages saying that questions were not answered appear
+when they were, in fact, answered, then switch to a different template.  The "default" template
+should always work.

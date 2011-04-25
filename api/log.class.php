@@ -271,9 +271,8 @@ final class log extends singleton
         $conf = array(
           'append' => true,
           'locking' => true,
-          'lineFormat' => '%3$s in %8$s::%7$s (%6$s): %4$s',
           'timeFormat' => '%Y-%m-%d (%a) %H:%M:%S' );
-        $this->loggers[ 'file' ] = \Log::singleton( 'file', LOG_FILE, '', $conf );
+        $this->loggers[ 'file' ] = \Log::singleton( 'file', LOG_FILE_PATH, '', $conf );
       }
     }
     else if( 'firebug' == $type )

@@ -1,0 +1,78 @@
+#!/usr/bin/php
+<?php
+/** 
+ * Utility which changes the version tag value
+ * @author Patrick Emond <emondpd@mcmaster.ca>
+ * @param string version
+ */
+
+$filename = 'web/sabretooth.ini.php';
+
+// validate arguments
+if( 2 != $argc )
+{
+  print "Script expects exactly one argument: the new version.\n";
+  exit( 1 );
+}
+
+// validate new version number
+$new_version = $argv[1];
+if( preg_match( '/[^0-9a-z.]/', $new_version ) )
+{
+  print "Version numbers must only contain numbers, lowercase letters and periods.\n";
+  exit( 2 );
+}
+
+// make sure ini file exists (checking ./ and ../)
+if( !file_exists( $filename ) ) $filename = '../'.$filename;
+
+if( !file_exists( $filename ) )
+{
+  print "Cannot find ini file.\n";
+  exit( 3 );
+}
+
+// replace the general-version setting in the main ini file
+$contents = file_get_contents( $filename );
+$new_contents = preg_replace( "/(SETTINGS\[ 'general' \]\[ 'version' \]) = '[^']+'/",
+                        "\\1 = '$new_version'",
+                        $contents,
+                        1 );
+
+// result will be NULL if an error occurred
+if( is_null( $new_contents ) )
+{
+  print "The script failed to change the version.\n";
+  exit( 4 );
+}
+
+if( $contents === $new_contents )
+{
+  print "Version number not changed.\n";
+  exit( 5 );
+}
+
+// open the ini file for writing
+$handler = fopen( $filename, 'w' );
+if( !$handler )
+{
+  print "Unable to open ini file for writing.\n";
+  exit( 6 );
+}
+
+// write the new version to the ini file
+$result = fwrite( $handler, $new_contents );
+if( !$result )
+{
+  print "Unable to write new version to ini file.\n";
+  exit( 7 );
+}
+
+if( !fclose( $handler ) )
+{
+  print "Unable to close file after writing new version.\n";
+  exit( 8 );
+}
+
+print "Successfully bumped version to $new_version\n";
+?>
