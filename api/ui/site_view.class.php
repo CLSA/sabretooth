@@ -41,18 +41,6 @@ class site_view extends base_view
 
     try
     {
-      // create the shift sub-list widget
-      $this->shift_list = new shift_list( $args );
-      $this->shift_list->set_parent( $this );
-      $this->shift_list->set_heading( 'Site shifts' );
-    }
-    catch( exc\permission $e )
-    {
-      $this->shift_list = NULL;
-    }
-
-    try
-    {
       // create the access sub-list widget
       $this->access_list = new access_list( $args );
       $this->access_list->set_parent( $this );
@@ -104,12 +92,6 @@ class site_view extends base_view
     $this->finish_setting_items();
 
     // finish the child widgets
-    if( !is_null( $this->shift_list ) )
-    {
-      $this->shift_list->finish();
-      $this->set_variable( 'shift_list', $this->shift_list->get_variables() );
-    }
-
     if( !is_null( $this->access_list ) )
     {
       $this->access_list->finish();
