@@ -55,11 +55,13 @@ try
 catch( exception\base_exception $e )
 {
   $type = $e->get_type();
-  log::err( ucwords( $type )." ".$e );
   $result_array['success'] = false;
   $result_array['error_type'] = ucfirst( $type );
   $result_array['error_code'] = $e->get_code();
   $result_array['error_message'] = 'notice' == $type ? $e->get_notice() : '';
+  
+  // log all but notice exceptions
+  if( 'notice' != $type ) log::err( ucwords( $type )." ".$e );
 }
 catch( \Twig_Error $e )
 {
@@ -70,22 +72,24 @@ catch( \Twig_Error $e )
   else $code = 0;
   
   $code = util::convert_number_to_code( TEMPLATE_BASE_ERROR_NUMBER + $code );
-  log::err( "Template ".$e );
   $result_array['success'] = false;
   $result_array['error_type'] = 'Template';
   $result_array['error_code'] = $code;
   $result_array['error_message'] = '';
+  
+  log::err( "Template ".$e );
 }
 catch( \Exception $e )
 {
   $code = class_exists( 'sabretooth\util' )
         ? util::convert_number_to_code( SYSTEM_BASE_ERROR_NUMBER )
         : 0;
-  if( class_exists( 'sabretooth\log' ) ) log::err( "Last minute ".$e );
   $result_array['success'] = false;
   $result_array['error_type'] = 'System';
   $result_array['error_code'] = $code;
   $result_array['error_message'] = '';
+  
+  if( class_exists( 'sabretooth\log' ) ) log::err( "Last minute ".$e );
 }
 
 if( true == $result_array['success'] )
