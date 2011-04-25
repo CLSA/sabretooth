@@ -69,3 +69,8 @@ Add all of the text in aux/survey_runtime.js to limesurvey's scripts/survey_runt
 This change to limesurvey assused that sabretooth is installed in the same parent directory
 as limesurvey (ie: ../sabretooth)  If this is not the case be sure to change the sabretooth_url
 variable in aux/survey_runtime.js
+
+WARNING: Some limesurvey templates are not compatible with the javascript which is added by this
+step.  When filling out surveys if pop-up messages saying that questions were not answered appear
+when they were, in fact, answered, then switch to a different template.  The "default" template
+should always work.
