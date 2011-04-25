@@ -13,6 +13,9 @@
 namespace sabretooth;
 global $SETTINGS;
 
+// tagged version
+$SETTINGS[ 'general' ][ 'version' ] = '0.1.1';
+
 // always leave as false when running as production server
 $SETTINGS[ 'general' ][ 'development_mode' ] = false;
 $SETTINGS[ 'general' ][ 'script_name' ] = false === strrchr( $_SERVER['SCRIPT_NAME'], '/' )

@@ -43,7 +43,7 @@ class self_menu extends widget
   {
     parent::finish();
 
-    $db_role = bus\session::self()->$session->get_role();
+    $db_role = bus\session::self()->get_role();
 
     // get all calendar widgets that the user has access to
     $calendars = array();
