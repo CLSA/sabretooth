@@ -6,3 +6,11 @@
  # @see base_add.twig for parameters
  #}
 {% extends "base_add.twig" %}
+
+{% block record %}
+  
+  {{ parent() }}
+  {% from 'macros.twig' import include_calendar %}
+  {{ include_calendar( 'site', site_calendar|default(false), true ) }}
+
+{% endblock record %}
