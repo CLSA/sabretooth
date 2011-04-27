@@ -20,14 +20,15 @@
           editable: false,
         {% endif %}
         theme: true,
+        defaultView: "{{ default_view|default('month') }}",
         allDaySlot: {{ allow_all_day ? "true" : "false" }},
         slotMinutes: 30,
         defaultEventMinutes: 60,
         firstHour: 8,
         header: {
-          left: "prev,next today",
+          left: "month,agendaWeek,agendaDay",
           center: "title",
-          right: "month,agendaWeek,agendaDay"
+          right: "prev,next today"
         },
         {% block callbacks %}{% endblock callbacks %}
       } );

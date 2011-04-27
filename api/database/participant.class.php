@@ -297,5 +297,31 @@ class participant extends has_note
                database::format_string( $this->id ) ) );
     return $contact_id ? new contact( $contact_id ) : NULL;
   }
+
+  /**
+   * Get the site that the participant belongs to.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return site
+   * @access public
+   */
+  public function get_primary_site()
+  {
+    $db_site = NULL;
+
+    if( !is_null( $this->site_id ) )
+    { // site is specifically defined
+      $db_site = $this->get_site();
+    }
+    else
+    {
+      $db_contact = $this->get_primary_location();
+      if( !is_null( $db_contact ) )
+      { // there is a primary contact
+        $db_site = $db_contact->get_province()->get_site();
+      }
+    }
+
+    return $db_site;
+  }
 }
 ?>

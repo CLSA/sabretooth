@@ -28,9 +28,14 @@ VALUES( "appointment", "call post-window", "15",
 considered missed." );
 
 INSERT INTO setting( category, name, value, description )
-VALUES( "appointment", "allow overflow", "true",
-"Whether or not to allow more appointments than are allowed by the expected number of appointments
-and scheduled shifts" );
+VALUES( "appointment", "start_time", "09:00",
+"The start time-of-day that appointments are expected to be booked.  This time is used for filling
+in expected operator times in the site calendar and when booking appointments." );
+
+INSERT INTO setting( category, name, value, description )
+VALUES( "appointment", "end_time", "21:00",
+"The end time-of-day that appointments are expected to be booked.  This time is used for filling
+in expected operator times in the site calendar and when booking appointments." );
 
 -- callback timing
 INSERT INTO setting( category, name, value, description )

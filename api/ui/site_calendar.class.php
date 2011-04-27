@@ -43,8 +43,9 @@ class site_calendar extends base_calendar
   public function finish()
   {
     parent::finish();
-    $this->set_variable( 'allow_all_day', true );
+    $this->set_variable( 'allow_all_day', false );
     $this->set_variable( 'editable', false );
+    $this->set_variable( 'default_view', 'agendaWeek' );
   }
 }
 ?>

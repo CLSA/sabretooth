@@ -59,6 +59,20 @@
 {% endmacro %}
 
 {##
+ # Includes a calendar widget, if calendar is set.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @param string subject The calendar's subject.
+ # @param array calendar The calendar's arguments.
+ # @param boolean spacer Whether to include spacing before including the calendar.
+ #}
+{% macro include_calendar( subject, calendar, spacer ) %}
+  {% if calendar|default(false) %}
+    {% if spacer|default(false) %}<div class="spacer" />{% endif %}
+    {% include [ subject, "calendar.twig" ]|join("_") with calendar %}
+  {% endif %}
+{% endmacro %}
+
+{##
  # This widget displays an icon/button which pops up a list of notes.
  # @author Patrick Emond <emondpd@mcmaster.ca>
  # @param string subject What subject to show notes for.
