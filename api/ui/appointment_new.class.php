@@ -33,8 +33,10 @@ class appointment_new extends base_new
   }
 
   /**
-   * Executes the action.
+   * Overrides the parent method to make sure the date isn't blank and that check for appointment
+   * slot availability.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
    * @access public
    */
   public function execute()
@@ -43,7 +45,14 @@ class appointment_new extends base_new
     $columns = $this->get_argument( 'columns' );
     if( !array_key_exists( 'date', $columns ) || 0 == strlen( $columns['date'] ) )
       throw new exc\notice( 'The date cannot be left blank.', __METHOD__ );
-
+    
+    // make sure there is a slot available for the appointment
+    $columns = $this->get_argument( 'columns', array() );
+    foreach( $columns as $column => $value ) $this->get_record()->$column = $value;
+    if( !$this->get_record()->validate_date() )
+      throw new exc\notice( 'There are no operators available during that time.', __METHOD__ );
+    
+    // no errors, go ahead and make the change
     parent::execute();
   }
 }
