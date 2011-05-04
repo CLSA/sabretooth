@@ -70,6 +70,31 @@ class voip_call extends \sabretooth\base_object
   }
   
   /**
+   * Starts recording (monitoring) the call.
+   * This is a convenience method for voip_manager::start_monitoring()
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $file The file name the recorded call is to be saved under.
+   * @access public
+   */
+  public function start_monitoring( $file )
+  {
+    voip_manager::self()->start_monitoring( $this, $file );
+  }
+  
+  /**
+   * Stops recording (monitoring) the call.
+   * This is a convenience method for voip_manager::stop_monitoring()
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function stop_monitoring()
+  {
+    voip_manager::self()->stop_monitoring( $this );
+  }
+  
+  /**
    * Get the call's peer
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string

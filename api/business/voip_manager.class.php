@@ -124,7 +124,6 @@ class voip_manager extends \sabretooth\singleton
     foreach( $events as $s8_event )
       if( 'Status' == $s8_event->get( 'event' ) )
         $this->call_list[] = new voip_call( $s8_event );
-    
   }
   
   /**
@@ -138,7 +137,7 @@ class voip_manager extends \sabretooth\singleton
    */
   public function call( $db_contact )
   {
-    if( !$this->enabled ) return;
+    if( !$this->enabled ) return NULL;
 
     // check that the contact is valid
     if( is_null( $db_contact ) ||
@@ -168,8 +167,10 @@ class voip_manager extends \sabretooth\singleton
       throw new exc\voip(
         $this->manager->getLastError(), __METHOD__ );
 
-    // rebuild the call list
+    // rebuild the call list and return (what should be) the peer's only call
     $this->get_calls_from_server();
+    $voip_call = current( $this->get_calls( $peer ) );
+    return $voip_call ? $voip_call : NULL;
   }
 
   /**
@@ -230,6 +231,66 @@ class voip_manager extends \sabretooth\singleton
 
     // rebuild the call list
     if( $rebuild_list ) $this->get_calls_from_server();
+  }
+
+  /**
+   * Starts recording a call.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param voip_call $voip_call The call to record.  If this parameter is null then the first
+   *                  call who's peer is the current user is recorded.
+   * @param string $file The file name the recorded call is to be saved under.
+   * @access public
+   */
+  public function start_monitoring( $voip_call, $file )
+  {
+    if( !$this->enabled ) return;
+    
+    if( is_null( $voip_call ) )
+    {
+      // monitor this user's first call
+      $peer = session::self()->get_user()->name;
+      $voip_call = current( $this->get_calls( $peer ) );
+
+      if( !$voip_call )
+        throw new exc\runtime(
+          'Tried to start monitoring a call but no call was found.', __METHOD__ );
+    }
+
+    if( !$voip_call )
+      throw new exc\runtime(
+        'Tried to start monitoring an invalid call.', __METHOD__ );
+
+    $filename = VOIP_MONITOR_PATH.'/'.$file.'.wav';
+    if( false == $this->manager->monitor( $voip_call->get_channel(), $filename, 'wav' ) )
+    {
+      die( "here" );
+      throw new exc\voip( $this->manager->getLastError(), __METHOD__ );
+    }
+  }
+
+  /**
+   * Stops recording the call.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param voip_call $voip_call The call to stop recording.  If this parameter is null then the
+   *                  first call who's peer is the current user is stopped.
+   * @access public
+   */
+  public function stop_monitoring( $voip_call = NULL )
+  {
+    if( !$this->enabled ) return;
+    
+    if( is_null( $voip_call ) )
+    { // monitor this user's first call
+      $peer = session::self()->get_user()->name;
+      $voip_call = current( $this->get_calls( $peer ) );
+    }
+
+    if( $voip_call )
+      if( false == $this->manager->stopMonitor( $voip_call->get_channel() ) )
+        throw new exc\voip(
+          $this->manager->getLastError(), __METHOD__ );
   }
 
   /**
