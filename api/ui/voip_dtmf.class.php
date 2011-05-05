@@ -40,7 +40,7 @@ class voip_dtmf extends action
    */
   public function execute()
   {
-    bus\voip_manager::self()->dtmf( $this->get_argument( 'tone' ) );
+    bus\voip_manager::self()->get_call()->dtmf( $this->get_argument( 'tone' ) );
   }
 }
 ?>
