@@ -190,6 +190,8 @@
                   jeditable_params.event = "click";
                   jeditable_params.onblur = "cancel";
                   jeditable_params.placeholder = "&nbsp;";
+                  jeditable_params.submit = "save";
+                  jeditable_params.cancel = "cancel";
                   
                   {% if 'string' == entry.type or 'number' == entry.type %}
         
@@ -207,7 +209,6 @@
                                             '"NULL":"",' +
                                             {% endif %}
                                             '"1":"Yes", "0":"No", "selected":"Yes" }';
-                    jeditable_params.submit = "ok";
                     $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
                       var index = process_change( $(this), value, "{{ entry.type }}" );
                       var data = jQuery.parseJSON( jeditable_params.data );
@@ -222,7 +223,6 @@
                                             '"{{ id }}":"{{ value }}",' +
                                             {% endfor %}
                                             '"selected":"{{ entry_value }}" }';
-                    jeditable_params.submit = "ok";
                     $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
                       var index = process_change( $(this), value, "{{ entry.type }}" );
                       var data = jQuery.parseJSON( jeditable_params.data );
