@@ -25,6 +25,7 @@ DROP TABLE IF EXISTS `participant` ;
 
 CREATE  TABLE IF NOT EXISTS `participant` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `uid` VARCHAR(45) NULL COMMENT 'External unique ID' ,
   `first_name` VARCHAR(45) NOT NULL ,
   `last_name` VARCHAR(45) NOT NULL ,
   `language` ENUM('en','fr') NULL DEFAULT NULL ,
