@@ -114,7 +114,11 @@
         title: "{{ subject|capitalize }} notes",
         modal: true,
         width: 550,
-        height: 600
+        height: 600,
+        close: function( event, ui ) {
+          // refresh the main slot to refresh any note counts
+          slot_refresh( "main" );
+        }
       } );
     } );
   } );
