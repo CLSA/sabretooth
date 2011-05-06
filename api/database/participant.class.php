@@ -35,22 +35,25 @@ class participant extends has_note
     // if there is no site restriction then just use the parent method
     if( is_null( $db_site ) ) return parent::select( $modifier, $count );
 
-    $select_tables = 'participant, participant_primary_location, contact';
-
-    // straight join the tables
+    // left join the participant_primary_location and contact tables
     if( is_null( $modifier ) ) $modifier = new modifier();
-    $modifier->where( 'participant.id', '=', 'participant_primary_location.participant_id', false );
-    $modifier->where( 'participant_primary_location.contact_id', '=', 'contact.id', false );
-
     $sql = sprintf( ( $count ? 'SELECT COUNT( %s.%s ) ' : 'SELECT %s.%s ' ).
                     'FROM %s '.
-                    'WHERE ( participant.site_id = %d '.
-                    '  OR contact.province_id IN '.
-                    '  ( SELECT id FROM province WHERE site_id = %d ) ) %s',
+                    'LEFT JOIN participant_primary_location '.
+                    'ON %s.id = participant_primary_location.participant_id '.
+                    'LEFT JOIN contact '.
+                    'ON participant_primary_location.contact_id = contact.id '.
+                    'WHERE ( %s.site_id = %d '.
+                    '  OR ( %s.site_id IS NULL '.
+                    '    AND contact.province_id IN ( '.
+                    '      SELECT id FROM province WHERE site_id = %d ) ) ) %s',
                     static::get_table_name(),
                     static::get_primary_key_name(),
-                    $select_tables,
+                    static::get_table_name(),
+                    static::get_table_name(),
+                    static::get_table_name(),
                     $db_site->id,
+                    static::get_table_name(),
                     $db_site->id,
                     $modifier->get_sql( true ) );
 
