@@ -137,7 +137,8 @@ function slot_url( slot, url ) {
     delay: 300, // ms
     align: "center"
   } );
-
+  
+  $( "#" + slot + "_slot" ).html( "" );
   $( "#" + slot + "_slot" ).load( url, null,
     function( response, status, request ) { ajax_complete( request, 'W' ) }
   );
