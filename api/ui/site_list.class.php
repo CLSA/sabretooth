@@ -34,7 +34,6 @@ class site_list extends base_list_widget
     
     $this->add_column( 'name', 'string', 'Name', true );
     $this->add_column( 'users', 'number', 'Users', false );
-    $this->add_column( 'last', 'fuzzy', 'Last activity', false );
   }
 
   /**
@@ -50,14 +49,9 @@ class site_list extends base_list_widget
     // get all sites
     foreach( $this->get_record_list() as $record )
     {
-      // determine the last activity
-      $db_activity = $record->get_last_activity();
-      $last = is_null( $db_activity ) ? null : $db_activity->date;
-
       $this->add_row( $record->id,
         array( 'name' => $record->name,
-               'users' => $record->get_user_count(),
-               'last' => $last ) );
+               'users' => $record->get_user_count() ) );
     }
 
     $this->finish_setting_rows();
