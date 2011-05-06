@@ -71,14 +71,14 @@ class voip_call extends \sabretooth\base_object
     if( !voip_manager::self()->get_enabled() ) return;
     
     // make sure the tone is valid
-    if( !preg_match( '/^[0-9a-dgs]$/', $argv[1] ) )
+    if( !preg_match( '/^[0-9a-dgs]$/', $tone ) )
     {
       log::warning( 'Attempting to play an invalid DTMF tone.' );
       return;
     }
 
     // play the dtmf sound locally as audible feedback
-    $this->play_sound( 'custom/dtmf'.$tone, false );
+    $this->play_sound( 'custom/dtmf'.$tone, 0, false );
     
     // convert g to # and s to * before sending to asterisk
     if( 'g' == $tone ) $tone = '#';
@@ -111,25 +111,35 @@ class voip_call extends \sabretooth\base_object
    * @param string $sound The name of the sound file to play, without file extension.  For custom
    *               sounds (those that are not included with asterisk) make sure to specify the
    *               custom directory, ie: custom/dtmf0
+   * @param int $volume The volume to play the sound at.  This is an integer which ranges from -4
+                to 4, where 0 is the "regular" volume.
    * @param boolean $bridge Whether to play the sound so that both sides of the connection can hear
    *                it.  If this is false then only the caller will hear the sound.
    * @access public
    */
-  public function play_sound( $sound, $bridge = true )
+  public function play_sound( $sound, $volume = 0, $bridge = true )
   {
+    if( !voip_manager::self()->get_enabled() ) return;
+    
+    // constrain the volume to be between -4 and 4
+    $volume = intval( $volume );
+    if( -4 > $volume ) $volume = -4;
+    else if( 4 < $volume ) $volume = 4;
+
     // play sound in local channel
     if( !$this->manager->originate(
-      'Local/do_playback@default',  // channel
-      'default',                    // context
-      'do_chanspy',                 // extension
-      1,                            // priority
-      false,                        // application
-      false,                        // data
-      30000,                        // timeout
-      false,                        // callerID
-      'CfMC_ActionID=PlayBack,'.    // variables
-      'CfMC_WhatToPlay='.$sound.','.
-      'CfMC_WhoHear='.$this->get_channel() ) )
+      'Local/playback@default',  // channel
+      'default',                 // context
+      'chanspy',                 // extension
+      1,                         // priority
+      false,                     // application
+      false,                     // data
+      30000,                     // timeout
+      false,                     // callerID
+      'ActionID=PlayBack,'.      // variables
+      'Sound='.$sound.','.
+      'Volume='.$volume.','.
+      'ToChannel='.$this->get_channel() ) )
     {
       throw new exc\voip( $this->manager->getLastError(), __METHOD__ );
     }
@@ -138,17 +148,18 @@ class voip_call extends \sabretooth\base_object
     {
       // play sound in bridged channel
       if( !$this->manager->originate(
-        'Local/do_playback@default',  // channel
-        'default',                    // context
-        'do_chanspy',                 // extension
-        1,                            // priority
-        false,                        // application
-        false,                        // data
-        30000,                        // timeout
-        false,                        // callerID
-        'CfMC_ActionID=PlayBack,'.    // variables
-        'CfMC_WhatToPlay='.$sound.','.
-        'CfMC_WhoHear='.$this->get_bridge() ) )
+        'Local/playback@default',  // channel
+        'default',                 // context
+        'chanspy',                 // extension
+        1,                         // priority
+        false,                     // application
+        false,                     // data
+        30000,                     // timeout
+        false,                     // callerID
+        'ActionID=PlayBack,'.      // variables
+        'Sound='.$sound.','.
+        'Volume='.$volume.','.
+        'ToChannel='.$this->get_bridge() ) )
       {
         throw new exc\voip( $this->manager->getLastError(), __METHOD__ );
       }
