@@ -36,7 +36,7 @@ class participant_add extends base_view
     $this->add_item( 'uid', 'string', 'Unique ID' );
     $this->add_item( 'first_name', 'string', 'First Name' );
     $this->add_item( 'last_name', 'string', 'Last Name' );
-    $this->add_item( 'language', 'enum', 'Language' );
+    $this->add_item( 'language', 'enum', 'Preferred Language' );
     $this->add_item( 'hin', 'string', 'Health Insurance Number' );
     $this->add_item( 'status', 'enum', 'Condition' );
     $this->add_item( 'site_id', 'enum', 'Prefered Site' );
@@ -64,7 +64,7 @@ class participant_add extends base_view
     $this->set_item( 'uid', '', false );
     $this->set_item( 'first_name', '', true );
     $this->set_item( 'last_name', '', true );
-    $this->set_item( 'language', key( $languages ), true, $languages );
+    $this->set_item( 'language', key( $languages ), false, $languages );
     $this->set_item( 'hin', '' );
     $this->set_item( 'status', '', false, $statuses );
     $this->set_item( 'site_id', '', false, $sites );

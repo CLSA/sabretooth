@@ -33,10 +33,10 @@ class participant_view extends base_view
     parent::__construct( 'participant', 'view', $args );
     
     // create an associative array with everything we want to display about the participant
-    $this->add_item( 'uid', 'string', 'UID' );
+    $this->add_item( 'uid', 'string', 'Unique ID' );
     $this->add_item( 'first_name', 'string', 'First Name' );
     $this->add_item( 'last_name', 'string', 'Last Name' );
-    $this->add_item( 'language', 'enum', 'Language' );
+    $this->add_item( 'language', 'enum', 'Preferred Language' );
     $this->add_item( 'hin', 'string', 'Health Insurance Number' );
     $this->add_item( 'status', 'enum', 'Condition' );
     $this->add_item( 'site_id', 'enum', 'Prefered Site' );
