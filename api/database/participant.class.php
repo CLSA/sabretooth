@@ -248,13 +248,14 @@ class participant extends has_note
       return NULL;
     }
     
-    // need custom SQL
-    $assignment_id = static::db()->get_one(
-      sprintf( 'SELECT assignment_id '.
-               'FROM participant_last_finished_assignment '.
-               'WHERE participant_id = %s',
-               database::format_string( $this->id ) ) );
-    return $assignment_id ? new assignment( $assignment_id ) : NULL;
+    $modifier = new modifier();
+    $modifier->where( 'interview.participant_id', '=', $this->id );
+    $modifier->where( 'end_time', '!=', NULL );
+    $modifier->order_desc( 'start_time' );
+    $modifier->limit( 1 );
+    $assignment_list = assignment::select( $modifier );
+
+    return 0 == count( $assignment_list ) ? NULL : current( $assignment_list );
   }
 
   /**
@@ -272,11 +273,18 @@ class participant extends has_note
       return NULL;
     }
     
-    // need custom SQL
-    $consent_id = static::db()->get_one(
-      sprintf( 'SELECT consent_id FROM participant_current_consent WHERE participant_id = %s',
-               database::format_string( $this->id ) ) );
-    return $consent_id ? new consent( $consent_id ) : NULL;
+    $modifier = new modifier();
+    $modifier->where( 'participant_id', '=', $this->id );
+    $modifier->where( 'event', 'in', array( 'verbal accept',
+                                            'verbal deny',
+                                            'written accept',
+                                            'written deny',
+                                            'retract' ) );
+    $modifier->order_desc( 'date' );
+    $modifier->limit( 1 );
+    $consent_list = consent::select( $modifier );
+
+    return 0 == count( $consent_list ) ? NULL : current( $consent_list );
   }
 
   /**

@@ -38,6 +38,7 @@ class user_list extends site_restricted_list
     $this->add_column( 'active', 'boolean', 'Active', true );
     $this->add_column( 'site.name', 'string', 'Site', false );
     $this->add_column( 'role.name', 'string', 'Role', false );
+    $this->add_column( 'last_activity', 'fuzzy', 'Last activity', false );
   }
 
   /**
@@ -67,12 +68,17 @@ class user_list extends site_restricted_list
       if( 1 == count( $db_roles ) ) $role = $db_roles[0]->name; // only one role?
       else if( 1 < count( $db_roles ) ) $role = 'multiple'; // multiple roles?
       
+      // determine the last activity
+      $db_activity = $record->get_last_activity();
+      $last = is_null( $db_activity ) ? null : $db_activity->date;
+
       // assemble the row for this record
       $this->add_row( $record->id,
         array( 'name' => $record->name,
                'active' => $record->active,
                'site.name' => $site,
-               'role.name' => $role ) );
+               'role.name' => $role,
+               'last_activity' => $last ) );
     }
 
     $this->finish_setting_rows();
