@@ -33,6 +33,7 @@ class participant_add extends base_view
     parent::__construct( 'participant', 'add', $args );
     
     // define all columns defining this record
+    $this->add_item( 'uid', 'string', 'Unique ID' );
     $this->add_item( 'first_name', 'string', 'First Name' );
     $this->add_item( 'last_name', 'string', 'Last Name' );
     $this->add_item( 'language', 'enum', 'Language' );
@@ -60,6 +61,7 @@ class participant_add extends base_view
     foreach( db\site::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
 
     // set the view's items
+    $this->set_item( 'uid', '', false );
     $this->set_item( 'first_name', '', true );
     $this->set_item( 'last_name', '', true );
     $this->set_item( 'language', key( $languages ), true, $languages );
