@@ -25,6 +25,7 @@ DROP TABLE IF EXISTS `participant` ;
 
 CREATE  TABLE IF NOT EXISTS `participant` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `uid` VARCHAR(45) NULL COMMENT 'External unique ID' ,
   `first_name` VARCHAR(45) NOT NULL ,
   `last_name` VARCHAR(45) NOT NULL ,
   `language` ENUM('en','fr') NULL DEFAULT NULL ,
@@ -692,44 +693,19 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `participant_primary_location` (`participant_id` INT, `contact_id` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `participant_current_consent`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `participant_current_consent` (`participant_id` INT, `consent_id` INT, `has_consent` INT);
-
--- -----------------------------------------------------
 -- Placeholder table for view `participant_last_assignment`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `participant_last_assignment` (`participant_id` INT, `assignment_id` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `user_last_activity`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `user_last_activity` (`activity_id` INT, `user_id` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `site_last_activity`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `site_last_activity` (`activity_id` INT, `site_id` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `role_last_activity`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `role_last_activity` (`activity_id` INT, `role_id` INT);
-
--- -----------------------------------------------------
 -- Placeholder table for view `participant_for_queue`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT);
+CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `uid` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `assignment_last_phone_call`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `assignment_last_phone_call` (`assignment_id` INT, `phone_call_id` INT);
-
--- -----------------------------------------------------
--- Placeholder table for view `participant_last_finished_assignment`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `participant_last_finished_assignment` (`participant_id` INT, `assignment_id` INT);
 
 -- -----------------------------------------------------
 -- View `participant_primary_location`
@@ -748,21 +724,6 @@ WHERE t1.rank = (
   GROUP BY t2.participant_id );
 
 -- -----------------------------------------------------
--- View `participant_current_consent`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `participant_current_consent` ;
-DROP TABLE IF EXISTS `participant_current_consent`;
-CREATE  OR REPLACE VIEW `participant_current_consent` AS
-SELECT participant_id, id AS consent_id, event IN( 'verbal accept', 'written accept' ) AS has_consent
-FROM consent AS t1
-WHERE t1.date = (
-  SELECT MAX( t2.date )
-  FROM consent AS t2
-  WHERE t2.event IN ( 'verbal accept','verbal deny','written accept','written deny','retract' )
-  AND t1.participant_id = t2.participant_id
-  GROUP BY t2.participant_id );
-
--- -----------------------------------------------------
 -- View `participant_last_assignment`
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `participant_last_assignment` ;
@@ -777,57 +738,6 @@ AND assignment_1.start_time = (
   WHERE interview_2.id = assignment_2.interview_id
   AND interview_1.participant_id = interview_2.participant_id
   GROUP BY interview_2.participant_id );
-
--- -----------------------------------------------------
--- View `user_last_activity`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `user_last_activity` ;
-DROP TABLE IF EXISTS `user_last_activity`;
-CREATE  OR REPLACE VIEW `user_last_activity` AS
-SELECT activity_1.id AS activity_id, user_1.id as user_id
-FROM activity AS activity_1, user AS user_1
-WHERE user_1.id = activity_1.user_id
-AND activity_1.date = (
-  SELECT MAX( activity_2.date )
-  FROM activity AS activity_2, user AS user_2
-  WHERE user_2.id = activity_2.user_id
-  AND user_2.id = user_1.id
-  GROUP BY user_2.id )
-GROUP BY activity_1.date;
-
--- -----------------------------------------------------
--- View `site_last_activity`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `site_last_activity` ;
-DROP TABLE IF EXISTS `site_last_activity`;
-CREATE  OR REPLACE VIEW `site_last_activity` AS
-SELECT activity_1.id AS activity_id, site_1.id as site_id
-FROM activity AS activity_1, site AS site_1
-WHERE site_1.id = activity_1.site_id
-AND activity_1.date = (
-  SELECT MAX( activity_2.date )
-  FROM activity AS activity_2, site AS site_2
-  WHERE site_2.id = activity_2.site_id
-  AND site_2.id = site_1.id
-  GROUP BY site_2.id )
-GROUP BY activity_1.date;
-
--- -----------------------------------------------------
--- View `role_last_activity`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `role_last_activity` ;
-DROP TABLE IF EXISTS `role_last_activity`;
-CREATE  OR REPLACE VIEW `role_last_activity` AS
-SELECT activity_1.id AS activity_id, role_1.id as role_id
-FROM activity AS activity_1, role AS role_1
-WHERE role_1.id = activity_1.role_id
-AND activity_1.date = (
-  SELECT MAX( activity_2.date )
-  FROM activity AS activity_2, role AS role_2
-  WHERE role_2.id = activity_2.role_id
-  AND role_2.id = role_1.id
-  GROUP BY role_2.id )
-GROUP BY activity_1.date;
 
 -- -----------------------------------------------------
 -- View `participant_for_queue`
@@ -867,23 +777,6 @@ AND phone_call_1.start_time = (
   AND assignment_1.id = assignment_2.id
   AND phone_call_2.end_time IS NOT NULL
   GROUP BY assignment_2.id );
-
--- -----------------------------------------------------
--- View `participant_last_finished_assignment`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `participant_last_finished_assignment` ;
-DROP TABLE IF EXISTS `participant_last_finished_assignment`;
-CREATE  OR REPLACE VIEW `participant_last_finished_assignment` AS
-SELECT interview_1.participant_id, assignment_1.id as assignment_id
-FROM assignment AS assignment_1, interview AS interview_1
-WHERE interview_1.id = assignment_1.interview_id
-AND assignment_1.start_time = (
-  SELECT MAX( assignment_2.start_time )
-  FROM assignment AS assignment_2, interview AS interview_2
-  WHERE interview_2.id = assignment_2.interview_id
-  AND interview_1.participant_id = interview_2.participant_id
-  AND assignment_2.end_time IS NOT NULL
-  GROUP BY interview_2.participant_id );
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

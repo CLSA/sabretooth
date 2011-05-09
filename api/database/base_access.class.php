@@ -109,12 +109,11 @@ abstract class base_access extends record
     
     $modifier = new modifier();
     $modifier->where( $subject_name.'_id', '=', $this->id );
-    $activity_id = static::db()->get_one(
-      sprintf( 'SELECT activity_id FROM %s_last_activity %s',
-               $subject_name,
-               $modifier->get_sql() ) );
+    $modifier->order_desc( 'date' );
+    $modifier->limit( 1 );
+    $activity_list = activity::select( $modifier );
     
-    return is_null( $activity_id ) ? NULL : new activity( $activity_id );
+    return 0 == count( $activity_list ) ? NULL : current( $activity_list );
   }
 
   /**

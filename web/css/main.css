@@ -230,7 +230,7 @@ span.status_icons {
 .ui-timepicker-div dl dt{ height: 25px; }
 .ui-timepicker-div dl dd{ margin: -25px 0 10px 65px; }
 .ui-timepicker-div td { font-size: 90%; }
-#ui-datepicker-div { z-index: 10 !important; }
+#ui-datepicker-div { z-index: 2000 !important; }
 
 /* override a few things in the jquery ui theme */
 .ui-button-text-only .ui-button-text { padding: .1em 1em; }

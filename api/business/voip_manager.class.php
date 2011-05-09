@@ -54,8 +54,7 @@ class voip_manager extends \sabretooth\singleton
       // create and connect to the shift8 AJAM interface
       $this->manager = new \Shift8( $this->url, $this->username, $this->password );
       if( !$this->manager->login() )
-        throw new exc\runtime(
-          'Unable to connect to the Asterisk server.', __METHOD__ );
+        throw new exc\runtime( 'Unable to connect to the Asterisk server.', __METHOD__ );
 
       // get the current SIP info
       $peer = session::self()->get_user()->name;
@@ -75,34 +74,8 @@ class voip_manager extends \sabretooth\singleton
     }
     catch( \Shift8_Exception $e )
     {
-      throw new exc\voip(
-        'Failed to initialize Asterisk AJAM interface.', __METHOD__, $e );
+      throw new exc\voip( 'Failed to initialize Asterisk AJAM interface.', __METHOD__, $e );
     }
-  }
-  
-  /**
-   * Gets a list of all active calls.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string|array $peers A peer or array or peers to restrict the list to.
-   * @return array( voip_call )
-   * @access public
-   */
-  public function get_calls( $peers = NULL )
-  {
-    if( !$this->enabled ) return array();
-    if( is_null( $this->call_list ) ) $this->get_calls_from_server();
-
-    if( is_null( $peers ) ) return $this->call_list;
-
-    // build the call list
-    $calls = array();
-    foreach( $this->call_list as $voip_call )
-      if( ( is_string( $peers ) && $peers == $voip_call->get_peer() ) ||
-          ( is_array( $peers ) && in_array( $voip_call->get_peer(), $peers ) ) )
-        $calls[] = $voip_call;
-
-    return $calls;
   }
   
   /**
@@ -110,20 +83,43 @@ class voip_manager extends \sabretooth\singleton
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\voip
-   * @access private
+   * @access public
    */
-  private function get_calls_from_server()
+  public function rebuild_call_list()
   {
     $this->call_list = array();
     $events = $this->manager->getStatus();
 
     if( is_null( $events ) )
-      throw new exc\voip(
-        $this->manager->getLastError(), __METHOD__ );
+      throw new exc\voip( $this->manager->getLastError(), __METHOD__ );
 
     foreach( $events as $s8_event )
       if( 'Status' == $s8_event->get( 'event' ) )
-        $this->call_list[] = new voip_call( $s8_event );
+        $this->call_list[] = new voip_call( $s8_event, $this->manager );
+  }
+  
+  /**
+   * Gets a user's active call.  If the user isn't currently on a call then null is returned.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $user Which user's call to retrieve.  If this parameter is null then the current
+   *               user's call is returned.
+   * @return voip_call
+   * @access public
+   */
+  public function get_call( $user = NULL )
+  {
+    if( !$this->enabled ) return NULL;
+    if( is_null( $this->call_list ) ) $this->rebuild_call_list();
+
+    $peer = is_null( $user ) ? session::self()->get_user()->name : $user;
+
+    // build the call list
+    $calls = array();
+    foreach( $this->call_list as $voip_call )
+      if( $peer == $voip_call->get_peer() ) return $voip_call;
+
+    return NULL;
   }
   
   /**
@@ -151,146 +147,23 @@ class voip_manager extends \sabretooth\singleton
       throw new exc\runtime(
         'Tried to connect to phone number which does not have exactly 10 digits.', __METHOD__ );
 
-    $peer = session::self()->get_user()->name;
-    
     // make sure the user isn't already in a call
-    if( 0 < count( $this->get_calls( $peer ) ) )
+    if( !is_null( $this->get_call() ) )
       throw new exc\notice(
         'Unable to connect call since you already appear to be in a call.', __METHOD__ );
 
     // originate call (careful, the online API has the arguments in the wrong order)
+    $peer = session::self()->get_user()->name;
     $channel = 'SIP/'.$peer;
     $context = 'users';
     $extension = $this->prefix.$digits;
     $priority = 1;
     if( !$this->manager->originate( $channel, $context, $extension, $priority ) )
-      throw new exc\voip(
-        $this->manager->getLastError(), __METHOD__ );
+      throw new exc\voip( $this->manager->getLastError(), __METHOD__ );
 
     // rebuild the call list and return (what should be) the peer's only call
-    $this->get_calls_from_server();
-    $voip_call = current( $this->get_calls( $peer ) );
-    return $voip_call ? $voip_call : NULL;
-  }
-
-  /**
-   * Play a DTMF tone.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $tone Which tone to play (one of 0123456789abcdgs)
-   * @throws exception\notice, exception\voip
-   * @access public
-   */
-  public function dtmf( $tone )
-  {
-    $peer = session::self()->get_user()->name;
-    
-    $calls = $this->get_calls( $peer );
-    // make sure the user is already in a call
-    if( 0 == count( $this->get_calls( $peer ) ) )
-      throw new exc\notice(
-        'Cannot send tones while not in a call.', __METHOD__ );
-    
-    // get the bridged channel of the first call
-    foreach( $calls as $voip_call )
-    {
-      $channel = $voip_call->get_bridge();
-      break;
-    }
-
-    // send the DTMF
-    if( !$this->manager->playDTMF( $tone, $channel ) )
-      throw new exc\voip(
-        $this->manager->getLastError(), __METHOD__ );
-  }
-
-  /**
-   * Disconnects a call (does nothing if already disconnected).
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param voip_call $voip_call The call to disconnect.  If this parameter is null then all
-   *                  calls who's peer is the current user are disconnected instead.
-   * @access public
-   */
-  public function hang_up( $voip_call = NULL )
-  {
-    if( !$this->enabled ) return;
-    
-    $rebuild_list = false;
-
-    if( is_null( $voip_call ) )
-    {
-      $peer = session::self()->get_user()->name;
-      foreach( $this->get_calls( $peer ) as $voip_call )
-        $rebuild_list = $rebuild_list || $this->manager->hangup( $voip_call->get_channel() );
-    }
-    else
-    {
-      $rebuild_list = $this->manager->hangup( $voip_call->get_channel() );
-    }
-
-    // rebuild the call list
-    if( $rebuild_list ) $this->get_calls_from_server();
-  }
-
-  /**
-   * Starts recording a call.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param voip_call $voip_call The call to record.  If this parameter is null then the first
-   *                  call who's peer is the current user is recorded.
-   * @param string $file The file name the recorded call is to be saved under.
-   * @access public
-   */
-  public function start_monitoring( $voip_call, $file )
-  {
-    if( !$this->enabled ) return;
-    
-    if( is_null( $voip_call ) )
-    {
-      // monitor this user's first call
-      $peer = session::self()->get_user()->name;
-      $voip_call = current( $this->get_calls( $peer ) );
-
-      if( !$voip_call )
-        throw new exc\runtime(
-          'Tried to start monitoring a call but no call was found.', __METHOD__ );
-    }
-
-    if( !$voip_call )
-      throw new exc\runtime(
-        'Tried to start monitoring an invalid call.', __METHOD__ );
-
-    $filename = VOIP_MONITOR_PATH.'/'.$file.'.wav';
-    if( false == $this->manager->monitor( $voip_call->get_channel(), $filename, 'wav' ) )
-    {
-      die( "here" );
-      throw new exc\voip( $this->manager->getLastError(), __METHOD__ );
-    }
-  }
-
-  /**
-   * Stops recording the call.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param voip_call $voip_call The call to stop recording.  If this parameter is null then the
-   *                  first call who's peer is the current user is stopped.
-   * @access public
-   */
-  public function stop_monitoring( $voip_call = NULL )
-  {
-    if( !$this->enabled ) return;
-    
-    if( is_null( $voip_call ) )
-    { // monitor this user's first call
-      $peer = session::self()->get_user()->name;
-      $voip_call = current( $this->get_calls( $peer ) );
-    }
-
-    if( $voip_call )
-      if( false == $this->manager->stopMonitor( $voip_call->get_channel() ) )
-        throw new exc\voip(
-          $this->manager->getLastError(), __METHOD__ );
+    $this->rebuild_call_list();
+    return $this->get_call();
   }
 
   /**

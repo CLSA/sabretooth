@@ -72,7 +72,7 @@ abstract class has_note extends record
     $db_note = new $note_class_name();
     $db_note->user_id = $user->id;
     $db_note->$subject_key_name = $this->id;
-    $db_note->date = date( 'Y-m-d H:i:s' );
+    $db_note->date = util::from_server_time( date( 'Y-m-d H:i:s' ) );
     $db_note->note = $note;
     $db_note->save();
   }

@@ -12,7 +12,6 @@
     $( function() {
       $( "#{{ widget.full }}_widget" ).find( "button" ).click( function() {
         var id = $(this).attr( "id" );
-        var file = "/images/dtmf" + id;
         
         if( "hangup" == id ) {
           if( send_action( "phone_call", "end" ) )
@@ -22,11 +21,6 @@
             slot_refresh( "shortcuts" );
           }
         } else {
-          // play the dual-tone
-          $( "embed" ).remove();
-          $( "body" ).append( '<embed src="' + file +
-                              '" autostart="true" hidden="true" loop="false" />' );
-  
           // send the dual-tone
           send_action( "voip", "dtmf", { tone: id } );
         }
