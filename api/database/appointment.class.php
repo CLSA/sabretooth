@@ -32,6 +32,88 @@ class appointment extends record
     $this->date = substr( $this->date, 0, -3 );
   }
   
+
+  /**
+   * Determines whether there are operator slots available during this appointment's date/time
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @throws exception\runtime
+   * @access public
+   */
+  public function validate_date()
+  {
+    if( is_null( $this->participant_id ) )
+      throw new exc\runtime(
+        'Cannot validate appointment date, participant id is not set.', __METHOD__ );
+
+    $db_participant = new participant( $this->participant_id );
+    $db_site = $db_participant->get_primary_site();
+    if( is_null( $db_site ) )
+      throw new exc\runtime(
+        'Cannot validate an appointment date, participant has no primary location.', __METHOD__ );
+    
+    $db_setting = setting::get_setting( 'appointment', 'start_time' );
+    $expected_start = intval( preg_replace( '/[^0-9]/', '', $db_setting->value ) );
+    $db_setting = setting::get_setting( 'appointment', 'end_time' );
+    $expected_end = intval( preg_replace( '/[^0-9]/', '', $db_setting->value ) );
+
+    // test for the start of the appointment
+    $datetime = new \DateTime( $this->date );
+    $start = intval( preg_replace( '/[^0-9]/', '', $datetime->format( 'H:i' ) ) );
+
+    // how many slots are open?
+    $modifier = new modifier();
+    $modifier->where( 'site_id', '=', $db_site->id );
+    $modifier->where( 'date', '=', $datetime->format( 'Y-m-d' ) );
+    $modifier->where( 'start_time', '<=', $datetime->format( 'H:i:s' ) );
+    $modifier->where( 'end_time', '>', $datetime->format( 'H:i:s' ) );
+    $open_slots = shift::count( $modifier );
+    if( $expected_start <= $start && $start <= $expected_end &&
+        $open_slots < $db_site->operators_expected )
+    {
+      $open_slots = $db_site->operators_expected;
+    }
+    
+    // and how many appointments are during this time?
+    $modifier = new modifier();
+    $modifier->where( 'date', '<=', $datetime->format( 'Y-m-d H:i:s' ) );
+    $modifier->where( 'date', '>', $datetime->format( 'Y-m-d H:i:s' ) );
+    $appointments = appointment::count_for_site( $db_site, $modifier );
+    $open_slots -= $appointments; 
+
+    if( 0 >= $open_slots ) return false;
+
+    // test for the end of the appointment
+    $datetime->add( new \DateInterval( 'PT1H' ) );
+    $end = intval( preg_replace( '/[^0-9]/', '', $datetime->format( 'H:i' ) ) );
+
+    // how many slots are open?
+    $modifier = new modifier();
+    $modifier->where( 'site_id', '=', $db_site->id );
+    $modifier->where( 'date', '=', $datetime->format( 'Y-m-d' ) );
+    $modifier->where( 'start_time', '<=', $datetime->format( 'H:i:s' ) );
+    $modifier->where( 'end_time', '>', $datetime->format( 'H:i:s' ) );
+    $open_slots = shift::count( $modifier );
+    if( $expected_start <= $start && $start <= $expected_end &&
+        $open_slots < $db_site->operators_expected )
+    {
+      $open_slots = $db_site->operators_expected;
+    }
+    
+    // and how many appointments are during this time?
+    $modifier = new modifier();
+    $modifier->where( 'date', '<=', $datetime->format( 'Y-m-d H:i:s' ) );
+    $modifier->where( 'date', '>', $datetime->format( 'Y-m-d H:i:s' ) );
+    $appointments = appointment::count_for_site( $db_site, $modifier );
+    $open_slots -= $appointments; 
+
+    if( 0 >= $open_slots ) return false;
+
+    // if we get here then there is at least one available slot
+    return true;
+  }
+
   /**
    * Identical to the parent's select method but restrict to a particular site.
    * 

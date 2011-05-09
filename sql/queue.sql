@@ -47,7 +47,7 @@ description = "Participants who have finished the questionnaire.";
 
 INSERT INTO queue SET
 name = "incomplete",
-title = "Uncomplete questionnaires",
+title = "Incomplete questionnaires",
 rank = NULL,
 parent_queue_id = (
   SELECT id FROM(

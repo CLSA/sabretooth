@@ -18,7 +18,7 @@ use sabretooth\exception as exc;
  * 
  * @package sabretooth\ui
  */
-class appointment_add extends base_view
+class appointment_add extends base_appointment_view
 {
   /**
    * Constructor
@@ -30,7 +30,7 @@ class appointment_add extends base_view
    */
   public function __construct( $args )
   {
-    parent::__construct( 'appointment', 'add', $args );
+    parent::__construct( 'add', $args );
     
     // add items to the view
     $this->add_item( 'participant_id', 'hidden' );

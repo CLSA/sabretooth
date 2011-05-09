@@ -185,23 +185,23 @@ abstract class base_view extends base_record_widget
   /**
    * When in view mode, determines whether an edit button should be available.
    * @var boolean
-   * @access private
+   * @access protected
    */
-  private $editable = false;
+  protected $editable = false;
 
   /**
    * When in view mode, determines whether a remove button should be available.
    * @var boolean
-   * @access private
+   * @access protected
    */
-   private $removable = false;
+   protected $removable = false;
 
   /**
    * Used by the add mode to display add/cancel buttons.
    * @var boolean
-   * @access private
+   * @access protected
    */
-   private $addable = false;
+   protected $addable = false;
 
   /**
    * An associative array where the key is a unique identifier (usually a column name) and the

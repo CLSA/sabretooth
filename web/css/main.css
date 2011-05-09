@@ -224,12 +224,13 @@ span.status_icons {
   cursor: help;
 }
 
-/* css for timepicker */
+/* css for timepicker and datepicker */
 .ui-timepicker-div .ui-widget-header{ margin-bottom: 8px; }
 .ui-timepicker-div dl{ text-align: left; }
 .ui-timepicker-div dl dt{ height: 25px; }
 .ui-timepicker-div dl dd{ margin: -25px 0 10px 65px; }
 .ui-timepicker-div td { font-size: 90%; }
+#ui-datepicker-div { z-index: 2000 !important; }
 
 /* override a few things in the jquery ui theme */
 .ui-button-text-only .ui-button-text { padding: .1em 1em; }

@@ -74,3 +74,10 @@ WARNING: Some limesurvey templates are not compatible with the javascript which 
 step.  When filling out surveys if pop-up messages saying that questions were not answered appear
 when they were, in fact, answered, then switch to a different template.  The "default" template
 should always work.
+
+F) SETUP ASTERISK
+=================
+Add the dialplans listed in aux/extensions.conf to the Asterisk server's extensions.conf file
+(/etc/asterisk/extensions.conf)
+Copy all .sln files from the aux/ directory to asterisk's custom sound directory
+(/usr/share/asterisk/sounds/custom)

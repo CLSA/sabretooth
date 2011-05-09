@@ -38,7 +38,7 @@ class shift_add extends base_view
     $this->end_time = $this->get_argument( 'end_time', NULL );
 
     // add items to the view
-    $this->add_item( 'site_id', 'enum', 'Site' );
+    $this->add_item( 'site_id', 'hidden' );
     $this->add_item( 'date', 'date', 'Date' );
     $this->add_item( 'start_time', 'time', 'Start Time' );
     $this->add_item( 'end_time', 'time', 'End Time' );
@@ -66,67 +66,18 @@ class shift_add extends base_view
   {
     parent::finish();
 
-    $session = bus\session::self();
-    
-    if( $this->parent )
+    if( $this->parent && 'user' == $this->parent->get_subject() )
     {
-      if( 'user' == $this->parent->get_subject() )
-      {
-        // create site enum array (for sites that user has operator access to only)
-        $sites = array();
-        $db_role = db\role::get_unique_record( 'name', 'operator' );
-        $modifier = new db\modifier();
-        $modifier->where( 'user_id', '=', $this->parent->get_record()->id );
-        $modifier->where( 'role_id', '=', $db_role->id );
-        foreach( db\access::select( $modifier ) as $db_access )
-          $sites[$db_access->site_id] = $db_access->get_site()->name;
-
-        $this->set_variable( 'user_id', $this->parent->get_record()->id );
-        $this->set_item( 'site_id', $session->get_site()->id, true, $sites );
-      }
-      else if( 'site' == $this->parent->get_subject() )
-      {
-        // replace the site enum with a hidden variable
-        $this->add_item( 'site_id', 'hidden' );
-        $this->set_item( 'site_id', $this->parent->get_record()->id );
-        if( !is_null( $this->user_list ) )
-        {
-          $this->user_list->finish();
-          $this->set_variable( 'user_list', $this->user_list->get_variables() );
-        }
-      }
-      else
-      {
-        throw new exc\runtime(
-          'Shift widget has an invalid parent "'.$this->parent->get_subject().
-          '", which should be "user" or "site".', __METHOD__ );
-        
-      }
+      $this->set_variable( 'user_id', $this->parent->get_record()->id );
     }
-    else
+    else if( !is_null( $this->user_list ) )
     {
-      // create site enum array
-      if( 'supervisor' == $session->get_role()->name )
-      {
-        $sites = array( $session->get_site()->id => $session->get_site()->name );
-      }
-      else
-      {
-        $sites = array();
-        foreach( db\site::select( $modifier ) as $db_site )
-          $sites[$db_site->id] = $db_site->name;
-      }
-
-      if( !is_null( $this->user_list ) )
-      {
-        $this->user_list->finish();
-        $this->set_variable( 'user_list', $this->user_list->get_variables() );
-      }
-
-      $this->set_item( 'site_id', $session->get_site()->id, true, $sites );
+      $this->user_list->finish();
+      $this->set_variable( 'user_list', $this->user_list->get_variables() );
     }
 
     // set the view's items
+    $this->set_item( 'site_id', bus\session::self()->get_site()->id, true );
     $this->set_item( 'date', $this->date, true );
     $this->set_item( 'start_time', $this->start_time, true );
     $this->set_item( 'end_time', $this->end_time, true );
@@ -147,8 +98,7 @@ class shift_add extends base_view
     $db_role = db\role::get_unique_record( 'name', 'operator' );
     if( is_null( $modifier ) ) $modifier = new db\modifier();
     $modifier->where( 'role_id', '=', $db_role->id );
-    if( $this->parent && 'site' == $this->parent->get_subject() )
-      $modifier->where( 'site_id', '=', $this->parent->get_record()->id );
+    $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );
 
     return db\user::count( $modifier );
   }
@@ -166,8 +116,7 @@ class shift_add extends base_view
     $db_role = db\role::get_unique_record( 'name', 'operator' );
     if( is_null( $modifier ) ) $modifier = new db\modifier();
     $modifier->where( 'role_id', '=', $db_role->id );
-    if( $this->parent && 'site' == $this->parent->get_subject() )
-      $modifier->where( 'site_id', '=', $this->parent->get_record()->id );
+    $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );
 
     return db\user::select( $modifier );
   }

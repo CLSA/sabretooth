@@ -18,7 +18,7 @@ use sabretooth\exception as exc;
  * 
  * @package sabretooth\ui
  */
-class appointment_view extends base_view
+class appointment_view extends base_appointment_view
 {
   /**
    * Constructor
@@ -30,7 +30,7 @@ class appointment_view extends base_view
    */
   public function __construct( $args )
   {
-    parent::__construct( 'appointment', 'view', $args );
+    parent::__construct( 'view', $args );
     
     // add items to the view
     $this->add_item( 'contact_id', 'enum', 'Phone Number' );
@@ -48,6 +48,10 @@ class appointment_view extends base_view
    */
   public function finish()
   {
+    // don't allow editing if the appointment has been assigned
+    $db_assignment = $this->get_record()->get_assignment();
+    $this->editable = is_null( $db_assignment );
+
     parent::finish();
     
     // create enum arrays
@@ -63,7 +67,6 @@ class appointment_view extends base_view
     $start_time = '';
     $end_time = '';
 
-    $db_assignment = $this->get_record()->get_assignment();
     if( !is_null( $db_assignment ) )
     {
       $this->set_item( 'assignment.user', $db_assignment->get_user()->name, false );

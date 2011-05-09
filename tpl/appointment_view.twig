@@ -7,6 +7,14 @@
  #}
 {% extends "base_view.twig" %}
 
+{% block record %}
+  
+  {{ parent() }}
+  {% from 'macros.twig' import include_calendar %}
+  {{ include_calendar( 'site', site_calendar|default(false), true ) }}
+
+{% endblock record %}
+
 {% block post_record %}
 
   {{ parent() }}

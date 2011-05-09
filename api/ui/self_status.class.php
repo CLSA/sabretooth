@@ -43,11 +43,8 @@ class self_status extends widget
   {
     parent::finish();
 
-    $this->set_variable( 'sip_enabled',
-      bus\voip_manager::self()->get_sip_enabled() );
-    $this->set_variable( 'on_call',
-      0 < count( bus\voip_manager::self()->get_calls(
-                   bus\session::self()->get_user()->name ) ) );
+    $this->set_variable( 'sip_enabled', bus\voip_manager::self()->get_sip_enabled() );
+    $this->set_variable( 'on_call', !is_null( bus\voip_manager::self()->get_call() ) );
   }
 }
 ?>

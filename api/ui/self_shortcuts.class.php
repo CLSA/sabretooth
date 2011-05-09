@@ -43,13 +43,9 @@ class self_shortcuts extends widget
   {
     parent::finish();
     
-    $db_user = bus\session::self()->get_user();
-    $db_role = bus\session::self()->get_role();
-
-    $this->set_variable( 'dialpad',
-      0 < count( bus\voip_manager::self()->get_calls( $db_user->name ) ) );
+    $this->set_variable( 'dialpad', !is_null( bus\voip_manager::self()->get_call() ) );
     $this->set_variable( 'calculator', true );
-    $this->set_variable( 'navigation', 'operator' != $db_role->name );
+    $this->set_variable( 'navigation', 'operator' != bus\session::self()->get_role()->name );
     $this->set_variable( 'refresh', true );
     $this->set_variable( 'home', false );
   }
