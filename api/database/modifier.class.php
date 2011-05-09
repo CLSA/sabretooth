@@ -119,7 +119,7 @@ class modifier extends \sabretooth\base_object
    */
   public function order_desc( $column )
   {
-    $this->order_desc( $column, true );
+    $this->order( $column, true );
   }
 
   /**
