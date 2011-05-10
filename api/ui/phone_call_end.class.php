@@ -43,7 +43,8 @@ class phone_call_end extends action
     $is_operator = 'operator' == $session->get_role()->name;
 
     // disconnect voip
-    bus\voip_manager::self()->get_call()->hang_up();
+    $voip_call = bus\voip_manager::self()->get_call();
+    if( !is_null( $voip_call ) ) $voip_call->hang_up();
 
     if( $is_operator )
     { // set the end time and status of the call
