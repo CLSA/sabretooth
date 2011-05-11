@@ -15,7 +15,7 @@ namespace sabretooth\exception;
  */
 define( 'ARGUMENT_BASE_ERROR_NUMBER',   100000 );
 define( 'DATABASE_BASE_ERROR_NUMBER',   200000 );
-define( 'MISSING_BASE_ERROR_NUMBER',    300000 );
+define( 'LDAP_BASE_ERROR_NUMBER',       300000 );
 define( 'NOTICE_BASE_ERROR_NUMBER',     400000 );
 define( 'PERMISSION_BASE_ERROR_NUMBER', 500000 );
 define( 'RUNTIME_BASE_ERROR_NUMBER',    600000 );
@@ -58,9 +58,10 @@ define( 'ARGUMENT_VOIP_CALL____CONSTRUCT_ERROR_NUMBER',   ARGUMENT_BASE_ERROR_NU
  */
 
 /**
- * "missing" error codes
+ * "ldap" error codes
+ * 
+ * Since ldap errors already have codes this list is likely to stay empty.
  */
-define( 'MISSING_AUTOLOADER__AUTOLOAD_ERROR_NUMBER', MISSING_BASE_ERROR_NUMBER + 1 );
 
 /**
  * "notice" error codes
@@ -132,6 +133,8 @@ define( 'RUNTIME_PARTICIPANT_PRIMARY____CONSTRUCT_ERROR_NUMBER', RUNTIME_BASE_ER
 define( 'RUNTIME_NOTE_LIST__FINISH_ERROR_NUMBER',                RUNTIME_BASE_ERROR_NUMBER + 35 );
 define( 'RUNTIME_NOTE_NEW__EXECUTE_ERROR_NUMBER',                RUNTIME_BASE_ERROR_NUMBER + 36 );
 define( 'RUNTIME_APPOINTMENT__VALIDATE_DATE_ERROR_NUMBER',       RUNTIME_BASE_ERROR_NUMBER + 37 );
+define( 'RUNTIME_AUTOLOADER__AUTOLOAD_ERROR_NUMBER',             RUNTIME_BASE_ERROR_NUMBER + 38 );
+define( 'RUNTIME_LDAP_MANAGER__SET_USER_PASSWORD_ERROR_NUMBER',  RUNTIME_BASE_ERROR_NUMBER + 39 );
 
 /**
  * "system" error codes
