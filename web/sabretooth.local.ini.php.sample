@@ -28,6 +28,12 @@ $SETTINGS[ 'db' ][ 'username' ] = 'put your database username here';
 $SETTINGS[ 'db' ][ 'password' ] = 'put your database password here';
 $SETTINGS[ 'db' ][ 'prefix' ] = 'put your table prefix here';
 
+// The LDAP base dn, username, password and whether LDAP is in active directory mode
+$SETTINGS[ 'ldap' ][ 'base' ] = '';
+$SETTINGS[ 'ldap' ][ 'username' ] = '';
+$SETTINGS[ 'ldap' ][ 'password' ] = '';
+$SETTINGS[ 'ldap' ][ 'active_directory' ] = true;
+
 // The Asterisk AJAM url, username and password
 $SETTINGS[ 'voip' ][ 'enabled' ] = true;
 $SETTINGS[ 'voip' ][ 'url' ] = 'put your AJAM url here';
