@@ -69,7 +69,7 @@ class ldap_manager extends \sabretooth\singleton
         throw new exc\ldap( ldap_error( $this->resource ), ldap_errno( $this->resource ) );
     }
 
-    if( !( @ldap_bind( $this->resource, ROOT, PASS ) ) )
+    if( !( @ldap_bind( $this->resource, $this->username, $this->password ) ) )
       throw new exc\ldap( ldap_error( $this->resource ), ldap_errno( $this->resource ) );
   }
   
@@ -205,7 +205,7 @@ class ldap_manager extends \sabretooth\singleton
   {
     $this->connect();
     
-    $search = @ldap_search( $this->resource, $this->base, sprintf( '(&(uid=*))', $username ) );
+    $search = @ldap_search( $this->resource, $this->base, '(&(uid=*))' );
     if( !$search )
       throw new exc\ldap( ldap_error( $this->resource ), ldap_errno( $this->resource ) );
     

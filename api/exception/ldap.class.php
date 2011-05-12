@@ -33,5 +33,18 @@ class ldap extends base_exception
     // This way a -9 would appear as 399009 instead of 299991
     parent::__construct( $message, 99000 + abs( $context ), $previous );
   }
+
+  /**
+   * Returns whether the exception was thrown because of trying to create a user that already
+   * exists.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function is_already_exists()
+  {
+    return LDAP_BASE_ERROR_NUMBER + 68 == $this->get_number();
+  }
 }
 ?>
