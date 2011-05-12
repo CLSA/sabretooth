@@ -20,7 +20,23 @@
 
   <script type="text/javascript">
     $( function() {
-      $( "#{{ widget.full }}_logout" ).button();
+      $( "#{{ widget.full }}_logout" ).button().click( function() {
+        $.cookie( 'logout', true );
+        jQuery.post( '?' );
+      } );
+      
+      // change password button
+      $( "#{{ widget.full }}_password" ).button().click( function() {
+        // open the change-password dialog
+        $( "#password_slot" ).dialog( {
+          title: "Change password",
+          modal: true,
+          width: 400,
+          height: 220,
+          autoOpen: true
+        } );
+        slot_load( "password", "self_password" );
+      } );
 
       // changes the active site
       $( "#{{ widget.full }}_set_site" ).change( function() {
@@ -63,8 +79,8 @@
         Welcome {{ user_name }}
       </td>
       <td align="right">
-        <button id="{{ widget.full }}_logout"
-                onclick="jQuery.post( 'index.php', { logout: 'logout' } );">logout</button>
+        <button id="{{ widget.full }}_password">password</button>
+        <button id="{{ widget.full }}_logout">logout</button>
       </td>
     </tr>
   </table>

@@ -278,6 +278,10 @@ VALUES( "widget", "self", "shortcuts", false, "The current user's shortcut icon 
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "status", false, "The current user's status." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "self", "password", false, "Dialog for changing the user's password." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "self", "set_password", false, "Changes the user's password." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "dialing_pad", false, "A telephone dialing pad widget." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "calculator", false, "A calculator widget." );
@@ -375,6 +379,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "user", "new_access", true, "Grant this user access to sites." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "user", "delete_access", true, "Removes this user's access to a site." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "user", "reset_password", true, "Resets a user's password." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "datum", "user", "primary", true, "Retrieves base user information." );
 

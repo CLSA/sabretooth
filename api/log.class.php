@@ -325,6 +325,9 @@ final class log extends singleton
    */
   static public function error_handler( $level, $message, $file, $line )
   {
+    // ignore ldap errors
+    if( 0 < preg_match( '/^ldap_[a-z_0-9]()/', $message ) ) return;
+
     $message .= "\n in $file on line $line (errno: $level)";
     if( E_PARSE == $level ||
         E_COMPILE_ERROR == $level ||
@@ -369,7 +372,10 @@ final class log extends singleton
     {
       log::warning( $message );
     }
-  
+    
+    // from PHP docs:
+    //   It is important to remember that the standard PHP error handler is completely bypassed for
+    //   the error types specified by error_types unless the callback function returns FALSE.
     return false;
   }
 

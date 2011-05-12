@@ -103,6 +103,14 @@ $SETTINGS[ 'db' ][ 'password' ] = '';
 $SETTINGS[ 'db' ][ 'database' ] = 'sabretooth';
 $SETTINGS[ 'db' ][ 'prefix' ] = '';
 
+// ldap settings
+$SETTINGS[ 'ldap' ][ 'server' ] = 'localhost';
+$SETTINGS[ 'ldap' ][ 'port' ] = 389;
+$SETTINGS[ 'ldap' ][ 'base' ] = '';
+$SETTINGS[ 'ldap' ][ 'username' ] = '';
+$SETTINGS[ 'ldap' ][ 'password' ] = '';
+$SETTINGS[ 'ldap' ][ 'active_directory' ] = true;
+
 // voip settings
 $SETTINGS[ 'voip' ][ 'enabled' ] = false;
 $SETTINGS[ 'voip' ][ 'url' ] = 'http://localhost:8088/mxml';

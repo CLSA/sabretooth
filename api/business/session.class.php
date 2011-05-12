@@ -49,6 +49,7 @@ final class session extends \sabretooth\singleton
                          'general',
                          'interface',
                          'version',
+                         'ldap',
                          'voip' );
     foreach( $categories as $category )
     {

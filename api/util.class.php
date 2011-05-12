@@ -519,6 +519,105 @@ final class util
   }
 
   /**
+   * Encodes a string using a SHA1 hash.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $string The string to encode
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function sha1_hash( $string )
+  {
+    return '{SHA}'.base64_encode( pack( 'H*', sha1( $string ) ) );
+  }
+
+  /**
+   * Encodes a string using a MD5 hash.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $string The string to encode
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function md5_hash( $string )
+  {
+    return '{MD5}'.base64_encode( pack( 'H*', md5( $string ) ) );
+  }
+
+  /**
+   * Encodes a string using a NTLM hash.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $string The string to encode
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function ntlm_hash( $string )
+  {
+    // Convert the password from UTF8 to UTF16 (little endian), encrypt with the MD4 hash and
+    // make it uppercase (not necessary, but it's common to do so with NTLM hashes)
+    return strtoupper( hash( 'md4', iconv( 'UTF-8', 'UTF-16LE', $string ) ) );
+  }
+
+  /**
+   * Encodes a string using a LM hash.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $string The string to encode
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function lm_hash( $string )
+  {
+    $string = strtoupper( substr( $string, 0, 14 ) );
+
+    $part_1 = self::des_encrypt( substr( $string, 0, 7 ) );
+    $part_2 = self::des_encrypt( substr( $string, 7, 7 ) );
+
+    return strtoupper( $part_1.$part_2 );
+  }
+
+  /**
+   * Encrypts a string using the DES standard
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $string The string to encode
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function des_encrypt( $string )
+  {
+    $key = array();
+    $tmp = array();
+    $length = strlen( $string );
+
+    for( $i = 0; $i < 7; ++$i ) $tmp[] = $i < $length ? ord( $string[$i] ) : 0;
+
+    $key[] = $tmp[0] & 254;
+    $key[] = ( $tmp[0] << 7 ) | ( $tmp[1] >> 1 );
+    $key[] = ( $tmp[1] << 6 ) | ( $tmp[2] >> 2 );
+    $key[] = ( $tmp[2] << 5 ) | ( $tmp[3] >> 3 );
+    $key[] = ( $tmp[3] << 4 ) | ( $tmp[4] >> 4 );
+    $key[] = ( $tmp[4] << 3 ) | ( $tmp[5] >> 5 );
+    $key[] = ( $tmp[5] << 2 ) | ( $tmp[6] >> 6 );
+    $key[] = $tmp[6] << 1;
+   
+    $key0 = '';
+   
+    foreach( $key as $k ) $key0 .= chr( $k );
+    $crypt = mcrypt_encrypt(
+      MCRYPT_DES, $key0, 'KGS!@#$%', MCRYPT_MODE_ECB,
+      mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_DES, MCRYPT_MODE_ECB ), MCRYPT_RAND ) );
+
+    return bin2hex( $crypt );
+  }
+
+  /**
    * Cache for action_mode method.
    * @var bool
    * @access private

@@ -49,11 +49,25 @@ class user_new extends base_new
    */
   public function execute()
   {
+    $columns = $this->get_argument( 'columns' );
+
+    // add the user to ldap
+    $ldap_manager = new bus\ldap_manager();
+    try
+    {
+      $ldap_manager->new_user(
+        $columns['name'], $columns['first_name'], $columns['last_name'], 'password' );
+    }
+    catch( exc\ldap $e )
+    {
+      // catch already exists exceptions, no need to report them
+      if( !$e->is_already_exists() ) throw $e;
+    }
+
     parent::execute();
 
     if( !is_null( $this->site_id ) && !is_null( $this->role_id ) )
     { // add the initial role to the new user
-      $columns = $this->get_argument( 'columns' );
       $db_user = db\user::get_unique_record( 'name', $columns['name'] );
       $db_access = new db\access();
       $db_access->user_id = $db_user->id;
