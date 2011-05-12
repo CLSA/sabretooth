@@ -380,6 +380,8 @@ VALUES( "action", "user", "new_access", true, "Grant this user access to sites."
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "user", "delete_access", true, "Removes this user's access to a site." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "user", "reset_password", true, "Resets a user's password." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "datum", "user", "primary", true, "Retrieves base user information." );
 
 COMMIT;
