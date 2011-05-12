@@ -155,6 +155,41 @@ class ldap_manager extends \sabretooth\singleton
   }
 
   /**
+   * Validate's a user/password pair, returning true if the password is a match and false if not
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $username
+   * @param string $password
+   * @throws exception\ldap, exception\runtime
+   * @return boolean
+   * @access public
+   */
+  public function validate_user( $username, $password )
+  {
+    $this->connect();
+
+    $search = @ldap_search( $this->resource, $this->base, sprintf( '(&(uid=%s))', $username ) );
+    if( !$search )
+      throw new exc\ldap( ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+  
+    $entries = @ldap_get_entries( $this->resource, $search );
+    ldap_free_result( $search );
+    if( !$entries )
+      throw new exc\ldap( ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+  
+    if( 0 == $entries['count'] )
+      throw new exc\runtime( sprintf( 'User %s not found.', $username ), __METHOD__ );
+  
+    $dn = $entries[0]['dn'];
+    $test = @ldap_bind( $this->resource, $dn, $password );
+
+    if( !$test && 49 != ldap_errno( $this->resource ) )
+      throw new exc\ldap( ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+    
+    return $test;
+  }
+
+  /**
    * Sets a user's password
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

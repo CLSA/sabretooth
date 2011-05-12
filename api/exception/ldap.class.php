@@ -31,7 +31,7 @@ class ldap extends base_exception
   {
     // If the error code is negative then add 99000 and make it positive
     // This way a -9 would appear as 399009 instead of 299991
-    parent::__construct( $message, 99000 + abs( $context ), $previous );
+    parent::__construct( $message, self::convert_context( $context ), $previous );
   }
 
   /**
@@ -44,7 +44,21 @@ class ldap extends base_exception
    */
   public function is_already_exists()
   {
-    return LDAP_BASE_ERROR_NUMBER + 68 == $this->get_number();
+    $number = LDAP_BASE_ERROR_NUMBER + self::convert_context( 68 );
+    return $this->get_number() == $number;
+  }
+  
+  /**
+   * Converts the context to an error number.
+   * This is necessary because some native LDAP errors are negative.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return integer
+   * @access private
+   */
+  private function convert_context( $number )
+  {
+    return 0 > $number ? 99000 + abs( $number ) : $number;
   }
 }
 ?>
