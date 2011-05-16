@@ -53,7 +53,8 @@ abstract class record extends \sabretooth\base_object
           ( 'start_time' == $name &&
             'datetime' == static::db()->get_column_data_type( static::get_table_name(), $name ) ) )
       {
-        $this->column_values[$name] = date( 'Y-m-d H:i:s' );
+        $date_obj = util::get_datetime_object();
+        $this->column_values[$name] = $date_obj->format( 'Y-m-d H:i:s' );
       }
       else
       {
@@ -168,8 +169,8 @@ abstract class record extends \sabretooth\base_object
         static::column_exists( 'end_time' ) &&
         !is_null( static::db()->get_column_default( static::get_table_name(), 'end_time' ) ) )
     {
-      $start_obj = new \DateTime( $this->start_time );
-      $end_obj = new \DateTime( $this->end_time );
+      $start_obj = util::get_datetime_object( $this->start_time );
+      $end_obj = util::get_datetime_object( $this->end_time );
       $interval = $start_obj->diff( $end_obj );
       if( 0 != $interval->invert ||
         ( 0 == $interval->days && 0 == $interval->h && 0 == $interval->i && 0 == $interval->s ) )

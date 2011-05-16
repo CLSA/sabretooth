@@ -55,7 +55,8 @@ class operator_end_break extends action
     
     foreach( $away_time_list as $db_away_time )
     {
-      $db_away_time->end_time = date( 'Y-m-d H:i:s' );
+      $date_obj = util::get_datetime_object();
+      $db_away_time->end_time = $date_obj->format( 'Y-m-d H:i:s' );
       $db_away_time->save();
     }
   }

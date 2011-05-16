@@ -123,8 +123,8 @@ INSERT INTO availability
 SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Cat' ),
     saturday = true,
     sunday = true,
-    start_time = '09:00:00',
-    end_time = '17:00:00';
+    start_time = '14:00:00',
+    end_time = '22:00:00';
 INSERT INTO availability
 SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Drake' ),
     monday = true,
@@ -132,13 +132,13 @@ SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Drake' ),
     wednesday = true,
     thursday = true,
     friday = true,
-    start_time = '09:00:00',
-    end_time = '17:00:00';
+    start_time = '14:00:00',
+    end_time = '22:00:00';
 INSERT INTO availability
 SET participant_id = ( SELECT id FROM participant WHERE last_name = 'Drake' ),
     wednesday = true,
-    start_time = '19:00:00',
-    end_time = '22:00:00';
+    start_time = '0:00:00',
+    end_time = '3:00:00';
 
 INSERT INTO sample( name, description ) VALUES ( 'First Sample', 'This is a test sample.' );
 INSERT INTO sample( name, description ) VALUES ( 'Second Sample', 'This is another test sample.' );

@@ -154,6 +154,33 @@ final class util
   }
   
   /**
+   * Returns a DateTimeZone object for the user's current site's timezone
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $server Whether to return the application's or server's timezone
+   * @return DateTimeZone
+   * @access public
+   */
+  public static function get_timezone_object( $server = false )
+  {
+    return new \DateTimeZone( $server ? 'UTC' : business\session::self()->get_site()->timezone );
+  }
+
+  /**
+   * Returns a DateTime object in the user's current site's timezone
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $datetime A date string in any valid PHP date time format.
+   * @param boolean $server Whether to return the datetimein the application's or server's timezone
+   * @return DateTime
+   * @access public
+   */
+  public static function get_datetime_object( $datetime = NULL, $server = false )
+  {
+    return new \DateTime( $datetime, self::get_timezone_object( $server ) );
+  }
+
+  /**
    * Converts the server's date to a user's date
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
@@ -166,11 +193,8 @@ final class util
   {
     if( is_null( $date ) || !is_string( $date ) ) return $date;
 
-    $user_tz = business\session::self()->get_site()->timezone;
-    $server_tz = date( 'e' );
-
-    $date_obj = new \DateTime( $date, new \DateTimeZone( $server_tz ) );
-    $date_obj->setTimeZone( new \DateTimeZone( $user_tz ) );
+    $date_obj = self::get_datetime_object( $date, true ); // server's timezone
+    $date_obj->setTimeZone( self::get_timezone_object() );
     return $date_obj->format( "Y-m-d G:i:s" );
   }
 
@@ -187,11 +211,8 @@ final class util
   {
     if( is_null( $date ) || !is_string( $date ) ) return $date;
 
-    $user_tz = business\session::self()->get_site()->timezone;
-    $server_tz = date( 'e' );
-
-    $date_obj = new \DateTime( $date, new \DateTimeZone( $user_tz ) );
-    $date_obj->setTimeZone( new \DateTimeZone( $server_tz ) );
+    $date_obj = self::get_datetime_object( $date );
+    $date_obj->setTimeZone( self::get_timezone_object( true ) );
     return $date_obj->format( "Y-m-d G:i:s" );
   }
 
@@ -208,11 +229,8 @@ final class util
   {
     if( is_null( $time ) || !is_string( $time ) ) return $time;
 
-    $user_tz = business\session::self()->get_site()->timezone;
-    $server_tz = date( 'e' );
-
-    $time_obj = new \DateTime( $time, new \DateTimeZone( $server_tz ) );
-    $time_obj->setTimeZone( new \DateTimeZone( $user_tz ) );
+    $time_obj = self::get_datetime_object( $time, true ); // server's timezone
+    $time_obj->setTimeZone( self::get_timezone_object() );
     return $time_obj->format( "G:i:s" );
   }
 
@@ -229,11 +247,8 @@ final class util
   {
     if( is_null( $time ) || !is_string( $time ) ) return $time;
 
-    $user_tz = business\session::self()->get_site()->timezone;
-    $server_tz = date( 'e' );
-
-    $time_obj = new \DateTime( $time, new \DateTimeZone( $user_tz ) );
-    $time_obj->setTimeZone( new \DateTimeZone( $server_tz ) );
+    $time_obj = self::get_datetime_object( $time );
+    $time_obj->setTimeZone( self::get_timezone_object( true ) );
     return $time_obj->format( "G:i:s" );
   }
 
@@ -241,19 +256,19 @@ final class util
    * Returns the date and time as a user-friendly string.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $date A date string in the format accepted by the DateTime constructor.
+   * @param string $date A date string in any valid PHP date time format.
    * @param boolean $include_seconds Whether to include the seconds in the output
    * @param string $invalid What to return if the input is invalid.
    * @return string
    * @static
    * @access public
    */
-  public static function get_formatted_datetime( $datetime, $include_seconds = true, $invalid = 'unknown' )
+  public static function get_formatted_datetime(
+    $datetime, $include_seconds = true, $invalid = 'unknown' )
   {
     if( is_null( $datetime ) || !is_string( $datetime ) ) return $invalid;
 
-    $user_tz = business\session::self()->get_site()->timezone;
-    $time_obj = new \DateTime( $datetime, new \DateTimeZone( $user_tz ) );
+    $time_obj = self::get_datetime_object( $datetime );
     return $time_obj->format( 'Y-m-d '.( $include_seconds ? 'g:i:s A, T' : 'g:i A, T' ) );
   }
 
@@ -261,7 +276,7 @@ final class util
    * Returns the date as a user-friendly string.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $date A date string in the format accepted by the DateTime constructor.
+   * @param string $date A date string in any valid PHP date time format.
    * @param string $invalid What to return if the input is invalid.
    * @return string
    * @static
@@ -271,7 +286,7 @@ final class util
   {
     if( is_null( $date ) || !is_string( $date ) ) return $invalid;
 
-    $date_obj = new \DateTime( $date );
+    $date_obj = self::get_datetime_object( $date );
     return $date_obj->format( 'l, F jS, Y' );
   }
 
@@ -279,7 +294,7 @@ final class util
    * Returns the time as a user-friendly string.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $date A date string in the format accepted by the DateTime constructor.
+   * @param string $date A date string in any valid PHP date time format.
    * @param boolean $include_seconds Whether to include the seconds in the output
    * @param string $invalid What to return if the input is invalid.
    * @return string
@@ -290,8 +305,7 @@ final class util
   {
     if( is_null( $time ) || !is_string( $time ) ) return $invalid;
 
-    $user_tz = business\session::self()->get_site()->timezone;
-    $time_obj = new \DateTime( $time, new \DateTimeZone( $user_tz ) );
+    $time_obj = self::get_datetime_object( $time );
     return $time_obj->format( $include_seconds ? 'g:i:s A, T' : 'g:i A, T' );
   }
 
@@ -299,7 +313,7 @@ final class util
    * Returns the interval between the date and "now"
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $date A date string in the format accepted by the DateTime constructor.
+   * @param string $date A date string in any valid PHP date time format.
    * @param string $date2 A second string to compare to instead of "now"
    * @return \DateInterval
    * @static
@@ -308,15 +322,16 @@ final class util
   public static function get_interval( $date, $date2 = NULL )
   {
     // we need to convert to server time since we will compare to the server's "now" time
-    $date_obj = new \DateTime( self::to_server_date( $date ) );
-    return $date_obj->diff( new \DateTime( $date2 ) );
+    $date_obj = self::get_datetime_object( $date );
+    $date2_obj = self::get_datetime_object( $date2 );
+    return $date_obj->diff( $date2_obj );
   }
 
   /**
    * Returns a fuzzy description of how long ago a certain date occured.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $date A date string in the format accepted by the DateTime constructor.
+   * @param string $date A date string in any valid PHP date time format.
    * @return string
    * @static
    * @access public
@@ -349,7 +364,7 @@ final class util
     }
     else if( 7 > $interval->days )
     {
-      $date_obj = new \DateTime( self::to_server_date( $date ) );
+      $date_obj = self::get_datetime_object( $date );
       $result = 'last '.$date_obj->format( 'l' );
     }
     else if( 1 > $interval->m && 0 == $interval->y )
@@ -358,7 +373,7 @@ final class util
     }
     else if( 1 > $interval->y )
     {
-      $date_obj = new \DateTime( self::to_server_date( $date ) );
+      $date_obj = self::get_datetime_object( $date );
       $result = 'last '.$date_obj->format( 'F' );
     }
     else

@@ -66,13 +66,14 @@ abstract class has_note extends record
    */
   public function add_note( $user, $note )
   {
+    $date_obj = util::get_datetime_object();
     $table_name = static::get_table_name();
     $subject_key_name = $table_name.'_'.static::get_primary_key_name();
     $note_class_name = '\\sabretooth\\database\\'.$table_name.'_note';
     $db_note = new $note_class_name();
     $db_note->user_id = $user->id;
     $db_note->$subject_key_name = $this->id;
-    $db_note->date = util::from_server_time( date( 'Y-m-d H:i:s' ) );
+    $db_note->date = $date_obj->format( 'Y-m-d H:i:s' );
     $db_note->note = $note;
     $db_note->save();
   }

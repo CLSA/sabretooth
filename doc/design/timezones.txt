@@ -1,0 +1,11 @@
+Times and timezones are being handled in the following manner:
+
+- All database times are in UTC
+- All times in memory (variables, active records, etc) are in the user's current site's timezone
+- With the exception of low-level database code which reads/writes from/to the database, all code
+  should assume that all times are in the user's current timezone (no converting necessary)
+- PHP's date() function should NEVER be used, instead use util::get_datetime_object() to get a
+  PHP DateTime object which tracks time zone.
+
+NOTE: In order for this to work the database has been designed such that all DATE, DATETIME, TIME
+      and TIMESTAMP columns have the name `date`, `start_time` or `end_time`

@@ -45,8 +45,8 @@ class site_feed extends base_feed
     $db_site = bus\session::self()->get_site();
 
     // start by creating an array with one element per day in the time span
-    $start_datetime = new \DateTime( $this->start_date );
-    $end_datetime = new \DateTime( $this->end_date );
+    $start_datetime = util::get_datetime_object( $this->start_date );
+    $end_datetime = util::get_datetime_object( $this->end_date );
     
     $days = array();
     $current_datetime = clone $start_datetime;
@@ -90,7 +90,7 @@ class site_feed extends base_feed
 
     foreach( db\appointment::select_for_site( $db_site, $modifier ) as $db_appointment )
     {
-      $appointment_datetime = new \DateTime( $db_appointment->date );
+      $appointment_datetime = util::get_datetime_object( $db_appointment->date );
       $slots = &$days[ $appointment_datetime->format( 'Y-m-d' ) ]['slots'];
 
       // decrement slot at start time

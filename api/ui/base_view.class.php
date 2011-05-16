@@ -93,10 +93,9 @@ abstract class base_view extends base_record_widget
     else if( 'time' == $type || 'datetime' == $type )
     {
       // build time time zone help text
-      $session = bus\session::self();
-      $date_obj = new \DateTime( "now", new \DateTimeZone( $session->get_site()->timezone ) );
+      $date_obj = util::get_datetime_object();
       $time_note = sprintf( 'Time is in %s\'s time zone (%s)',
-                            $session->get_site()->name,
+                            bus\session::self()->get_site()->name,
                             $date_obj->format( 'T' ) );
       $this->items[$item_id]['note'] = $time_note;
     }
@@ -125,7 +124,12 @@ abstract class base_view extends base_record_widget
     }
     else if( 'time' == $this->items[$item_id]['type'] )
     {
-      $value = strlen( $value ) ? date( 'H:i', strtotime( $value ) ) : "12:00";
+      if( strlen( $value ) )
+      {
+        $date_obj = util::get_datetime_object( $value );
+        $value = $date_obj->format( 'H:i' );
+      }
+      else $value = '12:00';
     }
     else if( 'hidden' == $this->items[$item_id]['type'] )
     {

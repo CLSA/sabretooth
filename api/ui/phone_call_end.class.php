@@ -51,7 +51,8 @@ class phone_call_end extends action
       $db_phone_call = $session->get_current_phone_call();
       if( !is_null( $db_phone_call ) )
       {
-        $db_phone_call->end_time = date( 'Y-m-d H:i:s' );
+        $date_obj = util::get_datetime_object();
+        $db_phone_call->end_time = $date_obj->format( 'Y-m-d H:i:s' );
         $db_phone_call->status = $this->get_argument( 'status' );
         $db_phone_call->save();
       }

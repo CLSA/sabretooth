@@ -59,15 +59,15 @@ class appointment extends record
     $expected_end = intval( preg_replace( '/[^0-9]/', '', $db_setting->value ) );
 
     // test for the start of the appointment
-    $datetime = new \DateTime( $this->date );
-    $start = intval( preg_replace( '/[^0-9]/', '', $datetime->format( 'H:i' ) ) );
+    $date_obj = util::get_datetime_object( $this->date );
+    $start = intval( preg_replace( '/[^0-9]/', '', $date_obj->format( 'H:i' ) ) );
 
     // how many slots are open?
     $modifier = new modifier();
     $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'date', '=', $datetime->format( 'Y-m-d' ) );
-    $modifier->where( 'start_time', '<=', $datetime->format( 'H:i:s' ) );
-    $modifier->where( 'end_time', '>', $datetime->format( 'H:i:s' ) );
+    $modifier->where( 'date', '=', $date_obj->format( 'Y-m-d' ) );
+    $modifier->where( 'start_time', '<=', $date_obj->format( 'H:i:s' ) );
+    $modifier->where( 'end_time', '>', $date_obj->format( 'H:i:s' ) );
     $open_slots = shift::count( $modifier );
     if( $expected_start <= $start && $start <= $expected_end &&
         $open_slots < $db_site->operators_expected )
@@ -77,23 +77,23 @@ class appointment extends record
     
     // and how many appointments are during this time?
     $modifier = new modifier();
-    $modifier->where( 'date', '<=', $datetime->format( 'Y-m-d H:i:s' ) );
-    $modifier->where( 'date', '>', $datetime->format( 'Y-m-d H:i:s' ) );
+    $modifier->where( 'date', '<=', $date_obj->format( 'Y-m-d H:i:s' ) );
+    $modifier->where( 'date', '>', $date_obj->format( 'Y-m-d H:i:s' ) );
     $appointments = appointment::count_for_site( $db_site, $modifier );
     $open_slots -= $appointments; 
 
     if( 0 >= $open_slots ) return false;
 
     // test for the end of the appointment
-    $datetime->add( new \DateInterval( 'PT1H' ) );
-    $end = intval( preg_replace( '/[^0-9]/', '', $datetime->format( 'H:i' ) ) );
+    $date_obj->add( new \DateInterval( 'PT1H' ) );
+    $end = intval( preg_replace( '/[^0-9]/', '', $date_obj->format( 'H:i' ) ) );
 
     // how many slots are open?
     $modifier = new modifier();
     $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'date', '=', $datetime->format( 'Y-m-d' ) );
-    $modifier->where( 'start_time', '<=', $datetime->format( 'H:i:s' ) );
-    $modifier->where( 'end_time', '>', $datetime->format( 'H:i:s' ) );
+    $modifier->where( 'date', '=', $date_obj->format( 'Y-m-d' ) );
+    $modifier->where( 'start_time', '<=', $date_obj->format( 'H:i:s' ) );
+    $modifier->where( 'end_time', '>', $date_obj->format( 'H:i:s' ) );
     $open_slots = shift::count( $modifier );
     if( $expected_start <= $start && $start <= $expected_end &&
         $open_slots < $db_site->operators_expected )
@@ -103,8 +103,8 @@ class appointment extends record
     
     // and how many appointments are during this time?
     $modifier = new modifier();
-    $modifier->where( 'date', '<=', $datetime->format( 'Y-m-d H:i:s' ) );
-    $modifier->where( 'date', '>', $datetime->format( 'Y-m-d H:i:s' ) );
+    $modifier->where( 'date', '<=', $date_obj->format( 'Y-m-d H:i:s' ) );
+    $modifier->where( 'date', '>', $date_obj->format( 'Y-m-d H:i:s' ) );
     $appointments = appointment::count_for_site( $db_site, $modifier );
     $open_slots -= $appointments; 
 
