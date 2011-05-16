@@ -13,51 +13,6 @@ parent_queue_id = NULL,
 description = "All participants in the database.";
 
 INSERT INTO queue SET
-name = "no_qnaire",
-title = "No questionnaire",
-rank = NULL,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "all" ) AS tmp ),
-description = "Participants who have never been assigned to any questionnaire.";
-
-INSERT INTO queue SET
-name = "qnaire",
-title = "Questionnaire",
-rank = NULL,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "all" ) AS tmp ),
-description = "Participants who have been assigned to the questionnaire.";
-
-INSERT INTO queue SET
-name = "complete",
-title = "Completed questionnaires",
-rank = NULL,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "qnaire" ) AS tmp ),
-description = "Participants who have finished the questionnaire.";
-
-INSERT INTO queue SET
-name = "incomplete",
-title = "Incomplete questionnaires",
-rank = NULL,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "qnaire" ) AS tmp ),
-description = "Participants who have not finished the questionnaire (including those who haven't
-started yet).";
-
-INSERT INTO queue SET
 name = "ineligible",
 title = "Ineligible participants",
 rank = NULL,
@@ -65,9 +20,9 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "incomplete" ) AS tmp ),
-description = "Participants who have not finished the questionnaire and are not eligible to
-continue due to refusal or a permanent condition.";
+    WHERE name = "all" ) AS tmp ),
+description = "Participants who are not eligible to answer questionnaires due to a permanent
+condition or because they are inactive.";
 
 INSERT INTO queue SET
 name = "eligible",
@@ -77,8 +32,31 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "incomplete" ) AS tmp ),
-description = "Participants who have not finished the questionnaire and are eligible to continue.";
+    WHERE name = "all" ) AS tmp ),
+description = "Participants who are eligible to answer questionnaires.";
+
+INSERT INTO queue SET
+name = "qnaire_waiting",
+title = "Waiting for questionnaire",
+rank = NULL,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "eligible" ) AS tmp ),
+description = "Eligible participants who are waiting the scheduled cool-down period before
+beginning the questionnaire.";
+
+INSERT INTO queue SET
+name = "qnaire",
+title = "Questionnaire",
+rank = NULL,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "eligible" ) AS tmp ),
+description = "Eligible participants who are currently assigned to the questionnaire.";
 
 INSERT INTO queue SET
 name = "assigned",
@@ -88,9 +66,8 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "eligible" ) AS tmp ),
-description = "Eligible participants who are currently assigned to an operator.
-This list only includes participants who have not finished the questionnaire.";
+    WHERE name = "qnaire" ) AS tmp ),
+description = "Eligible participants who are currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "not_assigned",
@@ -100,9 +77,8 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "eligible" ) AS tmp ),
-description = "Eligible participants who are not assigned to an operator.
-This list only includes participants who have not finished the questionnaire.";
+    WHERE name = "qnaire" ) AS tmp ),
+description = "Eligible participants who are not assigned to an operator.";
 
 INSERT INTO queue SET
 name = "appointment",
@@ -113,9 +89,8 @@ parent_queue_id = (
     SELECT id
     FROM queue
     WHERE name = "not_assigned" ) AS tmp ),
-description = "Eligible participants who have an (unassigned) appointment.
-This list only includes participants who have not finished the questionnaire and are not currently
-assigned to an operator.";
+description = "Participants who have an (unassigned) appointment.
+This list only includes participants who are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "upcoming_appointment",
@@ -127,8 +102,7 @@ parent_queue_id = (
     FROM queue
     WHERE name = "appointment" ) AS tmp ),
 description = "Participants who have an appointment in the future.
-This list only includes participants who have not finished the questionnaire and are not currently
-assigned to an operator.";
+This list only includes participants who are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "assignable_appointment",
@@ -140,8 +114,7 @@ parent_queue_id = (
     FROM queue
     WHERE name = "appointment" ) AS tmp ),
 description = "Participants who have an immediate appointment which is ready to be assigned.
-This list only includes participants who have not finished the questionnaire and are not currently
-assigned to an operator.";
+This list only includes participants who are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "missed_appointment",
@@ -153,8 +126,7 @@ parent_queue_id = (
     FROM queue
     WHERE name = "appointment" ) AS tmp ),
 description = "Participants who have an appointment which was missed.
-This list only includes participants who have not finished the questionnaire and are not currently
-assigned to an operator.";
+This list only includes participants who are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "no_appointment",
@@ -165,9 +137,8 @@ parent_queue_id = (
     SELECT id
     FROM queue
     WHERE name = "not_assigned" ) AS tmp ),
-description = "Eligible participants who do not have an appointment.
-This list only includes participants who have not finished the questionnaire and are not currently
-assigned to an operator.";
+description = "Participants who do not have an appointment.
+This list only includes participants who are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "new_participant",
@@ -179,8 +150,8 @@ parent_queue_id = (
     FROM queue
     WHERE name = "no_appointment" ) AS tmp ),
 description = "Participants who have never been assigned to an operator.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
 
 INSERT INTO queue SET
 name = "new_participant_no_availability",
@@ -192,8 +163,8 @@ parent_queue_id = (
     FROM queue
     WHERE name = "new_participant" ) AS tmp ),
 description = "Participants who have never been assigned to an operator.
-This list only includes participants who do not have an appointment, have no availability times,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, have no availability times
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "new_participant_availability",
@@ -205,8 +176,8 @@ parent_queue_id = (
     FROM queue
     WHERE name = "new_participant" ) AS tmp ),
 description = "Participants who have never been assigned to an operator.
-This list only includes participants who do not have an appointment, have availability times,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, have availability times
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "new_participant_not_available",
@@ -218,8 +189,8 @@ parent_queue_id = (
     FROM queue
     WHERE name = "new_participant_availability" ) AS tmp ),
 description = "Participants who have never been assigned to an operator.
-This list only includes participants who do not have an appointment, are not currently available,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, are not currently available
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "new_participant_available",
@@ -231,8 +202,8 @@ parent_queue_id = (
     FROM queue
     WHERE name = "new_participant_availability" ) AS tmp ),
 description = "Participants who have never been assigned to an operator.
-This list only includes participants who do not have an appointment, are currently available,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, are currently available
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "old_participant",
@@ -244,8 +215,8 @@ parent_queue_id = (
     FROM queue
     WHERE name = "no_appointment" ) AS tmp ),
 description = "Participants who have been previously assigned.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
 
 INSERT INTO queue SET
 name = "contacted",
@@ -257,8 +228,8 @@ parent_queue_id = (
     FROM queue
     WHERE name = "old_participant" ) AS tmp ),
 description = "Participants who's last call resulted in direct contact.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
 
 INSERT INTO queue SET
 name = "contacted_waiting",
@@ -271,8 +242,8 @@ parent_queue_id = (
     WHERE name = "contacted" ) AS tmp ),
 description = "Participants who's last call resulted in direct contact and the scheduled call back
 time has not yet been reached.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
 
 INSERT INTO queue SET
 name = "contacted_ready",
@@ -285,8 +256,8 @@ parent_queue_id = (
     WHERE name = "contacted" ) AS tmp ),
 description = "Participants who's last call resulted in direct contact and the scheduled call
 back time has been reached.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
 
 INSERT INTO queue SET
 name = "contacted_no_availability",
@@ -299,8 +270,8 @@ parent_queue_id = (
     WHERE name = "contacted_ready" ) AS tmp ),
 description = "Participants who's last call resulted in direct contact and the scheduled call
 back time has been reached.
-This list only includes participants who do not have an appointment, have no availability times,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, have no availability times
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "contacted_availability",
@@ -313,8 +284,8 @@ parent_queue_id = (
     WHERE name = "contacted_ready" ) AS tmp ),
 description = "Participants who's last call resulted in direct contact and the scheduled call
 back time has been reached.
-This list only includes participants who do not have an appointment, have availability times,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, have availability times
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "contacted_not_available",
@@ -327,8 +298,8 @@ parent_queue_id = (
     WHERE name = "contacted_availability" ) AS tmp ),
 description = "Participants who's last call resulted in direct contact and the scheduled call
 back time has been reached.
-This list only includes participants who do not have an appointment, are not currently available,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, are not currently available
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "contacted_available",
@@ -341,8 +312,8 @@ parent_queue_id = (
     WHERE name = "contacted_availability" ) AS tmp ),
 description = "Participants who's last call resulted in direct contact and the scheduled call
 back time has been reached.
-This list only includes participants who do not have an appointment, are currently available,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, are currently available
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "busy",
@@ -354,8 +325,8 @@ parent_queue_id = (
     FROM queue
     WHERE name = "old_participant" ) AS tmp ),
 description = "Participants who's last call resulted in a busy line.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
 
 INSERT INTO queue SET
 name = "busy_waiting",
@@ -368,8 +339,8 @@ parent_queue_id = (
     WHERE name = "busy" ) AS tmp ),
 description = "Participants who's last call resulted in a busy line and the scheduled call back
 time has not yet been reached.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
 
 INSERT INTO queue SET
 name = "busy_ready",
@@ -382,8 +353,8 @@ parent_queue_id = (
     WHERE name = "busy" ) AS tmp ),
 description = "Participants who's last call resulted in a busy line and the scheduled call back
 time has been reached.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
 
 INSERT INTO queue SET
 name = "busy_no_availability",
@@ -396,8 +367,8 @@ parent_queue_id = (
     WHERE name = "busy_ready" ) AS tmp ),
 description = "Participants who's last call resulted in a busy line and the scheduled call back
 time has been reached.
-This list only includes participants who do not have an appointment, have no availability times,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, have no availability times
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "busy_availability",
@@ -410,8 +381,8 @@ parent_queue_id = (
     WHERE name = "busy_ready" ) AS tmp ),
 description = "Participants who's last call resulted in a busy line and the scheduled call back
 time has been reached.
-This list only includes participants who do not have an appointment, have availability times,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, have availability times
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "busy_not_available",
@@ -424,8 +395,8 @@ parent_queue_id = (
     WHERE name = "busy_availability" ) AS tmp ),
 description = "Participants who's last call resulted in a busy line and the scheduled call back
 time has been reached.
-This list only includes participants who do not have an appointment, are not currently available,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, are not currently available
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "busy_available",
@@ -438,8 +409,8 @@ parent_queue_id = (
     WHERE name = "busy_availability" ) AS tmp ),
 description = "Participants who's last call resulted in a busy line and the scheduled call back
 time has been reached.
-This list only includes participants who do not have an appointment, are currently available,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, are currently available
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "fax",
@@ -451,8 +422,8 @@ parent_queue_id = (
     FROM queue
     WHERE name = "old_participant" ) AS tmp ),
 description = "Participants who's last call resulted in a fax line.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
 
 INSERT INTO queue SET
 name = "fax_waiting",
@@ -465,8 +436,8 @@ parent_queue_id = (
     WHERE name = "fax" ) AS tmp ),
 description = "Participants who's last call resulted in a fax line and the scheduled call back
 time has not yet been reached.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
 
 INSERT INTO queue SET
 name = "fax_ready",
@@ -479,8 +450,8 @@ parent_queue_id = (
     WHERE name = "fax" ) AS tmp ),
 description = "Participants who's last call resulted in a fax line and the scheduled call back
 time has been reached.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
 
 INSERT INTO queue SET
 name = "fax_no_availability",
@@ -493,8 +464,8 @@ parent_queue_id = (
     WHERE name = "fax_ready" ) AS tmp ),
 description = "Participants who's last call resulted in a fax line and the scheduled call back
 time has been reached.
-This list only includes participants who do not have an appointment, have no availability times,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, have no availability times
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "fax_availability",
@@ -507,8 +478,8 @@ parent_queue_id = (
     WHERE name = "fax_ready" ) AS tmp ),
 description = "Participants who's last call resulted in a fax line and the scheduled call back
 time has been reached.
-This list only includes participants who do not have an appointment, have availability times,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, have availability times
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "fax_not_available",
@@ -521,8 +492,8 @@ parent_queue_id = (
     WHERE name = "fax_availability" ) AS tmp ),
 description = "Participants who's last call resulted in a fax line and the scheduled call back
 time has been reached.
-This list only includes participants who do not have an appointment, are not currently available,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, are not currently available
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "fax_available",
@@ -535,8 +506,8 @@ parent_queue_id = (
     WHERE name = "fax_availability" ) AS tmp ),
 description = "Participants who's last call resulted in a fax line and the scheduled call back
 time has been reached.
-This list only includes participants who do not have an appointment, are currently available,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, are currently available
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "no_answer",
@@ -548,8 +519,8 @@ parent_queue_id = (
     FROM queue
     WHERE name = "old_participant" ) AS tmp ),
 description = "Participants who's last call resulted in no answer.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "no_answer_waiting",
@@ -562,8 +533,8 @@ parent_queue_id = (
     WHERE name = "no_answer" ) AS tmp ),
 description = "Participants who's last call resulted in no answer and the scheduled call back
 time has not yet been reached.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "no_answer_ready",
@@ -576,8 +547,8 @@ parent_queue_id = (
     WHERE name = "no_answer" ) AS tmp ),
 description = "Participants who's last call resulted in no answer and the scheduled call back
 time has been reached.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "no_answer_no_availability",
@@ -590,8 +561,8 @@ parent_queue_id = (
     WHERE name = "no_answer_ready" ) AS tmp ),
 description = "Participants who's last call resulted in no answer and the scheduled call back
 time has been reached.
-This list only includes participants who do not have an appointment, have no availability times,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, have no availability times
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "no_answer_availability",
@@ -604,8 +575,8 @@ parent_queue_id = (
     WHERE name = "no_answer_ready" ) AS tmp ),
 description = "Participants who's last call resulted in no answer and the scheduled call back
 time has been reached.
-This list only includes participants who do not have an appointment, have availability times,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, have availability times
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "no_answer_not_available",
@@ -618,8 +589,8 @@ parent_queue_id = (
     WHERE name = "no_answer_availability" ) AS tmp ),
 description = "Participants who's last call resulted in no answer and the scheduled call back
 time has been reached.
-This list only includes participants who do not have an appointment, are not currently available,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, are not currently available
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "no_answer_available",
@@ -632,8 +603,8 @@ parent_queue_id = (
     WHERE name = "no_answer_availability" ) AS tmp ),
 description = "Participants who's last call resulted in no answer and the scheduled call back
 time has been reached.
-This list only includes participants who do not have an appointment, are currently available,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, are currently available
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine_message",
@@ -646,8 +617,8 @@ parent_queue_id = (
     WHERE name = "old_participant" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine and a message was
 left.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine_message_waiting",
@@ -660,8 +631,8 @@ parent_queue_id = (
     WHERE name = "machine_message" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine and no message was
 left.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine_message_ready",
@@ -674,8 +645,8 @@ parent_queue_id = (
     WHERE name = "machine_message" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine, a message was left
 and the scheduled call back time has not yet been reached.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine_message_no_availability",
@@ -688,8 +659,8 @@ parent_queue_id = (
     WHERE name = "machine_message_ready" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine, a message was left
 and the scheduled call back time has not yet been reached.
-This list only includes participants who do not have an appointment, have no availability times,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, have no availability times
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine_message_availability",
@@ -702,8 +673,8 @@ parent_queue_id = (
     WHERE name = "machine_message_ready" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine, a message was left
 and the scheduled call back time has not yet been reached.
-This list only includes participants who do not have an appointment, have availability times,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, have availability times
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine_message_not_available",
@@ -716,8 +687,8 @@ parent_queue_id = (
     WHERE name = "machine_message_availability" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine, a message was left
 and the scheduled call back time has not yet been reached.
-This list only includes participants who do not have an appointment, are not currently available,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, are not currently available
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine_message_available",
@@ -730,8 +701,8 @@ parent_queue_id = (
     WHERE name = "machine_message_availability" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine, a message was left
 and the scheduled call back time has not yet been reached.
-This list only includes participants who do not have an appointment, are currently available,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, are currently available
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine_no_message",
@@ -744,8 +715,8 @@ parent_queue_id = (
     WHERE name = "old_participant" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine, a message was not left
 and the scheduled call back time has been reached.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine_no_message_waiting",
@@ -758,8 +729,8 @@ parent_queue_id = (
     WHERE name = "machine_no_message" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine, a message was not left
 and the scheduled call back time has not yet been reached.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine_no_message_ready",
@@ -772,8 +743,8 @@ parent_queue_id = (
     WHERE name = "machine_no_message" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine, a message was not left
 and the scheduled call back time has been reached.
-This list only includes participants who do not have an appointment,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine_no_message_no_availability",
@@ -786,8 +757,8 @@ parent_queue_id = (
     WHERE name = "machine_no_message_ready" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine, a message was not left
 and the scheduled call back time has been reached.
-This list only includes participants who do not have an appointment, have no availability times,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, have no availability times
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine_no_message_availability",
@@ -800,8 +771,8 @@ parent_queue_id = (
     WHERE name = "machine_no_message_ready" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine, a message was not left
 and the scheduled call back time has been reached.
-This list only includes participants who do not have an appointment, have availability times,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, have availability times
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine_no_message_not_available",
@@ -814,8 +785,8 @@ parent_queue_id = (
     WHERE name = "machine_no_message_availability" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine, a message was not left
 and the scheduled call back time has been reached.
-This list only includes participants who do not have an appointment, are not currently available,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, are not currently available
+and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine_no_message_available",
@@ -828,7 +799,18 @@ parent_queue_id = (
     WHERE name = "machine_no_message_availability" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine, a message was not left
 and the scheduled call back time has been reached.
-This list only includes participants who do not have an appointment, are currently available,
-have not finished the questionnaire and are not currently assigned to an operator.";
+This list only includes participants who do not have an appointment, are currently available
+and are not currently assigned to an operator.";
+
+INSERT INTO queue SET
+name = "complete",
+title = "Completed all questionnaires",
+rank = NULL,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "eligible" ) AS tmp ),
+description = "Eligible participants who have completed all questionnaires.";
 
 COMMIT;

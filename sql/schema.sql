@@ -32,6 +32,7 @@ CREATE  TABLE IF NOT EXISTS `participant` (
   `hin` VARCHAR(45) NULL DEFAULT NULL ,
   `status` ENUM('deceased', 'deaf', 'mentally unfit') NULL DEFAULT NULL ,
   `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'If not null then force all calls to this participant to the site.' ,
+  `prior_contact` DATE NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
   CONSTRAINT `fk_participant_site`
@@ -80,9 +81,26 @@ DROP TABLE IF EXISTS `qnaire` ;
 CREATE  TABLE IF NOT EXISTS `qnaire` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(255) NOT NULL ,
+  `rank` INT NOT NULL ,
+  `prev_qnaire_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The qnaire which must be completed before this one begins.' ,
+  `skip_qnaire_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The qnaire which, if started, causes this qnaire to be skipped.' ,
+  `delay` INT NOT NULL DEFAULT 0 COMMENT 'How many weeks after then end of the previous qnaire before starting.' ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `name_UNIQUE` (`name` ASC) )
+  UNIQUE INDEX `uq_name` (`name` ASC) ,
+  UNIQUE INDEX `uq_rank` (`rank` ASC) ,
+  INDEX `fk_prev_qnaire_id` (`prev_qnaire_id` ASC) ,
+  INDEX `fk_skip_qnaire_id` (`skip_qnaire_id` ASC) ,
+  CONSTRAINT `fk_qnaire_prev_qnaire`
+    FOREIGN KEY (`prev_qnaire_id` )
+    REFERENCES `qnaire` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_qnaire_skip_qnaire`
+    FOREIGN KEY (`skip_qnaire_id` )
+    REFERENCES `qnaire` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
@@ -364,16 +382,10 @@ DROP TABLE IF EXISTS `sample` ;
 CREATE  TABLE IF NOT EXISTS `sample` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(255) NOT NULL ,
-  `qnaire_id` INT UNSIGNED NULL DEFAULT NULL ,
+  `active` TINYINT(1)  NOT NULL DEFAULT false ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_name` (`name` ASC) ,
-  INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
-  CONSTRAINT `fk_sample_qnaire`
-    FOREIGN KEY (`qnaire_id` )
-    REFERENCES `qnaire` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+  UNIQUE INDEX `uq_name` (`name` ASC) )
 ENGINE = InnoDB;
 
 
@@ -700,7 +712,7 @@ CREATE TABLE IF NOT EXISTS `participant_last_assignment` (`participant_id` INT, 
 -- -----------------------------------------------------
 -- Placeholder table for view `participant_for_queue`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `uid` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT);
+CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `uid` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT, `prior_contact` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `assignment_last_phone_call`

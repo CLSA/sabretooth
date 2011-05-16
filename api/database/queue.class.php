@@ -44,8 +44,24 @@ class queue extends record
         ' FROM participant_for_queue AS participant'.
         ' WHERE true'; // needed to simplify modifier concatenation in list and count methods
       
-      // all participants not assigned to any qnaire
-      self::$query_list['no_qnaire'] =
+      // Ineligible -- TODO: what about refused consent?
+      self::$query_list['ineligible'] = sprintf(
+        ' %s'.
+        ' AND ('
+        '   participant.active = false',
+        '   OR participant.status IS NOT NULL'.
+        ' )',
+        self::$query_list['all'] );
+      
+      // Eligible
+      self::$query_list['eligible'] = sprintf(
+        ' %s'.
+        ' AND participant.active = true',
+        ' AND participant.status IS NULL',
+        self::$query_list['all'] );
+
+      // all participants who are waiting to begin the qnaire
+      self::$query_list['qnaire_waiting'] =
         ' SELECT <SELECT_PARTICIPANT>'.
         ' FROM participant_for_queue AS participant'.
         ' WHERE id NOT IN ('.
@@ -53,13 +69,25 @@ class queue extends record
         '   FROM participant_for_queue AS participant, sample_has_participant, sample'.
         '   WHERE participant.id = sample_has_participant.participant_id'.
         '   AND sample_has_participant.sample_id = sample.id'.
-        '   AND sample.qnaire_id IS NOT NULL'.
+        '   AND sample.active = false'.
         ' )';
       
+      // TODO: finish designing changing to the queue, then implement...
+
       // Questionnaire
       self::$query_list['qnaire'] =
         ' SELECT <SELECT_PARTICIPANT>'.
-        ' FROM participant_for_queue AS participant, sample_has_participant, sample'.
+        ' FROM participant_for_queue AS participant, assignment, interview, qnaire'.
+        ' WHERE participant.last_assignment_id = assignment.id'.
+        ' AND assignment.interview_id = interview.id'.
+        ' AND interview.completed = true'.
+        ' AND interview.qnaire_id = qnaire.id'.
+        ' AND qnaire.prev_qnaire_id <QNAIRE_TEST>'
+        self::$query_list['eligible'] );
+
+      self::$query_list['qnaire'] =
+        ' SELECT <SELECT_PARTICIPANT>'.
+        ' FROM participant_for_queue AS participant'.
         ' WHERE participant.id = sample_has_participant.participant_id'.
         ' AND sample_has_participant.sample_id = sample.id'.
         ' AND sample.qnaire_id <QNAIRE_TEST>';
@@ -79,18 +107,6 @@ class queue extends record
         self::$query_list['qnaire'],
         self::$query_list['complete'] );
       
-      // Ineligible
-      self::$query_list['ineligible'] = sprintf(
-        ' %s'.
-        ' AND participant.status IS NOT NULL',
-        self::$query_list['incomplete'] );
-      
-      // Eligible
-      self::$query_list['eligible'] = sprintf(
-        ' %s'.
-        ' AND participant.status IS NULL',
-        self::$query_list['incomplete'] );
-
       // Currently assigned
       self::$query_list['assigned'] = sprintf(
         ' %s'.
@@ -714,7 +730,7 @@ class queue extends record
    * @return string
    * @access protected
    */
-  public function get_sql( $select_participant_sql, $qnaire_test_sql )
+  protected function get_sql( $select_participant_sql, $qnaire_test_sql )
   {
     $sql = self::$query_list[ $this->name ];
     $sql = preg_replace( '/\<SELECT_PARTICIPANT\>/', $select_participant_sql, $sql, 1 );

@@ -210,7 +210,9 @@ class participant extends has_note
   }
 
   /**
-   * Get the participants last (non active) assignment
+   * Get the participant's most recent assignment.
+   * This will return the participant's current assignment, or the most recently closed assignment
+   * if the participant is not currently assigned.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return assignment
    * @access public
@@ -234,7 +236,7 @@ class participant extends has_note
   }
 
   /**
-   * Get the participants last (non active) assignment
+   * Get the participant's most recent, closed assignment.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return assignment
    * @access public

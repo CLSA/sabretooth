@@ -97,13 +97,15 @@ class participant_tree extends widget
       }
       else
       {
-        foreach( db\qnaire::select() as $db_qnaire )
+        $modifier = new db\modifier();
+        $modifier->order( 'rank' );
+        foreach( db\qnaire::select( $modifier ) as $db_qnaire )
         {
           $db_queue->set_qnaire( $db_qnaire );
           
           $index = implode( '_', array( $db_qnaire->id, $db_queue->id ) );
           $title = 'qnaire' == $db_queue->name
-                 ? 'Questionnaire: "'.$db_qnaire->name.'"'
+                 ? sprintf( 'Questionnaire #%d: "%s"', $db_qnaire->rank, $db_qnaire->name )
                  : $db_queue->title;
           $nodes[$index] = array( 'id' => $index,
                                   'title' => $title,
