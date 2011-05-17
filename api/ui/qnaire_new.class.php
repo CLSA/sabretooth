@@ -44,7 +44,7 @@ class qnaire_new extends base_new
     if( !array_key_exists( 'name', $columns ) || 0 == strlen( $columns['name'] ) )
       throw new exc\notice(
         'The questionnaire\'s name cannot be left blank.', __METHOD__ );
-
+    
     parent::execute();
   }
 }

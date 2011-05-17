@@ -83,21 +83,15 @@ CREATE  TABLE IF NOT EXISTS `qnaire` (
   `name` VARCHAR(255) NOT NULL ,
   `rank` INT NOT NULL ,
   `prev_qnaire_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The qnaire which must be completed before this one begins.' ,
-  `skip_qnaire_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The qnaire which, if started, causes this qnaire to be skipped.' ,
   `delay` INT NOT NULL DEFAULT 0 COMMENT 'How many weeks after then end of the previous qnaire before starting.' ,
+  `skip` TINYINT(1)  NOT NULL DEFAULT false ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) ,
   UNIQUE INDEX `uq_rank` (`rank` ASC) ,
   INDEX `fk_prev_qnaire_id` (`prev_qnaire_id` ASC) ,
-  INDEX `fk_skip_qnaire_id` (`skip_qnaire_id` ASC) ,
   CONSTRAINT `fk_qnaire_prev_qnaire`
     FOREIGN KEY (`prev_qnaire_id` )
-    REFERENCES `qnaire` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_qnaire_skip_qnaire`
-    FOREIGN KEY (`skip_qnaire_id` )
     REFERENCES `qnaire` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)

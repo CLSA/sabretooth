@@ -9,6 +9,9 @@
 
 namespace sabretooth\ui;
 use sabretooth\log, sabretooth\util;
+use sabretooth\business as bus;
+use sabretooth\database as db;
+use sabretooth\exception as exc;
 
 /**
  * widget qnaire list
@@ -30,8 +33,11 @@ class qnaire_list extends base_list_widget
     parent::__construct( 'qnaire', $args );
     
     $this->add_column( 'name', 'string', 'Name', true );
+    $this->add_column( 'rank', 'number', 'Rank', true );
+    $this->add_column( 'prev_qnaire', 'string', 'Previous', false );
+    $this->add_column( 'delay', 'number', 'Delay (weeks)', false );
+    $this->add_column( 'skip', 'boolean', 'Skip', false );
     $this->add_column( 'phases', 'number', 'Stages', false );
-    $this->add_column( 'samples', 'number', 'Samples', false );
   }
   
   /**
@@ -46,11 +52,21 @@ class qnaire_list extends base_list_widget
     
     foreach( $this->get_record_list() as $record )
     {
+      $prev_qnaire = 'none';
+      if( !is_null( $record->prev_qnaire_id ) )
+      {
+        $db_prev_qnaire = new db\qnaire( $record->prev_qnaire_id );
+        $prev_qnaire = $db_prev_qnaire->name;
+      }
+
       // assemble the row for this record
       $this->add_row( $record->id,
         array( 'name' => $record->name,
-               'phases' => $record->get_phase_count(),
-               'samples' => $record->get_sample_count() ) );
+               'rank' => $record->rank,
+               'prev_qnaire' => $prev_qnaire,
+               'delay' => $record->delay,
+               'skip' => $record->skip,
+               'phases' => $record->get_phase_count() ) );
     }
 
     $this->finish_setting_rows();
