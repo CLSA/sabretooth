@@ -55,6 +55,7 @@ class phase_add extends base_view
         'Phase widget must have a parent with qnaire as the subject.', __METHOD__ );
     
     // create enum arrays
+    $surveys = array();
     foreach( db\limesurvey\surveys::select() as $db_survey )
       $surveys[$db_survey->sid] = $db_survey->get_title();
     $num_phases = $this->parent->get_record()->get_phase_count();
@@ -69,7 +70,7 @@ class phase_add extends base_view
     $this->set_item( 'qnaire_id', $this->parent->get_record()->id );
     $this->set_item( 'sid', key( $surveys ), true, $surveys );
     $this->set_item( 'stage', $last_stage_key, true, $stages );
-    $this->set_item( 'repeated', 'No', true );
+    $this->set_item( 'repeated', false, true );
 
     $this->finish_setting_items();
   }

@@ -49,6 +49,7 @@ class phase_view extends base_view
     parent::finish();
 
     // create enum arrays
+    $surveys = array();
     foreach( db\limesurvey\surveys::select() as $db_survey )
       $surveys[$db_survey->sid] = $db_survey->get_title();
     $num_phases = $this->get_record()->get_qnaire()->get_phase_count();
