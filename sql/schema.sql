@@ -714,6 +714,11 @@ CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `uid` INT, `first_
 CREATE TABLE IF NOT EXISTS `assignment_last_phone_call` (`assignment_id` INT, `phone_call_id` INT);
 
 -- -----------------------------------------------------
+-- Placeholder table for view `participant_qnaire`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `participant_qnaire` (`id` INT, `current_qnaire_id` INT, `start_date` INT);
+
+-- -----------------------------------------------------
 -- View `participant_primary_location`
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `participant_primary_location` ;
@@ -783,6 +788,61 @@ AND phone_call_1.start_time = (
   AND assignment_1.id = assignment_2.id
   AND phone_call_2.end_time IS NOT NULL
   GROUP BY assignment_2.id );
+
+-- -----------------------------------------------------
+-- View `participant_qnaire`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `participant_qnaire` ;
+DROP TABLE IF EXISTS `participant_qnaire`;
+CREATE  OR REPLACE VIEW `participant_qnaire` AS
+SELECT p1.id,
+       IF( i1.completed IS NULL,
+           ( SELECT id FROM qnaire WHERE rank = 1 ),
+           IF( i1.completed, qnext.id, q1.id )
+       ) AS current_qnaire_id,
+       IF( i1.completed IS NULL,
+           IF( p1.prior_contact IS NULL,
+               NULL,
+               p1.prior_contact + INTERVAL(
+                 SELECT delay FROM qnaire WHERE rank = 1
+               ) WEEK ),
+           IF( i1.completed,
+               IF( qnext.delay IS NULL,
+                   NULL,
+                   IF( a1.end_time IS NULL,
+                       p1.prior_contact,
+                       a1.end_time
+                   ) + INTERVAL qnext.delay WEEK
+               ),
+               NULL
+           )
+       ) AS start_date
+FROM participant AS p1
+LEFT JOIN interview AS i1
+ON p1.id = i1.participant_id
+LEFT JOIN qnaire AS q1
+ON q1.id = i1.qnaire_id
+LEFT JOIN assignment a1
+ON a1.interview_id = i1.id
+LEFT JOIN qnaire AS qprev
+ON q1.prev_qnaire_id = qprev.id
+LEFT JOIN qnaire AS qnext
+ON ( q1.rank + 1 ) = qnext.rank
+WHERE (
+  q1.rank IS NULL OR
+  q1.rank = (
+    SELECT MAX( q2.rank )
+    FROM interview AS i2, qnaire AS q2
+    WHERE q2.id = i2.qnaire_id
+    AND i1.participant_id = i2.participant_id
+    GROUP BY i1.participant_id ) )
+AND (
+  a1.end_time IS NULL OR
+  a1.end_time = (
+    SELECT MAX( a2.end_time )
+    FROM assignment AS a2
+    WHERE a1.id = a2.id
+    GROUP BY a1.interview_id ) );
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
