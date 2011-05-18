@@ -39,8 +39,6 @@ class qnaire_add extends base_view
       'The questionnaire which must be finished before this one begins.' );
     $this->add_item( 'delay', 'number', 'Delay (weeks)',
       'How many weeks after the previous questionnaire is completed before this one may begin.' );
-    $this->add_item( 'skip', 'boolean', 'Skip',
-      'Whether or not this questionnaire may be skipped if the next is due.' );
     $this->add_item( 'description', 'text', 'Description' );
   }
 
@@ -70,7 +68,6 @@ class qnaire_add extends base_view
     $this->set_item( 'rank', $last_rank_key, true, $ranks );
     $this->set_item( 'prev_qnaire_id', key( $qnaires ), false, $qnaires );
     $this->set_item( 'delay', 52, true );
-    $this->set_item( 'skip', false, true );
     $this->set_item( 'description', '' );
 
     $this->finish_setting_items();

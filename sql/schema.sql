@@ -84,7 +84,6 @@ CREATE  TABLE IF NOT EXISTS `qnaire` (
   `rank` INT NOT NULL ,
   `prev_qnaire_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The qnaire which must be completed before this one begins.' ,
   `delay` INT NOT NULL DEFAULT 0 COMMENT 'How many weeks after then end of the previous qnaire before starting.' ,
-  `skip` TINYINT(1)  NOT NULL DEFAULT false ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) ,
@@ -602,6 +601,7 @@ CREATE  TABLE IF NOT EXISTS `setting` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `category` VARCHAR(45) NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
+  `type` ENUM( 'boolean', 'integer', 'float', 'string' ) NOT NULL ,
   `value` VARCHAR(45) NOT NULL ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
@@ -716,7 +716,7 @@ CREATE TABLE IF NOT EXISTS `assignment_last_phone_call` (`assignment_id` INT, `p
 -- -----------------------------------------------------
 -- Placeholder table for view `participant_qnaire`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `participant_qnaire` (`id` INT, `current_qnaire_id` INT, `start_date` INT);
+CREATE TABLE IF NOT EXISTS `participant_qnaire` (`participant_id` INT, `current_qnaire_id` INT, `start_date` INT);
 
 -- -----------------------------------------------------
 -- View `participant_primary_location`
@@ -795,7 +795,7 @@ AND phone_call_1.start_time = (
 DROP VIEW IF EXISTS `participant_qnaire` ;
 DROP TABLE IF EXISTS `participant_qnaire`;
 CREATE  OR REPLACE VIEW `participant_qnaire` AS
-SELECT p1.id,
+SELECT p1.id AS participant_id,
        IF( i1.completed IS NULL,
            ( SELECT id FROM qnaire WHERE rank = 1 ),
            IF( i1.completed, qnext.id, q1.id )

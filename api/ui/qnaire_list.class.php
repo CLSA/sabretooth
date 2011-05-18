@@ -36,7 +36,6 @@ class qnaire_list extends base_list_widget
     $this->add_column( 'rank', 'number', 'Rank', true );
     $this->add_column( 'prev_qnaire', 'string', 'Previous', false );
     $this->add_column( 'delay', 'number', 'Delay (weeks)', false );
-    $this->add_column( 'skip', 'boolean', 'Skip', false );
     $this->add_column( 'phases', 'number', 'Stages', false );
   }
   
@@ -65,7 +64,6 @@ class qnaire_list extends base_list_widget
                'rank' => $record->rank,
                'prev_qnaire' => $prev_qnaire,
                'delay' => $record->delay,
-               'skip' => $record->skip,
                'phases' => $record->get_phase_count() ) );
     }
 
