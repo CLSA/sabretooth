@@ -27,13 +27,13 @@ class ldap_manager extends \sabretooth\singleton
    */
   public function __construct()
   {
-    $session = session::self();
-    $this->server = $session->get_setting( 'ldap', 'server' );
-    $this->port = $session->get_setting( 'ldap', 'port' );
-    $this->base = $session->get_setting( 'ldap', 'base' );
-    $this->username = $session->get_setting( 'ldap', 'username' );
-    $this->password = $session->get_setting( 'ldap', 'password' );
-    $this->active_directory = $session->get_setting( 'ldap', 'active_directory' );
+    $setting_manager = setting_manager::self();
+    $this->server = $setting_manager->get_setting( 'ldap', 'server' );
+    $this->port = $setting_manager->get_setting( 'ldap', 'port' );
+    $this->base = $setting_manager->get_setting( 'ldap', 'base' );
+    $this->username = $setting_manager->get_setting( 'ldap', 'username' );
+    $this->password = $setting_manager->get_setting( 'ldap', 'password' );
+    $this->active_directory = $setting_manager->get_setting( 'ldap', 'active_directory' );
   }
 
   /**

@@ -38,7 +38,8 @@ class self_home extends widget
     // determine the user's last activity
     $db_activity = $session->get_user()->get_last_activity();
 
-    $this->set_variable( 'version', $session->get_setting( 'general', 'version' ) );
+    $this->set_variable( 'version',
+      bus\setting_manager::self()->get_setting( 'general', 'version' ) );
     $this->set_variable( 'user_name', $session->get_user()->name );
     $this->set_variable( 'role_name', $session->get_role()->name );
     $this->set_variable( 'site_name', $session->get_site()->name );

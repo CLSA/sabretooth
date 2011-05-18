@@ -29,12 +29,12 @@ class voip_manager extends \sabretooth\singleton
    */
   public function __construct()
   {
-    $session = session::self();
-    $this->enabled = true === $session->get_setting( 'voip', 'enabled' );
-    $this->url = $session->get_setting( 'voip', 'url' );
-    $this->username = $session->get_setting( 'voip', 'username' );
-    $this->password = $session->get_setting( 'voip', 'password' );
-    $this->prefix = $session->get_setting( 'voip', 'prefix' );
+    $setting_manager = setting_manager::self();
+    $this->enabled = true === $setting_manager->get_setting( 'voip', 'enabled' );
+    $this->url = $setting_manager->get_setting( 'voip', 'url' );
+    $this->username = $setting_manager->get_setting( 'voip', 'username' );
+    $this->password = $setting_manager->get_setting( 'voip', 'password' );
+    $this->prefix = $setting_manager->get_setting( 'voip', 'prefix' );
   }
     
   /**

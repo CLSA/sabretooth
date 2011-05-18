@@ -53,7 +53,7 @@ try
   $reset_password = $ldap_manager->validate_user( $session->get_user()->name, 'password' );
   
   // Since there is no main widget we need set up the template variables here
-  $version = $session->get_setting( 'version', 'JQUERY_UI' );
+  $version = business\setting_manager::self()->get_setting( 'version', 'JQUERY_UI' );
   $variables = array( 'jquery_ui_css_path' => '/'.$theme.'/jquery-ui-'.$version.'.custom.css',
                       'survey_url' => $session->get_survey_url(),
                       'is_operator' => 'operator' == $session->get_role()->name,

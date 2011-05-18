@@ -38,7 +38,7 @@ final class util
    */
   public static function in_devel_mode()
   {
-    return true == business\session::self()->get_setting( 'general', 'development_mode' );
+    return true == business\setting_manager::self()->get_setting( 'general', 'development_mode' );
   }
 
   /**
@@ -53,7 +53,7 @@ final class util
   {
     if( is_null( self::$action_mode ) )
       self::$action_mode =
-        'action.php' == business\session::self()->get_setting( 'general', 'script_name' );
+        'action.php' == business\setting_manager::self()->get_setting( 'general', 'script_name' );
     
     return self::$action_mode;
   }
@@ -70,7 +70,7 @@ final class util
   {
     if( is_null( self::$widget_mode ) )
       self::$widget_mode =
-        'widget.php' == business\session::self()->get_setting( 'general', 'script_name' );
+        'widget.php' == business\setting_manager::self()->get_setting( 'general', 'script_name' );
     
     return self::$widget_mode;
   }
