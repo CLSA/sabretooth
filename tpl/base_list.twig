@@ -200,6 +200,17 @@
           $.cookie( "{{ widget.compound }}_checked_ids", JSON.stringify( checked_ids ) );
         } );
       
+        // clear out all checked items (visible or not)
+        $( "#{{ widget.full }}_check_clear" ).click( function() {
+          $( ".{{ widget.full }}_check" ).each( function() {
+            $(this).attr( "checked", false );
+          } );
+      
+          // reset the checked ids cookie
+          checked_ids = [];
+          $.cookie( "{{ widget.compound }}_checked_ids", null );
+        } );
+      
         // create button set
         $( "#{{ widget.full }}_check_none" ).button().parent().buttonset();
       {% endif %}
@@ -435,6 +446,7 @@
               <button style="width:80px" id="{{ widget.full }}_check_all">all</button>
               <button style="width:80px" id="{{ widget.full }}_check_none">none</button>
               <button style="width:80px" id="{{ widget.full }}_check_invert">invert</button>
+              <button style="width:80px" id="{{ widget.full }}_check_clear">clear</button>
             </span>
             <span style="margin-left:20px"></span>
           {% endif %}
