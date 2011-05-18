@@ -53,10 +53,10 @@ class appointment extends record
       throw new exc\runtime(
         'Cannot validate an appointment date, participant has no primary location.', __METHOD__ );
     
-    $db_setting = setting::get_setting( 'appointment', 'start_time' );
-    $expected_start = intval( preg_replace( '/[^0-9]/', '', $db_setting->value ) );
-    $db_setting = setting::get_setting( 'appointment', 'end_time' );
-    $expected_end = intval( preg_replace( '/[^0-9]/', '', $db_setting->value ) );
+    $expected_start = intval( preg_replace( '/[^0-9]/', '',
+      bus\setting_manager::self()->get_setting( 'appointment', 'start_time' ) ) );
+    $expected_end = intval( preg_replace( '/[^0-9]/', '', 
+      bus\setting_manager::self()->get_setting( 'appointment', 'end_time' ) ) );
 
     // test for the start of the appointment
     $date_obj = util::get_datetime_object( $this->date );
@@ -201,8 +201,10 @@ class appointment extends record
     $status = 'unknown';
     
     // settings are in minutes, time() is in seconds, so multiply by 60
-    $pre_window_time = 60 * setting::get_setting( 'appointment', 'call pre-window' )->value;
-    $post_window_time = 60 * setting::get_setting( 'appointment', 'call post-window' )->value;
+    $pre_window_time = 60 * bus\setting_manager::self()->get_setting(
+                              'appointment', 'call pre-window' );
+    $post_window_time = 60 * bus\setting_manager::self()->get_setting(
+                               'appointment', 'call post-window' );
     $now = time();
     $appointment = strtotime( $this->date );
 

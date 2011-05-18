@@ -109,10 +109,10 @@ class site_feed extends base_feed
 
     // then, define the 'times' array to indicate when the number of slots changes, making sure to
     // incorperate the site's expected slots and filled slots
-    $db_setting = db\setting::get_setting( 'appointment', 'start_time' );
-    $expected_start = intval( preg_replace( '/[^0-9]/', '', $db_setting->value ) );
-    $db_setting = db\setting::get_setting( 'appointment', 'end_time' );
-    $expected_end = intval( preg_replace( '/[^0-9]/', '', $db_setting->value ) );
+    $expected_start = intval( preg_replace( '/[^0-9]/', '',
+      bus\setting_manager::self()->get_setting( 'appointment', 'start_time' ) ) );
+    $expected_end = intval( preg_replace( '/[^0-9]/', '',
+      bus\setting_manager::self()->get_setting( 'appointment', 'end_time' ) ) );
     $expected_slots = $db_site->operators_expected;
 
     foreach( $days as $date => $day )

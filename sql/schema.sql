@@ -596,6 +596,7 @@ CREATE  TABLE IF NOT EXISTS `setting` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `category` VARCHAR(45) NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
+  `type` ENUM( 'boolean', 'integer', 'float', 'string' ) NOT NULL ,
   `value` VARCHAR(45) NOT NULL ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,

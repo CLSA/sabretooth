@@ -28,7 +28,6 @@ final class session extends \sabretooth\singleton
    * Since this class uses the singleton pattern the constructor is never called directly.  Instead
    * use the {@link singleton} method.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\argument
    * @access protected
    */
   protected function __construct( $arguments )
@@ -36,33 +35,12 @@ final class session extends \sabretooth\singleton
     // WARNING!  When we construct the session we haven't finished setting up the system yet, so
     // don't use the log class in this method!
     
-    // one and only one argument should be past to the constructor
-    if( is_null( $arguments ) || !is_array( $arguments ) || 1 != count( $arguments ) )
-      throw new exc\argument( 'arguments', $arguments, __METHOD__ );
-
     // the first argument is the settings array from an .ini file
-    $settings = $arguments[0];
+    $setting_manager = setting_manager::self( $arguments[0] );
     
-    // copy the setting one category at a time, ignore any unknown categories
-    $categories = array( 'db',
-                         'survey_db',
-                         'general',
-                         'interface',
-                         'version',
-                         'ldap',
-                         'voip' );
-    foreach( $categories as $category )
-    {
-      // make sure the category exists
-      if( !array_key_exists( $category, $settings ) )
-        throw new exc\argument( 'arguments['.$category.']', NULL, __METHOD__ );
-
-      $this->settings[ $category ] = $settings[ $category ];
-    }
-
     // set error reporting
     error_reporting(
-      $this->settings[ 'general' ][ 'development_mode' ] ? E_ALL | E_STRICT : E_ALL );
+      $setting_manager->get_setting( 'general', 'development_mode' ) ? E_ALL | E_STRICT : E_ALL );
 
     // setup the session variables
     if( !isset( $_SESSION['slot'] ) ) $_SESSION['slot'] = array();
@@ -81,21 +59,23 @@ final class session extends \sabretooth\singleton
     // don't initialize more than once
     if( $this->initialized ) return;
 
+    $setting_manager = setting_manager::self();
+
     // create the databases
     $this->database = new db\database(
-      $this->get_setting( 'db', 'driver' ),
-      $this->get_setting( 'db', 'server' ),
-      $this->get_setting( 'db', 'username' ),
-      $this->get_setting( 'db', 'password' ),
-      $this->get_setting( 'db', 'database' ),
-      $this->get_setting( 'db', 'prefix' ) );
+      $setting_manager->get_setting( 'db', 'driver' ),
+      $setting_manager->get_setting( 'db', 'server' ),
+      $setting_manager->get_setting( 'db', 'username' ),
+      $setting_manager->get_setting( 'db', 'password' ),
+      $setting_manager->get_setting( 'db', 'database' ),
+      $setting_manager->get_setting( 'db', 'prefix' ) );
     $this->survey_database = new db\database(
-      $this->get_setting( 'survey_db', 'driver' ),
-      $this->get_setting( 'survey_db', 'server' ),
-      $this->get_setting( 'survey_db', 'username' ),
-      $this->get_setting( 'survey_db', 'password' ),
-      $this->get_setting( 'survey_db', 'database' ),
-      $this->get_setting( 'survey_db', 'prefix' ) );
+      $setting_manager->get_setting( 'survey_db', 'driver' ),
+      $setting_manager->get_setting( 'survey_db', 'server' ),
+      $setting_manager->get_setting( 'survey_db', 'username' ),
+      $setting_manager->get_setting( 'survey_db', 'password' ),
+      $setting_manager->get_setting( 'survey_db', 'database' ),
+      $setting_manager->get_setting( 'survey_db', 'prefix' ) );
     
     // determine the user (setting the user will also set the site and role)
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
@@ -106,31 +86,6 @@ final class session extends \sabretooth\singleton
     $this->initialized = true;
   }
   
-  /**
-   * Get the value of an .ini setting.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $category The category the setting belongs to.
-   * @param string $name The name of the setting.
-   * @access public
-   */
-  public function get_setting( $category, $name )
-  {
-    $value = NULL;
-    if( !isset( $this->settings[ $category ] ) ||
-        !isset( $this->settings[ $category ][ $name ] ) )
-    {
-      log::err(
-        "Tried getting value for setting [$category][$name] which doesn't exist." );
-    }
-    else
-    {
-      $value = $this->settings[ $category ][ $name ];
-    }
-
-    return $value;
-  }
-
   /**
    * Get the main database.
    * 
@@ -300,7 +255,7 @@ final class session extends \sabretooth\singleton
    */
   public function get_theme()
   {
-    $theme = $this->settings[ 'interface' ][ 'default_theme' ];
+    $theme = setting_manager::self()->get_setting( 'interface', 'default_theme' );
 
     if( !is_null( $this->user ) )
     {
@@ -383,7 +338,7 @@ final class session extends \sabretooth\singleton
   public function get_allow_call()
   {
     $allow = false;
-    if( !$this->get_setting( 'voip', 'enabled' ) )
+    if( !setting_manager::self()->get_setting( 'voip', 'enabled' ) )
     { // if voip is not enabled then allow calls
       $allow = true;
     }
@@ -393,8 +348,7 @@ final class session extends \sabretooth\singleton
     }
     else
     { // check to see if we can call without a SIP connection
-      $db_setting = db\setting::get_setting( 'voip', 'survey without sip' );
-      $allow = 'true' == $db_setting->value;
+      $allow = setting_manager::self()->get_setting( 'voip', 'survey without sip' );
     }
 
     return $allow;
@@ -709,13 +663,6 @@ final class session extends \sabretooth\singleton
    * @access private
    */
   private $initialized = false;
-
-  /**
-   * An array which holds .ini settings.
-   * @var array( mixed )
-   * @access private
-   */
-  private $settings = array();
 
   /**
    * The main database object.

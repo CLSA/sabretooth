@@ -80,7 +80,8 @@ class queue_list extends base_list_widget
     $db_restrict_qnaire = $restrict_qnaire_id
                         ? new db\qnaire( $restrict_qnaire_id )
                         : NULL;
-
+    
+    $setting_manager = bus\setting_manager::self();
     foreach( $this->get_record_list() as $record )
     {
       // restrict to the current site if the current user is a supervisor
@@ -90,10 +91,9 @@ class queue_list extends base_list_widget
       // restrict to the current qnaire
       $record->set_qnaire( $db_restrict_qnaire );
 
-      $db_setting = db\setting::get_setting( 'queue state', $record->name );
       $this->add_row( $record->id,
         array( 'rank' => $record->rank,
-               'enabled' => 'true' == $db_setting->value,
+               'enabled' => $setting_manager->get_setting( 'queue state', $record->name ),
                'participant_count' => $record->get_participant_count(),
                // I hate to put html here, but the alternative is to implement code in the
                // parent class for this ONLY instance of where we need this functionality.

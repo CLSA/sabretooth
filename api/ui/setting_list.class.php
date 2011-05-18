@@ -32,9 +32,12 @@ class setting_list extends base_list_widget
   {
     parent::__construct( 'setting', $args );
     
+    $is_supervisor = 'supervisor' == bus\session::self()->get_role()->name;
+
     $this->add_column( 'category', 'string', 'Category', true );
     $this->add_column( 'name', 'string', 'Name', true );
-    $this->add_column( 'value', 'string', 'Value', true );
+    $this->add_column( 'value', 'string', 'Default', false );
+    if( $is_supervisor ) $this->add_column( 'site_value', 'string', 'Value', false );
     $this->add_column( 'description', 'text', 'Description', true, 'left' );
   }
 
@@ -48,13 +51,33 @@ class setting_list extends base_list_widget
   {
     parent::finish();
     
+    $is_supervisor = 'supervisor' == bus\session::self()->get_role()->name;
+
+
     foreach( $this->get_record_list() as $record )
     {
-      $this->add_row( $record->id,
-        array( 'category' => $record->category,
-               'name' => $record->name,
-               'value' => $record->value,
-               'description' => $record->description ) );
+      if( $is_supervisor )
+      { // include the site's value
+        $modifier = new db\modifier();
+        $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );
+        $setting_value_list = $record->get_setting_value_list( $modifier );
+        $value = 1 == count( $setting_value_list ) ? $setting_value_list[0]->value : '';
+
+        $this->add_row( $record->id,
+          array( 'category' => $record->category,
+                 'name' => $record->name,
+                 'value' => $record->value,
+                 'site_value' => $value,
+                 'description' => $record->description ) );
+      }
+      else
+      {
+        $this->add_row( $record->id,
+          array( 'category' => $record->category,
+                 'name' => $record->name,
+                 'value' => $record->value,
+                 'description' => $record->description ) );
+      }
     }
 
     $this->finish_setting_rows();
