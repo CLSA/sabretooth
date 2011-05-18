@@ -12,8 +12,6 @@ use sabretooth\log, sabretooth\util;
 use sabretooth\database as db;
 use sabretooth\exception as exc;
 
-require_once SHIFT8_PATH.'/library/Shift8.php';
-
 /**
  * Manages LDAP entries
  * 
