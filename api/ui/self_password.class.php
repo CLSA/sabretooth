@@ -45,7 +45,7 @@ class self_password extends widget
     parent::finish();
     
     // if the current password is "password" then mark the widget as the first password change
-    $ldap_manager = new bus\ldap_manager();
+    $ldap_manager = bus\ldap_manager::self();
     $this->set_variable( 'first_password',
       $ldap_manager->validate_user( bus\session::self()->get_user()->name, 'password' ) );
   }

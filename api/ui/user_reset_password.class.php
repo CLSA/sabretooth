@@ -41,7 +41,7 @@ class user_reset_password extends base_record_action
   public function execute()
   {
     $db_user = new db\user( $this->get_argument( 'id' ) );
-    $ldap_manager = new bus\ldap_manager();
+    $ldap_manager = bus\ldap_manager::self();
     $ldap_manager->set_user_password( $db_user->name, 'password' );
   }
 }

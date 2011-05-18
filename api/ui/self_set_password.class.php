@@ -47,7 +47,7 @@ class self_set_password extends action
     $confirm = $this->get_argument( 'confirm' );
     
     // make sure the old password is correct
-    $ldap_manager = new bus\ldap_manager();
+    $ldap_manager = bus\ldap_manager::self();
     if( !$ldap_manager->validate_user( $db_user->name, $old ) )
       throw new exc\notice( 'The password you have provided is incorrect.', __METHOD__ );
     

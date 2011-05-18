@@ -52,7 +52,7 @@ class user_new extends base_new
     $columns = $this->get_argument( 'columns' );
 
     // add the user to ldap
-    $ldap_manager = new bus\ldap_manager();
+    $ldap_manager = bus\ldap_manager::self();
     try
     {
       $ldap_manager->new_user(

@@ -49,7 +49,7 @@ try
   $twig_template = $twig->loadTemplate( 'main.twig' );
 
   // determine if the user's password needs changing
-  $ldap_manager = new business\ldap_manager();
+  $ldap_manager = business\ldap_manager::self();
   $reset_password = $ldap_manager->validate_user( $session->get_user()->name, 'password' );
   
   // Since there is no main widget we need set up the template variables here

@@ -23,9 +23,9 @@ class ldap_manager extends \sabretooth\singleton
    * Constructor.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function __construct()
+  protected function __construct()
   {
     $setting_manager = setting_manager::self();
     $this->server = $setting_manager->get_setting( 'ldap', 'server' );
