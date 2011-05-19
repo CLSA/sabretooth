@@ -215,32 +215,6 @@ This list only includes participants who do not have an appointment and are not 
 to an operator.";
 
 INSERT INTO queue SET
-name = "new participant no availability",
-title = "New participants without availability",
-rank = 16,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "new participant" ) AS tmp ),
-description = "Participants who have never been assigned to an operator.
-This list only includes participants who do not have an appointment, have no availability times
-and are not currently assigned to an operator.";
-
-INSERT INTO queue SET
-name = "new participant availability",
-title = "New participants with availability",
-rank = NULL,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "new participant" ) AS tmp ),
-description = "Participants who have never been assigned to an operator.
-This list only includes participants who do not have an appointment, have availability times
-and are not currently assigned to an operator.";
-
-INSERT INTO queue SET
 name = "new participant not available",
 title = "New participants, not available",
 rank = NULL,
@@ -248,7 +222,7 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "new participant availability" ) AS tmp ),
+    WHERE name = "new participant" ) AS tmp ),
 description = "Participants who have never been assigned to an operator.
 This list only includes participants who do not have an appointment, are not currently available
 and are not currently assigned to an operator.";
@@ -261,9 +235,22 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "new participant availability" ) AS tmp ),
+    WHERE name = "new participant" ) AS tmp ),
 description = "Participants who have never been assigned to an operator.
 This list only includes participants who do not have an appointment, are currently available
+and are not currently assigned to an operator.";
+
+INSERT INTO queue SET
+name = "new participant always available",
+title = "New participants without availability",
+rank = 16,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "new participant" ) AS tmp ),
+description = "Participants who have never been assigned to an operator.
+This list only includes participants who do not have an appointment, have no availability times
 and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
@@ -321,34 +308,6 @@ This list only includes participants who do not have an appointment and are not 
 to an operator.";
 
 INSERT INTO queue SET
-name = "contacted no availability",
-title = "Last call: contacted (without availability)",
-rank = 4,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "contacted ready" ) AS tmp ),
-description = "Participants who's last call resulted in direct contact and the scheduled call
-back time has been reached.
-This list only includes participants who do not have an appointment, have no availability times
-and are not currently assigned to an operator.";
-
-INSERT INTO queue SET
-name = "contacted availability",
-title = "Last call: contacted (with availability)",
-rank = NULL,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "contacted ready" ) AS tmp ),
-description = "Participants who's last call resulted in direct contact and the scheduled call
-back time has been reached.
-This list only includes participants who do not have an appointment, have availability times
-and are not currently assigned to an operator.";
-
-INSERT INTO queue SET
 name = "contacted not available",
 title = "Last call: contacted (not available)",
 rank = NULL,
@@ -356,7 +315,7 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "contacted availability" ) AS tmp ),
+    WHERE name = "contacted ready" ) AS tmp ),
 description = "Participants who's last call resulted in direct contact and the scheduled call
 back time has been reached.
 This list only includes participants who do not have an appointment, are not currently available
@@ -370,10 +329,24 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "contacted availability" ) AS tmp ),
+    WHERE name = "contacted ready" ) AS tmp ),
 description = "Participants who's last call resulted in direct contact and the scheduled call
 back time has been reached.
 This list only includes participants who do not have an appointment, are currently available
+and are not currently assigned to an operator.";
+
+INSERT INTO queue SET
+name = "contacted always available",
+title = "Last call: contacted (without availability)",
+rank = 4,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "contacted ready" ) AS tmp ),
+description = "Participants who's last call resulted in direct contact and the scheduled call
+back time has been reached.
+This list only includes participants who do not have an appointment, have no availability times
 and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
@@ -418,34 +391,6 @@ This list only includes participants who do not have an appointment and are not 
 to an operator.";
 
 INSERT INTO queue SET
-name = "busy no availability",
-title = "Last Call: busy (without availability)",
-rank = 6,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "busy ready" ) AS tmp ),
-description = "Participants who's last call resulted in a busy line and the scheduled call back
-time has been reached.
-This list only includes participants who do not have an appointment, have no availability times
-and are not currently assigned to an operator.";
-
-INSERT INTO queue SET
-name = "busy availability",
-title = "Last Call: busy (with availability)",
-rank = NULL,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "busy ready" ) AS tmp ),
-description = "Participants who's last call resulted in a busy line and the scheduled call back
-time has been reached.
-This list only includes participants who do not have an appointment, have availability times
-and are not currently assigned to an operator.";
-
-INSERT INTO queue SET
 name = "busy not available",
 title = "Last Call: busy (not available)",
 rank = NULL,
@@ -453,7 +398,7 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "busy availability" ) AS tmp ),
+    WHERE name = "busy ready" ) AS tmp ),
 description = "Participants who's last call resulted in a busy line and the scheduled call back
 time has been reached.
 This list only includes participants who do not have an appointment, are not currently available
@@ -467,10 +412,24 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "busy availability" ) AS tmp ),
+    WHERE name = "busy ready" ) AS tmp ),
 description = "Participants who's last call resulted in a busy line and the scheduled call back
 time has been reached.
 This list only includes participants who do not have an appointment, are currently available
+and are not currently assigned to an operator.";
+
+INSERT INTO queue SET
+name = "busy always available",
+title = "Last Call: busy (without availability)",
+rank = 6,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "busy ready" ) AS tmp ),
+description = "Participants who's last call resulted in a busy line and the scheduled call back
+time has been reached.
+This list only includes participants who do not have an appointment, have no availability times
 and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
@@ -515,34 +474,6 @@ This list only includes participants who do not have an appointment and are not 
 to an operator.";
 
 INSERT INTO queue SET
-name = "fax no availability",
-title = "Last Call: fax (without availability)",
-rank = 8,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "fax ready" ) AS tmp ),
-description = "Participants who's last call resulted in a fax line and the scheduled call back
-time has been reached.
-This list only includes participants who do not have an appointment, have no availability times
-and are not currently assigned to an operator.";
-
-INSERT INTO queue SET
-name = "fax availability",
-title = "Last Call: fax (with availability)",
-rank = NULL,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "fax ready" ) AS tmp ),
-description = "Participants who's last call resulted in a fax line and the scheduled call back
-time has been reached.
-This list only includes participants who do not have an appointment, have availability times
-and are not currently assigned to an operator.";
-
-INSERT INTO queue SET
 name = "fax not available",
 title = "Last Call: fax (not available)",
 rank = NULL,
@@ -550,7 +481,7 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "fax availability" ) AS tmp ),
+    WHERE name = "fax ready" ) AS tmp ),
 description = "Participants who's last call resulted in a fax line and the scheduled call back
 time has been reached.
 This list only includes participants who do not have an appointment, are not currently available
@@ -564,10 +495,24 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "fax availability" ) AS tmp ),
+    WHERE name = "fax ready" ) AS tmp ),
 description = "Participants who's last call resulted in a fax line and the scheduled call back
 time has been reached.
 This list only includes participants who do not have an appointment, are currently available
+and are not currently assigned to an operator.";
+
+INSERT INTO queue SET
+name = "fax always available",
+title = "Last Call: fax (without availability)",
+rank = 8,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "fax ready" ) AS tmp ),
+description = "Participants who's last call resulted in a fax line and the scheduled call back
+time has been reached.
+This list only includes participants who do not have an appointment, have no availability times
 and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
@@ -612,34 +557,6 @@ This list only includes participants who do not have an appointment
 and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
-name = "no answer no availability",
-title = "Last Call: no answer (without availability)",
-rank = 10,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "no answer ready" ) AS tmp ),
-description = "Participants who's last call resulted in no answer and the scheduled call back
-time has been reached.
-This list only includes participants who do not have an appointment, have no availability times
-and are not currently assigned to an operator.";
-
-INSERT INTO queue SET
-name = "no answer availability",
-title = "Last Call: no answer (with availability)",
-rank = NULL,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "no answer ready" ) AS tmp ),
-description = "Participants who's last call resulted in no answer and the scheduled call back
-time has been reached.
-This list only includes participants who do not have an appointment, have availability times
-and are not currently assigned to an operator.";
-
-INSERT INTO queue SET
 name = "no answer not available",
 title = "Last Call: no answer (not available)",
 rank = NULL,
@@ -647,7 +564,7 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "no answer availability" ) AS tmp ),
+    WHERE name = "no answer ready" ) AS tmp ),
 description = "Participants who's last call resulted in no answer and the scheduled call back
 time has been reached.
 This list only includes participants who do not have an appointment, are not currently available
@@ -661,10 +578,24 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "no answer availability" ) AS tmp ),
+    WHERE name = "no answer ready" ) AS tmp ),
 description = "Participants who's last call resulted in no answer and the scheduled call back
 time has been reached.
 This list only includes participants who do not have an appointment, are currently available
+and are not currently assigned to an operator.";
+
+INSERT INTO queue SET
+name = "no answer always available",
+title = "Last Call: no answer (without availability)",
+rank = 10,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "no answer ready" ) AS tmp ),
+description = "Participants who's last call resulted in no answer and the scheduled call back
+time has been reached.
+This list only includes participants who do not have an appointment, have no availability times
 and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
@@ -710,34 +641,6 @@ This list only includes participants who do not have an appointment
 and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
-name = "machine message no availability",
-title = "Last Call: answering machine, message left (without availability)",
-rank = 12,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "machine message ready" ) AS tmp ),
-description = "Participants who's last call resulted in an answering machine, a message was left
-and the scheduled call back time has not yet been reached.
-This list only includes participants who do not have an appointment, have no availability times
-and are not currently assigned to an operator.";
-
-INSERT INTO queue SET
-name = "machine message availability",
-title = "Last Call: answering machine, message left (with availability)",
-rank = NULL,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "machine message ready" ) AS tmp ),
-description = "Participants who's last call resulted in an answering machine, a message was left
-and the scheduled call back time has not yet been reached.
-This list only includes participants who do not have an appointment, have availability times
-and are not currently assigned to an operator.";
-
-INSERT INTO queue SET
 name = "machine message not available",
 title = "Last Call: answering machine, message left (not available)",
 rank = NULL,
@@ -745,7 +648,7 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "machine message availability" ) AS tmp ),
+    WHERE name = "machine message ready" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine, a message was left
 and the scheduled call back time has not yet been reached.
 This list only includes participants who do not have an appointment, are not currently available
@@ -759,10 +662,24 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "machine message availability" ) AS tmp ),
+    WHERE name = "machine message ready" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine, a message was left
 and the scheduled call back time has not yet been reached.
 This list only includes participants who do not have an appointment, are currently available
+and are not currently assigned to an operator.";
+
+INSERT INTO queue SET
+name = "machine message always available",
+title = "Last Call: answering machine, message left (without availability)",
+rank = 12,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "machine message ready" ) AS tmp ),
+description = "Participants who's last call resulted in an answering machine, a message was left
+and the scheduled call back time has not yet been reached.
+This list only includes participants who do not have an appointment, have no availability times
 and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
@@ -808,34 +725,6 @@ This list only includes participants who do not have an appointment
 and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
-name = "machine no message no availability",
-title = "Last Call: answering machine, message not left (without availability)",
-rank = 14,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "machine no message ready" ) AS tmp ),
-description = "Participants who's last call resulted in an answering machine, a message was not left
-and the scheduled call back time has been reached.
-This list only includes participants who do not have an appointment, have no availability times
-and are not currently assigned to an operator.";
-
-INSERT INTO queue SET
-name = "machine no message availability",
-title = "Last Call: answering machine, message not left (with availability)",
-rank = NULL,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "machine no message ready" ) AS tmp ),
-description = "Participants who's last call resulted in an answering machine, a message was not left
-and the scheduled call back time has been reached.
-This list only includes participants who do not have an appointment, have availability times
-and are not currently assigned to an operator.";
-
-INSERT INTO queue SET
 name = "machine no message not available",
 title = "Last Call: answering machine, message not left (not available)",
 rank = NULL,
@@ -843,7 +732,7 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "machine no message availability" ) AS tmp ),
+    WHERE name = "machine no message ready" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine, a message was not left
 and the scheduled call back time has been reached.
 This list only includes participants who do not have an appointment, are not currently available
@@ -857,10 +746,24 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id 
     FROM queue
-    WHERE name = "machine no message availability" ) AS tmp ),
+    WHERE name = "machine no message ready" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine, a message was not left
 and the scheduled call back time has been reached.
 This list only includes participants who do not have an appointment, are currently available
+and are not currently assigned to an operator.";
+
+INSERT INTO queue SET
+name = "machine no message always available",
+title = "Last Call: answering machine, message not left (without availability)",
+rank = 14,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "machine no message ready" ) AS tmp ),
+description = "Participants who's last call resulted in an answering machine, a message was not left
+and the scheduled call back time has been reached.
+This list only includes participants who do not have an appointment, have no availability times
 and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
