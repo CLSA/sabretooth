@@ -44,36 +44,64 @@ class queue extends record
         ' FROM participant_for_queue AS participant'.
         ' WHERE true'; // needed to simplify modifier concatenation in list and count methods
       
+      // Completed all qnaires
+      self::$query_list['finished'] = sprintf(
+        ' %s'.
+        ' AND current_qnaire_id IS NULL',
+        self::$query_list['all'] );
+
       // Ineligible -- TODO: what about refused consent?
       self::$query_list['ineligible'] = sprintf(
         ' %s'.
-        ' AND ('
-        '   participant.active = false',
+        ' AND current_qnaire_id IS NOT NULL'.
+        ' AND ('.
+        '   participant.active = false'.
         '   OR participant.status IS NOT NULL'.
         ' )',
+        self::$query_list['all'] );
+      
+      // Inactive
+      self::$query_list['inactive'] = sprintf(
+        ' %s'.
+        ' AND participant.active = false',
+        self::$query_list['all'] );
+      
+      // Deceased
+      self::$query_list['deceased'] = sprintf(
+        ' %s'.
+        ' AND participant.active = true'.
+        ' AND participant.status = "deceased"',
+        self::$query_list['all'] );
+      
+      // Deaf
+      self::$query_list['deaf'] = sprintf(
+        ' %s'.
+        ' AND participant.active = true'.
+        ' AND participant.status = "deaf"',
+        self::$query_list['all'] );
+      
+      // Mentally unfit
+      self::$query_list['mentally unfit'] = sprintf(
+        ' %s'.
+        ' AND participant.active = true'.
+        ' AND participant.status = "mentally unfit"',
         self::$query_list['all'] );
       
       // Eligible
       self::$query_list['eligible'] = sprintf(
         ' %s'.
+        ' AND current_qnaire_id IS NOT NULL'.
         ' AND participant.active = true',
         ' AND participant.status IS NULL',
         self::$query_list['all'] );
 
       // all participants who are waiting to begin the qnaire
-      self::$query_list['qnaire_waiting'] =
-        ' SELECT <SELECT_PARTICIPANT>'.
-        ' FROM participant_for_queue AS participant'.
-        ' WHERE id NOT IN ('.
-        '   SELECT participant.id'.
-        '   FROM participant_for_queue AS participant, sample_has_participant, sample'.
-        '   WHERE participant.id = sample_has_participant.participant_id'.
-        '   AND sample_has_participant.sample_id = sample.id'.
-        '   AND sample.active = false'.
-        ' )';
+      self::$query_list['qnaire waiting'] = sprintf(
+        ' %s'.
+        ' AND participant.start_qnaire_date IS NOT NULL'.
+        ' AND qnaire.current_qnaire_id <QNAIRE_TEST>',
+        self::$quewry_list['eligible'] );
       
-      // TODO: finish designing changing to the queue, then implement...
-
       // Questionnaire
       self::$query_list['qnaire'] =
         ' SELECT <SELECT_PARTICIPANT>'.
@@ -114,7 +142,7 @@ class queue extends record
         self::$query_list['eligible'] );
       
       // Not currently assigned
-      self::$query_list['not_assigned'] = sprintf(
+      self::$query_list['not assigned'] = sprintf(
         ' %s'.
         ' AND participant.assigned = false',
         self::$query_list['eligible'] );
@@ -129,10 +157,10 @@ class queue extends record
         ' AND sample_has_participant.sample_id = sample.id'.
         ' AND sample.qnaire_id <QNAIRE_TEST>'.
         ' AND participant.id IN ( %s )',
-        self::$query_list['not_assigned'] );
+        self::$query_list['not assigned'] );
       
       // Upcoming Appointments
-      self::$query_list['upcoming_appointment'] = sprintf(
+      self::$query_list['upcoming appointment'] = sprintf(
         ' %s'.
         ' AND NOW() < appointment.date - INTERVAL ('.
         '   SELECT value'.
@@ -143,7 +171,7 @@ class queue extends record
         self::$query_list['appointment'] );
       
       // Assignable Appointments
-      self::$query_list['assignable_appointment'] = sprintf(
+      self::$query_list['assignable appointment'] = sprintf(
         ' %s'.
         ' AND NOW() >= appointment.date - INTERVAL ('.
         '   SELECT value'.
@@ -160,7 +188,7 @@ class queue extends record
         self::$query_list['appointment'] );
       
       // Missed Appointments
-      self::$query_list['missed_appointment'] = sprintf(
+      self::$query_list['missed appointment'] = sprintf(
         ' %s'.
         ' AND NOW() > appointment.date + INTERVAL ('.
         '   SELECT value'.
@@ -171,35 +199,35 @@ class queue extends record
         self::$query_list['appointment'] );
       
       // Do not have an appointment
-      self::$query_list['no_appointment'] = sprintf(
+      self::$query_list['no appointment'] = sprintf(
         ' %s'.
         ' AND participant.id NOT IN ( %s )',
-        self::$query_list['not_assigned'],
+        self::$query_list['not assigned'],
         self::$query_list['appointment'] );
       
       // No appointment, never assigned
-      self::$query_list['new_participant'] = sprintf(
+      self::$query_list['new participant'] = sprintf(
         ' %s'.
         ' AND participant.last_assignment_id IS NULL',
-        self::$query_list['no_appointment'] );
+        self::$query_list['no appointment'] );
       
       // Have availability
-      self::$query_list['new_participant_availability'] = sprintf(
+      self::$query_list['new participant availability'] = sprintf(
         ' SELECT <SELECT_PARTICIPANT>'.
         ' FROM participant_for_queue AS participant, availability'.
         ' WHERE participant.id = availability.participant_id'.
         ' AND participant.id IN ( %s )',
-        self::$query_list['new_participant'] );
+        self::$query_list['new participant'] );
       
       // Do not have availability
-      self::$query_list['new_participant_no_availability'] = sprintf(
+      self::$query_list['new participant no availability'] = sprintf(
         ' %s'.
         ' AND participant.id NOT IN ( %s )',
-        self::$query_list['new_participant'],
-        self::$query_list['new_participant_availability'] );
+        self::$query_list['new participant'],
+        self::$query_list['new participant availability'] );
 
       // Are currently available
-      self::$query_list['new_participant_available'] = sprintf(
+      self::$query_list['new participant available'] = sprintf(
         ' %s'.
         ' AND ( '.
         '   CASE DAYOFWEEK( NOW() )'.
@@ -215,32 +243,32 @@ class queue extends record
         '   AND availability.start_time < NOW()'.
         '   AND availability.end_time > NOW()'.
         ' )',
-        self::$query_list['new_participant_availability'] );
+        self::$query_list['new participant availability'] );
       
       // Are not currently available
-      self::$query_list['new_participant_not_available'] = sprintf(
+      self::$query_list['new participant not available'] = sprintf(
         ' %s'.
         ' AND participant.id NOT IN( %s )',
-        self::$query_list['new_participant_availability'],
-        self::$query_list['new_participant_available'] );
+        self::$query_list['new participant availability'],
+        self::$query_list['new participant available'] );
 
       // No appointment, previously assigned
-      self::$query_list['old_participant'] = sprintf(
+      self::$query_list['old participant'] = sprintf(
         ' SELECT <SELECT_PARTICIPANT>'.
         ' FROM participant_for_queue AS participant, assignment_last_phone_call, phone_call'.
         ' WHERE participant.last_assignment_id = assignment_last_phone_call.assignment_id'.
         ' AND assignment_last_phone_call.phone_call_id = phone_call.id'.
         ' AND participant.id IN( %s )',
-        self::$query_list['no_appointment'] );
+        self::$query_list['no appointment'] );
 
       // Contacted
       self::$query_list['contacted'] = sprintf(
         ' %s'.
         ' AND phone_call.status = "contacted"',
-        self::$query_list['old_participant'] );
+        self::$query_list['old participant'] );
       
       // Waiting for call-back delay
-      self::$query_list['contacted_waiting'] = sprintf(
+      self::$query_list['contacted waiting'] = sprintf(
         ' %s'.
         ' AND NOW() < phone_call.end_time + INTERVAL ('.
         '   SELECT value'.
@@ -250,7 +278,7 @@ class queue extends record
         self::$query_list['contacted'] );
       
       // Ready for call-back
-      self::$query_list['contacted_ready'] = sprintf(
+      self::$query_list['contacted ready'] = sprintf(
         ' %s'.
         ' AND NOW() >= phone_call.end_time + INTERVAL ('.
         '   SELECT value'.
@@ -260,22 +288,22 @@ class queue extends record
         self::$query_list['contacted'] );
       
       // Have availability
-      self::$query_list['contacted_availability'] = sprintf(
+      self::$query_list['contacted availability'] = sprintf(
         ' SELECT <SELECT_PARTICIPANT>'.
         ' FROM participant_for_queue AS participant, availability'.
         ' WHERE participant.id = availability.participant_id'.
         ' AND participant.id IN ( %s )',
-        self::$query_list['contacted_ready'] );
+        self::$query_list['contacted ready'] );
       
       // Do not have availability
-      self::$query_list['contacted_no_availability'] = sprintf(
+      self::$query_list['contacted no availability'] = sprintf(
         ' %s'.
         ' AND participant.id NOT IN ( %s )',
-        self::$query_list['contacted_ready'],
-        self::$query_list['contacted_availability'] );
+        self::$query_list['contacted ready'],
+        self::$query_list['contacted availability'] );
 
       // Are currently available
-      self::$query_list['contacted_available'] = sprintf(
+      self::$query_list['contacted available'] = sprintf(
         ' %s'.
         ' AND ( '.
         '   CASE DAYOFWEEK( NOW() )'.
@@ -291,23 +319,23 @@ class queue extends record
         '   AND availability.start_time < NOW()'.
         '   AND availability.end_time > NOW()'.
         ' )',
-        self::$query_list['contacted_availability'] );
+        self::$query_list['contacted availability'] );
       
       // Are not currently available
-      self::$query_list['contacted_not_available'] = sprintf(
+      self::$query_list['contacted not available'] = sprintf(
         ' %s'.
         ' AND participant.id NOT IN( %s )',
-        self::$query_list['contacted_availability'],
-        self::$query_list['contacted_available'] );
+        self::$query_list['contacted availability'],
+        self::$query_list['contacted available'] );
 
       // Busy line
       self::$query_list['busy'] = sprintf(
         ' %s'.
         ' AND phone_call.status = "busy"',
-        self::$query_list['old_participant'] );
+        self::$query_list['old participant'] );
       
       // Waiting for call-back delay
-      self::$query_list['busy_waiting'] = sprintf(
+      self::$query_list['busy waiting'] = sprintf(
         ' %s'.
         ' AND NOW() < phone_call.end_time + INTERVAL ('.
         '   SELECT value'.
@@ -317,7 +345,7 @@ class queue extends record
         self::$query_list['busy'] );
       
       // Ready for call-back
-      self::$query_list['busy_ready'] = sprintf(
+      self::$query_list['busy ready'] = sprintf(
         ' %s'.
         ' AND NOW() >= phone_call.end_time + INTERVAL ('.
         '   SELECT value'.
@@ -327,22 +355,22 @@ class queue extends record
         self::$query_list['busy'] );
       
       // Have availability
-      self::$query_list['busy_availability'] = sprintf(
+      self::$query_list['busy availability'] = sprintf(
         ' SELECT <SELECT_PARTICIPANT>'.
         ' FROM participant_for_queue AS participant, availability'.
         ' WHERE participant.id = availability.participant_id'.
         ' AND participant.id IN ( %s )',
-        self::$query_list['busy_ready'] );
+        self::$query_list['busy ready'] );
       
       // Do not have availability
-      self::$query_list['busy_no_availability'] = sprintf(
+      self::$query_list['busy no availability'] = sprintf(
         ' %s'.
         ' AND participant.id NOT IN ( %s )',
-        self::$query_list['busy_ready'],
-        self::$query_list['busy_availability'] );
+        self::$query_list['busy ready'],
+        self::$query_list['busy availability'] );
 
       // Are currently available
-      self::$query_list['busy_available'] = sprintf(
+      self::$query_list['busy available'] = sprintf(
         ' %s'.
         ' AND ( '.
         '   CASE DAYOFWEEK( NOW() )'.
@@ -358,23 +386,23 @@ class queue extends record
         '   AND availability.start_time < NOW()'.
         '   AND availability.end_time > NOW()'.
         ' )',
-        self::$query_list['busy_availability'] );
+        self::$query_list['busy availability'] );
       
       // Are not currently available
-      self::$query_list['busy_not_available'] = sprintf(
+      self::$query_list['busy not available'] = sprintf(
         ' %s'.
         ' AND participant.id NOT IN( %s )',
-        self::$query_list['busy_availability'],
-        self::$query_list['busy_available'] );
+        self::$query_list['busy availability'],
+        self::$query_list['busy available'] );
 
       // Fax line
       self::$query_list['fax'] = sprintf(
         ' %s'.
         ' AND phone_call.status = "fax"',
-        self::$query_list['old_participant'] );
+        self::$query_list['old participant'] );
       
       // Waiting for call-back delay
-      self::$query_list['fax_waiting'] = sprintf(
+      self::$query_list['fax waiting'] = sprintf(
         ' %s'.
         ' AND NOW() < phone_call.end_time + INTERVAL ('.
         '   SELECT value'.
@@ -384,7 +412,7 @@ class queue extends record
         self::$query_list['fax'] );
       
       // Ready for call-back
-      self::$query_list['fax_ready'] = sprintf(
+      self::$query_list['fax ready'] = sprintf(
         ' %s'.
         ' AND NOW() >= phone_call.end_time + INTERVAL ('.
         '   SELECT value'.
@@ -394,22 +422,22 @@ class queue extends record
         self::$query_list['fax'] );
       
       // Have availability
-      self::$query_list['fax_availability'] = sprintf(
+      self::$query_list['fax availability'] = sprintf(
         ' SELECT <SELECT_PARTICIPANT>'.
         ' FROM participant_for_queue AS participant, availability'.
         ' WHERE participant.id = availability.participant_id'.
         ' AND participant.id IN ( %s )',
-        self::$query_list['fax_ready'] );
+        self::$query_list['fax ready'] );
       
       // Do not have availability
-      self::$query_list['fax_no_availability'] = sprintf(
+      self::$query_list['fax no availability'] = sprintf(
         ' %s'.
         ' AND participant.id NOT IN ( %s )',
-        self::$query_list['fax_ready'],
-        self::$query_list['fax_availability'] );
+        self::$query_list['fax ready'],
+        self::$query_list['fax availability'] );
 
       // Are currently available
-      self::$query_list['fax_available'] = sprintf(
+      self::$query_list['fax available'] = sprintf(
         ' %s'.
         ' AND ( '.
         '   CASE DAYOFWEEK( NOW() )'.
@@ -425,58 +453,58 @@ class queue extends record
         '   AND availability.start_time < NOW()'.
         '   AND availability.end_time > NOW()'.
         ' )',
-        self::$query_list['fax_availability'] );
+        self::$query_list['fax availability'] );
       
       // Are not currently available
-      self::$query_list['fax_not_available'] = sprintf(
+      self::$query_list['fax not available'] = sprintf(
         ' %s'.
         ' AND participant.id NOT IN( %s )',
-        self::$query_list['fax_availability'],
-        self::$query_list['fax_available'] );
+        self::$query_list['fax availability'],
+        self::$query_list['fax available'] );
 
       // No answer
-      self::$query_list['no_answer'] = sprintf(
+      self::$query_list['no answer'] = sprintf(
         ' %s'.
         ' AND phone_call.status = "no answer"',
-        self::$query_list['old_participant'] );
+        self::$query_list['old participant'] );
       
       // Waiting for call-back delay
-      self::$query_list['no_answer_waiting'] = sprintf(
+      self::$query_list['no answer waiting'] = sprintf(
         ' %s'.
         ' AND NOW() < phone_call.end_time + INTERVAL ('.
         '   SELECT value'.
         '   FROM setting'.
         '   WHERE category = "callback timing"'.
         '   AND name = "no answer" ) MINUTE',
-        self::$query_list['no_answer'] );
+        self::$query_list['no answer'] );
       
       // Ready for call-back
-      self::$query_list['no_answer_ready'] = sprintf(
+      self::$query_list['no answer ready'] = sprintf(
         ' %s'.
         ' AND NOW() >= phone_call.end_time + INTERVAL ('.
         '   SELECT value'.
         '   FROM setting'.
         '   WHERE category = "callback timing"'.
         '   AND name = "no answer" ) MINUTE',
-        self::$query_list['no_answer'] );
+        self::$query_list['no answer'] );
       
       // Have availability
-      self::$query_list['no_answer_availability'] = sprintf(
+      self::$query_list['no answer availability'] = sprintf(
         ' SELECT <SELECT_PARTICIPANT>'.
         ' FROM participant_for_queue AS participant, availability'.
         ' WHERE participant.id = availability.participant_id'.
         ' AND participant.id IN ( %s )',
-        self::$query_list['no_answer_ready'] );
+        self::$query_list['no answer ready'] );
       
       // Do not have availability
-      self::$query_list['no_answer_no_availability'] = sprintf(
+      self::$query_list['no answer no availability'] = sprintf(
         ' %s'.
         ' AND participant.id NOT IN ( %s )',
-        self::$query_list['no_answer_ready'],
-        self::$query_list['no_answer_availability'] );
+        self::$query_list['no answer ready'],
+        self::$query_list['no answer availability'] );
 
       // Are currently available
-      self::$query_list['no_answer_available'] = sprintf(
+      self::$query_list['no answer available'] = sprintf(
         ' %s'.
         ' AND ( '.
         '   CASE DAYOFWEEK( NOW() )'.
@@ -492,58 +520,58 @@ class queue extends record
         '   AND availability.start_time < NOW()'.
         '   AND availability.end_time > NOW()'.
         ' )',
-        self::$query_list['no_answer_availability'] );
+        self::$query_list['no answer availability'] );
       
       // Are not currently available
-      self::$query_list['no_answer_not_available'] = sprintf(
+      self::$query_list['no answer not available'] = sprintf(
         ' %s'.
         ' AND participant.id NOT IN( %s )',
-        self::$query_list['no_answer_availability'],
-        self::$query_list['no_answer_available'] );
+        self::$query_list['no answer availability'],
+        self::$query_list['no answer available'] );
 
       // Message was left
-      self::$query_list['machine_message'] = sprintf(
+      self::$query_list['machine message'] = sprintf(
         ' %s'.
         ' AND phone_call.status = "machine message"',
-        self::$query_list['old_participant'] );
+        self::$query_list['old participant'] );
       
       // Waiting for call-back delay
-      self::$query_list['machine_message_waiting'] = sprintf(
+      self::$query_list['machine message waiting'] = sprintf(
         ' %s'.
         ' AND NOW() < phone_call.end_time + INTERVAL ('.
         '   SELECT value'.
         '   FROM setting'.
         '   WHERE category = "callback timing"'.
         '   AND name = "machine message" ) MINUTE',
-        self::$query_list['machine_message'] );
+        self::$query_list['machine message'] );
       
       // Ready for call-back
-      self::$query_list['machine_message_ready'] = sprintf(
+      self::$query_list['machine message ready'] = sprintf(
         ' %s'.
         ' AND NOW() >= phone_call.end_time + INTERVAL ('.
         '   SELECT value'.
         '   FROM setting'.
         '   WHERE category = "callback timing"'.
         '   AND name = "machine message" ) MINUTE',
-        self::$query_list['machine_message'] );
+        self::$query_list['machine message'] );
       
       // Have availability
-      self::$query_list['machine_message_availability'] = sprintf(
+      self::$query_list['machine message availability'] = sprintf(
         ' SELECT <SELECT_PARTICIPANT>'.
         ' FROM participant_for_queue AS participant, availability'.
         ' WHERE participant.id = availability.participant_id'.
         ' AND participant.id IN ( %s )',
-        self::$query_list['machine_message_ready'] );
+        self::$query_list['machine message ready'] );
       
       // Do not have availability
-      self::$query_list['machine_message_no_availability'] = sprintf(
+      self::$query_list['machine message no availability'] = sprintf(
         ' %s'.
         ' AND participant.id NOT IN ( %s )',
-        self::$query_list['machine_message_ready'],
-        self::$query_list['machine_message_availability'] );
+        self::$query_list['machine message ready'],
+        self::$query_list['machine message availability'] );
 
       // Are currently available
-      self::$query_list['machine_message_available'] = sprintf(
+      self::$query_list['machine message available'] = sprintf(
         ' %s'.
         ' AND ( '.
         '   CASE DAYOFWEEK( NOW() )'.
@@ -559,58 +587,58 @@ class queue extends record
         '   AND availability.start_time < NOW()'.
         '   AND availability.end_time > NOW()'.
         ' )',
-        self::$query_list['machine_message_availability'] );
+        self::$query_list['machine message availability'] );
       
       // Are not currently available
-      self::$query_list['machine_message_not_available'] = sprintf(
+      self::$query_list['machine message not available'] = sprintf(
         ' %s'.
         ' AND participant.id NOT IN( %s )',
-        self::$query_list['machine_message_availability'],
-        self::$query_list['machine_message_available'] );
+        self::$query_list['machine message availability'],
+        self::$query_list['machine message available'] );
 
       // Message was not left
-      self::$query_list['machine_no_message'] = sprintf(
+      self::$query_list['machine no message'] = sprintf(
         ' %s'.
         ' AND phone_call.status = "machine no message"',
-        self::$query_list['old_participant'] );
+        self::$query_list['old participant'] );
       
       // Waiting for call-back delay
-      self::$query_list['machine_no_message_waiting'] = sprintf(
+      self::$query_list['machine no message waiting'] = sprintf(
         ' %s'.
         ' AND NOW() < phone_call.end_time + INTERVAL ('.
         '   SELECT value'.
         '   FROM setting'.
         '   WHERE category = "callback timing"'.
         '   AND name = "machine no message" ) MINUTE',
-        self::$query_list['machine_no_message'] );
+        self::$query_list['machine no message'] );
       
       // Ready for call-back 
-      self::$query_list['machine_no_message_ready'] = sprintf(
+      self::$query_list['machine no message ready'] = sprintf(
         ' %s'.
         ' AND NOW() >= phone_call.end_time + INTERVAL ('.
         '   SELECT value'.
         '   FROM setting'.
         '   WHERE category = "callback timing"'.
         '   AND name = "machine no message" ) MINUTE',
-        self::$query_list['machine_no_message'] );
+        self::$query_list['machine no message'] );
 
       // Have availability
-      self::$query_list['machine_no_message_availability'] = sprintf(
+      self::$query_list['machine no message availability'] = sprintf(
         ' SELECT <SELECT_PARTICIPANT>'.
         ' FROM participant_for_queue AS participant, availability'.
         ' WHERE participant.id = availability.participant_id'.
         ' AND participant.id IN ( %s )',
-        self::$query_list['machine_no_message_ready'] );
+        self::$query_list['machine no message ready'] );
       
       // Do not have availability
-      self::$query_list['machine_no_message_no_availability'] = sprintf(
+      self::$query_list['machine no message no availability'] = sprintf(
         ' %s'.
         ' AND participant.id NOT IN ( %s )',
-        self::$query_list['machine_no_message_ready'],
-        self::$query_list['machine_no_message_availability'] );
+        self::$query_list['machine no message ready'],
+        self::$query_list['machine no message availability'] );
 
       // Are currently available
-      self::$query_list['machine_no_message_available'] = sprintf(
+      self::$query_list['machine no message available'] = sprintf(
         ' %s'.
         ' AND ( '.
         '   CASE DAYOFWEEK( NOW() )'.
@@ -626,14 +654,14 @@ class queue extends record
         '   AND availability.start_time < NOW()'.
         '   AND availability.end_time > NOW()'.
         ' )',
-        self::$query_list['machine_no_message_availability'] );
+        self::$query_list['machine no message availability'] );
       
       // Are not currently available
-      self::$query_list['machine_no_message_not_available'] = sprintf(
+      self::$query_list['machine no message not available'] = sprintf(
         ' %s'.
         ' AND participant.id NOT IN( %s )',
-        self::$query_list['machine_no_message_availability'],
-        self::$query_list['machine_no_message_available'] );
+        self::$query_list['machine no message availability'],
+        self::$query_list['machine no message available'] );
     }
   }
 
@@ -716,9 +744,9 @@ class queue extends record
   public function from_appointment()
   {
     return in_array( $this->name, array( 'appointment',
-                                         'upcoming_appointment',
-                                         'assignable_appointment',
-                                         'missed_appointment' ) );
+                                         'upcoming appointment',
+                                         'assignable appointment',
+                                         'missed appointment' ) );
   }
 
   /**
