@@ -247,13 +247,12 @@
         var restrictions = new Object();
         {% for id, restrict in restrictions %}
           var column = $(this).parent( "th" ).attr( "id" );
-          if( "{{ id }}" != column )
-            restrictions["{{ id }}"] = {
-              compare: "{{ restrict.compare }}",
-              value: "{{ restrict.value }}"
-            };
+          restrictions["{{ id }}"] = {
+            compare: "{{ id }}" == column ? "" : "{{ restrict.compare }}",
+            value: "{{ id }}" == column ? "" : "{{ restrict.value }}"
+          };
         {% endfor %}
-    
+
         var args = new Object();
         args.restrictions = restrictions;
         slot_load( {{ slot }},
