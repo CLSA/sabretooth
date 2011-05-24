@@ -431,6 +431,7 @@ class queue extends record
 
     // fill in the settings
     /*
+    // TODO: replace static settings with dynamic after merge
     $setting_manager = bus\setting_manager::self();
     $setting = $setting_manager->get_setting( 'appointment', 'call pre-window' );
     $sql = str_replace( '<APPOINTMENT_PRE_WINDOW>', $setting, $sql );
