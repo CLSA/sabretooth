@@ -97,7 +97,7 @@ class queue extends record
         // current_qnaire_id is the either the next qnaire to work on or the one in progress
         ' AND current_qnaire_id IS NOT NULL'.
         // active participant who does not have a "final" status
-        ' AND participant.active = true',
+        ' AND participant.active = true'.
         ' AND participant.status IS NULL',
         self::$query_list['all'] );
 
@@ -106,9 +106,9 @@ class queue extends record
         ' %s'.
         // the current qnaire cannot start before start_qnaire_date
         ' AND participant.start_qnaire_date IS NOT NULL'.
-        ' AND DATE( participant.start_qnaire_date ) > CURDATE()'.
-        ' AND qnaire.current_qnaire_id <QNAIRE_TEST>',
-        self::$quewry_list['eligible'] );
+        ' AND DATE( participant.start_qnaire_date ) > DATE( UTC_TIMESTAMP() )'.
+        ' AND participant.current_qnaire_id <QNAIRE_TEST>',
+        self::$query_list['eligible'] );
       
       // Active qnaire
       self::$query_list['qnaire'] = sprintf(
@@ -116,10 +116,10 @@ class queue extends record
         // we've started if the start_qnaire_date is null or we have reached that date
         ' AND ( '.
         '   participant.start_qnaire_date IS NULL'.
-        '   OR DATE( participant.start_qnaire_date ) <= CURDATE()'.
+        '   OR DATE( participant.start_qnaire_date ) <= DATE( UTC_TIMESTAMP() )'.
         ' )'.
-        ' AND qnaire.current_qnaire_id <QNAIRE_TEST>',
-        self::$quewry_list['eligible'] );
+        ' AND participant.current_qnaire_id <QNAIRE_TEST>',
+        self::$query_list['eligible'] );
 
       // Currently assigned
       self::$query_list['assigned'] = sprintf(
@@ -144,9 +144,9 @@ class queue extends record
         // from 'qnaire'
         ' AND ( '.
         '   participant.start_qnaire_date IS NULL'.
-        '   OR DATE( participant.start_qnaire_date ) <= CURDATE()'.
+        '   OR DATE( participant.start_qnaire_date ) <= DATE( UTC_TIMESTAMP() )'.
         ' )'.
-        ' AND qnaire.current_qnaire_id <QNAIRE_TEST>'.
+        ' AND participant.current_qnaire_id <QNAIRE_TEST>'.
         // from 'not assigned'
         ' AND participant.assigned = false'.
         // link to appointment table and make sure the appointment hasn't been assigned
@@ -189,9 +189,9 @@ class queue extends record
         // from 'qnaire'
         ' AND ( '.
         '   participant.start_qnaire_date IS NULL'.
-        '   OR DATE( participant.start_qnaire_date ) <= CURDATE()'.
+        '   OR DATE( participant.start_qnaire_date ) <= DATE( UTC_TIMESTAMP() )'.
         ' )'.
-        ' AND qnaire.current_qnaire_id <QNAIRE_TEST>'.
+        ' AND participant.current_qnaire_id <QNAIRE_TEST>'.
         // from 'not assigned'
         ' AND participant.assigned = false'.
         // make sure there is no appointment (the left-join above only links to unassigned
@@ -211,7 +211,7 @@ class queue extends record
         ' SELECT <SELECT_PARTICIPANT>'.
         ' FROM participant_for_queue AS participant'.
         ' LEFT JOIN participant_available'.
-        ' participant_available.participant_id = participant.id'.
+        ' ON participant_available.participant_id = participant.id'.
         // from 'no appointment'
         ' LEFT JOIN appointment'.
         ' ON appointment.participant_id = participant.id'.
@@ -221,9 +221,9 @@ class queue extends record
         ' AND participant.status IS NULL'.
         ' AND ( '.
         '   participant.start_qnaire_date IS NULL'.
-        '   OR DATE( participant.start_qnaire_date ) <= CURDATE()'.
+        '   OR DATE( participant.start_qnaire_date ) <= DATE( UTC_TIMESTAMP() )'.
         ' )'.
-        ' AND qnaire.current_qnaire_id <QNAIRE_TEST>'.
+        ' AND participant.current_qnaire_id <QNAIRE_TEST>'.
         ' AND participant.assigned = false'.
         ' AND appointment.id IS NULL'.
         // from 'new participant'
@@ -253,9 +253,9 @@ class queue extends record
       // No appointment, previously assigned
       self::$query_list['old participant'] =
         ' SELECT <SELECT_PARTICIPANT>'.
-        ' FROM participant_for_queue AS participant, assignment_last_phone_call, phone_call'.
+        ' FROM assignment_last_phone_call, phone_call, participant_for_queue AS participant'.
         ' LEFT JOIN participant_available'.
-        ' participant_available.participant_id = participant.id'.
+        ' ON participant_available.participant_id = participant.id'.
         // from 'no appointment'
         ' LEFT JOIN appointment'.
         ' ON appointment.participant_id = participant.id'.
@@ -265,14 +265,14 @@ class queue extends record
         ' AND participant.status IS NULL'.
         ' AND ( '.
         '   participant.start_qnaire_date IS NULL'.
-        '   OR DATE( participant.start_qnaire_date ) <= CURDATE()'.
+        '   OR DATE( participant.start_qnaire_date ) <= DATE( UTC_TIMESTAMP() )'.
         ' )'.
-        ' AND qnaire.current_qnaire_id <QNAIRE_TEST>'.
+        ' AND participant.current_qnaire_id <QNAIRE_TEST>'.
         ' AND participant.assigned = false'.
         ' AND appointment.id IS NULL'.
         // straight join the assignment_last_phone_call and phone_call tables
         ' AND assignment_last_phone_call.assignment_id = participant.last_assignment_id'.
-        ' AND phone_call.id = assignment_last_phone_call.call_id'.
+        ' AND phone_call.id = assignment_last_phone_call.phone_call_id'.
         // if there is no start_qnaire_date then the current qnaire has been started
         ' AND participant.start_qnaire_date IS NULL';
        
@@ -297,14 +297,14 @@ class queue extends record
         // Waiting for call-back delay
         self::$query_list[$phone_call_status.' waiting'] = sprintf(
           ' %s'.
-          ' AND UTC_TIMESTAMP() < phone_call.end_time + INTERVAL <CALLBACK_%s>',
+          ' AND UTC_TIMESTAMP() < phone_call.end_time + INTERVAL <CALLBACK_%s> MINUTE',
           self::$query_list[$phone_call_status],
           str_replace( ' ', '_', strtoupper( $phone_call_status ) ) );
         
         // Ready for call-back
         self::$query_list[$phone_call_status.' ready'] = sprintf(
           ' %s'.
-          ' AND UTC_TIMESTAMP() >= phone_call.end_time + INTERVAL <CALLBACK_%s>',
+          ' AND UTC_TIMESTAMP() >= phone_call.end_time + INTERVAL <CALLBACK_%s> MINUTE',
           self::$query_list[$phone_call_status],
           str_replace( ' ', '_', strtoupper( $phone_call_status ) ) );
         
@@ -432,23 +432,33 @@ class queue extends record
     $sql = str_replace( '<QNAIRE_TEST>', $qnaire_test_sql, $sql );
 
     // fill in the settings
+    /*
     $setting_manager = bus\setting_manager::self();
     $setting = $setting_manager->get_setting( 'appointment', 'call pre-window' );
-    $sql = str_replace( '<APPOINTMENT_PRE_WINDOW>', $setting );
+    $sql = str_replace( '<APPOINTMENT_PRE_WINDOW>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'appointment', 'call post-window' );
-    $sql = str_replace( '<APPOINTMENT_POST_WINDOW>', $setting );
+    $sql = str_replace( '<APPOINTMENT_POST_WINDOW>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'callback timing', 'contacted' );
-    $sql = str_replace( '<CALLBACK_CONTACTED>', $setting );
+    $sql = str_replace( '<CALLBACK_CONTACTED>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'callback timing', 'busy' );
-    $sql = str_replace( '<CALLBACK_BUSY>', $setting );
+    $sql = str_replace( '<CALLBACK_BUSY>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'callback timing', 'fax' );
-    $sql = str_replace( '<CALLBACK_FAX>', $setting );
+    $sql = str_replace( '<CALLBACK_FAX>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'callback timing', 'no answer' );
-    $sql = str_replace( '<CALLBACK_NO_ANSWER>', $setting );
+    $sql = str_replace( '<CALLBACK_NO_ANSWER>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'callback timing', 'machine message' );
-    $sql = str_replace( '<CALLBACK_MACHINE_MESSAGE>', $setting );
+    $sql = str_replace( '<CALLBACK_MACHINE_MESSAGE>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'callback timing', 'machine no message' );
-    $sql = str_replace( '<CALLBACK_MACHINE_NO_MESSAGE>', $setting );
+    $sql = str_replace( '<CALLBACK_MACHINE_NO_MESSAGE>', $setting, $sql );
+    */
+    $sql = str_replace( '<APPOINTMENT_PRE_WINDOW>', 5, $sql );
+    $sql = str_replace( '<APPOINTMENT_POST_WINDOW>', 15, $sql );
+    $sql = str_replace( '<CALLBACK_CONTACTED>', 10000, $sql );
+    $sql = str_replace( '<CALLBACK_BUSY>', 15, $sql );
+    $sql = str_replace( '<CALLBACK_FAX>', 15, $sql );
+    $sql = str_replace( '<CALLBACK_NO_ANSWER>', 10000, $sql );
+    $sql = str_replace( '<CALLBACK_MACHINE_MESSAGE>', 3000, $sql );
+    $sql = str_replace( '<CALLBACK_MACHINE_NO_MESSAGE>', 3000, $sql );
     return $sql;
   }
   

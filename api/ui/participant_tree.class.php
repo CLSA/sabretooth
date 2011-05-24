@@ -76,10 +76,10 @@ class participant_tree extends widget
       if( $is_supervisor ) $db_queue->set_site( $session->get_site() );
       else if( !is_null( $db_restrict_site ) ) $db_queue->set_site( $db_restrict_site );
 
-      // the first two nodes should not be repeated for every qnaire
-      if( 1 == $db_queue->id || 2 == $db_queue->id )
+      // the first eight nodes should not be repeated for every qnaire
+      if( !$db_queue->qnaire_specific )
       {
-        $index = implode( '_', array(0, $db_queue->id ) );
+        $index = implode( '_', array( 0, $db_queue->id ) );
         $nodes[$index] = array( 'id' => $index,
                                 'title' => $db_queue->title,
                                 'open' => 1 == $db_queue->id,
@@ -113,21 +113,17 @@ class participant_tree extends widget
                                   'rank' => $db_queue->rank,
                                   'count' => $db_queue->get_participant_count(),
                                   'children' => array() );
-          if( is_null( $db_queue->parent_queue_id ) )
-          { // insert as a root node (careful, nodes are being passed by reference!)
-            $tree[] = &$nodes[$index];
-          }
-          else
-          { // add as a branch to parent node
-            $parent_index = 1 == $db_queue->parent_queue_id || 2 == $db_queue->parent_queue_id
-                            ? implode( '_', array( 0, $db_queue->parent_queue_id ) )
-                            : implode( '_', array( $db_qnaire->id, $db_queue->parent_queue_id ) );
-            $nodes[$parent_index]['children'][] = &$nodes[$index];
 
-            if( !is_null( $nodes[$index]['rank'] ) )
-            { // open the parent branch if this branch is a queue
-              $nodes[$parent_index]['open'] = true;
-            }
+          // add as a branch to parent node
+          $db_parent_queue = new db\queue( $db_queue->parent_queue_id );
+          $parent_index = $db_parent_queue->qnaire_specific
+                          ? implode( '_', array( $db_qnaire->id, $db_queue->parent_queue_id ) )
+                          : implode( '_', array( 0, $db_queue->parent_queue_id ) );
+          $nodes[$parent_index]['children'][] = &$nodes[$index];
+
+          if( !is_null( $nodes[$index]['rank'] ) )
+          { // open the parent branch if this branch is a queue
+            $nodes[$parent_index]['open'] = true;
           }
         }
       }
