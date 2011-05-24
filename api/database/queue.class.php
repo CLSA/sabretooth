@@ -101,15 +101,6 @@ class queue extends record
         ' AND participant.status IS NULL',
         self::$query_list['all'] );
 
-      // Waiting for qnaire
-      self::$query_list['qnaire waiting'] = sprintf(
-        ' %s'.
-        // the current qnaire cannot start before start_qnaire_date
-        ' AND participant.start_qnaire_date IS NOT NULL'.
-        ' AND DATE( participant.start_qnaire_date ) > DATE( UTC_TIMESTAMP() )'.
-        ' AND participant.current_qnaire_id <QNAIRE_TEST>',
-        self::$query_list['eligible'] );
-      
       // Active qnaire
       self::$query_list['qnaire'] = sprintf(
         ' %s'.
@@ -121,6 +112,15 @@ class queue extends record
         ' AND participant.current_qnaire_id <QNAIRE_TEST>',
         self::$query_list['eligible'] );
 
+      // Waiting for qnaire
+      self::$query_list['qnaire waiting'] = sprintf(
+        ' %s'.
+        // the current qnaire cannot start before start_qnaire_date
+        ' AND participant.start_qnaire_date IS NOT NULL'.
+        ' AND DATE( participant.start_qnaire_date ) > DATE( UTC_TIMESTAMP() )'.
+        ' AND participant.current_qnaire_id <QNAIRE_TEST>',
+        self::$query_list['eligible'] );
+      
       // Currently assigned
       self::$query_list['assigned'] = sprintf(
         ' %s'.
@@ -346,10 +346,9 @@ class queue extends record
     // restrict to the site
     if( !is_null( $this->db_site ) ) $modifier->where( 'base_site_id', '=', $this->db_site->id );
     
-    $qnaire_test_sql = is_null( $this->db_qnaire ) ? 'IS NOT NULL' : '= '.$this->db_qnaire->id;
     return static::db()->get_one(
       sprintf( '%s %s',
-               $this->get_sql( 'COUNT( DISTINCT participant.id )', $qnaire_test_sql ),
+               $this->get_sql( 'COUNT( DISTINCT participant.id )' ),
                $modifier->get_sql( true ) ) );
   }
 
@@ -368,10 +367,9 @@ class queue extends record
     // restrict to the site
     if( !is_null( $this->db_site ) ) $modifier->where( 'base_site_id', '=', $this->db_site->id );
     
-    $qnaire_test_sql = is_null( $this->db_qnaire ) ? 'IS NOT NULL' : '= '.$this->db_qnaire->id;
     $participant_ids = static::db()->get_col(
       sprintf( '%s %s',
-               $this->get_sql( 'DISTINCT participant.id', $qnaire_test_sql ),
+               $this->get_sql( 'DISTINCT participant.id' ),
                $modifier->get_sql( true ) ) );
 
     $participants = array();
@@ -420,15 +418,15 @@ class queue extends record
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $select_participant_sql The text to put in place of the first occurance of
    *               <SELECT_PARTICIPANT>
-   * @param string $qnaire_test_sql The text to put in place of <QNAIRE_TEST>
    * @return string
    * @access protected
    */
-  protected function get_sql( $select_participant_sql, $qnaire_test_sql )
+  protected function get_sql( $select_participant_sql )
   {
     $sql = self::$query_list[ $this->name ];
     $sql = preg_replace( '/\<SELECT_PARTICIPANT\>/', $select_participant_sql, $sql, 1 );
     $sql = str_replace( '<SELECT_PARTICIPANT>', 'participant.id', $sql );
+    $qnaire_test_sql = is_null( $this->db_qnaire ) ? 'IS NOT NULL' : '= '.$this->db_qnaire->id;
     $sql = str_replace( '<QNAIRE_TEST>', $qnaire_test_sql, $sql );
 
     // fill in the settings

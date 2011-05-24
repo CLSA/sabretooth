@@ -33,6 +33,7 @@ class participant_view extends base_view
     parent::__construct( 'participant', 'view', $args );
     
     // create an associative array with everything we want to display about the participant
+    $this->add_item( 'active', 'boolean', 'Active' );
     $this->add_item( 'uid', 'string', 'Unique ID' );
     $this->add_item( 'first_name', 'string', 'First Name' );
     $this->add_item( 'last_name', 'string', 'Last Name' );
@@ -129,6 +130,7 @@ class participant_view extends base_view
 
     
     // set the view's items
+    $this->set_item( 'active', $this->get_record()->active, true );
     $this->set_item( 'uid', $this->get_record()->uid, false );
     $this->set_item( 'first_name', $this->get_record()->first_name );
     $this->set_item( 'last_name', $this->get_record()->last_name );

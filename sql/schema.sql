@@ -229,8 +229,8 @@ CREATE  TABLE IF NOT EXISTS `queue` (
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_rank` (`rank` ASC) ,
-  UNIQUE INDEX `uq_title` (`title` ASC) ,
   INDEX `fk_parent_queue_id` (`parent_queue_id` ASC) ,
+  UNIQUE INDEX `uq_name` (`name` ASC) ,
   CONSTRAINT `fk_queue_parent_queue_id`
     FOREIGN KEY (`parent_queue_id` )
     REFERENCES `queue` (`id` )
