@@ -109,7 +109,7 @@ abstract class base_access extends record
     
     $modifier = new modifier();
     $modifier->where( $subject_name.'_id', '=', $this->id );
-    $modifier->order_desc( 'date' );
+    $modifier->order_desc( 'datetime' );
     $modifier->limit( 1 );
     $activity_list = activity::select( $modifier );
     

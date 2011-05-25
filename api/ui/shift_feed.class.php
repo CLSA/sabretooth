@@ -50,8 +50,8 @@ class shift_feed extends base_feed
   {
     // create a list of shifts between the feed's start and end time
     $modifier = new db\modifier();
-    $modifier->where( 'date', '>=', $this->start_date );
-    $modifier->where( 'date', '<', $this->end_date );
+    $modifier->where( 'date', '>=', $this->start_datetime );
+    $modifier->where( 'date', '<', $this->end_datetime );
     if( is_null( $this->user_id ) )
       $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );
     else

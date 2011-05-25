@@ -33,8 +33,8 @@ abstract class base_feed extends datum
     parent::__construct( $subject, 'feed', $args );
 
     // set the start and end datetimes
-    $this->start_date = $this->get_argument( 'start' );
-    $this->end_date = $this->get_argument( 'end' );
+    $this->start_datetime = $this->get_argument( 'start' );
+    $this->end_datetime = $this->get_argument( 'end' );
   }
   
   /**
@@ -42,13 +42,13 @@ abstract class base_feed extends datum
    * @var string
    * @access protected
    */
-  protected $start_date = NULL;
+  protected $start_datetime = NULL;
   
   /**
    * The end date/time of the feed
    * @var string
    * @access protected
    */
-  protected $end_date = NULL;
+  protected $end_datetime = NULL;
 }
 ?>

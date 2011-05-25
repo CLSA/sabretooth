@@ -282,7 +282,7 @@ final class session extends \sabretooth\singleton
     
     // query for assignments which do not have a end time
     $modifier = new db\modifier();
-    $modifier->where( 'end_time', '=', NULL );
+    $modifier->where( 'end_datetime', '=', NULL );
     $assignment_list = $this->get_user()->get_assignment_list( $modifier );
 
     // only one assignment should ever be open at a time, warn if this isn't the case
@@ -315,7 +315,7 @@ final class session extends \sabretooth\singleton
 
     // query for phone calls which do not have a end time
     $modifier = new db\modifier();
-    $modifier->where( 'end_time', '=', NULL );
+    $modifier->where( 'end_datetime', '=', NULL );
     $phone_call_list = $db_assignment->get_phone_call_list( $modifier );
 
     // only one phone call should ever be open at a time, warn if this isn't the case
@@ -371,7 +371,7 @@ final class session extends \sabretooth\singleton
     $activity->role_id = $this->role->id;
     $activity->operation_id = $operation->get_id();
     $activity->query = serialize( $args );
-    $activity->elapsed_time = util::get_elapsed_time();
+    $activity->elapsed = util::get_elapsed_time();
     $activity->save();
   }
 
@@ -636,7 +636,7 @@ final class session extends \sabretooth\singleton
     
     // the assignment must have an open call
     $modifier = new db\modifier();
-    $modifier->where( 'end_time', '=', NULL );
+    $modifier->where( 'end_datetime', '=', NULL );
     $call_list = $db_assignment->get_phone_call_list( $modifier );
     if( 0 == count( $call_list ) ) return false;
 

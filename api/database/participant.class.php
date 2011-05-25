@@ -128,8 +128,8 @@ class participant extends has_note
     
     $modifier = new modifier();
     $modifier->where( 'interview.participant_id', '=', $this->id );
-    $modifier->where( 'end_time', '!=', NULL );
-    $modifier->order_desc( 'start_time' );
+    $modifier->where( 'end_datetime', '!=', NULL );
+    $modifier->order_desc( 'start_datetime' );
     $modifier->limit( 1 );
     $assignment_list = assignment::select( $modifier );
 

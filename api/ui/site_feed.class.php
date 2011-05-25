@@ -45,24 +45,24 @@ class site_feed extends base_feed
     $db_site = bus\session::self()->get_site();
 
     // start by creating an array with one element per day in the time span
-    $start_datetime = util::get_datetime_object( $this->start_date );
-    $end_datetime = util::get_datetime_object( $this->end_date );
+    $start_datetime_obj = util::get_datetime_object( $this->start_datetime );
+    $end_datetime_obj = util::get_datetime_object( $this->end_datetime );
     
     $days = array();
-    $current_datetime = clone $start_datetime;
-    while( $current_datetime->diff( $end_datetime )->days )
+    $current_datetime_obj = clone $start_datetime_obj;
+    while( $current_datetime_obj->diff( $end_datetime_obj )->days )
     {
-      $days[ $current_datetime->format( 'Y-m-d' ) ] = array(
+      $days[ $current_datetime_obj->format( 'Y-m-d' ) ] = array(
         'slots' => array(),
         'times' => array() );
-      $current_datetime->add( new \DateInterval( 'P1D' ) );
+      $current_datetime_obj->add( new \DateInterval( 'P1D' ) );
     }
     
     // then, incorperate operator shifts
     $modifier = new db\modifier();
     $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'date', '>=', $this->start_date );
-    $modifier->where( 'date', '<', $this->end_date );
+    $modifier->where( 'date', '>=', $this->start_datetime );
+    $modifier->where( 'date', '<', $this->end_datetime );
     $modifier->order( 'date' );
 
     foreach( db\shift::select( $modifier ) as $db_shift )
@@ -84,24 +84,24 @@ class site_feed extends base_feed
 
     // then, incorperate participant appointments
     $modifier = new db\modifier();
-    $modifier->where( 'date', '>=', $start_datetime->format( 'Y-m-d H:i:s' ) );
-    $modifier->where( 'date', '<', $end_datetime->format( 'Y-m-d H:i:s' ) );
-    $modifier->order( 'date' );
+    $modifier->where( 'datetime', '>=', $start_datetime_obj->format( 'Y-m-d H:i:s' ) );
+    $modifier->where( 'datetime', '<', $end_datetime_obj->format( 'Y-m-d H:i:s' ) );
+    $modifier->order( 'datetime' );
 
     foreach( db\appointment::select_for_site( $db_site, $modifier ) as $db_appointment )
     {
-      $appointment_datetime = util::get_datetime_object( $db_appointment->date );
-      $slots = &$days[ $appointment_datetime->format( 'Y-m-d' ) ]['slots'];
+      $appointment_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
+      $slots = &$days[ $appointment_datetime_obj->format( 'Y-m-d' ) ]['slots'];
 
       // decrement slot at start time
-      $time = intval( preg_replace( '/[^0-9]/', '', $appointment_datetime->format( 'H:i' ) ) );
+      $time = intval( preg_replace( '/[^0-9]/', '', $appointment_datetime_obj->format( 'H:i' ) ) );
       if( !array_key_exists( $time, $slots ) )
         $slots[$time] = array( 'operator' => 0, 'appointment' => 0 );
       $slots[$time]['appointment']++;
 
       // increment slot one hour later
-      $appointment_datetime->add( new \DateInterval( 'PT1H' ) );
-      $time = intval( preg_replace( '/[^0-9]/', '', $appointment_datetime->format( 'H:i' ) ) );
+      $appointment_datetime_obj->add( new \DateInterval( 'PT1H' ) );
+      $time = intval( preg_replace( '/[^0-9]/', '', $appointment_datetime_obj->format( 'H:i' ) ) );
       if( !array_key_exists( $time, $slots ) )
         $slots[$time] = array( 'operator' => 0, 'appointment' => 0 );
       $slots[$time]['appointment']--;

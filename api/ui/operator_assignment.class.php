@@ -84,7 +84,7 @@ class operator_assignment extends widget
       $db_contact_list = $db_participant->get_contact_list( $modifier );
       
       $modifier = new db\modifier();
-      $modifier->where( 'end_time', '!=', NULL );
+      $modifier->where( 'end_datetime', '!=', NULL );
       $current_calls = $db_assignment->get_phone_call_count( $modifier );
 
       if( 0 == count( $db_contact_list ) )
@@ -116,9 +116,9 @@ class operator_assignment extends widget
         $this->set_variable( 'previous_assignment_note_count',
           $db_last_assignment->get_note_count() );
         $this->set_variable( 'previous_assignment_date',
-          util::get_formatted_date( $db_last_assignment->start_time ) );
+          util::get_formatted_date( $db_last_assignment->start_datetime ) );
         $this->set_variable( 'previous_assignment_time',
-          util::get_formatted_time( $db_last_assignment->start_time ) );
+          util::get_formatted_time( $db_last_assignment->start_datetime ) );
       }
       $this->set_variable( 'previous_call_list', $previous_call_list );
       $this->set_variable( 'current_calls', $current_calls );

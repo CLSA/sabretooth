@@ -35,7 +35,7 @@ class access_list extends site_restricted_list
     $this->add_column( 'user.name', 'string', 'User', true );
     $this->add_column( 'role.name', 'string', 'Role', true );
     $this->add_column( 'site.name', 'string', 'Site', true );
-    $this->add_column( 'date', 'fuzzy', 'Granted', true );
+    $this->add_column( 'datetime', 'fuzzy', 'Granted', true );
   }
 
   /**
@@ -54,7 +54,7 @@ class access_list extends site_restricted_list
         array( 'user.name' => $record->get_user()->name,
                'role.name' => $record->get_role()->name,
                'site.name' => $record->get_site()->name,
-               'date' => $record->date ) );
+               'datetime' => $record->datetime ) );
     }
 
     $this->finish_setting_rows();

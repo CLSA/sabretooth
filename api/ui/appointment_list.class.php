@@ -35,7 +35,7 @@ class appointment_list extends site_restricted_list
     $this->add_column( 'participant.first_name', 'string', 'First name', true );
     $this->add_column( 'participant.last_name', 'string', 'Last name', true );
     $this->add_column( 'contact', 'string', 'Contact', false );
-    $this->add_column( 'date', 'datetime', 'Date', true );
+    $this->add_column( 'datetime', 'datetime', 'Date', true );
     $this->add_column( 'state', 'string', 'State', false );
 
     // don't add appointments if this list isn't parented
@@ -63,7 +63,7 @@ class appointment_list extends site_restricted_list
         array( 'participant.first_name' => $record->get_participant()->first_name,
                'participant.last_name' => $record->get_participant()->last_name,
                'contact' => $contact,
-               'date' => $record->date,
+               'datetime' => $record->datetime,
                'state' => $record->get_state() ) );
     }
 

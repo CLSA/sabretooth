@@ -45,10 +45,8 @@ class self_home extends widget
     $this->set_variable( 'site_name', $session->get_site()->name );
     if( $db_activity )
     {
-      $date = util::get_formatted_date( $db_activity->date );
-      $this->set_variable( 'last_day', $date );
-      $time = util::get_formatted_time( $db_activity->date );
-      $this->set_variable( 'last_time', $time );
+      $this->set_variable( 'last_day', util::get_formatted_date( $db_activity->datetime ) );
+      $this->set_variable( 'last_time', util::get_formatted_time( $db_activity->datetime ) );
     }
   }
 }

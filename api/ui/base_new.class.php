@@ -42,17 +42,27 @@ abstract class base_new extends base_record_action
     $columns = $this->get_argument( 'columns', array() );
 
     // check for time range validity, if necessary
-    if( array_key_exists( 'start_time', $columns ) && array_key_exists( 'end_time', $columns ) )
+    if( array_key_exists( 'start_time', $columns ) &&
+        array_key_exists( 'end_time', $columns ) )
     { 
-      $start_value = $columns['start_time'];
-      $end_value = $columns['end_time'];
-      
-      if( strtotime( $start_value ) >= strtotime( $end_value ) )
+      if( strtotime( $columns['start_time'] ) >= strtotime( $columns['end_time'] ) )
       { 
         throw new exc\notice(
           sprintf( 'Start and end times (%s to %s) are not valid.',
-                   $start_value,
-                   $end_value ),
+                   $columns['start_time'],
+                   $columns['end_time'] ),
+          __METHOD__ );
+      }
+    } 
+    else if( array_key_exists( 'start_datetime', $columns ) &&
+             array_key_exists( 'end_datetime', $columns ) )
+    { 
+      if( strtotime( $columns['start_datetime'] ) >= strtotime( $columns['end_datetime'] ) )
+      { 
+        throw new exc\notice(
+          sprintf( 'Start and end date-times (%s to %s) are not valid.',
+                   $columns['start_datetime'],
+                   $columns['end_datetime'] ),
           __METHOD__ );
       }
     } 

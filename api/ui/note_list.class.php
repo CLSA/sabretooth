@@ -58,9 +58,9 @@ class note_list extends widget
     $note_list = array();
     foreach( $db_record->get_note_list() as $db_note )
     {
-      $date = 7 > util::get_interval( $db_note->date )->days
-            ? util::get_fuzzy_period_ago( $db_note->date )
-            : util::get_formatted_date( $db_note->date );
+      $date = 7 > util::get_interval( $db_note->datetime )->days
+            ? util::get_fuzzy_period_ago( $db_note->datetime )
+            : util::get_formatted_date( $db_note->datetime );
       $note_list[] = array( 'id' => $db_note->id,
                             'sticky' => $db_note->sticky,
                             'user' => $db_note->get_user()->name,

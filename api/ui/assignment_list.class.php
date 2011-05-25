@@ -36,9 +36,9 @@ class assignment_list extends site_restricted_list
     $this->add_column( 'site.name', 'string', 'Site', true );
     $this->add_column( 'participant', 'string', 'Participant', false );
     $this->add_column( 'calls', 'number', 'Calls', false );
-    $this->add_column( 'start_time', 'date', 'Date', true );
-    $this->add_column( 'start_time_only', 'time', 'Start Time', false );
-    $this->add_column( 'end_time_only', 'time', 'End Time', false );
+    $this->add_column( 'start_datetime', 'date', 'Date', true );
+    $this->add_column( 'start_time', 'time', 'Start Time', false );
+    $this->add_column( 'end_time', 'time', 'End Time', false );
   }
   
   /**
@@ -62,9 +62,9 @@ class assignment_list extends site_restricted_list
                'site.name' => $record->get_site()->name,
                'participant' => $participant,
                'calls' => $record->get_phone_call_count(),
-               'start_time' => $record->start_time,
-               'start_time_only' => $record->start_time,
-               'end_time_only' => $record->end_time,
+               'start_datetime' => $record->start_datetime,
+               'start_time' => $record->start_datetime,
+               'end_time' => $record->end_datetime,
                // note_count isn't a column, it's used for the note button
                'note_count' => $record->get_note_count() ) );
     }

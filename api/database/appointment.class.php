@@ -28,8 +28,8 @@ class appointment extends record
   {
     parent::load();
 
-    // appointments are not to the second, so remove the :00 at the end of the date field
-    $this->date = substr( $this->date, 0, -3 );
+    // appointments are not to the second, so remove the :00 at the end of the datetime field
+    $this->datetime = substr( $this->datetime, 0, -3 );
   }
   
 
@@ -59,7 +59,7 @@ class appointment extends record
       bus\setting_manager::self()->get_setting( 'appointment', 'end_time' ) ) );
 
     // test for the start of the appointment
-    $date_obj = util::get_datetime_object( $this->date );
+    $date_obj = util::get_datetime_object( $this->datetime );
     $start = intval( preg_replace( '/[^0-9]/', '', $date_obj->format( 'H:i' ) ) );
 
     // how many slots are open?
@@ -68,6 +68,7 @@ class appointment extends record
     $modifier->where( 'date', '=', $date_obj->format( 'Y-m-d' ) );
     $modifier->where( 'start_time', '<=', $date_obj->format( 'H:i:s' ) );
     $modifier->where( 'end_time', '>', $date_obj->format( 'H:i:s' ) );
+    
     $open_slots = shift::count( $modifier );
     if( $expected_start <= $start && $start <= $expected_end &&
         $open_slots < $db_site->operators_expected )
@@ -77,8 +78,8 @@ class appointment extends record
     
     // and how many appointments are during this time?
     $modifier = new modifier();
-    $modifier->where( 'date', '<=', $date_obj->format( 'Y-m-d H:i:s' ) );
-    $modifier->where( 'date', '>', $date_obj->format( 'Y-m-d H:i:s' ) );
+    $modifier->where( 'datetime', '<=', $date_obj->format( 'Y-m-d H:i:s' ) );
+    $modifier->where( 'datetime', '>', $date_obj->format( 'Y-m-d H:i:s' ) );
     $appointments = appointment::count_for_site( $db_site, $modifier );
     $open_slots -= $appointments; 
 
@@ -103,8 +104,8 @@ class appointment extends record
     
     // and how many appointments are during this time?
     $modifier = new modifier();
-    $modifier->where( 'date', '<=', $date_obj->format( 'Y-m-d H:i:s' ) );
-    $modifier->where( 'date', '>', $date_obj->format( 'Y-m-d H:i:s' ) );
+    $modifier->where( 'datetime', '<=', $date_obj->format( 'Y-m-d H:i:s' ) );
+    $modifier->where( 'datetime', '>', $date_obj->format( 'Y-m-d H:i:s' ) );
     $appointments = appointment::count_for_site( $db_site, $modifier );
     $open_slots -= $appointments; 
 
@@ -206,7 +207,7 @@ class appointment extends record
     $post_window_time = 60 * bus\setting_manager::self()->get_setting(
                                'appointment', 'call post-window' );
     $now = time();
-    $appointment = strtotime( $this->date );
+    $appointment = strtotime( $this->datetime );
 
     // get the status of the appointment
     if( $now < $appointment - $pre_window_time )
@@ -226,7 +227,7 @@ class appointment extends record
       else // assigned
       {
         $db_assignment = $this->get_assignment();
-        if( !is_null( $db_assignment->end_time ) )
+        if( !is_null( $db_assignment->end_datetime ) )
         { // assignment closed but appointment never completed
           log::crit(
             sprintf( 'Appointment %d has assignment which is closed but no status was set.',
@@ -236,7 +237,7 @@ class appointment extends record
         else // assignment active
         {
           $modifier = new modifier();
-          $modifier->where( 'end_time', '=', NULL );
+          $modifier->where( 'end_datetime', '=', NULL );
           $open_phone_calls = $db_assignment->get_phone_call_count( $modifier );
           if( 0 < $open_phone_calls )
           { // assignment currently on call

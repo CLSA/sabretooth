@@ -126,7 +126,8 @@ class queue extends record
       // Not currently assigned
       self::$query_list['not assigned'] = sprintf(
         ' %s'.
-        // the qnaire is ready to start if the start_qnaire_date is null or we have reached that date
+        // the qnaire is ready to start if the start_qnaire_date is null or we have
+        // reached that date
         ' AND ( '.
         '   participant.start_qnaire_date IS NULL'.
         '   OR DATE( participant.start_qnaire_date ) <= DATE( UTC_TIMESTAMP() )'.
@@ -159,20 +160,20 @@ class queue extends record
       self::$query_list['upcoming appointment'] = sprintf(
         ' %s'.
         // appointment time (which is in UTC) is in the future
-        ' AND UTC_TIMESTAMP() < appointment.date - INTERVAL <APPOINTMENT_PRE_WINDOW> MINUTE',
+        ' AND UTC_TIMESTAMP() < appointment.datetime - INTERVAL <APPOINTMENT_PRE_WINDOW> MINUTE',
         self::$query_list['appointment'] );
       
       // Assignable Appointments
       self::$query_list['assignable appointment'] = sprintf(
         ' %s'.
-        ' AND UTC_TIMESTAMP() >= appointment.date - INTERVAL <APPOINTMENT_PRE_WINDOW> MINUTE'.
-        ' AND UTC_TIMESTAMP() <= appointment.date + INTERVAL <APPOINTMENT_POST_WINDOW> MINUTE',
+        ' AND UTC_TIMESTAMP() >= appointment.datetime - INTERVAL <APPOINTMENT_PRE_WINDOW> MINUTE'.
+        ' AND UTC_TIMESTAMP() <= appointment.datetime + INTERVAL <APPOINTMENT_POST_WINDOW> MINUTE',
         self::$query_list['appointment'] );
       
       // Missed Appointments
       self::$query_list['missed appointment'] = sprintf(
         ' %s'.
-        ' AND UTC_TIMESTAMP() > appointment.date + INTERVAL <APPOINTMENT_POST_WINDOW> MINUTE',
+        ' AND UTC_TIMESTAMP() > appointment.datetime + INTERVAL <APPOINTMENT_POST_WINDOW> MINUTE',
         self::$query_list['appointment'] );
       
       // Do not have an appointment
@@ -303,14 +304,14 @@ class queue extends record
         // Waiting for call-back delay
         self::$query_list[$phone_call_status.' waiting'] = sprintf(
           ' %s'.
-          ' AND UTC_TIMESTAMP() < phone_call.end_time + INTERVAL <CALLBACK_%s> MINUTE',
+          ' AND UTC_TIMESTAMP() < phone_call.end_datetime + INTERVAL <CALLBACK_%s> MINUTE',
           self::$query_list[$phone_call_status],
           str_replace( ' ', '_', strtoupper( $phone_call_status ) ) );
         
         // Ready for call-back
         self::$query_list[$phone_call_status.' ready'] = sprintf(
           ' %s'.
-          ' AND UTC_TIMESTAMP() >= phone_call.end_time + INTERVAL <CALLBACK_%s> MINUTE',
+          ' AND UTC_TIMESTAMP() >= phone_call.end_datetime + INTERVAL <CALLBACK_%s> MINUTE',
           self::$query_list[$phone_call_status],
           str_replace( ' ', '_', strtoupper( $phone_call_status ) ) );
         

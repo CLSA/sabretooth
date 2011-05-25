@@ -86,7 +86,7 @@ class assignment_begin extends action
       // this should always be the appointment with the earliest date
       $mod = new db\modifier();
       $mod->where( 'assignment_id', '=', NULL );
-      $mod->order( 'date' );
+      $mod->order( 'datetime' );
       $mod->limit( 1 );
       $appointment_list = $db_participant->get_appointment_list( $mod );
 

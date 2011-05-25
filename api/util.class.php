@@ -181,82 +181,48 @@ final class util
   }
 
   /**
-   * Converts the server's date to a user's date
+   * Converts the server's date/time to a user's date/time
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $date A date string in yyyy-mm-dd hh:mm:dd format
+   * @param string $datetime A date string in any valid PHP date time format.
+   * @param string $format The format to return the date/time in (default 'Y-m-d H:i:s')
    * @return string
    * @static
    * @access public
    */
-  public static function from_server_date( $date )
+  public static function from_server_datetime( $datetime, $format = 'Y-m-d H:i:s' )
   {
-    if( is_null( $date ) || !is_string( $date ) ) return $date;
+    if( is_null( $datetime ) || !is_string( $datetime ) ) return $datetime;
 
-    $date_obj = self::get_datetime_object( $date, true ); // server's timezone
-    $date_obj->setTimeZone( self::get_timezone_object() );
-    return $date_obj->format( "Y-m-d H:i:s" );
+    $datetime_obj = self::get_datetime_object( $datetime, true ); // server's timezone
+    $datetime_obj->setTimeZone( self::get_timezone_object() );
+    return $datetime_obj->format( $format );
   }
 
   /**
    * Converts a user's date to server date.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $date A date string in yyyy-mm-dd hh:mm:dd format
+   * @param string $datetime A date string in any valid PHP date time format.
+   * @param string $format The format to return the date/time in (default 'Y-m-d H:i:s')
    * @return string
    * @static
    * @access public
    */
-  public static function to_server_date( $date )
+  public static function to_server_datetime( $datetime, $format = 'Y-m-d H:i:s' )
   {
-    if( is_null( $date ) || !is_string( $date ) ) return $date;
+    if( is_null( $datetime ) || !is_string( $datetime ) ) return $datetime;
 
-    $date_obj = self::get_datetime_object( $date );
-    $date_obj->setTimeZone( self::get_timezone_object( true ) );
-    return $date_obj->format( "Y-m-d H:i:s" );
-  }
-
-  /**
-   * Converts the server's time to a user's time
-   * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $time A time string in hh:mm or hh:mm:ss
-   * @return string
-   * @static
-   * @access public
-   */
-  public static function from_server_time( $time )
-  {
-    if( is_null( $time ) || !is_string( $time ) ) return $time;
-
-    $time_obj = self::get_datetime_object( $time, true ); // server's timezone
-    $time_obj->setTimeZone( self::get_timezone_object() );
-    return $time_obj->format( "H:i:s" );
-  }
-
-  /**
-   * Converts a user's time to server time.
-   * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $time A time string in hh:mm or hh:mm:ss
-   * @return string
-   * @static
-   * @access public
-   */
-  public static function to_server_time( $time )
-  {
-    if( is_null( $time ) || !is_string( $time ) ) return $time;
-
-    $time_obj = self::get_datetime_object( $time );
-    $time_obj->setTimeZone( self::get_timezone_object( true ) );
-    return $time_obj->format( "H:i:s" );
+    $datetime_obj = self::get_datetime_object( $datetime );
+    $datetime_obj->setTimeZone( self::get_timezone_object( true ) );
+    return $datetime_obj->format( $format );
   }
 
   /**
    * Returns the date and time as a user-friendly string.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $date A date string in any valid PHP date time format.
+   * @param string $datetime A date string in any valid PHP date time format.
    * @param boolean $include_seconds Whether to include the seconds in the output
    * @param string $invalid What to return if the input is invalid.
    * @return string
@@ -286,15 +252,15 @@ final class util
   {
     if( is_null( $date ) || !is_string( $date ) ) return $invalid;
 
-    $date_obj = self::get_datetime_object( $date );
-    return $date_obj->format( 'l, F jS, Y' );
+    $datetime_obj = self::get_datetime_object( $date );
+    return $datetime_obj->format( 'l, F jS, Y' );
   }
 
   /**
    * Returns the time as a user-friendly string.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $date A date string in any valid PHP date time format.
+   * @param string $time A time string in any valid PHP date time format.
    * @param boolean $include_seconds Whether to include the seconds in the output
    * @param string $invalid What to return if the input is invalid.
    * @return string
@@ -322,25 +288,25 @@ final class util
   public static function get_interval( $date, $date2 = NULL )
   {
     // we need to convert to server time since we will compare to the server's "now" time
-    $date_obj = self::get_datetime_object( $date );
+    $datetime_obj = self::get_datetime_object( $date );
     $date2_obj = self::get_datetime_object( $date2 );
-    return $date_obj->diff( $date2_obj );
+    return $datetime_obj->diff( $date2_obj );
   }
 
   /**
    * Returns a fuzzy description of how long ago a certain date occured.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $date A date string in any valid PHP date time format.
+   * @param string $datetime A datetime string in any valid PHP date time format.
    * @return string
    * @static
    * @access public
    */
-  public static function get_fuzzy_period_ago( $date )
+  public static function get_fuzzy_period_ago( $datetime )
   {
-    if( is_null( $date ) || !is_string( $date ) ) return 'never';
+    if( is_null( $datetime ) || !is_string( $datetime ) ) return 'never';
     
-    $interval = self::get_interval( $date );
+    $interval = self::get_interval( $datetime );
     
     if( 0 != $interval->invert )
     {
@@ -364,8 +330,8 @@ final class util
     }
     else if( 7 > $interval->days )
     {
-      $date_obj = self::get_datetime_object( $date );
-      $result = 'last '.$date_obj->format( 'l' );
+      $datetime_obj = self::get_datetime_object( $datetime );
+      $result = 'last '.$datetime_obj->format( 'l' );
     }
     else if( 1 > $interval->m && 0 == $interval->y )
     {
@@ -373,8 +339,8 @@ final class util
     }
     else if( 1 > $interval->y )
     {
-      $date_obj = self::get_datetime_object( $date );
-      $result = 'last '.$date_obj->format( 'F' );
+      $datetime_obj = self::get_datetime_object( $datetime );
+      $result = 'last '.$datetime_obj->format( 'F' );
     }
     else
     {

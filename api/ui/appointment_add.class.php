@@ -35,7 +35,7 @@ class appointment_add extends base_appointment_view
     // add items to the view
     $this->add_item( 'participant_id', 'hidden' );
     $this->add_item( 'contact_id', 'enum', 'Phone Number' );
-    $this->add_item( 'date', 'datetime', 'Date' );
+    $this->add_item( 'datetime', 'datetime', 'Date' );
   }
 
   /**
@@ -65,7 +65,7 @@ class appointment_add extends base_appointment_view
     // set the view's items
     $this->set_item( 'participant_id', $this->parent->get_record()->id );
     $this->set_item( 'contact_id', '', true, $contacts );
-    $this->set_item( 'date', '', true );
+    $this->set_item( 'datetime', '', true );
 
     $this->finish_setting_items();
   }

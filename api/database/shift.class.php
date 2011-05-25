@@ -57,8 +57,8 @@ class shift extends record
     $modifier->where( 'date', '=', $this->date );
     
     // convert the start and end times to server time
-    $start_time = util::to_server_time( $this->start_time );
-    $end_time = util::to_server_time( $this->end_time );
+    $start_time = util::to_server_datetime( $this->start_time, 'H:i:s' );
+    $end_time = util::to_server_datetime( $this->end_time, 'H:i:s' );
 
     // (need to use custom SQL)
     $overlap_ids = static::db()->get_col( 

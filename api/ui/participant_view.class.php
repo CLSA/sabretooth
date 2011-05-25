@@ -41,7 +41,7 @@ class participant_view extends base_view
     $this->add_item( 'hin', 'string', 'Health Insurance Number' );
     $this->add_item( 'status', 'enum', 'Condition' );
     $this->add_item( 'site_id', 'enum', 'Prefered Site' );
-    $this->add_item( 'prior_contact', 'date', 'Prior Contact' );
+    $this->add_item( 'prior_contact_date', 'date', 'Prior Contact Date' );
     $this->add_item( 'current_qnaire_name', 'constant', 'Current Questionnaire' );
     $this->add_item( 'start_qnaire_date', 'constant', 'Delay Questionnaire Until' );
     
@@ -138,8 +138,8 @@ class participant_view extends base_view
     $this->set_item( 'hin', $this->get_record()->hin );
     $this->set_item( 'status', $this->get_record()->status, false, $statuses );
     $this->set_item( 'site_id', $site_id, false, $sites );
-    $this->set_item( 'prior_contact',
-      util::get_formatted_date( $this->get_record()->prior_contact, 'none' ), false );
+    $this->set_item( 'prior_contact_date',
+      util::get_formatted_date( $this->get_record()->prior_contact_date, 'none' ), false );
     $this->set_item( 'current_qnaire_name', $current_qnaire_name );
     $this->set_item( 'start_qnaire_date', $start_qnaire_date );
 

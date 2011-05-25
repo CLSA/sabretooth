@@ -82,7 +82,7 @@ class user_view extends base_view
     
     $db_activity = $this->get_record()->get_last_activity();
     $last = util::get_fuzzy_period_ago(
-              is_null( $db_activity ) ? null : $db_activity->date );
+              is_null( $db_activity ) ? null : $db_activity->datetime );
     $this->set_item( 'last_activity', $last );
 
     $this->finish_setting_items();

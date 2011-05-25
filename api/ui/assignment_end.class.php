@@ -70,7 +70,7 @@ class assignment_end extends action
 
       // save the assignment's end time
       $date_obj = util::get_datetime_object();
-      $db_assignment->end_time = $date_obj->format( 'Y-m-d H:i:s' );
+      $db_assignment->end_datetime = $date_obj->format( 'Y-m-d H:i:s' );
       $db_assignment->save();
     }
   }

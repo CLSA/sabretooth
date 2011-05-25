@@ -44,8 +44,8 @@ class appointment_feed extends base_feed
   {
     // create a list of appointments between the feed's start and end time
     $modifier = new db\modifier();
-    $modifier->where( 'date', '>=', $this->start_date );
-    $modifier->where( 'date', '<', $this->end_date );
+    $modifier->where( 'datetime', '>=', $this->start_datetime );
+    $modifier->where( 'datetime', '<', $this->end_datetime );
 
     $event_list = array();
     $db_site = bus\session::self()->get_site();
@@ -56,9 +56,9 @@ class appointment_feed extends base_feed
         'id' => $db_appointment->id,
         'title' => $db_participant->first_name.' '.$db_participant->last_name,
         'allDay' => false,
-        'start' => strtotime( $db_appointment->date ),
+        'start' => strtotime( $db_appointment->datetime ),
         // assume appointments to be one hour long
-        'end' => strtotime( ( $db_appointment->date ) + 3600 ) );
+        'end' => strtotime( ( $db_appointment->datetime ) + 3600 ) );
     }
 
     return $event_list;

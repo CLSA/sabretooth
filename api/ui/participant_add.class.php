@@ -41,7 +41,7 @@ class participant_add extends base_view
     $this->add_item( 'hin', 'string', 'Health Insurance Number' );
     $this->add_item( 'status', 'enum', 'Condition' );
     $this->add_item( 'site_id', 'enum', 'Prefered Site' );
-    $this->add_item( 'prior_contact', 'date', 'Prior Contact' );
+    $this->add_item( 'prior_contact_date', 'date', 'Prior Contact Date' );
   }
 
   /**
@@ -71,7 +71,7 @@ class participant_add extends base_view
     $this->set_item( 'hin', '' );
     $this->set_item( 'status', '', false, $statuses );
     $this->set_item( 'site_id', '', false, $sites );
-    $this->set_item( 'prior_contact', '' );
+    $this->set_item( 'prior_contact_date', '' );
 
     $this->finish_setting_items();
   }

@@ -425,6 +425,45 @@ class database extends \sabretooth\base_object
   }
   
   /**
+   * Returns whether the column name is of type "date"
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column_name Any (generic) column name
+   * @return boolean
+   * @static
+   * @access public
+   */
+  public static function is_date_column( $column_name )
+  {
+    return 'date' == $column_name || '_date' == substr( $column_name, -5 );
+  }
+
+  /**
+   * Returns whether the column name is of type "time"
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column_name Any (generic) column name
+   * @return boolean
+   * @static
+   * @access public
+   */
+  public static function is_time_column( $column_name )
+  {
+    return 'time' == $column_name || '_time' == substr( $column_name, -5 );
+  }
+
+  /**
+   * Returns whether the column name is of type "datetime"
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column_name Any (generic) column name
+   * @return boolean
+   * @static
+   * @access public
+   */
+  public static function is_datetime_column( $column_name )
+  {
+    return 'datetime' == $column_name || '_datetime' == substr( $column_name, -9 );
+  }
+
+  /**
    * Since ADODB does not support multiple database with the same driver this method must be
    * called before using the connection member.
    * This method is necessary because ADODB cannot connect to more than one database of the

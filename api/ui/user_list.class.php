@@ -70,7 +70,7 @@ class user_list extends site_restricted_list
       
       // determine the last activity
       $db_activity = $record->get_last_activity();
-      $last = is_null( $db_activity ) ? null : $db_activity->date;
+      $last = is_null( $db_activity ) ? null : $db_activity->datetime;
 
       // assemble the row for this record
       $this->add_row( $record->id,
