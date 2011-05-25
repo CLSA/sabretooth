@@ -67,31 +67,4 @@ VALUES( "callback timing", "machine no message", "integer", "4320",
 "Number of minutes to wait before calling back a participant where the previous call was an
 answering machine ano no message was left." );
 
--- callback limit
--- TODO: implement callback limits in queues
-INSERT INTO setting( category, name, type, value, description )
-VALUES( "callback limit", "busy", "integer", "10",
-"Number of consecutive busy phone call results before the participant is taken out of the callback
-queue." );
-
-INSERT INTO setting( category, name, type, value, description )
-VALUES( "callback limit", "fax", "integer", "10",
-"Number of consecutive fax phone call results before the participant is taken out of the callback
-queue." );
-
-INSERT INTO setting( category, name, type, value, description )
-VALUES( "callback limit", "no answer", "integer", "10",
-"Number of consecutive no answer phone call results before the participant is taken out of the
-callback queue." );
-
-INSERT INTO setting( category, name, type, value, description )
-VALUES( "callback limit", "machine message", "integer", "10",
-"Number of consecutive answering machine phone call results before the participant is taken out of
-the callback queue." );
-
-INSERT INTO setting( category, name, type, value, description )
-VALUES( "callback limit", "aggregate", "integer", "20",
-"Number of consecutive failed contact attempts (includeing calls resulting in busy, fax, no answer
-and answering machines) before the participant is taken out of all callback queues." );
-
 COMMIT;

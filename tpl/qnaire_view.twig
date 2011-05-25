@@ -12,6 +12,5 @@
   {{ parent() }}
   {% from 'macros.twig' import include_list %}
   {{ include_list( 'phase', phase_list|default(false), true ) }}
-  {{ include_list( 'sample', sample_list|default(false), true ) }}
 
 {% endblock record %}

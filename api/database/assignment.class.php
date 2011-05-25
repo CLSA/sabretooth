@@ -26,6 +26,7 @@ class assignment extends has_note
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return phase (null if the interview is completed)
+   * @throws exception\runtime
    * @access public
    */
   public function get_current_phase()
@@ -44,7 +45,14 @@ class assignment extends has_note
       $modifier = new modifier();
       $modifier->order( 'stage' );
       
-      foreach( $this->get_interview()->get_qnaire()->get_phase_list( $modifier ) as $db_phase )
+      $phase_list = $this->get_interview()->get_qnaire()->get_phase_list( $modifier );
+      if( 0 == count( $phase_list ) )
+      {
+        log::emerg( 'Questionnaire with no phases has been assigned.' );
+        return NULL;
+      }
+
+      foreach( $phase_list as $db_phase )
       {
         $token = $this->get_token( $db_phase );
 

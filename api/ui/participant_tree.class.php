@@ -64,6 +64,19 @@ class participant_tree extends widget
     $db_restrict_site = $restrict_site_id
                       ? new db\site( $restrict_site_id )
                       : NULL;
+    
+    $show_queue_index = $this->get_argument( 'show_queue_index', NULL );
+    if( is_null( $show_queue_index ) )
+    {
+      $db_show_queue = db\queue::get_unique_record( 'name', 'qnaire' );
+      $show_qnaire_id = 0;
+    }
+    else
+    {
+      $parts = explode( '_', $show_queue_index );
+      $show_qnaire_id = $parts[0];
+      $db_show_queue = new db\queue( $parts[1] );
+    }
 
     // build the tree from the root
     $nodes = array();
@@ -76,10 +89,10 @@ class participant_tree extends widget
       if( $is_supervisor ) $db_queue->set_site( $session->get_site() );
       else if( !is_null( $db_restrict_site ) ) $db_queue->set_site( $db_restrict_site );
 
-      // the first two nodes should not be repeated for every qnaire
-      if( 1 == $db_queue->id || 2 == $db_queue->id )
+      // handle queues which are not qnaire specific
+      if( !$db_queue->qnaire_specific )
       {
-        $index = implode( '_', array(0, $db_queue->id ) );
+        $index = sprintf( '%d_%d', 0, $db_queue->id );
         $nodes[$index] = array( 'id' => $index,
                                 'title' => $db_queue->title,
                                 'open' => 1 == $db_queue->id,
@@ -91,45 +104,67 @@ class participant_tree extends widget
         }
         else
         { // add as a branch to parent node
-          $parent_index = implode( '_', array( 0, $db_queue->parent_queue_id ) );
+          $parent_index = sprintf( '%d_%d', 0, $db_queue->parent_queue_id );
           $nodes[$parent_index]['children'][] = &$nodes[$index];
         }
       }
-      else
+      else // handle queues which are qnaire specific
       {
-        foreach( db\qnaire::select() as $db_qnaire )
+        $modifier = new db\modifier();
+        $modifier->order( 'rank' );
+        foreach( db\qnaire::select( $modifier ) as $db_qnaire )
         {
           $db_queue->set_qnaire( $db_qnaire );
           
-          $index = implode( '_', array( $db_qnaire->id, $db_queue->id ) );
+          $index = sprintf( '%d_%d', $db_qnaire->id, $db_queue->id );
           $title = 'qnaire' == $db_queue->name
-                 ? 'Questionnaire: "'.$db_qnaire->name.'"'
+                 ? sprintf( 'Questionnaire #%d: "%s"', $db_qnaire->rank, $db_qnaire->name )
                  : $db_queue->title;
+          $open = $db_show_queue->id == $db_queue->id && $show_qnaire_id == $db_qnaire->id;
+          // don't count the participants in hidden branches
+          $count = -1;
+          if( // always show all qnaire queues or...
+              'qnaire' == $db_queue->name || (
+                // if in the selected qnaire tree and...
+                $show_qnaire_id == $db_qnaire->id && (
+                  // this is the selected node or...
+                  $db_show_queue->id >= $db_queue->id ||
+                  // the parent queue is the selected node or...
+                  $db_show_queue->id == $db_queue->parent_queue_id ||
+                  // a sibling node is the selected node
+                  $db_show_queue->parent_queue_id == $db_queue->parent_queue_id ) ) )
+          {
+            $count = $db_queue->get_participant_count();
+          }
+
           $nodes[$index] = array( 'id' => $index,
                                   'title' => $title,
-                                  'open' => 'qnaire' == $db_queue->name,
+                                  'open' => $open,
                                   'rank' => $db_queue->rank,
-                                  'count' => $db_queue->get_participant_count(),
+                                  'count' => $count,
                                   'children' => array() );
-          if( is_null( $db_queue->parent_queue_id ) )
-          { // insert as a root node (careful, nodes are being passed by reference!)
-            $tree[] = &$nodes[$index];
-          }
-          else
-          { // add as a branch to parent node
-            $parent_index = 1 == $db_queue->parent_queue_id || 2 == $db_queue->parent_queue_id
-                            ? implode( '_', array( 0, $db_queue->parent_queue_id ) )
-                            : implode( '_', array( $db_qnaire->id, $db_queue->parent_queue_id ) );
-            $nodes[$parent_index]['children'][] = &$nodes[$index];
 
-            if( !is_null( $nodes[$index]['rank'] ) )
-            { // open the parent branch if this branch is a queue
-              $nodes[$parent_index]['open'] = true;
-            }
-          }
+          // add as a branch to parent node
+          $db_parent_queue = new db\queue( $db_queue->parent_queue_id );
+          $parent_index = sprintf( '%d_%d',
+            $db_parent_queue->qnaire_specific ? $db_qnaire->id : 0,
+            $db_queue->parent_queue_id );
+          $nodes[$parent_index]['children'][] = &$nodes[$index];
         }
       }
     }
+
+    // make sure that all ancestor's of the show queue are open
+    $db_queue = new db\queue( $db_show_queue->parent_queue_id );
+    
+    do
+    {
+      $index = sprintf( '%d_%d',
+        $db_queue->qnaire_specific ? $show_qnaire_id : 0,
+        $db_queue->id );
+      $nodes[$index]['open'] = true;
+      $db_queue = new db\queue( $db_queue->parent_queue_id );
+    } while( !is_null( $db_queue->parent_queue_id ) );
     
     $this->set_variable( 'tree', $tree );
   }

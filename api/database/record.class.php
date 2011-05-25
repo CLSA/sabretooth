@@ -921,7 +921,7 @@ abstract class record extends \sabretooth\base_object
     $record = NULL;
 
     // make sure the column is unique
-    if( static::db()->get_column_key( static::get_table_name(), $column ) )
+    if( 'UNI' == static::db()->get_column_key( static::get_table_name(), $column ) )
     {
       // this returns null if no records are found
       $modifier = new modifier();
