@@ -195,7 +195,7 @@ final class util
 
     $date_obj = self::get_datetime_object( $date, true ); // server's timezone
     $date_obj->setTimeZone( self::get_timezone_object() );
-    return $date_obj->format( "Y-m-d G:i:s" );
+    return $date_obj->format( "Y-m-d H:i:s" );
   }
 
   /**
@@ -213,7 +213,7 @@ final class util
 
     $date_obj = self::get_datetime_object( $date );
     $date_obj->setTimeZone( self::get_timezone_object( true ) );
-    return $date_obj->format( "Y-m-d G:i:s" );
+    return $date_obj->format( "Y-m-d H:i:s" );
   }
 
   /**
@@ -231,7 +231,7 @@ final class util
 
     $time_obj = self::get_datetime_object( $time, true ); // server's timezone
     $time_obj->setTimeZone( self::get_timezone_object() );
-    return $time_obj->format( "G:i:s" );
+    return $time_obj->format( "H:i:s" );
   }
 
   /**
@@ -249,7 +249,7 @@ final class util
 
     $time_obj = self::get_datetime_object( $time );
     $time_obj->setTimeZone( self::get_timezone_object( true ) );
-    return $time_obj->format( "G:i:s" );
+    return $time_obj->format( "H:i:s" );
   }
 
   /**
