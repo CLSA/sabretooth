@@ -123,10 +123,16 @@ class participant_tree extends widget
           $open = $db_show_queue->id == $db_queue->id && $show_qnaire_id == $db_qnaire->id;
           // don't count the participants in hidden branches
           $count = -1;
-          if( 'qnaire' == $db_queue->name || (
-            $show_qnaire_id == $db_qnaire->id && (
-              $db_show_queue->id >= $db_queue->id ||
-              $db_show_queue->id == $db_queue->parent_queue_id ) ) )
+          if( // always show all qnaire queues or...
+              'qnaire' == $db_queue->name || (
+                // if in the selected qnaire tree and...
+                $show_qnaire_id == $db_qnaire->id && (
+                  // this is the selected node or...
+                  $db_show_queue->id >= $db_queue->id ||
+                  // the parent queue is the selected node or...
+                  $db_show_queue->id == $db_queue->parent_queue_id ||
+                  // a sibling node is the selected node
+                  $db_show_queue->parent_queue_id == $db_queue->parent_queue_id ) ) )
           {
             $count = $db_queue->get_participant_count();
           }

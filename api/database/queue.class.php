@@ -104,11 +104,7 @@ class queue extends record
       // Active qnaire
       self::$query_list['qnaire'] = sprintf(
         ' %s'.
-        // we've started if the start_qnaire_date is null or we have reached that date
-        ' AND ( '.
-        '   participant.start_qnaire_date IS NULL'.
-        '   OR DATE( participant.start_qnaire_date ) <= DATE( UTC_TIMESTAMP() )'.
-        ' )'.
+        // current_qnaire_id is always set whether the qnaire is ready to start or not
         ' AND participant.current_qnaire_id <QNAIRE_TEST>',
         self::$query_list['eligible'] );
 
@@ -130,6 +126,11 @@ class queue extends record
       // Not currently assigned
       self::$query_list['not assigned'] = sprintf(
         ' %s'.
+        // the qnaire is ready to start if the start_qnaire_date is null or we have reached that date
+        ' AND ( '.
+        '   participant.start_qnaire_date IS NULL'.
+        '   OR DATE( participant.start_qnaire_date ) <= DATE( UTC_TIMESTAMP() )'.
+        ' )'.
         ' AND participant.assigned = false',
         self::$query_list['qnaire'] );
       
@@ -202,8 +203,12 @@ class queue extends record
       // No appointment, never assigned
       self::$query_list['new participant'] = sprintf(
         ' %s'.
-        // if there is a start_qnaire_date then the current qnaire has never been started
-        ' AND participant.start_qnaire_date IS NOT NULL',
+        // If there is a start_qnaire_date then the current qnaire has never been started,
+        // the exception is for participants who have never been assigned
+        ' AND ('.
+        '   participant.start_qnaire_date IS NOT NULL'.
+        '   OR participant.last_assignment_id IS NULL'.
+        ' )',
         self::$query_list['no appointment'] );
       
       // this is needed below
@@ -227,9 +232,10 @@ class queue extends record
         ' AND participant.assigned = false'.
         ' AND appointment.id IS NULL'.
         // from 'new participant'
-        ' AND participant.start_qnaire_date IS NOT NULL'.
-        // make sure no availability exists
-        ' AND participant_available.available IS NULL';
+        ' AND ('.
+        '   participant.start_qnaire_date IS NOT NULL'.
+        '   OR participant.last_assignment_id IS NULL'.
+        ' )';
 
       // Does not have availability
       self::$query_list['new participant always available'] = sprintf(

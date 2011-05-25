@@ -74,7 +74,7 @@ INTO TABLE contact
 FIELDS TERMINATED BY ',' ENCLOSED BY '"';
 
 INSERT INTO qnaire ( name, rank, prev_qnaire_id, delay ) VALUES
-( 'Baseline', 1, NULL, 0 ),
+( 'Baseline', 1, NULL, 52 ),
 ( 'Maintaining Contact', 2, 1, 78 ),
 ( 'Follow Up', 3, 1, 156 );
 
