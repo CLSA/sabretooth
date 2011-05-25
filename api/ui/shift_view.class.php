@@ -57,9 +57,9 @@ class shift_view extends base_view
     // set the view's items
     $this->set_item( 'user', $this->get_record()->get_user()->name );
     $this->set_item( 'site', $this->get_record()->get_site()->name );
-    $this->set_item( 'date', $this->get_record()->date, true );
-    $this->set_item( 'start_time', $this->get_record()->start_time, true );
-    $this->set_item( 'end_time', $this->get_record()->end_time, true );
+    $this->set_item( 'date', $this->get_record()->start_datetime, true );
+    $this->set_item( 'start_time', $this->get_record()->start_datetime, true );
+    $this->set_item( 'end_time', $this->get_record()->end_datetime, true );
 
     $this->finish_setting_items();
   }

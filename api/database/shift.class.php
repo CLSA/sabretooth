@@ -54,36 +54,35 @@ class shift extends record
     $modifier = new modifier();
     $modifier->where( 'id', '!=', $this->id );
     $modifier->where( 'user_id', '=', $this->user_id );
-    $modifier->where( 'date', '=', $this->date );
     
     // convert the start and end times to server time
-    $start_time = util::to_server_datetime( $this->start_time, 'H:i:s' );
-    $end_time = util::to_server_datetime( $this->end_time, 'H:i:s' );
+    $start_datetime = util::to_server_datetime( $this->start_datetime );
+    $end_datetime = util::to_server_datetime( $this->end_datetime );
 
     // (need to use custom SQL)
     $overlap_ids = static::db()->get_col( 
       sprintf( 'SELECT id FROM %s %s '.
-               'AND NOT ( ( start_time <= %s AND end_time <= %s ) OR '.
-                         '( start_time >= %s AND end_time >= %s ) )',
+               'AND NOT ( ( start_datetime <= %s AND end_datetime <= %s ) OR '.
+                         '( start_datetime >= %s AND end_datetime >= %s ) )',
                static::get_table_name(),
                $modifier->get_where(),
-               database::format_string( $start_time ),
-               database::format_string( $start_time ),
-               database::format_string( $end_time ),
-               database::format_string( $end_time ) ) );
+               database::format_string( $start_datetime ),
+               database::format_string( $start_datetime ),
+               database::format_string( $end_datetime ),
+               database::format_string( $end_datetime ) ) );
     
     if( 0 < count( $overlap_ids ) )
     {
       $overlap_id = current( $overlap_ids );
       $db_overlap = new static( $overlap_id );
       throw new exc\runtime(
-        sprintf( 'Shift time (%s to %s) for user "%s" overlaps '.
+        sprintf( 'Shift date/times (%s to %s) for user "%s" overlaps '.
                  'with another shift on the same day (%s to %s).',
-                 $this->start_time,
-                 $this->end_time,
+                 $this->start_datetime,
+                 $this->end_datetime,
                  $db_user->name,
-                 substr( $db_overlap->start_time, 0, -3 ),
-                 substr( $db_overlap->end_time, 0, -3 ) ),
+                 substr( $db_overlap->start_datetime, 0, -3 ),
+                 substr( $db_overlap->end_datetime, 0, -3 ) ),
         __METHOD__ );
     }
     

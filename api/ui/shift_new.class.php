@@ -52,7 +52,28 @@ class shift_new extends base_new
       $this->get_record()->user_id = $user_id;
       try
       {
-        parent::execute();
+        // the UI provides date, start time and end time, need to convert to start_datetime
+        // and end_datetime
+        $columns = $this->get_argument( 'columns', array() );
+        
+        if( strtotime( $columns['start_time'] ) >= strtotime( $columns['end_time'] ) )
+        {
+          throw new exc\notice(
+            sprintf( 'Start and end times (%s to %s) are not valid.',
+                     $columns['start_time'],
+                     $columns['end_time'] ),
+            __METHOD__ );
+        }
+        
+        $this->get_record()->start_datetime = $columns['date'].' '.$columns['start_time'];
+        $this->get_record()->end_datetime = $columns['date'].' '.$columns['end_time'];
+        
+        foreach( $columns as $column => $value )
+        {
+          if( 'date' != $column && 'start_time' != $column && 'end_time' != $column )
+            $this->get_record()->$column = $value;
+        }
+        $this->get_record()->save();
       }
       catch( exc\base_exception $e )
       {

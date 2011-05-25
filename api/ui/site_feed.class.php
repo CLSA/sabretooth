@@ -61,22 +61,26 @@ class site_feed extends base_feed
     // then, incorperate operator shifts
     $modifier = new db\modifier();
     $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'date', '>=', $this->start_datetime );
-    $modifier->where( 'date', '<', $this->end_datetime );
-    $modifier->order( 'date' );
+    $modifier->where( 'end_datetime', '>', $this->start_datetime );
+    $modifier->where( 'start_datetime', '<', $this->end_datetime );
+    $modifier->order( 'start_datetime' );
 
     foreach( db\shift::select( $modifier ) as $db_shift )
     {
-      $slots = &$days[ $db_shift->date ]['slots'];
+      $date = substr( $db_shift->start_datetime, 0, 10 );
+      $start_time = substr( $db_shift->start_datetime, 11, -3 );
+      $end_time = substr( $db_shift->end_datetime, 11, -3 );
+
+      $slots = &$days[ $date ]['slots'];
 
       // increment slot at start time
-      $time = intval( preg_replace( '/[^0-9]/', '', substr( $db_shift->start_time, 0, -3 ) ) );
+      $time = intval( preg_replace( '/[^0-9]/', '', $start_time ) );
       if( !array_key_exists( $time, $slots ) )
         $slots[$time] = array( 'operator' => 0, 'appointment' => 0 );
       $slots[$time]['operator']++;
 
       // decrement slot at end time
-      $time = intval( preg_replace( '/[^0-9]/', '', substr( $db_shift->end_time, 0, -3 ) ) );
+      $time = intval( preg_replace( '/[^0-9]/', '', $end_time ) );
       if( !array_key_exists( $time, $slots ) )
         $slots[$time] = array( 'operator' => 0, 'appointment' => 0 );
       $slots[$time]['operator']--;

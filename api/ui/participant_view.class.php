@@ -138,8 +138,7 @@ class participant_view extends base_view
     $this->set_item( 'hin', $this->get_record()->hin );
     $this->set_item( 'status', $this->get_record()->status, false, $statuses );
     $this->set_item( 'site_id', $site_id, false, $sites );
-    $this->set_item( 'prior_contact_date',
-      util::get_formatted_date( $this->get_record()->prior_contact_date, 'none' ), false );
+    $this->set_item( 'prior_contact_date', $this->get_record()->prior_contact_date, false );
     $this->set_item( 'current_qnaire_name', $current_qnaire_name );
     $this->set_item( 'start_qnaire_date', $start_qnaire_date );
 

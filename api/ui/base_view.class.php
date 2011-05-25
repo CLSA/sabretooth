@@ -122,6 +122,15 @@ abstract class base_view extends base_record_widget
       if( is_null( $value ) ) $value = '';
       else $value = $value ? 'Yes' : 'No';
     }
+    else if( 'date' == $this->items[$item_id]['type'] )
+    {
+      if( strlen( $value ) )
+      {
+        $date_obj = util::get_datetime_object( $value );
+        $value = $date_obj->format( 'Y-m-d' );
+      }
+      else $value = '';
+    }
     else if( 'time' == $this->items[$item_id]['type'] )
     {
       if( strlen( $value ) )
