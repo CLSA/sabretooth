@@ -104,6 +104,19 @@ description = "Participants who are not eligible for answering questionnaires be
 mentally unfit.";
 
 INSERT INTO queue SET
+name = "sourcing required",
+title = "Participants without a phone number",
+rank = NULL,
+qnaire_specific = false,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "ineligible" ) AS tmp ),
+description = "Participants who are not eligible for answering questionnaires because they have
+no active phone numbers.";
+
+INSERT INTO queue SET
 name = "eligible",
 title = "Eligible participants",
 rank = NULL,

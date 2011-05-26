@@ -676,7 +676,7 @@ CREATE TABLE IF NOT EXISTS `participant_last_assignment` (`participant_id` INT, 
 -- -----------------------------------------------------
 -- Placeholder table for view `participant_for_queue`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `active` INT, `uid` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT, `prior_contact_date` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT, `current_qnaire_id` INT, `start_qnaire_date` INT);
+CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `active` INT, `uid` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT, `prior_contact_date` INT, `phone_number_count` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT, `current_qnaire_id` INT, `start_qnaire_date` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `assignment_last_phone_call`
@@ -727,6 +727,7 @@ DROP VIEW IF EXISTS `participant_for_queue` ;
 DROP TABLE IF EXISTS `participant_for_queue`;
 CREATE  OR REPLACE VIEW `participant_for_queue` AS
 SELECT participant.*,
+       COUNT( DISTINCT contact.id ) as phone_number_count,
        assignment.id AS last_assignment_id,
        IFNULL( participant.site_id, province.site_id ) AS base_site_id,
        assignment.id IS NOT NULL AND assignment.end_datetime IS NULL AS assigned,
@@ -752,12 +753,16 @@ SELECT participant.*,
            )
        ) AS start_qnaire_date
 FROM participant
+LEFT JOIN contact
+ON contact.participant_id = participant.id
+AND contact.active
+AND contact.phone IS NOT NULL
 LEFT JOIN participant_primary_location
 ON participant.id = participant_primary_location.participant_id 
-LEFT JOIN contact
-ON participant_primary_location.contact_id = contact.id
+LEFT JOIN contact AS primary_contact
+ON participant_primary_location.contact_id = primary_contact.id
 LEFT JOIN province
-ON contact.province_id = province.id
+ON primary_contact.province_id = province.id
 LEFT JOIN participant_last_assignment
 ON participant.id = participant_last_assignment.participant_id 
 LEFT JOIN assignment
@@ -791,7 +796,8 @@ AND (
     WHERE interview.qnaire_id = next_prev_qnaire.id
     AND interview.id = assignment.interview_id
     AND next_prev_assignment.id = assignment.id
-    GROUP BY next_prev_assignment.interview_id ) );
+    GROUP BY next_prev_assignment.interview_id ) )
+GROUP BY participant.id;
 
 -- -----------------------------------------------------
 -- View `assignment_last_phone_call`

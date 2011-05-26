@@ -87,7 +87,7 @@ class operator_assignment extends widget
       $modifier->where( 'end_datetime', '!=', NULL );
       $current_calls = $db_assignment->get_phone_call_count( $modifier );
 
-      if( 0 == count( $db_contact_list ) )
+      if( 0 == count( $db_contact_list ) && 0 == $current_calls )
       {
         log::crit(
           sprintf( 'An operator has been assigned participant %d who has no callable contacts',

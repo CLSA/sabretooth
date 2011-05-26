@@ -61,6 +61,7 @@ class queue extends record
         ' AND ('.
         '   participant.active = false'.
         '   OR participant.status IS NOT NULL'.
+        '   OR participant.phone_number_count = 0'.
         ' )',
         self::$query_list['all'] );
       
@@ -98,6 +99,12 @@ class queue extends record
         ' AND participant.status = "mentally unfit"',
         self::$query_list['all'] );
       
+      // Inactive
+      self::$query_list['sourcing required'] = sprintf(
+        ' %s'.
+        ' AND participant.phone_number_count = 0',
+        self::$query_list['all'] );
+
       // Eligible
       self::$query_list['eligible'] = sprintf(
         ' %s'.
@@ -105,7 +112,8 @@ class queue extends record
         ' AND current_qnaire_id IS NOT NULL'.
         // active participant who does not have a "final" status
         ' AND participant.active = true'.
-        ' AND participant.status IS NULL',
+        ' AND participant.status IS NULL'.
+        ' AND participant.phone_number_count != 0',
         self::$query_list['all'] );
 
       // Active qnaire
@@ -340,8 +348,6 @@ class queue extends record
           ' AND participant_available.available = true',
           self::$query_list[$phone_call_status.' ready'] );
       }
-
-      // TODO: what about disconnected
     }
   }
 
@@ -380,7 +386,7 @@ class queue extends record
 
     // restrict to the site
     if( !is_null( $this->db_site ) ) $modifier->where( 'base_site_id', '=', $this->db_site->id );
-    
+
     $participant_ids = static::db()->get_col(
       sprintf( '%s %s',
                $this->get_sql( 'DISTINCT participant.id' ),
