@@ -32,7 +32,27 @@ class appointment extends record
     $this->datetime = substr( $this->datetime, 0, -3 );
   }
   
+  /**
+   * Overrides the parent save method.
+   * @author Patrick Emond
+   * @access public
+   */
+  public function save()
+  {
+    // make sure there is a maximum of 1 unassigned appointment
+    if( is_null( $this->assignment_id ) )
+    {
+      $modifier = new modifier();
+      $modifier->where( 'participant_id', '=', $this->participant_id );
+      $modifier->where( 'assignment_id', '=', NULL );
+      if( 0 < static::count( $modifier ) )
+        throw new exc\runtime(
+          'Cannot have more than one unassigned appointment per participant.', __METHOD__ );
+    }
 
+    parent::save();
+  }
+  
   /**
    * Determines whether there are operator slots available during this appointment's date/time
    * 

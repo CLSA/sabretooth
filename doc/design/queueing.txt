@@ -2,3 +2,5 @@ Sabretooth's Queueing System
 -+-+-+-+-+-+-+-+-+-+-+-+-+-+-
 
 TODO: needs to be re-written
+
+RESTRICTION: only one unassigned assignment per participant
