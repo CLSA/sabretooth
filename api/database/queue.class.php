@@ -84,6 +84,13 @@ class queue extends record
         ' AND participant.status = "deaf"',
         self::$query_list['all'] );
       
+      // Language barrier
+      self::$query_list['language barrier'] = sprintf(
+        ' %s'.
+        ' AND participant.active = true'.
+        ' AND participant.status = "language barrier"',
+        self::$query_list['all'] );
+      
       // Mentally unfit
       self::$query_list['mentally unfit'] = sprintf(
         ' %s'.
@@ -334,7 +341,7 @@ class queue extends record
           self::$query_list[$phone_call_status.' ready'] );
       }
 
-      // TODO: what about disconnected and wrong language?
+      // TODO: what about disconnected
     }
   }
 
@@ -448,6 +455,8 @@ class queue extends record
     $sql = str_replace( '<CALLBACK_BUSY>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'callback timing', 'fax' );
     $sql = str_replace( '<CALLBACK_FAX>', $setting, $sql );
+    $setting = $setting_manager->get_setting( 'callback timing', 'language' );
+    $sql = str_replace( '<CALLBACK_LANGUAGE>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'callback timing', 'no answer' );
     $sql = str_replace( '<CALLBACK_NO_ANSWER>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'callback timing', 'machine message' );

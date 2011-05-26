@@ -53,6 +53,11 @@ VALUES( "callback timing", "fax", "integer", "15",
 machine." );
 
 INSERT INTO setting( category, name, type, value, description )
+VALUES( "callback timing", "language", "integer", "4320",
+"Number of minutes to wait before calling back a participant where the previous call was a language
+barrier." );
+
+INSERT INTO setting( category, name, type, value, description )
 VALUES( "callback timing", "no answer", "integer", "2160",
 "Number of minutes to wait before calling back a participant where there was no answer during the
 previous call." );

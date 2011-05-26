@@ -65,6 +65,19 @@ description = "Participants who are not eligible for answering questionnaires be
 deceased.";
 
 INSERT INTO queue SET
+name = "language barrier",
+title = "Participants with a language barrier",
+rank = NULL,
+qnaire_specific = false,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "ineligible" ) AS tmp ),
+description = "Participants who are not eligible for answering questionnaires because of a language
+barrier.";
+
+INSERT INTO queue SET
 name = "deaf",
 title = "Deaf participants",
 rank = NULL,
@@ -247,7 +260,7 @@ and are not currently assigned to an operator.";
 INSERT INTO queue SET
 name = "new participant available",
 title = "New participants, available",
-rank = 15,
+rank = 17,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
@@ -261,7 +274,7 @@ and are not currently assigned to an operator.";
 INSERT INTO queue SET
 name = "new participant always available",
 title = "New participants without availability",
-rank = 16,
+rank = 18,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
@@ -554,6 +567,95 @@ This list only includes participants who do not have an appointment, have no ava
 and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
+name = "language",
+title = "Last call: language",
+rank = NULL,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "old participant" ) AS tmp ),
+description = "Participants who's last call resulted in a language barrier.
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
+
+INSERT INTO queue SET
+name = "language waiting",
+title = "Last call: language (waiting)",
+rank = NULL,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "language" ) AS tmp ),
+description = "Participants who's last call resulted in a language barrier and the scheduled call
+back time has not yet been reached.
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
+
+INSERT INTO queue SET
+name = "language ready",
+title = "Last call: language (ready)",
+rank = NULL,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "language" ) AS tmp ),
+description = "Participants who's last call resulted in a language barrier and the scheduled call
+back time has been reached.
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
+
+INSERT INTO queue SET
+name = "language not available",
+title = "Last Call: language (not available)",
+rank = NULL,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "language ready" ) AS tmp ),
+description = "Participants who's last call resulted in a language barrier and the scheduled call
+back time has been reached.
+This list only includes participants who do not have an appointment, are not currently available
+and are not currently assigned to an operator.";
+
+INSERT INTO queue SET
+name = "language available",
+title = "Last Call: language (available)",
+rank = 9,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "language ready" ) AS tmp ),
+description = "Participants who's last call resulted in a language barrier and the scheduled call
+back time has been reached.
+This list only includes participants who do not have an appointment, are currently available
+and are not currently assigned to an operator.";
+
+INSERT INTO queue SET
+name = "language always available",
+title = "Last Call: language (without availability)",
+rank = 10,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "language ready" ) AS tmp ),
+description = "Participants who's last call resulted in a language barrier and the scheduled call
+back time has been reached.
+This list only includes participants who do not have an appointment, have no availability times
+and are not currently assigned to an operator.";
+
+INSERT INTO queue SET
 name = "no answer",
 title = "Last call: no answer",
 rank = NULL,
@@ -615,7 +717,7 @@ and are not currently assigned to an operator.";
 INSERT INTO queue SET
 name = "no answer available",
 title = "Last Call: no answer (available)",
-rank = 9,
+rank = 11,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
@@ -630,7 +732,7 @@ and are not currently assigned to an operator.";
 INSERT INTO queue SET
 name = "no answer always available",
 title = "Last Call: no answer (without availability)",
-rank = 10,
+rank = 12,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
@@ -705,7 +807,7 @@ and are not currently assigned to an operator.";
 INSERT INTO queue SET
 name = "machine message available",
 title = "Last Call: answering machine, message left (available)",
-rank = 11,
+rank = 13,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
@@ -720,7 +822,7 @@ and are not currently assigned to an operator.";
 INSERT INTO queue SET
 name = "machine message always available",
 title = "Last Call: answering machine, message left (without availability)",
-rank = 12,
+rank = 14,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
@@ -795,7 +897,7 @@ and are not currently assigned to an operator.";
 INSERT INTO queue SET
 name = "machine no message available",
 title = "Last Call: answering machine, message not left (available)",
-rank = 13,
+rank = 15,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
@@ -810,7 +912,7 @@ and are not currently assigned to an operator.";
 INSERT INTO queue SET
 name = "machine no message always available",
 title = "Last Call: answering machine, message not left (without availability)",
-rank = 14,
+rank = 16,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
