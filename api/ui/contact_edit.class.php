@@ -42,7 +42,7 @@ class contact_edit extends base_edit
     $columns = $this->get_argument( 'columns' );
 
     // if there is a phone number, validate it
-    if( $columns['phone'] )
+    if( array_key_exists( 'phone', $columns ) )
     {
       if( 10 != strlen( preg_replace( '/[^0-9]/', '', $columns['phone'] ) ) )
         throw new exc\notice(
