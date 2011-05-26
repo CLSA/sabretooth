@@ -437,8 +437,6 @@ class queue extends record
     $sql = str_replace( '<QNAIRE_TEST>', $qnaire_test_sql, $sql );
 
     // fill in the settings
-    /*
-    // TODO: replace static settings with dynamic after merge
     $setting_manager = bus\setting_manager::self();
     $setting = $setting_manager->get_setting( 'appointment', 'call pre-window' );
     $sql = str_replace( '<APPOINTMENT_PRE_WINDOW>', $setting, $sql );
@@ -456,15 +454,6 @@ class queue extends record
     $sql = str_replace( '<CALLBACK_MACHINE_MESSAGE>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'callback timing', 'machine no message' );
     $sql = str_replace( '<CALLBACK_MACHINE_NO_MESSAGE>', $setting, $sql );
-    */
-    $sql = str_replace( '<APPOINTMENT_PRE_WINDOW>', 5, $sql );
-    $sql = str_replace( '<APPOINTMENT_POST_WINDOW>', 15, $sql );
-    $sql = str_replace( '<CALLBACK_CONTACTED>', 10000, $sql );
-    $sql = str_replace( '<CALLBACK_BUSY>', 15, $sql );
-    $sql = str_replace( '<CALLBACK_FAX>', 15, $sql );
-    $sql = str_replace( '<CALLBACK_NO_ANSWER>', 10000, $sql );
-    $sql = str_replace( '<CALLBACK_MACHINE_MESSAGE>', 3000, $sql );
-    $sql = str_replace( '<CALLBACK_MACHINE_NO_MESSAGE>', 3000, $sql );
     return $sql;
   }
   

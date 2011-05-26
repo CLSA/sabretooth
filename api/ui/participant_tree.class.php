@@ -121,6 +121,8 @@ class participant_tree extends widget
                  ? sprintf( 'Questionnaire #%d: "%s"', $db_qnaire->rank, $db_qnaire->name )
                  : $db_queue->title;
           $open = $db_show_queue->id == $db_queue->id && $show_qnaire_id == $db_qnaire->id;
+
+          /* TODO: the following is disabled for now, need to improve queue querying
           // don't count the participants in hidden branches
           $count = -1;
           if( // always show all qnaire queues or...
@@ -136,6 +138,8 @@ class participant_tree extends widget
           {
             $count = $db_queue->get_participant_count();
           }
+          */
+          $count = $db_queue->get_participant_count();
 
           $nodes[$index] = array( 'id' => $index,
                                   'title' => $title,

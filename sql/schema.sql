@@ -36,6 +36,9 @@ CREATE  TABLE IF NOT EXISTS `participant` (
   `prior_contact_date` DATE NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
+  INDEX `dk_active` (`active` ASC) ,
+  INDEX `dk_status` (`status` ASC) ,
+  INDEX `dk_prior_contact_date` (`prior_contact_date` ASC) ,
   CONSTRAINT `fk_participant_site`
     FOREIGN KEY (`site_id` )
     REFERENCES `site` (`id` )
@@ -195,6 +198,7 @@ CREATE  TABLE IF NOT EXISTS `interview` (
   INDEX `fk_participant_id` (`participant_id` ASC) ,
   INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
   INDEX `fk_duplicate_qnaire_id` (`qnaire_id` ASC) ,
+  INDEX `dk_completed` (`completed` ASC) ,
   CONSTRAINT `fk_interview_participant`
     FOREIGN KEY (`participant_id` )
     REFERENCES `participant` (`id` )
@@ -257,6 +261,8 @@ CREATE  TABLE IF NOT EXISTS `assignment` (
   INDEX `fk_interview_id` (`interview_id` ASC) ,
   INDEX `fk_queue_id` (`queue_id` ASC) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
+  INDEX `dk_start_datetime` (`start_datetime` ASC) ,
+  INDEX `dk_end_datetime` (`end_datetime` ASC) ,
   CONSTRAINT `fk_assignment_user`
     FOREIGN KEY (`user_id` )
     REFERENCES `user` (`id` )
@@ -295,6 +301,7 @@ CREATE  TABLE IF NOT EXISTS `phone_call` (
   PRIMARY KEY (`id`) ,
   INDEX `fk_contact_id` (`contact_id` ASC) ,
   INDEX `fk_assignment_id` (`assignment_id` ASC) ,
+  INDEX `status` (`status` ASC) ,
   CONSTRAINT `fk_phone_call_contact`
     FOREIGN KEY (`contact_id` )
     REFERENCES `contact` (`id` )
@@ -589,6 +596,7 @@ CREATE  TABLE IF NOT EXISTS `appointment` (
   INDEX `fk_contact_id` (`contact_id` ASC) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
   INDEX `fk_assignment_id` (`assignment_id` ASC) ,
+  INDEX `dk_status` (`status` ASC) ,
   CONSTRAINT `fk_appointment_contact`
     FOREIGN KEY (`contact_id` )
     REFERENCES `contact` (`id` )
