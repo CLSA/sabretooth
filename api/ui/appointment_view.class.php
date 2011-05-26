@@ -53,9 +53,29 @@ class appointment_view extends base_appointment_view
     $this->editable = is_null( $db_assignment );
 
     parent::finish();
+
+    $db_participant = new db\participant( $this->get_record()->participant_id );
+  
+    // need to add the participant's timezone information as information to the date item
+    $time_diff = $db_participant->get_primary_location()->get_time_diff();
+    $site_name = bus\session::self()->get_site()->name;
+    if( is_null( $time_diff ) )
+      $note = 'The participant\'s time zone is not known.';
+    else if( 0 == $time_diff )
+      $note = sprintf( 'The participant is in the same time zone as the %s site.',
+                       $site_name );
+    else if( 0 < $time_diff )
+      $note = sprintf( 'The participant\'s time zone is %s hours ahead of %s\'s time.',
+                       $time_diff,
+                       $site_name );
+    else if( 0 > $time_diff )
+      $note = sprintf( 'The participant\'s time zone is %s hours behind of %s\'s time.',
+                       abs( $time_diff ),
+                       $site_name );
+
+    $this->add_item( 'datetime', 'datetime', 'Date', $note );
     
     // create enum arrays
-    $db_participant = new db\participant( $this->get_record()->participant_id );
     $modifier = new db\modifier();
     $modifier->where( 'phone', '!=', NULL );
     $modifier->order( 'rank' );

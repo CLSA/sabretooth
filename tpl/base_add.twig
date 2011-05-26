@@ -164,7 +164,11 @@
             {% endif %}
         
             {% if entry.note is defined %}
-              <div class="help_note">{{ entry.note }}</div>
+              <div class="help_note">
+                {% autoescape false %}
+                  {{ entry.note }}
+                {% endautoescape %}
+              </div>
             {% endif %}
             </td>
           </tr>

@@ -52,9 +52,29 @@ class appointment_add extends base_appointment_view
     if( is_null( $this->parent ) || 'participant' != $this->parent->get_subject() )
       throw new exc\runtime(
         'Appointment widget must have a parent with participant as the subject.', __METHOD__ );
-    
-    // create enum arrays
+
     $db_participant = new db\participant( $this->parent->get_record()->id );
+    
+    // need to add the participant's timezone information as information to the date item
+    $time_diff = $db_participant->get_primary_location()->get_time_diff();
+    $site_name = bus\session::self()->get_site()->name;
+    if( is_null( $time_diff ) )
+      $note = 'The participant\'s time zone is not known.';
+    else if( 0 == $time_diff )
+      $note = sprintf( 'The participant is in the same time zone as the %s site.',
+                       $site_name );
+    else if( 0 < $time_diff )
+      $note = sprintf( 'The participant\'s time zone is %s hours ahead of %s\'s time.',
+                       $time_diff,
+                       $site_name );
+    else if( 0 > $time_diff )
+      $note = sprintf( 'The participant\'s time zone is %s hours behind %s\'s time.',
+                       abs( $time_diff ),
+                       $site_name );
+
+    $this->add_item( 'datetime', 'datetime', 'Date', $note );
+
+    // create enum arrays
     $modifier = new db\modifier();
     $modifier->where( 'phone', '!=', NULL );
     $modifier->order( 'rank' );

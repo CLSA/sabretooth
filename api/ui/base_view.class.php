@@ -87,18 +87,20 @@ abstract class base_view extends base_record_widget
    */
   public function add_item( $item_id, $type, $heading = NULL, $note = NULL )
   {
-    $this->items[$item_id] = array( 'type' => $type );
-    if( !is_null( $heading ) ) $this->items[$item_id]['heading'] = $heading;
-    if( !is_null( $note ) ) $this->items[$item_id]['note'] = $note;
-    else if( 'time' == $type || 'datetime' == $type )
+    // add timezone info to the note if the item is a time or datetime
+    if( 'time' == $type || 'datetime' == $type )
     {
       // build time time zone help text
       $date_obj = util::get_datetime_object();
       $time_note = sprintf( 'Time is in %s\'s time zone (%s)',
                             bus\session::self()->get_site()->name,
                             $date_obj->format( 'T' ) );
-      $this->items[$item_id]['note'] = $time_note;
+      $note = is_null( $note ) ? $time_note : $time_note.'<br>'.$note;
     }
+
+    $this->items[$item_id] = array( 'type' => $type );
+    if( !is_null( $heading ) ) $this->items[$item_id]['heading'] = $heading;
+    if( !is_null( $note ) ) $this->items[$item_id]['note'] = $note;
   }
 
   /**
