@@ -63,8 +63,7 @@ class assignment_end extends action
         // set the appointment status based on whether any calls reached the participant
         $modifier = new db\modifier();
         $modifier->where( 'status', '=', 'contacted' );
-        $db_appointment->status = 
-          0 < $db_assignment->get_phone_call_count( $modifier ) ? 'complete' : 'incomplete';
+        $db_appointment->reached = 0 < $db_assignment->get_phone_call_count( $modifier );
         $db_appointment->save();
       }
 

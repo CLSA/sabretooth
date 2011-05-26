@@ -591,12 +591,12 @@ CREATE  TABLE IF NOT EXISTS `appointment` (
   `contact_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'Which contact to use.' ,
   `assignment_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'This appointment\'s assignment.' ,
   `datetime` DATETIME NOT NULL ,
-  `status` ENUM('complete','incomplete') NULL DEFAULT NULL COMMENT 'If the appointment was met, whether the participant was reached.' ,
+  `reached` TINYINT(1)  NULL DEFAULT NULL COMMENT 'If the appointment was met, whether the participant was reached.' ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_contact_id` (`contact_id` ASC) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
   INDEX `fk_assignment_id` (`assignment_id` ASC) ,
-  INDEX `dk_status` (`status` ASC) ,
+  INDEX `dk_reached` (`reached` ASC) ,
   CONSTRAINT `fk_appointment_contact`
     FOREIGN KEY (`contact_id` )
     REFERENCES `contact` (`id` )

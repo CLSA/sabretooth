@@ -200,8 +200,15 @@ class appointment extends record
 
 
   /**
-   * Get the status of the appointment as a string (upcoming, missed, completed, in progress or
-   * assigned)
+   * Get the state of the appointment as a string:
+   *   reached: the appointment was met and the participant was reached
+   *   not reached: the appointment was met but the participant was not reached
+   *   upcoming: the appointment's date/time has not yet occurred
+   *   assignable: the appointment is ready to be assigned, but hasn't been
+   *   missed: the appointment was missed (never assigned) and the call window has passed
+   *   incomplete: the appointment was assigned but the assignment never closed (an error)
+   *   assigned: the appointment is currently assigned
+   *   in progress: the appointment is currently assigned and currently in a call
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
@@ -214,8 +221,8 @@ class appointment extends record
       return NULL;
     } 
     
-    // if the appointment has a status, nothing else matters
-    if( !is_null( $this->status ) ) return $this->status;
+    // if the appointment's reached column is set, nothing else matters
+    if( !is_null( $this->reached ) ) return $this->reached ? 'reached' : 'not reached';
 
     $status = 'unknown';
     
