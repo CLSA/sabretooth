@@ -54,7 +54,9 @@ class appointment_feed extends base_feed
       $db_participant = $db_appointment->get_participant();
       $event_list[] = array(
         'id' => $db_appointment->id,
-        'title' => $db_participant->first_name.' '.$db_participant->last_name,
+        'title' => is_null( $db_participant->uid ) || 0 == strlen( $db_participant->uid ) ?
+          $db_participant->first_name.' '.$db_participant->last_name :
+          $db_participant->uid,
         'allDay' => false,
         'start' => strtotime( $db_appointment->datetime ),
         // assume appointments to be one hour long
