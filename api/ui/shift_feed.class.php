@@ -48,6 +48,11 @@ class shift_feed extends base_feed
    */
   public function get_data()
   {
+    // determine from the start/end times whether this feed request is longer than a week
+    $start = strtotime( $this->start_datetime );
+    $end = strtotime( $this->end_datetime );
+    $showing_month = 10 < ( ( $end - $start ) / 3600 / 24 );
+
     // create a list of shifts between the feed's start and end time
     $modifier = new db\modifier();
     $modifier->where( 'end_datetime', '>', $this->start_datetime );
@@ -60,9 +65,19 @@ class shift_feed extends base_feed
     $event_list = array();
     foreach( db\shift::select( $modifier ) as $db_shift )
     {
+      $datetime_obj = util::get_datetime_object( $db_shift->end_datetime );
+      $end_time = '00' == $datetime_obj->format( 'i' )
+                ? $datetime_obj->format( 'ga' )
+                : $datetime_obj->format( 'g:ia' );
+
+      // remove the m in am/pm
+      $end_time = substr( $end_time, 0, -1 );
+
       $event_list[] = array(
         'id' => $db_shift->id,
-        'title' => $db_shift->get_user()->name,
+        'title' => $showing_month
+          ? sprintf( ' to %s %s', $end_time, $db_shift->get_user()->name )
+          : $db_shift->get_user()->name,
         'allDay' => false,
         'start' => strtotime( $db_shift->start_datetime ),
         'end' => strtotime( $db_shift->end_datetime ) );
