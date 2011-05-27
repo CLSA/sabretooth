@@ -1,6 +1,6 @@
 <?php
 /**
- * sample_new.class.php
+ * user_reset_password.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -14,24 +14,25 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * action sample new
- *
- * Create a new sample.
+ * Resets a user's password.
+ * 
  * @package sabretooth\ui
  */
-class sample_new extends base_new
+class user_reset_password extends base_record_action
 {
   /**
    * Constructor.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $subject The widget's subject.
    * @param array $args Action arguments
+   * @throws exception\argument
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'sample', $args );
+    parent::__construct( 'user', 'reset_password', $args );
   }
-
+  
   /**
    * Executes the action.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -39,12 +40,9 @@ class sample_new extends base_new
    */
   public function execute()
   {
-    // make sure the name column isn't blank
-    $columns = $this->get_argument( 'columns' );
-    if( !array_key_exists( 'name', $columns ) || 0 == strlen( $columns['name'] ) )
-      throw new exc\notice( 'The sample\'s name cannot be left blank.', __METHOD__ );
-
-    parent::execute();
+    $db_user = new db\user( $this->get_argument( 'id' ) );
+    $ldap_manager = bus\ldap_manager::self();
+    $ldap_manager->set_user_password( $db_user->name, 'password' );
   }
 }
 ?>

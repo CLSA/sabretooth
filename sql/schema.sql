@@ -25,15 +25,20 @@ DROP TABLE IF EXISTS `participant` ;
 
 CREATE  TABLE IF NOT EXISTS `participant` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `active` TINYINT(1)  NOT NULL DEFAULT true ,
   `uid` VARCHAR(45) NULL COMMENT 'External unique ID' ,
   `first_name` VARCHAR(45) NOT NULL ,
   `last_name` VARCHAR(45) NOT NULL ,
   `language` ENUM('en','fr') NULL DEFAULT NULL ,
   `hin` VARCHAR(45) NULL DEFAULT NULL ,
-  `status` ENUM('deceased', 'deaf', 'mentally unfit') NULL DEFAULT NULL ,
+  `status` ENUM('deceased', 'deaf', 'mentally unfit','language barrier') NULL DEFAULT NULL ,
   `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'If not null then force all calls to this participant to the site.' ,
+  `prior_contact_date` DATE NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
+  INDEX `dk_active` (`active` ASC) ,
+  INDEX `dk_status` (`status` ASC) ,
+  INDEX `dk_prior_contact_date` (`prior_contact_date` ASC) ,
   CONSTRAINT `fk_participant_site`
     FOREIGN KEY (`site_id` )
     REFERENCES `site` (`id` )
@@ -80,9 +85,19 @@ DROP TABLE IF EXISTS `qnaire` ;
 CREATE  TABLE IF NOT EXISTS `qnaire` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(255) NOT NULL ,
+  `rank` INT NOT NULL ,
+  `prev_qnaire_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The qnaire which must be completed before this one begins.' ,
+  `delay` INT NOT NULL DEFAULT 0 COMMENT 'How many weeks after then end of the previous qnaire before starting.' ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `name_UNIQUE` (`name` ASC) )
+  UNIQUE INDEX `uq_name` (`name` ASC) ,
+  UNIQUE INDEX `uq_rank` (`rank` ASC) ,
+  INDEX `fk_prev_qnaire_id` (`prev_qnaire_id` ASC) ,
+  CONSTRAINT `fk_qnaire_prev_qnaire`
+    FOREIGN KEY (`prev_qnaire_id` )
+    REFERENCES `qnaire` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
@@ -183,6 +198,7 @@ CREATE  TABLE IF NOT EXISTS `interview` (
   INDEX `fk_participant_id` (`participant_id` ASC) ,
   INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
   INDEX `fk_duplicate_qnaire_id` (`qnaire_id` ASC) ,
+  INDEX `dk_completed` (`completed` ASC) ,
   CONSTRAINT `fk_interview_participant`
     FOREIGN KEY (`participant_id` )
     REFERENCES `participant` (`id` )
@@ -212,12 +228,13 @@ CREATE  TABLE IF NOT EXISTS `queue` (
   `name` VARCHAR(45) NOT NULL ,
   `title` VARCHAR(255) NOT NULL ,
   `rank` INT UNSIGNED NULL DEFAULT NULL ,
+  `qnaire_specific` TINYINT(1)  NOT NULL ,
   `parent_queue_id` INT UNSIGNED NULL DEFAULT NULL ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_rank` (`rank` ASC) ,
-  UNIQUE INDEX `uq_title` (`title` ASC) ,
   INDEX `fk_parent_queue_id` (`parent_queue_id` ASC) ,
+  UNIQUE INDEX `uq_name` (`name` ASC) ,
   CONSTRAINT `fk_queue_parent_queue_id`
     FOREIGN KEY (`parent_queue_id` )
     REFERENCES `queue` (`id` )
@@ -237,13 +254,15 @@ CREATE  TABLE IF NOT EXISTS `assignment` (
   `site_id` INT UNSIGNED NOT NULL COMMENT 'The site from which the user was assigned.' ,
   `interview_id` INT UNSIGNED NOT NULL ,
   `queue_id` INT UNSIGNED NOT NULL COMMENT 'The queue that the assignment came from.' ,
-  `start_time` DATETIME NOT NULL ,
-  `end_time` DATETIME NULL DEFAULT NULL ,
+  `start_datetime` DATETIME NOT NULL ,
+  `end_datetime` DATETIME NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_user_id` (`user_id` ASC) ,
   INDEX `fk_interview_id` (`interview_id` ASC) ,
   INDEX `fk_queue_id` (`queue_id` ASC) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
+  INDEX `dk_start_datetime` (`start_datetime` ASC) ,
+  INDEX `dk_end_datetime` (`end_datetime` ASC) ,
   CONSTRAINT `fk_assignment_user`
     FOREIGN KEY (`user_id` )
     REFERENCES `user` (`id` )
@@ -276,12 +295,13 @@ CREATE  TABLE IF NOT EXISTS `phone_call` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `assignment_id` INT UNSIGNED NOT NULL ,
   `contact_id` INT UNSIGNED NOT NULL ,
-  `start_time` DATETIME NOT NULL COMMENT 'The time the call started.' ,
-  `end_time` DATETIME NULL DEFAULT NULL COMMENT 'The time the call endede.' ,
+  `start_datetime` DATETIME NOT NULL COMMENT 'The time the call started.' ,
+  `end_datetime` DATETIME NULL DEFAULT NULL COMMENT 'The time the call endede.' ,
   `status` ENUM('contacted', 'busy','no answer','machine message','machine no message','fax','disconnected','wrong number','language') NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_contact_id` (`contact_id` ASC) ,
   INDEX `fk_assignment_id` (`assignment_id` ASC) ,
+  INDEX `status` (`status` ASC) ,
   CONSTRAINT `fk_phone_call_contact`
     FOREIGN KEY (`contact_id` )
     REFERENCES `contact` (`id` )
@@ -357,51 +377,6 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sample`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `sample` ;
-
-CREATE  TABLE IF NOT EXISTS `sample` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `name` VARCHAR(255) NOT NULL ,
-  `qnaire_id` INT UNSIGNED NULL DEFAULT NULL ,
-  `description` TEXT NULL ,
-  PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_name` (`name` ASC) ,
-  INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
-  CONSTRAINT `fk_sample_qnaire`
-    FOREIGN KEY (`qnaire_id` )
-    REFERENCES `qnaire` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `sample_has_participant`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `sample_has_participant` ;
-
-CREATE  TABLE IF NOT EXISTS `sample_has_participant` (
-  `sample_id` INT UNSIGNED NOT NULL ,
-  `participant_id` INT UNSIGNED NOT NULL ,
-  PRIMARY KEY (`sample_id`, `participant_id`) ,
-  INDEX `fk_participant_id` (`participant_id` ASC) ,
-  INDEX `fk_sample_id` (`sample_id` ASC) ,
-  CONSTRAINT `fk_sample_has_participant_sample`
-    FOREIGN KEY (`sample_id` )
-    REFERENCES `sample` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_sample_has_participant_participant`
-    FOREIGN KEY (`participant_id` )
-    REFERENCES `participant` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `availability`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `availability` ;
@@ -437,9 +412,8 @@ CREATE  TABLE IF NOT EXISTS `shift` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `site_id` INT UNSIGNED NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
-  `date` DATE NOT NULL ,
-  `start_time` TIME NOT NULL ,
-  `end_time` TIME NOT NULL ,
+  `start_datetime` DATETIME NOT NULL ,
+  `end_datetime` DATETIME NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
   INDEX `fk_user_id` (`user_id` ASC) ,
@@ -466,7 +440,7 @@ CREATE  TABLE IF NOT EXISTS `access` (
   `user_id` INT UNSIGNED NOT NULL ,
   `role_id` INT UNSIGNED NOT NULL ,
   `site_id` INT UNSIGNED NOT NULL ,
-  `date` TIMESTAMP NOT NULL ,
+  `datetime` TIMESTAMP NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_role_id` (`role_id` ASC) ,
   INDEX `fk_user_id` (`user_id` ASC) ,
@@ -500,7 +474,7 @@ CREATE  TABLE IF NOT EXISTS `participant_note` (
   `user_id` INT UNSIGNED NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `sticky` TINYINT(1)  NOT NULL DEFAULT false ,
-  `date` DATETIME NOT NULL ,
+  `datetime` DATETIME NOT NULL ,
   `note` TEXT NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_user_id` (`user_id` ASC) ,
@@ -528,7 +502,7 @@ CREATE  TABLE IF NOT EXISTS `assignment_note` (
   `user_id` INT UNSIGNED NOT NULL ,
   `assignment_id` INT UNSIGNED NOT NULL ,
   `sticky` TINYINT(1)  NOT NULL DEFAULT false ,
-  `date` DATETIME NOT NULL ,
+  `datetime` DATETIME NOT NULL ,
   `note` TEXT NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_user_id` (`user_id` ASC) ,
@@ -558,8 +532,8 @@ CREATE  TABLE IF NOT EXISTS `activity` (
   `role_id` INT UNSIGNED NOT NULL ,
   `operation_id` INT UNSIGNED NOT NULL ,
   `query` VARCHAR(511) NOT NULL ,
-  `elapsed_time` FLOAT NOT NULL DEFAULT 0 ,
-  `date` TIMESTAMP NOT NULL ,
+  `elapsed` FLOAT NOT NULL DEFAULT 0 COMMENT 'The total time to perform the operation in seconds.' ,
+  `datetime` TIMESTAMP NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_role_id` (`role_id` ASC) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
@@ -596,6 +570,7 @@ CREATE  TABLE IF NOT EXISTS `setting` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `category` VARCHAR(45) NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
+  `type` ENUM( 'boolean', 'integer', 'float', 'string' ) NOT NULL ,
   `value` VARCHAR(45) NOT NULL ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
@@ -615,12 +590,13 @@ CREATE  TABLE IF NOT EXISTS `appointment` (
   `participant_id` INT UNSIGNED NOT NULL ,
   `contact_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'Which contact to use.' ,
   `assignment_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'This appointment\'s assignment.' ,
-  `date` DATETIME NOT NULL ,
-  `status` ENUM('complete','incomplete') NULL DEFAULT NULL COMMENT 'If the appointment was met, whether the participant was reached.' ,
+  `datetime` DATETIME NOT NULL ,
+  `reached` TINYINT(1)  NULL DEFAULT NULL COMMENT 'If the appointment was met, whether the participant was reached.' ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_contact_id` (`contact_id` ASC) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
   INDEX `fk_assignment_id` (`assignment_id` ASC) ,
+  INDEX `dk_reached` (`reached` ASC) ,
   CONSTRAINT `fk_appointment_contact`
     FOREIGN KEY (`contact_id` )
     REFERENCES `contact` (`id` )
@@ -675,8 +651,8 @@ DROP TABLE IF EXISTS `away_time` ;
 CREATE  TABLE IF NOT EXISTS `away_time` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `user_id` INT UNSIGNED NOT NULL ,
-  `start_time` DATETIME NOT NULL ,
-  `end_time` DATETIME NULL DEFAULT NULL ,
+  `start_datetime` DATETIME NOT NULL ,
+  `end_datetime` DATETIME NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_user_id` (`user_id` ASC) ,
   CONSTRAINT `fk_away_time_user`
@@ -700,12 +676,17 @@ CREATE TABLE IF NOT EXISTS `participant_last_assignment` (`participant_id` INT, 
 -- -----------------------------------------------------
 -- Placeholder table for view `participant_for_queue`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `uid` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT);
+CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `active` INT, `uid` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT, `prior_contact_date` INT, `phone_number_count` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT, `current_qnaire_id` INT, `start_qnaire_date` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `assignment_last_phone_call`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `assignment_last_phone_call` (`assignment_id` INT, `phone_call_id` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `participant_available`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `participant_available` (`participant_id` INT, `available` INT);
 
 -- -----------------------------------------------------
 -- View `participant_primary_location`
@@ -732,8 +713,8 @@ CREATE  OR REPLACE VIEW `participant_last_assignment` AS
 SELECT interview_1.participant_id, assignment_1.id as assignment_id
 FROM assignment AS assignment_1, interview AS interview_1
 WHERE interview_1.id = assignment_1.interview_id
-AND assignment_1.start_time = (
-  SELECT MAX( assignment_2.start_time )
+AND assignment_1.start_datetime = (
+  SELECT MAX( assignment_2.start_datetime )
   FROM assignment AS assignment_2, interview AS interview_2
   WHERE interview_2.id = assignment_2.interview_id
   AND interview_1.participant_id = interview_2.participant_id
@@ -746,20 +727,77 @@ DROP VIEW IF EXISTS `participant_for_queue` ;
 DROP TABLE IF EXISTS `participant_for_queue`;
 CREATE  OR REPLACE VIEW `participant_for_queue` AS
 SELECT participant.*,
+       COUNT( DISTINCT contact.id ) as phone_number_count,
        assignment.id AS last_assignment_id,
        IFNULL( participant.site_id, province.site_id ) AS base_site_id,
-       assignment.id IS NOT NULL AND assignment.end_time IS NULL AS assigned
+       assignment.id IS NOT NULL AND assignment.end_datetime IS NULL AS assigned,
+       IF( current_interview.id IS NULL,
+           ( SELECT id FROM qnaire WHERE rank = 1 ),
+           IF( current_interview.completed, next_qnaire.id, current_qnaire.id )
+       ) AS current_qnaire_id,
+       IF( current_interview.id IS NULL,
+           IF( participant.prior_contact_date IS NULL,
+               NULL,
+               participant.prior_contact_date + INTERVAL(
+                 SELECT delay FROM qnaire WHERE rank = 1
+               ) WEEK ),
+           IF( current_interview.completed,
+               IF( next_qnaire.id IS NULL,
+                   NULL,
+                   IF( next_prev_assignment.end_datetime IS NULL,
+                       participant.prior_contact_date,
+                       next_prev_assignment.end_datetime
+                   ) + INTERVAL next_qnaire.delay WEEK
+               ),
+               NULL
+           )
+       ) AS start_qnaire_date
 FROM participant
+LEFT JOIN contact
+ON contact.participant_id = participant.id
+AND contact.active
+AND contact.phone IS NOT NULL
 LEFT JOIN participant_primary_location
 ON participant.id = participant_primary_location.participant_id 
-LEFT JOIN contact
-ON participant_primary_location.contact_id = contact.id
+LEFT JOIN contact AS primary_contact
+ON participant_primary_location.contact_id = primary_contact.id
 LEFT JOIN province
-ON contact.province_id = province.id
+ON primary_contact.province_id = province.id
 LEFT JOIN participant_last_assignment
 ON participant.id = participant_last_assignment.participant_id 
 LEFT JOIN assignment
-ON participant_last_assignment.assignment_id = assignment.id;
+ON participant_last_assignment.assignment_id = assignment.id
+LEFT JOIN interview AS current_interview
+ON current_interview.participant_id = participant.id
+LEFT JOIN qnaire AS current_qnaire
+ON current_qnaire.id = current_interview.qnaire_id
+LEFT JOIN qnaire AS next_qnaire
+ON next_qnaire.rank = ( current_qnaire.rank + 1 )
+LEFT JOIN qnaire AS next_prev_qnaire
+ON next_prev_qnaire.id = next_qnaire.prev_qnaire_id
+LEFT JOIN interview AS next_prev_interview
+ON next_prev_interview.qnaire_id = next_prev_qnaire.id
+AND next_prev_interview.participant_id = participant.id
+LEFT JOIN assignment next_prev_assignment
+ON next_prev_assignment.interview_id = next_prev_interview.id
+WHERE (
+  current_qnaire.rank IS NULL OR
+  current_qnaire.rank = (
+    SELECT MAX( qnaire.rank )
+    FROM interview, qnaire
+    WHERE qnaire.id = interview.qnaire_id
+    AND current_interview.participant_id = interview.participant_id
+    GROUP BY current_interview.participant_id ) )
+AND (
+  next_prev_assignment.end_datetime IS NULL OR
+  next_prev_assignment.end_datetime = (
+    SELECT MAX( assignment.end_datetime )
+    FROM interview, assignment
+    WHERE interview.qnaire_id = next_prev_qnaire.id
+    AND interview.id = assignment.interview_id
+    AND next_prev_assignment.id = assignment.id
+    GROUP BY next_prev_assignment.interview_id ) )
+GROUP BY participant.id;
 
 -- -----------------------------------------------------
 -- View `assignment_last_phone_call`
@@ -770,13 +808,41 @@ CREATE  OR REPLACE VIEW `assignment_last_phone_call` AS
 SELECT assignment_1.id as assignment_id, phone_call_1.id as phone_call_id
 FROM phone_call AS phone_call_1, assignment AS assignment_1
 WHERE assignment_1.id = phone_call_1.assignment_id
-AND phone_call_1.start_time = (
-  SELECT MAX( phone_call_2.start_time )
+AND phone_call_1.start_datetime = (
+  SELECT MAX( phone_call_2.start_datetime )
   FROM phone_call AS phone_call_2, assignment AS assignment_2
   WHERE assignment_2.id = phone_call_2.assignment_id
   AND assignment_1.id = assignment_2.id
-  AND phone_call_2.end_time IS NOT NULL
+  AND phone_call_2.end_datetime IS NOT NULL
   GROUP BY assignment_2.id );
+
+-- -----------------------------------------------------
+-- View `participant_available`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `participant_available` ;
+DROP TABLE IF EXISTS `participant_available`;
+CREATE  OR REPLACE VIEW `participant_available` AS
+SELECT participant.id as participant_id,
+  IF( availability.id IS NULL,
+      NULL,
+      MAX(
+        CASE DAYOFWEEK( UTC_TIMESTAMP() )
+          WHEN 1 THEN availability.sunday
+          WHEN 2 THEN availability.monday
+          WHEN 3 THEN availability.tuesday
+          WHEN 4 THEN availability.wednesday
+          WHEN 5 THEN availability.thursday
+          WHEN 6 THEN availability.friday
+          WHEN 7 THEN availability.saturday
+          ELSE 0 END = 1
+        AND availability.start_time < TIME( UTC_TIMESTAMP() )
+        AND availability.end_time > TIME( UTC_TIMESTAMP() )
+      )
+    ) AS available
+FROM participant
+LEFT JOIN availability
+ON availability.participant_id = participant.id
+GROUP BY participant.id;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

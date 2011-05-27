@@ -35,7 +35,7 @@ try
   $twig->addFilter( 'nl2br', new \Twig_Filter_Function( 'nl2br' ) );
   $twig->addGlobal( 'FOREGROUND_COLOR', util::get_foreground_color( $theme ) );
   $twig->addGlobal( 'BACKGROUND_COLOR', util::get_background_color( $theme ) );
-  
+
   // determine which widget to render based on the GET variables
   $session = business\session::self();
   if( !isset( $_GET['slot'] ) || !is_string( $_GET['slot'] ) )

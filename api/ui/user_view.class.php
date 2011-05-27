@@ -82,18 +82,25 @@ class user_view extends base_view
     
     $db_activity = $this->get_record()->get_last_activity();
     $last = util::get_fuzzy_period_ago(
-              is_null( $db_activity ) ? null : $db_activity->date );
+              is_null( $db_activity ) ? null : $db_activity->datetime );
     $this->set_item( 'last_activity', $last );
 
     $this->finish_setting_items();
     
+    $role_name = bus\session::self()->get_role()->name;
+
+    $is_operator = $this->get_record()->has_access(
+                     bus\session::self()->get_site(),
+                     db\role::get_unique_record( 'name', 'operator' ) );
+
     // only show shift calendar if the current user is a supervisor and the viewed user is an
     // operator at this site
-    $this->set_variable( 'view_shifts',
-      $this->get_record()->has_access(
-        bus\session::self()->get_site(),
-        db\role::get_unique_record( 'name', 'operator' ) ) &&
-      'supervisor' == bus\session::self()->get_role()->name );
+    $this->set_variable( 'view_shifts', $is_operator && 'supervisor' == $role_name );
+    
+    // only show reset password button if current user is an administrator or supervisor
+    $this->set_variable( 'reset_password',
+      bus\session::self()->is_allowed(
+        db\operation::get_operation( 'action', 'user', 'reset_password' ) ) );
 
     if( !is_null( $this->access_list ) )
     {

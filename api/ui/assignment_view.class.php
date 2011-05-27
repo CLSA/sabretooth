@@ -37,9 +37,9 @@ class assignment_view extends base_view
     $this->add_item( 'site', 'constant', 'Site' );
     $this->add_item( 'participant', 'constant', 'Participant' );
     $this->add_item( 'queue', 'constant', 'Queue' );
-    $this->add_item( 'date', 'constant', 'Date' );
-    $this->add_item( 'start_time', 'constant', 'Start Time' );
-    $this->add_item( 'end_time', 'constant', 'End Time' );
+    $this->add_item( 'datetime', 'constant', 'Date' );
+    $this->add_item( 'start_time_only', 'constant', 'Start Time' );
+    $this->add_item( 'end_time_only', 'constant', 'End Time' );
 
     try
     {
@@ -72,12 +72,12 @@ class assignment_view extends base_view
     $this->set_item( 'site', $this->get_record()->get_site()->name );
     $this->set_item( 'participant', $participant );
     $this->set_item( 'queue', $this->get_record()->get_queue()->name );
-    $this->set_item( 'date',
-      util::get_formatted_date( $this->get_record()->start_time ) );
-    $this->set_item( 'start_time',
-      util::get_formatted_time( $this->get_record()->start_time, false ) );
-    $this->set_item( 'end_time',
-      util::get_formatted_time( $this->get_record()->end_time, false, 'none' ) );
+    $this->set_item( 'datetime',
+      util::get_formatted_date( $this->get_record()->start_datetime ) );
+    $this->set_item( 'start_time_only',
+      util::get_formatted_time( $this->get_record()->start_datetime, false ) );
+    $this->set_item( 'end_time_only',
+      util::get_formatted_time( $this->get_record()->end_datetime, false, 'none' ) );
 
     $this->finish_setting_items();
 

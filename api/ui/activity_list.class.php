@@ -38,8 +38,8 @@ class activity_list extends site_restricted_list
     $this->add_column( 'operation.type', 'string', 'Type', true );
     $this->add_column( 'operation.subject', 'string', 'Subject', true );
     $this->add_column( 'operation.name', 'string', 'Name', true );
-    $this->add_column( 'elapsed_time', 'string', 'Elapsed', true );
-    $this->add_column( 'date', 'datetime', 'Date', true );
+    $this->add_column( 'elapsed', 'string', 'Elapsed', true );
+    $this->add_column( 'datetime', 'datetime', 'Date', true );
   }
 
   /**
@@ -61,8 +61,8 @@ class activity_list extends site_restricted_list
                'operation.type' => $record->get_operation()->type,
                'operation.subject' => $record->get_operation()->subject,
                'operation.name' =>$record->get_operation()->name,
-               'elapsed_time' => sprintf( '%0.2fs', $record->elapsed_time ),
-               'date' => $record->date ) );
+               'elapsed' => sprintf( '%0.2fs', $record->elapsed ),
+               'datetime' => $record->datetime ) );
     }
 
     $this->finish_setting_rows();

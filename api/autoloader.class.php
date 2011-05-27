@@ -33,7 +33,7 @@ class autoloader
    * If the class is in the sabretooth\ namespace it attemps to load it from the api/ directory.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @static
-   * @throws exception\missing
+   * @throws exception\runtime
    * @access public
    */
   static public function autoload( $class )
@@ -61,6 +61,6 @@ class autoloader
     }
     
     // if we get here then the file is missing
-    throw new exception\missing( $class, __METHOD__ );
+    throw new exception\runtime( 'Missing class: '.$class, __METHOD__ );
   }
 }

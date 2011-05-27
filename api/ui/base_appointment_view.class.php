@@ -56,11 +56,12 @@ abstract class base_appointment_view extends base_view
     parent::finish();
     
     // set up the site calendar if editing is enabled
-    if( $this->editable )
+    if( $this->editable || 'add' == $this->get_name() )
     {
       if( !is_null( $this->site_calendar ) )
       {
         $this->site_calendar->finish();
+        log::debug( $this->site_calendar->get_variables() );
         $this->set_variable( 'site_calendar', $this->site_calendar->get_variables() );
       }
     }

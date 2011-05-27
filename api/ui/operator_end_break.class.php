@@ -43,7 +43,7 @@ class operator_end_break extends action
 
     // find this user's open break and record the end time
     $modifier = new db\modifier();
-    $modifier->where( 'end_time', '=', NULL );
+    $modifier->where( 'end_datetime', '=', NULL );
     $away_time_list = $db_user->get_away_time_list( $modifier );
     
     // report an error of there isn't exactly 1 one open away time
@@ -55,7 +55,8 @@ class operator_end_break extends action
     
     foreach( $away_time_list as $db_away_time )
     {
-      $db_away_time->end_time = date( 'Y-m-d H:i:s' );
+      $date_obj = util::get_datetime_object();
+      $db_away_time->end_datetime = $date_obj->format( 'Y-m-d H:i:s' );
       $db_away_time->save();
     }
   }

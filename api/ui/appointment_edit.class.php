@@ -43,9 +43,9 @@ class appointment_edit extends base_edit
     // make sure there is a slot available for the appointment
     $columns = $this->get_argument( 'columns', array() );
 
-    if( array_key_exists( 'date', $columns ) )
+    if( array_key_exists( 'datetime', $columns ) )
     {
-      $this->get_record()->date = $columns['date'];
+      $this->get_record()->datetime = $columns['datetime'];
       if( !$this->get_record()->validate_date() )
         throw new exc\notice( 'There are no operators available during that time.', __METHOD__ );
     }

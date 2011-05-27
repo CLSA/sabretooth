@@ -12,11 +12,15 @@ namespace sabretooth;
 $result_array = array( 'success' => true );
 
 // hack for logging out HTTP authentication
-if( isset( $_POST ) && isset( $_POST['logout'] ) && 'logout' == $_POST['logout'] )
+if( array_key_exists( 'logout', $_COOKIE ) && $_COOKIE['logout'] )
 {
+  setcookie( 'logout', false, time() - 100 * 3600 * 24 );
+
   // force the user to log out by sending a header with invalid HTTP auth credentials
-  $method = 'http'.( 'on' == $_SERVER['HTTPS'] ? 's' : '' );
-  header( 'Location: '.$method.'://none:none@'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'] );
+  header( sprintf( 'Location: %s://none:none@%s%s',
+                   'http'.( 'on' == $_SERVER['HTTPS'] ? 's' : '' ),
+                   $_SERVER['HTTP_HOST'],
+                   $_SERVER['REQUEST_URI'] ) );
   exit;
 }
 
@@ -43,12 +47,18 @@ try
   $twig->addGlobal( 'BACKGROUND_COLOR', util::get_background_color( $theme ) );
   
   $twig_template = $twig->loadTemplate( 'main.twig' );
+
+  // determine if the user's password needs changing
+  $ldap_manager = business\ldap_manager::self();
+  $reset_password = $ldap_manager->validate_user( $session->get_user()->name, 'password' );
   
   // Since there is no main widget we need set up the template variables here
-  $version = $session->get_setting( 'version', 'JQUERY_UI' );
+  $version = business\setting_manager::self()->get_setting( 'version', 'JQUERY_UI' );
   $variables = array( 'jquery_ui_css_path' => '/'.$theme.'/jquery-ui-'.$version.'.custom.css',
+                      // this is false if the survey shouldn't be displayed
                       'survey_url' => $session->get_survey_url(),
-                      'is_operator' => 'operator' == $session->get_role()->name );
+                      'is_operator' => 'operator' == $session->get_role()->name,
+                      'reset_password' => $reset_password );
   
   $result_array['output'] = $twig_template->render( $variables );
 }

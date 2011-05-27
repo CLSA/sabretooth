@@ -31,15 +31,11 @@ class appointment_list extends site_restricted_list
   public function __construct( $args )
   {
     parent::__construct( 'appointment', $args );
-    
     $this->add_column( 'participant.first_name', 'string', 'First name', true );
     $this->add_column( 'participant.last_name', 'string', 'Last name', true );
     $this->add_column( 'contact', 'string', 'Contact', false );
-    $this->add_column( 'date', 'datetime', 'Date', true );
+    $this->add_column( 'datetime', 'datetime', 'Date', true );
     $this->add_column( 'state', 'string', 'State', false );
-
-    // don't add appointments if this list isn't parented
-    if( is_null( $this->parent ) ) $this->addable = false;
   }
   
   /**
@@ -50,6 +46,16 @@ class appointment_list extends site_restricted_list
    */
   public function finish()
   {
+    // don't add appointments if this list isn't parented
+    if( is_null( $this->parent ) ) $this->addable = false;
+    else // don't add appointments if the parent already has an unassigned appointment
+    {
+      $modifier = new db\modifier();
+      $modifier->where( 'participant_id', '=', $this->parent->get_record()->id );
+      $modifier->where( 'assignment_id', '=', NULL );
+      $this->addable = 0 == db\appointment::count( $modifier );
+    }
+
     parent::finish();
 
     foreach( $this->get_record_list() as $record )
@@ -63,7 +69,7 @@ class appointment_list extends site_restricted_list
         array( 'participant.first_name' => $record->get_participant()->first_name,
                'participant.last_name' => $record->get_participant()->last_name,
                'contact' => $contact,
-               'date' => $record->date,
+               'datetime' => $record->datetime,
                'state' => $record->get_state() ) );
     }
 

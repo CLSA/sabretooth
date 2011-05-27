@@ -9,22 +9,38 @@
 
 {% block javascript %}
 
-  <script type="text/javascript">
-    $( function() {
-      $( "#{{ widget.full }}_calendar" ).click( function() {
-        slot_load( "{{ widget.full }}", "shift_calendar", "shift_calendar", { user_id: {{ id }} } );
-        $( "#{{ widget.full }}_slot" ).dialog( "open" );
+  {% if view_shifts or reset_password %}
+    <script type="text/javascript">
+      $( function() {
+        {% if reset_password %}
+          $( "#{{ widget.full }}_password" ).click( function() {
+            confirm_dialog(
+              "Reset Password",
+              "Are you sure you wish to reset this user's password?",
+              function() { send_action( 'user', 'reset_password', { "id": {{ id }} } ); }
+            );
+          } );
+        {% endif %}
+        
+        {% if view_shifts %}
+          // shift calendar button
+          $( "#{{ widget.full }}_calendar" ).click( function() {
+            slot_load( "{{ widget.full }}", "shift_calendar", "shift_calendar", { user_id: {{ id }} } );
+            $( "#{{ widget.full }}_slot" ).dialog( "open" );
+          } );
+          
+          // shift calendar dialog
+          $( "#{{ widget.full }}_slot" ).dialog( { 
+            autoOpen: false,
+            title: "Shift calendar",
+            modal: true,
+            width: 800,
+            height: 600
+          } );
+        {% endif %}
       } );
-
-      $( "#{{ widget.full }}_slot" ).dialog( { 
-        autoOpen: false,
-        title: "Shift calendar",
-        modal: true,
-        width: 800,
-        height: 600
-      } );
-    } );
-  </script>
+    </script>
+  {% endif %}
 
 {% endblock javascript %}
 
@@ -33,9 +49,14 @@
 
   {{ parent() }}
   {% from 'macros.twig' import include_list %}
-  {% if view_shifts %}
+  {% if view_shifts or reset_password %}
     <div class="spacer">
-      <button id="{{ widget.full }}_calendar">Open Shift Calendar</button>
+      {% if view_shifts %}
+        <button id="{{ widget.full }}_calendar">Shift Calendar</button>
+      {% endif %}
+      {% if reset_password %}
+        <button id="{{ widget.full }}_password">Reset Password</button>
+      {% endif %}
     </div>
     <div id="{{ widget.full }}_slot" />
   {% endif %}

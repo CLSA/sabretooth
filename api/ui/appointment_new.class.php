@@ -33,18 +33,18 @@ class appointment_new extends base_new
   }
 
   /**
-   * Overrides the parent method to make sure the date isn't blank and that check for appointment
-   * slot availability.
+   * Overrides the parent method to make sure the datetime isn't blank and that check for
+   * appointment slot availability.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\notice
    * @access public
    */
   public function execute()
   {
-    // make sure the date column isn't blank
+    // make sure the datetime column isn't blank
     $columns = $this->get_argument( 'columns' );
-    if( !array_key_exists( 'date', $columns ) || 0 == strlen( $columns['date'] ) )
-      throw new exc\notice( 'The date cannot be left blank.', __METHOD__ );
+    if( !array_key_exists( 'datetime', $columns ) || 0 == strlen( $columns['datetime'] ) )
+      throw new exc\notice( 'The date/time cannot be left blank.', __METHOD__ );
     
     // make sure there is a slot available for the appointment
     $columns = $this->get_argument( 'columns', array() );

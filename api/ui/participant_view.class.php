@@ -33,6 +33,7 @@ class participant_view extends base_view
     parent::__construct( 'participant', 'view', $args );
     
     // create an associative array with everything we want to display about the participant
+    $this->add_item( 'active', 'boolean', 'Active' );
     $this->add_item( 'uid', 'string', 'Unique ID' );
     $this->add_item( 'first_name', 'string', 'First Name' );
     $this->add_item( 'last_name', 'string', 'Last Name' );
@@ -40,19 +41,10 @@ class participant_view extends base_view
     $this->add_item( 'hin', 'string', 'Health Insurance Number' );
     $this->add_item( 'status', 'enum', 'Condition' );
     $this->add_item( 'site_id', 'enum', 'Prefered Site' );
+    $this->add_item( 'prior_contact_date', 'date', 'Prior Contact Date' );
+    $this->add_item( 'current_qnaire_name', 'constant', 'Current Questionnaire' );
+    $this->add_item( 'start_qnaire_date', 'constant', 'Delay Questionnaire Until' );
     
-    try
-    {
-      // create the sample sub-list widget
-      $this->sample_list = new sample_list( $args );
-      $this->sample_list->set_parent( $this );
-      $this->sample_list->set_heading( 'Samples' );
-    }
-    catch( exc\permission $e )
-    {
-      $this->sample_list = NULL;
-    }
-
     try
     {
       // create the contact sub-list widget
@@ -122,7 +114,23 @@ class participant_view extends base_view
     $db_site = $this->get_record()->get_site();
     $site_id = is_null( $db_site ) ? '' : $db_site->id;
     
+    $start_qnaire_date = $this->get_record()->start_qnaire_date;
+    if( is_null( $this->get_record()->current_qnaire_id ) )
+    {
+      $current_qnaire_name = '(none)';
+
+      $start_qnaire_date = '(not applicable)';
+    }
+    else
+    {
+      $db_current_qnaire = new db\qnaire( $this->get_record()->current_qnaire_id );
+      $current_qnaire_name = $db_current_qnaire->name;
+      $start_qnaire_date = util::get_formatted_date( $start_qnaire_date, 'immediately' );
+    }
+
+    
     // set the view's items
+    $this->set_item( 'active', $this->get_record()->active, true );
     $this->set_item( 'uid', $this->get_record()->uid, false );
     $this->set_item( 'first_name', $this->get_record()->first_name );
     $this->set_item( 'last_name', $this->get_record()->last_name );
@@ -130,14 +138,11 @@ class participant_view extends base_view
     $this->set_item( 'hin', $this->get_record()->hin );
     $this->set_item( 'status', $this->get_record()->status, false, $statuses );
     $this->set_item( 'site_id', $site_id, false, $sites );
+    $this->set_item( 'prior_contact_date', $this->get_record()->prior_contact_date, false );
+    $this->set_item( 'current_qnaire_name', $current_qnaire_name );
+    $this->set_item( 'start_qnaire_date', $start_qnaire_date );
 
     $this->finish_setting_items();
-
-    if( !is_null( $this->sample_list ) )
-    {
-      $this->sample_list->finish();
-      $this->set_variable( 'sample_list', $this->sample_list->get_variables() );
-    }
 
     if( !is_null( $this->contact_list ) )
     {
@@ -163,13 +168,6 @@ class participant_view extends base_view
       $this->set_variable( 'consent_list', $this->consent_list->get_variables() );
     }
   }
-  
-  /**
-   * The participant list widget.
-   * @var sample_list
-   * @access protected
-   */
-  protected $sample_list = NULL;
   
   /**
    * The participant list widget.

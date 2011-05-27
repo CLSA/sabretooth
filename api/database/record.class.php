@@ -45,15 +45,16 @@ abstract class record extends \sabretooth\base_object
     foreach( $columns as $name )
     {
       // If the default is CURRENT_TIMESTAMP, or if there is a DATETIME column by the name
-      // 'start_time' then make the default the current date and time.
+      // 'start_datetime' then make the default the current date and time.
       // Because of mysql does not allow setting the default value for a DATETIME column to be
       // NOW() we need to set the default here manually
       $default = static::db()->get_column_default( static::get_table_name(), $name );
       if( 'CURRENT_TIMESTAMP' == $default || 
-          ( 'start_time' == $name &&
+          ( 'start_datetime' == $name &&
             'datetime' == static::db()->get_column_data_type( static::get_table_name(), $name ) ) )
       {
-        $this->column_values[$name] = date( 'Y-m-d H:i:s' );
+        $date_obj = util::get_datetime_object();
+        $this->column_values[$name] = $date_obj->format( 'Y-m-d H:i:s' );
       }
       else
       {
@@ -127,20 +128,13 @@ abstract class record extends \sabretooth\base_object
 
       $this->column_values = $row;
 
-      // convert where necessary
+      // convert any date, time or datetime columns
       foreach( $this->column_values as $key => $val )
       {
-        $column_type = static::db()->get_column_data_type( static::get_table_name(), $key );
-
-        // convert where necessary
-        if( 'datetime' == $column_type || 'timestamp' == $column_type )
-        { // convert datetime to server date and time
-          $this->column_values[$key] = util::from_server_date( $val );
-        }
-        elseif( 'time' == $column_type )
-        { // convert time to server time
-          $this->column_values[$key] = util::from_server_time( $val );
-        }
+        if( database::is_time_column( $key ) )
+          $this->column_values[$key] = util::from_server_datetime( $val, 'H:i:s' );
+        else if( database::is_datetime_column( $key ) )
+          $this->column_values[$key] = util::from_server_datetime( $val );
       }
     }
   }
@@ -163,19 +157,35 @@ abstract class record extends \sabretooth\base_object
       return;
     }
     
-    // if we have start_time and end_time (which can't be null), make sure end comes after start
+    // if we have start and end time or datetime columns (which can't be null), make sure the end time
+    // comes after start time
     if( static::column_exists( 'start_time' ) &&
         static::column_exists( 'end_time' ) &&
         !is_null( static::db()->get_column_default( static::get_table_name(), 'end_time' ) ) )
     {
-      $start_obj = new \DateTime( $this->start_time );
-      $end_obj = new \DateTime( $this->end_time );
+      $start_obj = util::get_datetime_object( $this->start_time );
+      $end_obj = util::get_datetime_object( $this->end_time );
       $interval = $start_obj->diff( $end_obj );
       if( 0 != $interval->invert ||
         ( 0 == $interval->days && 0 == $interval->h && 0 == $interval->i && 0 == $interval->s ) )
       {
         throw new exc\runtime(
           'Tried to set end time which is not after the start time.', __METHOD__ );
+      }
+    }
+    else if(
+      static::column_exists( 'start_datetime' ) &&
+      static::column_exists( 'end_datetime' ) &&
+      !is_null( static::db()->get_column_default( static::get_table_name(), 'end_datetime' ) ) )
+    {
+      $start_obj = util::get_datetime_object( $this->start_datetime );
+      $end_obj = util::get_datetime_object( $this->end_datetime );
+      $interval = $start_obj->diff( $end_obj );
+      if( 0 != $interval->invert ||
+        ( 0 == $interval->days && 0 == $interval->h && 0 == $interval->i && 0 == $interval->s ) )
+      {
+        throw new exc\runtime(
+          'Tried to set end datetime which is not after the start datetime.', __METHOD__ );
       }
     }
 
@@ -186,17 +196,11 @@ abstract class record extends \sabretooth\base_object
     {
       if( static::get_primary_key_name() != $key )
       {
-        $column_type = static::db()->get_column_data_type( static::get_table_name(), $key );
-
-        // convert where necessary
-        if( 'datetime' == $column_type || 'timestamp' == $column_type )
-        { // convert datetime to server date and time
-          $val = util::to_server_date( $val );
-        }
-        elseif( 'time' == $column_type )
-        { // convert time to server time
-          $val = util::to_server_time( $val );
-        }
+        // convert any time or datetime columns
+        if( database::is_time_column( $key ) )
+          $val = util::to_server_datetime( $val, 'H:i:s' );
+        else if( database::is_datetime_column( $key ) )
+          $val = util::to_server_datetime( $val );
         
         $sets .= sprintf( '%s %s = %s',
                           $first ? '' : ',',
@@ -498,7 +502,7 @@ abstract class record extends \sabretooth\base_object
       log::err(
         sprintf( 'Tried to get a %s list from a %s, but there is no relationship between the two.',
                  $record_type,
-                 $table_name() ) );
+                 $table_name ) );
       return $count ? 0 : array();
     }
     else if( relationship::ONE_TO_ONE == $relationship )
@@ -920,7 +924,7 @@ abstract class record extends \sabretooth\base_object
     $record = NULL;
 
     // make sure the column is unique
-    if( static::db()->get_column_key( static::get_table_name(), $column ) )
+    if( 'UNI' == static::db()->get_column_key( static::get_table_name(), $column ) )
     {
       // this returns null if no records are found
       $modifier = new modifier();

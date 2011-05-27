@@ -67,16 +67,10 @@ class assignment_begin extends action
       throw new exc\notice(
         'There are no participants currently available.', __METHOD__ );
     
-    $db_sample = $db_participant->get_active_sample();
-    
-    if( is_null( $db_sample ) )
-      throw new exc\runtime(
-        'Participant in queue has no active sample.', __METHOD__ );
-
     // create an interview for the participant
     $db_interview = new db\interview();
     $db_interview->participant_id = $db_participant->id;
-    $db_interview->qnaire_id = $db_sample->qnaire_id;
+    $db_interview->qnaire_id = $db_participant->current_qnaire_id;
     $db_interview->save();
 
     // create an assignment for this user
@@ -92,7 +86,7 @@ class assignment_begin extends action
       // this should always be the appointment with the earliest date
       $mod = new db\modifier();
       $mod->where( 'assignment_id', '=', NULL );
-      $mod->order( 'date' );
+      $mod->order( 'datetime' );
       $mod->limit( 1 );
       $appointment_list = $db_participant->get_appointment_list( $mod );
 

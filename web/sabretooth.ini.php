@@ -14,7 +14,7 @@ namespace sabretooth;
 global $SETTINGS;
 
 // tagged version
-$SETTINGS[ 'general' ][ 'version' ] = '0.1.3';
+$SETTINGS[ 'general' ][ 'version' ] = '0.1.4';
 
 // always leave as false when running as production server
 $SETTINGS[ 'general' ][ 'development_mode' ] = false;
@@ -102,6 +102,14 @@ $SETTINGS[ 'db' ][ 'username' ] = 'sabretooth';
 $SETTINGS[ 'db' ][ 'password' ] = '';
 $SETTINGS[ 'db' ][ 'database' ] = 'sabretooth';
 $SETTINGS[ 'db' ][ 'prefix' ] = '';
+
+// ldap settings
+$SETTINGS[ 'ldap' ][ 'server' ] = 'localhost';
+$SETTINGS[ 'ldap' ][ 'port' ] = 389;
+$SETTINGS[ 'ldap' ][ 'base' ] = '';
+$SETTINGS[ 'ldap' ][ 'username' ] = '';
+$SETTINGS[ 'ldap' ][ 'password' ] = '';
+$SETTINGS[ 'ldap' ][ 'active_directory' ] = true;
 
 // voip settings
 $SETTINGS[ 'voip' ][ 'enabled' ] = false;

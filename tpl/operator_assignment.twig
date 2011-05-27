@@ -146,7 +146,7 @@
                     id="{{ widget.full }}__view_participant">View Details</button><br>
           </td>
           <td align="right">
-            {% if contact_list %}
+            {% if contact_list|default( false ) %}
               <select class="ui-state-default" id="{{ widget.full }}__parameter">
                 {% if on_call %}
                   {% for status in status_list %}

@@ -146,12 +146,6 @@ VALUES( "widget", "participant", "view", true, "View a participant's details." )
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "list", true, "List participants in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "participant", "add_sample", true, "View samples to add to a participant." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "participant", "new_sample", true, "Adds new samples to a participant." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "participant", "delete_sample", true, "Remove samples from a participant." );
-INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "add_appointment", true, "A form to create a new appointment to add to a participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "participant", "delete_appointment", true, "Remove a participant's appointment." );
@@ -244,28 +238,6 @@ VALUES( "action", "role", "new_operation", true, "Adds new operations to a role.
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "role", "delete_operation", true, "Remove operations from a role." );
 
--- sample
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "sample", "delete", true, "Removes a sample from the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "sample", "edit", true, "Edits a sample's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "sample", "new", true, "Add a new sample to the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "sample", "add", true, "View a form for creating a new sample." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "sample", "view", true, "View a sample's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "sample", "list", true, "List samples in the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "sample", "add_participant", true, "View participants to add to a sample." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "sample", "new_participant", true, "Adds new participants to a sample." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "sample", "delete_participant", true, "Remove participants from a sample." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "datum", "sample", "primary", true, "Retrieves base sample information." );
-
 -- self
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "home", false, "The current user's home screen." );
@@ -277,6 +249,10 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "shortcuts", false, "The current user's shortcut icon set." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "status", false, "The current user's status." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "self", "password", false, "Dialog for changing the user's password." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "self", "set_password", false, "Changes the user's password." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "dialing_pad", false, "A telephone dialing pad widget." );
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -375,6 +351,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "user", "new_access", true, "Grant this user access to sites." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "user", "delete_access", true, "Removes this user's access to a site." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "user", "reset_password", true, "Resets a user's password." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "datum", "user", "primary", true, "Retrieves base user information." );
 

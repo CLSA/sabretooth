@@ -68,11 +68,34 @@ abstract class base_list_widget extends widget
   {
     parent::finish();
     
+    $modifier = new db\modifier();
+
+    // apply column restrictions
+    if( is_array( $this->restrictions ) ) foreach( $this->restrictions as $column => $restrict )
+    {
+      // if compare and value are empty strings then remove the restriction
+      if( 0 == strlen( $restrict['compare'] ) && 0 == strlen( $restrict['value'] ) )
+      {
+        unset( $this->restrictions[$column] );
+      }
+      else
+      {
+        $operator = '';
+        if( 'is' == $restrict['compare'] ) $operator = '=';
+        else if( 'is not' == $restrict['compare'] ) $operator = '!=';
+        else if( 'like' == $restrict['compare'] ) $operator = 'LIKE';
+        else if( 'not like' == $restrict['compare'] ) $operator = 'NOT LIKE';
+        else log::error( 'Invalid comparison in list restriction.' );
+  
+        if( 0 < strlen( $operator ) ) $modifier->where( $column, $operator, $restrict['value'] );
+      }
+    }
+
     // determine the record count and list
     $method_name = 'determine_'.$this->get_subject().'_count';
     $this->record_count = $this->parent && method_exists( $this->parent, $method_name )
                         ? $this->parent->$method_name()
-                        : $this->determine_record_count();
+                        : $this->determine_record_count( $modifier );
 
     // make sure the page is valid, then set the rows array based on the page
     $max_page = ceil( $this->record_count / $this->items_per_page );
@@ -80,23 +103,10 @@ abstract class base_list_widget extends widget
     if( 1 > $this->page ) $this->page = 1; // lower limit
     if( $this->page > $max_page ) $this->page = $max_page; // upper limit
     
-    // build the sql modifier
-    $modifier = new db\modifier();
+    // apply ordering and paging to sql query
     if( strlen( $this->sort_column ) ) $modifier->order( $this->sort_column, $this->sort_desc );
     $modifier->limit( $this->items_per_page, ( $this->page - 1 ) * $this->items_per_page );
     
-    if( is_array( $this->restrictions ) ) foreach( $this->restrictions as $column => $restrict )
-    {
-      $operator = '';
-      if( 'is' == $restrict['compare'] ) $operator = '=';
-      else if( 'is not' == $restrict['compare'] ) $operator = '!=';
-      else if( 'like' == $restrict['compare'] ) $operator = 'LIKE';
-      else if( 'not like' == $restrict['compare'] ) $operator = 'NOT LIKE';
-      else log::error( 'Invalid comparison in list restriction.' );
-
-      if( 0 < strlen( $operator ) ) $modifier->where( $column, $operator, $restrict['value'] );
-    }
-
     $method_name = 'determine_'.$this->get_subject().'_list';
     $this->record_list =
       $this->parent && method_exists( $this->parent, $method_name )

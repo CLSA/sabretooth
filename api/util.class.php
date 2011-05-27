@@ -38,7 +38,7 @@ final class util
    */
   public static function in_devel_mode()
   {
-    return true == business\session::self()->get_setting( 'general', 'development_mode' );
+    return true == business\setting_manager::self()->get_setting( 'general', 'development_mode' );
   }
 
   /**
@@ -53,7 +53,7 @@ final class util
   {
     if( is_null( self::$action_mode ) )
       self::$action_mode =
-        'action.php' == business\session::self()->get_setting( 'general', 'script_name' );
+        'action.php' == business\setting_manager::self()->get_setting( 'general', 'script_name' );
     
     return self::$action_mode;
   }
@@ -70,7 +70,7 @@ final class util
   {
     if( is_null( self::$widget_mode ) )
       self::$widget_mode =
-        'widget.php' == business\session::self()->get_setting( 'general', 'script_name' );
+        'widget.php' == business\setting_manager::self()->get_setting( 'general', 'script_name' );
     
     return self::$widget_mode;
   }
@@ -154,106 +154,87 @@ final class util
   }
   
   /**
-   * Converts the server's date to a user's date
+   * Returns a DateTimeZone object for the user's current site's timezone
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $server Whether to return the application's or server's timezone
+   * @return DateTimeZone
+   * @access public
+   */
+  public static function get_timezone_object( $server = false )
+  {
+    return new \DateTimeZone( $server ? 'UTC' : business\session::self()->get_site()->timezone );
+  }
+
+  /**
+   * Returns a DateTime object in the user's current site's timezone
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $datetime A date string in any valid PHP date time format.
+   * @param boolean $server Whether to return the datetimein the application's or server's timezone
+   * @return DateTime
+   * @access public
+   */
+  public static function get_datetime_object( $datetime = NULL, $server = false )
+  {
+    return new \DateTime( $datetime, self::get_timezone_object( $server ) );
+  }
+
+  /**
+   * Converts the server's date/time to a user's date/time
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $date A date string in yyyy-mm-dd hh:mm:dd format
+   * @param string $datetime A date string in any valid PHP date time format.
+   * @param string $format The format to return the date/time in (default 'Y-m-d H:i:s')
    * @return string
    * @static
    * @access public
    */
-  public static function from_server_date( $date )
+  public static function from_server_datetime( $datetime, $format = 'Y-m-d H:i:s' )
   {
-    if( is_null( $date ) || !is_string( $date ) ) return $date;
+    if( is_null( $datetime ) || !is_string( $datetime ) ) return $datetime;
 
-    $user_tz = business\session::self()->get_site()->timezone;
-    $server_tz = date( 'e' );
-
-    $date_obj = new \DateTime( $date, new \DateTimeZone( $server_tz ) );
-    $date_obj->setTimeZone( new \DateTimeZone( $user_tz ) );
-    return $date_obj->format( "Y-m-d G:i:s" );
+    $datetime_obj = self::get_datetime_object( $datetime, true ); // server's timezone
+    $datetime_obj->setTimeZone( self::get_timezone_object() );
+    return $datetime_obj->format( $format );
   }
 
   /**
    * Converts a user's date to server date.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $date A date string in yyyy-mm-dd hh:mm:dd format
+   * @param string $datetime A date string in any valid PHP date time format.
+   * @param string $format The format to return the date/time in (default 'Y-m-d H:i:s')
    * @return string
    * @static
    * @access public
    */
-  public static function to_server_date( $date )
+  public static function to_server_datetime( $datetime, $format = 'Y-m-d H:i:s' )
   {
-    if( is_null( $date ) || !is_string( $date ) ) return $date;
+    if( is_null( $datetime ) || !is_string( $datetime ) ) return $datetime;
 
-    $user_tz = business\session::self()->get_site()->timezone;
-    $server_tz = date( 'e' );
-
-    $date_obj = new \DateTime( $date, new \DateTimeZone( $user_tz ) );
-    $date_obj->setTimeZone( new \DateTimeZone( $server_tz ) );
-    return $date_obj->format( "Y-m-d G:i:s" );
-  }
-
-  /**
-   * Converts the server's time to a user's time
-   * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $time A time string in hh:mm or hh:mm:ss
-   * @return string
-   * @static
-   * @access public
-   */
-  public static function from_server_time( $time )
-  {
-    if( is_null( $time ) || !is_string( $time ) ) return $time;
-
-    $user_tz = business\session::self()->get_site()->timezone;
-    $server_tz = date( 'e' );
-
-    $time_obj = new \DateTime( $time, new \DateTimeZone( $server_tz ) );
-    $time_obj->setTimeZone( new \DateTimeZone( $user_tz ) );
-    return $time_obj->format( "G:i:s" );
-  }
-
-  /**
-   * Converts a user's time to server time.
-   * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $time A time string in hh:mm or hh:mm:ss
-   * @return string
-   * @static
-   * @access public
-   */
-  public static function to_server_time( $time )
-  {
-    if( is_null( $time ) || !is_string( $time ) ) return $time;
-
-    $user_tz = business\session::self()->get_site()->timezone;
-    $server_tz = date( 'e' );
-
-    $time_obj = new \DateTime( $time, new \DateTimeZone( $user_tz ) );
-    $time_obj->setTimeZone( new \DateTimeZone( $server_tz ) );
-    return $time_obj->format( "G:i:s" );
+    $datetime_obj = self::get_datetime_object( $datetime );
+    $datetime_obj->setTimeZone( self::get_timezone_object( true ) );
+    return $datetime_obj->format( $format );
   }
 
   /**
    * Returns the date and time as a user-friendly string.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $date A date string in the format accepted by the DateTime constructor.
+   * @param string $datetime A date string in any valid PHP date time format.
    * @param boolean $include_seconds Whether to include the seconds in the output
    * @param string $invalid What to return if the input is invalid.
    * @return string
    * @static
    * @access public
    */
-  public static function get_formatted_datetime( $datetime, $include_seconds = true, $invalid = 'unknown' )
+  public static function get_formatted_datetime(
+    $datetime, $include_seconds = true, $invalid = 'unknown' )
   {
     if( is_null( $datetime ) || !is_string( $datetime ) ) return $invalid;
 
-    $user_tz = business\session::self()->get_site()->timezone;
-    $time_obj = new \DateTime( $datetime, new \DateTimeZone( $user_tz ) );
+    $time_obj = self::get_datetime_object( $datetime );
     return $time_obj->format( 'Y-m-d '.( $include_seconds ? 'g:i:s A, T' : 'g:i A, T' ) );
   }
 
@@ -261,7 +242,7 @@ final class util
    * Returns the date as a user-friendly string.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $date A date string in the format accepted by the DateTime constructor.
+   * @param string $date A date string in any valid PHP date time format.
    * @param string $invalid What to return if the input is invalid.
    * @return string
    * @static
@@ -271,15 +252,15 @@ final class util
   {
     if( is_null( $date ) || !is_string( $date ) ) return $invalid;
 
-    $date_obj = new \DateTime( $date );
-    return $date_obj->format( 'l, F jS, Y' );
+    $datetime_obj = self::get_datetime_object( $date );
+    return $datetime_obj->format( 'l, F jS, Y' );
   }
 
   /**
    * Returns the time as a user-friendly string.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $date A date string in the format accepted by the DateTime constructor.
+   * @param string $time A time string in any valid PHP date time format.
    * @param boolean $include_seconds Whether to include the seconds in the output
    * @param string $invalid What to return if the input is invalid.
    * @return string
@@ -290,8 +271,7 @@ final class util
   {
     if( is_null( $time ) || !is_string( $time ) ) return $invalid;
 
-    $user_tz = business\session::self()->get_site()->timezone;
-    $time_obj = new \DateTime( $time, new \DateTimeZone( $user_tz ) );
+    $time_obj = self::get_datetime_object( $time );
     return $time_obj->format( $include_seconds ? 'g:i:s A, T' : 'g:i A, T' );
   }
 
@@ -299,7 +279,7 @@ final class util
    * Returns the interval between the date and "now"
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $date A date string in the format accepted by the DateTime constructor.
+   * @param string $date A date string in any valid PHP date time format.
    * @param string $date2 A second string to compare to instead of "now"
    * @return \DateInterval
    * @static
@@ -308,24 +288,25 @@ final class util
   public static function get_interval( $date, $date2 = NULL )
   {
     // we need to convert to server time since we will compare to the server's "now" time
-    $date_obj = new \DateTime( self::to_server_date( $date ) );
-    return $date_obj->diff( new \DateTime( $date2 ) );
+    $datetime_obj = self::get_datetime_object( $date );
+    $date2_obj = self::get_datetime_object( $date2 );
+    return $datetime_obj->diff( $date2_obj );
   }
 
   /**
    * Returns a fuzzy description of how long ago a certain date occured.
    * 
    * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $date A date string in the format accepted by the DateTime constructor.
+   * @param string $datetime A datetime string in any valid PHP date time format.
    * @return string
    * @static
    * @access public
    */
-  public static function get_fuzzy_period_ago( $date )
+  public static function get_fuzzy_period_ago( $datetime )
   {
-    if( is_null( $date ) || !is_string( $date ) ) return 'never';
+    if( is_null( $datetime ) || !is_string( $datetime ) ) return 'never';
     
-    $interval = self::get_interval( $date );
+    $interval = self::get_interval( $datetime );
     
     if( 0 != $interval->invert )
     {
@@ -349,8 +330,8 @@ final class util
     }
     else if( 7 > $interval->days )
     {
-      $date_obj = new \DateTime( self::to_server_date( $date ) );
-      $result = 'last '.$date_obj->format( 'l' );
+      $datetime_obj = self::get_datetime_object( $datetime );
+      $result = 'last '.$datetime_obj->format( 'l' );
     }
     else if( 1 > $interval->m && 0 == $interval->y )
     {
@@ -358,8 +339,8 @@ final class util
     }
     else if( 1 > $interval->y )
     {
-      $date_obj = new \DateTime( self::to_server_date( $date ) );
-      $result = 'last '.$date_obj->format( 'F' );
+      $datetime_obj = self::get_datetime_object( $datetime );
+      $result = 'last '.$datetime_obj->format( 'F' );
     }
     else
     {
@@ -516,6 +497,105 @@ final class util
     else $background = 'white';
 
     return $background;
+  }
+
+  /**
+   * Encodes a string using a SHA1 hash.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $string The string to encode
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function sha1_hash( $string )
+  {
+    return '{SHA}'.base64_encode( pack( 'H*', sha1( $string ) ) );
+  }
+
+  /**
+   * Encodes a string using a MD5 hash.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $string The string to encode
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function md5_hash( $string )
+  {
+    return '{MD5}'.base64_encode( pack( 'H*', md5( $string ) ) );
+  }
+
+  /**
+   * Encodes a string using a NTLM hash.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $string The string to encode
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function ntlm_hash( $string )
+  {
+    // Convert the password from UTF8 to UTF16 (little endian), encrypt with the MD4 hash and
+    // make it uppercase (not necessary, but it's common to do so with NTLM hashes)
+    return strtoupper( hash( 'md4', iconv( 'UTF-8', 'UTF-16LE', $string ) ) );
+  }
+
+  /**
+   * Encodes a string using a LM hash.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $string The string to encode
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function lm_hash( $string )
+  {
+    $string = strtoupper( substr( $string, 0, 14 ) );
+
+    $part_1 = self::des_encrypt( substr( $string, 0, 7 ) );
+    $part_2 = self::des_encrypt( substr( $string, 7, 7 ) );
+
+    return strtoupper( $part_1.$part_2 );
+  }
+
+  /**
+   * Encrypts a string using the DES standard
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $string The string to encode
+   * @return string
+   * @static
+   * @access public
+   */
+  public static function des_encrypt( $string )
+  {
+    $key = array();
+    $tmp = array();
+    $length = strlen( $string );
+
+    for( $i = 0; $i < 7; ++$i ) $tmp[] = $i < $length ? ord( $string[$i] ) : 0;
+
+    $key[] = $tmp[0] & 254;
+    $key[] = ( $tmp[0] << 7 ) | ( $tmp[1] >> 1 );
+    $key[] = ( $tmp[1] << 6 ) | ( $tmp[2] >> 2 );
+    $key[] = ( $tmp[2] << 5 ) | ( $tmp[3] >> 3 );
+    $key[] = ( $tmp[3] << 4 ) | ( $tmp[4] >> 4 );
+    $key[] = ( $tmp[4] << 3 ) | ( $tmp[5] >> 5 );
+    $key[] = ( $tmp[5] << 2 ) | ( $tmp[6] >> 6 );
+    $key[] = $tmp[6] << 1;
+   
+    $key0 = '';
+   
+    foreach( $key as $k ) $key0 .= chr( $k );
+    $crypt = mcrypt_encrypt(
+      MCRYPT_DES, $key0, 'KGS!@#$%', MCRYPT_MODE_ECB,
+      mcrypt_create_iv( mcrypt_get_iv_size( MCRYPT_DES, MCRYPT_MODE_ECB ), MCRYPT_RAND ) );
+
+    return bin2hex( $crypt );
   }
 
   /**

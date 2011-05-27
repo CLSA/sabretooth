@@ -256,6 +256,9 @@ class modifier extends \sabretooth\base_object
     $first_item = true;
     foreach( $this->where_list as $where )
     {
+      $convert_time = database::is_time_column( $where['column'] );
+      $convert_datetime = database::is_datetime_column( $where['column'] );
+
       if( 'IN' == $where['operator'] || 'NOT IN' == $where['operator'] )
       {
         if( is_array( $where['value'] ) )
@@ -264,26 +267,46 @@ class modifier extends \sabretooth\base_object
           $compare = '';
           foreach( $where['value'] as $value )
           {
+            if( $where['format'] )
+            {
+              if( $convert_time ) $value = util::to_server_datetime( $value, 'H:i:s' );
+              else if( $convert_datetime ) $value = util::to_server_datetime( $value );
+              $value = database::format_string( $value );
+            }
+
             $compare .= $first_value
                       ? sprintf( '%s %s( ', $where['column'], $where['operator'] )
                       : ', ';
-            $compare .= $where['format'] ? database::format_string( $value ) : $value;
+            $compare .= $value;
             $first_value = false;
           }
           $compare .= ' )';
         }
         else
         {
+          $value = $where['value'];
+          if( $where['format'] )
+          {
+            if( $convert_time ) $value = util::to_server_datetime( $value, 'H:i:s' );
+            else if( $convert_datetime ) $value = util::to_server_datetime( $value );
+            $value = database::format_string( $value );
+          }
+
           $compare = sprintf( '%s %s( %s )',
                               $where['column'],
                               $where['operator'],
-                              $where['format'] ?
-                                database::format_string( $where['value'] ) : $where['value'] );
+                              $value );
         }
       }
       else
       {
-        $value = $where['format'] ? database::format_string( $where['value'] ) : $where['value'];
+        $value = $where['value'];
+        if( $where['format'] )
+        {
+          if( $convert_time ) $value = util::to_server_datetime( $value, 'H:i:s' );
+          else if( $convert_datetime ) $value = util::to_server_datetime( $value );
+          $value = database::format_string( $value );
+        }
         
         if( 'NULL' == $value )
         {

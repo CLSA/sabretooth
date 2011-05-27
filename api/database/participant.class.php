@@ -86,131 +86,9 @@ class participant extends has_note
   }
   
   /**
-   * Overrides the parent class to prevent the participant from being added to an active sample.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $record_type The type of record.
-   * @param int|array(int) $ids A single or array of primary key values for the record(s) being
-   *                       added.
-   * @throws exception\runtime
-   * @access protected
-   */
-  protected function add_records( $record_type, $ids )
-  {
-    // check the primary key value
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to query participant with no id.' );
-      return NULL;
-    }
-    
-    $removed = 0;
-    if( 'sample' == $record_type )
-    {
-      foreach( $ids as $index => $id )
-      {
-        // remove ids of active samples
-        $db_sample = new sample( $id );
-        if( !is_null( $db_sample->qnaire_id ) )
-        {
-          unset( $ids[$index] );
-          $removed++;
-        }
-      }
-    }
-    
-    // add whichever ids are left
-    if( 0 < count( $ids ) ) parent::add_records( $record_type, $ids );
-    
-    // report if any were not added
-    if( 0 < $removed )
-    {
-      throw new exc\runtime(
-        sprintf( 'Tried to add participant to %s active sample%s.',
-                 1 == $removed ? 'an' : $removed,
-                 1 == $removed ? '' : 's' ),
-        __METHOD__ );
-    }
-  }
-
-  /**
-   * Overrides the parent class to prevent the participant from being removed from an active sample.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $record_type The type of record.
-   * @param int $id The primary key value for the record being removed.
-   * @throws exception\runtime
-   * @access protected
-   */
-  protected function remove_records( $record_type, $id )
-  {
-    // check the primary key value
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to query participant with no id.' );
-      return NULL;
-    }
-    
-    $removed = 0;
-    if( 'sample' == $record_type )
-    {
-      foreach( $ids as $index => $id )
-      {
-        // remove ids of active samples
-        $db_sample = new sample( $id );
-        if( !is_null( $db_sample->qnaire_id ) )
-        {
-          unset( $ids[$index] );
-          $removed++;
-        }
-      }
-    }
-    
-    // remove whichever ids are left
-    if( 0 < count( $ids ) ) parent::remove_records( $record_type, $ids );
-    
-    // report if any were not added
-    if( 0 < $removed )
-    {
-      throw new exc\runtime(
-        sprintf( 'Tried to remove participant from %s active sample%s.',
-                 1 == $removed ? 'an' : $removed,
-                 1 == $removed ? '' : 's' ),
-        __METHOD__ );
-    }
-  }
-  
-  /**
-   * Returns the currently active sample that the participant belongs to, or NULL if the
-   * participant does not belong to an active sample (ie: is not queued for any interviews)
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return sample
-   * @access public
-   */
-  public function get_active_sample()
-  {
-    // check the primary key value
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to query participant with no id.' );
-      return NULL;
-    }
-    
-    $modifier = new modifier();
-    $modifier->where( 'qnaire_id', '!=', NULL );
-    $modifier->where( 'sample_has_participant.sample_id', '=', 'sample.id', false );
-    $modifier->where( 'sample_has_participant.participant_id', '=', $this->id );
-    $sample_list = sample::select( $modifier );
-
-    // warn if there are more than one active samples (this should never happen)
-    if( 1 < count( $sample_list ) )
-      log::crit(
-        sprintf( 'Participant %d belongs to more than one active sample!',
-                  $this->id ) );
-
-    return 0 < count( $sample_list ) ? current( $sample_list ) : NULL;
-  }
-
-  /**
-   * Get the participants last (non active) assignment
+   * Get the participant's most recent assignment.
+   * This will return the participant's current assignment, or the most recently closed assignment
+   * if the participant is not currently assigned.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return assignment
    * @access public
@@ -234,7 +112,7 @@ class participant extends has_note
   }
 
   /**
-   * Get the participants last (non active) assignment
+   * Get the participant's most recent, closed assignment.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return assignment
    * @access public
@@ -250,8 +128,8 @@ class participant extends has_note
     
     $modifier = new modifier();
     $modifier->where( 'interview.participant_id', '=', $this->id );
-    $modifier->where( 'end_time', '!=', NULL );
-    $modifier->order_desc( 'start_time' );
+    $modifier->where( 'end_datetime', '!=', NULL );
+    $modifier->order_desc( 'start_datetime' );
     $modifier->limit( 1 );
     $assignment_list = assignment::select( $modifier );
 
@@ -334,5 +212,63 @@ class participant extends has_note
 
     return $db_site;
   }
+  
+  /**
+   * Override parent's magic get method so that supplementary data can be retrieved
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $column_name The name of the column or table being fetched from the database
+   * @return mixed
+   * @access public
+   */
+  public function __get( $column_name )
+  {
+    if( 'current_qnaire_id' == $column_name || 'start_qnaire_date' == $column_name )
+    {
+      $this->get_queue_data();
+      return $this->$column_name;
+    }
+
+    return parent::__get( $column_name );
+  }
+
+  /**
+   * Fills in the current qnaire id and start qnaire date
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access private
+   */
+  private function get_queue_data()
+  {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to query participant with no id.' );
+      return NULL;
+    }
+    
+    if( is_null( $this->current_qnaire_id ) && is_null( $this->start_qnaire_date ) )
+    {
+      $sql = sprintf( 'SELECT current_qnaire_id, start_qnaire_date '.
+                      'FROM participant_for_queue '.
+                      'WHERE id = %s',
+                      database::format_string( $this->id ) );
+      $row = static::db()->get_row( $sql );
+      $this->current_qnaire_id = $row['current_qnaire_id'];
+      $this->start_qnaire_date = $row['start_qnaire_date'];
+    }
+  }
+
+  /**
+   * The participant's current questionnaire id (from participant_for_queue)
+   * @var int
+   * @access private
+   */
+  private $current_qnaire_id = NULL;
+
+  /**
+   * The date that the current questionnaire is to begin (from participant_for_queue)
+   * @var int
+   * @access private
+   */
+  private $start_qnaire_date = NULL;
 }
 ?>

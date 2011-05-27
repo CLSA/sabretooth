@@ -87,19 +87,20 @@ abstract class base_view extends base_record_widget
    */
   public function add_item( $item_id, $type, $heading = NULL, $note = NULL )
   {
+    // add timezone info to the note if the item is a time or datetime
+    if( 'time' == $type || 'datetime' == $type )
+    {
+      // build time time zone help text
+      $date_obj = util::get_datetime_object();
+      $time_note = sprintf( 'Time is in %s\'s time zone (%s)',
+                            bus\session::self()->get_site()->name,
+                            $date_obj->format( 'T' ) );
+      $note = is_null( $note ) ? $time_note : $time_note.'<br>'.$note;
+    }
+
     $this->items[$item_id] = array( 'type' => $type );
     if( !is_null( $heading ) ) $this->items[$item_id]['heading'] = $heading;
     if( !is_null( $note ) ) $this->items[$item_id]['note'] = $note;
-    else if( 'time' == $type || 'datetime' == $type )
-    {
-      // build time time zone help text
-      $session = bus\session::self();
-      $date_obj = new \DateTime( "now", new \DateTimeZone( $session->get_site()->timezone ) );
-      $time_note = sprintf( 'Time is in %s\'s time zone (%s)',
-                            $session->get_site()->name,
-                            $date_obj->format( 'T' ) );
-      $this->items[$item_id]['note'] = $time_note;
-    }
   }
 
   /**
@@ -123,9 +124,23 @@ abstract class base_view extends base_record_widget
       if( is_null( $value ) ) $value = '';
       else $value = $value ? 'Yes' : 'No';
     }
+    else if( 'date' == $this->items[$item_id]['type'] )
+    {
+      if( strlen( $value ) )
+      {
+        $date_obj = util::get_datetime_object( $value );
+        $value = $date_obj->format( 'Y-m-d' );
+      }
+      else $value = '';
+    }
     else if( 'time' == $this->items[$item_id]['type'] )
     {
-      $value = strlen( $value ) ? date( 'H:i', strtotime( $value ) ) : "12:00";
+      if( strlen( $value ) )
+      {
+        $date_obj = util::get_datetime_object( $value );
+        $value = $date_obj->format( 'H:i' );
+      }
+      else $value = '12:00';
     }
     else if( 'hidden' == $this->items[$item_id]['type'] )
     {

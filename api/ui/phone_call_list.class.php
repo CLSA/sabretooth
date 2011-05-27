@@ -33,7 +33,7 @@ class phone_call_list extends base_list_widget
     parent::__construct( 'phone_call', $args );
     
     $this->add_column( 'contact.type', 'string', 'Contact', true );
-    $this->add_column( 'date', 'date', 'Date', true );
+    $this->add_column( 'start_datetime', 'date', 'Date', true );
     $this->add_column( 'start_time', 'time', 'Start Time', false );
     $this->add_column( 'end_time', 'time', 'End Time', false );
     $this->add_column( 'status', 'string', 'Status', true );
@@ -54,9 +54,9 @@ class phone_call_list extends base_list_widget
       // assemble the row for this record
       $this->add_row( $record->id,
         array( 'contact.type' => $record->get_contact()->type,
-               'date' => $record->start_time,
-               'start_time' => $record->start_time,
-               'end_time' => $record->end_time,
+               'start_datetime' => $record->start_datetime,
+               'start_time' => $record->start_datetime,
+               'end_time' => $record->end_datetime,
                'status' => $record->status ? $record->status : 'in progress' ) );
     }
 

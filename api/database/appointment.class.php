@@ -28,11 +28,31 @@ class appointment extends record
   {
     parent::load();
 
-    // appointments are not to the second, so remove the :00 at the end of the date field
-    $this->date = substr( $this->date, 0, -3 );
+    // appointments are not to the second, so remove the :00 at the end of the datetime field
+    $this->datetime = substr( $this->datetime, 0, -3 );
   }
   
+  /**
+   * Overrides the parent save method.
+   * @author Patrick Emond
+   * @access public
+   */
+  public function save()
+  {
+    // make sure there is a maximum of 1 unassigned appointment
+    if( is_null( $this->assignment_id ) )
+    {
+      $modifier = new modifier();
+      $modifier->where( 'participant_id', '=', $this->participant_id );
+      $modifier->where( 'assignment_id', '=', NULL );
+      if( 0 < static::count( $modifier ) )
+        throw new exc\runtime(
+          'Cannot have more than one unassigned appointment per participant.', __METHOD__ );
+    }
 
+    parent::save();
+  }
+  
   /**
    * Determines whether there are operator slots available during this appointment's date/time
    * 
@@ -53,21 +73,21 @@ class appointment extends record
       throw new exc\runtime(
         'Cannot validate an appointment date, participant has no primary location.', __METHOD__ );
     
-    $db_setting = setting::get_setting( 'appointment', 'start_time' );
-    $expected_start = intval( preg_replace( '/[^0-9]/', '', $db_setting->value ) );
-    $db_setting = setting::get_setting( 'appointment', 'end_time' );
-    $expected_end = intval( preg_replace( '/[^0-9]/', '', $db_setting->value ) );
+    $expected_start = intval( preg_replace( '/[^0-9]/', '',
+      bus\setting_manager::self()->get_setting( 'appointment', 'start_time' ) ) );
+    $expected_end = intval( preg_replace( '/[^0-9]/', '', 
+      bus\setting_manager::self()->get_setting( 'appointment', 'end_time' ) ) );
 
     // test for the start of the appointment
-    $datetime = new \DateTime( $this->date );
-    $start = intval( preg_replace( '/[^0-9]/', '', $datetime->format( 'H:i' ) ) );
+    $date_obj = util::get_datetime_object( $this->datetime );
+    $start = intval( preg_replace( '/[^0-9]/', '', $date_obj->format( 'H:i' ) ) );
 
     // how many slots are open?
     $modifier = new modifier();
     $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'date', '=', $datetime->format( 'Y-m-d' ) );
-    $modifier->where( 'start_time', '<=', $datetime->format( 'H:i:s' ) );
-    $modifier->where( 'end_time', '>', $datetime->format( 'H:i:s' ) );
+    $modifier->where( 'start_datetime', '<=', $date_obj->format( 'Y-m-d H:i:s' ) );
+    $modifier->where( 'end_datetime', '>', $date_obj->format( 'Y-m-d H:i:s' ) );
+    
     $open_slots = shift::count( $modifier );
     if( $expected_start <= $start && $start <= $expected_end &&
         $open_slots < $db_site->operators_expected )
@@ -77,23 +97,22 @@ class appointment extends record
     
     // and how many appointments are during this time?
     $modifier = new modifier();
-    $modifier->where( 'date', '<=', $datetime->format( 'Y-m-d H:i:s' ) );
-    $modifier->where( 'date', '>', $datetime->format( 'Y-m-d H:i:s' ) );
+    $modifier->where( 'datetime', '<=', $date_obj->format( 'Y-m-d H:i:s' ) );
+    $modifier->where( 'datetime', '>', $date_obj->format( 'Y-m-d H:i:s' ) );
     $appointments = appointment::count_for_site( $db_site, $modifier );
     $open_slots -= $appointments; 
 
     if( 0 >= $open_slots ) return false;
 
     // test for the end of the appointment
-    $datetime->add( new \DateInterval( 'PT1H' ) );
-    $end = intval( preg_replace( '/[^0-9]/', '', $datetime->format( 'H:i' ) ) );
+    $date_obj->add( new \DateInterval( 'PT1H' ) );
+    $end = intval( preg_replace( '/[^0-9]/', '', $date_obj->format( 'H:i' ) ) );
 
     // how many slots are open?
     $modifier = new modifier();
     $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'date', '=', $datetime->format( 'Y-m-d' ) );
-    $modifier->where( 'start_time', '<=', $datetime->format( 'H:i:s' ) );
-    $modifier->where( 'end_time', '>', $datetime->format( 'H:i:s' ) );
+    $modifier->where( 'start_datetime', '<=', $date_obj->format( 'Y-m-d H:i:s' ) );
+    $modifier->where( 'end_datetime', '>', $date_obj->format( 'Y-m-d H:i:s' ) );
     $open_slots = shift::count( $modifier );
     if( $expected_start <= $start && $start <= $expected_end &&
         $open_slots < $db_site->operators_expected )
@@ -103,8 +122,8 @@ class appointment extends record
     
     // and how many appointments are during this time?
     $modifier = new modifier();
-    $modifier->where( 'date', '<=', $datetime->format( 'Y-m-d H:i:s' ) );
-    $modifier->where( 'date', '>', $datetime->format( 'Y-m-d H:i:s' ) );
+    $modifier->where( 'datetime', '<=', $date_obj->format( 'Y-m-d H:i:s' ) );
+    $modifier->where( 'datetime', '>', $date_obj->format( 'Y-m-d H:i:s' ) );
     $appointments = appointment::count_for_site( $db_site, $modifier );
     $open_slots -= $appointments; 
 
@@ -181,8 +200,15 @@ class appointment extends record
 
 
   /**
-   * Get the status of the appointment as a string (upcoming, missed, completed, in progress or
-   * assigned)
+   * Get the state of the appointment as a string:
+   *   reached: the appointment was met and the participant was reached
+   *   not reached: the appointment was met but the participant was not reached
+   *   upcoming: the appointment's date/time has not yet occurred
+   *   assignable: the appointment is ready to be assigned, but hasn't been
+   *   missed: the appointment was missed (never assigned) and the call window has passed
+   *   incomplete: the appointment was assigned but the assignment never closed (an error)
+   *   assigned: the appointment is currently assigned
+   *   in progress: the appointment is currently assigned and currently in a call
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
@@ -195,16 +221,18 @@ class appointment extends record
       return NULL;
     } 
     
-    // if the appointment has a status, nothing else matters
-    if( !is_null( $this->status ) ) return $this->status;
+    // if the appointment's reached column is set, nothing else matters
+    if( !is_null( $this->reached ) ) return $this->reached ? 'reached' : 'not reached';
 
     $status = 'unknown';
     
     // settings are in minutes, time() is in seconds, so multiply by 60
-    $pre_window_time = 60 * setting::get_setting( 'appointment', 'call pre-window' )->value;
-    $post_window_time = 60 * setting::get_setting( 'appointment', 'call post-window' )->value;
+    $pre_window_time = 60 * bus\setting_manager::self()->get_setting(
+                              'appointment', 'call pre-window' );
+    $post_window_time = 60 * bus\setting_manager::self()->get_setting(
+                               'appointment', 'call post-window' );
     $now = time();
-    $appointment = strtotime( $this->date );
+    $appointment = strtotime( $this->datetime );
 
     // get the status of the appointment
     if( $now < $appointment - $pre_window_time )
@@ -224,7 +252,7 @@ class appointment extends record
       else // assigned
       {
         $db_assignment = $this->get_assignment();
-        if( !is_null( $db_assignment->end_time ) )
+        if( !is_null( $db_assignment->end_datetime ) )
         { // assignment closed but appointment never completed
           log::crit(
             sprintf( 'Appointment %d has assignment which is closed but no status was set.',
@@ -234,7 +262,7 @@ class appointment extends record
         else // assignment active
         {
           $modifier = new modifier();
-          $modifier->where( 'end_time', '=', NULL );
+          $modifier->where( 'end_datetime', '=', NULL );
           $open_phone_calls = $db_assignment->get_phone_call_count( $modifier );
           if( 0 < $open_phone_calls )
           { // assignment currently on call

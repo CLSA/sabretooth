@@ -46,7 +46,8 @@ abstract class base_edit extends base_record_action
     $columns = $this->get_argument( 'columns', array() );
     
     // check for time range validity, if necessary
-    if( array_key_exists( 'start_time', $columns ) || array_key_exists( 'end_time', $columns ) )
+    if( array_key_exists( 'start_time', $columns ) ||
+        array_key_exists( 'end_time', $columns ) )
     {
       $start_value = array_key_exists( 'start_time', $columns )
                    ? $columns['start_time']
@@ -59,6 +60,25 @@ abstract class base_edit extends base_record_action
       {
         throw new exc\notice(
           sprintf( 'Start and end times (%s to %s) are not valid.',
+                   $start_value,
+                   $end_value ),
+          __METHOD__ );
+      }   
+    } 
+    else if( array_key_exists( 'start_datetime', $columns ) ||
+             array_key_exists( 'end_datetime', $columns ) )
+    {
+      $start_value = array_key_exists( 'start_datetime', $columns )
+                   ? $columns['start_datetime']
+                   : substr( $this->get_record()->start_datetime, 0, -3 );
+      $end_value = array_key_exists( 'end_datetime', $columns )
+                 ? $columns['end_datetime']
+                 : substr( $this->get_record()->end_datetime, 0, -3 );
+
+      if( strtotime( $start_value ) >= strtotime( $end_value ) )
+      {
+        throw new exc\notice(
+          sprintf( 'Start and end date-times (%s to %s) are not valid.',
                    $start_value,
                    $end_value ),
           __METHOD__ );

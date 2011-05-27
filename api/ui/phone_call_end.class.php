@@ -43,16 +43,44 @@ class phone_call_end extends action
     $is_operator = 'operator' == $session->get_role()->name;
 
     // disconnect voip
-    bus\voip_manager::self()->get_call()->hang_up();
+    $voip_call = bus\voip_manager::self()->get_call();
+    if( !is_null( $voip_call ) ) $voip_call->hang_up();
 
     if( $is_operator )
     { // set the end time and status of the call
       $db_phone_call = $session->get_current_phone_call();
       if( !is_null( $db_phone_call ) )
       {
-        $db_phone_call->end_time = date( 'Y-m-d H:i:s' );
+        $date_obj = util::get_datetime_object();
+        $db_phone_call->end_datetime = $date_obj->format( 'Y-m-d H:i:s' );
         $db_phone_call->status = $this->get_argument( 'status' );
         $db_phone_call->save();
+
+        // if the status is "disconnected" or "wrong number" deactivate the contact and make a note
+        // that the number has been disconnected
+        if( 'disconnected' == $db_phone_call->status ||
+            'wrong number' == $db_phone_call->status )
+        {
+          $db_contact = new db\contact( $db_phone_call->contact_id );
+          if( !is_null( $db_contact ) )
+          {
+            $note = sprintf( 'This contact has been disabled because a call was made to it '.
+                             'on %s at %s '.
+                             'by operator id %d (%s) '.
+                             'with the result of "%s".',
+                             util::get_formatted_date( $db_phone_call->end_datetime ),
+                             util::get_formatted_time( $db_phone_call->end_datetime ),
+                             $session->get_user()->id,
+                             $session->get_user()->name,
+                             $db_phone_call->status );
+            $db_contact->active = false;
+            $db_contact->note = is_null( $db_contact->note )
+                              ? $note
+                              : $db_contact->note."\n\n".$note;
+            $db_contact->save();
+
+          }
+        }
       }
     }
   }

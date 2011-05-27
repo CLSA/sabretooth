@@ -1,6 +1,6 @@
 <?php
 /**
- * sample_add.class.php
+ * self_password.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -14,11 +14,11 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * widget sample add
+ * widget self password
  * 
  * @package sabretooth\ui
  */
-class sample_add extends base_view
+class self_password extends widget
 {
   /**
    * Constructor
@@ -30,30 +30,24 @@ class sample_add extends base_view
    */
   public function __construct( $args )
   {
-    parent::__construct( 'sample', 'add', $args );
-    
-    // define all columns defining this record
-    $this->add_item( 'name', 'string', 'Name' );
-    $this->add_item( 'qnaire_id', 'hidden' );
-    $this->add_item( 'description', 'text', 'Description' );
+    parent::__construct( 'self', 'password', $args );
   }
 
   /**
    * Finish setting the variables in a widget.
    * 
+   * Defines all variables which need to be set for the associated template.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function finish()
   {
     parent::finish();
-
-    // set the view's items
-    $this->set_item( 'name', '', true );
-    $this->set_item( 'qnaire_id', '' );
-    $this->set_item( 'description', '' );
-
-    $this->finish_setting_items();
+    
+    // if the current password is "password" then mark the widget as the first password change
+    $ldap_manager = bus\ldap_manager::self();
+    $this->set_variable( 'first_password',
+      $ldap_manager->validate_user( bus\session::self()->get_user()->name, 'password' ) );
   }
 }
 ?>

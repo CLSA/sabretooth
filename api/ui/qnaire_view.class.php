@@ -34,8 +34,12 @@ class qnaire_view extends base_view
 
     // create an associative array with everything we want to display about the qnaire
     $this->add_item( 'name', 'string', 'Name' );
+    $this->add_item( 'rank', 'enum', 'Rank' );
+    $this->add_item( 'prev_qnaire_id', 'enum', 'Previous Questionnaire',
+      'The questionnaire which must be finished before this one begins.' );
+    $this->add_item( 'delay', 'number', 'Delay (weeks)',
+      'How many weeks after the previous questionnaire is completed before this one may begin.' );
     $this->add_item( 'phases', 'constant', 'Number of phases' );
-    $this->add_item( 'samples', 'constant', 'Number of samples' );
     $this->add_item( 'description', 'text', 'Description' );
 
     try
@@ -49,18 +53,6 @@ class qnaire_view extends base_view
     {
       $this->phase_list = NULL;
     }
-
-    try
-    {
-      // create the sample sub-list widget
-      $this->sample_list = new sample_list( $args );
-      $this->sample_list->set_parent( $this );
-      $this->sample_list->set_heading( 'Samples this questionnaire has been assigned to' );
-    }
-    catch( exc\permission $e )
-    {
-      $this->sample_list = NULL;
-    }
   }
 
   /**
@@ -73,10 +65,22 @@ class qnaire_view extends base_view
   {
     parent::finish();
 
+    // create enum arrays
+    $qnaires = array();
+    foreach( db\qnaire::select() as $db_qnaire )
+      if( $db_qnaire->id != $this->get_record()->id )
+        $qnaires[$db_qnaire->id] = $db_qnaire->name;
+    $num_ranks = db\qnaire::count();
+    $ranks = array();
+    for( $rank = 1; $rank <= ( $num_ranks + 1 ); $rank++ ) $ranks[] = $rank;
+    $ranks = array_combine( $ranks, $ranks );
+
     // set the view's items
     $this->set_item( 'name', $this->get_record()->name, true );
+    $this->set_item( 'rank', $this->get_record()->rank, true, $ranks );
+    $this->set_item( 'prev_qnaire_id', $this->get_record()->prev_qnaire_id, false, $qnaires );
+    $this->set_item( 'delay', $this->get_record()->delay, true );
     $this->set_item( 'phases', $this->get_record()->get_phase_count() );
-    $this->set_item( 'samples', $this->get_record()->get_sample_count() );
     $this->set_item( 'description', $this->get_record()->description );
 
     $this->finish_setting_items();
@@ -87,12 +91,6 @@ class qnaire_view extends base_view
       $this->phase_list->finish();
       $this->set_variable( 'phase_list', $this->phase_list->get_variables() );
     }
-
-    if( !is_null( $this->sample_list ) )
-    {
-      $this->sample_list->finish();
-      $this->set_variable( 'sample_list', $this->sample_list->get_variables() );
-    }
   }
   
   /**
@@ -101,12 +99,5 @@ class qnaire_view extends base_view
    * @access protected
    */
   protected $phase_list = NULL;
-  
-  /**
-   * The qnaire list widget.
-   * @var sample_list
-   * @access protected
-   */
-  protected $sample_list = NULL;
 }
 ?>
