@@ -502,7 +502,7 @@ abstract class record extends \sabretooth\base_object
       log::err(
         sprintf( 'Tried to get a %s list from a %s, but there is no relationship between the two.',
                  $record_type,
-                 $table_name() ) );
+                 $table_name ) );
       return $count ? 0 : array();
     }
     else if( relationship::ONE_TO_ONE == $relationship )
