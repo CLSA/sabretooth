@@ -42,12 +42,13 @@ class setting_view extends base_view
     {
       $this->add_item( 'value', 'constant', 'Default' );
       $this->add_item( 'site_value', 'string', 'Value' );
+      $this->add_item( 'description', 'constant', 'Description' );
     }
     else
     {
       $this->add_item( 'value', 'string', 'Default' );
+      $this->add_item( 'description', 'text', 'Description' );
     }
-    $this->add_item( 'description', 'text', 'Description' );
   }
 
   /**
