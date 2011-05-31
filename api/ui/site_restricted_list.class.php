@@ -33,7 +33,6 @@ abstract class site_restricted_list extends base_list_widget
   {
     parent::__construct( $subject, $args );
     
-    // if this list has a parent don't allow restricting (the parent already does)
     if( static::may_restrict() )
     {
       $restrict_site_id = $this->get_argument( "restrict_site_id", 0 );
@@ -59,6 +58,8 @@ abstract class site_restricted_list extends base_list_widget
    */
   public function finish()
   {
+    // if this list has a parent don't allow restricting (the parent already does)
+    if( !is_null( $this->parent ) ) $this->db_restrict_site = NULL;
 
     if( static::may_restrict() )
     {
