@@ -65,10 +65,12 @@ class shift_feed extends base_feed
     $event_list = array();
     foreach( db\shift::select( $modifier ) as $db_shift )
     {
-      $datetime_obj = util::get_datetime_object( $db_shift->end_datetime );
-      $end_time = '00' == $datetime_obj->format( 'i' )
-                ? $datetime_obj->format( 'ga' )
-                : $datetime_obj->format( 'g:ia' );
+      $start_datetime_obj = util::get_datetime_object( $db_shift->start_datetime );
+      $end_datetime_obj = util::get_datetime_object( $db_shift->end_datetime );
+
+      $end_time = '00' == $end_datetime_obj->format( 'i' )
+                ? $end_datetime_obj->format( 'ga' )
+                : $end_datetime_obj->format( 'g:ia' );
 
       // remove the m in am/pm
       $end_time = substr( $end_time, 0, -1 );
@@ -79,8 +81,8 @@ class shift_feed extends base_feed
           ? sprintf( ' to %s %s', $end_time, $db_shift->get_user()->name )
           : $db_shift->get_user()->name,
         'allDay' => false,
-        'start' => strtotime( $db_shift->start_datetime ),
-        'end' => strtotime( $db_shift->end_datetime ) );
+        'start' => $start_datetime_obj->format( \DateTime::ISO8601 ),
+        'end' => $end_datetime_obj->format( \DateTime::ISO8601 ) );
     }
 
     return $event_list;
