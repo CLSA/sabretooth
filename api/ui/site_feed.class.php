@@ -53,6 +53,177 @@ class site_feed extends base_feed
     while( $current_datetime_obj->diff( $end_datetime_obj )->days )
     {
       $days[ $current_datetime_obj->format( 'Y-m-d' ) ] = array(
+        'diffs' => array(),
+        'times' => array() );
+      $current_datetime_obj->add( new \DateInterval( 'P1D' ) );
+    }
+    
+    // now fill in the slot differentials for shift templates each day
+    $modifier = new db\modifier();
+    $modifier->where( 'site_id', '=', $db_site->id );
+    $modifier->where( 'start_date', '<', $this->end_datetime );
+    foreach( db\shift_template::select( $modifier ) as $db_shift_template )
+    {
+      foreach( $days as $date => $day )
+      {
+        $datetime_obj = util::get_datetime_object( $date );
+        $start_datetime_obj = util::get_datetime_object( $db_shift_template->start_date );
+        $end_datetime_obj = util::get_datetime_object( $db_shift_template->end_date );
+
+        $start_time_as_int =
+          intval( preg_replace( '/[^0-9]/', '',
+            substr( $db_shift_template->start_time, 0, -3 ) ) );
+        $end_time_as_int =
+          intval( preg_replace( '/[^0-9]/', '',
+            substr( $db_shift_template->end_time, 0, -3 ) ) );
+        
+        // make sure this date is between the template's start and end date
+        if( $start_datetime_obj <= $datetime_obj &&
+            ( is_null( $db_shift_template->end_date ) || $end_datetime_obj >= $datetime_obj ) )
+        {
+          $diffs = &$days[$date]['diffs'];
+          if( 'weekly' == $db_shift_template->repeat_type )
+          {
+            // determine how many weeks from the start date this day is
+            $weeks_apart = floor( $start_datetime_obj->diff( $datetime_obj )->days / 7 );
+          
+            if( 0 == $weeks_apart % $db_shift_template->repeat_every )
+            {
+              // make sure the day of the week matches
+              $weekday = strtolower( $datetime_obj->format( 'l' ) );
+              if( $db_shift_template->$weekday )
+              {
+                if( !array_key_exists( $start_time_as_int, $diffs ) )
+                  $diffs[ $start_time_as_int ] = 0;
+                $diffs[ $start_time_as_int ] += $db_shift_template->operators;
+
+                if( !array_key_exists( $end_time_as_int, $diffs ) )
+                  $diffs[ $end_time_as_int ] = 0;
+                $diffs[ $end_time_as_int ] -= $db_shift_template->operators;
+              }
+            }
+          }
+          else if( 'day of month' == $db_shift_template->repeat_type )
+          {
+            if( $datetime_obj->format( 'j' ) == $start_datetime_obj->format( 'j' ) )
+            {
+              if( !array_key_exists( $start_time_as_int, $diffs ) )
+                $diffs[ $start_time_as_int ] = 0;
+              $diffs[ $start_time_as_int ] += $db_shift_template->operators;
+
+              if( !array_key_exists( $end_time_as_int, $diffs ) )
+                $diffs[ $end_time_as_int ] = 0;
+              $diffs[ $end_time_as_int ] -= $db_shift_template->operators;
+            }
+          }
+          else if( 'day of week' == $db_shift_template->repeat_type )
+          {
+            if( $datetime_obj->format( 'l' ) == $start_datetime_obj->format( 'l' ) )
+            {
+              // determine which day of the week and week of the month the start date is on
+              $last_month_datetime_obj = clone $datetime_obj;
+              $last_month_datetime_obj->sub( new \DateInterval( 'P1M' ) );
+              $last_month_datetime_obj->setDate(
+                $last_month_datetime_obj->format( 'Y' ),
+                $last_month_datetime_obj->format( 'n' ),
+                $last_month_datetime_obj->format( 't' ) );
+              $week_number =
+                $datetime_obj->format( 'W' ) - $last_month_datetime_obj->format( 'W' );
+  
+              $last_month_datetime_obj = clone $start_datetime_obj;
+              $last_month_datetime_obj->sub( new \DateInterval( 'P1M' ) );
+              $last_month_datetime_obj->setDate(
+                $last_month_datetime_obj->format( 'Y' ),
+                $last_month_datetime_obj->format( 'n' ),
+                $last_month_datetime_obj->format( 't' ) );
+              $start_week_number =
+                $start_datetime_obj->format( 'W' ) - $last_month_datetime_obj->format( 'W' );
+  
+              if( $week_number == $start_week_number )
+              {
+                if( !array_key_exists( $start_time_as_int, $diffs ) )
+                  $diffs[ $start_time_as_int ] = 0;
+                $diffs[ $start_time_as_int ] += $db_shift_template->operators;
+  
+                if( !array_key_exists( $end_time_as_int, $diffs ) )
+                  $diffs[ $end_time_as_int ] = 0;
+                $diffs[ $end_time_as_int ] -= $db_shift_template->operators;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // then, use the 'diff' array to define the 'times' array
+    foreach( $days as $date => $day )
+    {
+      $num_operators = 0;
+      $diffs = &$days[$date]['diffs'];
+      $times = &$days[$date]['times'];
+
+      // sort the diff array by key (time) to make the following for-loop nice and simple
+      ksort( $diffs );
+
+      foreach( $diffs as $time => $diff )
+      {
+        $num_operators += $diff;
+        $times[$time] = $num_operators;
+      }
+    }
+
+    // finally, construct the event list using the 'times' array
+    $start_time = false;
+    $available = 0;
+    $event_list = array();
+    foreach( $days as $date => $day )
+    {
+      foreach( $day['times'] as $time => $number )
+      {
+        if( $number == $available ) continue;
+
+        $minutes = $time % 100;
+        $hours = ( $time - $minutes ) / 100;
+        $time_string = sprintf( '%02d:%02d', $hours, $minutes );
+        if( $start_time )
+        {
+          $end_time = $time_string;
+          
+          if( $available )
+          {
+            $end_time_for_title =
+              sprintf( '%s%s%s',
+                       $hours > 12 ? $hours - 12 : $hours,
+                       $minutes ? ':'.sprintf( '%02d', $minutes ) : '',
+                       $hours > 12 ? 'p' : 'a' );
+            $event_list[] = array(
+              'title' => sprintf( ' to %s: %d slots', $end_time_for_title, $available ),
+              'allDay' => false,
+              'start' => $date.' '.$start_time,
+              'end' => $date.' '.$end_time );
+          }
+        }
+
+        // only use this time as the next start time if the available number is not 0
+        $start_time = 0 < $number ? $time_string : false;
+        $available = $number;
+      }
+    }
+
+    return $event_list;
+
+
+
+/* OLD CODE *
+    // start by creating an array with one element per day in the time span
+    $start_datetime_obj = util::get_datetime_object( $this->start_datetime );
+    $end_datetime_obj = util::get_datetime_object( $this->end_datetime );
+    
+    $days = array();
+    $current_datetime_obj = clone $start_datetime_obj;
+    while( $current_datetime_obj->diff( $end_datetime_obj )->days )
+    {
+      $days[ $current_datetime_obj->format( 'Y-m-d' ) ] = array(
         'slots' => array(),
         'times' => array() );
       $current_datetime_obj->add( new \DateInterval( 'P1D' ) );
@@ -110,7 +281,7 @@ class site_feed extends base_feed
         $slots[$time] = array( 'operator' => 0, 'appointment' => 0 );
       $slots[$time]['appointment']--;
     }
-
+    
     // then, define the 'times' array to indicate when the number of slots changes, making sure to
     // incorperate the site's expected slots and filled slots
     $expected_start = intval( preg_replace( '/[^0-9]/', '',
@@ -118,7 +289,7 @@ class site_feed extends base_feed
     $expected_end = intval( preg_replace( '/[^0-9]/', '',
       bus\setting_manager::self()->get_setting( 'appointment', 'end_time' ) ) );
     $expected_slots = $db_site->operators_expected;
-
+    
     foreach( $days as $date => $day )
     {
       $num_operators = 0;
@@ -222,6 +393,7 @@ class site_feed extends base_feed
     }
     
     return $event_list;
+OLD CODE ************************************************************************/
   }
 }
 ?>

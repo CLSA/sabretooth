@@ -1,7 +1,7 @@
 {##
- # shift_calendar.twig
+ # shift_template_calendar.twig
  # 
- # Displays a calendar of a user's or a site's shifts.
+ # Displays a calendar showing a site's shift templates.
  # @author Patrick Emond <emondpd@mcmaster.ca>
  #}
 {% extends "base_calendar.twig" %}
@@ -10,41 +10,38 @@
 
   {% if editable %}
     dayClick: function( date, allDay, jsEvent, view ) {
-      // add a new shift
+      // add a new shift template
       var args = new Object();
       args.date = date.getFullYear() + "-" + ( date.getMonth() + 1 ) + "-" + date.getDate();
       if( !allDay ) {
         args.start_time = date.getHours() + ":" + date.getMinutes();
-        args.end_time = ( date.getHours() + 4 ) + ":" + date.getMinutes();
+        date.setTime( date.getTime() + 4*60*60*1000 );
+        args.end_time = date.getHours() + ":" + date.getMinutes();
       } else {
         args.start_time = "9:00";
         args.end_time = "13:00";
       }
   
-      {% if user_id|default(false) %}
-        args.id = {{ user_id }};
-        slot_load( "{{ widget.full }}", "user_add_shift", "user_add_shift", args );
-      {% else %}
-        slot_load( "{{ widget.full }}", "shift_add", "shift_add", args );
-      {% endif %}
+      slot_load( "{{ widget.full }}", "shift_template_add", "shift_template_add", args );
       $( "#{{ widget.full }}_slot" ).dialog( "open" );
     },
     eventClick: function( event, jsEvent, view ) {
-      // edit the shift
-      slot_load( "{{ widget.full }}", "shift_view", "shift_view", { id: event.id } );
+      // edit the shift template
+      slot_load(
+        "{{ widget.full }}",
+        "shift_template_view",
+        "shift_template_view",
+        { id: event.id } );
       $( "#{{ widget.full }}_slot" ).dialog( "open" );
     },
   {% endif %}
 
   events: function( start, end, callback ) {
     var args = new Object();
-    {% if user_id|default(false) %}
-      args.user_id = {{ user_id }};
-    {% endif %}
     args.start = start.getFullYear() + "-" + ( start.getMonth() + 1 ) + "-" + start.getDate();
     args.end = end.getFullYear() + "-" + ( end.getMonth() + 1 ) + "-" + end.getDate();
-    
-    var data = get_datum( "shift", "feed", args );
+
+    var data = get_datum( "shift_template", "feed", args );
     if( undefined != data ) {
       var events = new Array();
       for( var index = 0; index < data.length; index++ ) {

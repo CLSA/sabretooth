@@ -73,10 +73,12 @@ class appointment extends record
       throw new exc\runtime(
         'Cannot validate an appointment date, participant has no primary location.', __METHOD__ );
     
+    /* TODO: re-implement
     $expected_start = intval( preg_replace( '/[^0-9]/', '',
       bus\setting_manager::self()->get_setting( 'appointment', 'start_time' ) ) );
     $expected_end = intval( preg_replace( '/[^0-9]/', '', 
       bus\setting_manager::self()->get_setting( 'appointment', 'end_time' ) ) );
+    */
 
     // test for the start of the appointment
     $date_obj = util::get_datetime_object( $this->datetime );
@@ -89,11 +91,13 @@ class appointment extends record
     $modifier->where( 'end_datetime', '>', $date_obj->format( 'Y-m-d H:i:s' ) );
     
     $open_slots = shift::count( $modifier );
+    /* TODO: re-implement
     if( $expected_start <= $start && $start <= $expected_end &&
         $open_slots < $db_site->operators_expected )
     {
       $open_slots = $db_site->operators_expected;
     }
+    */
     
     // and how many appointments are during this time?
     $modifier = new modifier();
@@ -114,11 +118,13 @@ class appointment extends record
     $modifier->where( 'start_datetime', '<=', $date_obj->format( 'Y-m-d H:i:s' ) );
     $modifier->where( 'end_datetime', '>', $date_obj->format( 'Y-m-d H:i:s' ) );
     $open_slots = shift::count( $modifier );
+    /* TODO: re-implement
     if( $expected_start <= $start && $start <= $expected_end &&
         $open_slots < $db_site->operators_expected )
     {
       $open_slots = $db_site->operators_expected;
     }
+    */
     
     // and how many appointments are during this time?
     $modifier = new modifier();

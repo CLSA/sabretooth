@@ -66,6 +66,18 @@ abstract class base_new extends base_record_action
           __METHOD__ );
       }
     } 
+    else if( array_key_exists( 'start_date', $columns ) &&
+             array_key_exists( 'end_date', $columns ) )
+    { 
+      if( strtotime( $columns['start_date'] ) >= strtotime( $columns['end_date'] ) )
+      { 
+        throw new exc\notice(
+          sprintf( 'Start and end dates (%s to %s) are not valid.',
+                   $columns['start_date'],
+                   $columns['end_date'] ),
+          __METHOD__ );
+      }
+    } 
     
     // set record column values
     foreach( $columns as $column => $value ) $this->get_record()->$column = $value;

@@ -61,7 +61,6 @@ abstract class base_appointment_view extends base_view
       if( !is_null( $this->site_calendar ) )
       {
         $this->site_calendar->finish();
-        log::debug( $this->site_calendar->get_variables() );
         $this->set_variable( 'site_calendar', $this->site_calendar->get_variables() );
       }
     }

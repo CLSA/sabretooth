@@ -35,7 +35,6 @@ class site_view extends base_view
     // create an associative array with everything we want to display about the site
     $this->add_item( 'name', 'string', 'Name' );
     $this->add_item( 'timezone', 'enum', 'Time Zone' );
-    $this->add_item( 'operators_expected', 'number', 'Minimum expected operators' );
     $this->add_item( 'users', 'constant', 'Number of users' );
     $this->add_item( 'last_activity', 'constant', 'Last activity' );
 
@@ -81,7 +80,6 @@ class site_view extends base_view
     // set the view's items
     $this->set_item( 'name', $this->get_record()->name, true );
     $this->set_item( 'timezone', $this->get_record()->timezone, true, $timezones );
-    $this->set_item( 'operators_expected', $this->get_record()->operators_expected, true );
     $this->set_item( 'users', $this->get_record()->get_user_count() );
 
     $db_activity = $this->get_record()->get_last_activity();
