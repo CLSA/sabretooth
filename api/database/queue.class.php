@@ -52,7 +52,7 @@ class queue extends record
         ' AND current_qnaire_id IS NULL',
         self::$query_list['all'] );
 
-      // Ineligible -- TODO: what about refused consent?
+      // Ineligible
       self::$query_list['ineligible'] = sprintf(
         ' %s'.
         // current_qnaire_id is the either the next qnaire to work on or the one in progress
@@ -61,7 +61,8 @@ class queue extends record
         ' AND ('.
         '   participant.active = false'.
         '   OR participant.status IS NOT NULL'.
-        '   OR participant.phone_number_count = 0'.
+        '   OR phone_number_count = 0'.
+        '   OR last_consent IN( "verbal deny", "written deny", "retract", "withdraw" )'.
         ' )',
         self::$query_list['all'] );
       
@@ -71,6 +72,18 @@ class queue extends record
         ' AND participant.active = false',
         self::$query_list['all'] );
       
+      // No phone number
+      self::$query_list['sourcing required'] = sprintf(
+        ' %s'.
+        ' AND phone_number_count = 0',
+        self::$query_list['all'] );
+
+      // No phone number
+      self::$query_list['refused consent'] = sprintf(
+        ' %s'.
+        ' AND last_consent IN( "verbal deny", "written deny", "retract", "withdraw" )',
+        self::$query_list['all'] );
+
       // Deceased
       self::$query_list['deceased'] = sprintf(
         ' %s'.
@@ -99,12 +112,6 @@ class queue extends record
         ' AND participant.status = "mentally unfit"',
         self::$query_list['all'] );
       
-      // Inactive
-      self::$query_list['sourcing required'] = sprintf(
-        ' %s'.
-        ' AND participant.phone_number_count = 0',
-        self::$query_list['all'] );
-
       // Eligible
       self::$query_list['eligible'] = sprintf(
         ' %s'.
@@ -113,7 +120,8 @@ class queue extends record
         // active participant who does not have a "final" status
         ' AND participant.active = true'.
         ' AND participant.status IS NULL'.
-        ' AND participant.phone_number_count != 0',
+        ' AND phone_number_count != 0'.
+        ' AND last_consent NOT IN( "verbal deny", "written deny", "retract", "withdraw" )',
         self::$query_list['all'] );
 
       // Active qnaire

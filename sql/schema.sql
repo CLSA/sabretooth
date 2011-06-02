@@ -363,7 +363,7 @@ DROP TABLE IF EXISTS `consent` ;
 CREATE  TABLE IF NOT EXISTS `consent` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `participant_id` INT UNSIGNED NOT NULL ,
-  `event` ENUM('verbal accept','verbal deny','written accept','written deny','retract','mail request','mail sent') NOT NULL ,
+  `event` ENUM('verbal accept','verbal deny','written accept','written deny','retract','withdraw') NOT NULL ,
   `date` DATE NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
@@ -720,6 +720,11 @@ CREATE TABLE IF NOT EXISTS `assignment_last_phone_call` (`assignment_id` INT, `p
 CREATE TABLE IF NOT EXISTS `participant_available` (`participant_id` INT, `available` INT);
 
 -- -----------------------------------------------------
+-- Placeholder table for view `participant_last_consent`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `participant_last_consent` (`participant_id` INT, `consent_id` INT);
+
+-- -----------------------------------------------------
 -- View `participant_primary_location`
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `participant_primary_location` ;
@@ -759,6 +764,7 @@ DROP TABLE IF EXISTS `participant_for_queue`;
 CREATE  OR REPLACE VIEW `participant_for_queue` AS
 SELECT participant.*,
        COUNT( DISTINCT contact.id ) as phone_number_count,
+       consent.event AS last_consent,
        assignment.id AS last_assignment_id,
        IFNULL( participant.site_id, province.site_id ) AS base_site_id,
        assignment.id IS NOT NULL AND assignment.end_datetime IS NULL AS assigned,
@@ -794,6 +800,10 @@ LEFT JOIN contact AS primary_contact
 ON participant_primary_location.contact_id = primary_contact.id
 LEFT JOIN province
 ON primary_contact.province_id = province.id
+LEFT JOIN participant_last_consent
+ON participant.id = participant_last_consent.participant_id 
+LEFT JOIN consent
+ON consent.id = participant_last_consent.consent_id = primary_contact.id
 LEFT JOIN participant_last_assignment
 ON participant.id = participant_last_assignment.participant_id 
 LEFT JOIN assignment
@@ -874,6 +884,20 @@ FROM participant
 LEFT JOIN availability
 ON availability.participant_id = participant.id
 GROUP BY participant.id;
+
+-- -----------------------------------------------------
+-- View `participant_last_consent`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `participant_last_consent` ;
+DROP TABLE IF EXISTS `participant_last_consent`;
+CREATE  OR REPLACE VIEW `participant_last_consent` AS
+SELECT participant_id, id AS consent_id
+FROM consent AS t1
+WHERE t1.date = (
+  SELECT MAX( t2.date )
+  FROM consent AS t2
+  WHERE t1.participant_id = t2.participant_id
+  GROUP BY t2.participant_id );
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
