@@ -74,18 +74,13 @@ class shift_template_feed extends base_feed
             {
               // make sure the day of the week matches
               $weekday = strtolower( $datetime_obj->format( 'l' ) );
-              if( $db_shift_template->$weekday )
-              {
-                $add_event = true;
-              }
+              if( $db_shift_template->$weekday ) $add_event = true;
             }
           }
           else if( 'day of month' == $db_shift_template->repeat_type )
           {
             if( $datetime_obj->format( 'j' ) == $start_datetime_obj->format( 'j' ) )
-            {
               $add_event = true;
-            }
           }
           else if( 'day of week' == $db_shift_template->repeat_type )
           {
@@ -110,10 +105,7 @@ class shift_template_feed extends base_feed
               $start_week_number =
                 $start_datetime_obj->format( 'W' ) - $last_month_datetime_obj->format( 'W' );
   
-              if( $week_number == $start_week_number )
-              {
-                $add_event = true;
-              }
+              if( $week_number == $start_week_number ) $add_event = true;
             }
           }
         }

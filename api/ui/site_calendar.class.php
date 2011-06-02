@@ -44,8 +44,7 @@ class site_calendar extends base_calendar
   {
     parent::finish();
     $this->set_variable( 'allow_all_day', false );
-    $this->set_variable( 'editable', 'operator' != bus\session::self()->get_role()->name );
-    $this->set_variable( 'default_view', 'agendaWeek' );
+    $this->set_variable( 'editable', false );
   }
 }
 ?>

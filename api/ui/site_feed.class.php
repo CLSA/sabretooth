@@ -53,123 +53,121 @@ class site_feed extends base_feed
     while( $current_datetime_obj->diff( $end_datetime_obj )->days )
     {
       $days[ $current_datetime_obj->format( 'Y-m-d' ) ] = array(
+        'template' => false,
         'diffs' => array(),
         'times' => array() );
       $current_datetime_obj->add( new \DateInterval( 'P1D' ) );
     }
     
-    // now fill in the slot differentials for shift templates each day
+    // fill in the slot differentials for shift templates each day
     $modifier = new db\modifier();
     $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'start_date', '<', $this->end_datetime );
+    $modifier->where( 'start_date', '<=', $this->end_datetime );
     foreach( db\shift_template::select( $modifier ) as $db_shift_template )
     {
       foreach( $days as $date => $day )
       {
-        $datetime_obj = util::get_datetime_object( $date );
-        $start_datetime_obj = util::get_datetime_object( $db_shift_template->start_date );
-        $end_datetime_obj = util::get_datetime_object( $db_shift_template->end_date );
-
-        $start_time_as_int =
-          intval( preg_replace( '/[^0-9]/', '',
-            substr( $db_shift_template->start_time, 0, -3 ) ) );
-        $end_time_as_int =
-          intval( preg_replace( '/[^0-9]/', '',
-            substr( $db_shift_template->end_time, 0, -3 ) ) );
-        
-        // make sure this date is between the template's start and end date
-        if( $start_datetime_obj <= $datetime_obj &&
-            ( is_null( $db_shift_template->end_date ) || $end_datetime_obj >= $datetime_obj ) )
-        {
-          $diffs = &$days[$date]['diffs'];
-          if( 'weekly' == $db_shift_template->repeat_type )
-          {
-            // determine how many weeks from the start date this day is
-            $weeks_apart = floor( $start_datetime_obj->diff( $datetime_obj )->days / 7 );
+        $diffs = &$days[$date]['diffs'];
           
-            if( 0 == $weeks_apart % $db_shift_template->repeat_every )
-            {
-              // make sure the day of the week matches
-              $weekday = strtolower( $datetime_obj->format( 'l' ) );
-              if( $db_shift_template->$weekday )
-              {
-                if( !array_key_exists( $start_time_as_int, $diffs ) )
-                  $diffs[ $start_time_as_int ] = 0;
-                $diffs[ $start_time_as_int ] += $db_shift_template->operators;
+        if( $db_shift_template->match_date( $date ) )
+        {
+          $days[$date]['template'] = true;
 
-                if( !array_key_exists( $end_time_as_int, $diffs ) )
-                  $diffs[ $end_time_as_int ] = 0;
-                $diffs[ $end_time_as_int ] -= $db_shift_template->operators;
-              }
-            }
-          }
-          else if( 'day of month' == $db_shift_template->repeat_type )
-          {
-            if( $datetime_obj->format( 'j' ) == $start_datetime_obj->format( 'j' ) )
-            {
-              if( !array_key_exists( $start_time_as_int, $diffs ) )
-                $diffs[ $start_time_as_int ] = 0;
-              $diffs[ $start_time_as_int ] += $db_shift_template->operators;
+          $start_time_as_int =
+            intval( preg_replace( '/[^0-9]/', '',
+              substr( $db_shift_template->start_time, 0, -3 ) ) );
+          if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
+          $diffs[ $start_time_as_int ] += $db_shift_template->operators;
 
-              if( !array_key_exists( $end_time_as_int, $diffs ) )
-                $diffs[ $end_time_as_int ] = 0;
-              $diffs[ $end_time_as_int ] -= $db_shift_template->operators;
-            }
-          }
-          else if( 'day of week' == $db_shift_template->repeat_type )
-          {
-            if( $datetime_obj->format( 'l' ) == $start_datetime_obj->format( 'l' ) )
-            {
-              // determine which day of the week and week of the month the start date is on
-              $last_month_datetime_obj = clone $datetime_obj;
-              $last_month_datetime_obj->sub( new \DateInterval( 'P1M' ) );
-              $last_month_datetime_obj->setDate(
-                $last_month_datetime_obj->format( 'Y' ),
-                $last_month_datetime_obj->format( 'n' ),
-                $last_month_datetime_obj->format( 't' ) );
-              $week_number =
-                $datetime_obj->format( 'W' ) - $last_month_datetime_obj->format( 'W' );
-  
-              $last_month_datetime_obj = clone $start_datetime_obj;
-              $last_month_datetime_obj->sub( new \DateInterval( 'P1M' ) );
-              $last_month_datetime_obj->setDate(
-                $last_month_datetime_obj->format( 'Y' ),
-                $last_month_datetime_obj->format( 'n' ),
-                $last_month_datetime_obj->format( 't' ) );
-              $start_week_number =
-                $start_datetime_obj->format( 'W' ) - $last_month_datetime_obj->format( 'W' );
-  
-              if( $week_number == $start_week_number )
-              {
-                if( !array_key_exists( $start_time_as_int, $diffs ) )
-                  $diffs[ $start_time_as_int ] = 0;
-                $diffs[ $start_time_as_int ] += $db_shift_template->operators;
-  
-                if( !array_key_exists( $end_time_as_int, $diffs ) )
-                  $diffs[ $end_time_as_int ] = 0;
-                $diffs[ $end_time_as_int ] -= $db_shift_template->operators;
-              }
-            }
-          }
+          $end_time_as_int =
+            intval( preg_replace( '/[^0-9]/', '',
+              substr( $db_shift_template->end_time, 0, -3 ) ) );
+          if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[ $end_time_as_int ] = 0;
+          $diffs[ $end_time_as_int ] -= $db_shift_template->operators;
         }
+
+        // unset diffs since it is a reference
+        unset( $diffs );
       }
     }
 
-    // then, use the 'diff' array to define the 'times' array
+    // fill in the shifts (which override shift templates for that day)
+    $modifier = new db\modifier();
+    $modifier->where( 'site_id', '=', $db_site->id );
+    $modifier->where( 'start_datetime', '<', $this->end_datetime );
+    $modifier->where( 'end_datetime', '>', $this->start_datetime );
+    $modifier->order( 'start_datetime' );
+    foreach( db\shift::select( $modifier ) as $db_shift )
+    {
+      $start_datetime_obj = util::get_datetime_object( $db_shift->start_datetime );
+      $end_datetime_obj = util::get_datetime_object( $db_shift->end_datetime );
+      $date = $start_datetime_obj->format( 'Y-m-d' );
+      
+      if( $days[$date]['template'] )
+      { // remove the shift templates for this day, replace with shift
+        $days[$date]['diffs'] = array();
+        $days[$date]['template'] = false;
+      }
+
+      $diffs = &$days[ $start_datetime_obj->format( 'Y-m-d' ) ]['diffs'];
+      
+      $start_time_as_int = intval( $start_datetime_obj->format( 'Gi' ) );
+      $end_time_as_int = intval( $end_datetime_obj->format( 'Gi' ) );
+      
+      if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
+      $diffs[ $start_time_as_int ]++;
+      if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[ $end_time_as_int ] = 0;
+      $diffs[ $end_time_as_int ]--;
+
+      // unset diffs since it is a reference
+      unset( $diffs );
+    }
+
+    // fill in the appointments
+    $modifier = new db\modifier();
+    $modifier->where( 'datetime', '>=', $this->start_datetime );
+    $modifier->where( 'datetime', '<', $this->end_datetime );
+    $modifier->order( 'datetime' );
+    foreach( db\appointment::select_for_site( $db_site, $modifier ) as $db_appointment )
+    {
+      $appointment_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
+      $diffs = &$days[ $appointment_datetime_obj->format( 'Y-m-d' ) ]['diffs'];
+
+      $start_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
+      // increment slot one hour later
+      $appointment_datetime_obj->add( new \DateInterval( 'PT1H' ) );
+      $end_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
+
+      if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
+      $diffs[ $start_time_as_int ]--;
+      if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[ $end_time_as_int ] = 0;
+      $diffs[ $end_time_as_int ]++;
+
+      // unset diffs since it is a reference
+      unset( $diffs );
+    }
+    
+    // use the 'diff' arrays to define the 'times' array
     foreach( $days as $date => $day )
     {
       $num_operators = 0;
       $diffs = &$days[$date]['diffs'];
       $times = &$days[$date]['times'];
-
-      // sort the diff array by key (time) to make the following for-loop nice and simple
-      ksort( $diffs );
-
-      foreach( $diffs as $time => $diff )
+      
+      if( 0 < count( $diffs ) )
       {
-        $num_operators += $diff;
-        $times[$time] = $num_operators;
+        // sort the diff array by key (time) to make the following for-loop nice and simple
+        ksort( $diffs );
+  
+        foreach( $diffs as $time => $diff )
+        {
+          $num_operators += $diff;
+          $times[$time] = $num_operators;
+        }
       }
+
+      // unset times since it is a referece
+      unset( $times );
     }
 
     // finally, construct the event list using the 'times' array
