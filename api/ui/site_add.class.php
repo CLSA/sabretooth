@@ -35,7 +35,6 @@ class site_add extends base_view
     // define all columns defining this record
     $this->add_item( 'name', 'string', 'Name' );
     $this->add_item( 'timezone', 'enum', 'Time Zone' );
-    $this->add_item( 'operators_expected', 'number', 'Minimum expected operators' );
   }
 
   /**
@@ -55,7 +54,6 @@ class site_add extends base_view
     // set the view's items
     $this->set_item( 'name', '', true );
     $this->set_item( 'timezone', key( $timezones ), true, $timezones );
-    $this->set_item( 'operators_expected', 0, true );
 
     $this->finish_setting_items();
   }

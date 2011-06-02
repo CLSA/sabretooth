@@ -55,7 +55,7 @@ class self_menu extends widget
     
     foreach( $widgets as $db_widget )
     {
-      $calendars[] = array( 'heading' => $db_widget->subject,
+      $calendars[] = array( 'heading' => str_replace( '_', ' ', $db_widget->subject ),
                             'widget' => $db_widget->subject.'_'.$db_widget->name );
     }
 
@@ -67,12 +67,19 @@ class self_menu extends widget
     $modifier->where( 'operation.name', '=', 'list' );
     $widgets = $db_role->get_operation_list( $modifier );
     
-    $exclude = array( 'appointment', 'availability', 'consent', 'contact', 'phase', 'phone_call' );
+    $exclude = array(
+      'appointment',
+      'availability',
+      'consent',
+      'contact',
+      'operation',
+      'phase',
+      'phone_call' );
 
     foreach( $widgets as $db_widget )
     {
       if( !in_array( $db_widget->subject, $exclude ) )
-        $lists[] = array( 'heading' => util::pluralize( $db_widget->subject ),
+        $lists[] = array( 'heading' => util::pluralize( str_replace( '_', ' ', $db_widget->subject ) ),
                           'widget' => $db_widget->subject.'_'.$db_widget->name );
       
       // insert the participant tree after participant list

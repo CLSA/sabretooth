@@ -12,7 +12,6 @@ CREATE  TABLE IF NOT EXISTS `site` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `name` VARCHAR(45) NOT NULL ,
   `timezone` ENUM('Canada/Pacific','Canada/Mountain','Canada/Central','Canada/Eastern','Canada/Atlantic','Canada/Newfoundland') NOT NULL ,
-  `operators_expected` INT UNSIGNED NOT NULL DEFAULT 0 ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) )
 ENGINE = InnoDB;
@@ -658,6 +657,38 @@ CREATE  TABLE IF NOT EXISTS `away_time` (
   CONSTRAINT `fk_away_time_user`
     FOREIGN KEY (`user_id` )
     REFERENCES `user` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `shift_template`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `shift_template` ;
+
+CREATE  TABLE IF NOT EXISTS `shift_template` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `site_id` INT UNSIGNED NOT NULL ,
+  `start_time` TIME NOT NULL ,
+  `end_time` TIME NOT NULL ,
+  `start_date` DATE NOT NULL ,
+  `end_date` DATE NULL ,
+  `operators` INT UNSIGNED NOT NULL ,
+  `repeat_type` ENUM('weekly','day of month','day of week') NOT NULL DEFAULT "weekly" ,
+  `repeat_every` INT NOT NULL DEFAULT 1 ,
+  `monday` TINYINT(1)  NOT NULL DEFAULT false ,
+  `tuesday` TINYINT(1)  NOT NULL DEFAULT false ,
+  `wednesday` TINYINT(1)  NOT NULL DEFAULT false ,
+  `thursday` TINYINT(1)  NOT NULL DEFAULT false ,
+  `friday` TINYINT(1)  NOT NULL DEFAULT false ,
+  `saturday` TINYINT(1)  NOT NULL DEFAULT false ,
+  `sunday` TINYINT(1)  NOT NULL DEFAULT false ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_site_id` (`site_id` ASC) ,
+  CONSTRAINT `fk_shift_template_site`
+    FOREIGN KEY (`site_id` )
+    REFERENCES `site` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

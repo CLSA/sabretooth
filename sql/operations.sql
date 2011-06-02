@@ -294,6 +294,24 @@ VALUES( "datum", "shift", "feed", true, "Retrieves a list of shifts for a given 
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "datum", "shift", "primary", true, "Retrieves base shift information." );
 
+-- shift_template
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "shift_template", "delete", true, "Removes a shift template from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "shift_template", "edit", true, "Edits a shift template's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "shift_template", "new", true, "Add a new shift template to the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "shift_template", "add", true, "View a form for creating a new shift template." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "shift_template", "view", true, "View a shift template's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "shift_template", "calendar", true, "Shows shift templates in a calendar format." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "datum", "shift_template", "feed", true, "Retrieves a list of shift templates for a given time-span." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "datum", "shift_template", "primary", true, "Retrieves base shift template information." );
+
 -- site
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "site", "edit", true, "Edits a site's details." );

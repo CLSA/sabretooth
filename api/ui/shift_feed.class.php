@@ -78,7 +78,7 @@ class shift_feed extends base_feed
       $event_list[] = array(
         'id' => $db_shift->id,
         'title' => $showing_month
-          ? sprintf( ' to %s %s', $end_time, $db_shift->get_user()->name )
+          ? sprintf( ' to %s: %s', $end_time, $db_shift->get_user()->name )
           : $db_shift->get_user()->name,
         'allDay' => false,
         'start' => $start_datetime_obj->format( \DateTime::ISO8601 ),

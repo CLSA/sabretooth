@@ -32,13 +32,13 @@ class availability_list extends base_list_widget
   {
     parent::__construct( 'availability', $args );
     
-    $this->add_column( 'monday', 'boolean', 'Mon', true );
-    $this->add_column( 'tuesday', 'boolean', 'Tue', true );
-    $this->add_column( 'wednesday', 'boolean', 'Wed', true );
-    $this->add_column( 'thursday', 'boolean', 'Thu', true );
-    $this->add_column( 'friday', 'boolean', 'Fri', true );
-    $this->add_column( 'saturday', 'boolean', 'Sat', true );
-    $this->add_column( 'sunday', 'boolean', 'Sun', true );
+    $this->add_column( 'monday', 'boolean', 'M', true );
+    $this->add_column( 'tuesday', 'boolean', 'T', true );
+    $this->add_column( 'wednesday', 'boolean', 'W', true );
+    $this->add_column( 'thursday', 'boolean', 'T', true );
+    $this->add_column( 'friday', 'boolean', 'F', true );
+    $this->add_column( 'saturday', 'boolean', 'S', true );
+    $this->add_column( 'sunday', 'boolean', 'S', true );
     $this->add_column( 'start_time', 'time', 'Start', true );
     $this->add_column( 'end_time', 'time', 'End', true );
   }

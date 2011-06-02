@@ -47,6 +47,7 @@ class shift_calendar extends base_calendar
       $db_user = new db\user( $this->user_id );
       $this->set_heading( 'Shifts for '.$db_user->name );
     }
+
   }
   
   /**

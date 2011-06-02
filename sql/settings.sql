@@ -26,16 +26,6 @@ VALUES( "appointment", "call post-window", "integer", "15",
 "Number of minutes after an appointment when it is considered assignable, after which it will be
 considered missed." );
 
-INSERT INTO setting( category, name, type, value, description )
-VALUES( "appointment", "start_time", "string", "09:00",
-"The start time-of-day that appointments are expected to be booked.  This time is used for filling
-in expected operator times in the site calendar and when booking appointments." );
-
-INSERT INTO setting( category, name, type, value, description )
-VALUES( "appointment", "end_time", "string", "21:00",
-"The end time-of-day that appointments are expected to be booked.  This time is used for filling
-in expected operator times in the site calendar and when booking appointments." );
-
 -- callback timing
 INSERT INTO setting( category, name, type, value, description )
 VALUES( "callback timing", "contacted", "integer", "10080",
