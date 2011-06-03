@@ -45,6 +45,7 @@ class appointment extends record
       $modifier = new modifier();
       $modifier->where( 'participant_id', '=', $this->participant_id );
       $modifier->where( 'assignment_id', '=', NULL );
+      if( !is_null( $this->id ) ) $modifier->where( 'id', '!=', $this->id );
       if( 0 < static::count( $modifier ) )
         throw new exc\runtime(
           'Cannot have more than one unassigned appointment per participant.', __METHOD__ );
@@ -73,61 +74,118 @@ class appointment extends record
       throw new exc\runtime(
         'Cannot validate an appointment date, participant has no primary location.', __METHOD__ );
     
-    $expected_start = intval( preg_replace( '/[^0-9]/', '',
-      bus\setting_manager::self()->get_setting( 'appointment', 'start_time' ) ) );
-    $expected_end = intval( preg_replace( '/[^0-9]/', '', 
-      bus\setting_manager::self()->get_setting( 'appointment', 'end_time' ) ) );
+    $start_datetime_obj = util::get_datetime_object( $this->datetime );
+    $end_datetime_obj = clone $start_datetime_obj;
+    $end_datetime_obj->add( new \DateInterval( 'PT1H' ) ); // appointments are one hour long
 
-    // test for the start of the appointment
-    $date_obj = util::get_datetime_object( $this->datetime );
-    $start = intval( preg_replace( '/[^0-9]/', '', $date_obj->format( 'H:i' ) ) );
-
-    // how many slots are open?
+    // determine whether to test for shifts or shift templates on the appointment day
     $modifier = new modifier();
     $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'start_datetime', '<=', $date_obj->format( 'Y-m-d H:i:s' ) );
-    $modifier->where( 'end_datetime', '>', $date_obj->format( 'Y-m-d H:i:s' ) );
+    $modifier->where( 'DATE( start_datetime )', '=', $start_datetime_obj->format( 'Y-m-d' ) );
     
-    $open_slots = shift::count( $modifier );
-    if( $expected_start <= $start && $start <= $expected_end &&
-        $open_slots < $db_site->operators_expected )
+    $diffs = array();
+
+    if( 0 == shift::count( $modifier ) )
+    { // determine slots using shift template
+      $modifier = new $modifier();
+      $modifier->where( 'site_id', '=', $db_site->id );
+      $modifier->where( 'start_date', '<=', $start_datetime_obj->format( 'Y-m-d' ) );
+      $modifier->where( 'start_time', '<', $end_datetime_obj->format( 'H:i:s' ) );
+      $modifier->where( 'end_time', '>', $start_datetime_obj->format( 'H:i:s' ) );
+      
+      foreach( shift_template::select( $modifier ) as $db_shift_template )
+      {
+        if( $db_shift_template->match_date( $date ) )
+        {
+          $start_time_as_int =
+            intval( preg_replace( '/[^0-9]/', '',
+              substr( $db_shift_template->start_time, 0, -3 ) ) );
+          if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[$start_time_as_int] = 0;
+          $diffs[$start_time_as_int] += $db_shift_template->operators;
+
+          $end_time_as_int =
+            intval( preg_replace( '/[^0-9]/', '',
+              substr( $db_shift_template->end_time, 0, -3 ) ) );
+          if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[$end_time_as_int] = 0;
+          $diffs[$end_time_as_int] -= $db_shift_template->operators;
+        }
+      }
+    }
+    else // determine slots using shifts
     {
-      $open_slots = $db_site->operators_expected;
+      $modifier = new $modifier();
+      $modifier->where( 'site_id', '=', $db_site->id );
+      $modifier->where( 'start_datetime', '<', $end_datetime_obj->format( 'Y-m-d H:i:s' ) );
+      $modifier->where( 'end_datetime', '>', $start_datetime_obj->format( 'Y-m-d H:i:s' ) );
+
+      foreach( shift::select( $modifier ) as $db_shift )
+      {
+        $start_time_as_int =
+          intval( preg_replace( '/[^0-9]/', '',
+            substr( $db_shift->start_datetime, -8, -3 ) ) );
+        $end_time_as_int =
+          intval( preg_replace( '/[^0-9]/', '',
+            substr( $db_shift->end_datetime, -8, -3 ) ) );
+
+        if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[$start_time_as_int] = 0;
+        $diffs[$start_time_as_int]++;
+        if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[$end_time_as_int] = 0;
+        $diffs[$end_time_as_int]--;
+      }
     }
     
     // and how many appointments are during this time?
     $modifier = new modifier();
-    $modifier->where( 'datetime', '<=', $date_obj->format( 'Y-m-d H:i:s' ) );
-    $modifier->where( 'datetime', '>', $date_obj->format( 'Y-m-d H:i:s' ) );
-    $appointments = appointment::count_for_site( $db_site, $modifier );
-    $open_slots -= $appointments; 
-
-    if( 0 >= $open_slots ) return false;
-
-    // test for the end of the appointment
-    $date_obj->add( new \DateInterval( 'PT1H' ) );
-    $end = intval( preg_replace( '/[^0-9]/', '', $date_obj->format( 'H:i' ) ) );
-
-    // how many slots are open?
-    $modifier = new modifier();
-    $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'start_datetime', '<=', $date_obj->format( 'Y-m-d H:i:s' ) );
-    $modifier->where( 'end_datetime', '>', $date_obj->format( 'Y-m-d H:i:s' ) );
-    $open_slots = shift::count( $modifier );
-    if( $expected_start <= $start && $start <= $expected_end &&
-        $open_slots < $db_site->operators_expected )
+    $modifier->where( 'DATE( datetime )', '=', $start_datetime_obj->format( 'Y-m-d' ) );
+    if( !is_null( $this->id ) ) $modifier->where( 'appointment.id', '!=', $this->id );
+    foreach( appointment::select_for_site( $db_site, $modifier ) as $db_appointment )
     {
-      $open_slots = $db_site->operators_expected;
+      $appointment_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
+
+      $start_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
+      // increment slot one hour later
+      $appointment_datetime_obj->add( new \DateInterval( 'PT1H' ) );
+      $end_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
+
+      if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
+      $diffs[ $start_time_as_int ]--;
+      if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[ $end_time_as_int ] = 0;
+      $diffs[ $end_time_as_int ]++;
     }
     
-    // and how many appointments are during this time?
-    $modifier = new modifier();
-    $modifier->where( 'datetime', '<=', $date_obj->format( 'Y-m-d H:i:s' ) );
-    $modifier->where( 'datetime', '>', $date_obj->format( 'Y-m-d H:i:s' ) );
-    $appointments = appointment::count_for_site( $db_site, $modifier );
-    $open_slots -= $appointments; 
+    // if we have no diffs on this day, then we have no slots
+    if( 0 == count( $diffs ) ) return false;
 
-    if( 0 >= $open_slots ) return false;
+    // use the 'diff' arrays to define the 'times' array
+    $times = array( 0 => 0 ); // start day with no operators
+    ksort( $diffs );
+    $num_operators = 0;
+    foreach( $diffs as $time => $diff )
+    {
+      $num_operators += $diff;
+      $times[$time] = $num_operators;
+    }
+
+    // Now search the times array for any 0's inside the appointment time
+    // NOTE: we need to include the time immediately prior to the appointment start time
+    $start_time_as_int = intval( $start_datetime_obj->format( 'Gi' ) );
+    $end_time_as_int = intval( $end_datetime_obj->format( 'Gi' ) );
+    $match = false;
+    foreach( $times as $time => $slots )
+    {
+      if( $start_time_as_int <= $time && $time < $end_time_as_int )
+      {
+        if( 1 > $slots ) return false;
+
+        if( !$match )
+        {
+          if( $time != $start_time_as_int && 1 > $last_slot ) return false;
+          $match = true;
+        }
+      }
+
+      $last_slot = $slots;
+    }
 
     // if we get here then there is at least one available slot
     return true;

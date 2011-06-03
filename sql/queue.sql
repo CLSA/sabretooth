@@ -15,7 +15,7 @@ description = "All participants in the database.";
 
 INSERT INTO queue SET
 name = "finished",
-title = "Participants finished all questionnaires",
+title = "Finished all questionnaires",
 rank = NULL,
 qnaire_specific = false,
 parent_queue_id = (
@@ -27,7 +27,7 @@ description = "Participants who have completed all questionnaires.";
 
 INSERT INTO queue SET
 name = "ineligible",
-title = "Ineligible participants",
+title = "Not eligible to answer questionnaires",
 rank = NULL,
 qnaire_specific = false,
 parent_queue_id = (
@@ -36,7 +36,7 @@ parent_queue_id = (
     FROM queue
     WHERE name = "all" ) AS tmp ),
 description = "Participants who are not eligible to answer questionnaires due to a permanent
-condition or because they are inactive.";
+condition, because they are inactive or because they do not have a phone number.";
 
 INSERT INTO queue SET
 name = "inactive",
@@ -50,6 +50,32 @@ parent_queue_id = (
     WHERE name = "ineligible" ) AS tmp ),
 description = "Participants who are not eligible for answering questionnaires because they have
 been marked as inactive.";
+
+INSERT INTO queue SET
+name = "sourcing required",
+title = "Participants without a phone number",
+rank = NULL,
+qnaire_specific = false,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "ineligible" ) AS tmp ),
+description = "Participants who are not eligible for answering questionnaires because they have
+no active phone numbers.";
+
+INSERT INTO queue SET
+name = "refused consent",
+title = "Participants who refused consent",
+rank = NULL,
+qnaire_specific = false,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "ineligible" ) AS tmp ),
+description = "Participants who are not eligible for answering questionnaires because they have
+refused consent.";
 
 INSERT INTO queue SET
 name = "deceased",
@@ -104,21 +130,8 @@ description = "Participants who are not eligible for answering questionnaires be
 mentally unfit.";
 
 INSERT INTO queue SET
-name = "sourcing required",
-title = "Participants without a phone number",
-rank = NULL,
-qnaire_specific = false,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "ineligible" ) AS tmp ),
-description = "Participants who are not eligible for answering questionnaires because they have
-no active phone numbers.";
-
-INSERT INTO queue SET
 name = "eligible",
-title = "Eligible participants",
+title = "Eligible to answer questionnaires",
 rank = NULL,
 qnaire_specific = false,
 parent_queue_id = (

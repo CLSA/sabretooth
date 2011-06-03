@@ -1,6 +1,6 @@
 <?php
 /**
- * site_calendar.class.php
+ * shift_template_calendar.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -18,7 +18,7 @@ use sabretooth\exception as exc;
  * 
  * @package sabretooth\ui
  */
-class site_calendar extends base_calendar
+class shift_template_calendar extends base_calendar
 {
   /**
    * Constructor
@@ -30,8 +30,8 @@ class site_calendar extends base_calendar
    */
   public function __construct( $args )
   {
-    parent::__construct( 'site', $args );
-    $this->set_heading( 'Open appointment slots for '.bus\session::self()->get_site()->name );
+    parent::__construct( 'shift_template', $args );
+    $this->set_heading( 'Shift template for '.bus\session::self()->get_site()->name );
   }
   
   /**
@@ -44,7 +44,7 @@ class site_calendar extends base_calendar
   {
     parent::finish();
     $this->set_variable( 'allow_all_day', false );
-    $this->set_variable( 'editable', false );
+    $this->set_variable( 'editable', true );
   }
 }
 ?>

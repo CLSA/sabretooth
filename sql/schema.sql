@@ -10,9 +10,9 @@ DROP TABLE IF EXISTS `site` ;
 
 CREATE  TABLE IF NOT EXISTS `site` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   `timezone` ENUM('Canada/Pacific','Canada/Mountain','Canada/Central','Canada/Eastern','Canada/Atlantic','Canada/Newfoundland') NOT NULL ,
-  `operators_expected` INT UNSIGNED NOT NULL DEFAULT 0 ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) )
 ENGINE = InnoDB;
@@ -25,6 +25,7 @@ DROP TABLE IF EXISTS `participant` ;
 
 CREATE  TABLE IF NOT EXISTS `participant` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
   `uid` VARCHAR(45) NULL COMMENT 'External unique ID' ,
   `first_name` VARCHAR(45) NOT NULL ,
@@ -54,6 +55,7 @@ DROP TABLE IF EXISTS `user` ;
 
 CREATE  TABLE IF NOT EXISTS `user` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   `first_name` VARCHAR(255) NOT NULL ,
   `last_name` VARCHAR(255) NOT NULL ,
@@ -71,6 +73,7 @@ DROP TABLE IF EXISTS `role` ;
 
 CREATE  TABLE IF NOT EXISTS `role` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) )
@@ -84,6 +87,7 @@ DROP TABLE IF EXISTS `qnaire` ;
 
 CREATE  TABLE IF NOT EXISTS `qnaire` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(255) NOT NULL ,
   `rank` INT NOT NULL ,
   `prev_qnaire_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The qnaire which must be completed before this one begins.' ,
@@ -108,6 +112,7 @@ DROP TABLE IF EXISTS `phase` ;
 
 CREATE  TABLE IF NOT EXISTS `phase` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `qnaire_id` INT UNSIGNED NOT NULL ,
   `sid` INT NOT NULL COMMENT 'limesurvey surveys.sid' ,
   `stage` SMALLINT UNSIGNED NOT NULL ,
@@ -131,6 +136,7 @@ DROP TABLE IF EXISTS `province` ;
 
 CREATE  TABLE IF NOT EXISTS `province` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   `abbreviation` VARCHAR(5) NOT NULL ,
   `site_id` INT UNSIGNED NULL COMMENT 'Which site manages participants.' ,
@@ -153,6 +159,7 @@ DROP TABLE IF EXISTS `contact` ;
 
 CREATE  TABLE IF NOT EXISTS `contact` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
   `rank` INT NOT NULL ,
@@ -189,6 +196,7 @@ DROP TABLE IF EXISTS `interview` ;
 
 CREATE  TABLE IF NOT EXISTS `interview` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `qnaire_id` INT UNSIGNED NOT NULL ,
   `require_supervisor` TINYINT(1)  NOT NULL DEFAULT false ,
@@ -250,6 +258,7 @@ DROP TABLE IF EXISTS `assignment` ;
 
 CREATE  TABLE IF NOT EXISTS `assignment` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
   `site_id` INT UNSIGNED NOT NULL COMMENT 'The site from which the user was assigned.' ,
   `interview_id` INT UNSIGNED NOT NULL ,
@@ -293,6 +302,7 @@ DROP TABLE IF EXISTS `phone_call` ;
 
 CREATE  TABLE IF NOT EXISTS `phone_call` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `assignment_id` INT UNSIGNED NOT NULL ,
   `contact_id` INT UNSIGNED NOT NULL ,
   `start_datetime` DATETIME NOT NULL COMMENT 'The time the call started.' ,
@@ -322,6 +332,7 @@ DROP TABLE IF EXISTS `operation` ;
 
 CREATE  TABLE IF NOT EXISTS `operation` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `type` ENUM('action','datum','widget') NOT NULL ,
   `subject` VARCHAR(45) NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
@@ -339,6 +350,7 @@ DROP TABLE IF EXISTS `role_has_operation` ;
 
 CREATE  TABLE IF NOT EXISTS `role_has_operation` (
   `role_id` INT UNSIGNED NOT NULL ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `operation_id` INT UNSIGNED NOT NULL ,
   PRIMARY KEY (`role_id`, `operation_id`) ,
   INDEX `fk_role_id` (`role_id` ASC) ,
@@ -363,9 +375,11 @@ DROP TABLE IF EXISTS `consent` ;
 
 CREATE  TABLE IF NOT EXISTS `consent` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
-  `event` ENUM('verbal accept','verbal deny','written accept','written deny','retract','mail request','mail sent') NOT NULL ,
+  `event` ENUM('verbal accept','verbal deny','written accept','written deny','retract','withdraw') NOT NULL ,
   `date` DATE NOT NULL ,
+  `note` TEXT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
   CONSTRAINT `fk_consent_participant`
@@ -383,6 +397,7 @@ DROP TABLE IF EXISTS `availability` ;
 
 CREATE  TABLE IF NOT EXISTS `availability` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `monday` TINYINT(1)  NOT NULL DEFAULT false ,
   `tuesday` TINYINT(1)  NOT NULL DEFAULT false ,
@@ -410,6 +425,7 @@ DROP TABLE IF EXISTS `shift` ;
 
 CREATE  TABLE IF NOT EXISTS `shift` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `site_id` INT UNSIGNED NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
   `start_datetime` DATETIME NOT NULL ,
@@ -471,6 +487,7 @@ DROP TABLE IF EXISTS `participant_note` ;
 
 CREATE  TABLE IF NOT EXISTS `participant_note` (
   `id` INT NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `sticky` TINYINT(1)  NOT NULL DEFAULT false ,
@@ -499,6 +516,7 @@ DROP TABLE IF EXISTS `assignment_note` ;
 
 CREATE  TABLE IF NOT EXISTS `assignment_note` (
   `id` INT NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
   `assignment_id` INT UNSIGNED NOT NULL ,
   `sticky` TINYINT(1)  NOT NULL DEFAULT false ,
@@ -568,6 +586,7 @@ DROP TABLE IF EXISTS `setting` ;
 
 CREATE  TABLE IF NOT EXISTS `setting` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `category` VARCHAR(45) NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   `type` ENUM( 'boolean', 'integer', 'float', 'string' ) NOT NULL ,
@@ -587,6 +606,7 @@ DROP TABLE IF EXISTS `appointment` ;
 
 CREATE  TABLE IF NOT EXISTS `appointment` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `contact_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'Which contact to use.' ,
   `assignment_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'This appointment\'s assignment.' ,
@@ -622,6 +642,7 @@ DROP TABLE IF EXISTS `setting_value` ;
 
 CREATE  TABLE IF NOT EXISTS `setting_value` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `setting_id` INT UNSIGNED NOT NULL ,
   `site_id` INT UNSIGNED NOT NULL ,
   `value` VARCHAR(45) NOT NULL ,
@@ -650,6 +671,7 @@ DROP TABLE IF EXISTS `away_time` ;
 
 CREATE  TABLE IF NOT EXISTS `away_time` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
   `start_datetime` DATETIME NOT NULL ,
   `end_datetime` DATETIME NULL DEFAULT NULL ,
@@ -658,6 +680,38 @@ CREATE  TABLE IF NOT EXISTS `away_time` (
   CONSTRAINT `fk_away_time_user`
     FOREIGN KEY (`user_id` )
     REFERENCES `user` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `shift_template`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `shift_template` ;
+
+CREATE  TABLE IF NOT EXISTS `shift_template` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `site_id` INT UNSIGNED NOT NULL ,
+  `start_time` TIME NOT NULL ,
+  `end_time` TIME NOT NULL ,
+  `start_date` DATE NOT NULL ,
+  `end_date` DATE NULL ,
+  `operators` INT UNSIGNED NOT NULL ,
+  `repeat_type` ENUM('weekly','day of month','day of week') NOT NULL DEFAULT "weekly" ,
+  `repeat_every` INT NOT NULL DEFAULT 1 ,
+  `monday` TINYINT(1)  NOT NULL DEFAULT false ,
+  `tuesday` TINYINT(1)  NOT NULL DEFAULT false ,
+  `wednesday` TINYINT(1)  NOT NULL DEFAULT false ,
+  `thursday` TINYINT(1)  NOT NULL DEFAULT false ,
+  `friday` TINYINT(1)  NOT NULL DEFAULT false ,
+  `saturday` TINYINT(1)  NOT NULL DEFAULT false ,
+  `sunday` TINYINT(1)  NOT NULL DEFAULT false ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_site_id` (`site_id` ASC) ,
+  CONSTRAINT `fk_shift_template_site`
+    FOREIGN KEY (`site_id` )
+    REFERENCES `site` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -676,7 +730,7 @@ CREATE TABLE IF NOT EXISTS `participant_last_assignment` (`participant_id` INT, 
 -- -----------------------------------------------------
 -- Placeholder table for view `participant_for_queue`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `active` INT, `uid` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT, `prior_contact_date` INT, `phone_number_count` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT, `current_qnaire_id` INT, `start_qnaire_date` INT);
+CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `active` INT, `uid` INT, `language` INT, `status` INT, `prior_contact_date` INT, `phone_number_count` INT, `last_consent` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT, `current_qnaire_id` INT, `start_qnaire_date` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `assignment_last_phone_call`
@@ -687,6 +741,11 @@ CREATE TABLE IF NOT EXISTS `assignment_last_phone_call` (`assignment_id` INT, `p
 -- Placeholder table for view `participant_available`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `participant_available` (`participant_id` INT, `available` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `participant_last_consent`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `participant_last_consent` (`participant_id` INT, `consent_id` INT);
 
 -- -----------------------------------------------------
 -- View `participant_primary_location`
@@ -726,8 +785,14 @@ AND assignment_1.start_datetime = (
 DROP VIEW IF EXISTS `participant_for_queue` ;
 DROP TABLE IF EXISTS `participant_for_queue`;
 CREATE  OR REPLACE VIEW `participant_for_queue` AS
-SELECT participant.*,
+SELECT participant.id,
+       participant.active,
+       participant.uid,
+       participant.language,
+       participant.status,
+       participant.prior_contact_date,
        COUNT( DISTINCT contact.id ) as phone_number_count,
+       consent.event AS last_consent,
        assignment.id AS last_assignment_id,
        IFNULL( participant.site_id, province.site_id ) AS base_site_id,
        assignment.id IS NOT NULL AND assignment.end_datetime IS NULL AS assigned,
@@ -763,6 +828,10 @@ LEFT JOIN contact AS primary_contact
 ON participant_primary_location.contact_id = primary_contact.id
 LEFT JOIN province
 ON primary_contact.province_id = province.id
+LEFT JOIN participant_last_consent
+ON participant.id = participant_last_consent.participant_id 
+LEFT JOIN consent
+ON consent.id = participant_last_consent.consent_id
 LEFT JOIN participant_last_assignment
 ON participant.id = participant_last_assignment.participant_id 
 LEFT JOIN assignment
@@ -843,6 +912,20 @@ FROM participant
 LEFT JOIN availability
 ON availability.participant_id = participant.id
 GROUP BY participant.id;
+
+-- -----------------------------------------------------
+-- View `participant_last_consent`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `participant_last_consent` ;
+DROP TABLE IF EXISTS `participant_last_consent`;
+CREATE  OR REPLACE VIEW `participant_last_consent` AS
+SELECT participant_id, id AS consent_id
+FROM consent AS t1
+WHERE t1.date = (
+  SELECT MAX( t2.date )
+  FROM consent AS t2
+  WHERE t1.participant_id = t2.participant_id
+  GROUP BY t2.participant_id );
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

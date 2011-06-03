@@ -8,4 +8,4 @@ Times and timezones are being handled in the following manner:
   PHP DateTime object which tracks time zone.
 - All time, date and datetime type columns MUST either be named after their type or end in an
   underscore and their type (ie: date, start_date, prior_datetime, etc)
-- All timestamp type columns MUST be named "datetime" or end in "_datetime".
+- All timestamp type columns MUST be named "timestamp", "datetime" or end in "_datetime".

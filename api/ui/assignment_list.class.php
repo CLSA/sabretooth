@@ -100,7 +100,7 @@ class assignment_list extends site_restricted_list
                       ? 0
                       : $db_assignment->get_interview()->participant_id;
       $modifier->where( 'interview.participant_id', '=', $participant_id );
-      $modifier->where( 'end_time', '!=', NULL );
+      $modifier->where( 'end_datetime', '!=', NULL );
     }
 
     return parent::determine_record_count( $modifier );
@@ -125,7 +125,7 @@ class assignment_list extends site_restricted_list
                       ? 0
                       : $db_assignment->get_interview()->participant_id;
       $modifier->where( 'interview.participant_id', '=', $participant_id );
-      $modifier->where( 'end_time', '!=', NULL );
+      $modifier->where( 'end_datetime', '!=', NULL );
     }
 
     return parent::determine_record_list( $modifier );

@@ -49,9 +49,8 @@ abstract class record extends \sabretooth\base_object
       // Because of mysql does not allow setting the default value for a DATETIME column to be
       // NOW() we need to set the default here manually
       $default = static::db()->get_column_default( static::get_table_name(), $name );
-      if( 'CURRENT_TIMESTAMP' == $default || 
-          ( 'start_datetime' == $name &&
-            'datetime' == static::db()->get_column_data_type( static::get_table_name(), $name ) ) )
+      if( 'start_datetime' == $name ||
+          ( 'CURRENT_TIMESTAMP' == $default && 'datetime' == $name ) )
       {
         $date_obj = util::get_datetime_object();
         $this->column_values[$name] = $date_obj->format( 'Y-m-d H:i:s' );
@@ -126,15 +125,17 @@ abstract class record extends \sabretooth\base_object
                    $this->column_values[static::get_primary_key_name()] ),
           __METHOD__ );
 
-      $this->column_values = $row;
-
       // convert any date, time or datetime columns
-      foreach( $this->column_values as $key => $val )
+      foreach( $row as $key => $val )
       {
-        if( database::is_time_column( $key ) )
-          $this->column_values[$key] = util::from_server_datetime( $val, 'H:i:s' );
-        else if( database::is_datetime_column( $key ) )
-          $this->column_values[$key] = util::from_server_datetime( $val );
+        if( array_key_exists( $key, $this->column_values ) )
+        {
+          if( database::is_time_column( $key ) )
+            $this->column_values[$key] = util::from_server_datetime( $val, 'H:i:s' );
+          else if( database::is_datetime_column( $key ) )
+            $this->column_values[$key] = util::from_server_datetime( $val );
+          else $this->column_values[$key] = $val;
+        }
       }
     }
   }
@@ -956,7 +957,8 @@ abstract class record extends \sabretooth\base_object
   }
   
   /**
-   * Returns an array of column names for this table.
+   * Returns an array of column names for this table.  Any columns in the database by the name
+   * 'timestamp' are always ignored and left out of the active record.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return array( string )
    * @access public

@@ -92,6 +92,18 @@ class participant_view extends base_view
     {
       $this->consent_list = NULL;
     }
+
+    try
+    {
+      // create the assignment sub-list widget
+      $this->assignment_list = new assignment_list( $args );
+      $this->assignment_list->set_parent( $this );
+      $this->assignment_list->set_heading( 'Assignment history' );
+    }
+    catch( exc\permission $e )
+    {
+      $this->assignment_list = NULL;
+    }
   }
 
   /**
@@ -167,8 +179,44 @@ class participant_view extends base_view
       $this->consent_list->finish();
       $this->set_variable( 'consent_list', $this->consent_list->get_variables() );
     }
+
+    if( !is_null( $this->assignment_list ) )
+    {
+      $this->assignment_list->finish();
+      $this->set_variable( 'assignment_list', $this->assignment_list->get_variables() );
+    }
   }
   
+  /**
+   * Overrides the assignment list widget's method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return int
+   * @assignment protected
+   */
+  public function determine_assignment_count( $modifier = NULL )
+  {
+    if( NULL == $modifier ) $modifier = new db\modifier();
+    $modifier->where( 'interview.participant_id', '=', $this->get_record()->id );
+    return db\assignment::count( $modifier );
+  }
+
+  /**
+   * Overrides the assignment list widget's method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return array( record )
+   * @assignment protected
+   */
+  public function determine_assignment_list( $modifier = NULL )
+  {
+    if( NULL == $modifier ) $modifier = new db\modifier();
+    $modifier->where( 'interview.participant_id', '=', $this->get_record()->id );
+    return db\assignment::select( $modifier );
+  }
+
   /**
    * The participant list widget.
    * @var contact_list
@@ -196,5 +244,12 @@ class participant_view extends base_view
    * @access protected
    */
   protected $consent_list = NULL;
+  
+  /**
+   * The participant list widget.
+   * @var assignment_list
+   * @access protected
+   */
+  protected $assignment_list = NULL;
 }
 ?>

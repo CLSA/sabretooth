@@ -35,6 +35,7 @@ class consent_view extends base_view
     // add items to the view
     $this->add_item( 'event', 'enum', 'Event' );
     $this->add_item( 'date', 'date', 'Date' );
+    $this->add_item( 'note', 'text', 'Note' );
   }
 
   /**
@@ -54,6 +55,7 @@ class consent_view extends base_view
     // set the view's items
     $this->set_item( 'event', $this->get_record()->event, true, $events );
     $this->set_item( 'date', $this->get_record()->date, true );
+    $this->set_item( 'note', $this->get_record()->note );
 
     $this->finish_setting_items();
   }

@@ -51,6 +51,11 @@ class appointment_feed extends base_feed
     $db_site = bus\session::self()->get_site();
     foreach( db\appointment::select_for_site( $db_site, $modifier ) as $db_appointment )
     {
+      $start_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
+      $end_datetime_obj = clone $start_datetime_obj;
+      // assume appointments to be one hour long
+      $end_datetime_obj->modify( '+1 hour' );
+
       $db_participant = $db_appointment->get_participant();
       $event_list[] = array(
         'id' => $db_appointment->id,
@@ -58,9 +63,8 @@ class appointment_feed extends base_feed
           $db_participant->first_name.' '.$db_participant->last_name :
           $db_participant->uid,
         'allDay' => false,
-        'start' => strtotime( $db_appointment->datetime ),
-        // assume appointments to be one hour long
-        'end' => strtotime( ( $db_appointment->datetime ) + 3600 ) );
+        'start' => $start_datetime_obj->format( \DateTime::ISO8601 ),
+        'end' => $end_datetime_obj->format( \DateTime::ISO8601 ) );
     }
 
     return $event_list;

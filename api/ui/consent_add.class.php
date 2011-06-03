@@ -36,6 +36,7 @@ class consent_add extends base_view
     $this->add_item( 'participant_id', 'hidden' );
     $this->add_item( 'event', 'enum', 'Event' );
     $this->add_item( 'date', 'date', 'Date' );
+    $this->add_item( 'note', 'text', 'Note' );
   }
 
   /**
@@ -61,6 +62,7 @@ class consent_add extends base_view
     $this->set_item( 'participant_id', $this->parent->get_record()->id );
     $this->set_item( 'event', key( $events ), true, $events );
     $this->set_item( 'date', '', true );
+    $this->set_item( 'note', '' );
 
     $this->finish_setting_items();
   }
