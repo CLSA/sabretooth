@@ -10,6 +10,7 @@ DROP TABLE IF EXISTS `site` ;
 
 CREATE  TABLE IF NOT EXISTS `site` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   `timezone` ENUM('Canada/Pacific','Canada/Mountain','Canada/Central','Canada/Eastern','Canada/Atlantic','Canada/Newfoundland') NOT NULL ,
   PRIMARY KEY (`id`) ,
@@ -24,6 +25,7 @@ DROP TABLE IF EXISTS `participant` ;
 
 CREATE  TABLE IF NOT EXISTS `participant` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
   `uid` VARCHAR(45) NULL COMMENT 'External unique ID' ,
   `first_name` VARCHAR(45) NOT NULL ,
@@ -53,6 +55,7 @@ DROP TABLE IF EXISTS `user` ;
 
 CREATE  TABLE IF NOT EXISTS `user` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   `first_name` VARCHAR(255) NOT NULL ,
   `last_name` VARCHAR(255) NOT NULL ,
@@ -70,6 +73,7 @@ DROP TABLE IF EXISTS `role` ;
 
 CREATE  TABLE IF NOT EXISTS `role` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) )
@@ -83,6 +87,7 @@ DROP TABLE IF EXISTS `qnaire` ;
 
 CREATE  TABLE IF NOT EXISTS `qnaire` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(255) NOT NULL ,
   `rank` INT NOT NULL ,
   `prev_qnaire_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The qnaire which must be completed before this one begins.' ,
@@ -107,6 +112,7 @@ DROP TABLE IF EXISTS `phase` ;
 
 CREATE  TABLE IF NOT EXISTS `phase` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `qnaire_id` INT UNSIGNED NOT NULL ,
   `sid` INT NOT NULL COMMENT 'limesurvey surveys.sid' ,
   `stage` SMALLINT UNSIGNED NOT NULL ,
@@ -130,6 +136,7 @@ DROP TABLE IF EXISTS `province` ;
 
 CREATE  TABLE IF NOT EXISTS `province` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   `abbreviation` VARCHAR(5) NOT NULL ,
   `site_id` INT UNSIGNED NULL COMMENT 'Which site manages participants.' ,
@@ -152,6 +159,7 @@ DROP TABLE IF EXISTS `contact` ;
 
 CREATE  TABLE IF NOT EXISTS `contact` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
   `rank` INT NOT NULL ,
@@ -188,6 +196,7 @@ DROP TABLE IF EXISTS `interview` ;
 
 CREATE  TABLE IF NOT EXISTS `interview` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `qnaire_id` INT UNSIGNED NOT NULL ,
   `require_supervisor` TINYINT(1)  NOT NULL DEFAULT false ,
@@ -249,6 +258,7 @@ DROP TABLE IF EXISTS `assignment` ;
 
 CREATE  TABLE IF NOT EXISTS `assignment` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
   `site_id` INT UNSIGNED NOT NULL COMMENT 'The site from which the user was assigned.' ,
   `interview_id` INT UNSIGNED NOT NULL ,
@@ -292,6 +302,7 @@ DROP TABLE IF EXISTS `phone_call` ;
 
 CREATE  TABLE IF NOT EXISTS `phone_call` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `assignment_id` INT UNSIGNED NOT NULL ,
   `contact_id` INT UNSIGNED NOT NULL ,
   `start_datetime` DATETIME NOT NULL COMMENT 'The time the call started.' ,
@@ -321,6 +332,7 @@ DROP TABLE IF EXISTS `operation` ;
 
 CREATE  TABLE IF NOT EXISTS `operation` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `type` ENUM('action','datum','widget') NOT NULL ,
   `subject` VARCHAR(45) NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
@@ -338,6 +350,7 @@ DROP TABLE IF EXISTS `role_has_operation` ;
 
 CREATE  TABLE IF NOT EXISTS `role_has_operation` (
   `role_id` INT UNSIGNED NOT NULL ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `operation_id` INT UNSIGNED NOT NULL ,
   PRIMARY KEY (`role_id`, `operation_id`) ,
   INDEX `fk_role_id` (`role_id` ASC) ,
@@ -362,6 +375,7 @@ DROP TABLE IF EXISTS `consent` ;
 
 CREATE  TABLE IF NOT EXISTS `consent` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `event` ENUM('verbal accept','verbal deny','written accept','written deny','retract','withdraw') NOT NULL ,
   `date` DATE NOT NULL ,
@@ -382,6 +396,7 @@ DROP TABLE IF EXISTS `availability` ;
 
 CREATE  TABLE IF NOT EXISTS `availability` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `monday` TINYINT(1)  NOT NULL DEFAULT false ,
   `tuesday` TINYINT(1)  NOT NULL DEFAULT false ,
@@ -409,6 +424,7 @@ DROP TABLE IF EXISTS `shift` ;
 
 CREATE  TABLE IF NOT EXISTS `shift` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `site_id` INT UNSIGNED NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
   `start_datetime` DATETIME NOT NULL ,
@@ -470,6 +486,7 @@ DROP TABLE IF EXISTS `participant_note` ;
 
 CREATE  TABLE IF NOT EXISTS `participant_note` (
   `id` INT NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `sticky` TINYINT(1)  NOT NULL DEFAULT false ,
@@ -498,6 +515,7 @@ DROP TABLE IF EXISTS `assignment_note` ;
 
 CREATE  TABLE IF NOT EXISTS `assignment_note` (
   `id` INT NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
   `assignment_id` INT UNSIGNED NOT NULL ,
   `sticky` TINYINT(1)  NOT NULL DEFAULT false ,
@@ -567,6 +585,7 @@ DROP TABLE IF EXISTS `setting` ;
 
 CREATE  TABLE IF NOT EXISTS `setting` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `category` VARCHAR(45) NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   `type` ENUM( 'boolean', 'integer', 'float', 'string' ) NOT NULL ,
@@ -586,6 +605,7 @@ DROP TABLE IF EXISTS `appointment` ;
 
 CREATE  TABLE IF NOT EXISTS `appointment` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `contact_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'Which contact to use.' ,
   `assignment_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'This appointment\'s assignment.' ,
@@ -621,6 +641,7 @@ DROP TABLE IF EXISTS `setting_value` ;
 
 CREATE  TABLE IF NOT EXISTS `setting_value` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `setting_id` INT UNSIGNED NOT NULL ,
   `site_id` INT UNSIGNED NOT NULL ,
   `value` VARCHAR(45) NOT NULL ,
@@ -649,6 +670,7 @@ DROP TABLE IF EXISTS `away_time` ;
 
 CREATE  TABLE IF NOT EXISTS `away_time` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
   `start_datetime` DATETIME NOT NULL ,
   `end_datetime` DATETIME NULL DEFAULT NULL ,
@@ -707,7 +729,7 @@ CREATE TABLE IF NOT EXISTS `participant_last_assignment` (`participant_id` INT, 
 -- -----------------------------------------------------
 -- Placeholder table for view `participant_for_queue`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `active` INT, `uid` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT, `prior_contact_date` INT, `phone_number_count` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT, `current_qnaire_id` INT, `start_qnaire_date` INT);
+CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `timestamp` INT, `active` INT, `uid` INT, `first_name` INT, `last_name` INT, `language` INT, `hin` INT, `status` INT, `site_id` INT, `prior_contact_date` INT, `phone_number_count` INT, `last_consent` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT, `current_qnaire_id` INT, `start_qnaire_date` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `assignment_last_phone_call`

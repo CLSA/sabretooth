@@ -75,12 +75,17 @@ class database extends \sabretooth\base_object
     foreach( $rows as $row )
     {
       extract( $row ); // defines $table_name, $column_name and $column_type
-      if( !array_key_exists( $table_name, $this->columns ) ) $this->columns[$table_name] = array();
-      $this->columns[$table_name][$column_name] =
-        array( 'data_type' => $data_type,
-               'type' => $column_type,
-               'default' => $column_default,
-               'key' => $column_key );
+      if( 'timestamp' != $column_name ) // ignore timestamp columns
+      {
+        if( !array_key_exists( $table_name, $this->columns ) )
+          $this->columns[$table_name] = array();
+
+        $this->columns[$table_name][$column_name] =
+          array( 'data_type' => $data_type,
+                 'type' => $column_type,
+                 'default' => $column_default,
+                 'key' => $column_key );
+      }
     }
   }
 
@@ -460,7 +465,8 @@ class database extends \sabretooth\base_object
    */
   public static function is_datetime_column( $column_name )
   {
-    return 'datetime' == $column_name || '_datetime' == substr( $column_name, -9 );
+    return 'datetime' == $column_name ||
+           '_datetime' == substr( $column_name, -9 );
   }
 
   /**
