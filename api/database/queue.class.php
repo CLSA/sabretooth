@@ -72,45 +72,55 @@ class queue extends record
         ' AND participant.active = false',
         self::$query_list['all'] );
       
-      // No phone number
-      self::$query_list['sourcing required'] = sprintf(
-        ' %s'.
-        ' AND phone_number_count = 0',
-        self::$query_list['all'] );
-
-      // No phone number
+      // refused consent
       self::$query_list['refused consent'] = sprintf(
         ' %s'.
+        ' AND participant.active = true'.
         ' AND last_consent IN( "verbal deny", "written deny", "retract", "withdraw" )',
         self::$query_list['all'] );
 
+      // No phone number
+      self::$query_list['sourcing required'] = sprintf(
+        ' %s'.
+        ' AND participant.active = true'.
+        ' AND last_consent NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
+        ' AND phone_number_count = 0',
+        self::$query_list['all'] );
+
+      // this is needed below
+      $status_sql = sprintf( 
+        ' %s'.
+        ' AND participant.active = true'.
+        ' AND ('.
+        '   last_consent IS NULL'.
+        '   OR last_consent NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
+        ' )'.
+        ' AND phone_number_count > 0',
+        self::$query_list['all'] );
+      
       // Deceased
       self::$query_list['deceased'] = sprintf(
         ' %s'.
-        ' AND participant.active = true'.
         ' AND participant.status = "deceased"',
-        self::$query_list['all'] );
+        $status_sql );
       
       // Deaf
       self::$query_list['deaf'] = sprintf(
         ' %s'.
-        ' AND participant.active = true'.
         ' AND participant.status = "deaf"',
-        self::$query_list['all'] );
+        $status_sql );
       
       // Language barrier
       self::$query_list['language barrier'] = sprintf(
         ' %s'.
-        ' AND participant.active = true'.
         ' AND participant.status = "language barrier"',
-        self::$query_list['all'] );
+        $status_sql );
       
       // Mentally unfit
       self::$query_list['mentally unfit'] = sprintf(
         ' %s'.
-        ' AND participant.active = true'.
         ' AND participant.status = "mentally unfit"',
-        self::$query_list['all'] );
+        $status_sql );
       
       // Eligible
       self::$query_list['eligible'] = sprintf(
@@ -121,7 +131,10 @@ class queue extends record
         ' AND participant.active = true'.
         ' AND participant.status IS NULL'.
         ' AND phone_number_count != 0'.
-        ' AND last_consent NOT IN( "verbal deny", "written deny", "retract", "withdraw" )',
+        ' AND ('.
+        '   last_consent IS NULL'.
+        '   OR last_consent NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
+        ' )',
         self::$query_list['all'] );
 
       // Active qnaire

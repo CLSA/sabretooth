@@ -803,7 +803,7 @@ ON primary_contact.province_id = province.id
 LEFT JOIN participant_last_consent
 ON participant.id = participant_last_consent.participant_id 
 LEFT JOIN consent
-ON consent.id = participant_last_consent.consent_id = primary_contact.id
+ON consent.id = participant_last_consent.consent_id
 LEFT JOIN participant_last_assignment
 ON participant.id = participant_last_assignment.participant_id 
 LEFT JOIN assignment
