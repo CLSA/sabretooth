@@ -1,6 +1,6 @@
 <?php
 /**
- * province.class.php
+ * region.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\database
@@ -13,9 +13,9 @@ use sabretooth\business as bus;
 use sabretooth\exception as exc;
 
 /**
- * province: record
+ * region: record
  *
  * @package sabretooth\database
  */
-class province extends record {}
+class region extends record {}
 ?>

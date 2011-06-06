@@ -35,18 +35,18 @@ class participant extends has_note
     // if there is no site restriction then just use the parent method
     if( is_null( $db_site ) ) return parent::select( $modifier, $count );
 
-    // left join the participant_primary_location and contact tables
+    // left join the participant_primary_address and address tables
     if( is_null( $modifier ) ) $modifier = new modifier();
     $sql = sprintf( ( $count ? 'SELECT COUNT( %s.%s ) ' : 'SELECT %s.%s ' ).
                     'FROM %s '.
-                    'LEFT JOIN participant_primary_location '.
-                    'ON %s.id = participant_primary_location.participant_id '.
-                    'LEFT JOIN contact '.
-                    'ON participant_primary_location.contact_id = contact.id '.
+                    'LEFT JOIN participant_primary_address '.
+                    'ON %s.id = participant_primary_address.participant_id '.
+                    'LEFT JOIN address '.
+                    'ON participant_primary_address.address_id = address.id '.
                     'WHERE ( %s.site_id = %d '.
                     '  OR ( %s.site_id IS NULL '.
-                    '    AND contact.province_id IN ( '.
-                    '      SELECT id FROM province WHERE site_id = %d ) ) ) %s',
+                    '    AND address.region_id IN ( '.
+                    '      SELECT id FROM region WHERE site_id = %d ) ) ) %s',
                     static::get_table_name(),
                     static::get_primary_key_name(),
                     static::get_table_name(),
@@ -166,12 +166,13 @@ class participant extends has_note
   }
 
   /**
-   * Get the participant's primary location
+   * Get the participant's "first" address.  This is the highest ranking, active address
+   * Note: this address may be in the United States
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return contact
+   * @return address
    * @access public
    */
-  public function get_primary_location()
+  public function get_first_address()
   {
     // check the primary key value
     if( is_null( $this->id ) )
@@ -181,10 +182,10 @@ class participant extends has_note
     }
     
     // need custom SQL
-    $contact_id = static::db()->get_one(
-      sprintf( 'SELECT contact_id FROM participant_primary_location WHERE participant_id = %s',
+    $address_id = static::db()->get_one(
+      sprintf( 'SELECT address_id FROM participant_first_address WHERE participant_id = %s',
                database::format_string( $this->id ) ) );
-    return $contact_id ? new contact( $contact_id ) : NULL;
+    return $address_id ? new address( $address_id ) : NULL;
   }
 
   /**
@@ -203,10 +204,10 @@ class participant extends has_note
     }
     else
     {
-      $db_contact = $this->get_primary_location();
-      if( !is_null( $db_contact ) )
-      { // there is a primary contact
-        $db_site = $db_contact->get_province()->get_site();
+      $db_address = $this->get_primary_address();
+      if( !is_null( $db_address ) )
+      { // there is a primary address
+        $db_site = $db_address->get_region()->get_site();
       }
     }
 

@@ -94,6 +94,27 @@ abstract class base_new extends base_record_action
           'Unable to create the new '.$this->get_subject().' because it is not unique.',
           __METHOD__, $e );
       }
+      else if( $e->is_missing_data() )
+      {
+        $matches = array();
+        $found = preg_match( "/Column '[^']+'/", $e->get_raw_message(), $matches );
+
+        if( $found )
+        {
+          $message = sprintf(
+            'You must specify "%s" in order to create a new %s.',
+            substr( $matches[0], 8, -1 ),
+            $this->get_subject() );
+        }
+        else
+        {
+          $message = sprintf(
+            'Unable to create the new %s, not all mandatory fields have been filled out.',
+            $this->get_subect() );
+        }
+
+        throw new exc\notice( $message, __METHOD__, $e );
+      }
 
       throw $e;
     }

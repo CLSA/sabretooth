@@ -11,31 +11,31 @@ INSERT INTO site( name, timezone ) VALUES
 ( 'Sherbrooke', 'Canada/Eastern' ),
 ( 'Victoria', 'Canada/Pacific' );
 
-UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Victoria" )
+UPDATE region SET site_id = ( SELECT id FROM site WHERE name = "Victoria" )
 WHERE abbreviation = "AB";
-UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Victoria" )
+UPDATE region SET site_id = ( SELECT id FROM site WHERE name = "Victoria" )
 WHERE abbreviation = "BC";
-UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Manitoba" )
+UPDATE region SET site_id = ( SELECT id FROM site WHERE name = "Manitoba" )
 WHERE abbreviation = "MB";
-UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Dalhousie" )
+UPDATE region SET site_id = ( SELECT id FROM site WHERE name = "Dalhousie" )
 WHERE abbreviation = "NB";
-UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Dalhousie" )
+UPDATE region SET site_id = ( SELECT id FROM site WHERE name = "Dalhousie" )
 WHERE abbreviation = "NL";
-UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Victoria" )
+UPDATE region SET site_id = ( SELECT id FROM site WHERE name = "Victoria" )
 WHERE abbreviation = "NT";
-UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Dalhousie" )
+UPDATE region SET site_id = ( SELECT id FROM site WHERE name = "Dalhousie" )
 WHERE abbreviation = "NS";
-UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Manitoba" )
+UPDATE region SET site_id = ( SELECT id FROM site WHERE name = "Manitoba" )
 WHERE abbreviation = "NU";
-UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "McMaster" )
+UPDATE region SET site_id = ( SELECT id FROM site WHERE name = "McMaster" )
 WHERE abbreviation = "ON";
-UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Dalhousie" )
+UPDATE region SET site_id = ( SELECT id FROM site WHERE name = "Dalhousie" )
 WHERE abbreviation = "PE";
-UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Sherbrooke" )
+UPDATE region SET site_id = ( SELECT id FROM site WHERE name = "Sherbrooke" )
 WHERE abbreviation = "QC";
-UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Manitoba" )
+UPDATE region SET site_id = ( SELECT id FROM site WHERE name = "Manitoba" )
 WHERE abbreviation = "SK";
-UPDATE province SET site_id = ( SELECT id FROM site WHERE name = "Victoria" )
+UPDATE region SET site_id = ( SELECT id FROM site WHERE name = "Victoria" )
 WHERE abbreviation = "YT";
 
 INSERT INTO user( name, first_name, last_name ) VALUES
@@ -69,8 +69,12 @@ LOAD DATA LOCAL INFILE "./participants.csv"
 INTO TABLE participant
 FIELDS TERMINATED BY ',' ENCLOSED BY '"';
 
-LOAD DATA LOCAL INFILE "./contacts.csv"
-INTO TABLE contact
+LOAD DATA LOCAL INFILE "./addresses.csv"
+INTO TABLE address
+FIELDS TERMINATED BY ',' ENCLOSED BY '"';
+
+LOAD DATA LOCAL INFILE "./phone_numbers.csv"
+INTO TABLE phone
 FIELDS TERMINATED BY ',' ENCLOSED BY '"';
 
 INSERT INTO qnaire ( name, rank, prev_qnaire_id, delay ) VALUES

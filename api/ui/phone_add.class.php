@@ -1,6 +1,6 @@
 <?php
 /**
- * contact_add.class.php
+ * phone_add.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -14,11 +14,11 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * widget contact add
+ * widget phone add
  * 
  * @package sabretooth\ui
  */
-class contact_add extends base_view
+class phone_add extends base_view
 {
   /**
    * Constructor
@@ -30,20 +30,15 @@ class contact_add extends base_view
    */
   public function __construct( $args )
   {
-    parent::__construct( 'contact', 'add', $args );
+    parent::__construct( 'phone', 'add', $args );
     
     // add items to the view
     $this->add_item( 'participant_id', 'hidden' );
+    $this->add_item( 'address_id', 'enum', 'Associated address' );
     $this->add_item( 'active', 'boolean', 'Active' );
     $this->add_item( 'rank', 'enum', 'Rank' );
     $this->add_item( 'type', 'enum', 'Type' );
-    $this->add_item( 'phone', 'string', 'Phone' );
-    $this->add_item( 'address1', 'string', 'Address1' );
-    $this->add_item( 'address2', 'string', 'Address2' );
-    $this->add_item( 'city', 'string', 'City' );
-    $this->add_item( 'province_id', 'enum', 'Province' );
-    $this->add_item( 'country', 'string', 'Country' );
-    $this->add_item( 'postcode', 'string', 'Postcode' );
+    $this->add_item( 'number', 'string', 'Phone' );
     $this->add_item( 'note', 'text', 'Note' );
   }
 
@@ -60,34 +55,39 @@ class contact_add extends base_view
     // this widget must have a parent, and it's subject must be a participant
     if( is_null( $this->parent ) || 'participant' != $this->parent->get_subject() )
       throw new exc\runtime(
-        'Contact widget must have a parent with participant as the subject.', __METHOD__ );
-    
+        'Phone widget must have a parent with participant as the subject.', __METHOD__ );
+
     // create enum arrays
-    $num_contacts = $this->parent->get_record()->get_contact_count();
+    $modifier = new db\modifier();
+    $modifier->where( 'participant_id', '=', $this->parent->get_record()->id ); 
+    $modifier->order( 'rank' );
+    $addresses = array();
+    foreach( db\address::select( $modifier ) as $db_address )
+    {
+      $db_region = $db_address->get_region();
+      $addresses[$db_address->id] = sprintf( '%d. %s, %s, %s',
+        $db_address->rank,
+        $db_address->city,
+        $db_region->name,
+        $db_region->country );
+    }
+    $num_phones = $this->parent->get_record()->get_phone_count();
     $ranks = array();
-    for( $rank = 1; $rank <= ( $num_contacts + 1 ); $rank++ ) $ranks[] = $rank;
+    for( $rank = 1; $rank <= ( $num_phones + 1 ); $rank++ ) $ranks[] = $rank;
     $ranks = array_combine( $ranks, $ranks );
     end( $ranks );
     $last_rank_key = key( $ranks );
     reset( $ranks );
-    $types = db\contact::get_enum_values( 'type' );
+    $types = db\phone::get_enum_values( 'type' );
     $types = array_combine( $types, $types );
-    $provinces = array();
-    foreach( db\province::select() as $db_province )
-      $provinces[$db_province->id] = $db_province->name;
 
     // set the view's items
     $this->set_item( 'participant_id', $this->parent->get_record()->id );
+    $this->set_item( 'address_id', '', false, $addresses );
     $this->set_item( 'active', true, true );
     $this->set_item( 'rank', $last_rank_key, true, $ranks );
     $this->set_item( 'type', key( $types ), true, $types );
-    $this->set_item( 'phone', '' );
-    $this->set_item( 'address1', '' );
-    $this->set_item( 'address2', '' );
-    $this->set_item( 'city', '' );
-    $this->set_item( 'province_id', '', false, $provinces );
-    $this->set_item( 'country', '' );
-    $this->set_item( 'postcode', '' );
+    $this->set_item( 'number', '', true );
     $this->set_item( 'note', '' );
 
     $this->finish_setting_items();

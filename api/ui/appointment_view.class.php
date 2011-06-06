@@ -33,7 +33,9 @@ class appointment_view extends base_appointment_view
     parent::__construct( 'view', $args );
     
     // add items to the view
-    $this->add_item( 'contact_id', 'enum', 'Phone Number' );
+    $this->add_item( 'phone_id', 'enum', 'Phone Number',
+      'Select a specific phone number to call for the appointment, or leave this field blank if '.
+      'any of the participant\'s phone numbers can be called.' );
     $this->add_item( 'datetime', 'datetime', 'Date' );
     $this->add_item( 'assignment.user', 'constant', 'Assigned to' );
     $this->add_item( 'state', 'constant', 'State',
@@ -56,8 +58,16 @@ class appointment_view extends base_appointment_view
 
     $db_participant = new db\participant( $this->get_record()->participant_id );
   
+    // determine the time difference
+    $db_phone = $this->get_record()->get_phone();
+
+    // go with the phone's address if there is one, and the first address if not
+    $db_address = is_null( $db_phone )
+                ? $db_participant->get_first_address()
+                : $db_phone->get_address();
+    $time_diff = is_null( $db_address ) ? NULL : $db_address->get_time_diff();
+
     // need to add the participant's timezone information as information to the date item
-    $time_diff = $db_participant->get_primary_location()->get_time_diff();
     $site_name = bus\session::self()->get_site()->name;
     if( is_null( $time_diff ) )
       $note = 'The participant\'s time zone is not known.';
@@ -77,11 +87,11 @@ class appointment_view extends base_appointment_view
     
     // create enum arrays
     $modifier = new db\modifier();
-    $modifier->where( 'phone', '!=', NULL );
+    $modifier->where( 'active', '=', true );
     $modifier->order( 'rank' );
-    $contacts = array();
-    foreach( $db_participant->get_contact_list( $modifier ) as $db_contact )
-      $contacts[$db_contact->id] = $db_contact->rank.". ".$db_contact->phone;
+    $phones = array();
+    foreach( $db_participant->get_phone_list( $modifier ) as $db_phone )
+      $phones[$db_phone->id] = $db_phone->rank.". ".$db_phone->number;
     
     if( !is_null( $db_assignment ) )
     {
@@ -101,7 +111,7 @@ class appointment_view extends base_appointment_view
     }
 
     // set the view's items
-    $this->set_item( 'contact_id', $this->get_record()->contact_id, true, $contacts );
+    $this->set_item( 'phone_id', $this->get_record()->phone_id, false, $phones );
     $this->set_item( 'datetime', $this->get_record()->datetime, true );
     $this->set_item( 'state', $this->get_record()->get_state(), false );
 

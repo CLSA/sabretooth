@@ -1,6 +1,6 @@
 <?php
 /**
- * contact_new.class.php
+ * phone_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -14,12 +14,12 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * action contact new
+ * action phone edit
  *
- * Create a new contact.
+ * Edit a phone.
  * @package sabretooth\ui
  */
-class contact_new extends base_new
+class phone_edit extends base_edit
 {
   /**
    * Constructor.
@@ -29,9 +29,9 @@ class contact_new extends base_new
    */
   public function __construct( $args )
   {
-    parent::__construct( 'contact', $args );
+    parent::__construct( 'phone', $args );
   }
-  
+
   /**
    * Executes the action.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -39,18 +39,14 @@ class contact_new extends base_new
    */
   public function execute()
   {
-    // make sure there is either a phone number OR city and province
     $columns = $this->get_argument( 'columns' );
-    if( !( $columns['phone'] || ( $columns['province_id'] && $columns['city'] ) ) )
-      throw new exc\notice(
-        'You must provide a phone number OR city and province.', __METHOD__ );
-    
+
     // if there is a phone number, validate it
-    if( $columns['phone'] )
+    if( array_key_exists( 'number', $columns ) )
     {
-      if( 10 != strlen( preg_replace( '/[^0-9]/', '', $columns['phone'] ) ) )
+      if( 10 != strlen( preg_replace( '/[^0-9]/', '', $columns['number'] ) ) )
         throw new exc\notice(
-          'Phone number must have exactly 10 digits.', __METHOD__ );
+          'Phone numbers must have exactly 10 digits.', __METHOD__ );
     }
 
     parent::execute();

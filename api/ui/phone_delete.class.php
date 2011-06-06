@@ -1,6 +1,6 @@
 <?php
 /**
- * contact_delete.class.php
+ * phone_delete.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -14,11 +14,11 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * action contact delete
+ * action phone delete
  * 
  * @package sabretooth\ui
  */
-class contact_delete extends base_delete
+class phone_delete extends base_delete
 {
   /**
    * Constructor.
@@ -28,7 +28,7 @@ class contact_delete extends base_delete
    */
   public function __construct( $args )
   {
-    parent::__construct( 'contact', $args );
+    parent::__construct( 'phone', $args );
   }
 }
 ?>

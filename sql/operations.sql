@@ -30,6 +30,22 @@ VALUES( "widget", "activity", "list", true, "List system activity." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "datum", "activity", "primary", true, "Retrieves base activity information." );
 
+-- address
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "address", "delete", true, "Removes a participant's address entry from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "address", "edit", true, "Edits the details of a participant's address entry." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "address", "new", true, "Creates a new address entry for a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "address", "add", true, "View a form for creating new address entry for a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "address", "view", true, "View the details of a participant's particular address entry." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "address", "list", true, "Lists a participant's address entries." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "datum", "address", "primary", true, "Retrieves base address information." );
+
 -- appointment
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "appointment", "delete", true, "Removes a participant's appointment from the system." );
@@ -94,22 +110,6 @@ VALUES( "widget", "consent", "list", true, "Lists a participant's consent entrie
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "datum", "consent", "primary", true, "Retrieves base consent information." );
 
--- contact
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "contact", "delete", true, "Removes a participant's contact entry from the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "contact", "edit", true, "Edits the details of a participant's contact entry." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "contact", "new", true, "Creates a new contact entry for a participant." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "contact", "add", true, "View a form for creating new contact entry for a participant." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "contact", "view", true, "View the details of a participant's particular contact entry." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "contact", "list", true, "Lists a participant's contact entries." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "datum", "contact", "primary", true, "Retrieves base contact information." );
-
 -- notes
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "note", "delete", true, "Removes a note from the system." );
@@ -158,9 +158,13 @@ VALUES( "widget", "participant", "add_consent", true, "A form to create a new co
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "participant", "delete_consent", true, "Remove a participant's consent entry." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "participant", "add_contact", true, "A form to create a new contact entry to add to a participant." );
+VALUES( "widget", "participant", "add_address", true, "A form to create a new address entry to add to a participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "action", "participant", "delete_contact", true, "Remove a participant's contact entry." );
+VALUES( "action", "participant", "delete_address", true, "Remove a participant's address entry." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "add_phone", true, "A form to create a new phone entry to add to a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "participant", "delete_phone", true, "Remove a participant's phone entry." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "tree", true, "Displays participants in a tree format, revealing which queue the belong to." );
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -181,6 +185,22 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "phase", "list", true, "Lists a questionnaire's phases." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "datum", "phase", "primary", true, "Retrieves base phase information." );
+
+-- phone
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "phone", "delete", true, "Removes a participant's phone entry from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "phone", "edit", true, "Edits the details of a participant's phone entry." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "action", "phone", "new", true, "Creates a new phone entry for a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "phone", "add", true, "View a form for creating new phone entry for a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "phone", "view", true, "View the details of a participant's particular phone entry." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "phone", "list", true, "Lists a participant's phone entries." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "datum", "phone", "primary", true, "Retrieves base phone information." );
 
 -- phone call
 INSERT INTO operation( type, subject, name, restricted, description )

@@ -35,7 +35,7 @@ class phase_add extends base_view
     // add items to the view
     $this->add_item( 'qnaire_id', 'hidden' );
     $this->add_item( 'sid', 'enum', 'Survey' );
-    $this->add_item( 'stage', 'enum', 'Stage' );
+    $this->add_item( 'rank', 'enum', 'Stage' );
     $this->add_item( 'repeated', 'boolean', 'Repeated' );
   }
 
@@ -59,17 +59,17 @@ class phase_add extends base_view
     foreach( db\limesurvey\surveys::select() as $db_survey )
       $surveys[$db_survey->sid] = $db_survey->get_title();
     $num_phases = $this->parent->get_record()->get_phase_count();
-    $stages = array();
-    for( $stage = 1; $stage <= ( $num_phases + 1 ); $stage++ ) $stages[] = $stage;
-    $stages = array_combine( $stages, $stages );
-    end( $stages );
-    $last_stage_key = key( $stages );
-    reset( $stages );
+    $ranks = array();
+    for( $rank = 1; $rank <= ( $num_phases + 1 ); $rank++ ) $ranks[] = $rank;
+    $ranks = array_combine( $ranks, $ranks );
+    end( $ranks );
+    $last_rank_key = key( $ranks );
+    reset( $ranks );
 
     // set the view's items
     $this->set_item( 'qnaire_id', $this->parent->get_record()->id );
     $this->set_item( 'sid', key( $surveys ), true, $surveys );
-    $this->set_item( 'stage', $last_stage_key, true, $stages );
+    $this->set_item( 'rank', $last_rank_key, true, $ranks );
     $this->set_item( 'repeated', false, true );
 
     $this->finish_setting_items();

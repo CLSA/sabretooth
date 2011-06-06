@@ -59,6 +59,18 @@ class database extends base_exception
   {
     return DATABASE_BASE_ERROR_NUMBER + 1451 == $this->get_number();
   }
+  
+  /**
+   * Returns whether the exception was thrown because a column which cannot be null is not set.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function is_missing_data()
+  {
+    return DATABASE_BASE_ERROR_NUMBER + 1048  == $this->get_number();
+  }
 
   /**
    * The sql which caused the exception.

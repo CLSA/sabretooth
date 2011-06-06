@@ -34,7 +34,9 @@ class appointment_add extends base_appointment_view
     
     // add items to the view
     $this->add_item( 'participant_id', 'hidden' );
-    $this->add_item( 'contact_id', 'enum', 'Phone Number' );
+    $this->add_item( 'phone_id', 'enum', 'Phone Number',
+      'Select a specific phone number to call for the appointment, or leave this field blank if '.
+      'any of the participant\'s phone numbers can be called.' );
     $this->add_item( 'datetime', 'datetime', 'Date' );
   }
 
@@ -55,8 +57,11 @@ class appointment_add extends base_appointment_view
 
     $db_participant = new db\participant( $this->parent->get_record()->id );
     
+    // determine the time difference
+    $db_address = $db_participant->get_first_address();
+    $time_diff = is_null( $db_address ) ? NULL : $db_address->get_time_diff();
+
     // need to add the participant's timezone information as information to the date item
-    $time_diff = $db_participant->get_primary_location()->get_time_diff();
     $site_name = bus\session::self()->get_site()->name;
     if( is_null( $time_diff ) )
       $note = 'The participant\'s time zone is not known.';
@@ -76,15 +81,15 @@ class appointment_add extends base_appointment_view
 
     // create enum arrays
     $modifier = new db\modifier();
-    $modifier->where( 'phone', '!=', NULL );
+    $modifier->where( 'active', '=', true );
     $modifier->order( 'rank' );
-    $contacts = array();
-    foreach( $db_participant->get_contact_list( $modifier ) as $db_contact )
-      $contacts[$db_contact->id] = $db_contact->rank.". ".$db_contact->phone;
+    $phones = array();
+    foreach( $db_participant->get_phone_list( $modifier ) as $db_phone )
+      $phones[$db_phone->id] = $db_phone->rank.". ".$db_phone->number;
 
     // set the view's items
     $this->set_item( 'participant_id', $this->parent->get_record()->id );
-    $this->set_item( 'contact_id', '', true, $contacts );
+    $this->set_item( 'phone_id', '', false, $phones );
     $this->set_item( 'datetime', '', true );
 
     $this->finish_setting_items();

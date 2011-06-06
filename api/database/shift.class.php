@@ -22,8 +22,6 @@ class shift extends record
   /**
    * Overrides the parent class to prevent doubling shift times.
    * 
-   * If the record has a stage which already exists it will push the current phase and all that
-   * come after it down by one stage to make room for this one.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\runtime
    * @access public

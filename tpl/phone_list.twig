@@ -1,7 +1,7 @@
 {##
- # contact_list.twig
+ # phone_list.twig
  # 
- # Lists contacts.
+ # Lists phones.
  # @author Patrick Emond <emondpd@mcmaster.ca>
  # @see base_list.twig for parameters
  #}
@@ -20,7 +20,7 @@
         } ).click( function() {
           var args = new Object();
           var id_string = $(this).attr( "id" );
-          args.contact_id = parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) );
+          args.phone_id = parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) );
           // place the call and refresh the status widget
           if( send_action( "phone_call", "begin", args ) )
           {
@@ -34,7 +34,7 @@
 
 {% endblock javascript %}
 
-{# if needed, add an extra column for connecting to the contact #}
+{# if needed, add an extra column for connecting to the phone #}
 {% block header_button_columns %}
   
   {% if allow_connect %}
@@ -47,11 +47,9 @@
 
   {% if allow_connect %}
     <td>
-      {% if row.columns['contact.has_phone'] %}
-        <button class="{{ widget.full }}_connect"
-                {{ sip_enabled ? '' : 'disabled' }}
-                id="{{ widget.full }}_connect_{{ row.id }}">call</button>
-      {% endif %}
+      <button class="{{ widget.full }}_connect"
+              {{ sip_enabled ? '' : 'disabled' }}
+              id="{{ widget.full }}_connect_{{ row.id }}">call</button>
     </td>
   {% endif %}
 

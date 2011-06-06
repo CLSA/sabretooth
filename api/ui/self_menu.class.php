@@ -68,12 +68,13 @@ class self_menu extends widget
     $widgets = $db_role->get_operation_list( $modifier );
     
     $exclude = array(
+      'address',
       'appointment',
       'availability',
       'consent',
-      'contact',
       'operation',
       'phase',
+      'phone',
       'phone_call' );
 
     foreach( $widgets as $db_widget )

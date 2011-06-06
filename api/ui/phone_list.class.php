@@ -1,6 +1,6 @@
 <?php
 /**
- * contact_list.class.php
+ * phone_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -14,28 +14,28 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * widget contact list
+ * widget phone list
  * 
  * @package sabretooth\ui
  */
-class contact_list extends base_list_widget
+class phone_list extends base_list_widget
 {
   /**
    * Constructor
    * 
-   * Defines all variables required by the contact list.
+   * Defines all variables required by the phone list.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'contact', $args );
+    parent::__construct( 'phone', $args );
     
     $this->add_column( 'active', 'boolean', 'Active', true );
     $this->add_column( 'rank', 'number', 'Rank', true );
     $this->add_column( 'type', 'string', 'Type', true );
-    $this->add_column( 'details', 'string', 'Details', false );
+    $this->add_column( 'number', 'string', 'Number', false );
   }
   
   /**
@@ -57,19 +57,11 @@ class contact_list extends base_list_widget
 
     foreach( $this->get_record_list() as $record )
     {
-      // get the details (phone or address)
-      $details = $record->phone
-               ? $record->phone
-               : $record->city.', '.$record->get_province()->abbreviation.' '.$record->postcode;
-
       $this->add_row( $record->id,
         array( 'active' => $record->active,
                'rank' => $record->rank,
                'type' => $record->type,
-               'details' => $details,
-               // This last item isn't actually a column, it's a hack to make sure only contacts
-               // that have phone numbers in them get the call button (see tpl/contact_list.twig)
-               'has_phone' => !is_null( $record->phone ) ) );
+               'number' => $record->number ) );
     }
 
     $this->finish_setting_rows();

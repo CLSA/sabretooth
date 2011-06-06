@@ -1,6 +1,6 @@
 <?php
 /**
- * qnaire.class.php
+ * phone.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\database
@@ -13,9 +13,18 @@ use sabretooth\business as bus;
 use sabretooth\exception as exc;
 
 /**
- * qnaire: record
+ * phone: record
  *
  * @package sabretooth\database
  */
-class qnaire extends has_rank {}
+class phone extends has_rank
+{
+  /**
+   * The type of record which the record has a rank for.
+   * @var string
+   * @access protected
+   * @static
+   */
+  protected static $rank_parent = 'participant';
+}
 ?>
