@@ -63,6 +63,7 @@ class assignment_list extends site_restricted_list
       $modifier->limit( 1 );
       $phone_call_list = $record->get_phone_call_list( $modifier );
       $status = 0 == count( $phone_call_list ) ? 'no calls made' : $phone_call_list[0]->status;
+      if( 0 == strlen( $status ) ) $status = 'in progress';
 
       // assemble the row for this record
       $this->add_row( $record->id,
