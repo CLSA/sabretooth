@@ -108,6 +108,15 @@ class operator_assignment extends widget
       $this->set_variable( 'participant_name', $name );
       $this->set_variable( 'participant_language', $language );
       $this->set_variable( 'participant_consent', $consent );
+      
+      // set the appointment variable
+      $modifier = new db\modifier();
+      $modifier->where( 'assignment_id', '=', $db_assignment->id );
+      $appointment_list = db\appointment::select( $modifier );
+      $db_appointment = 0 == count( $appointment_list ) ? NULL : $appointment_list[0];
+      $this->set_variable( 'appointment', is_null( $db_appointment ) ?
+        false : util::get_formatted_time( $db_appointment->datetime, false ) );
+
       if( !is_null( $db_last_assignment ) )
       {
         $this->set_variable( 'previous_assignment_id', $db_last_assignment->id );

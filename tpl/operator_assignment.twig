@@ -122,6 +122,15 @@
           <td class="heading">Current Consent:</td>
           <td class="content">{{ participant_consent }}</td>
         </tr>
+        {% if appointment %}
+          <tr>
+            <td class="heading">Appointment:</td>
+            <td class="content" style="font-style: italic">
+              This assignment is fulfilling an appointment scheduled to begin
+              at {{ appointment }}.
+            </td>
+          </tr>
+        {% endif %}
         <tr>
           <td class="heading">Previous Assignment:</td>
           <td class="content">
