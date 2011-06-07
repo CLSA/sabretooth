@@ -62,8 +62,7 @@
       } );
 
       // day of week checkbox changed
-      //$( "[attribute^='{{ widget.full }}__'] :checkbox" ).change( function () {
-      $( ":checkbox" ).change( function () {
+      $( "[id^='{{ widget.full }}__'] :checkbox" ).change( function () {
         var day = $(this).attr( "name" );
         var checked = $(this).attr( "checked" ) ? 1 : 0;
         var args = new Object();
@@ -106,13 +105,20 @@
     <tr id="{{ widget.full }}__repeat_on_row">
       <td class="heading">Repeat on:</td>
       <td class="content">
-        M<input id="{{ widget.full }}__monday" type="checkbox" name="monday" {{ monday ? "checked" : "" }} />
-        T<input id="{{ widget.full }}__tuesday" type="checkbox" name="tuesday" {{ tuesday ? "checked" : "" }} />
-        W<input id="{{ widget.full }}__wednesday" type="checkbox" name="wednesday" {{ wednesday ? "checked" : "" }} />
-        T<input id="{{ widget.full }}__thursday" type="checkbox" name="thursday" {{ thursday ? "checked" : "" }} />
-        F<input id="{{ widget.full }}__friday" type="checkbox" name="friday" {{ friday ? "checked" : "" }} />
-        S<input id="{{ widget.full }}__saturday" type="checkbox" name="saturday" {{ saturday ? "checked" : "" }} />
-        S<input id="{{ widget.full }}__sunday" type="checkbox" name="sunday" {{ sunday ? "checked" : "" }} />
+        M<input id="{{ widget.full }}__monday" type="checkbox"
+                name="monday" {{ monday ? "checked" : "" }} />
+        T<input id="{{ widget.full }}__tuesday" type="checkbox"
+                name="tuesday" {{ tuesday ? "checked" : "" }} />
+        W<input id="{{ widget.full }}__wednesday" type="checkbox"
+                name="wednesday" {{ wednesday ? "checked" : "" }} />
+        T<input id="{{ widget.full }}__thursday" type="checkbox"
+                name="thursday" {{ thursday ? "checked" : "" }} />
+        F<input id="{{ widget.full }}__friday" type="checkbox"
+                name="friday" {{ friday ? "checked" : "" }} />
+        S<input id="{{ widget.full }}__saturday" type="checkbox"
+                name="saturday" {{ saturday ? "checked" : "" }} />
+        S<input id="{{ widget.full }}__sunday" type="checkbox"
+                name="sunday" {{ sunday ? "checked" : "" }} />
       </td>
     </tr>
     <tr id="{{ widget.full }}__repeat_by_row">

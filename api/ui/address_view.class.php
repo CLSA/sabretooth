@@ -53,6 +53,19 @@ class address_view extends base_view
   {
     parent::finish();
 
+    $this->set_variable( 'january', $this->get_record()->january );
+    $this->set_variable( 'february', $this->get_record()->february );
+    $this->set_variable( 'march', $this->get_record()->march );
+    $this->set_variable( 'april', $this->get_record()->april );
+    $this->set_variable( 'may', $this->get_record()->may );
+    $this->set_variable( 'june', $this->get_record()->june );
+    $this->set_variable( 'july', $this->get_record()->july );
+    $this->set_variable( 'august', $this->get_record()->august );
+    $this->set_variable( 'september', $this->get_record()->september );
+    $this->set_variable( 'october', $this->get_record()->october );
+    $this->set_variable( 'november', $this->get_record()->november );
+    $this->set_variable( 'december', $this->get_record()->december );
+
     // create enum arrays
     $num_addresss = $this->get_record()->get_participant()->get_address_count();
     $ranks = array();

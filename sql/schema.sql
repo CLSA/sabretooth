@@ -275,6 +275,18 @@ CREATE  TABLE IF NOT EXISTS `address` (
   `city` VARCHAR(100) NOT NULL ,
   `region_id` INT UNSIGNED NOT NULL ,
   `postcode` VARCHAR(10) NOT NULL ,
+  `january` TINYINT(1)  NOT NULL DEFAULT true ,
+  `february` TINYINT(1)  NOT NULL DEFAULT true ,
+  `march` TINYINT(1)  NOT NULL DEFAULT true ,
+  `april` TINYINT(1)  NOT NULL DEFAULT true ,
+  `may` TINYINT(1)  NOT NULL DEFAULT true ,
+  `june` TINYINT(1)  NOT NULL DEFAULT true ,
+  `july` TINYINT(1)  NOT NULL DEFAULT true ,
+  `august` TINYINT(1)  NOT NULL DEFAULT true ,
+  `september` TINYINT(1)  NOT NULL DEFAULT true ,
+  `october` TINYINT(1)  NOT NULL DEFAULT true ,
+  `november` TINYINT(1)  NOT NULL DEFAULT true ,
+  `december` TINYINT(1)  NOT NULL DEFAULT true ,
   `note` TEXT NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
@@ -793,6 +805,20 @@ WHERE t1.rank = (
   FROM address AS t2
   WHERE t2.active
   AND t1.participant_id = t2.participant_id
+  AND CASE MONTH( CURRENT_TIME() )
+        WHEN 1 THEN t2.january
+        WHEN 2 THEN t2.february
+        WHEN 3 THEN t2.march
+        WHEN 4 THEN t2.april
+        WHEN 5 THEN t2.may
+        WHEN 6 THEN t2.june
+        WHEN 7 THEN t2.july
+        WHEN 8 THEN t2.august
+        WHEN 9 THEN t2.september
+        WHEN 10 THEN t2.october
+        WHEN 11 THEN t2.november
+        WHEN 12 THEN t2.december
+        ELSE 0 END = 1
   GROUP BY t2.participant_id );
 
 -- -----------------------------------------------------

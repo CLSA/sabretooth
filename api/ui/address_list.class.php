@@ -33,6 +33,7 @@ class address_list extends base_list_widget
     parent::__construct( 'address', $args );
     
     $this->add_column( 'active', 'boolean', 'Active', true );
+    $this->add_column( 'available', 'boolean', 'Available', false );
     $this->add_column( 'rank', 'number', 'Rank', true );
     $this->add_column( 'city', 'string', 'City', false );
   }
@@ -49,9 +50,13 @@ class address_list extends base_list_widget
     
     foreach( $this->get_record_list() as $record )
     {
+      // check if the address is available this month
+      $month = strtolower( util::get_datetime_object( NULL, true )->format( 'F' ) );
+
       $db_region = $record->get_region();
       $this->add_row( $record->id,
         array( 'active' => $record->active,
+               'available' => $record->$month,
                'rank' => $record->rank,
                'city' => $record->city.', '.$db_region->name ) );
     }

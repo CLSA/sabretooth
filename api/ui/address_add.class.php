@@ -54,6 +54,19 @@ class address_add extends base_view
   {
     parent::finish();
     
+    $this->set_variable( 'january', true );
+    $this->set_variable( 'february', true );
+    $this->set_variable( 'march', true );
+    $this->set_variable( 'april', true );
+    $this->set_variable( 'may', true );
+    $this->set_variable( 'june', true );
+    $this->set_variable( 'july', true );
+    $this->set_variable( 'august', true );
+    $this->set_variable( 'september', true );
+    $this->set_variable( 'october', true );
+    $this->set_variable( 'november', true );
+    $this->set_variable( 'december', true );
+
     // this widget must have a parent, and it's subject must be a participant
     if( is_null( $this->parent ) || 'participant' != $this->parent->get_subject() )
       throw new exc\runtime(
