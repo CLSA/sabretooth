@@ -147,6 +147,7 @@ CREATE  TABLE IF NOT EXISTS `interview` (
   INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
   INDEX `fk_duplicate_qnaire_id` (`qnaire_id` ASC) ,
   INDEX `dk_completed` (`completed` ASC) ,
+  UNIQUE INDEX `uq_participant_id_qnaire_id` (`participant_id` ASC, `qnaire_id` ASC) ,
   CONSTRAINT `fk_interview_participant`
     FOREIGN KEY (`participant_id` )
     REFERENCES `participant` (`id` )

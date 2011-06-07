@@ -67,11 +67,32 @@ class assignment_begin extends action
       throw new exc\notice(
         'There are no participants currently available.', __METHOD__ );
     
-    // create an interview for the participant
-    $db_interview = new db\interview();
-    $db_interview->participant_id = $db_participant->id;
-    $db_interview->qnaire_id = $db_participant->current_qnaire_id;
-    $db_interview->save();
+    // make sure the qnaire has phases
+    $db_qnaire = new db\qnaire( $db_participant->current_qnaire_id );
+    if( 0 == $db_qnaire->get_phase_count() )
+      throw new exc\notice(
+        'This participant\'s next questionnaire is not yet ready.  '.
+        'Please immediately report this problem to a supervisor.',
+        __METHOD__ );
+    
+    // get this participant's interview or create a new one if none exists yet
+    $modifier = new db\modifier();
+    $modifier->where( 'participant_id', '=', $db_participant->id );
+    $modifier->where( 'qnaire_id', '=', $db_participant->current_qnaire_id );
+
+    $db_interview_list = db\interview::select( $modifier );
+    
+    if( 0 == count( $db_interview_list ) )
+    {
+      $db_interview = new db\interview();
+      $db_interview->participant_id = $db_participant->id;
+      $db_interview->qnaire_id = $db_participant->current_qnaire_id;
+      $db_interview->save();
+    }
+    else
+    {
+      $db_interview = $db_interview_list[0];
+    }
 
     // create an assignment for this user
     $db_assignment = new db\assignment();
