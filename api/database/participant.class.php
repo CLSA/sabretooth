@@ -166,7 +166,30 @@ class participant extends has_note
   }
 
   /**
-   * Get the participant's "first" address.  This is the highest ranking, active address
+   * Get the participant's "primary" address.  This is the highest ranking canadian address.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return address
+   * @access public
+   */
+  public function get_primary_address()
+  {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to query participant with no id.' );
+      return NULL;
+    }
+    
+    // need custom SQL
+    $address_id = static::db()->get_one(
+      sprintf( 'SELECT address_id FROM participant_primary_address WHERE participant_id = %s',
+               database::format_string( $this->id ) ) );
+    return $address_id ? new address( $address_id ) : NULL;
+  }
+
+  /**
+   * Get the participant's "first" address.  This is the highest ranking, active, available
+   * address.
    * Note: this address may be in the United States
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return address

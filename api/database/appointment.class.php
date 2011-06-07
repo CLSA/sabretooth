@@ -287,8 +287,8 @@ class appointment extends record
                               'appointment', 'call pre-window' );
     $post_window_time = 60 * bus\setting_manager::self()->get_setting(
                                'appointment', 'call post-window' );
-    $now = time();
-    $appointment = strtotime( $this->datetime );
+    $now = util::get_datetime_object()->getTimestamp();
+    $appointment = util::get_datetime_object( $this->datetime )->getTimestamp();
 
     // get the status of the appointment
     if( $now < $appointment - $pre_window_time )
