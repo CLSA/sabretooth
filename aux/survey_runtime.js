@@ -17,7 +17,7 @@ jQuery(document).ready( function() {
         $question.html( $question.html().replace( /{participant:last_name}/gi, json.data.last_name ) );
         $question.html( $question.html().replace( /{participant:street}/gi, json.data.street ) );
         $question.html( $question.html().replace( /{participant:city}/gi, json.data.city ) );
-        $question.html( $question.html().replace( /{participant:province}/gi, json.data.province ) );
+        $question.html( $question.html().replace( /{participant:region}/gi, json.data.region ) );
         $question.html( $question.html().replace( /{participant:postcode}/gi, json.data.postcode ) );
       }
     } );

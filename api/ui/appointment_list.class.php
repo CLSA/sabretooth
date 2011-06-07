@@ -33,7 +33,7 @@ class appointment_list extends site_restricted_list
     parent::__construct( 'appointment', $args );
     $this->add_column( 'participant.first_name', 'string', 'First name', true );
     $this->add_column( 'participant.last_name', 'string', 'Last name', true );
-    $this->add_column( 'contact', 'string', 'Contact', false );
+    $this->add_column( 'phone', 'string', 'Phone number', false );
     $this->add_column( 'datetime', 'datetime', 'Date', true );
     $this->add_column( 'state', 'string', 'State', false );
   }
@@ -60,15 +60,17 @@ class appointment_list extends site_restricted_list
 
     foreach( $this->get_record_list() as $record )
     {
-      $db_contact = $record->get_contact();
-      $contact = sprintf( '(%d) %s: %s',
-                          $db_contact->rank,
-                          $db_contact->type,
-                          $db_contact->phone );
+      $db_phone = $record->get_phone();
+      $phone = is_null( $db_phone )
+             ? 'not specified'
+             : sprintf( '(%d) %s: %s',
+                        $db_phone->rank,
+                        $db_phone->type,
+                        $db_phone->number );
       $this->add_row( $record->id,
         array( 'participant.first_name' => $record->get_participant()->first_name,
                'participant.last_name' => $record->get_participant()->last_name,
-               'contact' => $contact,
+               'phone' => $phone,
                'datetime' => $record->datetime,
                'state' => $record->get_state() ) );
     }

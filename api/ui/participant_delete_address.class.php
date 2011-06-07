@@ -1,6 +1,6 @@
 <?php
 /**
- * contact_primary.class.php
+ * participant_delete_address.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -14,22 +14,21 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * datum contact primary
+ * action participant delete_address
  * 
  * @package sabretooth\ui
  */
-class contact_primary extends base_primary
+class participant_delete_address extends base_delete_record
 {
   /**
-   * Constructor
-   * 
+   * Constructor.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param array $args An associative array of arguments to be processed by the datum
+   * @param array $args Action arguments
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'contact', $args );
+    parent::__construct( 'participant', 'address', $args );
   }
 }
 ?>

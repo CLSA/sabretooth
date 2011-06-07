@@ -30,11 +30,11 @@ class voip_call extends \sabretooth\base_object
    */
   public function __construct( $s8_event, $manager )
   {
-    // check that the contact is valid
+    // check that the shift8 event is valid
     if( is_null( $s8_event ) ||
         !is_object( $s8_event ) ||
         'Shift8_Event' != get_class( $s8_event ) )
-      throw new exc\argument( 'connect to invalid contact.', __METHOD__ );
+      throw new exc\argument( 's8_event', $s8_event, __METHOD__ );
     
     $this->manager = $manager;
     $this->channel = $s8_event->get( 'channel' );

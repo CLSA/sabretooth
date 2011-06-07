@@ -47,14 +47,26 @@ class participant_view extends base_view
     
     try
     {
-      // create the contact sub-list widget
-      $this->contact_list = new contact_list( $args );
-      $this->contact_list->set_parent( $this );
-      $this->contact_list->set_heading( 'Contact information' );
+      // create the address sub-list widget
+      $this->address_list = new address_list( $args );
+      $this->address_list->set_parent( $this );
+      $this->address_list->set_heading( 'Addresses' );
     }
     catch( exc\permission $e )
     {
-      $this->contact_list = NULL;
+      $this->address_list = NULL;
+    }
+
+    try
+    {
+      // create the phone sub-list widget
+      $this->phone_list = new phone_list( $args );
+      $this->phone_list->set_parent( $this );
+      $this->phone_list->set_heading( 'Phone numbers' );
+    }
+    catch( exc\permission $e )
+    {
+      $this->phone_list = NULL;
     }
 
     try
@@ -156,10 +168,16 @@ class participant_view extends base_view
 
     $this->finish_setting_items();
 
-    if( !is_null( $this->contact_list ) )
+    if( !is_null( $this->address_list ) )
     {
-      $this->contact_list->finish();
-      $this->set_variable( 'contact_list', $this->contact_list->get_variables() );
+      $this->address_list->finish();
+      $this->set_variable( 'address_list', $this->address_list->get_variables() );
+    }
+
+    if( !is_null( $this->phone_list ) )
+    {
+      $this->phone_list->finish();
+      $this->set_variable( 'phone_list', $this->phone_list->get_variables() );
     }
 
     if( !is_null( $this->appointment_list ) )
@@ -219,10 +237,17 @@ class participant_view extends base_view
 
   /**
    * The participant list widget.
-   * @var contact_list
+   * @var address_list
    * @access protected
    */
-  protected $contact_list = NULL;
+  protected $address_list = NULL;
+  
+  /**
+   * The participant list widget.
+   * @var phone_list
+   * @access protected
+   */
+  protected $phone_list = NULL;
   
   /**
    * The participant list widget.

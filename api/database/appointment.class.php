@@ -72,7 +72,7 @@ class appointment extends record
     $db_site = $db_participant->get_primary_site();
     if( is_null( $db_site ) )
       throw new exc\runtime(
-        'Cannot validate an appointment date, participant has no primary location.', __METHOD__ );
+        'Cannot validate an appointment date, participant has no primary address.', __METHOD__ );
     
     $start_datetime_obj = util::get_datetime_object( $this->datetime );
     $end_datetime_obj = clone $start_datetime_obj;
@@ -90,12 +90,10 @@ class appointment extends record
       $modifier = new $modifier();
       $modifier->where( 'site_id', '=', $db_site->id );
       $modifier->where( 'start_date', '<=', $start_datetime_obj->format( 'Y-m-d' ) );
-      $modifier->where( 'start_time', '<', $end_datetime_obj->format( 'H:i:s' ) );
-      $modifier->where( 'end_time', '>', $start_datetime_obj->format( 'H:i:s' ) );
       
       foreach( shift_template::select( $modifier ) as $db_shift_template )
       {
-        if( $db_shift_template->match_date( $date ) )
+        if( $db_shift_template->match_date( $start_datetime_obj->format( 'Y-m-d' ) ) )
         {
           $start_time_as_int =
             intval( preg_replace( '/[^0-9]/', '',
@@ -207,20 +205,20 @@ class appointment extends record
     // if there is no site restriction then just use the parent method
     if( is_null( $db_site ) ) return parent::select( $modifier, $count );
     
-    $select_tables = 'appointment, participant_primary_location, participant, contact';
+    $select_tables = 'appointment, participant_primary_address, participant, address';
     
     // straight join the tables
     if( is_null( $modifier ) ) $modifier = new modifier();
     $modifier->where(
-      'appointment.participant_id', '=', 'participant_primary_location.participant_id', false );
-    $modifier->where( 'participant_primary_location.contact_id', '=', 'contact.id', false );
+      'appointment.participant_id', '=', 'participant_primary_address.participant_id', false );
+    $modifier->where( 'participant_primary_address.address_id', '=', 'address.id', false );
     $modifier->where( 'appointment.participant_id', '=', 'participant.id', false );
 
     $sql = sprintf( ( $count ? 'SELECT COUNT( %s.%s ) ' : 'SELECT %s.%s ' ).
                     'FROM %s '.
                     'WHERE ( participant.site_id = %d '.
-                    '  OR contact.province_id IN '.
-                    '  ( SELECT id FROM province WHERE site_id = %d ) ) %s',
+                    '  OR address.region_id IN '.
+                    '  ( SELECT id FROM region WHERE site_id = %d ) ) %s',
                     static::get_table_name(),
                     static::get_primary_key_name(),
                     $select_tables,
@@ -289,8 +287,8 @@ class appointment extends record
                               'appointment', 'call pre-window' );
     $post_window_time = 60 * bus\setting_manager::self()->get_setting(
                                'appointment', 'call post-window' );
-    $now = time();
-    $appointment = strtotime( $this->datetime );
+    $now = util::get_datetime_object()->getTimestamp();
+    $appointment = util::get_datetime_object( $this->datetime )->getTimestamp();
 
     // get the status of the appointment
     if( $now < $appointment - $pre_window_time )

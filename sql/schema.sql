@@ -115,11 +115,11 @@ CREATE  TABLE IF NOT EXISTS `phase` (
   `timestamp` TIMESTAMP NOT NULL ,
   `qnaire_id` INT UNSIGNED NOT NULL ,
   `sid` INT NOT NULL COMMENT 'limesurvey surveys.sid' ,
-  `stage` SMALLINT UNSIGNED NOT NULL ,
+  `rank` SMALLINT UNSIGNED NOT NULL ,
   `repeated` TINYINT(1)  NOT NULL DEFAULT false ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
-  UNIQUE INDEX `uq_qnaire_id_stage` (`qnaire_id` ASC, `stage` ASC) ,
+  UNIQUE INDEX `uq_qnaire_id_rank` (`qnaire_id` ASC, `rank` ASC) ,
   CONSTRAINT `fk_phase_qnaire`
     FOREIGN KEY (`qnaire_id` )
     REFERENCES `qnaire` (`id` )
@@ -127,66 +127,6 @@ CREATE  TABLE IF NOT EXISTS `phase` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'aka: qnaire_has_survey' ;
-
-
--- -----------------------------------------------------
--- Table `province`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `province` ;
-
-CREATE  TABLE IF NOT EXISTS `province` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
-  `name` VARCHAR(45) NOT NULL ,
-  `abbreviation` VARCHAR(5) NOT NULL ,
-  `site_id` INT UNSIGNED NULL COMMENT 'Which site manages participants.' ,
-  INDEX `fk_site_id` (`site_id` ASC) ,
-  PRIMARY KEY (`id`) ,
-  UNIQUE INDEX `uq_name` (`name` ASC) ,
-  UNIQUE INDEX `uq_abbreviation` (`abbreviation` ASC) ,
-  CONSTRAINT `fk_province_site`
-    FOREIGN KEY (`site_id` )
-    REFERENCES `site` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `contact`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `contact` ;
-
-CREATE  TABLE IF NOT EXISTS `contact` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
-  `participant_id` INT UNSIGNED NOT NULL ,
-  `active` TINYINT(1)  NOT NULL DEFAULT true ,
-  `rank` INT NOT NULL ,
-  `type` ENUM('home','home2','work','work2','cell','cell2','other') NOT NULL DEFAULT 'home' ,
-  `phone` VARCHAR(20) NULL DEFAULT NULL ,
-  `address1` VARCHAR(512) NULL DEFAULT NULL ,
-  `address2` VARCHAR(512) NULL DEFAULT NULL ,
-  `city` VARCHAR(45) NULL DEFAULT NULL COMMENT 'If outside Canada, this should contain state and/or region as well.' ,
-  `province_id` INT UNSIGNED NULL DEFAULT NULL ,
-  `country` VARCHAR(20) NULL DEFAULT NULL ,
-  `postcode` VARCHAR(20) NULL DEFAULT NULL ,
-  `note` TEXT NULL DEFAULT NULL ,
-  PRIMARY KEY (`id`) ,
-  INDEX `fk_participant_id` (`participant_id` ASC) ,
-  UNIQUE INDEX `uq_participant_id_active_rank` (`participant_id` ASC, `rank` ASC) ,
-  INDEX `fk_province_id` (`province_id` ASC) ,
-  CONSTRAINT `fk_contact_participant`
-    FOREIGN KEY (`participant_id` )
-    REFERENCES `participant` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_contact_province`
-    FOREIGN KEY (`province_id` )
-    REFERENCES `province` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
@@ -207,6 +147,7 @@ CREATE  TABLE IF NOT EXISTS `interview` (
   INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
   INDEX `fk_duplicate_qnaire_id` (`qnaire_id` ASC) ,
   INDEX `dk_completed` (`completed` ASC) ,
+  UNIQUE INDEX `uq_participant_id_qnaire_id` (`participant_id` ASC, `qnaire_id` ASC) ,
   CONSTRAINT `fk_interview_participant`
     FOREIGN KEY (`participant_id` )
     REFERENCES `participant` (`id` )
@@ -296,6 +237,106 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `region`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `region` ;
+
+CREATE  TABLE IF NOT EXISTS `region` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
+  `name` VARCHAR(45) NOT NULL ,
+  `abbreviation` VARCHAR(5) NOT NULL ,
+  `country` VARCHAR(45) NOT NULL ,
+  `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'Which site manages participants.' ,
+  INDEX `fk_site_id` (`site_id` ASC) ,
+  PRIMARY KEY (`id`) ,
+  UNIQUE INDEX `uq_name` (`name` ASC) ,
+  UNIQUE INDEX `uq_abbreviation` (`abbreviation` ASC) ,
+  CONSTRAINT `fk_region_site_id`
+    FOREIGN KEY (`site_id` )
+    REFERENCES `site` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `address`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `address` ;
+
+CREATE  TABLE IF NOT EXISTS `address` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` TIMESTAMP NOT NULL ,
+  `participant_id` INT UNSIGNED NOT NULL ,
+  `active` TINYINT(1)  NOT NULL DEFAULT true ,
+  `rank` INT NOT NULL ,
+  `address1` VARCHAR(512) NOT NULL ,
+  `address2` VARCHAR(512) NULL DEFAULT NULL ,
+  `city` VARCHAR(100) NOT NULL ,
+  `region_id` INT UNSIGNED NOT NULL ,
+  `postcode` VARCHAR(10) NOT NULL ,
+  `january` TINYINT(1)  NOT NULL DEFAULT true ,
+  `february` TINYINT(1)  NOT NULL DEFAULT true ,
+  `march` TINYINT(1)  NOT NULL DEFAULT true ,
+  `april` TINYINT(1)  NOT NULL DEFAULT true ,
+  `may` TINYINT(1)  NOT NULL DEFAULT true ,
+  `june` TINYINT(1)  NOT NULL DEFAULT true ,
+  `july` TINYINT(1)  NOT NULL DEFAULT true ,
+  `august` TINYINT(1)  NOT NULL DEFAULT true ,
+  `september` TINYINT(1)  NOT NULL DEFAULT true ,
+  `october` TINYINT(1)  NOT NULL DEFAULT true ,
+  `november` TINYINT(1)  NOT NULL DEFAULT true ,
+  `december` TINYINT(1)  NOT NULL DEFAULT true ,
+  `note` TEXT NULL DEFAULT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_participant_id` (`participant_id` ASC) ,
+  INDEX `fk_region_id` (`region_id` ASC) ,
+  CONSTRAINT `fk_address_participant_id`
+    FOREIGN KEY (`participant_id` )
+    REFERENCES `participant` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_address_region_id`
+    FOREIGN KEY (`region_id` )
+    REFERENCES `region` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `phone`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `phone` ;
+
+CREATE  TABLE IF NOT EXISTS `phone` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `timestamp` VARCHAR(45) NULL ,
+  `participant_id` INT UNSIGNED NOT NULL ,
+  `address_id` INT UNSIGNED NULL DEFAULT NULL ,
+  `active` TINYINT(1)  NOT NULL DEFAULT true ,
+  `rank` INT NOT NULL ,
+  `type` ENUM('home','home2','work','work2','mobile','mobile2','other','other2') NOT NULL ,
+  `number` VARCHAR(45) NOT NULL ,
+  `note` TEXT NULL DEFAULT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_participant_id` (`participant_id` ASC) ,
+  INDEX `fk_address_id` (`address_id` ASC) ,
+  CONSTRAINT `fk_phone_participant_id`
+    FOREIGN KEY (`participant_id` )
+    REFERENCES `participant` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_phone_address_id`
+    FOREIGN KEY (`address_id` )
+    REFERENCES `address` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `phone_call`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `phone_call` ;
@@ -304,22 +345,22 @@ CREATE  TABLE IF NOT EXISTS `phone_call` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `timestamp` TIMESTAMP NOT NULL ,
   `assignment_id` INT UNSIGNED NOT NULL ,
-  `contact_id` INT UNSIGNED NOT NULL ,
+  `phone_id` INT UNSIGNED NOT NULL ,
   `start_datetime` DATETIME NOT NULL COMMENT 'The time the call started.' ,
   `end_datetime` DATETIME NULL DEFAULT NULL COMMENT 'The time the call endede.' ,
   `status` ENUM('contacted', 'busy','no answer','machine message','machine no message','fax','disconnected','wrong number','language') NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
-  INDEX `fk_contact_id` (`contact_id` ASC) ,
   INDEX `fk_assignment_id` (`assignment_id` ASC) ,
   INDEX `status` (`status` ASC) ,
-  CONSTRAINT `fk_phone_call_contact`
-    FOREIGN KEY (`contact_id` )
-    REFERENCES `contact` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+  INDEX `fk_phone_id` (`phone_id` ASC) ,
   CONSTRAINT `fk_phone_call_assignment`
     FOREIGN KEY (`assignment_id` )
     REFERENCES `assignment` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_phone_call_phone_id`
+    FOREIGN KEY (`phone_id` )
+    REFERENCES `phone` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -608,20 +649,15 @@ CREATE  TABLE IF NOT EXISTS `appointment` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
-  `contact_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'Which contact to use.' ,
+  `phone_id` INT UNSIGNED NULL DEFAULT NULL ,
   `assignment_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'This appointment\'s assignment.' ,
   `datetime` DATETIME NOT NULL ,
   `reached` TINYINT(1)  NULL DEFAULT NULL COMMENT 'If the appointment was met, whether the participant was reached.' ,
   PRIMARY KEY (`id`) ,
-  INDEX `fk_contact_id` (`contact_id` ASC) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
   INDEX `fk_assignment_id` (`assignment_id` ASC) ,
   INDEX `dk_reached` (`reached` ASC) ,
-  CONSTRAINT `fk_appointment_contact`
-    FOREIGN KEY (`contact_id` )
-    REFERENCES `contact` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+  INDEX `fk_phone_id` (`phone_id` ASC) ,
   CONSTRAINT `fk_appointment_participant`
     FOREIGN KEY (`participant_id` )
     REFERENCES `participant` (`id` )
@@ -630,6 +666,11 @@ CREATE  TABLE IF NOT EXISTS `appointment` (
   CONSTRAINT `fk_appointment_assignment`
     FOREIGN KEY (`assignment_id` )
     REFERENCES `assignment` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_appointment_phone_id`
+    FOREIGN KEY (`phone_id` )
+    REFERENCES `phone` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -646,16 +687,16 @@ CREATE  TABLE IF NOT EXISTS `setting_value` (
   `setting_id` INT UNSIGNED NOT NULL ,
   `site_id` INT UNSIGNED NOT NULL ,
   `value` VARCHAR(45) NOT NULL ,
-  INDEX `fk_setting_id1` (`setting_id` ASC) ,
-  INDEX `fk_site_id1` (`site_id` ASC) ,
+  INDEX `fk_setting_id` (`setting_id` ASC) ,
+  INDEX `fk_site_id` (`site_id` ASC) ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_setting_id_site_id` (`setting_id` ASC, `site_id` ASC) ,
-  CONSTRAINT `fk_setting_id1`
+  CONSTRAINT `fk_setting_value_setting_id`
     FOREIGN KEY (`setting_id` )
     REFERENCES `setting` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_site_id1`
+  CONSTRAINT `fk_setting_value_site_id`
     FOREIGN KEY (`site_id` )
     REFERENCES `site` (`id` )
     ON DELETE NO ACTION
@@ -718,9 +759,9 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Placeholder table for view `participant_primary_location`
+-- Placeholder table for view `participant_first_address`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `participant_primary_location` (`participant_id` INT, `contact_id` INT);
+CREATE TABLE IF NOT EXISTS `participant_first_address` (`participant_id` INT, `address_id` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `participant_last_assignment`
@@ -748,19 +789,37 @@ CREATE TABLE IF NOT EXISTS `participant_available` (`participant_id` INT, `avail
 CREATE TABLE IF NOT EXISTS `participant_last_consent` (`participant_id` INT, `consent_id` INT);
 
 -- -----------------------------------------------------
--- View `participant_primary_location`
+-- Placeholder table for view `participant_primary_address`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `participant_primary_location` ;
-DROP TABLE IF EXISTS `participant_primary_location`;
-CREATE  OR REPLACE VIEW `participant_primary_location` AS
-SELECT participant_id, id AS contact_id
-FROM contact AS t1
+CREATE TABLE IF NOT EXISTS `participant_primary_address` (`participant_id` INT, `address_id` INT);
+
+-- -----------------------------------------------------
+-- View `participant_first_address`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `participant_first_address` ;
+DROP TABLE IF EXISTS `participant_first_address`;
+CREATE  OR REPLACE VIEW `participant_first_address` AS
+SELECT participant_id, id AS address_id
+FROM address AS t1
 WHERE t1.rank = (
   SELECT MIN( t2.rank )
-  FROM contact AS t2
+  FROM address AS t2
   WHERE t2.active
-  AND t2.province_id IS NOT NULL
   AND t1.participant_id = t2.participant_id
+  AND CASE MONTH( CURRENT_TIME() )
+        WHEN 1 THEN t2.january
+        WHEN 2 THEN t2.february
+        WHEN 3 THEN t2.march
+        WHEN 4 THEN t2.april
+        WHEN 5 THEN t2.may
+        WHEN 6 THEN t2.june
+        WHEN 7 THEN t2.july
+        WHEN 8 THEN t2.august
+        WHEN 9 THEN t2.september
+        WHEN 10 THEN t2.october
+        WHEN 11 THEN t2.november
+        WHEN 12 THEN t2.december
+        ELSE 0 END = 1
   GROUP BY t2.participant_id );
 
 -- -----------------------------------------------------
@@ -791,10 +850,10 @@ SELECT participant.id,
        participant.language,
        participant.status,
        participant.prior_contact_date,
-       COUNT( DISTINCT contact.id ) as phone_number_count,
+       COUNT( DISTINCT phone.id ) as phone_number_count,
        consent.event AS last_consent,
        assignment.id AS last_assignment_id,
-       IFNULL( participant.site_id, province.site_id ) AS base_site_id,
+       IFNULL( participant.site_id, primary_region.site_id ) AS base_site_id,
        assignment.id IS NOT NULL AND assignment.end_datetime IS NULL AS assigned,
        IF( current_interview.id IS NULL,
            ( SELECT id FROM qnaire WHERE rank = 1 ),
@@ -818,16 +877,16 @@ SELECT participant.id,
            )
        ) AS start_qnaire_date
 FROM participant
-LEFT JOIN contact
-ON contact.participant_id = participant.id
-AND contact.active
-AND contact.phone IS NOT NULL
-LEFT JOIN participant_primary_location
-ON participant.id = participant_primary_location.participant_id 
-LEFT JOIN contact AS primary_contact
-ON participant_primary_location.contact_id = primary_contact.id
-LEFT JOIN province
-ON primary_contact.province_id = province.id
+LEFT JOIN phone
+ON phone.participant_id = participant.id
+AND phone.active
+AND phone.number IS NOT NULL
+LEFT JOIN participant_primary_address
+ON participant.id = participant_primary_address.participant_id 
+LEFT JOIN address AS primary_address
+ON participant_primary_address.address_id = primary_address.id
+LEFT JOIN region AS primary_region
+ON primary_address.region_id = primary_region.id
 LEFT JOIN participant_last_consent
 ON participant.id = participant_last_consent.participant_id 
 LEFT JOIN consent
@@ -925,6 +984,23 @@ WHERE t1.date = (
   SELECT MAX( t2.date )
   FROM consent AS t2
   WHERE t1.participant_id = t2.participant_id
+  GROUP BY t2.participant_id );
+
+-- -----------------------------------------------------
+-- View `participant_primary_address`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `participant_primary_address` ;
+DROP TABLE IF EXISTS `participant_primary_address`;
+CREATE  OR REPLACE VIEW `participant_primary_address` AS
+SELECT participant_id, id AS address_id
+FROM address AS t1
+WHERE t1.rank = (
+  SELECT MIN( t2.rank )
+  FROM address AS t2, region
+  WHERE t2.region_id = region.id
+  AND t2.active
+  AND region.site_id IS NOT NULL
+  AND t1.participant_id = t2.participant_id
   GROUP BY t2.participant_id );
 
 

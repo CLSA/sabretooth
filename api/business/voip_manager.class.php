@@ -123,26 +123,26 @@ class voip_manager extends \sabretooth\singleton
   }
   
   /**
-   * Attempts to connect to a contact.
+   * Attempts to connect to a phone.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\contact $db_contact
+   * @param database\phone $db_phone
    * @return voip_call
    * @access public
    * @throws exception\argument, exception\runtime, exception\notice, exception\voip
    */
-  public function call( $db_contact )
+  public function call( $db_phone )
   {
     if( !$this->enabled ) return NULL;
 
-    // check that the contact is valid
-    if( is_null( $db_contact ) ||
-        !is_object( $db_contact ) ||
-        'sabretooth\\database\\contact' != get_class( $db_contact ) )
-      throw new exc\argument( 'db_contact', $db_contact, __METHOD__ );
+    // check that the phone is valid
+    if( is_null( $db_phone ) ||
+        !is_object( $db_phone ) ||
+        'sabretooth\\database\\phone' != get_class( $db_phone ) )
+      throw new exc\argument( 'db_phone', $db_phone, __METHOD__ );
 
     // check that the phone number has exactly 10 digits
-    $digits = preg_replace( '/[^0-9]/', '', $db_contact->phone );
+    $digits = preg_replace( '/[^0-9]/', '', $db_phone->number );
     if( 10 != strlen( $digits ) )
       throw new exc\runtime(
         'Tried to connect to phone number which does not have exactly 10 digits.', __METHOD__ );

@@ -56,15 +56,15 @@ class phone_call_end extends action
         $db_phone_call->status = $this->get_argument( 'status' );
         $db_phone_call->save();
 
-        // if the status is "disconnected" or "wrong number" deactivate the contact and make a note
+        // if the status is "disconnected" or "wrong number" deactivate the phone and make a note
         // that the number has been disconnected
         if( 'disconnected' == $db_phone_call->status ||
             'wrong number' == $db_phone_call->status )
         {
-          $db_contact = new db\contact( $db_phone_call->contact_id );
-          if( !is_null( $db_contact ) )
+          $db_phone = new db\phone( $db_phone_call->phone_id );
+          if( !is_null( $db_phone ) )
           {
-            $note = sprintf( 'This contact has been disabled because a call was made to it '.
+            $note = sprintf( 'This phone number has been disabled because a call was made to it '.
                              'on %s at %s '.
                              'by operator id %d (%s) '.
                              'with the result of "%s".',
@@ -73,12 +73,11 @@ class phone_call_end extends action
                              $session->get_user()->id,
                              $session->get_user()->name,
                              $db_phone_call->status );
-            $db_contact->active = false;
-            $db_contact->note = is_null( $db_contact->note )
+            $db_phone->active = false;
+            $db_phone->note = is_null( $db_phone->note )
                               ? $note
-                              : $db_contact->note."\n\n".$note;
-            $db_contact->save();
-
+                              : $db_phone->note."\n\n".$note;
+            $db_phone->save();
           }
         }
       }

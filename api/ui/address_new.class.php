@@ -1,6 +1,6 @@
 <?php
 /**
- * participant_delete_contact.class.php
+ * address_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -14,11 +14,12 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * action participant delete_contact
- * 
+ * action address new
+ *
+ * Create a new address.
  * @package sabretooth\ui
  */
-class participant_delete_contact extends base_delete_record
+class address_new extends base_new
 {
   /**
    * Constructor.
@@ -28,7 +29,7 @@ class participant_delete_contact extends base_delete_record
    */
   public function __construct( $args )
   {
-    parent::__construct( 'participant', 'contact', $args );
+    parent::__construct( 'address', $args );
   }
 }
 ?>

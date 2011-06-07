@@ -83,7 +83,10 @@ class queue extends record
       self::$query_list['sourcing required'] = sprintf(
         ' %s'.
         ' AND participant.active = true'.
-        ' AND last_consent NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
+        ' AND ('.
+        '   last_consent IS NULL'.
+        '   OR last_consent NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
+        ' )'.
         ' AND phone_number_count = 0',
         self::$query_list['all'] );
 

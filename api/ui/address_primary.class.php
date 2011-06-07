@@ -1,6 +1,6 @@
 <?php
 /**
- * participant_add_contact.class.php
+ * address_primary.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -14,24 +14,22 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * widget participant add_contact
+ * datum address primary
  * 
  * @package sabretooth\ui
  */
-class participant_add_contact extends base_add_record
+class address_primary extends base_primary
 {
   /**
    * Constructor
    * 
-   * Defines all variables which need to be set for the associated template.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $name The name of the contact.
-   * @param array $args An associative array of arguments to be processed by the widget
+   * @param array $args An associative array of arguments to be processed by the datum
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'participant', 'contact', $args );
+    parent::__construct( 'address', $args );
   }
 }
 ?>

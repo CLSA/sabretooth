@@ -1,6 +1,6 @@
 <?php
 /**
- * phase_list.class.php
+ * address_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -14,27 +14,28 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * widget phase list
+ * widget address list
  * 
  * @package sabretooth\ui
  */
-class phase_list extends base_list_widget
+class address_list extends base_list_widget
 {
   /**
    * Constructor
    * 
-   * Defines all variables required by the phase list.
+   * Defines all variables required by the address list.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'phase', $args );
+    parent::__construct( 'address', $args );
     
-    $this->add_column( 'survey', 'string', 'Survey', false );
-    $this->add_column( 'rank', 'string', 'Stage', true );
-    $this->add_column( 'repeated', 'boolean', 'Repeated', true );
+    $this->add_column( 'active', 'boolean', 'Active', true );
+    $this->add_column( 'available', 'boolean', 'Available', false );
+    $this->add_column( 'rank', 'number', 'Rank', true );
+    $this->add_column( 'city', 'string', 'City', false );
   }
   
   /**
@@ -46,16 +47,18 @@ class phase_list extends base_list_widget
   public function finish()
   {
     parent::finish();
-
+    
     foreach( $this->get_record_list() as $record )
     {
-      // get the survey
-      $db_survey = new db\limesurvey\surveys( $record->sid );
+      // check if the address is available this month
+      $month = strtolower( util::get_datetime_object( NULL, true )->format( 'F' ) );
 
+      $db_region = $record->get_region();
       $this->add_row( $record->id,
-        array( 'survey' => $db_survey->get_title(),
+        array( 'active' => $record->active,
+               'available' => $record->$month,
                'rank' => $record->rank,
-               'repeated' => $record->repeated ) );
+               'city' => $record->city.', '.$db_region->name ) );
     }
 
     $this->finish_setting_rows();

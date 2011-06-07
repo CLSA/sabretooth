@@ -54,15 +54,15 @@ class participant_primary extends base_primary
     $data = parent::get_data();
 
     // add the primary address
-    $db_contact = $this->get_record()->get_primary_location();
-    if( !is_null( $db_contact ) )
+    $db_address = $this->get_record()->get_primary_address();
+    if( !is_null( $db_address ) )
     {
-      $data['street'] = is_null( $db_contact->address2 )
-                      ? $db_contact->address1
-                      : $db_contact->address1.', '.$db_contact->address2;
-      $data['city'] = $db_contact->city;
-      $data['province'] = $db_contact->get_province()->name;
-      $data['postcode'] = $db_contact->postcode;
+      $data['street'] = is_null( $db_address->address2 )
+                      ? $db_address->address1
+                      : $db_address->address1.', '.$db_address->address2;
+      $data['city'] = $db_address->city;
+      $data['region'] = $db_address->get_region()->name;
+      $data['postcode'] = $db_address->postcode;
     }
 
     return $data;

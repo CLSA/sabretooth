@@ -69,39 +69,37 @@ class operator_assignment extends widget
       {
         foreach( $db_last_assignment->get_phone_call_list() as $db_phone_call )
         {
-          $db_contact = $db_phone_call->get_contact();
-          $previous_call_list[] = sprintf( 'Called contact #%d (%s): %s',
-            $db_contact->rank,
-            $db_contact->type,
+          $db_phone = $db_phone_call->get_phone();
+          $previous_call_list[] = sprintf( 'Called phone #%d (%s): %s',
+            $db_phone->rank,
+            $db_phone->type,
             $db_phone_call->status ? $db_phone_call->status : 'unknown' );
         }
       }
 
       $modifier = new db\modifier();
       $modifier->where( 'active', '=', true );
-      $modifier->where( 'phone', '!=', NULL );
       $modifier->order( 'rank' );
-      $db_contact_list = $db_participant->get_contact_list( $modifier );
+      $db_phone_list = $db_participant->get_phone_list( $modifier );
       
       $modifier = new db\modifier();
       $modifier->where( 'end_datetime', '!=', NULL );
       $current_calls = $db_assignment->get_phone_call_count( $modifier );
 
-      if( 0 == count( $db_contact_list ) && 0 == $current_calls )
+      if( 0 == count( $db_phone_list ) && 0 == $current_calls )
       {
         log::crit(
-          sprintf( 'An operator has been assigned participant %d who has no callable contacts',
+          sprintf( 'An operator has been assigned participant %d who has no callable phone numbers',
           $db_participant->id ) );
       }
       else
       {
-        $contact_list = array();
-        foreach( $db_contact_list as $db_contact )
-          $contact_list[$db_contact->id] =
-            sprintf( '%d. %s (%s)', $db_contact->rank, $db_contact->type, $db_contact->phone );
-        $this->set_variable( 'contact_list', $contact_list );
-        $this->set_variable( 'status_list',
-          db\phone_call::get_enum_values( 'status' ) );
+        $phone_list = array();
+        foreach( $db_phone_list as $db_phone )
+          $phone_list[$db_phone->id] =
+            sprintf( '%d. %s (%s)', $db_phone->rank, $db_phone->type, $db_phone->number );
+        $this->set_variable( 'phone_list', $phone_list );
+        $this->set_variable( 'status_list', db\phone_call::get_enum_values( 'status' ) );
       }
 
       $this->set_variable( 'assignment_id', $db_assignment->id );
@@ -110,6 +108,15 @@ class operator_assignment extends widget
       $this->set_variable( 'participant_name', $name );
       $this->set_variable( 'participant_language', $language );
       $this->set_variable( 'participant_consent', $consent );
+      
+      // set the appointment variable
+      $modifier = new db\modifier();
+      $modifier->where( 'assignment_id', '=', $db_assignment->id );
+      $appointment_list = db\appointment::select( $modifier );
+      $db_appointment = 0 == count( $appointment_list ) ? NULL : $appointment_list[0];
+      $this->set_variable( 'appointment', is_null( $db_appointment ) ?
+        false : util::get_formatted_time( $db_appointment->datetime, false ) );
+
       if( !is_null( $db_last_assignment ) )
       {
         $this->set_variable( 'previous_assignment_id', $db_last_assignment->id );

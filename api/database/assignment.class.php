@@ -43,7 +43,7 @@ class assignment extends has_note
     if( is_null( $this->current_phase ) )
     { // we haven't determined the current phase yet, do that now using tokens
       $modifier = new modifier();
-      $modifier->order( 'stage' );
+      $modifier->order( 'rank' );
       
       $phase_list = $this->get_interview()->get_qnaire()->get_phase_list( $modifier );
       if( 0 == count( $phase_list ) )

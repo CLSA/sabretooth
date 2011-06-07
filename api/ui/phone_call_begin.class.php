@@ -42,7 +42,7 @@ class phone_call_begin extends action
     $session = bus\session::self();
     $is_operator = 'operator' == $session->get_role()->name;
     
-    $db_contact = new db\contact( $this->get_argument( 'contact_id' ) );
+    $db_phone = new db\phone( $this->get_argument( 'phone_id' ) );
     $db_assignment = NULL;
 
     if( $is_operator )
@@ -53,19 +53,19 @@ class phone_call_begin extends action
         throw new exc\runtime(
           'Operator tried to make call without an assignment.', __METHOD__ );
 
-      if( $db_contact->participant_id != $db_assignment->get_interview()->participant_id )
+      if( $db_phone->participant_id != $db_assignment->get_interview()->participant_id )
         throw new exc\runtime(
           'Operator tried to make call to participant who is not currently assigned.', __METHOD__ );
     }
     
-    // connect voip to contact
-    bus\voip_manager::self()->call( $db_contact );
+    // connect voip to phone
+    bus\voip_manager::self()->call( $db_phone );
 
     if( $is_operator )
     { // create a record of the phone call
       $db_phone_call = new db\phone_call();
       $db_phone_call->assignment_id = $db_assignment->id;
-      $db_phone_call->contact_id = $db_contact->id;
+      $db_phone_call->phone_id = $db_phone->id;
       $db_phone_call->save();
     }
   }

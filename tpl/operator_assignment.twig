@@ -53,7 +53,7 @@
               window.location.reload();
             }
           {% else %}
-            args.contact_id = $( "#{{ widget.full }}__parameter" ).val();
+            args.phone_id = $( "#{{ widget.full }}__parameter" ).val();
             if( send_action( "phone_call", "begin", args ) ) {
               window.location.reload();
             }
@@ -122,6 +122,15 @@
           <td class="heading">Current Consent:</td>
           <td class="content">{{ participant_consent }}</td>
         </tr>
+        {% if appointment %}
+          <tr>
+            <td class="heading">Appointment:</td>
+            <td class="content" style="font-style: italic">
+              This assignment is fulfilling an appointment scheduled to begin
+              at {{ appointment }}.
+            </td>
+          </tr>
+        {% endif %}
         <tr>
           <td class="heading">Previous Assignment:</td>
           <td class="content">
@@ -146,15 +155,15 @@
                     id="{{ widget.full }}__view_participant">View Details</button><br>
           </td>
           <td align="right">
-            {% if contact_list|default( false ) %}
+            {% if phone_list|default( false ) %}
               <select class="ui-state-default" id="{{ widget.full }}__parameter">
                 {% if on_call %}
                   {% for status in status_list %}
                     <option value="{{ status }}">{{ status }}</option>
                   {% endfor %}
                 {% else %}
-                  {% for id, contact in contact_list %}
-                    <option value="{{ id }}">{{ contact }}</option>
+                  {% for id, phone in phone_list %}
+                    <option value="{{ id }}">{{ phone }}</option>
                   {% endfor %}
                 {% endif %}
               </select>
