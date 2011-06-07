@@ -90,8 +90,6 @@ class appointment extends record
       $modifier = new $modifier();
       $modifier->where( 'site_id', '=', $db_site->id );
       $modifier->where( 'start_date', '<=', $start_datetime_obj->format( 'Y-m-d' ) );
-      $modifier->where( 'start_time', '<', $end_datetime_obj->format( 'H:i:s' ) );
-      $modifier->where( 'end_time', '>', $start_datetime_obj->format( 'H:i:s' ) );
       
       foreach( shift_template::select( $modifier ) as $db_shift_template )
       {
