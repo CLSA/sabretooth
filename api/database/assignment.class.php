@@ -51,21 +51,25 @@ class assignment extends has_note
         log::emerg( 'Questionnaire with no phases has been assigned.' );
         return NULL;
       }
+      
 
       foreach( $phase_list as $db_phase )
       {
         $token = $this->get_token( $db_phase );
+        $tokens_table = sprintf( '%stokens_%d',
+          bus\setting_manager::self()->get_setting( 'survey_db', 'prefix' ),
+          $db_phase->sid );
 
         $completed = limesurvey\record::db()->get_one(
-          sprintf( 'SELECT completed FROM tokens_%s WHERE token = %s',
-                   $db_phase->sid,
+          sprintf( 'SELECT completed FROM %s WHERE token = %s',
+                   $tokens_table,
                    database::format_string( $token ) ) );
 
         if( is_null( $completed ) )
         { // token not found, create it
           limesurvey\record::db()->execute(
-            sprintf( 'INSERT INTO tokens_%s SET token = %s',
-                   $db_phase->sid,
+            sprintf( 'INSERT INTO %s SET token = %s',
+                   $tokens_table,
                    database::format_string( $token ) ) );
           $this->current_phase = $db_phase;
           break;
