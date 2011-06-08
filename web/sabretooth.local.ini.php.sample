@@ -28,6 +28,12 @@ $SETTINGS[ 'db' ][ 'username' ] = 'put your database username here';
 $SETTINGS[ 'db' ][ 'password' ] = 'put your database password here';
 $SETTINGS[ 'db' ][ 'prefix' ] = 'put your table prefix here';
 
+// audit database settings (null values use the limesurvey database settings)
+// NOTE: either the prefix or the database must not different from limesurvey's prefix
+// and server, otherwise auditing will not work.
+$SETTINGS[ 'audit_db' ][ 'enabled' ] = false;
+$SETTINGS[ 'audit_db' ][ 'prefix' ] = 'audit_';
+
 // The LDAP base dn, username, password and whether LDAP is in active directory mode
 $SETTINGS[ 'ldap' ][ 'base' ] = '';
 $SETTINGS[ 'ldap' ][ 'username' ] = '';

@@ -32,6 +32,7 @@ class setting_manager extends \sabretooth\singleton
 
     // copy the setting one category at a time, ignore any unknown categories
     $categories = array( 'db',
+                         'audit_db',
                          'survey_db',
                          'general',
                          'interface',
