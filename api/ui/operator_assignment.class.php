@@ -51,7 +51,8 @@ class operator_assignment extends widget
 
     if( !is_null( $db_assignment ) )
     { // fill out the participant's details
-      $db_participant = $db_assignment->get_interview()->get_participant();
+      $db_interview = $db_assignment->get_interview();
+      $db_participant = $db_interview->get_participant();
       
       $name = sprintf( $db_participant->first_name.' '.$db_participant->last_name );
 
@@ -102,6 +103,14 @@ class operator_assignment extends widget
         $this->set_variable( 'status_list', db\phone_call::get_enum_values( 'status' ) );
       }
 
+      if( 0 == $current_calls && $db_interview->completed )
+      {
+        log::crit(
+          sprintf( 'An operator has been assigned participant %d who\'s interview is complete '.
+                   'but the operator has not made any calls.',
+                   $db_participant->id ) );
+      }
+
       $this->set_variable( 'assignment_id', $db_assignment->id );
       $this->set_variable( 'participant_id', $db_participant->id );
       $this->set_variable( 'participant_note_count', $db_participant->get_note_count() );
@@ -128,9 +137,16 @@ class operator_assignment extends widget
           util::get_formatted_time( $db_last_assignment->start_datetime ) );
       }
       $this->set_variable( 'previous_call_list', $previous_call_list );
-      $this->set_variable( 'current_calls', $current_calls );
+      $this->set_variable( 'interview_completed', $db_interview->completed );
       $this->set_variable( 'allow_call', $session->get_allow_call() );
-      $this->set_variable( 'on_call', !is_null( $session->get_current_phone_call() ) );
+
+      $on_call = !is_null( $session->get_current_phone_call() );
+      $this->set_variable( 'on_call', $on_call );
+      
+      // only allow an assignment to be ended if the operator is not in a call and
+      // they have made at least one call or the interview is completed
+      $this->set_variable( 'allow_end_assignment',
+        !$on_call && ( 0 < $current_calls || $db_interview->completed ) );
     }
   }
 }

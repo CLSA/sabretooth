@@ -44,6 +44,9 @@
         $( "#{{ widget.full }}__call" ).button( {
           text: true,
           label: "{{ on_call ? 'End Call' : 'Call' }}",
+          {% if not on_call and interview_completed %}
+            disabled: true,
+          {% endif %}
           icons: { primary: "ui-icon-person" }
         } ).click( function() {
           args = new Object();
@@ -184,7 +187,7 @@
           <td align="right">
             <button style="width: 180px;"
                     id="{{ widget.full }}__end_assignment"
-                    {{ on_call or 0 == current_calls ? "disabled" : "" }}>End Assignment</button>
+                    {{ allow_end_assignment ? "" : "disabled" }}>End Assignment</button>
           </td>
         </tr>
         <tr>
