@@ -86,11 +86,17 @@ class appointment_add extends base_appointment_view
     $phones = array();
     foreach( $db_participant->get_phone_list( $modifier ) as $db_phone )
       $phones[$db_phone->id] = $db_phone->rank.". ".$db_phone->number;
+    
+    // create the min datetime array
+    $start_qnaire_date = $this->parent->get_record()->start_qnaire_date;
+    $datetime_limits = !is_null( $start_qnaire_date )
+                     ? array( 'min_date' => substr( $start_qnaire_date, 0, -9 ) )
+                     : NULL;
 
     // set the view's items
     $this->set_item( 'participant_id', $this->parent->get_record()->id );
     $this->set_item( 'phone_id', '', false, $phones );
-    $this->set_item( 'datetime', '', true );
+    $this->set_item( 'datetime', '', true, $datetime_limits );
 
     $this->finish_setting_items();
   }

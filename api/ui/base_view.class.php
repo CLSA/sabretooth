@@ -104,15 +104,17 @@ abstract class base_view extends base_record_widget
   }
 
   /**
-   * Sets and item's value (and enum values for enum types).
+   * Sets and item's value and additional data.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $item_id The item's id, can be one of the record's column names.
    * @param mixed $value The item's value.
-   * @param array $enum For enum item types, all possible values.
+   * @param mixed $data For enum item types, an array of all possible values, for date types an
+   *              associative array of min_date and/or max_date and for datetime types an
+   *              associative array of min_datetime and/or max_datetime
    * @throws exception\argument
    * @access public
    */
-  public function set_item( $item_id, $value, $required = false, $enum = NULL )
+  public function set_item( $item_id, $value, $required = false, $data = NULL )
   {
     // make sure the item exists
     if( !array_key_exists( $item_id, $this->items ) )
@@ -158,8 +160,13 @@ abstract class base_view extends base_record_widget
     }
 
     $this->items[$item_id]['value'] = $value;
-    if( !is_null( $enum ) )
+    if( 'enum' == $this->items[$item_id]['type'] )
     {
+      $enum = $data;
+      if( is_null( $enum ) )
+        throw new exc\runtime(
+          'Trying to set enum item without enum values.', __METHOD__ );
+
       // add a null entry (to the front of the array) if the item is not required
       if( !$required )
       {
@@ -169,14 +176,20 @@ abstract class base_view extends base_record_widget
       }
       $this->items[$item_id]['enum'] = $enum;
     }
-    else if( 'enum' == $this->items[$item_id]['type'] )
-    { // make sure the type isn't an enum (since enum values aren't provided)
-      throw new exc\runtime(
-        'Trying to set enum item without enum values.', __METHOD__ );
+    else if( 'date' == $this->items[$item_id]['type'] ||
+             'datetime' == $this->items[$item_id]['type'] )
+    {
+      if( is_array( $data ) )
+      {
+        $date_limits = $data;
+        if( array_key_exists( 'min_date', $date_limits ) )
+          $this->items[$item_id]['min_date'] = $date_limits['min_date'];
+        if( array_key_exists( 'max_date', $date_limits ) )
+          $this->items[$item_id]['max_date'] = $date_limits['max_date'];
+      }
     }
 
     $this->items[$item_id]['required'] = $required;
-
   }
 
   /**
