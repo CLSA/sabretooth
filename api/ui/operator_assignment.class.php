@@ -123,8 +123,17 @@ class operator_assignment extends widget
       $modifier->where( 'assignment_id', '=', $db_assignment->id );
       $appointment_list = db\appointment::select( $modifier );
       $db_appointment = 0 == count( $appointment_list ) ? NULL : $appointment_list[0];
-      $this->set_variable( 'appointment', is_null( $db_appointment ) ?
-        false : util::get_formatted_time( $db_appointment->datetime, false ) );
+      if( !is_null( $db_appointment ) )
+      {
+        $this->set_variable( 'appointment', util::get_formatted_time( $db_appointment->datetime, false ) );
+        $this->set_variable( 'phone_id',
+          is_null( $db_appointment->phone_id ) ? false : $db_appointment->phone_id );
+      }
+      else
+      {
+        $this->set_variable( 'appointment', false );
+        $this->set_variable( 'phone_id', false );
+      }
 
       if( !is_null( $db_last_assignment ) )
       {

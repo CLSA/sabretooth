@@ -129,8 +129,12 @@
           <tr>
             <td class="heading">Appointment:</td>
             <td class="content" style="font-style: italic">
-              This assignment is fulfilling an appointment scheduled to begin
-              at {{ appointment }}.
+              This assignment is fulfilling an appointment scheduled for {{ appointment }}.<br>
+              {% if phone_id %}
+                The participant specified to be called at: {{ phone_list[phone_id] }}.
+              {% else %}
+                The participant did not specify which number to call.
+              {% endif %}
             </td>
           </tr>
         {% endif %}
@@ -166,7 +170,7 @@
                   {% endfor %}
                 {% else %}
                   {% for id, phone in phone_list %}
-                    <option value="{{ id }}">{{ phone }}</option>
+                    <option {{ phone_id == id ? "selected" : "" }} value="{{ id }}">{{ phone }}</option>
                   {% endfor %}
                 {% endif %}
               </select>

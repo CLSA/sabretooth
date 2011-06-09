@@ -291,7 +291,32 @@ class appointment extends record
     $appointment = util::get_datetime_object( $this->datetime )->getTimestamp();
 
     // get the status of the appointment
-    if( $now < $appointment - $pre_window_time )
+    $db_assignment = $this->get_assignment();
+    if( !is_null( $db_assignment ) )
+    {
+      if( !is_null( $db_assignment->end_datetime ) )
+      { // assignment closed but appointment never completed
+        log::crit(
+          sprintf( 'Appointment %d has assignment which is closed but no status was set.',
+                   $this->id ) );
+        $status = 'incomplete';
+      }
+      else // assignment active
+      {
+        $modifier = new modifier();
+        $modifier->where( 'end_datetime', '=', NULL );
+        $open_phone_calls = $db_assignment->get_phone_call_count( $modifier );
+        if( 0 < $open_phone_calls )
+        { // assignment currently on call
+          $status = "in progress";
+        }
+        else
+        { // not on call
+          $status = "assigned";
+        }
+      }
+    }
+    else if( $now < $appointment - $pre_window_time )
     {
       $status = 'upcoming';
     }
@@ -300,36 +325,8 @@ class appointment extends record
       $status = 'assignable';
     }
     else
-    { // not in the future
-      if( is_null( $this->assignment_id ) )
-      { // not assigned
-        $status = 'missed';
-      }
-      else // assigned
-      {
-        $db_assignment = $this->get_assignment();
-        if( !is_null( $db_assignment->end_datetime ) )
-        { // assignment closed but appointment never completed
-          log::crit(
-            sprintf( 'Appointment %d has assignment which is closed but no status was set.',
-                     $this->id ) );
-          $status = 'incomplete';
-        }
-        else // assignment active
-        {
-          $modifier = new modifier();
-          $modifier->where( 'end_datetime', '=', NULL );
-          $open_phone_calls = $db_assignment->get_phone_call_count( $modifier );
-          if( 0 < $open_phone_calls )
-          { // assignment currently on call
-            $status = "in progress";
-          }
-          else
-          { // not on call
-            $status = "assigned";
-          }
-        }
-      }
+    {
+      $status = 'missed';
     }
 
     return $status;
