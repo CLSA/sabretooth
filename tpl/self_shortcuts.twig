@@ -66,7 +66,7 @@
           }
         } ).click( function() {
           slot_next( "main" );
-        } );
+        } ).parent().buttonset();
       {% endif %}
       
       {% if refresh %}
@@ -92,6 +92,23 @@
           slot_load( "main", "self_home" );
         } );
       {% endif %}
+
+        $( "#{{ widget.full }}_font_down" ).button( {
+          text: false,
+          icons: {
+            primary: "ui-icon-minus"
+          }
+        } ).click( function() {
+        } ).fontscale( "body", "down" );
+
+        $( "#{{ widget.full }}_font_up" ).button( {
+          text: false,
+          icons: {
+            primary: "ui-icon-plus"
+          }
+        } ).click( function() {
+        } ).fontscale( "body", "up" ).parent().buttonset();
+
     } );
   </script>
 
@@ -105,11 +122,17 @@
     {% endif %}
     {% if calculator %}<button id="{{ widget.full }}_calculator">calculator</button>{% endif %}
     {% if navigation %}
-      <button id="{{ widget.full }}_prev">back</button>
-      <button id="{{ widget.full }}_next">forward</button>
+      <span>
+        <button id="{{ widget.full }}_prev">back</button>
+        <button id="{{ widget.full }}_next">forward</button>
+      </span>
     {% endif %}
     {% if refresh %}<button id="{{ widget.full }}_refresh">refresh</button>{% endif %}
     {% if home %}<button id="{{ widget.full }}_home">home</button>{% endif %}
+    <span>
+      <button id="{{ widget.full }}_font_down">smaller font</button>
+      <button id="{{ widget.full }}_font_up">larger font</button>
+    </span>
   </span>
 
 {% endblock widget %}

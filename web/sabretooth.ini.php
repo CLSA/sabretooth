@@ -82,6 +82,8 @@ $SETTINGS[ 'url' ][ 'JQUERY_JSTREE_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/jsTree.js';
 $SETTINGS[ 'url' ][ 'JQUERY_FULLCALENDAR_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/fullcalendar.js';
+$SETTINGS[ 'url' ][ 'JQUERY_FONTSCALE_JS' ] =
+  $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/fontscale.js';
 
 // css files
 $SETTINGS[ 'url' ][ 'JQUERY_UI_THEMES' ] = $SETTINGS[ 'url' ][ 'JQUERY_UI' ].'/css';
