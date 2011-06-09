@@ -182,6 +182,11 @@ class queue extends record
         ' WHERE current_qnaire_id IS NOT NULL'.
         ' AND participant.active = true'.
         ' AND participant.status IS NULL'.
+        ' AND phone_number_count != 0'.
+        ' AND ('.
+        '   last_consent IS NULL'.
+        '   OR last_consent NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
+        ' )'.
         // from 'qnaire'
         ' AND ( '.
         '   participant.start_qnaire_date IS NULL'.
@@ -227,6 +232,11 @@ class queue extends record
         ' WHERE current_qnaire_id IS NOT NULL'.
         ' AND participant.active = true'.
         ' AND participant.status IS NULL'.
+        ' AND phone_number_count != 0'.
+        ' AND ('.
+        '   last_consent IS NULL'.
+        '   OR last_consent NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
+        ' )'.
         // from 'qnaire'
         ' AND ( '.
         '   participant.start_qnaire_date IS NULL'.
@@ -264,6 +274,11 @@ class queue extends record
         ' WHERE current_qnaire_id IS NOT NULL'.
         ' AND participant.active = true'.
         ' AND participant.status IS NULL'.
+        ' AND phone_number_count != 0'.
+        ' AND ('.
+        '   last_consent IS NULL'.
+        '   OR last_consent NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
+        ' )'.
         ' AND ( '.
         '   participant.start_qnaire_date IS NULL'.
         '   OR DATE( participant.start_qnaire_date ) <= DATE( UTC_TIMESTAMP() )'.
@@ -309,6 +324,11 @@ class queue extends record
         ' WHERE current_qnaire_id IS NOT NULL'.
         ' AND participant.active = true'.
         ' AND participant.status IS NULL'.
+        ' AND phone_number_count != 0'.
+        ' AND ('.
+        '   last_consent IS NULL'.
+        '   OR last_consent NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
+        ' )'.
         ' AND ( '.
         '   participant.start_qnaire_date IS NULL'.
         '   OR DATE( participant.start_qnaire_date ) <= DATE( UTC_TIMESTAMP() )'.
@@ -390,6 +410,9 @@ class queue extends record
     // restrict to the site
     if( !is_null( $this->db_site ) ) $modifier->where( 'base_site_id', '=', $this->db_site->id );
     
+    log::print_r( sprintf( '%s %s',
+               $this->get_sql( 'COUNT( DISTINCT participant.id )' ),
+               $modifier->get_sql( true ) ), $this->name );
     return static::db()->get_one(
       sprintf( '%s %s',
                $this->get_sql( 'COUNT( DISTINCT participant.id )' ),
