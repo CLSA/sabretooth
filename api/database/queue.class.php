@@ -410,9 +410,6 @@ class queue extends record
     // restrict to the site
     if( !is_null( $this->db_site ) ) $modifier->where( 'base_site_id', '=', $this->db_site->id );
     
-    log::print_r( sprintf( '%s %s',
-               $this->get_sql( 'COUNT( DISTINCT participant.id )' ),
-               $modifier->get_sql( true ) ), $this->name );
     return static::db()->get_one(
       sprintf( '%s %s',
                $this->get_sql( 'COUNT( DISTINCT participant.id )' ),
