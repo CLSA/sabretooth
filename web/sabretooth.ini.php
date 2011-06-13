@@ -14,7 +14,7 @@ namespace sabretooth;
 global $SETTINGS;
 
 // tagged version
-$SETTINGS[ 'general' ][ 'version' ] = '0.1.6';
+$SETTINGS[ 'general' ][ 'version' ] = '0.1.7';
 
 // always leave as false when running as production server
 $SETTINGS[ 'general' ][ 'development_mode' ] = false;
@@ -82,6 +82,8 @@ $SETTINGS[ 'url' ][ 'JQUERY_JSTREE_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/jsTree.js';
 $SETTINGS[ 'url' ][ 'JQUERY_FULLCALENDAR_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/fullcalendar.js';
+$SETTINGS[ 'url' ][ 'JQUERY_FONTSCALE_JS' ] =
+  $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/fontscale.js';
 
 // css files
 $SETTINGS[ 'url' ][ 'JQUERY_UI_THEMES' ] = $SETTINGS[ 'url' ][ 'JQUERY_UI' ].'/css';
@@ -102,6 +104,15 @@ $SETTINGS[ 'db' ][ 'username' ] = 'sabretooth';
 $SETTINGS[ 'db' ][ 'password' ] = '';
 $SETTINGS[ 'db' ][ 'database' ] = 'sabretooth';
 $SETTINGS[ 'db' ][ 'prefix' ] = '';
+
+// audit database settings (false values use the limesurvey database settings)
+$SETTINGS[ 'audit_db' ][ 'enabled' ] = false;
+$SETTINGS[ 'audit_db' ][ 'driver' ] = false;
+$SETTINGS[ 'audit_db' ][ 'server' ] = false;
+$SETTINGS[ 'audit_db' ][ 'username' ] = false;
+$SETTINGS[ 'audit_db' ][ 'password' ] = false;
+$SETTINGS[ 'audit_db' ][ 'database' ] = false;
+$SETTINGS[ 'audit_db' ][ 'prefix' ] = 'audit_';
 
 // ldap settings
 $SETTINGS[ 'ldap' ][ 'server' ] = 'localhost';

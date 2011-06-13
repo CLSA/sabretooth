@@ -76,7 +76,31 @@ final class session extends \sabretooth\singleton
       $setting_manager->get_setting( 'survey_db', 'password' ),
       $setting_manager->get_setting( 'survey_db', 'database' ),
       $setting_manager->get_setting( 'survey_db', 'prefix' ) );
-    
+    if( $setting_manager->get_setting( 'audit_db', 'enabled' ) )
+    {
+      // If not set then the audit database settings use the same as limesurvey,
+      // with the exception of the prefix
+      $this->audit_database = new db\database(
+        false === $setting_manager->get_setting( 'audit_db', 'driver' ) ?
+        $setting_manager->get_setting( 'survey_db', 'driver' ) :
+        $setting_manager->get_setting( 'audit_db', 'driver' ),
+        false === $setting_manager->get_setting( 'audit_db', 'server' ) ?
+        $setting_manager->get_setting( 'survey_db', 'server' ) :
+        $setting_manager->get_setting( 'audit_db', 'server' ),
+        false === $setting_manager->get_setting( 'audit_db', 'username' ) ?
+        $setting_manager->get_setting( 'survey_db', 'username' ) :
+        $setting_manager->get_setting( 'audit_db', 'username' ),
+        false === $setting_manager->get_setting( 'audit_db', 'password' ) ?
+        $setting_manager->get_setting( 'survey_db', 'password' ) :
+        $setting_manager->get_setting( 'audit_db', 'password' ),
+        false === $setting_manager->get_setting( 'audit_db', 'database' ) ?
+        $setting_manager->get_setting( 'survey_db', 'database' ) :
+        $setting_manager->get_setting( 'audit_db', 'database' ),
+        false === $setting_manager->get_setting( 'audit_db', 'prefix' ) ?
+        $setting_manager->get_setting( 'survey_db', 'prefix' ) :
+        $setting_manager->get_setting( 'audit_db', 'prefix' ) );
+    }
+
     // determine the user (setting the user will also set the site and role)
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
     $this->set_user( db\user::get_unique_record( 'name', $user_name ) );
@@ -108,6 +132,18 @@ final class session extends \sabretooth\singleton
   public function get_survey_database()
   {
     return $this->survey_database;
+  }
+
+  /**
+   * Get the audit database.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database
+   * @access public
+   */
+  public function get_audit_database()
+  {
+    return $this->audit_database;
   }
 
   /**
@@ -677,6 +713,13 @@ final class session extends \sabretooth\singleton
    * @access private
    */
   private $survey_database = NULL;
+
+  /**
+   * The survey database object.
+   * @var database
+   * @access private
+   */
+  private $audit_database = NULL;
 
   /**
    * The record of the current user.

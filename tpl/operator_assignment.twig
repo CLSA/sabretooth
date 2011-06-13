@@ -44,6 +44,9 @@
         $( "#{{ widget.full }}__call" ).button( {
           text: true,
           label: "{{ on_call ? 'End Call' : 'Call' }}",
+          {% if not on_call and interview_completed %}
+            disabled: true,
+          {% endif %}
           icons: { primary: "ui-icon-person" }
         } ).click( function() {
           args = new Object();
@@ -126,8 +129,12 @@
           <tr>
             <td class="heading">Appointment:</td>
             <td class="content" style="font-style: italic">
-              This assignment is fulfilling an appointment scheduled to begin
-              at {{ appointment }}.
+              This assignment is fulfilling an appointment scheduled for {{ appointment }}.<br>
+              {% if phone_id %}
+                The participant specified to be called at: {{ phone_list[phone_id] }}.
+              {% else %}
+                The participant did not specify which number to call.
+              {% endif %}
             </td>
           </tr>
         {% endif %}
@@ -163,7 +170,7 @@
                   {% endfor %}
                 {% else %}
                   {% for id, phone in phone_list %}
-                    <option value="{{ id }}">{{ phone }}</option>
+                    <option {{ phone_id == id ? "selected" : "" }} value="{{ id }}">{{ phone }}</option>
                   {% endfor %}
                 {% endif %}
               </select>
@@ -184,7 +191,7 @@
           <td align="right">
             <button style="width: 180px;"
                     id="{{ widget.full }}__end_assignment"
-                    {{ on_call or 0 == current_calls ? "disabled" : "" }}>End Assignment</button>
+                    {{ allow_end_assignment ? "" : "disabled" }}>End Assignment</button>
           </td>
         </tr>
         <tr>

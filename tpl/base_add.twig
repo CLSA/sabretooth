@@ -82,6 +82,12 @@
                     timeFormat: 'hh:mm',
                     ampm: false,
                     stepMinute: 5,
+                    {% if entry.min_date|default( false ) %}
+                      minDateTime: new Date( '{{ entry.min_date }}' ),
+                    {% endif %}
+                    {% if entry.max_date|default( false ) %}
+                      maxDateTime: new Date( '{{ entry.max_date }}' ),
+                    {% endif %}
                     showAnim: 'slideDown'
                   } );
                 } );
@@ -95,6 +101,12 @@
                 $( function () {
                   $( "#{{ widget.full }}__{{ item_id }}" ).datepicker( {
                     dateFormat: 'yy-mm-dd',
+                    {% if entry.min_date|default( false ) %}
+                      minDate: new Date( '{{ entry.min_date }}' ),
+                    {% endif %}
+                    {% if entry.max_date|default( false ) %}
+                      maxDate: new Date( '{{ entry.max_date }}' ),
+                    {% endif %}
                     showAnim: 'slideDown'
                   } );
                 } );

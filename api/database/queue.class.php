@@ -125,6 +125,12 @@ class queue extends record
         ' AND participant.status = "mentally unfit"',
         $status_sql );
       
+      // Other
+      self::$query_list['other'] = sprintf(
+        ' %s'.
+        ' AND participant.status = "other"',
+        $status_sql );
+      
       // Eligible
       self::$query_list['eligible'] = sprintf(
         ' %s'.
@@ -182,6 +188,11 @@ class queue extends record
         ' WHERE current_qnaire_id IS NOT NULL'.
         ' AND participant.active = true'.
         ' AND participant.status IS NULL'.
+        ' AND phone_number_count != 0'.
+        ' AND ('.
+        '   last_consent IS NULL'.
+        '   OR last_consent NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
+        ' )'.
         // from 'qnaire'
         ' AND ( '.
         '   participant.start_qnaire_date IS NULL'.
@@ -227,6 +238,11 @@ class queue extends record
         ' WHERE current_qnaire_id IS NOT NULL'.
         ' AND participant.active = true'.
         ' AND participant.status IS NULL'.
+        ' AND phone_number_count != 0'.
+        ' AND ('.
+        '   last_consent IS NULL'.
+        '   OR last_consent NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
+        ' )'.
         // from 'qnaire'
         ' AND ( '.
         '   participant.start_qnaire_date IS NULL'.
@@ -264,6 +280,11 @@ class queue extends record
         ' WHERE current_qnaire_id IS NOT NULL'.
         ' AND participant.active = true'.
         ' AND participant.status IS NULL'.
+        ' AND phone_number_count != 0'.
+        ' AND ('.
+        '   last_consent IS NULL'.
+        '   OR last_consent NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
+        ' )'.
         ' AND ( '.
         '   participant.start_qnaire_date IS NULL'.
         '   OR DATE( participant.start_qnaire_date ) <= DATE( UTC_TIMESTAMP() )'.
@@ -309,6 +330,11 @@ class queue extends record
         ' WHERE current_qnaire_id IS NOT NULL'.
         ' AND participant.active = true'.
         ' AND participant.status IS NULL'.
+        ' AND phone_number_count != 0'.
+        ' AND ('.
+        '   last_consent IS NULL'.
+        '   OR last_consent NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
+        ' )'.
         ' AND ( '.
         '   participant.start_qnaire_date IS NULL'.
         '   OR DATE( participant.start_qnaire_date ) <= DATE( UTC_TIMESTAMP() )'.
