@@ -125,6 +125,12 @@ class queue extends record
         ' AND participant.status = "mentally unfit"',
         $status_sql );
       
+      // Other
+      self::$query_list['other'] = sprintf(
+        ' %s'.
+        ' AND participant.status = "other"',
+        $status_sql );
+      
       // Eligible
       self::$query_list['eligible'] = sprintf(
         ' %s'.

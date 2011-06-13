@@ -130,6 +130,19 @@ description = "Participants who are not eligible for answering questionnaires be
 mentally unfit.";
 
 INSERT INTO queue SET
+name = "other",
+title = "Participants with an undefined condition",
+rank = NULL,
+qnaire_specific = false,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "ineligible" ) AS tmp ),
+description = "Participants who are not eligible for answering questionnaires because they have
+been identified to have an undefined condition (other).";
+
+INSERT INTO queue SET
 name = "eligible",
 title = "Eligible to answer questionnaires",
 rank = NULL,
