@@ -44,8 +44,16 @@ class setting_manager extends \sabretooth\singleton
       // make sure the category exists
       if( !array_key_exists( $category, $static_settings ) )
         throw new exc\argument( 'static_settings['.$category.']', NULL, __METHOD__ );
-
+      
       $this->static_settings[ $category ] = $static_settings[ $category ];
+    }
+
+    // have the audit settings mirror limesurvey, if necessary
+    foreach( $this->static_settings[ 'audit_db' ] as $key => $value )
+    {
+      if( false === $value )
+        $this->static_settings[ 'audit_db' ][ $key ] =
+          $this->static_settings[ 'survey_db' ][ $key ];
     }
   }
 
