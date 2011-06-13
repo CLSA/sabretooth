@@ -86,6 +86,7 @@ class operator_assignment extends widget
       $modifier = new db\modifier();
       $modifier->where( 'end_datetime', '!=', NULL );
       $current_calls = $db_assignment->get_phone_call_count( $modifier );
+      $on_call = !is_null( $session->get_current_phone_call() );
 
       if( 0 == count( $db_phone_list ) && 0 == $current_calls )
       {
@@ -103,7 +104,7 @@ class operator_assignment extends widget
         $this->set_variable( 'status_list', db\phone_call::get_enum_values( 'status' ) );
       }
 
-      if( 0 == $current_calls && $db_interview->completed )
+      if( 0 == $current_calls && !$on_call && $db_interview->completed )
       {
         log::crit(
           sprintf( 'An operator has been assigned participant %d who\'s interview is complete '.
@@ -149,7 +150,6 @@ class operator_assignment extends widget
       $this->set_variable( 'interview_completed', $db_interview->completed );
       $this->set_variable( 'allow_call', $session->get_allow_call() );
 
-      $on_call = !is_null( $session->get_current_phone_call() );
       $this->set_variable( 'on_call', $on_call );
       
       // only allow an assignment to be ended if the operator is not in a call and
