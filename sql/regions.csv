@@ -13,14 +13,18 @@ NULL,NULL,"Saskatchewan","SK","Canada",NULL
 NULL,NULL,"Yukon","YT","Canada",NULL
 NULL,NULL,"Alabama","AL","USA",NULL
 NULL,NULL,"Alaska","AK","USA",NULL
+NULL,NULL,"American Samoa","AS","USA",NULL
 NULL,NULL,"Arizona","AZ","USA",NULL
 NULL,NULL,"Arkansas","AR","USA",NULL
 NULL,NULL,"California","CA","USA",NULL
 NULL,NULL,"Colorado","CO","USA",NULL
 NULL,NULL,"Connecticut","CT","USA",NULL
 NULL,NULL,"Delaware","DE","USA",NULL
+NULL,NULL,"District of Columbia","DC","USA",NULL
+NULL,NULL,"Federated States of Micronesia","FM","USA",NULL
 NULL,NULL,"Florida","FL","USA",NULL
 NULL,NULL,"Georgia","GA","USA",NULL
+NULL,NULL,"Guam","GU","USA",NULL
 NULL,NULL,"Hawaii","HI","USA",NULL
 NULL,NULL,"Idaho","ID","USA",NULL
 NULL,NULL,"Illinois","IL","USA",NULL
@@ -30,6 +34,7 @@ NULL,NULL,"Kansas","KS","USA",NULL
 NULL,NULL,"Kentucky","KY","USA",NULL
 NULL,NULL,"Louisiana","LA","USA",NULL
 NULL,NULL,"Maine","ME","USA",NULL
+NULL,NULL,"Marshall Islands","MH","USA",NULL
 NULL,NULL,"Maryland","MD","USA",NULL
 NULL,NULL,"Massachusetts","MA","USA",NULL
 NULL,NULL,"Michigan","MI","USA",NULL
@@ -45,10 +50,13 @@ NULL,NULL,"New Mexico","NM","USA",NULL
 NULL,NULL,"New York","NY","USA",NULL
 NULL,NULL,"North Carolina","NC","USA",NULL
 NULL,NULL,"North Dakota","ND","USA",NULL
+NULL,NULL,"Northern Mariana Islands","MP","USA",NULL
 NULL,NULL,"Ohio","OH","USA",NULL
 NULL,NULL,"Oklahoma","OK","USA",NULL
 NULL,NULL,"Oregon","OR","USA",NULL
+NULL,NULL,"Palau","PW","USA",NULL
 NULL,NULL,"Pennsylvania","PA","USA",NULL
+NULL,NULL,"Puerto Rico","PR","USA",NULL
 NULL,NULL,"Rhode Island","RI","USA",NULL
 NULL,NULL,"South Carolina","SC","USA",NULL
 NULL,NULL,"South Dakota","SD","USA",NULL
@@ -56,8 +64,12 @@ NULL,NULL,"Tennessee","TN","USA",NULL
 NULL,NULL,"Texas","TX","USA",NULL
 NULL,NULL,"Utah","UT","USA",NULL
 NULL,NULL,"Vermont","VT","USA",NULL
+NULL,NULL,"Virgin Islands","VI","USA",NULL
 NULL,NULL,"Virginia","VA","USA",NULL
 NULL,NULL,"Washington","WA","USA",NULL
 NULL,NULL,"West Virginia","WV","USA",NULL
 NULL,NULL,"Wisconsin","WI","USA",NULL
 NULL,NULL,"Wyoming","WY","USA",NULL
+NULL,NULL,"Armed Forces Americas","AA","USA",NULL
+NULL,NULL,"Armed Forces Africa","AE","USA",NULL
+NULL,NULL,"Armed Forces Pacific","AP","USA",NULL

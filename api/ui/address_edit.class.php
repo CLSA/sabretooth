@@ -31,5 +31,28 @@ class address_edit extends base_edit
   {
     parent::__construct( 'address', $args );
   }
+
+  /**
+   * Overrides the parent method to make sure the postcode is valid.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access public
+   */
+  public function execute()
+  {
+    $columns = $this->get_argument( 'columns' );
+
+    // validate the postcode
+    if( array_key_exists( 'postcode', $columns ) )
+    {
+      $postcode = $columns['postcode'];
+      if( !preg_match( '/^[A-Z][0-9][A-Z] [0-9][A-Z][0-9]$/', $postcode ) && // postal code
+          !preg_match( '/^[0-9]{5}$/', $postcode ) )  // zip code
+        throw new exc\notice(
+          'Postal codes must be in "A1A 1A1" format, zip codes in "01234" format.', __METHOD__ );
+    }
+
+    parent::execute();
+  }
 }
 ?>
