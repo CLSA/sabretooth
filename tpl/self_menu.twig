@@ -28,6 +28,12 @@
           slot_load( "main", "{{ list.widget }}" );
         } );
       {% endfor %}
+      {% for report in reports %}
+        $( "#{{ widget.full }}_{{ report.widget }}" ).button().click( function() {
+          $( "#left_extruder" ).closeMbExtruder();
+          slot_load( "main", "{{ report.widget }}" );
+        } );
+      {% endfor %}
     } );
   </script>
 
@@ -53,6 +59,17 @@
         <div style="padding: 2px;">
           <button style="width: 100%;" 
                   id="{{ widget.full }}_{{ list.widget }}">{{ list.heading|capitalize }}</button>
+        </div>
+      {% endfor %}
+      <div class="spacer" />
+    {% endif %}
+
+    {% if reports|count %}
+      <div class="title" style="text-align: center">Reports</div>
+      {% for report in reports %}
+        <div style="padding: 2px;">
+          <button style="width: 100%;" 
+                  id="{{ widget.full }}_{{ report.widget }}">{{ report.heading|capitalize }}</button>
         </div>
       {% endfor %}
     {% endif %}
