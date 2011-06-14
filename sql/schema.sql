@@ -806,7 +806,7 @@ WHERE t1.rank = (
   FROM address AS t2
   WHERE t2.active
   AND t1.participant_id = t2.participant_id
-  AND CASE MONTH( CURRENT_TIME() )
+  AND CASE MONTH( CURRENT_DATE() )
         WHEN 1 THEN t2.january
         WHEN 2 THEN t2.february
         WHEN 3 THEN t2.march

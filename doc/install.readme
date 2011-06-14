@@ -7,6 +7,7 @@ The following software must be installed prior to installing sabretooth:
 - PEAR Log (pear install Log)
 - PEAR Twig (pear channel-discover pear.twig-project.org && pear install twig
 - PEAR PhpDocumentor (pear install PhpDocumentor)
+- PEAR PHPExcel
 - ADOdb 5.11+
 - jQuery 1.4.4+
 - jQuery-ui 1.8.8+
@@ -14,7 +15,6 @@ The following software must be installed prior to installing sabretooth:
     cookie, hoverIntent, layout, extruder, flipText, metadata, loading, loading.overflow,
     jeditable, timepicker, rightClick and tooltip
 - Shift8 0.1.3+
-- phpexcel 1.7.5+
 
 The client-side software was developed to be used by firefox version 3.6.13.  This application has
 not been developed to be cross-browser compatible so use any other browser at your own risk.

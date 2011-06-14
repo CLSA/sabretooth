@@ -81,23 +81,11 @@ final class session extends \sabretooth\singleton
       // If not set then the audit database settings use the same as limesurvey,
       // with the exception of the prefix
       $this->audit_database = new db\database(
-        false === $setting_manager->get_setting( 'audit_db', 'driver' ) ?
-        $setting_manager->get_setting( 'survey_db', 'driver' ) :
         $setting_manager->get_setting( 'audit_db', 'driver' ),
-        false === $setting_manager->get_setting( 'audit_db', 'server' ) ?
-        $setting_manager->get_setting( 'survey_db', 'server' ) :
         $setting_manager->get_setting( 'audit_db', 'server' ),
-        false === $setting_manager->get_setting( 'audit_db', 'username' ) ?
-        $setting_manager->get_setting( 'survey_db', 'username' ) :
         $setting_manager->get_setting( 'audit_db', 'username' ),
-        false === $setting_manager->get_setting( 'audit_db', 'password' ) ?
-        $setting_manager->get_setting( 'survey_db', 'password' ) :
         $setting_manager->get_setting( 'audit_db', 'password' ),
-        false === $setting_manager->get_setting( 'audit_db', 'database' ) ?
-        $setting_manager->get_setting( 'survey_db', 'database' ) :
         $setting_manager->get_setting( 'audit_db', 'database' ),
-        false === $setting_manager->get_setting( 'audit_db', 'prefix' ) ?
-        $setting_manager->get_setting( 'survey_db', 'prefix' ) :
         $setting_manager->get_setting( 'audit_db', 'prefix' ) );
     }
 
