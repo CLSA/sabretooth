@@ -41,22 +41,22 @@ class address extends has_rank
     if( !is_null( $this->postcode ) &&
         static::db()->get_one(
           'SELECT COUNT(*) '.
-          'FROM INFORMATION_SCHEMA.SCHEMATA '.
-          'WHERE SCHEMA_NAME = "postal_codes"' ) )
+          'FROM information_schema.schemata '.
+          'WHERE schema_name = "address_info"' ) )
     {
-      $postal_code = 6 == strlen( $this->postcode )
+      $postcode = 6 == strlen( $this->postcode )
                    ? substr( $this->postcode, 0, 3 ).' '.substr( $this->postcode, -3 )
                    : $this->postcode;
-      $postal_code = strtoupper( $postal_code );
+      $postcode = strtoupper( $postcode );
 
-      $sql = sprintf( 'SELECT TIME_ZONE, DAY_LIGHT_SAVINGS '.
-                      'FROM postal_codes.postal_code '.
-                      'WHERE POSTAL_CODE = "%s"',
-                      $postal_code );
+      $sql = sprintf( 'SELECT timezone_offset, daylight_savings '.
+                      'FROM address_info.postcode '.
+                      'WHERE postcode = "%s"',
+                      $postcode );
       $row = static::db()->get_row( $sql );
       if( 0 < count( $row ) )
       {
-        $offset = -$row['TIME_ZONE'] + ( 'Y' == $row['DAY_LIGHT_SAVINGS'] ? 1 : 0 );
+        $offset = $row['timezone_offset'] + ( $row['daylight_savings'] ? 1 : 0 );
         return $offset - $user_offset;
       }
     }

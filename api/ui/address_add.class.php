@@ -40,7 +40,8 @@ class address_add extends base_view
     $this->add_item( 'address2', 'string', 'Address2' );
     $this->add_item( 'city', 'string', 'City' );
     $this->add_item( 'region_id', 'enum', 'Region' );
-    $this->add_item( 'postcode', 'string', 'Postcode' );
+    $this->add_item( 'postcode', 'string', 'Postcode',
+      'Postal codes must be in "A1A 1A1" format, zip codes in "01234" format.' );
     $this->add_item( 'note', 'text', 'Note' );
   }
 
