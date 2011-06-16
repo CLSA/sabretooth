@@ -82,7 +82,7 @@ try
   if( is_null( $widget['name'] ) )
     throw new exception\runtime( 'Unable to determine widget name.', 'WIDGET__SCRIPT' );
   
-  $widget_class = '\\sabretooth\\ui\\'.$widget['name'];
+  $widget_class = '\\sabretooth\\ui\\widget\\'.$widget['name'];
   
   // create the widget using the provided args then finish it
   $operation = new $widget_class( $widget['args'] );

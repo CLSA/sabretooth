@@ -24,7 +24,7 @@ try
   if( !isset( $_POST['name'] ) ) throw new exception\argument( 'name', NULL, 'ACTION__SCRIPT' );
 
   $action_name = $_POST['subject'].'_'.$_POST['name'];
-  $action_class = 'sabretooth\\ui\\'.$action_name;
+  $action_class = 'sabretooth\\ui\\action\\'.$action_name;
   $action_args = isset( $_POST ) ? $_POST : NULL;
 
   // create the operation using the provided args then execute it

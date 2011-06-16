@@ -12,12 +12,12 @@
   {{ parent() }}
   <script type="text/javascript">
     $( function () {
-      // add button
-      $( "#{{ widget.compound }}_add" ).click( function () {
+      // download button
+      $( "#{{ widget.compound }}_download" ).click( function () {
         // submit the form information as a new action
         var args = new Object();
         var columns = new Object();
-        $( "#{{ widget.full }}_add_form :input" ).each( function() {
+        $( "#{{ widget.full }}_download_form :input" ).each( function() {
           var id_string = $(this).attr( "id" );
           var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
           columns[column_name] = "checkbox" == $(this).attr( "type" )
@@ -25,8 +25,9 @@
                                : $(this).val();
         } );
         args.columns = columns;
-    
-        if( send_action( "{{ widget.subject }}", "new", args ) ) slot_prev( {{ slot }} );
+        
+        console.log( args );
+        //if( send_action( "{{ widget.subject }}", "new", args ) ) slot_prev( {{ slot }} );
       } );
     } );
   </script>
@@ -35,15 +36,16 @@
 
 {% block widget %}
 
-  {# put hidden parameters here #}
-  {% for param_id, param in parameters %}
-    {% if 'hidden' == param.type %}
-      {% set param_value = param.value is defined ? param.value : "" %}
-      <input id="{{ widget.full }}__{{ param_id }}" type="hidden" value="{{ param_value }}" />
-    {% endif %}
-  {% endfor %}
+  <div id="{{ widget.full }}_download_form" class="ui-widget ui-widget-content app-widget-content">
 
-  <div class="ui-widget ui-widget-content app-widget-content">
+    {# put hidden parameters here #}
+    {% for param_id, param in parameters %}
+      {% if 'hidden' == param.type %}
+        {% set param_value = param.value is defined ? param.value : "" %}
+        <input id="{{ widget.full }}__{{ param_id }}" type="hidden" value="{{ param_value }}" />
+      {% endif %}
+    {% endfor %}
+
     <div class="spacer">{{ description|default( "" ) }}</div>
     <table>
       {% for param_id, param in parameters %}
@@ -197,11 +199,11 @@
       <tr>
         <td class="heading">Format:</td>
         <td class="content">
-          <select id="{{ widget.full }}__name"
+          <select id="{{ widget.full }}__format"
                   style="width: 100%" class="ui-state-default">
-            <option id="excel2007">Microsoft Excel 2007</option>
-            <option id="excel5">Microsoft Excel 5.0</option>
-            <option id="csv">CSV</option>
+            <option value="excel2007">Microsoft Excel 2007</option>
+            <option value="excel5">Microsoft Excel 5.0</option>
+            <option value="csv">CSV</option>
           </select>
         </td>
       </tr>

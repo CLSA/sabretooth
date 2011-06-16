@@ -24,7 +24,7 @@ try
   if( !isset( $_GET['name'] ) ) throw new exception\argument( 'name', NULL, 'DATUM__SCRIPT' );
 
   $datum_name = $_GET['subject'].'_'.$_GET['name'];
-  $datum_class = 'sabretooth\\ui\\'.$datum_name;
+  $datum_class = 'sabretooth\\ui\\datum\\'.$datum_name;
   $datum_args = isset( $_GET ) ? $_GET : NULL;
 
   // create the operation using the provided args then execute it
