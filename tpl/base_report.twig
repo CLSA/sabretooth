@@ -35,6 +35,14 @@
 
 {% block widget %}
 
+  {# put hidden parameters here #}
+  {% for param_id, param in parameters %}
+    {% if 'hidden' == param.type %}
+      {% set param_value = param.value is defined ? param.value : "" %}
+      <input id="{{ widget.full }}__{{ param_id }}" type="hidden" value="{{ param_value }}" />
+    {% endif %}
+  {% endfor %}
+
   <div class="ui-widget ui-widget-content app-widget-content">
     <div class="spacer">{{ description|default( "" ) }}</div>
     <table>
@@ -52,7 +60,7 @@
           {% endfor %}
           </td></tr>
 
-        {% else %}
+        {% elseif 'hidden' != param.type %}
 
           <tr>
             <td class="heading">

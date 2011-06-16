@@ -238,6 +238,10 @@ VALUES( "widget", "queue", "list", true, "List queues in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "datum", "queue", "primary", true, "Retrieves base queue information." );
 
+-- report
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "productivity", "report", true, "Set up a productivity report." );
+
 -- role
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "action", "role", "delete", true, "Removes a role from the system." );

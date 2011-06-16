@@ -43,7 +43,7 @@ abstract class base_report extends widget
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $param_id The parameter's id, can be one of the record's column names.
    * @param string $type The parameter's type, one of "boolean", "date", "time", "datetime",
-   *               "number", "string", "text", "enum" or "constant"
+   *               "number", "string", "text", "enum" or "hidden"
    * @param string $heading The parameter's heading as it will appear in the view
    * @param string $note A note to add below the parameter.
    * @access public
