@@ -40,7 +40,7 @@ abstract class base_add_record extends base_record_widget
     $this->get_argument( 'id' );
 
     // build the child add widget
-    $class_name = '\\sabretooth\\ui\\'.$child.'_add';
+    $class_name = '\\sabretooth\\ui\\widget\\'.$child.'_add';
     $this->add_widget = new $class_name( $args );
     $this->add_widget->set_parent( $this, 'edit' );
 

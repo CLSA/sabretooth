@@ -33,7 +33,7 @@ class user_view extends base_view
     parent::__construct( 'user', 'view', $args );
 
     // create an associative array with everything we want to display about the user
-    $this->add_item( 'name', 'string', 'Username' );
+    $this->add_item( 'name', 'constant', 'Username' );
     $this->add_item( 'first_name', 'string', 'First name' );
     $this->add_item( 'last_name', 'string', 'Last name' );
     $this->add_item( 'active', 'boolean', 'Active' );
