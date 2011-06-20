@@ -80,14 +80,60 @@ abstract class base_list_widget extends \sabretooth\ui\widget
       }
       else
       {
-        $operator = '';
-        if( 'is' == $restrict['compare'] ) $operator = '=';
-        else if( 'is not' == $restrict['compare'] ) $operator = '!=';
-        else if( 'like' == $restrict['compare'] ) $operator = 'LIKE';
-        else if( 'not like' == $restrict['compare'] ) $operator = 'NOT LIKE';
-        else log::error( 'Invalid comparison in list restriction.' );
-  
-        if( 0 < strlen( $operator ) ) $modifier->where( $column, $operator, $restrict['value'] );
+        $operator = NULL;
+        $value = NULL;
+        if( array_key_exists( $column, $this->columns ) &&
+            'boolean' == $this->columns[$column]['type'] )
+        {
+          $input_value = strtolower( $restrict['value'] );
+
+          if( 'y' === $input_value || 'yes' === $input_value ||
+              '1' === $input_value || 1 === $input_value ||
+              'true' === $input_value || true === $input_value )
+          {
+            $value = true;
+            $this->restrictions[$column]['value'] = 'Yes';
+          }
+          else if( 'n' === $input_value || 'no' === $input_value ||
+                   '0' === $input_value || 0 === $input_value ||
+                   'false' === $input_value || false === $input_value )
+          {
+            $value = false;
+            $this->restrictions[$column]['value'] = 'No';
+          }
+          
+          if( !is_null( $value ) )
+          {
+            if( 'is' == $restrict['compare'] || 'like' == $restrict['compare'] )
+            {
+              $operator = '=';
+              $this->restrictions[$column]['compare'] = 'is';
+            }
+            else
+            {
+              $operator = '!=';
+              $this->restrictions[$column]['compare'] = 'is not';
+            }
+          }
+        }
+        else
+        {
+          $value = $restrict['value'];
+          if( 'is' == $restrict['compare'] ) $operator = '=';
+          else if( 'is not' == $restrict['compare'] ) $operator = '!=';
+          else if( 'like' == $restrict['compare'] ) $operator = 'LIKE';
+          else if( 'not like' == $restrict['compare'] ) $operator = 'NOT LIKE';
+          else log::error( 'Invalid comparison in list restriction.' );
+        }
+        
+        if( is_null( $operator ) || is_null( $value ) )
+        {
+          unset( $this->restrictions[$column] );
+        }
+        else
+        {
+          $modifier->where( $column, $operator, $value );
+        }
       }
     }
 
