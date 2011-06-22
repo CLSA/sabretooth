@@ -51,5 +51,14 @@ abstract class base_primary extends base_record_datum
       $data[ $column ] = $this->get_record()->$column;
     return $data;
   }
+
+  /**
+   * Primary data is always returned in json format
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_data_type() { return "json"; }
 }
 ?>

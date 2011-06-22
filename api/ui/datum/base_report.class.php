@@ -1,6 +1,6 @@
 <?php
 /**
- * base_feed.class.php
+ * base_report.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -14,50 +14,36 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * Base class for all feed datums.
+ * Base class for all reports.
  * 
  * @abstract
  * @package sabretooth\ui
  */
-abstract class base_feed extends \sabretooth\ui\datum
+abstract class base_report extends \sabretooth\ui\datum
 {
   /**
    * Constructor
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $subject The subject to retrieve the primary information from.
    * @param array $args An associative array of arguments to be processed by the datum
    * @access public
    */
   public function __construct( $subject, $args )
   {
-    parent::__construct( $subject, 'feed', $args );
-
-    // set the start and end datetimes
-    $this->start_datetime = $this->get_argument( 'start' );
-    $this->end_datetime = $this->get_argument( 'end' );
+    parent::__construct( $subject, 'report', $args );
   }
-  
+
   /**
-   * Feeds are always returned in JSON format.
+   * Returns the report type (xls, xlsx, html, pdf or csv)
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
-  public function get_data_type() { return "json"; }
-
-  /**
-   * The start date/time of the feed
-   * @var string
-   * @access protected
-   */
-  protected $start_datetime = NULL;
-  
-  /**
-   * The end date/time of the feed
-   * @var string
-   * @access protected
-   */
-  protected $end_datetime = NULL;
+  public function get_data_type()
+  {
+    return $this->get_argument( 'format' );
+  }
 }
 ?>

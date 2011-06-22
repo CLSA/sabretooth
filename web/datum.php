@@ -33,7 +33,8 @@ try
     throw new exception\runtime(
       'Invoked operation "'.$datum_class.'" is invalid.', 'DATUM__SCRIPT' );
   
-  $result_array['data'] = $operation->get_data();
+  $data_type = $operation->get_data_type();
+  $data = $operation->get_data();
   business\session::self()->log_activity( $operation, $datum_args );
   log::notice(
     sprintf( 'finished script: executed datum "%s", processing time %0.2f seconds',
@@ -67,7 +68,25 @@ ob_end_clean();
 
 if( true == $result_array['success'] )
 {
-  print json_encode( $result_array );
+  if( 'json' == $data_type )
+  {
+    $result_array['data'] = $data;
+    print json_encode( $result_array );
+  }
+  else
+  {
+    header( 'Pragma: public');
+    header( 'Expires: 0');
+    header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
+    header( 'Cache-Control: private', false );
+    header( 'Content-Type: application/force-download' );
+    header( 'Content-Type: application/octet-stream' );
+    header( 'Content-Type: application/ms-excel' );
+    header( 'Content-Disposition: attachment; filename='.$datum_name.'.'.$data_type );
+    header( 'Content-Transfer-Encoding: binary ' );
+    header( 'Content-Length: '.strlen( $data ) );
+    print $data;
+  }
 }
 else
 {

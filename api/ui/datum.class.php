@@ -35,6 +35,16 @@ abstract class datum extends operation
   }
 
   /**
+   * Returns the type of data provided by this datum operation.
+   * Should either be json or a standard file type (xls, xlsx, html, pdf, csv, and so on)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @abstract
+   * @access public
+   */
+  abstract public function get_data_type();
+
+  /**
    * Returns the data provided by this datum operation.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

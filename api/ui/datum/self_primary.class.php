@@ -46,5 +46,14 @@ class self_primary extends \sabretooth\ui\datum
     foreach( $db_user->get_column_names() as $column ) $data[ $column ] = $db_user->$column;
     return $data;
   }
+
+  /**
+   * Primary data is always returned in json format
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return string
+   * @access public
+   */
+  public function get_data_type() { return "json"; }
 }
 ?>

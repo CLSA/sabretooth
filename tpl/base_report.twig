@@ -16,18 +16,17 @@
       $( "#{{ widget.compound }}_download" ).click( function () {
         // submit the form information as a new action
         var args = new Object();
-        var columns = new Object();
+        args.subject = "{{ widget.subject }}";
+        args.name = "report";
         $( "#{{ widget.full }}_download_form :input" ).each( function() {
           var id_string = $(this).attr( "id" );
-          var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
-          columns[column_name] = "checkbox" == $(this).attr( "type" )
-                               ? ( $(this).is( ":checked" ) ? 1 : 0 )
-                               : $(this).val();
+          var param_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
+          args[param_name] = "checkbox" == $(this).attr( "type" )
+                           ? ( $(this).is( ":checked" ) ? 1 : 0 )
+                           : $(this).val();
         } );
-        args.columns = columns;
         
-        console.log( args );
-        //if( send_action( "{{ widget.subject }}", "new", args ) ) slot_prev( {{ slot }} );
+        window.location = "datum.php?" + jQuery.param( args );
       } );
     } );
   </script>
@@ -201,8 +200,12 @@
         <td class="content">
           <select id="{{ widget.full }}__format"
                   style="width: 100%" class="ui-state-default">
-            <option value="excel2007">Microsoft Excel 2007</option>
-            <option value="excel5">Microsoft Excel 5.0</option>
+            <option value="xlsx">Microsoft Excel 2007</option>
+            <option value="xls">Microsoft Excel 5.0</option>
+            <option value="html">HTML (web page)</option>
+            {# PDF file types were causing problems, dissabled for now
+              <option value="pdf">PDF</option>
+            #}
             <option value="csv">CSV</option>
           </select>
         </td>
