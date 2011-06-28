@@ -107,7 +107,7 @@ class phase extends has_rank
       $insert_pos = strpos( $sql, '`submitdate`' );
       $insert_sql =
         substr( $sql, 0, $insert_pos ).
-        '`timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP'.
+        '`timestamp` timestamp NOT NULL'.
         " ON UPDATE CURRENT_TIMESTAMP,\n".
         substr( $sql, $insert_pos );
 

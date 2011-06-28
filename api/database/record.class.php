@@ -213,7 +213,7 @@ abstract class record extends \sabretooth\base_object
     
     // either insert or update the row based on whether the primary key is set
     $sql = sprintf( is_null( $this->column_values[static::get_primary_key_name()] )
-                    ? 'INSERT INTO %s SET %s'
+                    ? 'INSERT INTO %s SET create_timestamp = NULL, %s'
                     : 'UPDATE %s SET %s WHERE %s = %d',
                     static::get_table_name(),
                     $sets,
@@ -662,14 +662,14 @@ abstract class record extends \sabretooth\base_object
     foreach( $ids as $foreign_key_value )
     {
       if( !$first ) $values .= ', ';
-      $values .= sprintf( '(%s, %s)',
+      $values .= sprintf( '(NULL, %s, %s)',
                        database::format_string( $primary_key_value ),
                        database::format_string( $foreign_key_value ) );
       $first = false;
     }
 
     static::db()->execute(
-      sprintf( 'INSERT INTO %s (%s_id, %s_id) VALUES %s',
+      sprintf( 'INSERT INTO %s (create_timestamp, %s_id, %s_id) VALUES %s',
                $joining_table_name,
                static::get_table_name(),
                $record_type,

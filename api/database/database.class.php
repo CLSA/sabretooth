@@ -75,7 +75,8 @@ class database extends \sabretooth\base_object
     foreach( $rows as $row )
     {
       extract( $row ); // defines $table_name, $column_name and $column_type
-      if( 'timestamp' != $column_name ) // ignore timestamp columns
+      if( 'update_timestamp' != $column_name && // ignore timestamp columns
+          'create_timestamp' != $column_name )
       {
         if( !array_key_exists( $table_name, $this->columns ) )
           $this->columns[$table_name] = array();

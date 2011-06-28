@@ -396,6 +396,7 @@ final class session extends \sabretooth\singleton
     $activity->operation_id = $operation->get_id();
     $activity->query = serialize( $args );
     $activity->elapsed = util::get_elapsed_time();
+    $activity->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
     $activity->save();
   }
 
