@@ -82,8 +82,12 @@ class phase extends has_rank
       return;
     }
     
+    $survey_db_name = $setting_manager->get_setting( 'survey_db', 'database' );
+    $audit_db_name = $setting_manager->get_setting( 'audit_db', 'database' );
     $survey_table = $setting_manager->get_setting( 'survey_db', 'prefix' ).'survey_'.$this->sid;
     $audit_table = $setting_manager->get_setting( 'audit_db', 'prefix' ).'survey_'.$this->sid;
+    $audit_db = bus\session::self()->get_audit_database();
+    $survey_db = bus\session::self()->get_survey_database();
 
     // check to see if the audit table already exists
     $count = static::db()->get_one( sprintf(
@@ -91,14 +95,11 @@ class phase extends has_rank
       ' FROM information_schema.TABLES'.
       ' WHERE TABLE_SCHEMA = %s'.
       ' AND TABLE_NAME = %s',
-      database::format_string( $setting_manager->get_setting( 'audit_db', 'database' ) ),
+      database::format_string( $audit_db_name ),
       database::format_string( $audit_table ) ) );
     
     if( 0 == $count )
     {
-      $audit_db = bus\session::self()->get_audit_database();
-      $survey_db = bus\session::self()->get_survey_database();
-
       // get the survey table's create syntax
       $row = $survey_db->get_row( 'SHOW CREATE TABLE '.$survey_table );
       $sql = $row['Create Table'];
@@ -107,23 +108,66 @@ class phase extends has_rank
       $insert_pos = strpos( $sql, '`submitdate`' );
       $insert_sql =
         substr( $sql, 0, $insert_pos ).
-        '`timestamp` timestamp NOT NULL'.
-        " ON UPDATE CURRENT_TIMESTAMP,\n".
+        '`timestamp` timestamp NOT NULL, '.
         substr( $sql, $insert_pos );
+      
+      // remove extra whitespace
+      $insert_sql = preg_replace( '/[\n\r]/', '', $insert_sql );
+      $insert_sql = preg_replace( '/ +/', ' ', $insert_sql );
 
       // remove the auto increment
       $insert_sql = preg_replace( '/ AUTO_INCREMENT(=[0-9]+)?/', '', $insert_sql );
-
+      
       // remove the primary key
-      $insert_sql = str_replace( ",\nPRIMARY KEY (`id`)", '', $insert_sql );
+      $insert_sql = str_replace( ', PRIMARY KEY (`id`)', '', $insert_sql );
 
       // set the table name
-      $insert_sql = preg_replace( '/`'.$survey_table.'` \(\n/',
-                                  '`'.$audit_table."` ( \n", $insert_sql );
-
+      $insert_sql = str_replace( '`'.$survey_table.'` (',
+                                 '`'.$audit_table.'` (', $insert_sql );
+      
       $audit_db->execute( $insert_sql );
+    }
 
-      // TODO: need to add the trigger
+    // check to see if the audit trigger already exists
+    $count = static::db()->get_one( sprintf(
+      ' SELECT COUNT(*)'.
+      ' FROM information_schema.TRIGGERS'.
+      ' WHERE TRIGGER_SCHEMA = %s'.
+      ' AND TRIGGER_NAME = %s',
+      database::format_string( $survey_db_name ),
+      database::format_string( $survey_table.'_auditing' ) ) );
+    
+    if( 0 == $count )
+    {
+      // now we add the trigger
+      $column_names = $survey_db->get_col(
+        sprintf( ' SELECT COLUMN_NAME'.
+                 ' FROM information_schema.COLUMNS'.
+                 ' WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s',
+                 database::format_string( $audit_db_name ),
+                 database::format_string( $survey_table ) ) );
+      
+      // build the trigger sql
+      $trigger_sql = sprintf( ' CREATE TRIGGER %s_auditing'.
+                              ' BEFORE UPDATE ON %s FOR EACH ROW'.
+                              ' BEGIN INSERT INTO %s.%s SET',
+                              $survey_table,
+                              $survey_table,
+                              $audit_db_name,
+                              $audit_table );
+      
+      $first = true;
+      foreach( $column_names as $column_name )
+      {
+        $trigger_sql .= sprintf( '%s %s = OLD.%s',
+                                 $first ? '' : ',',
+                                 $column_name,
+                                 $column_name );
+        $first = false;
+      }
+      $trigger_sql .= '; END';
+  
+      $survey_db->execute( $trigger_sql );
     }
   }
 
