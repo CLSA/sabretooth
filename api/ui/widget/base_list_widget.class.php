@@ -121,8 +121,16 @@ abstract class base_list_widget extends \sabretooth\ui\widget
           $value = $restrict['value'];
           if( 'is' == $restrict['compare'] ) $operator = '=';
           else if( 'is not' == $restrict['compare'] ) $operator = '!=';
-          else if( 'like' == $restrict['compare'] ) $operator = 'LIKE';
-          else if( 'not like' == $restrict['compare'] ) $operator = 'NOT LIKE';
+          else if( 'like' == $restrict['compare'] )
+          {
+            $value = '%'.$value.'%';
+            $operator = 'LIKE';
+          }
+          else if( 'not like' == $restrict['compare'] )
+          {
+            $value = '%'.$value.'%';
+            $operator = 'NOT LIKE';
+          }
           else log::error( 'Invalid comparison in list restriction.' );
         }
         
