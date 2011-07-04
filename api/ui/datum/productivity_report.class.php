@@ -43,6 +43,7 @@ class productivity_report extends base_report
    */
   public function get_data()
   {
+    $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
     $now_datetime_obj = util::get_datetime_object();
     $report = new bus\report();
     
@@ -66,72 +67,83 @@ class productivity_report extends base_report
     // add the title
     $report->merge_cells( 'A'.$row.':'.$end_col.$row );
     $title = ( $daily_date ? 'Daily' : 'Overall' ).' Productivity Report';
-    $report->set_cell( $col.$row, $title, 'center', true );
+    if( $restrict_site_id )
+    {
+      $db_site = new db\site( $restrict_site_id );
+      $title .= ' for '.$db_site->name;
+    }
+    $report->set_size( 16 );
+    $report->set_bold( true );
+    $report->set_horizontal_alignment( 'center' );
+    $report->set_cell( $col.$row, $title );
     $row++;
     
+    $report->set_size( 14 );
+    $report->set_bold( false );
     if( $daily_date )
     {
       $report->merge_cells( 'A'.$row.':'.$end_col.$row );
-      $report->set_cell( $col.$row, $today, 'center' );
+      $report->set_cell( $col.$row, $today );
       $row++;
     }
     
     $report->merge_cells( 'A'.$row.':'.$end_col.$row );
     $generated = 'Generated on '.$now_datetime_obj->format( 'Y-m-d' ).
                  ' at '.$now_datetime_obj->format( 'H:i' );
-    $report->set_cell( $col.$row, $generated, 'center' );
+    $report->set_cell( $col.$row, $generated );
 
     // restrict to a site, if necessary
-    $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
     $site_mod = new db\modifier();
     if( $restrict_site_id ) $site_mod->where( 'id', '=', $restrict_site_id );
     
+    $report->set_size( NULL );
+    $report->set_bold( true );
     $db_role = db\role::get_unique_record( 'name', 'operator' );
     foreach( db\site::select( $site_mod ) as $db_site )
     {
       $row += 2;
       $col = 'A';
+      
+      if( 0 == $restrict_site_id )
+      {
+        // add the site header
+        $report->merge_cells( 'A'.$row.':'.$end_col.$row );
+        $report->set_cell( $col.$row, $db_site->name );
+        $row++;
+      }
 
-      // add the site header
-      $report->merge_cells( 'A'.$row.':'.$end_col.$row );
-      $report->set_cell( $col.$row, $db_site->name, 'center', true );
-      $row++;
-
+      $report->set_background_color( 'CCCCCC' );
+      $report->set_horizontal_alignment( 'left' );
       $report->set_cell( $col.$row, 'Operator' );
-      $report->set_fill( $col.$row, 'FFCCCCCC' );
       $col++;
       
-      $report->set_cell( $col.$row, 'Completes', 'center' );
-      $report->set_fill( $col.$row, 'FFCCCCCC' );
+      $report->set_horizontal_alignment( 'center' );
+      $report->set_cell( $col.$row, 'Completes' );
       $col++;
       
       if( $daily_date )
       {
         $report->set_cell( $col.$row, 'Start Time', 'center' );
-        $report->set_fill( $col.$row, 'FFCCCCCC' );
         $col++;
       
         $report->set_cell( $col.$row, 'End Time', 'center' );
-        $report->set_fill( $col.$row, 'FFCCCCCC' );
         $col++;
       }
       
       $report->set_cell( $col.$row, 'Total Time', 'center' );
-      $report->set_fill( $col.$row, 'FFCCCCCC' );
       $col++;
 
       $report->set_cell( $col.$row, 'CPH', 'center' );
-      $report->set_fill( $col.$row, 'FFCCCCCC' );
       $col++;
       
       $report->set_cell( $col.$row, 'Avg. Length', 'center' );
-      $report->set_fill( $col.$row, 'FFCCCCCC' );
       $col++;
       
       $row++;
 
-      // get all users which have the operator role
-      $total_time = 0;
+      // get the data for all users
+      $report->set_background_color( NULL );
+      $report->set_bold( false );
       $first_row = $row;
       foreach( db\user::select() as $db_user )
       {
@@ -140,6 +152,7 @@ class productivity_report extends base_report
         $mod->where( 'user_id', '=', $db_user->id );
         $mod->where( 'site_id', '=', $db_site->id );
         $mod->where( 'role_id', '=', $db_role->id );
+
         if( $daily_date )
         {
           // get the min and max datetimes for this day
@@ -154,9 +167,12 @@ class productivity_report extends base_report
             $diff_obj = $max_datetime_obj->diff( $min_datetime_obj );
             $total_time = $diff_obj->h + round( $diff_obj->i / 15 ) * 0.25;
           }
+          else $total_time = 0;
         }
         else
         {
+          $total_time = 0;
+
           // get the overall min and max datetimes, then use those to get min/max datetimes
           // for all days
           $min_datetime_obj = db\activity::get_min_datetime( $mod );
@@ -198,6 +214,7 @@ class productivity_report extends base_report
           $col = 'A';
   
           // name
+          $report->set_horizontal_alignment( 'left' );
           $report->set_cell( $col.$row, $db_user->first_name.' '.$db_user->last_name );
           $col++;
     
@@ -213,6 +230,7 @@ class productivity_report extends base_report
           foreach( $db_user->get_assignment_list( $mod ) as $db_assignment )
             if( $db_assignment->get_interview()->completed ) $completes++;
           
+          $report->set_horizontal_alignment( 'center' );
           $report->set_cell( $col.$row, $completes, 'center' );
           $col++;
           
@@ -243,45 +261,49 @@ class productivity_report extends base_report
           $row++;
         }
       }
+
       $last_row = $row - 1;
       
       $col = 'A';
 
       // now do the totals/sums
-      $report->set_cell( $col.$row, 'Total', 'left', true );
+      $report->set_horizontal_alignment( 'left' );
+      $report->set_bold( true );
+      $report->set_cell( $col.$row, 'Total' );
       $col++;
       
       // completes
+      $report->set_horizontal_alignment( 'center' );
       $value = $first_row > $last_row ? 0 : '=SUM( '.$col.$first_row.':'.$col.$last_row.' )';
-      $cell_obj = $report->set_cell( $col.$row, $value, 'center' );
+      $cell_obj = $report->set_cell( $col.$row, $value );
       $completes = $cell_obj->getCalculatedValue();
       $col++;
       
       if( $daily_date )
       {
         // start time
-        $report->set_cell( $col.$row, '--', 'center' );
+        $report->set_cell( $col.$row, '--' );
         $col++;
         
         // end time
-        $report->set_cell( $col.$row, '--', 'center' );
+        $report->set_cell( $col.$row, '--' );
         $col++;
       }
       
       // total time
       $value = $first_row > $last_row ? 0 : '=SUM( '.$col.$first_row.':'.$col.$last_row.' )';
-      $cell_obj = $report->set_cell( $col.$row, $value, 'center' );
+      $cell_obj = $report->set_cell( $col.$row, $value );
       $total_time = $cell_obj->getCalculatedValue();
       $col++;
       
 
       // completes per hour
       if( 0 !== $value )
-        $report->set_cell( $col.$row, sprintf( '%0.2f', $completes/$total_time ), 'center' );
+        $report->set_cell( $col.$row, sprintf( '%0.2f', $completes/$total_time ) );
       $col++;
       
       // average interview time
-      $report->set_cell( $col.$row, 'TBD', 'center' );
+      $report->set_cell( $col.$row, 'TBD' );
       $col++;
       $row++;
     }
