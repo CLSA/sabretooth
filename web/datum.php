@@ -90,6 +90,7 @@ if( true == $result_array['success'] )
 }
 else
 {
-  util::send_http_error( json_encode( $result_array ) );
+  if( 'json' == $data_type ) util::send_http_error( json_encode( $result_array ) );
+  else include TPL_PATH.'/index_error.php';
 }
 ?>
