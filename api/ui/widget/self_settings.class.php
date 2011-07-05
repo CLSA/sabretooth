@@ -43,6 +43,7 @@ class self_settings extends \sabretooth\ui\widget
     parent::finish();
 
     $session = bus\session::self();
+
     // create and setup the widget
     $db_user = $session->get_user();
     $db_site = $session->get_site();
@@ -63,7 +64,10 @@ class self_settings extends \sabretooth\ui\widget
     foreach( new \DirectoryIterator( JQUERY_UI_THEMES_PATH ) as $file )
       if( !$file->isDot() && $file->isDir() ) $themes[] = $file->getFilename();
 
-    $this->set_variable( 'user_name', $db_user->name );
+    $this->set_variable( 'user', $db_user->first_name.' '.$db_user->last_name );
+    $this->set_variable( 'version',
+      bus\setting_manager::self()->get_setting( 'general', 'version' ) );
+    $this->set_variable( 'development', util::in_devel_mode() );
     $this->set_variable( 'current_site_name', $db_site->name );
     $this->set_variable( 'current_role_name', $db_role->name );
     $this->set_variable( 'current_theme_name', $session->get_theme() );

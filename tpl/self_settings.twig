@@ -3,7 +3,6 @@
  # 
  # Allows the user to define configurable session-based settings.
  # @author Patrick Emond <emondpd@mcmaster.ca>
- # @param string user_name
  # @param string current_site_name
  # @param string current_role_name
  # @param string current_theme_name
@@ -75,12 +74,19 @@
 
   <table>
     <tr>
-      <td align="left">
-        Welcome {{ user_name }}
+      <td align="left" valign="top">
+        <img src="img/logo_small.png" style="height:60px; margin:4px" />
       </td>
-      <td align="right">
-        <button id="{{ widget.full }}_password">password</button>
-        <button id="{{ widget.full }}_logout">logout</button>
+      <td align="left" valign="top" class="title">
+        Sabretooth version {{ version }}<br>
+        Logged in as {{ user }}<br>
+        {% if development %}
+          <div class="ui-state-error" style="margin-top:4px;padding:2px">development mode</div>
+        {% endif %}
+      </td>
+      <td align="right" valign="top">
+        <button id="{{ widget.full }}_password" style="width:135px; margin:2px">password</button><br>
+        <button id="{{ widget.full }}_logout" style="width:135px; margin:2px">logout</button>
       </td>
     </tr>
   </table>
@@ -88,9 +94,9 @@
   <table>
     <tr>
       <td align="left" width="50%">
-        <span class="title">Site:</span>
+        <span class="title" style="width:20%">Site:</span>
         {% if 1 < sites|count %}
-          <select id="{{ widget.full }}_set_site" style="width: 140px" class="ui-state-default">
+          <select id="{{ widget.full }}_set_site" style="width: 80%" class="ui-state-default">
             {% for site in sites %}
               <option{{ current_site_name == site ? ' selected' : '' }}>{{ site }}</option>
             {% endfor %}
@@ -99,10 +105,10 @@
           {{ current_site_name }}
         {% endif %}
       </td>
-      <td align="left" width="50%">
-        <span class="title">Role:</span>
+      <td align="right" width="50%">
+        <span class="title" style="width:20%">Role:</span>
         {% if 1 < roles|count %}
-          <select id="{{ widget.full }}_set_role" style="width: 140px" class="ui-state-default">
+          <select id="{{ widget.full }}_set_role" style="width: 80%" class="ui-state-default">
             {% for role in roles %}
               <option{{ current_role_name == role ? ' selected' : '' }}>{{ role }}</option>
             {% endfor %}
@@ -116,10 +122,10 @@
   <hr class="ui-widget ui-widget-content">
   <table>
     <tr>
-      <td align="left">
+      <td align="left" width="10%">
         <span class="title">Theme:&nbsp;</span>
       </td>
-      <td align="right" width="95%">
+      <td align="right" width="90%">
         <select id="{{ widget.full }}_set_theme" style="width: 100%" class="ui-state-default">
           {% for theme in themes %}
             <option{{ current_theme_name == theme ? ' selected' : '' }}>{{ theme }}</option>
