@@ -33,7 +33,7 @@ class assignment extends has_note
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to determine token for interview with no id.' );
+      log::warning( 'Tried to determine current phase for assignment with no id.' );
       return NULL;
     } 
     

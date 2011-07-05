@@ -93,7 +93,8 @@ final class session extends \sabretooth\singleton
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
     $this->set_user( db\user::get_unique_record( 'name', $user_name ) );
     if( NULL == $this->user )
-      throw new exc\runtime( 'User "'.$user_name.'" not found.', __METHOD__ );
+      throw new exc\permission(
+        db\operation::get_operation( 'action', 'self', 'set_role' ), __METHOD__ );
 
     $this->initialized = true;
   }
@@ -198,6 +199,8 @@ final class session extends \sabretooth\singleton
           $_SESSION['current_role_id'] = $this->role->id;
         }
       }
+      else throw new exc\permission(
+        db\operation::get_operation( 'action', 'self', 'set_role' ), __METHOD__ );
     }
   }
 
