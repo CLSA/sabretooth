@@ -34,6 +34,19 @@ class report extends \sabretooth\base_object
     $this->php_excel->getActiveSheet()->getPageSetup()->setHorizontalCentered( true );
   }
   
+  /**
+   * Magic call method.
+   * 
+   * Magic call method which is used to set font/cell format type properties which are used when the
+   * {@link set_cell} method is called.  The possible format type properties are listed in the
+   * {@link current_values} class member.
+   * @method mixed get_<format_type>() Returns the current value for the <format_type>.  If no
+   *               value has been set the value will be NULL.
+   * @method null set_<format_type>() Sets the the current value for the <format_type>.  If set to
+   *              NULL then the default format value will be used.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
   public function __call( $name, $args )
   {
     $exception = new exc\runtime(
@@ -68,6 +81,17 @@ class report extends \sabretooth\base_object
     }
   }
 
+  /**
+   * Set the value of a cell.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $coordinate A cell in "A1" format
+   * @param string $value The value of the cell.  This can either be a string, number, date or time
+   *               (which will be displayed as is) or an equation which should always start with =
+   *               (ie: =A1+A2)
+   * @return PHPExcel Cell object
+   * @access public
+   */
   public function set_cell( $coordinate, $value )
   {
     $column = preg_replace( '/[^A-Za-z]/', '', $coordinate );
@@ -109,6 +133,13 @@ class report extends \sabretooth\base_object
     return $cell_obj;
   }
   
+  /**
+   * Merges a range of cells into a single cell.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $range Two cells separated by a colon: "A1:B2" format
+   * @access public
+   */
   public function merge_cells( $range )
   {
     try
@@ -121,6 +152,14 @@ class report extends \sabretooth\base_object
     }
   }
 
+  /**
+   * Renders the report in the given format.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $format One of xlsx, xls, html, pdf or csv
+   * @return string
+   * @access public
+   */
   public function get_file( $format )
   {
     // create the desired file writer type 
@@ -152,6 +191,11 @@ class report extends \sabretooth\base_object
     return $data;
   }
   
+  /**
+   * An array of cell default formatting
+   * @var array
+   * @access protected
+   */
   protected $current_format = array( 'bold' => NULL,
                                      'italic' => NULL,
                                      'size' => NULL,
@@ -160,6 +204,11 @@ class report extends \sabretooth\base_object
                                      'horizontal_alignment' => NULL,
                                      'vertical_alignment' => NULL );
 
-  private $php_excel = NULL;
+  /**
+   * The PHPExcel object used to create excel files
+   * @var PHPExcel object
+   * @access protected
+   */
+  protected $php_excel = NULL;
 }
 ?>
