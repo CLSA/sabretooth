@@ -134,5 +134,5 @@ $SETTINGS[ 'voip' ][ 'prefix' ] = '';
 $SETTINGS[ 'path' ][ 'VOIP_MONITOR' ] = '/var/local/sabretooth/monitor';
 
 // themes
-$SETTINGS[ 'interface' ][ 'default_theme' ] = 'humanity';
+$SETTINGS[ 'interface' ][ 'default_theme' ] = 'smoothness';
 ?>
