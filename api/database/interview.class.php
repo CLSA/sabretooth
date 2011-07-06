@@ -44,7 +44,7 @@ class interview extends has_note
     return (float) $survey_db->get_one(
       sprintf( ' SELECT timing.interviewTime'.
                ' FROM survey_%s_timings AS timing, survey_%s AS survey'.
-               ' WHERE timing.id = survey.id'
+               ' WHERE timing.id = survey.id'.
                ' AND survey.token = %s',
                $db_phase->sid,
                $db_phase->sid,
