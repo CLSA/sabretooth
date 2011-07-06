@@ -37,7 +37,7 @@ class phone_edit extends base_edit
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     $columns = $this->get_argument( 'columns' );
 
@@ -49,7 +49,7 @@ class phone_edit extends base_edit
           'Phone numbers must have exactly 10 digits.', __METHOD__ );
     }
 
-    parent::execute();
+    parent::finish();
   }
 }
 ?>

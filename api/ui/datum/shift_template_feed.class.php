@@ -40,7 +40,7 @@ class shift_template_feed extends base_feed
    * @return array
    * @access public
    */
-  public function get_data()
+  public function finish()
   {
     $event_list = array();
     $db_site = bus\session::self()->get_site();

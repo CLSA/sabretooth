@@ -37,7 +37,7 @@ class shift_edit extends base_edit
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     try
     {

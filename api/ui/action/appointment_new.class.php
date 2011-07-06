@@ -39,7 +39,7 @@ class appointment_new extends base_new
    * @throws exception\notice
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     // make sure the datetime column isn't blank
     $columns = $this->get_argument( 'columns' );
@@ -53,7 +53,7 @@ class appointment_new extends base_new
       throw new exc\notice( 'There are no operators available during that time.', __METHOD__ );
     
     // no errors, go ahead and make the change
-    parent::execute();
+    parent::finish();
   }
 }
 ?>

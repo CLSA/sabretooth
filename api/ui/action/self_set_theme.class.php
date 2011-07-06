@@ -39,7 +39,7 @@ class self_set_theme extends \sabretooth\ui\action
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     $session = bus\session::self();
     $session->get_user()->theme = $this->theme_name;

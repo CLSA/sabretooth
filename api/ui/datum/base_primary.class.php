@@ -44,7 +44,7 @@ abstract class base_primary extends base_record_datum
    * @return associative array
    * @access public
    */
-  public function get_data()
+  public function finish()
   {
     $data = array();
     foreach( $this->get_record()->get_column_names() as $column )

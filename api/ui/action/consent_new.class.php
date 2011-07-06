@@ -37,14 +37,14 @@ class consent_new extends base_new
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     // make sure the date column isn't blank
     $columns = $this->get_argument( 'columns' );
     if( !array_key_exists( 'date', $columns ) || 0 == strlen( $columns['date'] ) )
       throw new exc\notice( 'The date cannot be left blank.', __METHOD__ );
 
-    parent::execute();
+    parent::finish();
   }
 }
 ?>

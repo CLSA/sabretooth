@@ -33,7 +33,7 @@ try
     throw new exception\runtime(
       'Invoked operation "'.$action_class.'" is invalid.', 'ACTION__SCRIPT' );
   
-  $operation->execute();
+  $operation->finish();
   business\session::self()->log_activity( $operation, $action_args );
   log::notice(
     sprintf( 'finished script: executed action "%s", processing time %0.2f seconds',

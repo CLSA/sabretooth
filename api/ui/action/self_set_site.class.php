@@ -40,7 +40,7 @@ class self_set_site extends \sabretooth\ui\action
    * @throws exception\runtime
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     $db_site = db\site::get_unique_record( 'name', $this->site_name );
     if( NULL == $db_site )

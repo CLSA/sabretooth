@@ -39,7 +39,7 @@ class self_set_password extends \sabretooth\ui\action
    * @throws exception\runtime
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     $db_user = bus\session::self()->get_user();
     $old = $this->get_argument( 'old', 'password' );

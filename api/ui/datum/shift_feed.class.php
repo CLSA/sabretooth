@@ -46,7 +46,7 @@ class shift_feed extends base_feed
    * @return array
    * @access public
    */
-  public function get_data()
+  public function finish()
   {
     // determine from the start/end times whether this feed request is longer than a week
     $start = strtotime( $this->start_datetime );

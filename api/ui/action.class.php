@@ -33,14 +33,5 @@ abstract class action extends operation
   {
     parent::__construct( 'action', $subject, $name, $args );
   }
-
-  /**
-   * Perform the action.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @abstract
-   * @access public
-   */
-  abstract public function execute();
 }
 ?>

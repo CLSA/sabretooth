@@ -34,7 +34,7 @@ try
       'Invoked operation "'.$datum_class.'" is invalid.', 'DATUM__SCRIPT' );
   
   $data_type = $operation->get_data_type();
-  $data = $operation->get_data();
+  $data = $operation->finish();
   business\session::self()->log_activity( $operation, $datum_args );
   log::notice(
     sprintf( 'finished script: executed datum "%s", processing time %0.2f seconds',

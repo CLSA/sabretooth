@@ -38,7 +38,7 @@ class setting_edit extends base_edit
    * @throws exception\runtime
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     // check to see if site_value is in the column list
     $columns = $this->get_argument( 'columns', array() );
@@ -70,7 +70,7 @@ class setting_edit extends base_edit
         $db_setting_value->save();
       }
     }
-    else parent::execute();
+    else parent::finish();
   }
 }
 ?>

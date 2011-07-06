@@ -41,7 +41,7 @@ abstract class base_delete extends base_record_action
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     try
     {

@@ -37,7 +37,7 @@ class shift_new extends base_new
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     // make sure the date column isn't blank
     $columns = $this->get_argument( 'columns' );

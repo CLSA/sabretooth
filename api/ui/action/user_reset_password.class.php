@@ -38,7 +38,7 @@ class user_reset_password extends base_record_action
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     $db_user = new db\user( $this->get_argument( 'id' ) );
     $ldap_manager = bus\ldap_manager::self();

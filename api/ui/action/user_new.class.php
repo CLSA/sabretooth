@@ -48,7 +48,7 @@ class user_new extends base_new
    * @access public
    * @throws exception\notice
    */
-  public function execute()
+  public function finish()
   {
     $columns = $this->get_argument( 'columns' );
     
@@ -73,7 +73,7 @@ class user_new extends base_new
       if( !$e->is_already_exists() ) throw $e;
     }
 
-    parent::execute();
+    parent::finish();
 
     if( !is_null( $this->site_id ) && !is_null( $this->role_id ) )
     { // add the initial role to the new user

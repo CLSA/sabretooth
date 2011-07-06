@@ -40,7 +40,7 @@ class site_feed extends base_feed
    * @return array
    * @access public
    */
-  public function get_data()
+  public function finish()
   {
     $db_site = bus\session::self()->get_site();
 

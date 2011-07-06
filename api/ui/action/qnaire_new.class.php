@@ -37,7 +37,7 @@ class qnaire_new extends base_new
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     // make sure the name column isn't blank
     $columns = $this->get_argument( 'columns' );
@@ -45,7 +45,7 @@ class qnaire_new extends base_new
       throw new exc\notice(
         'The questionnaire\'s name cannot be left blank.', __METHOD__ );
     
-    parent::execute();
+    parent::finish();
   }
 }
 ?>

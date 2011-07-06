@@ -38,7 +38,7 @@ class note_edit extends \sabretooth\ui\action
    * @throws exception\runtime
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     // make sure there is a valid note category
     $category = $this->get_argument( 'category' );

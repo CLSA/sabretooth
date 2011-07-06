@@ -43,14 +43,5 @@ abstract class datum extends operation
    * @access public
    */
   abstract public function get_data_type();
-
-  /**
-   * Returns the data provided by this datum operation.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @abstract
-   * @access public
-   */
-  abstract public function get_data();
 }
 ?>

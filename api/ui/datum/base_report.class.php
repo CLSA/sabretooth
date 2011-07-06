@@ -16,6 +16,9 @@ use sabretooth\exception as exc;
 /**
  * Base class for all reports.
  * 
+ * Reports are built by gathering all data for the report in the constructor and building
+ * the report from that data in the {@link finish} method.
+ * 
  * @abstract
  * @package sabretooth\ui
  */

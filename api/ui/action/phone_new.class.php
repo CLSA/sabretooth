@@ -38,7 +38,7 @@ class phone_new extends base_new
    * @throws exception\notice
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     // make sure the datetime column isn't blank
     $columns = $this->get_argument( 'columns' );
@@ -51,7 +51,7 @@ class phone_new extends base_new
         'Phone numbers must have exactly 10 digits.', __METHOD__ );
 
     // no errors, go ahead and make the change
-    parent::execute();
+    parent::finish();
   }
 }
 ?>

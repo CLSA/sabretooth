@@ -51,6 +51,17 @@ abstract class operation extends \sabretooth\base_object
     if( !bus\session::self()->is_allowed( $this->operation_record ) )
       throw new exc\permission( $this->operation_record, __METHOD__ );
   }
+  
+  /**
+   * Finish processing the operation.
+   * 
+   * Every operation must complete whatever processing it is responsible for in this
+   * method.  This method may or may not return a mixed result.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @abstract
+   * @access public
+   */
+  abstract public function finish();
 
   /**
    * Get the database id of the operation.

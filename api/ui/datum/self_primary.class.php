@@ -39,7 +39,7 @@ class self_primary extends \sabretooth\ui\datum
    * @return associative array
    * @access public
    */
-  public function get_data()
+  public function finish()
   {
     $db_user = bus\session::self()->get_user();
     $data = array();

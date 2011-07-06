@@ -38,7 +38,7 @@ class voip_dtmf extends \sabretooth\ui\action
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     bus\voip_manager::self()->get_call()->dtmf( $this->get_argument( 'tone' ) );
   }

@@ -38,7 +38,7 @@ class address_edit extends base_edit
    * @throws exception\notice
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     $columns = $this->get_argument( 'columns' );
 
@@ -52,7 +52,7 @@ class address_edit extends base_edit
           'Postal codes must be in "A1A 1A1" format, zip codes in "01234" format.', __METHOD__ );
     }
 
-    parent::execute();
+    parent::finish();
   }
 }
 ?>

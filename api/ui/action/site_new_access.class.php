@@ -36,7 +36,7 @@ class site_new_access extends base_new_record
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     foreach( $this->get_argument( 'role_id_list' ) as $role_id )
     {

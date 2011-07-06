@@ -40,7 +40,7 @@ class self_set_role extends \sabretooth\ui\action
    * @throws exception\runtime
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     $db_role = db\role::get_unique_record( 'name', $this->role_name );
     if( NULL == $db_role )

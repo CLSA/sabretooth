@@ -41,7 +41,7 @@ class productivity_report extends base_report
    * @return associative array
    * @access public
    */
-  public function get_data()
+  public function finish()
   {
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
     $now_datetime_obj = util::get_datetime_object();

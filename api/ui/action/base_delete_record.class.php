@@ -39,7 +39,7 @@ abstract class base_delete_record extends base_record_action
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     $method_name = 'remove_'.$this->child_subject;
     $this->get_record()->$method_name( $this->get_argument( 'remove_id' ) );

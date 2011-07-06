@@ -40,7 +40,7 @@ abstract class widget extends operation
   }
 
   /**
-   * Finish setting the variables in a widget.
+   * Define generic widget variables for use by all templates.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public

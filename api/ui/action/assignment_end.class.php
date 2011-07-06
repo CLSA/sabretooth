@@ -37,7 +37,7 @@ class assignment_end extends \sabretooth\ui\action
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     $session = bus\session::self();
     $db_assignment = $session->get_current_assignment();

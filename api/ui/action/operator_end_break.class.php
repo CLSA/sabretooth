@@ -37,7 +37,7 @@ class operator_end_break extends \sabretooth\ui\action
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     $db_user = bus\session::self()->get_user();
 

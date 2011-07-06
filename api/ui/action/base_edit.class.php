@@ -41,7 +41,7 @@ abstract class base_edit extends base_record_action
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     $columns = $this->get_argument( 'columns', array() );
     

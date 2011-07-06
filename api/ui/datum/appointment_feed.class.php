@@ -40,7 +40,7 @@ class appointment_feed extends base_feed
    * @return array
    * @access public
    */
-  public function get_data()
+  public function finish()
   {
     // create a list of appointments between the feed's start and end time
     $modifier = new db\modifier();

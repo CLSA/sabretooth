@@ -38,7 +38,7 @@ class appointment_edit extends base_edit
    * @throws exception\notice
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     // make sure there is a slot available for the appointment
     $columns = $this->get_argument( 'columns', array() );
@@ -51,7 +51,7 @@ class appointment_edit extends base_edit
     }
     
     // no errors, go ahead and make the change
-    parent::execute();
+    parent::finish();
   }
 }
 ?>

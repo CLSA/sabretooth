@@ -49,9 +49,9 @@ class participant_primary extends base_primary
    * @return associative array
    * @access public
    */
-  public function get_data()
+  public function finish()
   {
-    $data = parent::get_data();
+    $data = parent::finish();
 
     // add the primary address
     $db_address = $this->get_record()->get_primary_address();

@@ -37,7 +37,7 @@ class operator_begin_break extends \sabretooth\ui\action
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function execute()
+  public function finish()
   {
     $session = bus\session::self();
     $db_away_time = new db\away_time();
