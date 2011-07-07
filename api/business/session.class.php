@@ -94,7 +94,7 @@ final class session extends \sabretooth\singleton
     $this->set_user( db\user::get_unique_record( 'name', $user_name ) );
     if( NULL == $this->user )
       throw new exc\permission(
-        db\operation::get_operation( 'action', 'self', 'set_role' ), __METHOD__ );
+        db\operation::get_operation( 'push', 'self', 'set_role' ), __METHOD__ );
 
     $this->initialized = true;
   }
@@ -200,7 +200,7 @@ final class session extends \sabretooth\singleton
         }
       }
       else throw new exc\permission(
-        db\operation::get_operation( 'action', 'self', 'set_role' ), __METHOD__ );
+        db\operation::get_operation( 'push', 'self', 'set_role' ), __METHOD__ );
     }
   }
 

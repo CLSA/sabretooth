@@ -110,7 +110,7 @@
               "Are you sure you want to remove the {{ widget.subject }} " +
               "from the {{ parent.subject }}?",
               function() {
-                if( send_action( "{{ parent.subject }}", "delete_{{ widget.subject }}", args ) ) {
+                if( ajax_push( "{{ parent.subject }}", "delete_{{ widget.subject }}", args ) ) {
                   {% if widget.subject == "access" %}slot_refresh( "settings" );{% endif %}
                   slot_refresh( {{ slot }} );
                 }
@@ -121,7 +121,7 @@
               "Delete {{ widget.subject }}?",
               "Are you sure you want to delete the {{ widget.subject }}?",
               function() {
-                if( send_action( "{{ widget.subject }}", "delete", { "id": id } ) ) {
+                if( ajax_push( "{{ widget.subject }}", "delete", { "id": id } ) ) {
                   {% if widget.subject == "access" %}slot_refresh( "settings" );{% endif %}
                   slot_refresh( {{ slot }} );
                 }

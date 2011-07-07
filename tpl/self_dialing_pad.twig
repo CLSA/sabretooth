@@ -14,7 +14,7 @@
         var id = $(this).attr( "id" );
         
         if( "hangup" == id ) {
-          if( send_action( "phone_call", "end" ) )
+          if( ajax_push( "phone_call", "end" ) )
           {
             $( "#" + {{ slot }} + "_slot" ).dialog( "close" );
             slot_refresh( "status" );
@@ -22,7 +22,7 @@
           }
         } else {
           // send the dual-tone
-          send_action( "voip", "dtmf", { tone: id } );
+          ajax_push( "voip", "dtmf", { tone: id } );
         }
       } );
     } );

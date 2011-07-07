@@ -74,7 +74,7 @@
             ( 1 == role_ids.length ? "one role" : role_ids.length + " roles" ) + ".<br>" +
             "Are you sure you want to continue?</p>",
             function() {
-              if( send_action( "{{ widget.subject }}", "new_access", args ) ) {
+              if( ajax_push( "{{ widget.subject }}", "new_access", args ) ) {
                 // clear the checked ids cookies
                 $.cookie( "{{ widget.full }}_{{ access_child }}_list_checked_ids", null );
                 $.cookie( "{{ widget.full }}_role_list_checked_ids", null );

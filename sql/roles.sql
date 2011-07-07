@@ -21,7 +21,7 @@ AND operation.subject = "administrator";
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "setting" AND name = "edit" );
+      type = "push" AND subject = "setting" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -35,19 +35,19 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "user" AND name = "delete" );
+      type = "push" AND subject = "user" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "user" AND name = "edit" );
+      type = "push" AND subject = "user" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "user" AND name = "new" );
+      type = "push" AND subject = "user" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "user" AND name = "reset_password" );
+      type = "push" AND subject = "user" AND name = "reset_password" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -63,11 +63,11 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "site" AND name = "edit" );
+      type = "push" AND subject = "site" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "site" AND name = "new" );
+      type = "push" AND subject = "site" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -83,15 +83,15 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "role" AND name = "delete" );
+      type = "push" AND subject = "role" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "role" AND name = "edit" );
+      type = "push" AND subject = "role" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "role" AND name = "new" );
+      type = "push" AND subject = "role" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -119,7 +119,7 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "access" AND name = "delete" );
+      type = "push" AND subject = "access" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -131,11 +131,11 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "user" AND name = "new_access" );
+      type = "push" AND subject = "user" AND name = "new_access" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "user" AND name = "delete_access" );
+      type = "push" AND subject = "user" AND name = "delete_access" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -143,11 +143,11 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "site" AND name = "new_access" );
+      type = "push" AND subject = "site" AND name = "new_access" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "site" AND name = "delete_access" );
+      type = "push" AND subject = "site" AND name = "delete_access" );
 
 -- assignment and calling
 INSERT INTO role_has_operation
@@ -165,25 +165,25 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phone_call" AND name = "begin" );
+      type = "push" AND subject = "phone_call" AND name = "begin" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phone_call" AND name = "end" );
+      type = "push" AND subject = "phone_call" AND name = "end" );
 
 -- participant
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete" );
+      type = "push" AND subject = "participant" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "edit" );
+      type = "push" AND subject = "participant" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "new" );
+      type = "push" AND subject = "participant" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -201,15 +201,15 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "appointment" AND name = "delete" );
+      type = "push" AND subject = "appointment" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "appointment" AND name = "edit" );
+      type = "push" AND subject = "appointment" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "appointment" AND name = "new" );
+      type = "push" AND subject = "appointment" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -229,21 +229,21 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete_appointment" );
+      type = "push" AND subject = "participant" AND name = "delete_appointment" );
 
 -- availability
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "availability" AND name = "delete" );
+      type = "push" AND subject = "availability" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "availability" AND name = "edit" );
+      type = "push" AND subject = "availability" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "availability" AND name = "new" );
+      type = "push" AND subject = "availability" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -263,21 +263,21 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete_availability" );
+      type = "push" AND subject = "participant" AND name = "delete_availability" );
 
 -- consent
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "consent" AND name = "delete" );
+      type = "push" AND subject = "consent" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "consent" AND name = "edit" );
+      type = "push" AND subject = "consent" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "consent" AND name = "new" );
+      type = "push" AND subject = "consent" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -297,21 +297,21 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete_consent" );
+      type = "push" AND subject = "participant" AND name = "delete_consent" );
 
 -- contact information (address and phone)
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "address" AND name = "delete" );
+      type = "push" AND subject = "address" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "address" AND name = "edit" );
+      type = "push" AND subject = "address" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "address" AND name = "new" );
+      type = "push" AND subject = "address" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -331,19 +331,19 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete_address" );
+      type = "push" AND subject = "participant" AND name = "delete_address" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phone" AND name = "delete" );
+      type = "push" AND subject = "phone" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phone" AND name = "edit" );
+      type = "push" AND subject = "phone" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phone" AND name = "new" );
+      type = "push" AND subject = "phone" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -363,21 +363,21 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete_phone" );
+      type = "push" AND subject = "participant" AND name = "delete_phone" );
 
 -- qnaire/phase
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "qnaire" AND name = "delete" );
+      type = "push" AND subject = "qnaire" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "qnaire" AND name = "edit" );
+      type = "push" AND subject = "qnaire" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "qnaire" AND name = "new" );
+      type = "push" AND subject = "qnaire" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -397,19 +397,19 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "qnaire" AND name = "delete_phase" );
+      type = "push" AND subject = "qnaire" AND name = "delete_phase" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phase" AND name = "delete" );
+      type = "push" AND subject = "phase" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phase" AND name = "edit" );
+      type = "push" AND subject = "phase" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phase" AND name = "new" );
+      type = "push" AND subject = "phase" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -441,11 +441,11 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "note" AND name = "delete" );
+      type = "push" AND subject = "note" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "note" AND name = "edit" );
+      type = "push" AND subject = "note" AND name = "edit" );
 
 -- ALL reports
 INSERT INTO role_has_operation( role_id, operation_id )
@@ -470,15 +470,15 @@ AND operation.subject = "clerk";
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete" );
+      type = "push" AND subject = "participant" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "edit" );
+      type = "push" AND subject = "participant" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "new" );
+      type = "push" AND subject = "participant" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -496,15 +496,15 @@ SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "appointment" AND name = "delete" );
+      type = "push" AND subject = "appointment" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "appointment" AND name = "edit" );
+      type = "push" AND subject = "appointment" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "appointment" AND name = "new" );
+      type = "push" AND subject = "appointment" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -524,21 +524,21 @@ SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete_appointment" );
+      type = "push" AND subject = "participant" AND name = "delete_appointment" );
 
 -- availability
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "availability" AND name = "delete" );
+      type = "push" AND subject = "availability" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "availability" AND name = "edit" );
+      type = "push" AND subject = "availability" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "availability" AND name = "new" );
+      type = "push" AND subject = "availability" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -558,21 +558,21 @@ SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete_availability" );
+      type = "push" AND subject = "participant" AND name = "delete_availability" );
 
 -- consent
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "consent" AND name = "delete" );
+      type = "push" AND subject = "consent" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "consent" AND name = "edit" );
+      type = "push" AND subject = "consent" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "consent" AND name = "new" );
+      type = "push" AND subject = "consent" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -592,21 +592,21 @@ SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete_consent" );
+      type = "push" AND subject = "participant" AND name = "delete_consent" );
 
 -- contact information (address and phone)
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "address" AND name = "delete" );
+      type = "push" AND subject = "address" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "address" AND name = "edit" );
+      type = "push" AND subject = "address" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "address" AND name = "new" );
+      type = "push" AND subject = "address" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -626,19 +626,19 @@ SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete_address" );
+      type = "push" AND subject = "participant" AND name = "delete_address" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phone" AND name = "delete" );
+      type = "push" AND subject = "phone" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phone" AND name = "edit" );
+      type = "push" AND subject = "phone" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phone" AND name = "new" );
+      type = "push" AND subject = "phone" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -658,21 +658,21 @@ SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete_phone" );
+      type = "push" AND subject = "participant" AND name = "delete_phone" );
 
 -- qnaire/phase
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "qnaire" AND name = "delete" );
+      type = "push" AND subject = "qnaire" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "qnaire" AND name = "edit" );
+      type = "push" AND subject = "qnaire" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "qnaire" AND name = "new" );
+      type = "push" AND subject = "qnaire" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -692,19 +692,19 @@ SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "qnaire" AND name = "delete_phase" );
+      type = "push" AND subject = "qnaire" AND name = "delete_phase" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phase" AND name = "delete" );
+      type = "push" AND subject = "phase" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phase" AND name = "edit" );
+      type = "push" AND subject = "phase" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phase" AND name = "new" );
+      type = "push" AND subject = "phase" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -761,11 +761,11 @@ SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "assignment" AND name = "begin" );
+      type = "push" AND subject = "assignment" AND name = "begin" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "assignment" AND name = "end" );
+      type = "push" AND subject = "assignment" AND name = "end" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -773,11 +773,11 @@ SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phone_call" AND name = "begin" );
+      type = "push" AND subject = "phone_call" AND name = "begin" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phone_call" AND name = "end" );
+      type = "push" AND subject = "phone_call" AND name = "end" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -795,7 +795,7 @@ SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "edit" );
+      type = "push" AND subject = "participant" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -805,7 +805,7 @@ SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "appointment" AND name = "new" );
+      type = "push" AND subject = "appointment" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -827,15 +827,15 @@ SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "availability" AND name = "delete" );
+      type = "push" AND subject = "availability" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "availability" AND name = "edit" );
+      type = "push" AND subject = "availability" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "availability" AND name = "new" );
+      type = "push" AND subject = "availability" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -855,13 +855,13 @@ SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete_availability" );
+      type = "push" AND subject = "participant" AND name = "delete_availability" );
 
 -- consent
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "consent" AND name = "new" );
+      type = "push" AND subject = "consent" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -883,7 +883,7 @@ SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "address" AND name = "new" );
+      type = "push" AND subject = "address" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -907,7 +907,7 @@ SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phone" AND name = "new" );
+      type = "push" AND subject = "phone" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -945,7 +945,7 @@ AND operation.subject = "supervisor";
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "setting" AND name = "edit" );
+      type = "push" AND subject = "setting" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -959,19 +959,19 @@ SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "user" AND name = "delete" );
+      type = "push" AND subject = "user" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "user" AND name = "edit" );
+      type = "push" AND subject = "user" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "user" AND name = "new" );
+      type = "push" AND subject = "user" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "user" AND name = "reset_password" );
+      type = "push" AND subject = "user" AND name = "reset_password" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -1015,7 +1015,7 @@ SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "access" AND name = "delete" );
+      type = "push" AND subject = "access" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -1027,11 +1027,11 @@ SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "user" AND name = "new_access" );
+      type = "push" AND subject = "user" AND name = "new_access" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "user" AND name = "delete_access" );
+      type = "push" AND subject = "user" AND name = "delete_access" );
 
 -- assignment and calling
 INSERT INTO role_has_operation
@@ -1049,11 +1049,11 @@ SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phone_call" AND name = "begin" );
+      type = "push" AND subject = "phone_call" AND name = "begin" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phone_call" AND name = "end" );
+      type = "push" AND subject = "phone_call" AND name = "end" );
 
 -- shift
 INSERT INTO role_has_operation
@@ -1063,19 +1063,19 @@ SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "user" AND name = "delete_shift" );
+      type = "push" AND subject = "user" AND name = "delete_shift" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "shift" AND name = "delete" );
+      type = "push" AND subject = "shift" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "shift" AND name = "edit" );
+      type = "push" AND subject = "shift" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "shift" AND name = "new" );
+      type = "push" AND subject = "shift" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -1097,15 +1097,15 @@ SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "shift_template" AND name = "delete" );
+      type = "push" AND subject = "shift_template" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "shift_template" AND name = "edit" );
+      type = "push" AND subject = "shift_template" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "shift_template" AND name = "new" );
+      type = "push" AND subject = "shift_template" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -1127,7 +1127,7 @@ SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "edit" );
+      type = "push" AND subject = "participant" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -1141,15 +1141,15 @@ SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "appointment" AND name = "delete" );
+      type = "push" AND subject = "appointment" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "appointment" AND name = "edit" );
+      type = "push" AND subject = "appointment" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "appointment" AND name = "new" );
+      type = "push" AND subject = "appointment" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -1177,21 +1177,21 @@ SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete_appointment" );
+      type = "push" AND subject = "participant" AND name = "delete_appointment" );
 
 -- availability
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "availability" AND name = "delete" );
+      type = "push" AND subject = "availability" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "availability" AND name = "edit" );
+      type = "push" AND subject = "availability" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "availability" AND name = "new" );
+      type = "push" AND subject = "availability" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -1211,21 +1211,21 @@ SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete_availability" );
+      type = "push" AND subject = "participant" AND name = "delete_availability" );
 
 -- consent
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "consent" AND name = "delete" );
+      type = "push" AND subject = "consent" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "consent" AND name = "edit" );
+      type = "push" AND subject = "consent" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "consent" AND name = "new" );
+      type = "push" AND subject = "consent" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -1245,21 +1245,21 @@ SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete_consent" );
+      type = "push" AND subject = "participant" AND name = "delete_consent" );
 
 -- contact information (address and phone)
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "address" AND name = "delete" );
+      type = "push" AND subject = "address" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "address" AND name = "edit" );
+      type = "push" AND subject = "address" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "address" AND name = "new" );
+      type = "push" AND subject = "address" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -1279,19 +1279,19 @@ SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete_address" );
+      type = "push" AND subject = "participant" AND name = "delete_address" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phone" AND name = "delete" );
+      type = "push" AND subject = "phone" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phone" AND name = "edit" );
+      type = "push" AND subject = "phone" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "phone" AND name = "new" );
+      type = "push" AND subject = "phone" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -1311,7 +1311,7 @@ SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "participant" AND name = "delete_phone" );
+      type = "push" AND subject = "participant" AND name = "delete_phone" );
 
 -- queue
 INSERT INTO role_has_operation
@@ -1327,11 +1327,11 @@ SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "note" AND name = "delete" );
+      type = "push" AND subject = "note" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "note" AND name = "edit" );
+      type = "push" AND subject = "note" AND name = "edit" );
 
 -- ALL reports
 INSERT INTO role_has_operation( role_id, operation_id )
@@ -1356,7 +1356,7 @@ AND operation.subject = "technician";
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "technician" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "setting" AND name = "edit" );
+      type = "push" AND subject = "setting" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "technician" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -1370,15 +1370,15 @@ SET role_id = ( SELECT id FROM role WHERE name = "technician" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "technician" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "role" AND name = "delete" );
+      type = "push" AND subject = "role" AND name = "delete" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "technician" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "role" AND name = "edit" );
+      type = "push" AND subject = "role" AND name = "edit" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "technician" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "role" AND name = "new" );
+      type = "push" AND subject = "role" AND name = "new" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "technician" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -1408,11 +1408,11 @@ SET role_id = ( SELECT id FROM role WHERE name = "technician" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "technician" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "role" AND name = "new_operation" );
+      type = "push" AND subject = "role" AND name = "new_operation" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "technician" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "action" AND subject = "role" AND name = "delete_operation" );
+      type = "push" AND subject = "role" AND name = "delete_operation" );
 
 -- queue
 INSERT INTO role_has_operation

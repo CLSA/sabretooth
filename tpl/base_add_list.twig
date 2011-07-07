@@ -41,7 +41,7 @@
             " to be added to the {{ widget.subject }}.<br>" +
             "Are you sure you want to continue?</p>",
             function() {
-              if( send_action( "{{ widget.subject }}", "new_{{ list_subject }}", args ) ) {
+              if( ajax_push( "{{ widget.subject }}", "new_{{ list_subject }}", args ) ) {
                 // clear the checked ids object cookie and return to the previous page
                 $.cookie( "{{ widget.full }}_{{ list_widget_name }}_checked_ids", null );
                 slot_prev( {{ slot }} );

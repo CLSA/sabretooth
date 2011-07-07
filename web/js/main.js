@@ -88,7 +88,7 @@ function get_datum( subject, name, args ) {
     async: false,
     type: "GET",
     data: jQuery.param( args ),
-    complete: function( request, result ) { ajax_complete( request, 'D' ) },
+    complete: function( request, result ) { ajax_complete( request, 'R' ) },
     dataType: "json"
   } );
   var response = jQuery.parseJSON( request.responseText );
@@ -96,24 +96,24 @@ function get_datum( subject, name, args ) {
 }
 
 /**
- * Request an operation be performed to the server.
+ * Request a push (write) operation from the web service.
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @param string subject The action's subject.
- * @param string name The action's name.
- * @param JSON-array args The arguments to pass to the operation object
- * @return bool Whether or not the operation completed successfully
+ * @param string subject The subject of the push.
+ * @param string name The name of the push.
+ * @param JSON-array args The arguments to pass along with the push.
+ * @return bool Whether or not the push completed successfully
  */
-function send_action( subject, name, args ) {
+function ajax_push( subject, name, args ) {
   if( undefined == args ) args = new Object();
   args.subject = subject;
   args.name = name;
   var request = jQuery.ajax( {
-    url: "action.php",
+    url: "push.php",
     async: false,
     type: "POST",
     data: jQuery.param( args ),
-    complete: function( request, result ) { ajax_complete( request, 'A' ) },
+    complete: function( request, result ) { ajax_complete( request, 'W' ) },
     dataType: "json"
   } );
   var response = jQuery.parseJSON( request.responseText );
@@ -140,7 +140,7 @@ function slot_url( slot, url ) {
   
   $( "#" + slot + "_slot" ).html( "" );
   $( "#" + slot + "_slot" ).load( url, null,
-    function( response, status, request ) { ajax_complete( request, 'W' ) }
+    function( response, status, request ) { ajax_complete( request, 'I' ) }
   );
 }
 
@@ -204,7 +204,8 @@ function slot_refresh( slot ) {
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @param XMLHttpRequest request The request send back from the server.
- * @param string code A code describing the type of ajax request (A for action, W for widget)
+ * @param string code A code describing the type of ajax request
+ *        (W for push/write, R for pull/read and I for widget/interface)
  */
 function ajax_complete( request, code ) {
   if( 400 == request.status ) {

@@ -60,8 +60,8 @@
       else columns[column_name] = new_value;
       args.columns = columns;
     
-      // send the action, updating the hidden "old" input upon success
-      if( send_action( "{{ widget.subject }}", "edit", args ) ) {
+      // push the changed data, updating the hidden "old" input upon success
+      if( ajax_push( "{{ widget.subject }}", "edit", args ) ) {
         // if we are setting start_time, then update end_time
         if( 'time' == type && 'start_time' == column_name ) {
           $( "#old_{{ widget.full }}__end_time" ).val( columns.end_time );
@@ -87,7 +87,7 @@
           "Delete {{ widget.subject }}?",
           "Are you sure you want to remove this {{ widget.subject }}?",
           function() {
-            if( send_action( "{{ widget.subject }}", "delete", { "id": {{ id|default(0) }} } ) ) {
+            if( ajax_push( "{{ widget.subject }}", "delete", { "id": {{ id|default(0) }} } ) ) {
               $slot = $( "#" + {{ slot }} + "_slot" );
               if( "#main_slot" == $slot.selector ) slot_prev( {{ slot }} );
               else $slot.dialog( "close" ); // assume we're in a popup dialog
@@ -150,8 +150,8 @@
                         columns[column_name] = $(this).children( "textarea" ).val();
                         args.columns = columns;
             
-                        // send the action, reload the record on success
-                        if( send_action( "{{ widget.subject }}", "edit", args ) )
+                        // push the data, reload the record on success
+                        if( ajax_push( "{{ widget.subject }}", "edit", args ) )
                           slot_refresh( {{ slot }} );
             
                         $(this).dialog( "close" );

@@ -72,7 +72,7 @@ class access extends record
         role::get_unique_record( 'name', 'administrator' )->id == $this->role_id )
       throw new exc\permission(
         // fake the operation
-        operation::get_operation( 'action', 'user', 'new_access' ), __METHOD__ );
+        operation::get_operation( 'push', 'user', 'new_access' ), __METHOD__ );
 
     parent::save();
   }
@@ -90,7 +90,7 @@ class access extends record
         'administrator' == $this->get_role()->name )
       throw new exc\permission(
         // fake the operation
-        operation::get_operation( 'action', 'access', 'delete' ), __METHOD__ );
+        operation::get_operation( 'push', 'access', 'delete' ), __METHOD__ );
 
     parent::delete();
   }

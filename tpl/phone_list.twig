@@ -22,7 +22,7 @@
           var id_string = $(this).attr( "id" );
           args.phone_id = parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) );
           // place the call and refresh the status widget
-          if( send_action( "phone_call", "begin", args ) )
+          if( ajax_push( "phone_call", "begin", args ) )
           {
             slot_refresh( "status" );
             slot_refresh( "shortcuts" );

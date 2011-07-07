@@ -36,7 +36,7 @@
             "Please select which users to add to the {{ widget.subject }}, or click cancel.</p>"
           );
         } else {
-          // submit the form information as a new action
+          // push the form information
           var args = new Object();
           args.user_id_list = user_ids;
           var columns = new Object();
@@ -47,7 +47,7 @@
           } );
           args.columns = columns;
     
-          if( send_action( "{{ widget.subject }}", "new", args ) ) {
+          if( ajax_push( "{{ widget.subject }}", "new", args ) ) {
             // clear the checked ids object cookie and return to the previous page
             $.cookie( "{{ widget.full }}_user_list_checked_ids", null );
             $slot = $( "#" + {{ slot }} + "_slot" );

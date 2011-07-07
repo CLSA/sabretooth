@@ -23,7 +23,7 @@ class self_settings extends \sabretooth\ui\widget
   /**
    * Constructor.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param array $args Action arguments
+   * @param array $args Operation arguments
    * @access public
    */
   public function __construct( $args )

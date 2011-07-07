@@ -44,9 +44,9 @@ abstract class base_view extends base_record_widget
       // determine properties based on the current user's permissions
       $session = bus\session::self();
       $this->editable = $session->is_allowed(
-        db\operation::get_operation( 'action', $subject, 'edit' ) );
+        db\operation::get_operation( 'push', $subject, 'edit' ) );
       $this->removable = $session->is_allowed( 
-        db\operation::get_operation( 'action', $subject, 'delete' ) );
+        db\operation::get_operation( 'push', $subject, 'delete' ) );
 
       $this->set_heading( 'Viewing '.$this->get_subject().' details' );
     }

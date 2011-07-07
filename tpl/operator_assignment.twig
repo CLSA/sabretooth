@@ -37,7 +37,7 @@
       
         // end assignment button
         $( "#{{ widget.full }}__end_assignment" ).click( function() {
-          if( send_action( "assignment", "end" ) ) slot_refresh( {{ slot }} );
+          if( ajax_push( "assignment", "end" ) ) slot_refresh( {{ slot }} );
         } );
         
         // call/end-call button
@@ -52,12 +52,12 @@
           args = new Object();
           {% if on_call %}
             args.status = $( "#{{ widget.full }}__parameter" ).val();
-            if( send_action( "phone_call", "end", args ) ) {
+            if( ajax_push( "phone_call", "end", args ) ) {
               window.location.reload();
             }
           {% else %}
             args.phone_id = $( "#{{ widget.full }}__parameter" ).val();
-            if( send_action( "phone_call", "begin", args ) ) {
+            if( ajax_push( "phone_call", "begin", args ) ) {
               window.location.reload();
             }
           {% endif %}
@@ -67,7 +67,7 @@
       
         // begin assignment button
         $( "#{{ widget.full }}__assignment" ).click( function() {
-          if( send_action( "assignment", "begin" ) ) slot_refresh( {{ slot }} );
+          if( ajax_push( "assignment", "begin" ) ) slot_refresh( {{ slot }} );
         } );
 
         // view schedule button
@@ -83,12 +83,12 @@
 
         // go on break button
         $( "#{{ widget.full }}__break" ).click( function() {
-          if( send_action( "operator", "begin_break" ) )
+          if( ajax_push( "operator", "begin_break" ) )
             confirm_dialog(
               "On a break",
               "<p>Close this window when you wish to end your break.</p>",
               function() {
-                send_action( "operator", "end_break" );
+                ajax_push( "operator", "end_break" );
               },
               false
             );

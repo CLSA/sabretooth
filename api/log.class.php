@@ -338,15 +338,14 @@ final class log extends singleton
       log::emerg( $message );
       // When this function is called due to a fatal error it will die afterwards so we cannot
       // throw an exception.  Instead we can build the exception and emulate what is done in
-      // the index/widget/action scripts.
-      // just as is done in the widget and action scripts.
+      // the index/widget/push/pull scripts.
       $e = new exception\base_exception( $message, $level );
       $result_array = array(
         'error_type' => ucfirst( $e->get_type() ),
         'error_code' => $e->get_code(),
         'error_message' => '' );
 
-      if( util::in_action_mode() || util::in_widget_mode() )
+      if( util::in_push_mode() || util::in_widget_mode() )
       { // send the error in json format in an http error header
         util::send_http_error( json_encode( $result_array ) );
       }

@@ -41,7 +41,7 @@
       $( "#{{ widget.full }}_set_site" ).change( function() {
         var selected = $( "#{{ widget.full }}_set_site option:selected" );
         if( 0 != selected.val() ) {
-          if( send_action( 'self', 'set_site', { "site": selected.text() } ) ) {
+          if( ajax_push( 'self', 'set_site', { "site": selected.text() } ) ) {
             window.location.reload();
           }
         }
@@ -51,7 +51,7 @@
       $( "#{{ widget.full }}_set_role" ).change( function() {
         var selected = $( "#{{ widget.full }}_set_role option:selected" );
         if( 0 != selected.val() ) {
-          if( send_action( 'self', 'set_role', { "role": selected.text() } ) ) {
+          if( ajax_push( 'self', 'set_role', { "role": selected.text() } ) ) {
             window.location.reload();
           }
         }
@@ -61,7 +61,7 @@
       $( "#{{ widget.full }}_set_theme" ).change( function() {
         var selected = $( "#{{ widget.full }}_set_theme option:selected" );
         if( 0 != selected.val() ) {
-          if( send_action( 'self', 'set_theme', { "theme": selected.text() } ) )
+          if( ajax_push( 'self', 'set_theme', { "theme": selected.text() } ) )
             window.location.reload();
         }
       } );

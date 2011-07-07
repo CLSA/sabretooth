@@ -100,7 +100,7 @@ class user_view extends base_view
     // only show reset password button if current user is an administrator or supervisor
     $this->set_variable( 'reset_password',
       bus\session::self()->is_allowed(
-        db\operation::get_operation( 'action', 'user', 'reset_password' ) ) );
+        db\operation::get_operation( 'push', 'user', 'reset_password' ) ) );
 
     if( !is_null( $this->access_list ) )
     {

@@ -53,7 +53,7 @@ abstract class base_list_widget extends \sabretooth\ui\widget
     $this->addable = $session->is_allowed(
       db\operation::get_operation( 'widget', $this->get_subject(), 'add' ) );
     $this->removable = $session->is_allowed(
-      db\operation::get_operation( 'action', $this->get_subject(), 'delete' ) );
+      db\operation::get_operation( 'push', $this->get_subject(), 'delete' ) );
   }
   
   /**
@@ -222,7 +222,7 @@ abstract class base_list_widget extends \sabretooth\ui\widget
           'widget', $this->parent->get_subject(), 'add_'.$this->get_subject() ) );
       $this->removable = $session->is_allowed(
         db\operation::get_operation(
-          'action', $this->parent->get_subject(), 'delete_'.$this->get_subject() ) );
+          'push', $this->parent->get_subject(), 'delete_'.$this->get_subject() ) );
     }
   }
   

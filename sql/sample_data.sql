@@ -40,6 +40,7 @@ WHERE abbreviation = "YT";
 
 INSERT INTO user( name, first_name, last_name ) VALUES
 ( 'patrick', 'P.', 'Emond' ),
+( 'dean', 'D.', 'Inglis' ),
 ( 'dipietv', 'V.', 'DiPietro' );
 
 INSERT INTO access

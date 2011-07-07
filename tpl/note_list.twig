@@ -26,7 +26,7 @@
           args.id = parseInt( id_string.substring( id_string.lastIndexOf("__") + 2 ) );
           args.category = "{{ category }}";
           args.sticky = $(this).hasClass( "ui-icon-pin-w" );
-          if( send_action( "note", "edit", args ) )
+          if( ajax_push( "note", "edit", args ) )
             slot_refresh( {{ slot }} );
         } );
       {% endif %}
@@ -61,7 +61,7 @@
               args.category = "{{ category }}";
               args.note = $(this).children( "textarea" ).val();
 
-              if( send_action( "note", "edit", args ) )
+              if( ajax_push( "note", "edit", args ) )
                 slot_refresh( {{ slot }} );
               $(this).dialog( "close" );
             },
@@ -85,7 +85,7 @@
           var id_string = $(this).attr( "id" );
           args.id = parseInt( id_string.substring( id_string.lastIndexOf("__") + 2 ) );
           args.category = "{{ category }}";
-          send_action( "note", "delete", args );
+          ajax_push( "note", "delete", args );
           slot_refresh( {{ slot }} );
         } );
       {% endif %}
@@ -98,7 +98,7 @@
         args.note = $( "#{{ namespace }}_text" ).val();
         if( args.note )
         {
-          send_action( "note", "new", args );
+          ajax_push( "note", "new", args );
           slot_refresh( {{ slot }} );
         }
       } );

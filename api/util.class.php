@@ -42,20 +42,37 @@ final class util
   }
 
   /**
-   * Returns whether the system is in action mode.
+   * Returns whether the system is in pull mode.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @static
    * @return boolean
    * @access public
    */
-  public static function in_action_mode()
+  public static function in_pull_mode()
   {
-    if( is_null( self::$action_mode ) )
-      self::$action_mode =
-        'action.php' == business\setting_manager::self()->get_setting( 'general', 'script_name' );
+    if( is_null( self::$pull_mode ) )
+      self::$pull_mode =
+        'pull.php' == business\setting_manager::self()->get_setting( 'general', 'script_name' );
     
-    return self::$action_mode;
+    return self::$pull_mode;
+  }
+  
+  /**
+   * Returns whether the system is in push mode.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @static
+   * @return boolean
+   * @access public
+   */
+  public static function in_push_mode()
+  {
+    if( is_null( self::$push_mode ) )
+      self::$push_mode =
+        'push.php' == business\setting_manager::self()->get_setting( 'general', 'script_name' );
+    
+    return self::$push_mode;
   }
   
   /**
@@ -599,11 +616,18 @@ final class util
   }
 
   /**
-   * Cache for action_mode method.
+   * Cache for pull_mode method.
    * @var bool
    * @access private
    */
-  private static $action_mode = NULL;
+  private static $pull_mode = NULL;
+
+  /**
+   * Cache for push_mode method.
+   * @var bool
+   * @access private
+   */
+  private static $push_mode = NULL;
 
   /**
    * Cache for widget_mode method.
