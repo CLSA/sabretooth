@@ -1,16 +1,16 @@
 // The following was added in order to integrate with Sabretooth
 jQuery(document).ready( function() {
-  var sabretooth_datum_url = "../sabretooth/datum.php";
+  var sabretooth_pull_url = "../sabretooth/pull.php";
   $question = $( "div[id^=question]" )
   if( $question && $question.html() ) {
-    jQuery.getJSON( sabretooth_datum_url + "?subject=self&name=primary",
+    jQuery.getJSON( sabretooth_pull_url + "?subject=self&name=primary",
                     function( json ) {
       if( json.success ) {
         $question.html( $question.html().replace( /{operator:first_name}/gi, json.data.first_name ) );
         $question.html( $question.html().replace( /{operator:last_name}/gi, json.data.last_name ) );
       }
     } );
-    jQuery.getJSON( sabretooth_datum_url + "?subject=participant&name=primary&id=assignment",
+    jQuery.getJSON( sabretooth_pull_url + "?subject=participant&name=primary&id=assignment",
                     function( json ) {
       if( json.success ) {
         $question.html( $question.html().replace( /{participant:first_name}/gi, json.data.first_name ) );

@@ -39,7 +39,7 @@ abstract class operation extends \sabretooth\base_object
   public function __construct( $type, $subject, $name, $args )
   {
     // type must either be a pull, push or widget
-    if( 'push' != $type && 'datum' != $type && 'widget' != $type )
+    if( 'push' != $type && 'pull' != $type && 'widget' != $type )
       throw new exc\argument( 'type', $type, __METHOD__ );
     
     $this->operation_record =

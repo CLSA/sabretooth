@@ -32,7 +32,7 @@
     args.start = start.getFullYear() + "-" + ( start.getMonth() + 1 ) + "-" + start.getDate();
     args.end = end.getFullYear() + "-" + ( end.getMonth() + 1 ) + "-" + end.getDate();
 
-    var data = get_datum( "site", "feed", args );
+    var data = ajax_pull( "site", "feed", args );
     if( undefined != data ) {
       var events = new Array();
       for( var index = 0; index < data.length; index++ ) {

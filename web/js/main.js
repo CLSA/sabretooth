@@ -74,17 +74,17 @@ function error_dialog( title, message ) {
  * Request information from the server.
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @param string subject The datum's subject.
- * @param string name The datum's name.
+ * @param string subject The subject of the pull.
+ * @param string name The name of the pull.
  * @param array args The arguments to pass to the operation object
  * @return mixed The requested data or null if there was an error.
  */
-function get_datum( subject, name, args ) {
+function ajax_pull( subject, name, args ) {
   if( undefined == args ) args = new Object();
   args.subject = subject;
   args.name = name;
   var request = jQuery.ajax( {
-    url: "datum.php",
+    url: "pull.php",
     async: false,
     type: "GET",
     data: jQuery.param( args ),
