@@ -447,15 +447,13 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "action" AND subject = "note" AND name = "edit" );
 
--- reports
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "widget" AND subject = "productivity" AND name = "report" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "datum" AND subject = "productivity" AND name = "report" );
+-- ALL reports
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id
+FROM role, operation
+WHERE role.name = "administrator"
+AND operation.name = "report";
+
 
 -- -----------------------------------------------------
 -- -----------------------------------------------------
@@ -1335,15 +1333,12 @@ SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "action" AND subject = "note" AND name = "edit" );
 
--- reports
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "widget" AND subject = "productivity" AND name = "report" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "datum" AND subject = "productivity" AND name = "report" );
+-- ALL reports
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id
+FROM role, operation
+WHERE role.name = "supervisor"
+AND operation.name = "report";
 
 
 -- -----------------------------------------------------
