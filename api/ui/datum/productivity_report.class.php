@@ -32,283 +32,200 @@ class productivity_report extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'productivity', $args );
-  }
+    
+    $db_role = db\role::get_unique_record( 'name', 'operator' );
 
-  /**
-   * Returns the data provided by this datum operation.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return associative array
-   * @access public
-   */
-  public function finish()
-  {
+    // get the operation's arguments
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-    $now_datetime_obj = util::get_datetime_object();
-    $report = new bus\report();
+    $single_date = $this->get_argument( 'date' );
+    if( $single_date ) $single_datetime_obj = util::get_datetime_object( $single_date );
     
-    // get report date (blank for overall reports)
-    $daily_date = $this->get_argument( 'date' );
-    if( $daily_date )
-    {
-      $datetime_obj = util::get_datetime_object( $daily_date );
-      $today = $datetime_obj->format( 'l, F jS, Y' );
-      $datetime_obj->setTime( 0, 0 );
-      $start_today = $datetime_obj->format( 'Y-m-d H:i:s' );
-      $datetime_obj->setTime( 23, 59, 59 );
-      $end_today = $datetime_obj->format( 'Y-m-d H:i:s' );
-    }
-
-    // add the header row
-    $row = 1;
-    $col = 'A';
-    $end_col = $daily_date ? 'G' : 'E';
-    
-    // add the title
-    $report->merge_cells( 'A'.$row.':'.$end_col.$row );
-    $title = ( $daily_date ? 'Daily' : 'Overall' ).' Productivity Report';
+    // set the title and sub title(s)
+    $title = ( $single_date ? 'Daily' : 'Overall' ).' Productivity Report';
     if( $restrict_site_id )
     {
       $db_site = new db\site( $restrict_site_id );
       $title .= ' for '.$db_site->name;
     }
-    $report->set_size( 16 );
-    $report->set_bold( true );
-    $report->set_horizontal_alignment( 'center' );
-    $report->set_cell( $col.$row, $title );
-    $row++;
-    
-    $report->set_size( 14 );
-    $report->set_bold( false );
-    if( $daily_date )
-    {
-      $report->merge_cells( 'A'.$row.':'.$end_col.$row );
-      $report->set_cell( $col.$row, $today );
-      $row++;
-    }
-    
-    $report->merge_cells( 'A'.$row.':'.$end_col.$row );
+
+    $this->add_title( $title );
+
+    $now_datetime_obj = util::get_datetime_object();
     $generated = 'Generated on '.$now_datetime_obj->format( 'Y-m-d' ).
                  ' at '.$now_datetime_obj->format( 'H:i' );
-    $report->set_cell( $col.$row, $generated );
 
-    // restrict to a site, if necessary
+    if( $single_date )
+      $this->add_title( $single_datetime_obj->format( 'l, F jS, Y' ) );
+    $this->add_title( $generated );
+    
+    // now create a table for every site included in the report
     $site_mod = new db\modifier();
     if( $restrict_site_id ) $site_mod->where( 'id', '=', $restrict_site_id );
-    
-    $report->set_size( NULL );
-    $report->set_bold( true );
-    $db_role = db\role::get_unique_record( 'name', 'operator' );
     foreach( db\site::select( $site_mod ) as $db_site )
     {
-      $row += 2;
-      $col = 'A';
-      
-      if( 0 == $restrict_site_id )
-      {
-        // add the site header
-        $report->merge_cells( 'A'.$row.':'.$end_col.$row );
-        $report->set_cell( $col.$row, $db_site->name );
-        $row++;
-      }
-
-      $report->set_background_color( 'CCCCCC' );
-      $report->set_horizontal_alignment( 'left' );
-      $report->set_cell( $col.$row, 'Operator' );
-      $col++;
-      
-      $report->set_horizontal_alignment( 'center' );
-      $report->set_cell( $col.$row, 'Completes' );
-      $col++;
-      
-      if( $daily_date )
-      {
-        $report->set_cell( $col.$row, 'Start Time', 'center' );
-        $col++;
-      
-        $report->set_cell( $col.$row, 'End Time', 'center' );
-        $col++;
-      }
-      
-      $report->set_cell( $col.$row, 'Total Time', 'center' );
-      $col++;
-
-      $report->set_cell( $col.$row, 'CPH', 'center' );
-      $col++;
-      
-      $report->set_cell( $col.$row, 'Avg. Length', 'center' );
-      $col++;
-      
-      $row++;
-
-      // get the data for all users
-      $report->set_background_color( NULL );
-      $report->set_bold( false );
-      $first_row = $row;
+      $contents = array();
+      // start by determining the table contents
       foreach( db\user::select() as $db_user )
       {
         // make sure the operator has min/max time for this date range
-        $mod = new db\modifier();
-        $mod->where( 'user_id', '=', $db_user->id );
-        $mod->where( 'site_id', '=', $db_site->id );
-        $mod->where( 'role_id', '=', $db_role->id );
+        $activity_mod = new db\modifier();
+        $activity_mod->where( 'user_id', '=', $db_user->id );
+        $activity_mod->where( 'site_id', '=', $db_site->id );
+        $activity_mod->where( 'role_id', '=', $db_role->id );
 
-        if( $daily_date )
+        if( $single_date )
         {
           // get the min and max datetimes for this day
-          $mod->where( 'datetime', '>=', $start_today );
-          $mod->where( 'datetime', '<=', $end_today );
-          
-          $min_datetime_obj = db\activity::get_min_datetime( $mod );
-          $max_datetime_obj = db\activity::get_max_datetime( $mod );
-
-          if( is_object( $min_datetime_obj ) && is_object( $max_datetime_obj ) )
-          {
-            $diff_obj = $max_datetime_obj->diff( $min_datetime_obj );
-            $total_time = $diff_obj->h + round( $diff_obj->i / 15 ) * 0.25;
-          }
-          else $total_time = 0;
+          $activity_mod->where( 'datetime', '>=',
+            $single_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
+          $activity_mod->where( 'datetime', '<=',
+            $single_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
         }
-        else
-        {
-          $total_time = 0;
 
-          // get the overall min and max datetimes, then use those to get min/max datetimes
-          // for all days
-          $min_datetime_obj = db\activity::get_min_datetime( $mod );
-          $max_datetime_obj = db\activity::get_max_datetime( $mod );
-          
-          if( is_object( $min_datetime_obj ) && is_object( $max_datetime_obj ) )
+        $start_datetime_obj = db\activity::get_min_datetime( $activity_mod );
+        $end_datetime_obj = db\activity::get_max_datetime( $activity_mod );
+        
+        // if there is no activity then skip this user
+        if( is_null( $start_datetime_obj ) || is_null( $end_datetime_obj ) ) continue;
+        
+        // Determine the number of completed interviews and their average length.
+        // This is done by looping through all of this user's assignments.  Any assignment's who's
+        // interview is completed is tested to see if that interview's last assignment is the
+        // originating assignment.
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        $assignment_mod = new db\modifier();
+        if( $single_date )
+        {
+          $assignment_mod->where( 'start_datetime', '>=',
+            $single_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
+          $assignment_mod->where( 'start_datetime', '<=',
+            $single_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
+        }
+        
+        $completes = 0;
+        $interview_time = 0;
+        foreach( $db_user->get_assignment_list( $assignment_mod ) as $db_assignment )
+        {
+          $db_interview = $db_assignment->get_interview();
+          if( $db_interview->completed )
           {
-            $interval = new \DateInterval( 'P1D' );
-            for( $datetime_obj = clone $min_datetime_obj;
-                 $datetime_obj <= $max_datetime_obj;
-                 $datetime_obj->add( $interval ) )
+            $last_assignment_mod = new db\modifier();
+            $last_assignment_mod->where( 'interview_id', '=', $db_interview->id );
+            $last_assignment_mod->order_desc( 'start_datetime' );
+            $last_assignment_mod->limit( 1 );
+            $db_last_assignment = current( db\assignment::select( $last_assignment_mod ) );
+            if( $db_assignment->id == $db_last_assignment->id )
             {
-              $datetime_obj->setTime( 23, 59, 59 );
-              $end_date = $datetime_obj->format( 'Y-m-d H:i:s' );
-              $datetime_obj->setTime( 0, 0 );
-              $start_date = $datetime_obj->format( 'Y-m-d H:i:s' );
-   
-              $mod = new db\modifier();
-              $mod->where( 'user_id', '=', $db_user->id );
-              $mod->where( 'site_id', '=', $db_site->id );
-              $mod->where( 'role_id', '=', $db_role->id );
-              $mod->where( 'datetime', '>=', $start_date );
-              $mod->where( 'datetime', '<=', $end_date );
-              
-              $inner_min_datetime_obj = db\activity::get_min_datetime( $mod );
-              $inner_max_datetime_obj = db\activity::get_max_datetime( $mod );
-              
-              if( is_object( $inner_min_datetime_obj ) && is_object( $inner_max_datetime_obj ) )
+              $completes++;
+
+              foreach( $db_interview->get_qnaire()->get_phase_list() as $db_phase )
               {
-                $diff_obj = $inner_max_datetime_obj->diff( $inner_min_datetime_obj );
-                $total_time += $diff_obj->h + round( $diff_obj->i / 15 ) * 0.25;
+                // only count the time in non-repeating phases
+                if( !$db_phase->repeated )
+                  $interview_time += $db_interview->get_interview_time( $db_phase );
               }
             }
           }
         }
-        
-        if( !is_null( $min_datetime_obj ) && !is_null( $max_datetime_obj ) )
+
+        // Determine the total working time.
+        // This is done by finding the minimum and maximum activity time for every day included in
+        // the report and calculating the difference between the two times.
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        $total_time = 0;
+        $start_datetime_obj->setTime( 0, 0 );
+        $end_datetime_obj->setTime( 0, 0 );
+        $interval = new \DateInterval( 'P1D' );
+        for( $datetime_obj = clone $start_datetime_obj;
+             $datetime_obj <= $end_datetime_obj;
+             $datetime_obj->add( $interval ) )
         {
-          $col = 'A';
-  
-          // name
-          $report->set_horizontal_alignment( 'left' );
-          $report->set_cell( $col.$row, $db_user->first_name.' '.$db_user->last_name );
-          $col++;
-    
-          // completes
-          $completes = 0;
-          $mod = new db\modifier();
-          if( $daily_date )
-          {
-            $mod->where( 'start_datetime', '>=', $start_today );
-            $mod->where( 'start_datetime', '<=', $end_today );
-          }
+          // if reporting a single date restrict the count to that day only
+          if( $single_date && $single_datetime_obj != $datetime_obj ) continue;
 
-          foreach( $db_user->get_assignment_list( $mod ) as $db_assignment )
-            if( $db_assignment->get_interview()->completed ) $completes++;
+          $day_activity_mod = new db\modifier();
+          $day_activity_mod->where( 'user_id', '=', $db_user->id );
+          $day_activity_mod->where( 'site_id', '=', $db_site->id );
+          $day_activity_mod->where( 'role_id', '=', $db_role->id );
+          $day_activity_mod->where( 'datetime', '>=',
+            $datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
+          $day_activity_mod->where( 'datetime', '<=',
+            $datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
           
-          $report->set_horizontal_alignment( 'center' );
-          $report->set_cell( $col.$row, $completes, 'center' );
-          $col++;
+          $min_datetime_obj = db\activity::get_min_datetime( $day_activity_mod );
+          $max_datetime_obj = db\activity::get_max_datetime( $day_activity_mod );
           
-          if( $daily_date )
+          if( !is_null( $min_datetime_obj ) && !is_null( $max_datetime_obj ) )
           {
-            // start time
-            $report->set_cell( $col.$row, $min_datetime_obj->format( "H:i" ), 'center' );
-            $col++;
-            
-            // end time
-            $report->set_cell( $col.$row, $max_datetime_obj->format( "H:i" ), 'center' );
-            $col++;
+            $diff_obj = $max_datetime_obj->diff( $min_datetime_obj );
+            $total_time += $diff_obj->h + round( $diff_obj->i / 15 ) * 0.25;
           }
+        }
 
-          // total time (calculated above)
-          $report->set_cell( $col.$row, $total_time, 'center' );
-          $col++;
-    
-          // completes per hour
-          if( 0 < $total_time )
-            $report->set_cell( $col.$row, sprintf( '%0.2f', $completes / $total_time ), 'center' );
-          $col++;
-
-          // average interview time
-          $report->set_cell( $col.$row, 'TBD', 'center' );
-          $col++;
-
-          $row++;
+        // Now we can use all the information gathered above to fill in the contents of the table.
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        if( $single_date )
+        {
+          $contents[] = array(
+            $db_user->first_name.' '.$db_user->last_name,
+            $completes,
+            $min_datetime_obj->format( "H:i" ),
+            $max_datetime_obj->format( "H:i" ),
+            $total_time,
+            $total_time > 0 ? sprintf( '%0.2f', $completes / $total_time ) : '',
+            $completes > 0 ? sprintf( '%0.2f', $interview_time / $completes / 60 ) : '' );
+        }
+        else
+        {
+          $contents[] = array(
+            $db_user->first_name.' '.$db_user->last_name,
+            $completes,
+            $total_time,
+            $total_time > 0 ? sprintf( '%0.2f', $completes / $total_time ) : '',
+            $completes > 0 ? sprintf( '%0.2f', $interview_time / $completes / 60 ) : '' );
         }
       }
 
-      $last_row = $row - 1;
-      
-      $col = 'A';
-
-      // now do the totals/sums
-      $report->set_horizontal_alignment( 'left' );
-      $report->set_bold( true );
-      $report->set_cell( $col.$row, 'Total' );
-      $col++;
-      
-      // completes
-      $report->set_horizontal_alignment( 'center' );
-      $value = $first_row > $last_row ? 0 : '=SUM( '.$col.$first_row.':'.$col.$last_row.' )';
-      $cell_obj = $report->set_cell( $col.$row, $value );
-      $completes = $cell_obj->getCalculatedValue();
-      $col++;
-      
-      if( $daily_date )
+      if( $single_date )
       {
-        // start time
-        $report->set_cell( $col.$row, '--' );
-        $col++;
-        
-        // end time
-        $report->set_cell( $col.$row, '--' );
-        $col++;
+        $header = array(
+          "Operator",
+          "Completes",
+          "Start Time",
+          "End Time",
+          "Total Time",
+          "CPH",
+          "Avg. Length" );
+
+        $footer = array(
+          "Total",
+          "sum()",
+          "--",
+          "--",
+          "sum()",
+          "average()",
+          "average()" );
       }
-      
-      // total time
-      $value = $first_row > $last_row ? 0 : '=SUM( '.$col.$first_row.':'.$col.$last_row.' )';
-      $cell_obj = $report->set_cell( $col.$row, $value );
-      $total_time = $cell_obj->getCalculatedValue();
-      $col++;
-      
+      else
+      {
+        $header = array(
+          "Operator",
+          "Completes",
+          "Total Time",
+          "CPH",
+          "Avg. Length" );
 
-      // completes per hour
-      if( 0 !== $value )
-        $report->set_cell( $col.$row, sprintf( '%0.2f', $completes/$total_time ) );
-      $col++;
-      
-      // average interview time
-      $report->set_cell( $col.$row, 'TBD' );
-      $col++;
-      $row++;
+        $footer = array(
+          "Total",
+          "sum()",
+          "sum()",
+          "average()",
+          "average()" );
+      }
+
+      $title = 0 == $restrict_site_id ? $db_site->name : NULL;
+      $this->add_table( $title, $header, $contents, $footer );
     }
-
-    return $report->get_file( $this->get_argument( 'format' ) );
   }
 }
 ?>

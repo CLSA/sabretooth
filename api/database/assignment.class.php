@@ -109,9 +109,9 @@ class assignment extends has_note
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
-   * @access private
+   * @access public
    */
-  private function get_token( $db_phase )
+  public function get_token( $db_phase )
   {
     return is_null( $db_phase ) ?
       NULL : sprintf( "%s_%s_%s", 
