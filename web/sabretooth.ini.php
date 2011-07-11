@@ -32,7 +32,7 @@ $SETTINGS[ 'path' ][ 'SABRETOOTH' ] = '/usr/local/lib/sabretooth';
 // the location of libraries
 $SETTINGS[ 'path' ][ 'ADODB' ] = '/usr/local/lib/adodb';
 $SETTINGS[ 'path' ][ 'SHIFT8' ] = '/usr/local/lib/shift8';
-$SETTINGS[ 'path' ][ 'PHPEXCEL' ] = '/usr/local/lib/phpexcel';
+$SETTINGS[ 'path' ][ 'TONIC' ] = '/usr/local/lib/tonic';
 $SETTINGS[ 'path' ][ 'JS' ] = 'js';
 $SETTINGS[ 'path' ][ 'CSS' ] = 'css';
 
