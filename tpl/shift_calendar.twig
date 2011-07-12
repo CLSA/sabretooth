@@ -23,15 +23,15 @@
   
       {% if user_id|default(false) %}
         args.id = {{ user_id }};
-        slot_load( "{{ widget.full }}", "user_add_shift", "user_add_shift", args );
+        slot_load( "{{ widget.full }}", "user", "add_shift", args );
       {% else %}
-        slot_load( "{{ widget.full }}", "shift_add", "shift_add", args );
+        slot_load( "{{ widget.full }}", "shift", "add", args );
       {% endif %}
       $( "#{{ widget.full }}_slot" ).dialog( "open" );
     },
     eventClick: function( event, jsEvent, view ) {
       // edit the shift
-      slot_load( "{{ widget.full }}", "shift_view", "shift_view", { id: event.id } );
+      slot_load( "{{ widget.full }}", "shift", "view", { id: event.id } );
       $( "#{{ widget.full }}_slot" ).dialog( "open" );
     },
   {% endif %}

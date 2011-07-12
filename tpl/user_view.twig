@@ -26,7 +26,7 @@
         {% if view_shifts %}
           // shift calendar button
           $( "#{{ widget.full }}_calendar" ).click( function() {
-            slot_load( "{{ widget.full }}", "shift_calendar", "shift_calendar", { user_id: {{ id }} } );
+            slot_load( "{{ widget.full }}", "shift", "calendar", { user_id: {{ id }} } );
             $( "#{{ widget.full }}_slot" ).dialog( "open" );
           } );
           

@@ -56,7 +56,8 @@ class self_menu extends \sabretooth\ui\widget
     foreach( $widgets as $db_widget )
     {
       $calendars[] = array( 'heading' => str_replace( '_', ' ', $db_widget->subject ),
-                            'widget' => $db_widget->subject.'_'.$db_widget->name );
+                            'subject' => $db_widget->subject,
+                            'name' => $db_widget->name );
     }
 
     // get all list widgets that the user has access to
@@ -82,12 +83,14 @@ class self_menu extends \sabretooth\ui\widget
       if( !in_array( $db_widget->subject, $exclude ) )
         $lists[] = array(
           'heading' => util::pluralize( str_replace( '_', ' ', $db_widget->subject ) ),
-          'widget' => $db_widget->subject.'_'.$db_widget->name );
+          'subject' => $db_widget->subject,
+          'name' => $db_widget->name );
       
       // insert the participant tree after participant list
       if( 'participant' == $db_widget->subject )
         $lists[] = array( 'heading' => 'Participant Tree',
-                          'widget' => 'participant_tree' );
+                          'subject' => 'participant',
+                          'name' => 'tree' );
     }
 
     // get all report widgets that the user has access to
@@ -101,7 +104,8 @@ class self_menu extends \sabretooth\ui\widget
     foreach( $widgets as $db_widget )
     {
       $reports[] = array( 'heading' => str_replace( '_', ' ', $db_widget->subject ),
-                            'widget' => $db_widget->subject.'_'.$db_widget->name );
+                          'subject' => $db_widget->subject,
+                          'name' => $db_widget->name );
     }
 
     $this->set_variable( 'calendars', $calendars );

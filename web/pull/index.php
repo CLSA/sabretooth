@@ -3,10 +3,11 @@
  * pull.php
  * 
  * Web script which can be called to retrieve data from the system.
- * This script returns data in JSON format.
+ * This script provides a GET based web service for reading.
+ * HTTP accept headers are not yet implemented.
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @throws exception\argument, exception\runtime
+ * @throws exception\runtime
  */
 namespace sabretooth;
 ob_start();
@@ -16,18 +17,25 @@ $result_array = array( 'success' => true );
 
 try
 {
+  // we need to back up to the main web directory in order for paths to work properly
+  chdir( '..' );
+
   // load web-script common code
   require_once 'sabretooth.inc.php';
   
-  // Try creating an operation and calling the pull provided by the POST variables
-  if( !isset( $_GET['subject'] ) ) throw new exception\argument( 'subject', NULL, 'PULL__SCRIPT' );
-  if( !isset( $_GET['name'] ) ) throw new exception\argument( 'name', NULL, 'PULL__SCRIPT' );
+  $base_url_path = substr( $_SERVER['PHP_SELF'], 0, strrpos( $_SERVER['PHP_SELF'], '/' ) + 1 );
+  $pull_url = str_replace( $base_url_path, '', $_SERVER['REDIRECT_URL'] );
+  $pull_tokens = explode( '/', $pull_url );
 
-  $pull_name = $_GET['subject'].'_'.$_GET['name'];
+  // There should be at least two parts to the pull redirect url
+  if( 2 > count( $pull_tokens ) )
+    throw new exception\runtime( 'Invalid pull URL "'.$pull_url.'".', 'PULL__SCRIPT' );
+
+  $pull_name = $pull_tokens[0].'_'.$pull_tokens[1];
   $pull_class = 'sabretooth\\ui\\pull\\'.$pull_name;
   $pull_args = isset( $_GET ) ? $_GET : NULL;
 
-  // create the operation using the provided args then execute it
+  // create the operation using the url and GET variables then execute it
   $operation = new $pull_class( $pull_args );
   if( !is_subclass_of( $operation, 'sabretooth\\ui\\pull' ) )
     throw new exception\runtime(
@@ -37,7 +45,7 @@ try
   $data = $operation->finish();
   business\session::self()->log_activity( $operation, $pull_args );
   log::notice(
-    sprintf( 'finished script: executed pull "%s", processing time %0.2f seconds',
+    sprintf( 'pull "%s", processing time %0.2f seconds',
              $pull_class,
              util::get_elapsed_time() ) );
 }
@@ -90,7 +98,8 @@ if( true == $result_array['success'] )
 }
 else
 {
-  if( 'json' == $data_type ) util::send_http_error( json_encode( $result_array ) );
+  if( !isset( $data_type ) || 'json' == $data_type )
+    util::send_http_error( json_encode( $result_array ) );
   else include TPL_PATH.'/index_error.php';
 }
 ?>

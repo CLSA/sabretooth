@@ -3,10 +3,10 @@
  * widget.php
  * 
  * Web script which loads widgets.
- * This script should only ever be called by an AJAX GET request.
+ * This script provides a GET based web service for user-interface "widgets".
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @throws exception\argument, exception\runtime
+ * @throws exception\runtime
  */
 namespace sabretooth;
 ob_start();
@@ -16,8 +16,26 @@ $result_array = array( 'success' => true );
 
 try
 {
+  // we need to back up to the main web directory in order for paths to work properly
+  chdir( '..' );
+
   // load web-script common code
   require_once 'sabretooth.inc.php';
+  
+  $base_url_path = substr( $_SERVER['PHP_SELF'], 0, strrpos( $_SERVER['PHP_SELF'], '/' ) + 1 );
+  $widget_url = str_replace( $base_url_path, '', $_SERVER['REDIRECT_URL'] );
+  $widget_tokens = explode( '/', $widget_url );
+
+  // There should be at least two parts to the widget redirect url
+  if( 2 > count( $widget_tokens ) )
+    throw new exception\runtime( 'Invalid widget URL "'.$widget_url.'".', 'PULL__SCRIPT' );
+
+  $slot_name = $widget_tokens[0];
+  $slot_action = $widget_tokens[1];
+  $widget['name'] = 4 > count( $widget_tokens )
+               ? NULL
+               : $widget_tokens[2].'_'.$widget_tokens[3];
+  $widget['args'] = isset( $_GET ) ? $_GET : NULL;
 
   // register autoloaders
   require_once 'Twig/Autoloader.php';
@@ -38,14 +56,9 @@ try
 
   // determine which widget to render based on the GET variables
   $session = business\session::self();
-  if( !isset( $_GET['slot'] ) || !is_string( $_GET['slot'] ) )
-    throw new exception\argument( 'slot', NULL, 'WIDGET__SCRIPT' );
-  $slot_name = isset( $_GET['slot'] ) ? $_GET['slot'] : NULL;
-  $widget['name'] = isset( $_GET['widget'] ) ? $_GET['widget'] : NULL;
   $current_widget = $session->slot_current( $slot_name );
 
   // if we are loading the same widget as last time then merge the arguments
-  $widget['args'] = $_GET;
   if( !is_null( $current_widget ) &&
       is_array( $current_widget['args'] ) &&
       $widget['name'] == $current_widget['name'] )
@@ -61,23 +74,10 @@ try
     }
   }
 
-  $go_prev = isset( $_GET['prev'] ) && 1 == $_GET['prev'];
-  $go_next = isset( $_GET['next'] ) && 1 == $_GET['next'];
-  $refresh = isset( $_GET['refresh'] ) && 1 == $_GET['refresh'];
-    
   // if the prev, next or refresh buttons were invoked, adjust the widget appropriately
-  if( $go_prev )
-  {
-    $widget = $session->slot_prev( $slot_name );
-  }
-  else if( $go_next )
-  {
-    $widget = $session->slot_next( $slot_name );
-  }
-  else if( $refresh )
-  {
-    if( !is_null( $current_widget ) ) $widget = $current_widget;
-  }
+  if( 'prev' == $slot_action ) $widget = $session->slot_prev( $slot_name );
+  else if( 'next' == $slot_action ) $widget = $session->slot_next( $slot_name );
+  else if( 'refresh' == $slot_action && !is_null( $current_widget ) ) $widget = $current_widget;
 
   if( is_null( $widget['name'] ) )
     throw new exception\runtime( 'Unable to determine widget name.', 'WIDGET__SCRIPT' );
@@ -96,15 +96,15 @@ try
   // render the widget and report to the session
   $result_array['output'] = $twig_template->render( $operation->get_variables() );
 
-  // don't push or log prev/next/refresh requests
-  if( !( $go_prev || $go_next || $refresh ) )
+  // only push and log on load slot actions
+  if( 'load' != $slot_action )
   {
     $session->slot_push( $slot_name, $widget['name'], $widget['args'] );
     $session->log_activity( $operation, $widget['args'] );
   }
 
   log::notice(
-    sprintf( 'finished script: rendered "%s" in slot "%s", processing time %0.2f seconds',
+    sprintf( 'widget "%s" in slot "%s", processing time %0.2f seconds',
              $widget['name'],
              $slot_name,
              util::get_elapsed_time() ) );

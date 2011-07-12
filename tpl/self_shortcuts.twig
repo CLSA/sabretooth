@@ -29,7 +29,7 @@
             height: 225,
             autoOpen: true
           } );
-          slot_load( "dialing_pad", "self_dialing_pad" );
+          slot_load( "dialing_pad", "self", "dialing_pad" );
         } );
       {% endif %}
       
@@ -47,7 +47,7 @@
             height: 320,
             autoOpen: true
           } );
-          slot_load( "calculator", "self_calculator" );
+          slot_load( "calculator", "self", "calculator" );
         } );
       {% endif %}
       
@@ -89,7 +89,7 @@
             primary: "ui-icon-home"
           }
         } ).click( function() {
-          slot_load( "main", "self_home" );
+          slot_load( "main", "self", "home" );
         } );
       {% endif %}
 

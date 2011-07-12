@@ -109,7 +109,7 @@
       var args = new Object();
       args.category = "{{ subject }}";
       args.category_id = {{ id }};
-      slot_load( "note", "note_list", "note_list", args );
+      slot_load( "note", "note", "list", args );
       $( "#note_slot" ).dialog( {
         title: "{{ subject|capitalize }} notes",
         modal: true,

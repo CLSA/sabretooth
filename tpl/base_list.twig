@@ -88,10 +88,7 @@
         $( ".{{ widget.full }}_view" ).click( function() {
           var id_string = $(this).attr( 'id' );
           var id = parseInt( id_string.substring( id_string.lastIndexOf('_') + 1 ) );
-          slot_load( {{ slot }},
-                     "{{ widget.subject }}_view",
-                     "{{ widget.subject }}_view",
-                     { "id": id } );
+          slot_load( {{ slot }}, "{{ widget.subject }}", "view", { "id": id } );
         } );
       {% endif %}
     
@@ -135,12 +132,10 @@
         // add button
         $( "#{{ widget.full }}_add" ).click( function() {
           {% if parent.exists %}
-            slot_load( {{ slot }},
-                       "{{ parent.subject }}_add_{{ widget.subject }}",
-                       "{{ parent.subject }}_add_{{ widget.subject }}",
+            slot_load( {{ slot }}, "{{ parent.subject }}", "add_{{ widget.subject }}",
                        { "id": {{ parent.id }} } );
           {% else %}
-            slot_load( {{ slot }}, "{{ widget.subject }}_add" );
+            slot_load( {{ slot }}, "{{ widget.subject }}", "add" );
           {% endif %}
         } );
       {% endif %}
@@ -225,9 +220,10 @@
         args.sort_column = $(this).parent( "th" ).attr("id");
         args.sort_desc = "{{ sort_column }}" == args.sort_column ? {{ sort_desc ? 0 : 1 }} : 0;
         slot_load( {{ slot }},
-                   "{{ parent.exists ? parent.full : widget.full }}",
-                   "{{ widget.full }}",
-                   args );
+                   "{{ parent.exists ? parent.subject : widget.subject }}",
+                   "{{ parent.exists ? parent.name : widget.name }}",
+                   args,
+                   "{{ widget.full }}" );
       } );
     
       // right-clicking a header button adds a new restriction
@@ -261,9 +257,10 @@
         var args = new Object();
         args.restrictions = restrictions;
         slot_load( {{ slot }},
-                   "{{ parent.exists ? parent.full : widget.full }}",
-                   "{{ widget.full }}",
-                   args );
+                   "{{ parent.exists ? parent.subject : widget.subject }}",
+                   "{{ parent.exists ? parent.name : widget.name }}",
+                   args,
+                   "{{ widget.full }}" );
       } );
 
       // the add-restriction dialog
@@ -291,9 +288,10 @@
             var args = new Object();
             args.restrictions = restrictions;
             slot_load( {{ slot }},
-                       "{{ parent.exists ? parent.full : widget.full }}",
-                       "{{ widget.full }}",
-                       args );
+                       "{{ parent.exists ? parent.subject : widget.subject }}",
+                       "{{ parent.exists ? parent.name : widget.name }}",
+                       args,
+                       "{{ widget.full }}" );
     
             $(this).dialog( "close" );
           },
@@ -309,9 +307,10 @@
           var args = new Object();
           args.page = {{ page - 1 }};
           slot_load( {{ slot }},
-                     "{{ parent.exists ? parent.full : widget.full }}",
-                     "{{ widget.full }}",
-                     args );
+                     "{{ parent.exists ? parent.subject : widget.subject }}",
+                     "{{ parent.exists ? parent.name : widget.name }}",
+                     args,
+                     "{{ widget.full }}" );
         } );
       
         // next page button
@@ -319,9 +318,10 @@
           var args = new Object();
           args.page = {{ page + 1 }};
           slot_load( {{ slot }},
-                     "{{ parent.exists ? parent.full : widget.full }}",
-                     "{{ widget.full }}",
-                     args );
+                     "{{ parent.exists ? parent.subject : widget.subject }}",
+                     "{{ parent.exists ? parent.name : widget.name }}",
+                     args,
+                     "{{ widget.full }}" );
         } );
       
         // create a button set

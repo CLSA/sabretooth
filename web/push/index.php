@@ -3,10 +3,10 @@
  * push.php
  * 
  * Web script which can be called to perform operations on the system.
- * This script should only ever be called by an AJAX POST request.
+ * This script provides a POST based web service for writing.
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @throws exception\argument, exception\runtime
+ * @throws exception\runtime
  */
 namespace sabretooth;
 ob_start();
@@ -16,18 +16,25 @@ $result_array = array( 'success' => true );
 
 try
 {
+  // we need back up to the main web directory in order for paths to work properly
+  chdir( '..' );
+
   // load web-script common code
   require_once 'sabretooth.inc.php';
   
-  // Try creating an operation and calling the push provided by the POST variables
-  if( !isset( $_POST['subject'] ) ) throw new exception\argument( 'subject', NULL, 'PUSH__SCRIPT' );
-  if( !isset( $_POST['name'] ) ) throw new exception\argument( 'name', NULL, 'PUSH__SCRIPT' );
+  $base_url_path = substr( $_SERVER['PHP_SELF'], 0, strrpos( $_SERVER['PHP_SELF'], '/' ) + 1 );
+  $push_url = str_replace( $base_url_path, '', $_SERVER['REDIRECT_URL'] ); 
+  $push_tokens = explode( '/', $push_url );
+  
+  // There should be at least two parts to the push redirect url
+  if( 2 > count( $push_tokens ) )
+    throw new exception\runtime( 'Invalid push URL "'.$push_url.'".', 'PULL__SCRIPT' ); 
 
-  $push_name = $_POST['subject'].'_'.$_POST['name'];
+  $push_name = $push_tokens[0].'_'.$push_tokens[1];
   $push_class = 'sabretooth\\ui\\push\\'.$push_name;
   $push_args = isset( $_POST ) ? $_POST : NULL;
-
-  // create the operation using the provided args then execute it
+         
+  // create the operation using the url and POST variables then execute it
   $operation = new $push_class( $push_args );
   if( !is_subclass_of( $operation, 'sabretooth\\ui\\push' ) )
     throw new exception\runtime(
@@ -36,7 +43,7 @@ try
   $operation->finish();
   business\session::self()->log_activity( $operation, $push_args );
   log::notice(
-    sprintf( 'finished script: executed push "%s", processing time %0.2f seconds',
+    sprintf( 'push "%s", processing time %0.2f seconds',
              $push_class,
              util::get_elapsed_time() ) );
 }

@@ -16,9 +16,7 @@
         // reload page if site selector is changed
         $( "#{{ widget.full }}__restrict_site" ).change( function() {
           var site_id = $( "#{{ widget.full }}__restrict_site option:selected" ).val();
-          slot_load( {{ slot }},
-                     "{{ widget.full }}",
-                     "{{ widget.full }}",
+          slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}",
                      { "restrict_site_id": site_id } );
         } );
       {% endif %}
@@ -26,9 +24,7 @@
       // reload page if qnaire selector is changed
       $( "#{{ widget.full }}__restrict_qnaire" ).change( function() {
         var qnaire_id = $( "#{{ widget.full }}__restrict_qnaire option:selected" ).val();
-        slot_load( {{ slot }},
-                   "{{ widget.full }}",
-                   "{{ widget.full }}",
+        slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}",
                    { "restrict_qnaire_id": qnaire_id } );
       } );
     } );

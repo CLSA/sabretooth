@@ -13,8 +13,7 @@
       {% if participant_id|default(false) %}
         // view participant button
         $( "#{{ widget.full }}__view_participant" ).click( function() {
-          slot_load( "{{ widget.full }}", "participant_view", "participant_view",
-                     { id: {{ participant_id }} } );
+          slot_load( "{{ widget.full }}", "participant", "view", { id: {{ participant_id }} } );
           $( "#{{ widget.full }}_slot" ).dialog( {
             title: "Viewing details for {{ participant_name }}",
             modal: true,
@@ -25,8 +24,7 @@
       
         // view call history button
         $( "#{{ widget.full }}__view_history" ).click( function() {
-          slot_load( "{{ widget.full }}", "assignment_list", "assignment_view",
-                     { id: {{ participant_id }} } );
+          slot_load( "{{ widget.full }}", "assignment", "list", { id: {{ participant_id }} } );
           $( "#{{ widget.full }}_slot" ).dialog( {
             title: "Viewing call history for {{ participant_name }}",
             modal: true,
@@ -72,7 +70,7 @@
 
         // view schedule button
         $( "#{{ widget.full }}__schedule" ).click( function() {
-          slot_load( "{{ widget.full }}", "shift_calendar", "shift_calendar" );
+          slot_load( "{{ widget.full }}", "shift", "calendar" );
           $( "#{{ widget.full }}_slot" ).dialog( {
             title: "Schedule",
             modal: true,

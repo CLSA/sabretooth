@@ -53,7 +53,7 @@ final class util
   {
     if( is_null( self::$pull_mode ) )
       self::$pull_mode =
-        'pull.php' == business\setting_manager::self()->get_setting( 'general', 'script_name' );
+        'pull' == business\setting_manager::self()->get_setting( 'general', 'operation_type' );
     
     return self::$pull_mode;
   }
@@ -70,7 +70,7 @@ final class util
   {
     if( is_null( self::$push_mode ) )
       self::$push_mode =
-        'push.php' == business\setting_manager::self()->get_setting( 'general', 'script_name' );
+        'push' == business\setting_manager::self()->get_setting( 'general', 'operation_type' );
     
     return self::$push_mode;
   }
@@ -87,7 +87,7 @@ final class util
   {
     if( is_null( self::$widget_mode ) )
       self::$widget_mode =
-        'widget.php' == business\setting_manager::self()->get_setting( 'general', 'script_name' );
+        'widget' == business\setting_manager::self()->get_setting( 'general', 'operation_type' );
     
     return self::$widget_mode;
   }

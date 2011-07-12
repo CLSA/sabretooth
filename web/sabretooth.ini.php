@@ -18,13 +18,21 @@ $SETTINGS[ 'general' ][ 'version' ] = '0.2';
 
 // always leave as false when running as production server
 $SETTINGS[ 'general' ][ 'development_mode' ] = false;
-$SETTINGS[ 'general' ][ 'script_name' ] = false === strrchr( $_SERVER['SCRIPT_NAME'], '/' )
-                                        ? $_SERVER['SCRIPT_NAME']
-                                        : substr( strrchr( $_SERVER['SCRIPT_NAME'], '/' ), 1 );
 
-// system URLs
-$SETTINGS[ 'url' ][ 'BASE' ] = ( $_SERVER["HTTPS"] ? 'https' : 'http' ).'://'.$_SERVER["HTTP_HOST"];
-$SETTINGS[ 'url' ][ 'FULL' ] = $SETTINGS[ 'url' ][ 'BASE' ].$_SERVER["REQUEST_URI"];
+// determine the operation type from the script name
+$script = $_SERVER['SCRIPT_NAME'];
+if( false !== strpos( $script, 'widget.php' ) )
+  $SETTINGS[ 'general' ][ 'operation_type' ] = 'widget';
+else if( false !== strpos( $script, 'pull/index.php' ) )
+  $SETTINGS[ 'general' ][ 'operation_type' ] = 'pull';
+else if( false !== strpos( $script, 'push/index.php' ) )
+  $SETTINGS[ 'general' ][ 'operation_type' ] = 'push';
+else
+  $SETTINGS[ 'general' ][ 'operation_type' ] = 'index';
+                                           
+//$SETTINGS[ 'general' ][ 'script_name' ] = false === strrchr( $_SERVER['SCRIPT_NAME'], '/' )
+//                                        ? $_SERVER['SCRIPT_NAME']
+//                                        : substr( strrchr( $_SERVER['SCRIPT_NAME'], '/' ), 1 );
 
 // the location of sabretooth internal path
 $SETTINGS[ 'path' ][ 'SABRETOOTH' ] = '/usr/local/lib/sabretooth';
@@ -38,13 +46,13 @@ $SETTINGS[ 'path' ][ 'CSS' ] = 'css';
 
 // the url of limesurvey
 $SETTINGS[ 'path' ][ 'LIMESURVEY' ] = '/var/www/limesurvey';
-$SETTINGS[ 'url' ][ 'LIMESURVEY' ] = $SETTINGS[ 'url' ][ 'FULL' ].'/limesurvey';
+$SETTINGS[ 'url' ][ 'LIMESURVEY' ] = '../limesurvey';
 
 // javascript libraries
 $SETTINGS[ 'version' ][ 'JQUERY' ] = '1.4.4';
 $SETTINGS[ 'version' ][ 'JQUERY_UI' ] = '1.8.9';
 
-$SETTINGS[ 'url' ][ 'JQUERY' ] = $SETTINGS[ 'url' ][ 'BASE' ].'/jquery';
+$SETTINGS[ 'url' ][ 'JQUERY' ] = '/jquery';
 $SETTINGS[ 'url' ][ 'JQUERY_UI' ] = $SETTINGS[ 'url' ][ 'JQUERY' ].'/ui';
 $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ] = $SETTINGS[ 'url' ][ 'JQUERY' ].'/plugins';
 $SETTINGS[ 'path' ][ 'JQUERY_UI_THEMES' ] = '/var/www/jquery/ui/css';

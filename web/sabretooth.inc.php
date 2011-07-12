@@ -80,5 +80,4 @@ $session = business\session::self( $SETTINGS );
 $session->initialize();
 $voip = business\voip_manager::self();
 $voip->initialize();
-log::notice( 'running script: "'.$SETTINGS[ 'url' ][ 'FULL' ].'"' );
 ?>
