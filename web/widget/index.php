@@ -97,7 +97,7 @@ try
   $result_array['output'] = $twig_template->render( $operation->get_variables() );
 
   // only push and log on load slot actions
-  if( 'load' != $slot_action )
+  if( 'load' == $slot_action )
   {
     $session->slot_push( $slot_name, $widget['name'], $widget['args'] );
     $session->log_activity( $operation, $widget['args'] );
