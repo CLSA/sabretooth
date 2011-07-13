@@ -24,7 +24,7 @@
                            : $(this).val();
         } );
         
-        window.location = "{{ widget.subject }}/report" + jQuery.param( args );
+        window.location = "{{ widget.subject }}/report?" + jQuery.param( args );
       } );
     } );
   </script>
