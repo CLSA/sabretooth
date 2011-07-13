@@ -16,8 +16,6 @@
       $( "#{{ widget.compound }}_download" ).click( function () {
         // push the form information
         var args = new Object();
-        args.subject = "{{ widget.subject }}";
-        args.name = "report";
         $( "#{{ widget.full }}_download_form :input" ).each( function() {
           var id_string = $(this).attr( "id" );
           var param_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
@@ -26,7 +24,7 @@
                            : $(this).val();
         } );
         
-        window.location = "pull.php?" + jQuery.param( args );
+        window.location = "{{ widget.subject }}/report" + jQuery.param( args );
       } );
     } );
   </script>

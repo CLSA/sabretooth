@@ -82,7 +82,7 @@ function error_dialog( title, message ) {
 function ajax_pull( subject, name, args ) {
   if( undefined == args ) args = new Object();
   var request = jQuery.ajax( {
-    url: "pull/" + subject + "/" + name,
+    url: subject + "/" + name,
     async: false,
     type: "GET",
     data: jQuery.param( args ),
@@ -105,7 +105,7 @@ function ajax_pull( subject, name, args ) {
 function ajax_push( subject, name, args ) {
   if( undefined == args ) args = new Object();
   var request = jQuery.ajax( {
-    url: "push/" + subject + "/" + name,
+    url: subject + "/" + name,
     async: false,
     type: "POST",
     data: jQuery.param( args ),
@@ -127,7 +127,7 @@ function ajax_push( subject, name, args ) {
  * @param string name The widget's name.
  * @param object args The arguments to pass along with the push.
  */
-function ajax_widget( slot, action, subject, name, args ) {
+function ajax_slot( slot, action, subject, name, args ) {
   $.loading( {
     onAjax: true,
     mask: true,
@@ -136,7 +136,7 @@ function ajax_widget( slot, action, subject, name, args ) {
     align: "center"
   } );
   
-  var url = "widget/" + slot + "/" + action;
+  var url = "slot/" + slot + "/" + action;
   if( subject && name ) url += "/" + subject + "/" + name;
   if( undefined != args ) url += "?" + jQuery.param( args );
 
@@ -159,10 +159,11 @@ function ajax_widget( slot, action, subject, name, args ) {
 function slot_load( slot, subject, name, args, namespace ) {
   // build the url (args is an associative array)
   if( undefined == namespace ) namespace = subject + '_' + name;
-  var namespace_args = new Object();
-  if( undefined != args ) namespace_args[namespace] = args;
-  console.log( namespace_args );
-  ajax_widget( slot, 'load', subject, name, namespace_args );
+  if( undefined != args ) {
+    var namespace_args = new Object();
+    namespace_args[namespace] = args;
+  }
+  ajax_slot( slot, 'load', subject, name, namespace_args );
 }
 
 /**
@@ -172,8 +173,7 @@ function slot_load( slot, subject, name, args, namespace ) {
  * @param string slot The slot to affect.
  */
 function slot_prev( slot ) {
-  var args = new Object();
-  ajax_widget( slot, 'prev' );
+  ajax_slot( slot, 'prev' );
 }
 
 /**
@@ -183,10 +183,7 @@ function slot_prev( slot ) {
  * @param string slot The slot to rewind.
  */
 function slot_next( slot ) {
-  var args = new Object();
-  args.next = 1;
-  args.slot = slot;
-  ajax_widget( slot, 'next' );
+  ajax_slot( slot, 'next' );
 }
 
 /**
@@ -196,10 +193,7 @@ function slot_next( slot ) {
  * @param string slot The slot to rewind.
  */
 function slot_refresh( slot ) {
-  args = new Object();
-  args.refresh = 1;
-  args.slot = slot;
-  ajax_widget( slot, 'refresh' );
+  ajax_slot( slot, 'refresh' );
 }
 
 /**

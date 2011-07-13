@@ -129,40 +129,40 @@
 
 <body>
   {% if survey_url %}
-  <div class="ui-layout-center">
+    <div class="ui-layout-center">
   {% endif %}
-    <div id="error_slot"></div>
-    <div id="confirm_slot"></div>
-    <div id="note_slot"></div>
-    <div id="dialing_pad_slot"></div>
-    <div id="calculator_slot"></div>
-    <div id="password_slot"></div>
-    <div id="top_extruder" class="{title:'settings'}">
-      <div id="settings_slot"></div>
+  <div id="error_slot"></div>
+  <div id="confirm_slot"></div>
+  <div id="note_slot"></div>
+  <div id="dialing_pad_slot"></div>
+  <div id="calculator_slot"></div>
+  <div id="password_slot"></div>
+  <div id="top_extruder" class="{title:'settings'}">
+    <div id="settings_slot"></div>
+  </div>
+  {% if not is_operator %}
+    <div id="left_extruder" class="{title:'menu'}">
+      <div id="menu_slot"></div>
     </div>
-    {% if not is_operator %}
-      <div id="left_extruder" class="{title:'menu'}">
-        <div id="menu_slot"></div>
-      </div>
-    {% endif %}
-    <div class="ui-widget-content" id="app_ui">
-      <table>
-        <tr>
-          <td><div id="status_slot"></div></td>
-          <td><div id="shortcuts_slot"></div></td>
-        </tr>
-      </table>
-      <div id="main_slot"></div>
-    </div>
+  {% endif %}
+  <div class="ui-widget-content" id="app_ui">
+    <table>
+      <tr>
+        <td><div id="status_slot"></div></td>
+        <td><div id="shortcuts_slot"></div></td>
+      </tr>
+    </table>
+    <div id="main_slot"></div>
+  </div>
   {% if survey_url %}
-  </div>
-  <div class="ui-layout-south" id="survey_ui">
-    <object style="width:100%; height: 100%; position: absolute;"
-            data="{% autoescape false %}{{ survey_url }}{% endautoescape %}"
-            id="survey_object">
-      <p>Your browser is not supported, try with Firefox 3.6+</p>
-    </object>
-  </div>
+    </div>
+    <div class="ui-layout-south" id="survey_ui">
+      <object style="width:100%; height: 100%; position: absolute;"
+              data="{% autoescape false %}{{ survey_url }}{% endautoescape %}"
+              id="survey_object">
+        <p>Your browser is not supported, try with Firefox 3.6+</p>
+      </object>
+    </div>
   {% endif %}
 </body>
 

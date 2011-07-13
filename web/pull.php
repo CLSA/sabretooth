@@ -17,9 +17,6 @@ $result_array = array( 'success' => true );
 
 try
 {
-  // we need to back up to the main web directory in order for paths to work properly
-  chdir( '..' );
-
   // load web-script common code
   require_once 'sabretooth.inc.php';
   
@@ -46,7 +43,7 @@ try
   business\session::self()->log_activity( $operation, $pull_args );
   log::notice(
     sprintf( 'pull "%s", processing time %0.2f seconds',
-             $pull_class,
+             $pull_name,
              util::get_elapsed_time() ) );
 }
 catch( exception\base_exception $e )
