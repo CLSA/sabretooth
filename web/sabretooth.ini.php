@@ -30,17 +30,12 @@ else if( false !== strpos( $script, 'push/index.php' ) )
 else
   $SETTINGS[ 'general' ][ 'operation_type' ] = 'index';
                                            
-//$SETTINGS[ 'general' ][ 'script_name' ] = false === strrchr( $_SERVER['SCRIPT_NAME'], '/' )
-//                                        ? $_SERVER['SCRIPT_NAME']
-//                                        : substr( strrchr( $_SERVER['SCRIPT_NAME'], '/' ), 1 );
-
 // the location of sabretooth internal path
 $SETTINGS[ 'path' ][ 'SABRETOOTH' ] = '/usr/local/lib/sabretooth';
 
 // the location of libraries
 $SETTINGS[ 'path' ][ 'ADODB' ] = '/usr/local/lib/adodb';
 $SETTINGS[ 'path' ][ 'SHIFT8' ] = '/usr/local/lib/shift8';
-$SETTINGS[ 'path' ][ 'TONIC' ] = '/usr/local/lib/tonic';
 $SETTINGS[ 'path' ][ 'JS' ] = 'js';
 $SETTINGS[ 'path' ][ 'CSS' ] = 'css';
 

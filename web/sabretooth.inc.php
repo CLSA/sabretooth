@@ -75,7 +75,7 @@ include_file( API_PATH.'/autoloader.class.php' );
 // registers an autoloader so classes don't have to be included manually
 autoloader::register();
 
-// set up the session, voip manager and send a notice of what's happening
+// set up the session and voip manager
 $session = business\session::self( $SETTINGS );
 $session->initialize();
 $voip = business\voip_manager::self();
