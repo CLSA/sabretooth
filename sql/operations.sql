@@ -3,18 +3,7 @@
 -- -----------------------------------------------------
 SET AUTOCOMMIT=0;
 
--- generic operations
 DELETE FROM operation;
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "login", "halt", true, "Logs out all users (except the user who executes this operation)." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "login", "suspend", true, "Prevents all users from logging in (except the user who executes this operation)." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "voip", "halt", true, "Disconnects all VOIP sessions." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "voip", "suspend", true, "Prevents any new VOIP sessions from connecting." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "voip", "dtmf", false, "Sends DTMF tones." );
 
 -- access
 INSERT INTO operation( type, subject, name, restricted, description )
