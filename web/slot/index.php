@@ -102,12 +102,6 @@ try
     $session->slot_push( $slot_name, $widget['name'], $widget['args'] );
     $session->log_activity( $operation, $widget['args'] );
   }
-
-  log::notice(
-    sprintf( 'widget "%s" in slot "%s", processing time %0.2f seconds',
-             $widget['name'],
-             $slot_name,
-             util::get_elapsed_time() ) );
 }
 catch( exception\base_exception $e )
 {

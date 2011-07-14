@@ -31,7 +31,6 @@ class self_set_site extends \sabretooth\ui\push
   public function __construct( $args )
   {
     parent::__construct( 'self', 'set_site', $args );
-    $this->site_name = $this->get_argument( 'site' ); // must exist
   }
   
   /**
@@ -42,10 +41,14 @@ class self_set_site extends \sabretooth\ui\push
    */
   public function finish()
   {
-    $db_site = db\site::get_unique_record( 'name', $this->site_name );
-    if( NULL == $db_site )
-      throw new exc\runtime(
-        'Invalid site name "'.$this->site_name.'"', __METHOD__ );
+    try
+    {
+      $db_site = new db\site::( $this->get_argument( 'id' ) );
+    }
+    catch( exc\runtime $e )
+    {
+      throw new exc\argument( 'id', $this->get_argument( 'id' ), __METHOD__, $e );
+    }
 
     // get the first role associated with the site
     $modifier = new db\modifier();
@@ -54,16 +57,9 @@ class self_set_site extends \sabretooth\ui\push
     $db_role_list = $session->get_user()->get_role_list( $modifier );
     if( 0 == count( $db_role_list ) )
       throw new exc\runtime(
-        'User has no access to site name "'.$this->site_name.'"', __METHOD__ );
+        'User does not have access to the given site.',  __METHOD__ );
 
     $session::self()->set_site_and_role( $db_site, $db_role_list[0] );
   }
-
-  /**
-   * The name of the site to set.
-   * @var string
-   * @access protected
-   */
-  protected $site_name = NULL;
 }
 ?>

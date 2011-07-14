@@ -46,18 +46,18 @@ class self_settings extends \sabretooth\ui\widget
 
     // create and setup the widget
     $db_user = $session->get_user();
-    $db_site = $session->get_site();
-    $db_role = $session->get_role();
+    $db_current_site = $session->get_site();
+    $db_current_role = $session->get_role();
     
-    $site_names = array();
-    $sites = $db_user->get_site_list();
-    foreach( $sites as $site ) $site_names[] = $site->name;
+    $sites = array();
+    foreach( $db_user->get_site_list() as $db_site )
+      $sites[ $db_site->id ] = $db_site->name;
 
-    $role_names = array();
+    $roles = array();
     $modifier = new db\modifier();
-    $modifier->where( 'site_id', '=', $db_site->id );
-    $roles = $db_user->get_role_list( $modifier );
-    foreach( $roles as $role ) $role_names[] = $role->name;
+    $modifier->where( 'site_id', '=', $db_current_site->id );
+    foreach( $db_user->get_role_list( $modifier ) as $db_role )
+      $roles[ $db_role->id ] = $db_role->name;
     
     // themes are found in the jquery-ui 
     $themes = array();
@@ -68,11 +68,13 @@ class self_settings extends \sabretooth\ui\widget
     $this->set_variable( 'version',
       bus\setting_manager::self()->get_setting( 'general', 'version' ) );
     $this->set_variable( 'development', util::in_devel_mode() );
-    $this->set_variable( 'current_site_name', $db_site->name );
-    $this->set_variable( 'current_role_name', $db_role->name );
+    $this->set_variable( 'current_site_id', $db_current_site->id );
+    $this->set_variable( 'current_site_name', $db_current_site->name );
+    $this->set_variable( 'current_role_id', $db_current_role->id );
+    $this->set_variable( 'current_role_name', $db_current_role->name );
     $this->set_variable( 'current_theme_name', $session->get_theme() );
-    $this->set_variable( 'roles', $role_names );
-    $this->set_variable( 'sites', $site_names );
+    $this->set_variable( 'roles', $roles );
+    $this->set_variable( 'sites', $sites );
     $this->set_variable( 'themes', $themes );
   }
 }

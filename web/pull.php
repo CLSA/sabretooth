@@ -41,10 +41,6 @@ try
   $data_type = $operation->get_data_type();
   $data = $operation->finish();
   business\session::self()->log_activity( $operation, $pull_args );
-  log::notice(
-    sprintf( 'pull "%s", processing time %0.2f seconds',
-             $pull_name,
-             util::get_elapsed_time() ) );
 }
 catch( exception\base_exception $e )
 {

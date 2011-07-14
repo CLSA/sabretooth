@@ -39,10 +39,6 @@ try
   
   $operation->finish();
   business\session::self()->log_activity( $operation, $push_args );
-  log::notice(
-    sprintf( 'push "%s", processing time %0.2f seconds',
-             $push_name,
-             util::get_elapsed_time() ) );
 }
 catch( exception\base_exception $e )
 {
