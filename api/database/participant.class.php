@@ -137,12 +137,12 @@ class participant extends has_note
   }
 
   /**
-   * Get the participant's current defining consent
+   * Get the participant's last consent
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return consent
    * @access public
    */
-  public function get_current_consent()
+  public function get_last_consent()
   {
     // check the primary key value
     if( is_null( $this->id ) )
@@ -153,16 +153,11 @@ class participant extends has_note
     
     $modifier = new modifier();
     $modifier->where( 'participant_id', '=', $this->id );
-    $modifier->where( 'event', 'in', array( 'verbal accept',
-                                            'verbal deny',
-                                            'written accept',
-                                            'written deny',
-                                            'retract' ) );
-    $modifier->order_desc( 'date' );
-    $modifier->limit( 1 );
-    $consent_list = consent::select( $modifier );
 
-    return 0 == count( $consent_list ) ? NULL : current( $consent_list );
+    $sql = sprintf( 'SELECT consent_id FROM participant_last_consent %s',
+                    $modifier->get_sql() );
+    $consent_id = static::db()->get_one( $sql );
+    return $consent_id ? new consent( $consent_id ) : NULL;
   }
 
   /**

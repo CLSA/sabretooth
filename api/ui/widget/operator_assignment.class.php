@@ -61,7 +61,7 @@ class operator_assignment extends \sabretooth\ui\widget
       else if( 'fr' == $db_participant->language ) $language = 'french';
 
       $consent = 'none';
-      $db_consent = $db_participant->get_current_consent();
+      $db_consent = $db_participant->get_last_consent();
       if( !is_null( $db_consent ) ) $consent = $db_consent->event;
       
       $previous_call_list = array();
