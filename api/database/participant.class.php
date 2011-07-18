@@ -151,12 +151,12 @@ class participant extends has_note
       return NULL;
     }
     
-    $modifier = new modifier();
-    $modifier->where( 'participant_id', '=', $this->id );
-
-    $sql = sprintf( 'SELECT consent_id FROM participant_last_consent %s',
-                    $modifier->get_sql() );
-    $consent_id = static::db()->get_one( $sql );
+    // need custom SQL
+    $consent_id = static::db()->get_one(
+      sprintf( 'SELECT consent_id '.
+               'FROM participant_last_consent '.
+               'WHERE participant_id = %s',
+               database::format_string( $this->id ) ) );
     return $consent_id ? new consent( $consent_id ) : NULL;
   }
 
