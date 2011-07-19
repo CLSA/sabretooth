@@ -63,6 +63,26 @@ INSERT INTO access
 SET user_id = ( SELECT id FROM user WHERE name = 'patrick' ),
     role_id = ( SELECT id FROM role WHERE name = 'operator' ),
     site_id = ( SELECT id FROM site WHERE name = 'Manitoba' );
+INSERT INTO access
+SET user_id = ( SELECT id FROM user WHERE name = 'dean' ),
+    role_id = ( SELECT id FROM role WHERE name = 'administrator' ),
+    site_id = ( SELECT id FROM site WHERE name = 'McMaster' );
+INSERT INTO access
+SET user_id = ( SELECT id FROM user WHERE name = 'dean' ),
+    role_id = ( SELECT id FROM role WHERE name = 'supervisor' ),
+    site_id = ( SELECT id FROM site WHERE name = 'McMaster' );
+INSERT INTO access
+SET user_id = ( SELECT id FROM user WHERE name = 'dean' ),
+    role_id = ( SELECT id FROM role WHERE name = 'supervisor' ),
+    site_id = ( SELECT id FROM site WHERE name = 'Manitoba' );
+INSERT INTO access
+SET user_id = ( SELECT id FROM user WHERE name = 'dean' ),
+    role_id = ( SELECT id FROM role WHERE name = 'operator' ),
+    site_id = ( SELECT id FROM site WHERE name = 'McMaster' );
+INSERT INTO access
+SET user_id = ( SELECT id FROM user WHERE name = 'dean' ),
+    role_id = ( SELECT id FROM role WHERE name = 'operator' ),
+    site_id = ( SELECT id FROM site WHERE name = 'Manitoba' );
 
 LOAD DATA LOCAL INFILE "./participants.csv"
 INTO TABLE participant
