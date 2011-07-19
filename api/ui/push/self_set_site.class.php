@@ -43,7 +43,7 @@ class self_set_site extends \sabretooth\ui\push
   {
     try
     {
-      $db_site = new db\site::( $this->get_argument( 'id' ) );
+      $db_site = new db\site( $this->get_argument( 'id' ) );
     }
     catch( exc\runtime $e )
     {
