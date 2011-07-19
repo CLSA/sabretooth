@@ -214,6 +214,13 @@ class participant extends has_note
    */
   public function get_primary_site()
   {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to query participant with no id.' );
+      return NULL;
+    }
+    
     $db_site = NULL;
 
     if( !is_null( $this->site_id ) )
@@ -232,6 +239,28 @@ class participant extends has_note
     return $db_site;
   }
   
+  /**
+   * Get the last phone call which reached the participant
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return phone_call
+   * @access public
+   */
+  public function get_last_contacted_phone_call()
+  {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to query participant with no id.' );
+      return NULL;
+    }
+    
+    // need custom SQL
+    $phone_call_id = static::db()->get_one(
+      sprintf( 'SELECT phone_call_id FROM participant_last_contacted_phone_call WHERE participant_id = %s',
+               database::format_string( $this->id ) ) );
+    return $phone_call_id ? new phone_call( $phone_call_id ) : NULL;
+  }
+
   /**
    * Override parent's magic get method so that supplementary data can be retrieved
    * @author Patrick Emond <emondpd@mcmaster.ca>
