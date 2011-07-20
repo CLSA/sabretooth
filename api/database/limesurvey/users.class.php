@@ -7,7 +7,7 @@
  * @filesource
  */
 
-namespace sabretooth\database\limesurveys;
+namespace sabretooth\database\limesurvey;
 use sabretooth\business as bus;
 use sabretooth\database as db;
 use sabretooth\exception as exc;

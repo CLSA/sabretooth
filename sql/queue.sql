@@ -90,6 +90,7 @@ parent_queue_id = (
 description = "Participants who are not eligible for answering questionnaires because they are
 deceased.";
 
+-- TODO: replace "language barrier" with "participant not reached"
 INSERT INTO queue SET
 name = "language barrier",
 title = "Participants with a language barrier",
