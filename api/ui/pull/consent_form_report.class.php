@@ -19,7 +19,7 @@ use sabretooth\exception as exc;
  * @abstract
  * @package sabretooth\ui
  */
-class consent_form extends base_report
+class consent_form_report extends base_report
 {
   /**
    * Constructor
@@ -32,7 +32,14 @@ class consent_form extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'consent_form', $args );
-    
+  }
+
+  public function finish()
+  {
+    // TODO: Change this to the title/code of the limesurvey question to check
+    // (this should be the consent form question)
+    $question_code = 'A';
+
     $this->add_title( 'Consent Form Required Report' );
     $this->add_title(
       'A list of participant\'s who have indicated they require a new consent form' );
@@ -49,7 +56,7 @@ class consent_form extends base_report
     {
       $done = false;
 
-      $consent_mod = new modifier();
+      $consent_mod = new db\modifier();
       $consent_mod->where( 'event', '=', 'written accept' );
       $consent_mod->or_where( 'event', '=', 'written deny' );
       $consent_mod->or_where( 'event', '=', 'retract' );
@@ -59,13 +66,13 @@ class consent_form extends base_report
         // now go through their interviews until the consent question code is found
         foreach( $db_participant->get_interview_list() as $db_interview )
         {
-          foreach( $db_interivew->get_qnaire()->get_phase_list() as $db_phase )
+          foreach( $db_interview->get_qnaire()->get_phase_list() as $db_phase )
           {
             // figure out the token
             $token = db\limesurvey\record::get_token( $db_interview, $db_phase );
 
             // determine if the participant answered yes to the consent question
-            $survey_mod = new modifier();
+            $survey_mod = new db\modifier();
             if( $db_phase->repeated )
             {
               // replace the token's 0 with a database % wildcard
@@ -81,21 +88,19 @@ class consent_form extends base_report
               {
                 $db_address = $db_participant->get_first_address();
                 $db_region = $db_address->get_region();
-                $db_phone = NULL; // TODO
+                $db_last_phone_call = $db_participant->get_last_contacted_phone_call();
 
                 $contents[] = array(
-                  $db_partitipant->uid,
-                  $db_interview->complete ? 'Yes' : 'No',
-                  $db_participant->get_last_contacted_phone_call()->start_datetime,
+                  $db_participant->uid,
+                  $db_interview->completed ? 'Yes' : 'No',
+                  $db_last_phone_call ? $db_last_phone_call()->start_datetime : 'never',
                   $db_participant->first_name,
                   $db_participant->last_name,
-                  $db_address->address1,
-                  $db_address->address2,
+                  $db_address->address1." ".$db_address->address2,
                   $db_address->city,
                   $db_region->abbreviation,
                   $db_region->country,
-                  $db_address->postcode,
-                  $db_phone->number );
+                  $db_address->postcode );
 
                 $done = true;
               }
@@ -107,8 +112,22 @@ class consent_form extends base_report
         }
       }
     }
+    
+    $header = array(
+      "UID",
+      "Interview\nComplete",
+      "Last Contact",
+      "First Name",
+      "Last Name",
+      "Address",
+      "City",
+      "Prov/State",
+      "Country",
+      "Postcode" );
+    
+    $this->add_table( NULL, $header, $contents, NULL );
 
-    $this->add_table( NULL, $header, $contents, $footer );
+    return parent::finish();
   }
 }
 ?>

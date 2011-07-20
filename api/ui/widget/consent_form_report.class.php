@@ -18,7 +18,7 @@ use sabretooth\exception as exc;
  * 
  * @package sabretooth\ui
  */
-class consent_form extends site_restricted_report
+class consent_form_report extends base_report
 {
   /**
    * Constructor
@@ -30,8 +30,8 @@ class consent_form extends site_restricted_report
    */
   public function __construct( $args )
   {
-    parent::__construct( 'consent forms', $args );
-    
+    parent::__construct( 'consent_form', $args );
+
     $this->set_variable( 'description',
       'This report lists all participants who require a new consent form to be mailed to '.
       'them.  The report generates the participant\'s name, address, phone number and last '.
