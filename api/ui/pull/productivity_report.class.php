@@ -32,7 +32,10 @@ class productivity_report extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'productivity', $args );
-    
+  }
+
+  public function finish()
+  {
     $db_role = db\role::get_unique_record( 'name', 'operator' );
 
     // get the operation's arguments
@@ -226,6 +229,8 @@ class productivity_report extends base_report
       $title = 0 == $restrict_site_id ? $db_site->name : NULL;
       $this->add_table( $title, $header, $contents, $footer );
     }
+
+    return parent::finish();
   }
 }
 ?>
