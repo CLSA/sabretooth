@@ -114,11 +114,7 @@ class assignment extends has_note
   public function get_token( $db_phase )
   {
     return is_null( $db_phase ) ?
-      NULL : sprintf( "%s_%s_%s", 
-                      $this->interview_id,
-                      $db_phase->id,
-                      // repeated phases have the assignment id as the last part of the token
-                      $db_phase->repeated ? $this->id : 0 );
+      NULL : limesurvey\record::get_token( $this->get_interview(), $db_phase, $this );
   }
 
   /**

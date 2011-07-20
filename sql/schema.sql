@@ -361,7 +361,7 @@ CREATE  TABLE IF NOT EXISTS `phone_call` (
   `phone_id` INT UNSIGNED NOT NULL ,
   `start_datetime` DATETIME NOT NULL COMMENT 'The time the call started.' ,
   `end_datetime` DATETIME NULL DEFAULT NULL COMMENT 'The time the call endede.' ,
-  `status` ENUM('contacted', 'busy','no answer','machine message','machine no message','fax','disconnected','wrong number','language') NULL DEFAULT NULL ,
+  `status` ENUM('contacted','busy','no answer','machine message','machine no message','fax','disconnected','wrong number','language') NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_assignment_id` (`assignment_id` ASC) ,
   INDEX `status` (`status` ASC) ,
@@ -823,6 +823,11 @@ CREATE TABLE IF NOT EXISTS `participant_last_consent` (`participant_id` INT, `co
 CREATE TABLE IF NOT EXISTS `participant_primary_address` (`participant_id` INT, `address_id` INT);
 
 -- -----------------------------------------------------
+-- Placeholder table for view `participant_last_contacted_phone_call`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `participant_last_contacted_phone_call` (`participant_id` INT, `phone_call_id` INT);
+
+-- -----------------------------------------------------
 -- View `participant_first_address`
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `participant_first_address` ;
@@ -1031,6 +1036,25 @@ WHERE t1.rank = (
   AND region.site_id IS NOT NULL
   AND t1.participant_id = t2.participant_id
   GROUP BY t2.participant_id );
+
+-- -----------------------------------------------------
+-- View `participant_last_contacted_phone_call`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `participant_last_contacted_phone_call` ;
+DROP TABLE IF EXISTS `participant_last_contacted_phone_call`;
+CREATE  OR REPLACE VIEW `participant_last_contacted_phone_call` AS
+SELECT interview_1.participant_id, phone_call_1.id as phone_call_id
+FROM phone_call AS phone_call_1, assignment AS assignment_1, interview AS interview_1
+WHERE phone_call_1.assignment_id = assignment_1.id
+AND interview_1.id = assignment_1.interview_id
+AND phone_call_1.start_datetime = (
+  SELECT MAX( phone_call_2.start_datetime )
+  FROM phone_call AS phone_call_2, assignment AS assignment_2, interview AS interview_2
+  WHERE phone_call_2.status = "contact"
+  AND phone_call_2.assignment_id = assignment_2.id
+  AND assignment_2.interview_id = interview_2.id
+  AND interview_1.participant_id = interview_2.participant_id
+  GROUP BY interview_2.participant_id );
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
