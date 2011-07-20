@@ -53,7 +53,7 @@
       {% for calendar in calendars %}
         <div style="padding: 2px;">
           <button id="{{ widget.full }}__{{ calendar.subject }}_{{ calendar.name }}"
-                  style="width: 100%;">{{ calendar.heading|capitalize }}</button>
+                  style="width: 100%;">{{ calendar.heading|ucwords }}</button>
         </div>
       {% endfor %}
       <div class="spacer" />
@@ -64,7 +64,7 @@
       {% for list in lists %}
         <div style="padding: 2px;">
           <button id="{{ widget.full }}__{{ list.subject }}_{{ list.name }}"
-                  style="width: 100%;">{{ list.heading|capitalize }}</button>
+                  style="width: 100%;">{{ list.heading|ucwords }}</button>
         </div>
       {% endfor %}
       <div class="spacer" />
@@ -75,7 +75,7 @@
       {% for report in reports %}
         <div style="padding: 2px;">
           <button id="{{ widget.full }}__{{ report.subject }}_{{ report.name }}"
-                  style="width: 100%;">{{ report.heading|capitalize }}</button>
+                  style="width: 100%;">{{ report.heading|ucwords }}</button>
         </div>
       {% endfor %}
     {% endif %}

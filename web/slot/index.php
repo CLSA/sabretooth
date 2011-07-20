@@ -51,6 +51,7 @@ try
                                                  'cache' => TEMPLATE_CACHE_PATH ) );
   $twig->addFilter( 'count', new \Twig_Filter_Function( 'count' ) );
   $twig->addFilter( 'nl2br', new \Twig_Filter_Function( 'nl2br' ) );
+  $twig->addFilter( 'ucwords', new \Twig_Filter_Function( 'ucwords' ) );
   $twig->addGlobal( 'FOREGROUND_COLOR', util::get_foreground_color( $theme ) );
   $twig->addGlobal( 'BACKGROUND_COLOR', util::get_background_color( $theme ) );
 

@@ -179,7 +179,7 @@ abstract class widget extends operation
    */
   public function set_heading( $heading )
   {
-    $this->heading = ucwords( $heading );
+    $this->heading = str_replace( '_', ' ', $heading );
   }
 
   /**
