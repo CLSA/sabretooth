@@ -32,7 +32,7 @@ class survey extends record
    */
   public static function get_table_name()
   {
-    if( is_null( $table_sid ) )
+    if( is_null( static::$table_sid ) )
     {
       throw new exc\runtime(
         'The survey id (table_sid) must be set before using this class.', __METHOD__ );
@@ -41,6 +41,24 @@ class survey extends record
     return sprintf( '%s_%s',
                     parent::get_table_name(),
                     static::$table_sid );
+  }
+  
+  public function get_response( $question_code )
+  {
+    // the questions table has more than one column in its primary key so custom sql is needed
+    $modifier = new db\modifier();
+    $modifier->where( 'sid', '=', static::$table_sid );
+    $modifier->where( 'title', '=', $question_code );
+    $modifier->group( 'sid' );
+    $modifier->group( 'gid' );
+    $modifier->group( 'qid' );
+    $sql = sprintf( 'SELECT gid, qid FROM %s %s',
+                    static::db()->get_prefix().'questions',
+                    $modifier->get_sql() );
+    
+    $row = static::db()->get_row( $sql );
+    $column_name = sprintf( '%sX%sX%s', static::$table_sid, $row['gid'], $row['qid'] );
+    return $this->$column_name;
   }
 
   /**
