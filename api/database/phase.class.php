@@ -73,7 +73,7 @@ class phase extends has_rank
     if( !$setting_manager->get_setting( 'audit_db', 'enabled' ) )
     {
       // remove any triggers to the audit table
-      $trigger_sql = sprintf( 'CREATE TRIGGER %s_auditing', $survey_table );
+      $trigger_sql = sprintf( 'DROP TRIGGER IF EXISTS %s_auditing', $survey_table );
       $survey_db->execute( $trigger_sql );
     }
     else
