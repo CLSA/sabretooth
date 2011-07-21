@@ -18,7 +18,7 @@ use sabretooth\exception as exc;
  * 
  * @package sabretooth\ui
  */
-class participant_status_report extends site_restricted_report
+class participant_status_report extends base_report
 {
   /**
    * Constructor
