@@ -18,7 +18,7 @@ use sabretooth\exception as exc;
  * 
  * @package sabretooth\ui
  */
-class productivity_report extends site_restricted_report
+class productivity_report extends base_report
 {
   /**
    * Constructor
@@ -31,6 +31,8 @@ class productivity_report extends site_restricted_report
   public function __construct( $args )
   {
     parent::__construct( 'productivity', $args );
+
+    $this->restrict_by_site();
     
     $this->set_variable( 'description',
       'This report lists operator productivity.  The report can either be generated for a '.
