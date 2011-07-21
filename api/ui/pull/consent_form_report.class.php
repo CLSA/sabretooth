@@ -43,11 +43,6 @@ class consent_form_report extends base_report
     $this->add_title( 'Consent Form Required Report' );
     $this->add_title(
       'A list of participant\'s who have indicated they require a new consent form' );
-
-    $now_datetime_obj = util::get_datetime_object();
-    $generated = 'Generated on '.$now_datetime_obj->format( 'Y-m-d' ).
-                 ' at '.$now_datetime_obj->format( 'H:i' );
-    $this->add_title( $generated );
     
     $contents = array();
 

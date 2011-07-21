@@ -38,10 +38,6 @@ class participant_status_report extends base_report
   {
     $this->add_title( 'Participant Status Report' );
 
-    $now_datetime_obj = util::get_datetime_object();
-    $generated = 'Generated on '.$now_datetime_obj->format( 'Y-m-d' ).
-                 ' at '.$now_datetime_obj->format( 'H:i' );
-    $this->add_title( $generated );
     
     // TODO: this report only grabs the first interview, once there are multiple interviews
     // it will need to be updated!
@@ -99,6 +95,7 @@ class participant_status_report extends base_report
       }
       else
       {
+        $now_datetime_obj = util::get_datetime_object();
         $appointment_mod = new db\modifier();
         $appointment_mod->where( 'assignment_id', '=', NULL );
         $appointment_mod->where( 'datetime', '>', $now_datetime_obj->format( 'Y-m-d H:i:s' ) );

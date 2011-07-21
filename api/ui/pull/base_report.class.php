@@ -110,6 +110,20 @@ abstract class base_report extends \sabretooth\ui\pull
       $this->report->set_cell( 'A'.$row, $title );
       $row++;
 
+      // add the time and date when the report was generated after the header 
+      if( $first )
+      {
+        $now_datetime_obj = util::get_datetime_object();
+        $time_title = 'Generated on '.$now_datetime_obj->format( 'Y-m-d' ).
+                     ' at '.$now_datetime_obj->format( 'H:i' );
+        $this->report->set_size( 14 );
+        $this->report->set_bold( false );
+        $this->report->set_horizontal_alignment( 'center' );
+        if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
+        $this->report->set_cell( 'A'.$row, $time_title );
+        $row++;
+      }
+
       $first = false;
     }
 

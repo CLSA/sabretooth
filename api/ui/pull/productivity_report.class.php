@@ -53,13 +53,8 @@ class productivity_report extends base_report
 
     $this->add_title( $title );
 
-    $now_datetime_obj = util::get_datetime_object();
-    $generated = 'Generated on '.$now_datetime_obj->format( 'Y-m-d' ).
-                 ' at '.$now_datetime_obj->format( 'H:i' );
-
     if( $single_date )
       $this->add_title( $single_datetime_obj->format( 'l, F jS, Y' ) );
-    $this->add_title( $generated );
     
     // now create a table for every site included in the report
     $site_mod = new db\modifier();
