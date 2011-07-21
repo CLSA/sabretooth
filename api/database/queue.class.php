@@ -355,7 +355,7 @@ class queue extends record
                                     'machine message',
                                     'machine no message',
                                     'fax',
-                                    'language' );
+                                    'not reached' );
 
       foreach( $phone_call_statuses as $phone_call_status )
       {
@@ -511,8 +511,8 @@ class queue extends record
     $sql = str_replace( '<CALLBACK_BUSY>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'callback timing', 'fax' );
     $sql = str_replace( '<CALLBACK_FAX>', $setting, $sql );
-    $setting = $setting_manager->get_setting( 'callback timing', 'language' );
-    $sql = str_replace( '<CALLBACK_LANGUAGE>', $setting, $sql );
+    $setting = $setting_manager->get_setting( 'callback timing', 'not reached' );
+    $sql = str_replace( '<CALLBACK_NOT_REACHED>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'callback timing', 'no answer' );
     $sql = str_replace( '<CALLBACK_NO_ANSWER>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'callback timing', 'machine message' );

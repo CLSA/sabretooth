@@ -361,7 +361,7 @@ CREATE  TABLE IF NOT EXISTS `phone_call` (
   `phone_id` INT UNSIGNED NOT NULL ,
   `start_datetime` DATETIME NOT NULL COMMENT 'The time the call started.' ,
   `end_datetime` DATETIME NULL DEFAULT NULL COMMENT 'The time the call endede.' ,
-  `status` ENUM('contacted','busy','no answer','machine message','machine no message','fax','disconnected','wrong number','language') NULL DEFAULT NULL ,
+  `status` ENUM('contacted','busy','no answer','machine message','machine no message','fax','disconnected','wrong number','not reached') NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_assignment_id` (`assignment_id` ASC) ,
   INDEX `status` (`status` ASC) ,

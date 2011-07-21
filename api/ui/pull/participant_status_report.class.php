@@ -63,7 +63,7 @@ class participant_status_report extends base_report
       'Deceased' => 0,
       'Disconnected or not in service' => 0,
       'Fax/data line' => 0,
-      'Language barrier' => 0,
+      'Not reached' => 0,
       'No answer - Ring out' => 0,
       'Not yet called' => 0,
       'Permanent condition (excl. deceased)' => 0,
@@ -214,9 +214,9 @@ class participant_status_report extends base_report
               {
                 $grand_totals[ $province ][ 'Fax/data line' ]++;
               }
-              else if( 'language' == $db_recent_failed_call->status )
+              else if( 'not reached' == $db_recent_failed_call->status )
               {
-                $grand_totals[ $province ][ 'Language barrier' ]++;
+                $grand_totals[ $province ][ 'Not reached' ]++;
               }
               else if( 'no answer' == $db_recent_failed_call->status ) 
               {
