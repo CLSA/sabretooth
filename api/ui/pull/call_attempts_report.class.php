@@ -90,6 +90,9 @@ class call_attempts_report extends base_report
           $db_assignment->start_datetime,
           $db_phone_call->status,
           $total_calls );
+
+        // remove the site if we are restricting the report
+        if( $restrict_site_id ) array_shift( current( $contents ) );
       }
     }
     
@@ -101,6 +104,9 @@ class call_attempts_report extends base_report
       'Call Result',
       '# Calls' );
     
+    // remove the site if we are restricting the report
+    if( $restrict_site_id ) array_shift( $header );
+
     $this->add_table( NULL, $header, $contents, NULL );
 
     return parent::finish();
