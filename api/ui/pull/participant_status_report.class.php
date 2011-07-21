@@ -32,318 +32,281 @@ class participant_status_report extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'participant_status', $args );
-    
+  }
+
+  public function finish()
+  {
     $this->add_title( 'Participant Status Report' );
-    
-    // TODO: this report only grabs the first interview, once there are multiple interviews
-    // it will need to be updated!
-
-    $totals = array(
-      'Completed interview - Consent not received',
-      'Completed interview - Consent received',
-      'Completed interview - Consent Retracted',
-      'Completed interview - No consent information',
-      'Withdrawn from study',
-      'Hard refusal',
-      'Soft refusal',
-      '10+ Unproductive Call Attempts',
-      'Answering machine - Message left',
-      'Answering machine - No message left',
-      'Busy',
-      'Appointment',
-      'Deceased',
-      'Disconnected or not in service',
-      'Fax/data line',
-      'Language barrier',
-      'No answer - Ring out',
-      'Not yet called',
-      'Permanent condition (excl. deceased)',
-      'Wrong or business number',
-      'Grand Total Attempted' );
-    
-    foreach( db\participant::select() as $db_participant )
-    {
-      // only grab the first interview for now
-      $interview_list = $db_participant->get_interview_list();
-      if( count( $interview_list ) )
-      {
-        $db_interview = current( $interview_list );
-        $db_consent = $db_participant->get_last_consent();
-        if( $db_interview->completed )
-        {
-          if( is_null( $db_consent ) )
-          {
-            $totals['Completed interview - No consent information']++;
-          }
-          else if( 'verbal accept' == $db_consent->event ||
-                   'written accept' == $db_consent->event )
-          {
-            $totals['Completed interview - Consent received']++;
-          }
-          else if( 'verbal deny' == $db_consent->event ||
-                   'written deny' == $db_consent->event )
-          {
-            $totals['Completed interview - Consent not received']++;
-          }
-          else if( 'retract' == $db_consent->event )
-          {
-            $totals['Completed interview - Consent Retracted']++;
-          }
-          else if( 'withdraw' == $db_consent->event )
-          {
-            $totals['Withdrawn from study']++;
-          }
-          else
-          {
-            log::err( sprintf( 'Unknown consent type "%s" found.', $db_consent->event ) );
-          }
-        }
-        else
-        {
-          if( 'verbal deny' == $db_consent->event ||
-              'written deny' == $db_consent->event ||
-              'retract' == $db_consent->event ||
-              'withdraw' == $db_consent->event )
-          {
-            'Hard refusal'
-          }
-          // TODO: soft refusals currently not being determined by the software
-
-          $db_interview->get_assignment_list();
-
-
-          '10+ Unproductive Call Attempts',
-          'Answering machine - Message left',
-          'Answering machine - No message left',
-          'Busy',
-          'Appointment',
-          'Deceased',
-          'Disconnected or not in service',
-          'Fax/data line',
-          'Language barrier',
-          'No answer - Ring out',
-          'Not yet called',
-          'Permanent condition (excl. deceased)',
-          'Wrong or business number',
-        }
-      }
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-    $db_role = db\role::get_unique_record( 'name', 'operator' );
-
-    // get the operation's arguments
-    $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-    $single_date = $this->get_argument( 'date' );
-    if( $single_date ) $single_datetime_obj = util::get_datetime_object( $single_date );
-    
-    // set the title and sub title(s)
-    $title = ( $single_date ? 'Daily' : 'Overall' ).' Participant status Report';
-    if( $restrict_site_id )
-    {
-      $db_site = new db\site( $restrict_site_id );
-      $title .= ' for '.$db_site->name;
-    }
-
-    $this->add_title( $title );
 
     $now_datetime_obj = util::get_datetime_object();
     $generated = 'Generated on '.$now_datetime_obj->format( 'Y-m-d' ).
                  ' at '.$now_datetime_obj->format( 'H:i' );
-
-    if( $single_date )
-      $this->add_title( $single_datetime_obj->format( 'l, F jS, Y' ) );
     $this->add_title( $generated );
     
-    // now create a table for every site included in the report
-    $site_mod = new db\modifier();
-    if( $restrict_site_id ) $site_mod->where( 'id', '=', $restrict_site_id );
-    foreach( db\site::select( $site_mod ) as $db_site )
+    // TODO: this report only grabs the first interview, once there are multiple interviews
+    // it will need to be updated!
+
+
+    $region_totals = array(
+      'Completed interview - Consent not received' => 0,
+      'Completed interview - Consent received' => 0,
+      'Completed interview - Consent Retracted' => 0,
+      'Completed interview - No consent information' => 0,
+      'Withdrawn from study' => 0,
+      'Hard refusal' => 0,
+      'Soft refusal' => 0,
+      '10+ Unproductive Call Attempts' => 0,
+      'Answering machine - Message left' => 0,
+      'Answering machine - No message left' => 0,
+      'Busy' => 0,
+      'Appointment' => 0,
+      'Deceased' => 0,
+      'Disconnected or not in service' => 0,
+      'Fax/data line' => 0,
+      'Language barrier' => 0,
+      'No answer - Ring out' => 0,
+      'Not yet called' => 0,
+      'Permanent condition (excl. deceased)' => 0,
+      'Wrong or business number' => 0,
+      'Grand Total Attempted' => 0,
+      'Total completed interviews' => 0,
+      'Response rate (incl. soft refusals)' => 0,
+      'Response rate (excl. soft refusals)' => 0
+      );
+
+    $region_mod = new db\modifier();
+    $region_mod->order( 'abbreviation' );
+    $region_mod->where( 'country', '=', 'Canada' );
+    $grand_totals = array();
+    foreach( db\region::select($region_mod) as $db_region )
     {
-      $contents = array();
-      // start by determining the table contents
-      foreach( db\user::select() as $db_user )
+      $grand_totals[ $db_region->abbreviation ] = $region_totals; 
+    }
+    // the last column of the report sums totals row-wise
+    $grand_totals[ 'Grand Total' ] = $region_totals;
+    
+    foreach( db\participant::select() as $db_participant )
+    {
+      $province = $db_participant->get_primary_address()->get_region()->abbreviation;
+
+      if( 'deceased' == $db_participant->status )
       {
-        // make sure the operator has min/max time for this date range
-        $activity_mod = new db\modifier();
-        $activity_mod->where( 'user_id', '=', $db_user->id );
-        $activity_mod->where( 'site_id', '=', $db_site->id );
-        $activity_mod->where( 'role_id', '=', $db_role->id );
-
-        if( $single_date )
-        {
-          // get the min and max datetimes for this day
-          $activity_mod->where( 'datetime', '>=',
-            $single_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
-          $activity_mod->where( 'datetime', '<=',
-            $single_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
-        }
-
-        $start_datetime_obj = db\activity::get_min_datetime( $activity_mod );
-        $end_datetime_obj = db\activity::get_max_datetime( $activity_mod );
-        
-        // if there is no activity then skip this user
-        if( is_null( $start_datetime_obj ) || is_null( $end_datetime_obj ) ) continue;
-        
-        // Determine the number of completed interviews and their average length.
-        // This is done by looping through all of this user's assignments.  Any assignment's who's
-        // interview is completed is tested to see if that interview's last assignment is the
-        // originating assignment.
-        ///////////////////////////////////////////////////////////////////////////////////////////
-        $assignment_mod = new db\modifier();
-        if( $single_date )
-        {
-          $assignment_mod->where( 'start_datetime', '>=',
-            $single_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
-          $assignment_mod->where( 'start_datetime', '<=',
-            $single_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
-        }
-        
-        $completes = 0;
-        $interview_time = 0;
-        foreach( $db_user->get_assignment_list( $assignment_mod ) as $db_assignment )
-        {
-          $db_interview = $db_assignment->get_interview();
-          if( $db_interview->completed )
-          {
-            $last_assignment_mod = new db\modifier();
-            $last_assignment_mod->where( 'interview_id', '=', $db_interview->id );
-            $last_assignment_mod->order_desc( 'start_datetime' );
-            $last_assignment_mod->limit( 1 );
-            $db_last_assignment = current( db\assignment::select( $last_assignment_mod ) );
-            if( $db_assignment->id == $db_last_assignment->id )
-            {
-              $completes++;
-
-              foreach( $db_interview->get_qnaire()->get_phase_list() as $db_phase )
-              {
-                // only count the time in non-repeating phases
-                if( !$db_phase->repeated )
-                  $interview_time += $db_interview->get_interview_time( $db_phase );
-              }
-            }
-          }
-        }
-
-        // Determine the total working time.
-        // This is done by finding the minimum and maximum activity time for every day included in
-        // the report and calculating the difference between the two times.
-        ///////////////////////////////////////////////////////////////////////////////////////////
-        $total_time = 0;
-        $start_datetime_obj->setTime( 0, 0 );
-        $end_datetime_obj->setTime( 0, 0 );
-        $interval = new \DateInterval( 'P1D' );
-        for( $datetime_obj = clone $start_datetime_obj;
-             $datetime_obj <= $end_datetime_obj;
-             $datetime_obj->add( $interval ) )
-        {
-          // if reporting a single date restrict the count to that day only
-          if( $single_date && $single_datetime_obj != $datetime_obj ) continue;
-
-          $day_activity_mod = new db\modifier();
-          $day_activity_mod->where( 'user_id', '=', $db_user->id );
-          $day_activity_mod->where( 'site_id', '=', $db_site->id );
-          $day_activity_mod->where( 'role_id', '=', $db_role->id );
-          $day_activity_mod->where( 'datetime', '>=',
-            $datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
-          $day_activity_mod->where( 'datetime', '<=',
-            $datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
-          
-          $min_datetime_obj = db\activity::get_min_datetime( $day_activity_mod );
-          $max_datetime_obj = db\activity::get_max_datetime( $day_activity_mod );
-          
-          if( !is_null( $min_datetime_obj ) && !is_null( $max_datetime_obj ) )
-          {
-            $diff_obj = $max_datetime_obj->diff( $min_datetime_obj );
-            $total_time += $diff_obj->h + round( $diff_obj->i / 15 ) * 0.25;
-          }
-        }
-
-        // Now we can use all the information gathered above to fill in the contents of the table.
-        ///////////////////////////////////////////////////////////////////////////////////////////
-        if( $single_date )
-        {
-          $contents[] = array(
-            $db_user->first_name.' '.$db_user->last_name,
-            $completes,
-            $min_datetime_obj->format( "H:i" ),
-            $max_datetime_obj->format( "H:i" ),
-            $total_time,
-            $total_time > 0 ? sprintf( '%0.2f', $completes / $total_time ) : '',
-            $completes > 0 ? sprintf( '%0.2f', $interview_time / $completes / 60 ) : '' );
-        }
-        else
-        {
-          $contents[] = array(
-            $db_user->first_name.' '.$db_user->last_name,
-            $completes,
-            $total_time,
-            $total_time > 0 ? sprintf( '%0.2f', $completes / $total_time ) : '',
-            $completes > 0 ? sprintf( '%0.2f', $interview_time / $completes / 60 ) : '' );
-        }
+        $grand_totals[ $province ][ 'Deceased' ]++;
       }
-
-      if( $single_date )
+      else if( !is_null( $db_participant->status ) )
       {
-        $header = array(
-          "Operator",
-          "Completes",
-          "Start Time",
-          "End Time",
-          "Total Time",
-          "CPH",
-          "Avg. Length" );
-
-        $footer = array(
-          "Total",
-          "sum()",
-          "--",
-          "--",
-          "sum()",
-          "average()",
-          "average()" );
+        $grand_totals[ $province ][ 'Permanent condition (excl. deceased)' ]++;    
       }
       else
       {
-        $header = array(
-          "Operator",
-          "Completes",
-          "Total Time",
-          "CPH",
-          "Avg. Length" );
+        $appointment_mod = new db\modifier();
+        $appointment_mod->where( 'assignment_id', '=', NULL );
+        $appointment_mod->where( 'datetime', '>', $now_datetime_obj->format( 'Y-m-d H:i:s' ) );
+        $has_appointment = false;
+        foreach( $db_participant->get_appointment_list( $appointment_mod ) as $db_appointment )
+        {
+          if( 'upcoming' == $db_appointment->get_state() )
+          {
+            $grand_totals[ $province ][ 'Appointment' ]++;
+            $has_appointment = true;
+            break;
+          }
+        }
+        if( $has_appointment ) continue;
 
-        $footer = array(
-          "Total",
-          "sum()",
-          "sum()",
-          "average()",
-          "average()" );
+        // only grab the first interview for now
+        $interview_list = $db_participant->get_interview_list();
+        if( 0 == count( $interview_list ) )
+        {
+          $grand_totals[ $province ][ 'Not yet called' ]++;
+        }
+        else
+        {
+          $db_interview = current( $interview_list );
+          $db_consent = $db_participant->get_last_consent();
+          if( $db_interview->completed )
+          {
+            if( is_null( $db_consent ) )
+            {
+              $grand_totals[ $province ][ 'Completed interview - No consent information' ]++;
+            }
+            else if( 'written accept' == $db_consent->event )
+            {
+              $grand_totals[ $province ][ 'Completed interview - Written consent received' ]++;
+            }
+            else if( 'verbal deny'   == $db_consent->event ||
+                     'verbal accept' == $db_consent->event ||
+                     'written deny'  == $db_consent->event )
+            {
+              $grand_totals[ $province ][ 'Completed interview - Written consent not received' ]++;
+            }
+            else if( 'retract' == $db_consent->event )
+            {
+              $grand_totals[ $province ][ 'Completed interview - Consent Retracted' ]++;
+            }
+            else if( 'withdraw' == $db_consent->event )
+            {
+              $grand_totals[ $province ][ 'Withdrawn from study' ]++;
+            }
+            else
+            {
+              log::err( sprintf( 'Unknown consent type "%s" found.', $db_consent->event ) );
+            }
+          }
+          else if( 'verbal deny'  == $db_consent->event ||
+                   'written deny' == $db_consent->event ||
+                   'retract'      == $db_consent->event ||
+                   'withdraw'     == $db_consent->event )
+          {
+            $grand_totals[ $province ][ 'Hard refusal' ]++;
+          }
+          else 
+          {
+           
+            // TODO: soft refusals currently not being determined by the software
+            $assignment_mod = new db\modifier();
+            $assignment_mod->order_desc( 'start_datetime' );
+            $failed_calls = 0;
+            $db_recent_failed_call = NULL;
+            foreach( $db_interview->get_assignment_list( $assignment_mod ) as $db_assignment )
+            {
+              // find the most recently completed phone call
+              $phone_call_mod = new db\modifier();
+              $phone_call_mod->order_desc( 'start_datetime' );
+              $phone_call_mod->where( 'end_datetime', '!=', NULL );
+              $phone_call_mod->limit( 1 );
+              $db_phone_call = current( $db_assignment->get_phone_call_list( $phone_call_mod ) );
+              if( false != $db_phone_call && 'contacted' != $db_phone_call->status )
+              {
+                $failed_calls++;
+                // since the calls are sorted most recent to first, this captures the most
+                // recent failed call
+                if( 1 == $failed_calls )
+                {
+                  $db_recent_failed_call = $db_phone_call;
+                }
+              }
+            }
+            
+            if( 10 <= $failed_calls )
+            {
+              $grand_totals[ $province ][ '10+ Unproductive Call Attempts' ]++;
+            }
+            else if( !is_null( $db_recent_failed_call ) )
+            {              
+              if( 'machine message' == $db_recent_failed_call->status )
+              {
+                $grand_totals[ $province ][ 'Answering machine - Message left' ]++;
+              }
+              else if( 'machine no message' == $db_recent_failed_call->status )
+              {
+                $grand_totals[ $province ][ 'Answering machine - No message left' ]++;
+              }
+              else if( 'busy' == $db_recent_failed_call->status )
+              {
+                $grand_totals[ $province ][ 'Busy' ]++;
+              }
+              else if( 'disconnected' == $db_recent_failed_call->status )
+              {
+                $grand_totals[ $province ][ 'Disconnected or not in service' ]++;
+              }
+              else if( 'fax' == $db_recent_failed_call->status )
+              {
+                $grand_totals[ $province ][ 'Fax/data line' ]++;
+              }
+              else if( 'language' == $db_recent_failed_call->status )
+              {
+                $grand_totals[ $province ][ 'Language barrier' ]++;
+              }
+              else if( 'no answer' == $db_recent_failed_call->status ) 
+              {
+                $grand_totals[ $province ][ 'No answer - Ring out' ]++;
+              }
+              else if( 'wrong number' == $db_recent_failed_call->status )
+              {
+                $grand_totals[ $province ][ 'Wrong or business number' ]++;
+              }
+            }  
+          }// end interview not completed
+        }// end non empty interview list
+      }// end if not deceased or some condition
+    }// end participants
+    
+    $region_keys = array_keys( $region_totals );
+    $header = array( 'Current Outcome' );
+   
+    foreach( $grand_totals as $prov => $value )
+    {
+      $header[] = $prov;
+      if( 'Grand Total' != $prov )
+      {
+        $grand_totals[ $prov ][ 'Grand Total Attempted' ] = 
+          array_sum( array_slice( $value, 8 ) );
+
+        $tci = array_sum( array_slice( $value, 0, 4 ) );
+
+        $grand_totals[ $prov ][ 'Total completed interviews' ] = $tci;
+        $denom = $tci + $value[ 'Hard refusal' ] + $value[ 'Soft refusal' ];
+
+        $grand_totals[ $prov ][ 'Response rate (incl. soft refusals)' ] =  
+          $denom ? $tci / $denom : 'NA';
+                  
+        $denom = $tci + $value[ 'Withdrawn from study' ] 
+                      + $value[ '10+ Unproductive Call Attempts' ];
+
+        $grand_totals[ $prov ][ 'Response rate (excl. soft refusals)' ] = 
+          $denom ? $tci / $denom : 'NA';
+
+        foreach( $region_keys as $column )
+        {
+          $grand_totals[ 'Grand Total' ][ $column ] += $grand_totals[ $prov ][ $column ];
+        }
       }
-
-      $title = 0 == $restrict_site_id ? $db_site->name : NULL;
-      $this->add_table( $title, $header, $contents, $footer );
     }
-*/
-  }
-}
+
+    $gtci = $grand_totals[ 'Grand Total' ][ 'Total completed interviews' ];
+
+    $denom =
+          $gtci + 
+          $grand_totals[ 'Grand Total' ]['Hard refusal' ] + 
+          $grand_totals[ 'Grand Total' ][ 'Soft refusal' ];
+
+    $grand_totals[ 'Grand Total' ][ 'Response rate (incl. soft refusals)' ] = 
+      $denom ? $gtci / $denom : 'NA';
+
+    $denom = 
+          $gtci + 
+          $grand_totals[ 'Grand Total' ][ 'Withdrawn from study' ] + 
+          $grand_totals[ 'Grand Total' ][ '10+ Unproductive Call Attempts' ];
+
+    $grand_totals[ 'Grand Total' ][ 'Response rate (excl. soft refusals)' ] = 
+      $denom ? $gtci / $denom : 'NA';
+
+    // build the final 2D content array
+    $temp_content = array( $region_keys );
+    foreach( $grand_totals as $key => $column )
+    {
+      $temp_array = array();
+      foreach( $column as $value )
+      {
+        $temp_array[] = $value;
+      }
+      $temp_content[] = $temp_array;
+    }
+
+    // transpose from column-wise to row-wise
+    $content = array();
+    foreach( $temp_content as $key => $subarr )
+    {
+      foreach( $subarr as $subkey => $subvalue )
+      {
+        $content[ $subkey ][ $key ] = $subvalue;
+      }
+    }
+   
+    $this->add_table( NULL, $header, $content, NULL );
+
+    return parent::finish();
+  }// end constructor
+}// end class def
 ?>
