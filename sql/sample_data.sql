@@ -38,51 +38,16 @@ WHERE abbreviation = "SK";
 UPDATE region SET site_id = ( SELECT id FROM site WHERE name = "Victoria" )
 WHERE abbreviation = "YT";
 
+-- Creates default/sample users
 INSERT INTO user( name, first_name, last_name ) VALUES
 ( 'patrick', 'P.', 'Emond' ),
 ( 'dean', 'D.', 'Inglis' ),
 ( 'dipietv', 'V.', 'DiPietro' );
 
-INSERT INTO access
-SET user_id = ( SELECT id FROM user WHERE name = 'patrick' ),
-    role_id = ( SELECT id FROM role WHERE name = 'administrator' ),
-    site_id = ( SELECT id FROM site WHERE name = 'McMaster' );
-INSERT INTO access
-SET user_id = ( SELECT id FROM user WHERE name = 'patrick' ),
-    role_id = ( SELECT id FROM role WHERE name = 'supervisor' ),
-    site_id = ( SELECT id FROM site WHERE name = 'McMaster' );
-INSERT INTO access
-SET user_id = ( SELECT id FROM user WHERE name = 'patrick' ),
-    role_id = ( SELECT id FROM role WHERE name = 'supervisor' ),
-    site_id = ( SELECT id FROM site WHERE name = 'Manitoba' );
-INSERT INTO access
-SET user_id = ( SELECT id FROM user WHERE name = 'patrick' ),
-    role_id = ( SELECT id FROM role WHERE name = 'operator' ),
-    site_id = ( SELECT id FROM site WHERE name = 'McMaster' );
-INSERT INTO access
-SET user_id = ( SELECT id FROM user WHERE name = 'patrick' ),
-    role_id = ( SELECT id FROM role WHERE name = 'operator' ),
-    site_id = ( SELECT id FROM site WHERE name = 'Manitoba' );
-INSERT INTO access
-SET user_id = ( SELECT id FROM user WHERE name = 'dean' ),
-    role_id = ( SELECT id FROM role WHERE name = 'administrator' ),
-    site_id = ( SELECT id FROM site WHERE name = 'McMaster' );
-INSERT INTO access
-SET user_id = ( SELECT id FROM user WHERE name = 'dean' ),
-    role_id = ( SELECT id FROM role WHERE name = 'supervisor' ),
-    site_id = ( SELECT id FROM site WHERE name = 'McMaster' );
-INSERT INTO access
-SET user_id = ( SELECT id FROM user WHERE name = 'dean' ),
-    role_id = ( SELECT id FROM role WHERE name = 'supervisor' ),
-    site_id = ( SELECT id FROM site WHERE name = 'Manitoba' );
-INSERT INTO access
-SET user_id = ( SELECT id FROM user WHERE name = 'dean' ),
-    role_id = ( SELECT id FROM role WHERE name = 'operator' ),
-    site_id = ( SELECT id FROM site WHERE name = 'McMaster' );
-INSERT INTO access
-SET user_id = ( SELECT id FROM user WHERE name = 'dean' ),
-    role_id = ( SELECT id FROM role WHERE name = 'operator' ),
-    site_id = ( SELECT id FROM site WHERE name = 'Manitoba' );
+-- Grants all roles to all sites to all users
+INSERT INTO access ( user_id, role_id, site_id )
+SELECT user.id AS user_id, role.id AS role_id, site.id AS site_id
+FROM user, role, site;
 
 LOAD DATA LOCAL INFILE "./participants.csv"
 INTO TABLE participant
