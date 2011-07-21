@@ -229,10 +229,6 @@ VALUES( "pull", "queue", "primary", true, "Retrieves base queue information." );
 
 -- reports
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "disposition", "report", true, "Set up a disposition report." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "disposition", "report", true, "Download a disposition report." );
-INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "productivity", "report", true, "Set up a productivity report." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "productivity", "report", true, "Download a productivity report." );
