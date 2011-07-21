@@ -37,7 +37,26 @@ abstract class base_report extends \sabretooth\ui\widget
     parent::__construct( $subject, 'report', $args );
     $this->set_heading( $this->get_subject().' report' );
   }
-  
+ 
+  //TODO doc
+  protected function restrict_by_site()
+  {
+    $this->is_restricted_by_site = true;
+
+    if( static::may_restrict_by_site() )
+    {
+      $this->add_parameter( 'restrict_site_id', 'enum', 'Site' );
+    }
+    else
+    {
+      $this->add_parameter( 'restrict_site_id', 'hidden' );
+
+      // if restricted, show the site's name in the heading
+      $predicate = bus\session::self()->get_site()->name;
+      $this->set_heading( $this->get_heading().' for '.$predicate );
+    }
+  }
+
   /**
    * Add a parameter to the report.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -164,6 +183,44 @@ abstract class base_report extends \sabretooth\ui\widget
     $this->set_variable( 'parameters', $this->parameters );
   }
 
+  // TODO doc
+  public function finish()
+  {
+    if( $this->is_restricted_by_site )
+    {
+      if( static::may_restrict_by_site() )
+      {
+        // if this is an admin, give them a list of sites to choose from
+        $sites = array( 0 => 'All sites' );
+        foreach( db\site::select() as $db_site )
+          $sites[$db_site->id] = $db_site->name;
+  
+        $this->set_parameter( 'restrict_site_id', key( $sites ), true, $sites );
+      }
+      else
+      {
+        $this->set_parameter( 'restrict_site_id', bus\session::self()->get_site()->id );
+      }
+    }
+    
+    // this has to be done AFTER the remove_column() call above
+    parent::finish();
+  }
+
+  /**
+   * Determines whether the current user may choose which site to restrict by.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @static
+   * @access public
+   */
+  public static function may_restrict_by_site()
+  {
+    $role_name = bus\session::self()->get_role()->name;
+    return 'administrator' == $role_name || 'technician' == $role_name;
+  }
+
   /**
    * An associative array where the key is a unique identifier (usually a column name) and the
    * value is an associative array which includes:
@@ -176,5 +233,8 @@ abstract class base_report extends \sabretooth\ui\widget
    * @access private
    */
   private $parameters = array();
+
+  //TODO doc
+  private $is_restrict_by_site = false;
 }
 ?>
