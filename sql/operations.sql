@@ -244,6 +244,10 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "call_attempts", "report", true, "Set up a call attempts report." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "call_attempts", "report", true, "Download a call attempts report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "call_history", "report", true, "Set up a call history report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "call_history", "report", true, "Download a call history report." );
 
 -- role
 INSERT INTO operation( type, subject, name, restricted, description )
