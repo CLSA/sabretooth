@@ -248,6 +248,14 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "call_history", "report", true, "Set up a call history report." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "call_history", "report", true, "Download a call history report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "consent_outstanding", "report", true, "Set up a written consent outstanding report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "consent_outstanding", "report", true, "Download a written consent outstanding report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "package_required", "report", true, "Set up a new package required report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "package_required", "report", true, "Download a new package required report." );
 
 -- role
 INSERT INTO operation( type, subject, name, restricted, description )
