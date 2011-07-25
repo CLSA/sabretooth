@@ -88,7 +88,7 @@ class consent_form_report extends base_report
                 $contents[] = array(
                   $db_participant->uid,
                   $db_interview->completed ? 'Yes' : 'No',
-                  $db_last_phone_call ? $db_last_phone_call()->start_datetime : 'never',
+                  $db_last_phone_call ? $db_last_phone_call->start_datetime : 'never',
                   $db_participant->first_name,
                   $db_participant->last_name,
                   $db_address->address1." ".$db_address->address2,
