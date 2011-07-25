@@ -253,9 +253,9 @@ VALUES( "widget", "consent_outstanding", "report", true, "Set up a written conse
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "consent_outstanding", "report", true, "Download a written consent outstanding report." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "package_required", "report", true, "Set up a new package required report." );
+VALUES( "widget", "mailout_required", "report", true, "Set up a new mailout required report." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "package_required", "report", true, "Download a new package required report." );
+VALUES( "pull", "mailout_required", "report", true, "Download a new mailout required report." );
 
 -- role
 INSERT INTO operation( type, subject, name, restricted, description )

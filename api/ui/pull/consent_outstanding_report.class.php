@@ -36,7 +36,7 @@ class consent_outstanding_report extends base_report
   {
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0);
 
-    $title = 'Written Consent Outstading Report';
+    $title = 'Written Consent Outstanding Report';
     if( $restrict_site_id )
     {
       $db_site = new db\site( $restrict_site_id );
@@ -56,7 +56,7 @@ class consent_outstanding_report extends base_report
 
       $consent_mod = new db\modifier();
       $consent_mod->where( 'event', '=', 'verbal accept' );
-      if( 0 == count( $db_participant->get_consent_list( $consent_mod ) ) )
+      if( count( $db_participant->get_consent_list( $consent_mod ) ) )
       {
         // only grab the first interview for now
         $interview_list = $db_participant->get_interview_list();
@@ -71,11 +71,11 @@ class consent_outstanding_report extends base_report
           $db_last_phone_call = $db_participant->get_last_contacted_phone_call();
         
           $date_completed = 'NA';
-         if( $db_last_phone_call )
-         {
+          if( $db_last_phone_call )
+          {
             $date_completed = substr( $db_last_phone_call->start_datetime, 0, 
               strpos( $db_last_phone_call->start_datetime, ' ' ) );
-         }
+          }
 
           $contents[] = array(
             $db_participant->uid,

@@ -1,6 +1,6 @@
 <?php
 /**
- * package_required.class.php
+ * mailout_required.class.php
  * 
  * @author Dean Inglis <inglisd@mcmaster.ca>
  * @package sabretooth\ui
@@ -14,11 +14,11 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * widget package required report
+ * widget mailout required report
  * 
  * @package sabretooth\ui
  */
-class package_required_report extends base_report
+class mailout_required_report extends base_report
 {
   /**
    * Constructor
@@ -30,13 +30,15 @@ class package_required_report extends base_report
    */
   public function __construct( $args )
   {
-    parent::__construct( 'package_required', $args );
+    parent::__construct( 'mailout_required', $args );
     $this->restrict_by_site();
 
     $this->set_variable( 'description',
-      'This report lists all participants who require a new package to be mailed to '.
-      'them.  The report generates the participant\'s name, address, phone number and last '.
-      'time they were successfully contacted.' );
+      'This report lists all participants (or proxies) or who require an information package'.
+      ' or consent form to be mailed out to them.  The report generates the participant\'s id,'. 
+      ' name, address and last date they were successfully contacted.' );
+
+    $this->add_parameter( 'mailout_type', 'enum', 'Mailout Type' );
   }
 
   /**
@@ -47,6 +49,10 @@ class package_required_report extends base_report
   {
     parent::finish();
 
+    $mailout_types = array( 'Participant information package',
+                            'Proxy information package' );
+
+    $this->set_parameter( 'mailout_type', current( $mailout_types ), true, $mailout_types );
     $this->finish_setting_parameters();
   }
 }
