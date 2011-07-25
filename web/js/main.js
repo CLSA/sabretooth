@@ -5,14 +5,14 @@
  */
 function update_shortcuts() {
   // the home button should only be enabled if the main slot is NOT displaying the home widget
-  $( "#self_shortcuts_home" ).attr( "disabled", undefined == $.cookie( "slot.main.widget" ) ||
-                                                "self_home" == $.cookie( "slot.main.widget" ) )
+  $( "#self_shortcuts_home" ).attr( "disabled", undefined == $.cookie( "slot__main__widget" ) ||
+                                                "self_home" == $.cookie( "slot__main__widget" ) )
                              .button( "refresh" );
 
   // the prev and next buttons should only be enabled if there are prev and next widgets available
-  $( "#self_shortcuts_prev" ).attr( "disabled", undefined == $.cookie( "slot.main.prev" ) )
+  $( "#self_shortcuts_prev" ).attr( "disabled", undefined == $.cookie( "slot__main__prev" ) )
                              .button( "refresh" );
-  $( "#self_shortcuts_next" ).attr( "disabled", undefined == $.cookie( "slot.main.next" ) )
+  $( "#self_shortcuts_next" ).attr( "disabled", undefined == $.cookie( "slot__main__next" ) )
                              .button( "refresh" );
 }
 

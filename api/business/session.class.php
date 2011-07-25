@@ -630,15 +630,15 @@ final class session extends \sabretooth\singleton
     foreach( array_keys( $_SESSION['slot'] ) as $slot )
     {
       $widget = $this->slot_current( $slot );
-      setcookie( "slot.$slot.widget", $widget['name'] );
+      setcookie( 'slot__'.$slot.'__widget', $widget['name'], 0, COOKIE_PATH );
       
       $index = $_SESSION['slot'][$slot]['stack']['index'];
 
-      setcookie( "slot.$slot.prev", $this->slot_has_prev( $slot ) ?
-        $_SESSION['slot'][$slot]['stack']['widgets'][$index-1]['name'] : NULL );
+      setcookie( 'slot__'.$slot.'__prev', $this->slot_has_prev( $slot ) ?
+        $_SESSION['slot'][$slot]['stack']['widgets'][$index-1]['name'] : NULL, 0, COOKIE_PATH );
 
-      setcookie( "slot.$slot.next", $this->slot_has_next( $slot ) ?
-        $_SESSION['slot'][$slot]['stack']['widgets'][$index+1]['name'] : NULL );
+      setcookie( 'slot__'.$slot.'__next', $this->slot_has_next( $slot ) ?
+        $_SESSION['slot'][$slot]['stack']['widgets'][$index+1]['name'] : NULL, 0, COOKIE_PATH );
     }
   }
   

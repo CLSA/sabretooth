@@ -21,15 +21,27 @@ $SETTINGS[ 'general' ][ 'development_mode' ] = false;
 
 // determine the operation type from the script name
 $script = $_SERVER['SCRIPT_NAME'];
-if( false !== strpos( $script, 'widget.php' ) )
+if( false !== strpos( $script, 'slot/index.php' ) )
+{
+  $SETTINGS[ 'path' ][ 'COOKIE' ] = substr( $_SERVER['SCRIPT_NAME'], 0, -14 );
   $SETTINGS[ 'general' ][ 'operation_type' ] = 'widget';
-else if( false !== strpos( $script, 'pull/index.php' ) )
+}
+else if( false !== strpos( $script, 'pull.php' ) )
+{
+  $SETTINGS[ 'path' ][ 'COOKIE' ] = substr( $_SERVER['SCRIPT_NAME'], 0, -8 );
   $SETTINGS[ 'general' ][ 'operation_type' ] = 'pull';
-else if( false !== strpos( $script, 'push/index.php' ) )
+}
+else if( false !== strpos( $script, 'push.php' ) )
+{
+  $SETTINGS[ 'path' ][ 'COOKIE' ] = substr( $_SERVER['SCRIPT_NAME'], 0, -8 );
   $SETTINGS[ 'general' ][ 'operation_type' ] = 'push';
+}
 else
+{
+  $SETTINGS[ 'path' ][ 'COOKIE' ] = substr( $_SERVER['SCRIPT_NAME'], 0, -9 );
   $SETTINGS[ 'general' ][ 'operation_type' ] = 'index';
-                                           
+}
+
 // the location of sabretooth internal path
 $SETTINGS[ 'path' ][ 'SABRETOOTH' ] = '/usr/local/lib/sabretooth';
 
