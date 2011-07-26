@@ -45,8 +45,8 @@ abstract class base_add_record extends base_record_widget
     $this->add_widget->set_parent( $this, 'edit' );
 
     $this->add_widget->set_heading(
-      sprintf( 'Choose %s to add to the %s',
-               util::pluralize( $child ),
+      sprintf( 'Add a new %s to the %s',
+               $child,
                $subject ) );
   }
   
