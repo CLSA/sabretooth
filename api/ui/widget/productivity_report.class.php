@@ -14,7 +14,7 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * widget self status
+ * widget productivity report
  * 
  * @package sabretooth\ui
  */
@@ -42,6 +42,8 @@ class productivity_report extends base_report
 
     // add paramters to the report
     $this->add_parameter( 'date', 'date', 'Date', 'Leave blank for an overall report.' );
+
+    $this->add_parameter( 'qnaire_id', 'enum', 'Questionnaire' );
   }
 
   /**
@@ -54,6 +56,10 @@ class productivity_report extends base_report
 
     $this->set_parameter( 'date', '', false );
     
+    $qnaires = array();
+    foreach( db\qnaire::select() as $db_qnaire ) $qnaires[$db_qnaire->id] = $db_qnaire->name;
+    $this->set_parameter( 'qnaire_id', current( $qnaires ), true, $qnaires );
+  
     $this->finish_setting_parameters();
   }
 }

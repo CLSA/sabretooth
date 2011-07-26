@@ -1,0 +1,8 @@
+call_attempts_report.class.php:52:               $db_qnaire->name ) );
+call_attempts_report.class.php:65:      $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
+consent_form_report.class.php:49:               'during the %s interview', $db_qnaire->name ) );
+consent_form_report.class.php:67:        $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
+consent_outstanding_report.class.php:67:        $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
+mailout_required_report.class.php:82:        $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
+participant_status_report.class.php:113:        $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id ); 
+sourcing_required_report.class.php:63:      $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );

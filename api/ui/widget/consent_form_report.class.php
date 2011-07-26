@@ -1,6 +1,6 @@
 <?php
 /**
- * consent_form.class.php
+ * consent_form_report.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -36,6 +36,8 @@ class consent_form_report extends base_report
       'This report lists all participants who require a new consent form to be mailed to '.
       'them.  The report generates the participant\'s name, address, phone number and last '.
       'time they were successfully contacted.' );
+
+    $this->add_parameter( 'qnaire_id' , 'enum', 'Questionnaire' );
   }
 
   /**
@@ -45,6 +47,10 @@ class consent_form_report extends base_report
   public function finish()
   {
     parent::finish();
+
+    $qnaires = array();
+    foreach( db\qnaire::select() as $db_qnaire ) $qnaires[$db_qnaire->id] = $db_qnaire->name;
+    $this->set_parameter( 'qnaire_id', current( $qnaires ), true, $qnaires );
 
     $this->finish_setting_parameters();
   }

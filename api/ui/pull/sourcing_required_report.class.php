@@ -34,7 +34,9 @@ class sourcing_required_report extends base_report
 
   public function finish()
   {
-    $restrict_site_id = $this->get_argument( 'restrict_site_id', 0);
+    // get the report args
+    $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
+    $db_qnaire = new db\qnaire( $this->get_argument( 'qnaire_id' ) );
 
     $title = 'Sourcing Required Report';
     if( $restrict_site_id )
@@ -44,6 +46,8 @@ class sourcing_required_report extends base_report
     }
 
     $this->add_title( $title );
+    $this->add_title( sprintf( 'Participants requiring sourcing for the '.
+                               '%s interview', $db_qnaire->name ) ) ;
 
     $contents = array();
 
@@ -57,13 +61,10 @@ class sourcing_required_report extends base_report
       // dont bother with deceased or otherwise impaired
       if( !is_null( $db_participant->status ) ) continue;
 
-      $interview_list = $db_participant->get_interview_list();
-
-      if( 0 == count( $interview_list ) ) continue;
-
-      $db_interview = current( $interview_list );
-
-      if( !$db_interview->completed )
+      $interview_mod = new db\modifier();
+      $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
+      $db_interview = current( $db_participant->get_interview_list( $interview_mod ) );
+      if( $db_interview && !$db_interview->completed )
       {
         $assignment_mod = new db\modifier();
         $assignment_mod->order_desc( 'start_datetime' );
@@ -88,7 +89,9 @@ class sourcing_required_report extends base_report
             }
           }
         }
-        $done = false;        
+
+        $done = false;
+
         if( 10 <= $failed_calls )
         {
           $done = true;
@@ -125,7 +128,7 @@ class sourcing_required_report extends base_report
             $db_address->postcode,
             $date_completed );
         }
-      } // end non-empty consent list search  
+      } // end non-null incomplete interview  
     } // end loop on participants 
 
     // TODO we need two alternate contacts added to the report fields

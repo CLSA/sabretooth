@@ -35,7 +35,10 @@ class mailout_required_report extends base_report
 
   public function finish()
   {
+    // get the report arguments
     $mailout_type = $this->get_argument( 'mailout_type' );
+    $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
+    $db_qnaire = new db\qnaire( $this->get_argument( 'qnaire_id' ) );
 
     // TODO: Change this to the title/code of the limesurvey question to check
     // (this should be the new information package required question)
@@ -51,14 +54,15 @@ class mailout_required_report extends base_report
       $title = 'Proxy Information Package Required Report';
     }
 
-    $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-
     if( $restrict_site_id )
     {
       $db_site = new db\site( $restrict_site_id );
       $title = $title.' for '.$db_site->name;
     }
     $this->add_title( $title );
+    $this->add_title( 
+      sprintf( 'Listing of those who requested a new information package during '.
+               'the %s interview', $db_qnaire->name ) ) ;
     
     $contents = array();
 
@@ -77,13 +81,11 @@ class mailout_required_report extends base_report
       $consent_mod->or_where( 'event', '=', 'written accept' );
       if( count( $db_participant->get_consent_list( $consent_mod ) ) )
       {
-        $interview_list = $db_participant->get_interview_list();
-        
-        if( 0 == count( $interview_list ) ) continue;
-        
-        $db_interview = current( $interview_list );
-          
-        if( $db_interview->completed )
+        $interview_mod = new db\modifier();
+        $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
+        $db_participant->get_interview_list( $interview_mod );
+        $db_interview = current( $db_participant->get_interview_list( $interview_mod ) );
+        if( $db_interview && $db_interview->completed )
         {
           foreach( $db_interview->get_qnaire()->get_phase_list() as $db_phase )
           {

@@ -1,6 +1,6 @@
 <?php
 /**
- * consent_form.class.php
+ * consent_form_report.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -36,13 +36,17 @@ class consent_form_report extends base_report
 
   public function finish()
   {
+    // get the report args
+    $db_qnaire = new db\qnaire( $this->get_argument( 'qnaire_id' ) );
+
     // TODO: Change this to the title/code of the limesurvey question to check
     // (this should be the consent form question)
     $question_code = 'A';
 
     $this->add_title( 'Consent Form Required Report' );
     $this->add_title(
-      'A list of participant\'s who have indicated they require a new consent form' );
+      sprintf( 'A list of participant\'s who have indicated they require a new consent form '.
+               'during the %s interview', $db_qnaire->name ) );
     
     $contents = array();
 
@@ -59,7 +63,9 @@ class consent_form_report extends base_report
       if( 0 == count( $db_participant->get_consent_list( $consent_mod ) ) )
       {
         // now go through their interviews until the consent question code is found
-        foreach( $db_participant->get_interview_list() as $db_interview )
+        $interview_mod = new db\modifier();
+        $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
+        foreach( $db_participant->get_interview_list( $interview_mod ) as $db_interview )
         {
           foreach( $db_interview->get_qnaire()->get_phase_list() as $db_phase )
           {

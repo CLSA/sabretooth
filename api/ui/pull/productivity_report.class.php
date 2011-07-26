@@ -41,6 +41,8 @@ class productivity_report extends base_report
     // get the operation's arguments
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
     $single_date = $this->get_argument( 'date' );
+    $db_qnaire = new db\qnaire( $this->get_argument( 'qnaire_id' ) );
+    
     if( $single_date ) $single_datetime_obj = util::get_datetime_object( $single_date );
     
     // set the title and sub title(s)
@@ -52,6 +54,9 @@ class productivity_report extends base_report
     }
 
     $this->add_title( $title );
+    $this->add_title( 
+      sprintf( 'Listing of operator productivity pertaining to '.
+               'the %s interview', $db_qnaire->name ) ) ;
 
     if( $single_date )
       $this->add_title( $single_datetime_obj->format( 'l, F jS, Y' ) );
