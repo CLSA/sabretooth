@@ -1,6 +1,6 @@
 <?php
 /**
- * consent_outstanding_report.class.php
+ * sourcing_required_report.class.php
  * 
  * @author Dean Inglis <inglisd@mcmaster.ca>
  * @package sabretooth\ui
@@ -14,11 +14,11 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * Consent outstanding report data.
+ * Sourcing required report data.
  * 
  * @package sabretooth\ui
  */
-class consent_outstanding_report extends base_report
+class sourcing_required_report extends base_report
 {
   /**
    * Constructor
@@ -29,14 +29,14 @@ class consent_outstanding_report extends base_report
    */
   public function __construct( $args )
   {
-    parent::__construct( 'consent_outstanding', $args );
+    parent::__construct( 'sourcing_required', $args );
   }
 
   public function finish()
   {
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0);
 
-    $title = 'Written Consent Outstanding Report';
+    $title = 'Sourcing Required Report';
     if( $restrict_site_id )
     {
       $db_site = new db\site( $restrict_site_id );
@@ -57,27 +57,61 @@ class consent_outstanding_report extends base_report
       // dont bother with deceased or otherwise impaired
       if( !is_null( $db_participant->status ) ) continue;
 
-      $consent_mod = new db\modifier();
-      $consent_mod->where( 'event', '=', 'verbal accept' );
-      if( count( $db_participant->get_consent_list( $consent_mod ) ) )
-      {
-        // only grab the first interview for now
-        $interview_list = $db_participant->get_interview_list();
-      
-        if( 0 == count( $interview_list ) ) continue;
+      $interview_list = $db_participant->get_interview_list();
 
-        $db_interview = current( $interview_list );
-        if( $db_interview->completed )
+      if( 0 == count( $interview_list ) ) continue;
+
+      $db_interview = current( $interview_list );
+
+      if( !$db_interview->completed )
+      {
+        $assignment_mod = new db\modifier();
+        $assignment_mod->order_desc( 'start_datetime' );
+        $failed_calls = 0;
+        $db_recent_failed_call = NULL;
+        foreach( $db_interview->get_assignment_list( $assignment_mod ) as $db_assignment )
+        {
+          // find the most recently completed phone call
+          $phone_call_mod = new db\modifier();
+          $phone_call_mod->order_desc( 'start_datetime' );
+          $phone_call_mod->where( 'end_datetime', '!=', NULL );
+          $phone_call_mod->limit( 1 );
+          $db_phone_call = current( $db_assignment->get_phone_call_list( $phone_call_mod ) );
+          if( false != $db_phone_call && 'contacted' != $db_phone_call->status )
+          {
+            $failed_calls++;
+            // since the calls are sorted most recent to first, this captures the most
+            // recent failed call
+            if( 1 == $failed_calls )
+            {
+              $db_recent_failed_call = $db_phone_call;
+            }
+          }
+        }
+        $done = false;        
+        if( 10 <= $failed_calls )
+        {
+          $done = true;
+        }
+        else if( !is_null( $db_recent_failed_call ) )
+        {              
+          if( 'disconnected' == $db_recent_failed_call->status ||
+              'wrong number' == $db_recent_failed_call->status )
+          {
+            $done = true;
+          }
+        }
+
+        if( $done )
         {
           $db_address = $db_participant->get_primary_address();
           $db_region = $db_address->get_region();
-          $db_last_phone_call = $db_participant->get_last_contacted_phone_call();
         
           $date_completed = 'NA';
-          if( !is_null( $db_last_phone_call ) )
+          if( !is_null( $db_recent_failed_call ) )
           {
-            $date_completed = substr( $db_last_phone_call->start_datetime, 0, 
-              strpos( $db_last_phone_call->start_datetime, ' ' ) );
+            $date_completed = substr( $db_recent_failed_call->start_datetime, 0, 
+              strpos( $db_recent_failed_call->start_datetime, ' ' ) );
           }
 
           $contents[] = array(

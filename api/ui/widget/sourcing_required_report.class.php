@@ -14,7 +14,7 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * widget consent outstanding report
+ * widget sourcing required report
  * 
  * @package sabretooth\ui
  */
@@ -34,9 +34,10 @@ class sourcing_required_report extends base_report
     $this->restrict_by_site();
 
     $this->set_variable( 'description',
-      'This report lists all participants who ree '.
-      'The report generates the participant\'s id, name, address, and last '.
-      'date they were successfully contacted.' );
+      'This report lists all participants who require sourcing. '.
+      'The report generates the participant\'s id, name, address, the last '.
+      'date they were successfully contacted, and the contact information '.
+      'for two alternates.' );
   }
 
   /**

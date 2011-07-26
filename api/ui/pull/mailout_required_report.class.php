@@ -62,8 +62,11 @@ class mailout_required_report extends base_report
     
     $contents = array();
 
-    // loop through every participant searching for those who have no written consent
-    foreach( db\participant::select() as $db_participant )
+    $participant_list = $restric_site_id
+                      ? db\participant::select_for_site( $db_site )
+                      : db\participant::select();
+
+    foreach( $participant_list as $db_participant )
     {
       $done = false;
 
@@ -106,7 +109,7 @@ class mailout_required_report extends base_report
                 $db_region = $db_address->get_region();
                 $db_last_phone_call = $db_participant->get_last_contacted_phone_call();
                 $date_completed = 'NA';
-                if( $db_last_phone_call )
+                if( !is_null( $db_last_phone_call ) )
                 {
                   $date_completed = substr( $db_last_phone_call->start_datetime, 0, 
                     strpos( $db_last_phone_call->start_datetime, ' ' ) );

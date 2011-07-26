@@ -256,6 +256,10 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "mailout_required", "report", true, "Set up a new mailout required report." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "mailout_required", "report", true, "Download a new mailout required report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "sourcing_required", "report", true, "Set up a new sourcing required report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "sourcing_required", "report", true, "Download a new sourcing required report." );
 
 -- role
 INSERT INTO operation( type, subject, name, restricted, description )
