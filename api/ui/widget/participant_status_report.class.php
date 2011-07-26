@@ -33,9 +33,12 @@ class participant_status_report extends base_report
     parent::__construct( 'participant_status', $args );
     
     $this->set_variable( 'description',
-      'This report lists operator participant_status.  Currently, only an overall report can be '.
-      'generated.  In the near future reports for a single day or date range can be generated.'.
-      'Populations are broken down by province and various call, participant and consent statuses.' );
+      'This report provides totals of various status types.  Currently, only an overall '.
+      'report can be generated.  In the near future reports for a single day or date range can be '.
+      'generated.  Populations are broken down by province and various call, participant and '.
+      'consent statuses.' );
+
+    $this->add_parameter( 'qnaire_id', 'enum', 'Questionnaire' );  
   }
 
   /**
@@ -45,6 +48,10 @@ class participant_status_report extends base_report
   public function finish()
   {
     parent::finish();
+    
+    $qnaires = array();
+    foreach( db\qnaire::select() as $db_qnaire ) $qnaires[$db_qnaire->id] = $db_qnaire->name;
+    $this->set_parameter( 'qnaire_id', current( $qnaires ), true, $qnaires );
 
     $this->finish_setting_parameters();
   }

@@ -36,12 +36,13 @@ class participant_status_report extends base_report
 
   public function finish()
   {
+    // get the report arguments
+    $db_qnaire = new db\qnaire( $this->get_argument( 'qnaire_id' ) );
+
     $this->add_title( 'Participant Status Report' );
-
-    
-    // TODO: this report only grabs the first interview, once there are multiple interviews
-    // it will need to be updated!
-
+    $this->add_title( 
+      sprintf( 'Listing of categorical totals pertaining to '.
+               'the %s interview', $db_qnaire->name ) ) ;
 
     $region_totals = array(
       'Completed interview - Consent not received' => 0,
@@ -111,8 +112,9 @@ class participant_status_report extends base_report
         }
         if( $has_appointment ) continue;
 
-        // only grab the first interview for now
-        $interview_list = $db_participant->get_interview_list();
+        $interview_mod = new db\modifier();
+        $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id ); 
+        $interview_list = $db_participant->get_interview_list( $interview_mod );
         if( 0 == count( $interview_list ) )
         {
           $grand_totals[ $province ][ 'Not yet called' ]++;
@@ -159,7 +161,6 @@ class participant_status_report extends base_report
           }
           else 
           {
-           
             // TODO: soft refusals currently not being determined by the software
             $assignment_mod = new db\modifier();
             $assignment_mod->order_desc( 'start_datetime' );
