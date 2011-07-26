@@ -1,8 +1,8 @@
 <?php
 /**
- * consent_form_report.class.php
+ * sourcing_required_report.class.php
  * 
- * @author Patrick Emond <emondpd@mcmaster.ca>
+ * @author Dean Inglis <inglisd@mcmaster.ca>
  * @package sabretooth\ui
  * @filesource
  */
@@ -14,34 +14,36 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * widget consent form report
+ * widget sourcing required report
  * 
  * @package sabretooth\ui
  */
-class consent_form_report extends base_report
+class sourcing_required_report extends base_report
 {
   /**
    * Constructor
    * 
    * Defines all variables which need to be set for the associated template.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @author Dean Inglis <inglisd@mcmaster.ca>
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'consent_form', $args );
+    parent::__construct( 'sourcing_required', $args );
+    $this->restrict_by_site();
 
     $this->set_variable( 'description',
-      'This report lists all participants who require a new consent form to be mailed to '.
-      'them.  The report generates the participant\'s name, address, phone number and last '.
-      'time they were successfully contacted.' );
+      'This report lists all participants who require sourcing. '.
+      'The report generates the participant\'s id, name, address, the last '.
+      'date they were successfully contacted, and the contact information '.
+      'for two alternates.' );
 
-    $this->add_parameter( 'qnaire_id' , 'enum', 'Questionnaire' );
+    $this->add_parameter( 'qnaire_id', 'enum', 'Questionnaire' );  
   }
 
   /**
-   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @author Dean Inglis <inglisd@mcmaster.ca>
    * @access public
    */
   public function finish()
@@ -51,7 +53,7 @@ class consent_form_report extends base_report
     $qnaires = array();
     foreach( db\qnaire::select() as $db_qnaire ) $qnaires[$db_qnaire->id] = $db_qnaire->name;
     $this->set_parameter( 'qnaire_id', current( $qnaires ), true, $qnaires );
-
+    
     $this->finish_setting_parameters();
   }
 }
