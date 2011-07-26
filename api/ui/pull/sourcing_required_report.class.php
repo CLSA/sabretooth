@@ -128,7 +128,8 @@ class sourcing_required_report extends base_report
       } // end non-empty consent list search  
     } // end loop on participants 
 
-    
+    // TODO we need two alternate contacts added to the report fields
+    // but this functionality will have to come from Mastodon
     $header = array(
       "UID",
       "First Name",
