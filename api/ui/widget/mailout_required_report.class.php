@@ -54,6 +54,9 @@ class mailout_required_report extends base_report
     $mailout_types = array( 'Participant information package',
                             'Proxy information package' );
 
+    // copy values to keys
+    $mailout_types = array_combine( $mailout_types, $mailout_types );
+
     $this->set_parameter( 'mailout_type', current( $mailout_types ), true, $mailout_types );
 
     $qnaires = array();
