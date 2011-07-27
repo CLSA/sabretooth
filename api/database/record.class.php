@@ -192,7 +192,6 @@ abstract class record extends \sabretooth\base_object
 
     // building the SET list since it is identical for inserts and updates
     $sets = '';
-    $first = true;
     foreach( $this->column_values as $key => $val )
     {
       if( static::get_primary_key_name() != $key )
@@ -203,17 +202,15 @@ abstract class record extends \sabretooth\base_object
         else if( database::is_datetime_column( $key ) )
           $val = util::to_server_datetime( $val );
         
-        $sets .= sprintf( '%s %s = %s',
-                          $first ? '' : ',',
+        $sets .= sprintf( ', %s = %s',
                           $key,
                           database::format_string( $val ) );
-        $first = false;
       }
     }
     
     // either insert or update the row based on whether the primary key is set
     $sql = sprintf( is_null( $this->column_values[static::get_primary_key_name()] )
-                    ? 'INSERT INTO %s SET create_timestamp = NULL, %s'
+                    ? 'INSERT INTO %s SET create_timestamp = NULL %s'
                     : 'UPDATE %s SET %s WHERE %s = %d',
                     static::get_table_name(),
                     $sets,
