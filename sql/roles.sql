@@ -454,6 +454,11 @@ FROM role, operation
 WHERE role.name = "administrator"
 AND operation.name = "report";
 
+-- reports
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "productivity" AND name = "report" );
 
 -- -----------------------------------------------------
 -- -----------------------------------------------------
@@ -1339,6 +1344,12 @@ SELECT role.id, operation.id
 FROM role, operation
 WHERE role.name = "supervisor"
 AND operation.name = "report";
+
+-- reports
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "productivity" AND name = "report" );
 
 
 -- -----------------------------------------------------

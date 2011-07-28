@@ -261,6 +261,10 @@ VALUES( "widget", "sourcing_required", "report", true, "Set up a new sourcing re
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "sourcing_required", "report", true, "Download a new sourcing required report." );
 
+-- report
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "productivity", "report", true, "Set up a productivity report." );
+
 -- role
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "role", "delete", true, "Removes a role from the system." );
