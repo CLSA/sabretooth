@@ -18,7 +18,7 @@
             confirm_dialog(
               "Reset Password",
               "Are you sure you wish to reset this user's password?",
-              function() { send_action( 'user', 'reset_password', { "id": {{ id }} } ); }
+              function() { ajax_push( 'user', 'reset_password', { "id": {{ id }} } ); }
             );
           } );
         {% endif %}
@@ -26,7 +26,7 @@
         {% if view_shifts %}
           // shift calendar button
           $( "#{{ widget.full }}_calendar" ).click( function() {
-            slot_load( "{{ widget.full }}", "shift_calendar", "shift_calendar", { user_id: {{ id }} } );
+            slot_load( "{{ widget.full }}", "shift", "calendar", { user_id: {{ id }} } );
             $( "#{{ widget.full }}_slot" ).dialog( "open" );
           } );
           

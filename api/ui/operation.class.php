@@ -23,13 +23,13 @@ use sabretooth\exception as exc;
 abstract class operation extends \sabretooth\base_object
 {
   /**
-   * Returns the associated database operation for the provided action.
+   * Returns the associated database operation for the provided operation.
    * 
    * In addition to constructing the operation object, the operation is also validated against the
    * user's current role's access.  If the operation is not permitted a permission exception is
    * thrown.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $type The type of operation (either 'action' or 'widget')
+   * @param string $type The type of operation (either 'push', 'pull' or 'widget')
    * @param string $subject The subject of the operation.
    * @param string $name The name of the operation.
    * @param array $args An associative array of arguments to be processed by the widgel
@@ -38,8 +38,8 @@ abstract class operation extends \sabretooth\base_object
    */
   public function __construct( $type, $subject, $name, $args )
   {
-    // type must either be an action or widget
-    if( 'action' != $type && 'datum' != $type && 'widget' != $type )
+    // type must either be a pull, push or widget
+    if( 'push' != $type && 'pull' != $type && 'widget' != $type )
       throw new exc\argument( 'type', $type, __METHOD__ );
     
     $this->operation_record =
@@ -51,6 +51,17 @@ abstract class operation extends \sabretooth\base_object
     if( !bus\session::self()->is_allowed( $this->operation_record ) )
       throw new exc\permission( $this->operation_record, __METHOD__ );
   }
+  
+  /**
+   * Finish processing the operation.
+   * 
+   * Every operation must complete whatever processing it is responsible for in this
+   * method.  This method may or may not return a mixed result.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @abstract
+   * @access public
+   */
+  abstract public function finish();
 
   /**
    * Get the database id of the operation.

@@ -51,7 +51,7 @@ class setting_manager extends \sabretooth\singleton
     // have the audit settings mirror limesurvey, if necessary
     foreach( $this->static_settings[ 'audit_db' ] as $key => $value )
     {
-      if( false === $value )
+      if( false === $value && 'enabled' != $key )
         $this->static_settings[ 'audit_db' ][ $key ] =
           $this->static_settings[ 'survey_db' ][ $key ];
     }

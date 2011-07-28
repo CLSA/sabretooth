@@ -93,7 +93,8 @@ final class session extends \sabretooth\singleton
     $user_name = $_SERVER[ 'PHP_AUTH_USER' ];
     $this->set_user( db\user::get_unique_record( 'name', $user_name ) );
     if( NULL == $this->user )
-      throw new exc\runtime( 'User "'.$user_name.'" not found.', __METHOD__ );
+      throw new exc\permission(
+        db\operation::get_operation( 'push', 'self', 'set_role' ), __METHOD__ );
 
     $this->initialized = true;
   }
@@ -198,6 +199,8 @@ final class session extends \sabretooth\singleton
           $_SESSION['current_role_id'] = $this->role->id;
         }
       }
+      else throw new exc\permission(
+        db\operation::get_operation( 'push', 'self', 'set_role' ), __METHOD__ );
     }
   }
 
@@ -396,6 +399,7 @@ final class session extends \sabretooth\singleton
     $activity->operation_id = $operation->get_id();
     $activity->query = serialize( $args );
     $activity->elapsed = util::get_elapsed_time();
+    $activity->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
     $activity->save();
   }
 
@@ -626,15 +630,15 @@ final class session extends \sabretooth\singleton
     foreach( array_keys( $_SESSION['slot'] ) as $slot )
     {
       $widget = $this->slot_current( $slot );
-      setcookie( "slot.$slot.widget", $widget['name'] );
+      setcookie( 'slot__'.$slot.'__widget', $widget['name'], 0, COOKIE_PATH );
       
       $index = $_SESSION['slot'][$slot]['stack']['index'];
 
-      setcookie( "slot.$slot.prev", $this->slot_has_prev( $slot ) ?
-        $_SESSION['slot'][$slot]['stack']['widgets'][$index-1]['name'] : NULL );
+      setcookie( 'slot__'.$slot.'__prev', $this->slot_has_prev( $slot ) ?
+        $_SESSION['slot'][$slot]['stack']['widgets'][$index-1]['name'] : NULL, 0, COOKIE_PATH );
 
-      setcookie( "slot.$slot.next", $this->slot_has_next( $slot ) ?
-        $_SESSION['slot'][$slot]['stack']['widgets'][$index+1]['name'] : NULL );
+      setcookie( 'slot__'.$slot.'__next', $this->slot_has_next( $slot ) ?
+        $_SESSION['slot'][$slot]['stack']['widgets'][$index+1]['name'] : NULL, 0, COOKIE_PATH );
     }
   }
   

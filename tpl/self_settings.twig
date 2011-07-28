@@ -3,8 +3,9 @@
  # 
  # Allows the user to define configurable session-based settings.
  # @author Patrick Emond <emondpd@mcmaster.ca>
- # @param string user_name
+ # @param string current_site_id
  # @param string current_site_name
+ # @param string current_role_id
  # @param string current_role_name
  # @param string current_theme_name
  # @param array roles This is an associative array containing the names of all roles which the user
@@ -35,34 +36,26 @@
           height: 220,
           autoOpen: true
         } );
-        slot_load( "password", "self_password" );
+        slot_load( "password", "self", "password" );
       } );
 
       // changes the active site
       $( "#{{ widget.full }}_set_site" ).change( function() {
-        var selected = $( "#{{ widget.full }}_set_site option:selected" );
-        if( 0 != selected.val() ) {
-          if( send_action( 'self', 'set_site', { "site": selected.text() } ) ) {
-            window.location.reload();
-          }
-        }
+        if( ajax_push( 'self', 'set_site', { "id": $(this).val() } ) )
+          window.location.reload();
       } );
     
       // changes the active role
       $( "#{{ widget.full }}_set_role" ).change( function() {
-        var selected = $( "#{{ widget.full }}_set_role option:selected" );
-        if( 0 != selected.val() ) {
-          if( send_action( 'self', 'set_role', { "role": selected.text() } ) ) {
-            window.location.reload();
-          }
-        }
+        if( ajax_push( 'self', 'set_role', { "id": $(this).val() } ) )
+          window.location.reload();
       } );
     
       // changes the active theme
       $( "#{{ widget.full }}_set_theme" ).change( function() {
         var selected = $( "#{{ widget.full }}_set_theme option:selected" );
         if( 0 != selected.val() ) {
-          if( send_action( 'self', 'set_theme', { "theme": selected.text() } ) )
+          if( ajax_push( 'self', 'set_theme', { "theme": selected.text() } ) )
             window.location.reload();
         }
       } );
@@ -75,12 +68,19 @@
 
   <table>
     <tr>
-      <td align="left">
-        Welcome {{ user_name }}
+      <td align="left" valign="top">
+        <img src="img/logo_small.png" style="height:60px; margin:4px" />
       </td>
-      <td align="right">
-        <button id="{{ widget.full }}_password">password</button>
-        <button id="{{ widget.full }}_logout">logout</button>
+      <td align="left" valign="top" class="title">
+        Sabretooth version {{ version }}<br>
+        Logged in as {{ user }}<br>
+        {% if development %}
+          <div class="ui-state-error" style="margin-top:4px;padding:2px">development mode</div>
+        {% endif %}
+      </td>
+      <td align="right" valign="top">
+        <button id="{{ widget.full }}_password" style="width:135px; margin:2px">password</button><br>
+        <button id="{{ widget.full }}_logout" style="width:135px; margin:2px">logout</button>
       </td>
     </tr>
   </table>
@@ -88,23 +88,25 @@
   <table>
     <tr>
       <td align="left" width="50%">
-        <span class="title">Site:</span>
+        <span class="title" style="width:20%">Site:</span>
         {% if 1 < sites|count %}
-          <select id="{{ widget.full }}_set_site" style="width: 140px" class="ui-state-default">
-            {% for site in sites %}
-              <option{{ current_site_name == site ? ' selected' : '' }}>{{ site }}</option>
+          <select id="{{ widget.full }}_set_site" style="width: 80%" class="ui-state-default">
+            {% for id, site in sites %}
+              <option {{ current_site_id == id ? 'selected' : '' }}
+                      value="{{ id }}">{{ site }}</option>
             {% endfor %}
           </select>
         {% else %}
           {{ current_site_name }}
         {% endif %}
       </td>
-      <td align="left" width="50%">
-        <span class="title">Role:</span>
+      <td align="right" width="50%">
+        <span class="title" style="width:20%">Role:</span>
         {% if 1 < roles|count %}
-          <select id="{{ widget.full }}_set_role" style="width: 140px" class="ui-state-default">
-            {% for role in roles %}
-              <option{{ current_role_name == role ? ' selected' : '' }}>{{ role }}</option>
+          <select id="{{ widget.full }}_set_role" style="width: 80%" class="ui-state-default">
+            {% for id, role in roles %}
+              <option {{ current_role_id == id ? 'selected' : '' }}
+                      value="{{ id }}">{{ role }}</option>
             {% endfor %}
           </select>
         {% else %}
@@ -116,10 +118,10 @@
   <hr class="ui-widget ui-widget-content">
   <table>
     <tr>
-      <td align="left">
+      <td align="left" width="10%">
         <span class="title">Theme:&nbsp;</span>
       </td>
-      <td align="right" width="95%">
+      <td align="right" width="90%">
         <select id="{{ widget.full }}_set_theme" style="width: 100%" class="ui-state-default">
           {% for theme in themes %}
             <option{{ current_theme_name == theme ? ' selected' : '' }}>{{ theme }}</option>

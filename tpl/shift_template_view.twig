@@ -29,7 +29,7 @@
         if( "monthly" == $(this).val() ) {
           columns.repeat_type = $( "#{{ widget.full }}__repeat_by" ).val();
           args.columns = columns;
-          if( send_action( "{{ widget.subject }}", "edit", args ) ) {
+          if( ajax_push( "{{ widget.subject }}", "edit", args ) ) {
             $( "#{{ widget.full }}__repeat_every_row" ).hide();
             $( "#{{ widget.full }}__repeat_on_row" ).hide();
             $( "#{{ widget.full }}__repeat_by_row" ).show();
@@ -40,7 +40,7 @@
         else { // put back the old markup
           columns.repeat_type = "weekly";
           args.columns = columns;
-          if( send_action( "{{ widget.subject }}", "edit", args ) )
+          if( ajax_push( "{{ widget.subject }}", "edit", args ) )
           {
             $( "#{{ widget.full }}__repeat_by_row" ).hide();
             $( "#{{ widget.full }}__repeat_every_row" ).show();
@@ -58,7 +58,7 @@
         var columns = new Object();
         columns.repeat_every = $(this).val();
         args.columns = columns;
-        send_action( "{{ widget.subject }}", "edit", args );
+        ajax_push( "{{ widget.subject }}", "edit", args );
       } );
 
       // day of week checkbox changed
@@ -70,7 +70,7 @@
         var columns = new Object();
         columns[day] = checked;
         args.columns = columns;
-        send_action( "{{ widget.subject }}", "edit", args );
+        ajax_push( "{{ widget.subject }}", "edit", args );
       } );
 
     } );

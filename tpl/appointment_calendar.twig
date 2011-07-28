@@ -10,7 +10,7 @@
 
         eventClick: function( event, jsEvent, view ) {
           // edit the appointment
-          slot_load( "{{ widget.full }}", "appointment_view", "appointment_view", { id: event.id } );
+          slot_load( "{{ widget.full }}", "appointment", "view", { id: event.id } );
           $( "#{{ widget.full }}_slot" ).dialog( "open" );
         },
         events: function( start, end, callback ) {
@@ -18,7 +18,7 @@
           args.start = start.getFullYear() + "-" + ( start.getMonth() + 1 ) + "-" + start.getDate();
           args.end = end.getFullYear() + "-" + ( end.getMonth() + 1 ) + "-" + end.getDate();
 
-          var data = get_datum( "appointment", "feed", args );
+          var data = ajax_pull( "appointment", "feed", args );
           if( undefined != data ) {
             var events = new Array();
             for( var index = 0; index < data.length; index++ ) {

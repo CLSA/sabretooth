@@ -22,7 +22,7 @@
         args.end_time = "13:00";
       }
   
-      slot_load( "{{ widget.full }}", "shift_template_add", "shift_template_add", args );
+      slot_load( "{{ widget.full }}", "shift", "template_add", args );
       $( "#{{ widget.full }}_slot" ).dialog( "open" );
     },
   {% endif %}
@@ -32,7 +32,7 @@
     args.start = start.getFullYear() + "-" + ( start.getMonth() + 1 ) + "-" + start.getDate();
     args.end = end.getFullYear() + "-" + ( end.getMonth() + 1 ) + "-" + end.getDate();
 
-    var data = get_datum( "site", "feed", args );
+    var data = ajax_pull( "site", "feed", args );
     if( undefined != data ) {
       var events = new Array();
       for( var index = 0; index < data.length; index++ ) {

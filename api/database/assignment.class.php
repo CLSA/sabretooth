@@ -33,7 +33,7 @@ class assignment extends has_note
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to determine token for interview with no id.' );
+      log::warning( 'Tried to determine current phase for assignment with no id.' );
       return NULL;
     } 
     
@@ -109,16 +109,12 @@ class assignment extends has_note
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
-   * @access private
+   * @access public
    */
-  private function get_token( $db_phase )
+  public function get_token( $db_phase )
   {
     return is_null( $db_phase ) ?
-      NULL : sprintf( "%s_%s_%s", 
-                      $this->interview_id,
-                      $db_phase->id,
-                      // repeated phases have the assignment id as the last part of the token
-                      $db_phase->repeated ? $this->id : 0 );
+      NULL : limesurvey\record::get_token( $this->get_interview(), $db_phase, $this );
   }
 
   /**

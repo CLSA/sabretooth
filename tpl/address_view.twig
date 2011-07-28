@@ -23,7 +23,7 @@
         var columns = new Object();
         columns[month] = checked;
         args.columns = columns;
-        send_action( "{{ widget.subject }}", "edit", args );
+        ajax_push( "{{ widget.subject }}", "edit", args );
       } );
 
     } );

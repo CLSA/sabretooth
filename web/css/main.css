@@ -140,6 +140,11 @@ ins.no_icon {
   margin-right: 10px;
 }
 
+div.app-widget-header {
+  font-size: 1.2em;
+  font-weight: bold !important;
+}
+
 div.app-widget-content {
   padding-top: 0px;
   padding-bottom: 0px;

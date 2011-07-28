@@ -63,7 +63,7 @@ class user extends base_access
     foreach( $site_id_list as $id )
     {
       if( !$first ) $values .= ', ';
-      $values .= sprintf( '(%s, %s, %s)',
+      $values .= sprintf( '(NULL, %s, %s, %s)',
                        database::format_string( $id ),
                        database::format_string( $role_id ),
                        database::format_string( $this->id ) );
@@ -71,7 +71,7 @@ class user extends base_access
     }
 
     static::db()->execute(
-      sprintf( 'INSERT IGNORE INTO access (site_id, role_id, user_id) VALUES %s',
+      sprintf( 'INSERT IGNORE INTO access (create_timestamp, site_id, role_id, user_id) VALUES %s',
                $values ) );
   }
 

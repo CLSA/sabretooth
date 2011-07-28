@@ -193,6 +193,16 @@ abstract class record extends \sabretooth\base_object
     // building the SET list since it is identical for inserts and updates
     $sets = '';
     $first = true;
+
+    // add the create_timestamp column if this is a new record
+    if( is_null( $this->column_values[static::get_primary_key_name()] ) )
+    {
+      $sets .= sprintf( 'create_timestamp = %s',
+                        database::format_string( $val ) );
+      $first = false;
+    }
+    
+    // now add the rest of the columns
     foreach( $this->column_values as $key => $val )
     {
       if( static::get_primary_key_name() != $key )
@@ -207,6 +217,7 @@ abstract class record extends \sabretooth\base_object
                           $first ? '' : ',',
                           $key,
                           database::format_string( $val ) );
+
         $first = false;
       }
     }
@@ -662,14 +673,14 @@ abstract class record extends \sabretooth\base_object
     foreach( $ids as $foreign_key_value )
     {
       if( !$first ) $values .= ', ';
-      $values .= sprintf( '(%s, %s)',
+      $values .= sprintf( '(NULL, %s, %s)',
                        database::format_string( $primary_key_value ),
                        database::format_string( $foreign_key_value ) );
       $first = false;
     }
 
     static::db()->execute(
-      sprintf( 'INSERT INTO %s (%s_id, %s_id) VALUES %s',
+      sprintf( 'INSERT INTO %s (create_timestamp, %s_id, %s_id) VALUES %s',
                $joining_table_name,
                static::get_table_name(),
                $record_type,

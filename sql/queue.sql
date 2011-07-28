@@ -606,8 +606,8 @@ This list only includes participants who do not have an appointment, have no ava
 and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
-name = "language",
-title = "Last call: language",
+name = "not reached",
+title = "Last call: not reached",
 rank = NULL,
 qnaire_specific = true,
 parent_queue_id = (
@@ -615,82 +615,83 @@ parent_queue_id = (
     SELECT id
     FROM queue
     WHERE name = "old participant" ) AS tmp ),
-description = "Participants who's last call resulted in a language barrier.
+description = "Participants who's last call resulted in reaching a person other than the
+participant.
 This list only includes participants who do not have an appointment and are not currently assigned
 to an operator.";
 
 INSERT INTO queue SET
-name = "language waiting",
-title = "Last call: language (waiting)",
+name = "not reached waiting",
+title = "Last call: not reached (waiting)",
 rank = NULL,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "language" ) AS tmp ),
-description = "Participants who's last call resulted in a language barrier and the scheduled call
-back time has not yet been reached.
+    WHERE name = "not reached" ) AS tmp ),
+description = "Participants who's last call resulted in reaching a person other than the
+participant and the scheduled call back time has not yet been reached.
 This list only includes participants who do not have an appointment and are not currently assigned
 to an operator.";
 
 INSERT INTO queue SET
-name = "language ready",
-title = "Last call: language (ready)",
+name = "not reached ready",
+title = "Last call: not reached (ready)",
 rank = NULL,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "language" ) AS tmp ),
-description = "Participants who's last call resulted in a language barrier and the scheduled call
-back time has been reached.
+    WHERE name = "not reached" ) AS tmp ),
+description = "Participants who's last call resulted in reaching a person other than the
+participant and the scheduled call back time has been reached.
 This list only includes participants who do not have an appointment and are not currently assigned
 to an operator.";
 
 INSERT INTO queue SET
-name = "language not available",
-title = "Last Call: language (not available)",
+name = "not reached not available",
+title = "Last Call: not reached (not available)",
 rank = NULL,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "language ready" ) AS tmp ),
-description = "Participants who's last call resulted in a language barrier and the scheduled call
-back time has been reached.
+    WHERE name = "not reached ready" ) AS tmp ),
+description = "Participants who's last call resulted in reaching a person other than the
+participant and the scheduled call back time has been reached.
 This list only includes participants who do not have an appointment, are not currently available
 and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
-name = "language available",
-title = "Last Call: language (available)",
+name = "not reached available",
+title = "Last Call: not reached (available)",
 rank = 9,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "language ready" ) AS tmp ),
-description = "Participants who's last call resulted in a language barrier and the scheduled call
-back time has been reached.
+    WHERE name = "not reached ready" ) AS tmp ),
+description = "Participants who's last call resulted in reaching a person other than the
+participant and the scheduled call back time has been reached.
 This list only includes participants who do not have an appointment, are currently available
 and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
-name = "language always available",
-title = "Last Call: language (without availability)",
+name = "not reached always available",
+title = "Last Call: not reached (without availability)",
 rank = 10,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "language ready" ) AS tmp ),
-description = "Participants who's last call resulted in a language barrier and the scheduled call
-back time has been reached.
+    WHERE name = "not reached ready" ) AS tmp ),
+description = "Participants who's last call resulted in reaching a person other than the
+participant and the scheduled call back time has been reached.
 This list only includes participants who do not have an appointment, have no availability times
 and are not currently assigned to an operator.";
 

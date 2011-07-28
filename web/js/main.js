@@ -5,14 +5,14 @@
  */
 function update_shortcuts() {
   // the home button should only be enabled if the main slot is NOT displaying the home widget
-  $( "#self_shortcuts_home" ).attr( "disabled", undefined == $.cookie( "slot.main.widget" ) ||
-                                                "self_home" == $.cookie( "slot.main.widget" ) )
+  $( "#self_shortcuts_home" ).attr( "disabled", undefined == $.cookie( "slot__main__widget" ) ||
+                                                "self_home" == $.cookie( "slot__main__widget" ) )
                              .button( "refresh" );
 
   // the prev and next buttons should only be enabled if there are prev and next widgets available
-  $( "#self_shortcuts_prev" ).attr( "disabled", undefined == $.cookie( "slot.main.prev" ) )
+  $( "#self_shortcuts_prev" ).attr( "disabled", undefined == $.cookie( "slot__main__prev" ) )
                              .button( "refresh" );
-  $( "#self_shortcuts_next" ).attr( "disabled", undefined == $.cookie( "slot.main.next" ) )
+  $( "#self_shortcuts_next" ).attr( "disabled", undefined == $.cookie( "slot__main__next" ) )
                              .button( "refresh" );
 }
 
@@ -74,21 +74,19 @@ function error_dialog( title, message ) {
  * Request information from the server.
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @param string subject The datum's subject.
- * @param string name The datum's name.
- * @param array args The arguments to pass to the operation object
+ * @param string subject The subject of the pull.
+ * @param string name The name of the pull.
+ * @param object args The arguments to pass to the operation object
  * @return mixed The requested data or null if there was an error.
  */
-function get_datum( subject, name, args ) {
+function ajax_pull( subject, name, args ) {
   if( undefined == args ) args = new Object();
-  args.subject = subject;
-  args.name = name;
   var request = jQuery.ajax( {
-    url: "datum.php",
+    url: subject + "/" + name,
     async: false,
     type: "GET",
     data: jQuery.param( args ),
-    complete: function( request, result ) { ajax_complete( request, 'D' ) },
+    complete: function( request, result ) { ajax_complete( request, 'R' ) },
     dataType: "json"
   } );
   var response = jQuery.parseJSON( request.responseText );
@@ -96,24 +94,22 @@ function get_datum( subject, name, args ) {
 }
 
 /**
- * Request an operation be performed to the server.
+ * Request a push (write) operation from the web service.
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @param string subject The action's subject.
- * @param string name The action's name.
- * @param JSON-array args The arguments to pass to the operation object
- * @return bool Whether or not the operation completed successfully
+ * @param string subject The subject of the push.
+ * @param string name The name of the push.
+ * @param object args The arguments to pass along with the push.
+ * @return bool Whether or not the push completed successfully
  */
-function send_action( subject, name, args ) {
+function ajax_push( subject, name, args ) {
   if( undefined == args ) args = new Object();
-  args.subject = subject;
-  args.name = name;
   var request = jQuery.ajax( {
-    url: "action.php",
+    url: subject + "/" + name,
     async: false,
     type: "POST",
     data: jQuery.param( args ),
-    complete: function( request, result ) { ajax_complete( request, 'A' ) },
+    complete: function( request, result ) { ajax_complete( request, 'W' ) },
     dataType: "json"
   } );
   var response = jQuery.parseJSON( request.responseText );
@@ -127,9 +123,11 @@ function send_action( subject, name, args ) {
  * It should not be used directly anywhere else.
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @param string slot The slot to place the loaded content into.
- * @param string url The url to load.
+ * @param string subject The widget's subject.
+ * @param string name The widget's name.
+ * @param object args The arguments to pass along with the push.
  */
-function slot_url( slot, url ) {
+function ajax_slot( slot, action, subject, name, args ) {
   $.loading( {
     onAjax: true,
     mask: true,
@@ -138,9 +136,13 @@ function slot_url( slot, url ) {
     align: "center"
   } );
   
+  var url = "slot/" + slot + "/" + action;
+  if( subject && name ) url += "/" + subject + "/" + name;
+  if( undefined != args ) url += "?" + jQuery.param( args );
+
   $( "#" + slot + "_slot" ).html( "" );
   $( "#" + slot + "_slot" ).load( url, null,
-    function( response, status, request ) { ajax_complete( request, 'W' ) }
+    function( response, status, request ) { ajax_complete( request, 'I' ) }
   );
 }
 
@@ -149,18 +151,19 @@ function slot_url( slot, url ) {
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @param string slot The slot to place the widget into.
- * @param string widget The widget's name (must be the name of a ui class)
+ * @param string subject The widget's subject.
+ * @param string name The widget's name.
  * @param string namespace The namespace to pass the args under.
  * @param JSON-array $args The arguments to pass to the widget object
  */
-function slot_load( slot, widget, namespace, args ) {
+function slot_load( slot, subject, name, args, namespace ) {
   // build the url (args is an associative array)
-  var query_object = new Object();
-  if( undefined != args ) query_object[namespace] = args;
-  query_object.slot = slot;
-  query_object.widget = widget;
-  var url = "widget.php?" + jQuery.param( query_object );
-  slot_url( slot, url );
+  if( undefined == namespace ) namespace = subject + '_' + name;
+  if( undefined != args ) {
+    var namespace_args = new Object();
+    namespace_args[namespace] = args;
+  }
+  ajax_slot( slot, 'load', subject, name, namespace_args );
 }
 
 /**
@@ -170,8 +173,7 @@ function slot_load( slot, widget, namespace, args ) {
  * @param string slot The slot to affect.
  */
 function slot_prev( slot ) {
-  var url = "widget.php?prev=1&slot=" + slot;
-  slot_url( slot, url );
+  ajax_slot( slot, 'prev' );
 }
 
 /**
@@ -181,8 +183,7 @@ function slot_prev( slot ) {
  * @param string slot The slot to rewind.
  */
 function slot_next( slot ) {
-  var url = "widget.php?next=1&slot=" + slot;
-  slot_url( slot, url );
+  ajax_slot( slot, 'next' );
 }
 
 /**
@@ -192,11 +193,7 @@ function slot_next( slot ) {
  * @param string slot The slot to rewind.
  */
 function slot_refresh( slot ) {
-  args = new Object();
-  args.refresh = 1;
-  args.slot = slot;
-  var url = "widget.php?" + jQuery.param( args );
-  slot_url( slot, url );
+  ajax_slot( slot, 'refresh' );
 }
 
 /**
@@ -204,7 +201,8 @@ function slot_refresh( slot ) {
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @param XMLHttpRequest request The request send back from the server.
- * @param string code A code describing the type of ajax request (A for action, W for widget)
+ * @param string code A code describing the type of ajax request
+ *        (W for push/write, R for pull/read and I for widget/interface)
  */
 function ajax_complete( request, code ) {
   if( 400 == request.status ) {

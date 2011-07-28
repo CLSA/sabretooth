@@ -23,7 +23,7 @@ class operation extends record
    * Get an operation given it's type, subject and name.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $type "action" or "widget"
+   * @param string $type "push", "pull" or "widget"
    * @param string $subject
    * @param string $name
    * @static

@@ -1,6 +1,6 @@
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='';
 
 
 -- -----------------------------------------------------
@@ -10,7 +10,8 @@ DROP TABLE IF EXISTS `site` ;
 
 CREATE  TABLE IF NOT EXISTS `site` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   `timezone` ENUM('Canada/Pacific','Canada/Mountain','Canada/Central','Canada/Eastern','Canada/Atlantic','Canada/Newfoundland') NOT NULL ,
   PRIMARY KEY (`id`) ,
@@ -25,14 +26,14 @@ DROP TABLE IF EXISTS `participant` ;
 
 CREATE  TABLE IF NOT EXISTS `participant` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
   `uid` VARCHAR(45) NULL COMMENT 'External unique ID' ,
   `first_name` VARCHAR(45) NOT NULL ,
   `last_name` VARCHAR(45) NOT NULL ,
-  `language` ENUM('en','fr') NULL DEFAULT NULL ,
-  `hin` VARCHAR(45) NULL DEFAULT NULL ,
   `status` ENUM('deceased', 'deaf', 'mentally unfit','language barrier','other') NULL DEFAULT NULL ,
+  `language` ENUM('en','fr') NULL DEFAULT NULL ,
   `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'If not null then force all calls to this participant to the site.' ,
   `prior_contact_date` DATE NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
@@ -55,7 +56,8 @@ DROP TABLE IF EXISTS `user` ;
 
 CREATE  TABLE IF NOT EXISTS `user` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   `first_name` VARCHAR(255) NOT NULL ,
   `last_name` VARCHAR(255) NOT NULL ,
@@ -73,7 +75,8 @@ DROP TABLE IF EXISTS `role` ;
 
 CREATE  TABLE IF NOT EXISTS `role` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) )
@@ -87,7 +90,8 @@ DROP TABLE IF EXISTS `qnaire` ;
 
 CREATE  TABLE IF NOT EXISTS `qnaire` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(255) NOT NULL ,
   `rank` INT NOT NULL ,
   `prev_qnaire_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The qnaire which must be completed before this one begins.' ,
@@ -112,7 +116,8 @@ DROP TABLE IF EXISTS `phase` ;
 
 CREATE  TABLE IF NOT EXISTS `phase` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `qnaire_id` INT UNSIGNED NOT NULL ,
   `sid` INT NOT NULL COMMENT 'limesurvey surveys.sid' ,
   `rank` SMALLINT UNSIGNED NOT NULL ,
@@ -136,9 +141,10 @@ DROP TABLE IF EXISTS `interview` ;
 
 CREATE  TABLE IF NOT EXISTS `interview` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
-  `participant_id` INT UNSIGNED NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `qnaire_id` INT UNSIGNED NOT NULL ,
+  `participant_id` INT UNSIGNED NOT NULL ,
   `require_supervisor` TINYINT(1)  NOT NULL DEFAULT false ,
   `completed` TINYINT(1)  NOT NULL DEFAULT false ,
   `duplicate_qnaire_id` INT UNSIGNED NULL DEFAULT NULL ,
@@ -174,6 +180,8 @@ DROP TABLE IF EXISTS `queue` ;
 
 CREATE  TABLE IF NOT EXISTS `queue` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   `title` VARCHAR(255) NOT NULL ,
   `rank` INT UNSIGNED NULL DEFAULT NULL ,
@@ -199,7 +207,8 @@ DROP TABLE IF EXISTS `assignment` ;
 
 CREATE  TABLE IF NOT EXISTS `assignment` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
   `site_id` INT UNSIGNED NOT NULL COMMENT 'The site from which the user was assigned.' ,
   `interview_id` INT UNSIGNED NOT NULL ,
@@ -243,7 +252,8 @@ DROP TABLE IF EXISTS `region` ;
 
 CREATE  TABLE IF NOT EXISTS `region` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   `abbreviation` VARCHAR(5) NOT NULL ,
   `country` VARCHAR(45) NOT NULL ,
@@ -267,7 +277,8 @@ DROP TABLE IF EXISTS `address` ;
 
 CREATE  TABLE IF NOT EXISTS `address` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
   `rank` INT NOT NULL ,
@@ -312,7 +323,8 @@ DROP TABLE IF EXISTS `phone` ;
 
 CREATE  TABLE IF NOT EXISTS `phone` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` VARCHAR(45) NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `address_id` INT UNSIGNED NULL DEFAULT NULL ,
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
@@ -343,12 +355,13 @@ DROP TABLE IF EXISTS `phone_call` ;
 
 CREATE  TABLE IF NOT EXISTS `phone_call` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `assignment_id` INT UNSIGNED NOT NULL ,
   `phone_id` INT UNSIGNED NOT NULL ,
   `start_datetime` DATETIME NOT NULL COMMENT 'The time the call started.' ,
   `end_datetime` DATETIME NULL DEFAULT NULL COMMENT 'The time the call endede.' ,
-  `status` ENUM('contacted', 'busy','no answer','machine message','machine no message','fax','disconnected','wrong number','language') NULL DEFAULT NULL ,
+  `status` ENUM('contacted','busy','no answer','machine message','machine no message','fax','disconnected','wrong number','not reached') NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_assignment_id` (`assignment_id` ASC) ,
   INDEX `status` (`status` ASC) ,
@@ -373,8 +386,9 @@ DROP TABLE IF EXISTS `operation` ;
 
 CREATE  TABLE IF NOT EXISTS `operation` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
-  `type` ENUM('action','datum','widget') NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `type` ENUM('pull','push','widget') NOT NULL ,
   `subject` VARCHAR(45) NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   `restricted` TINYINT(1)  NOT NULL DEFAULT true ,
@@ -391,8 +405,9 @@ DROP TABLE IF EXISTS `role_has_operation` ;
 
 CREATE  TABLE IF NOT EXISTS `role_has_operation` (
   `role_id` INT UNSIGNED NOT NULL ,
-  `timestamp` TIMESTAMP NOT NULL ,
   `operation_id` INT UNSIGNED NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   PRIMARY KEY (`role_id`, `operation_id`) ,
   INDEX `fk_role_id` (`role_id` ASC) ,
   INDEX `fk_operation_id` (`operation_id` ASC) ,
@@ -416,7 +431,8 @@ DROP TABLE IF EXISTS `consent` ;
 
 CREATE  TABLE IF NOT EXISTS `consent` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `event` ENUM('verbal accept','verbal deny','written accept','written deny','retract','withdraw') NOT NULL ,
   `date` DATE NOT NULL ,
@@ -438,7 +454,8 @@ DROP TABLE IF EXISTS `availability` ;
 
 CREATE  TABLE IF NOT EXISTS `availability` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `monday` TINYINT(1)  NOT NULL DEFAULT false ,
   `tuesday` TINYINT(1)  NOT NULL DEFAULT false ,
@@ -466,7 +483,8 @@ DROP TABLE IF EXISTS `shift` ;
 
 CREATE  TABLE IF NOT EXISTS `shift` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `site_id` INT UNSIGNED NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
   `start_datetime` DATETIME NOT NULL ,
@@ -494,10 +512,11 @@ DROP TABLE IF EXISTS `access` ;
 
 CREATE  TABLE IF NOT EXISTS `access` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
   `role_id` INT UNSIGNED NOT NULL ,
   `site_id` INT UNSIGNED NOT NULL ,
-  `datetime` TIMESTAMP NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_role_id` (`role_id` ASC) ,
   INDEX `fk_user_id` (`user_id` ASC) ,
@@ -528,7 +547,8 @@ DROP TABLE IF EXISTS `participant_note` ;
 
 CREATE  TABLE IF NOT EXISTS `participant_note` (
   `id` INT NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `sticky` TINYINT(1)  NOT NULL DEFAULT false ,
@@ -557,7 +577,8 @@ DROP TABLE IF EXISTS `assignment_note` ;
 
 CREATE  TABLE IF NOT EXISTS `assignment_note` (
   `id` INT NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
   `assignment_id` INT UNSIGNED NOT NULL ,
   `sticky` TINYINT(1)  NOT NULL DEFAULT false ,
@@ -586,13 +607,15 @@ DROP TABLE IF EXISTS `activity` ;
 
 CREATE  TABLE IF NOT EXISTS `activity` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
   `site_id` INT UNSIGNED NOT NULL ,
   `role_id` INT UNSIGNED NOT NULL ,
   `operation_id` INT UNSIGNED NOT NULL ,
   `query` VARCHAR(511) NOT NULL ,
   `elapsed` FLOAT NOT NULL DEFAULT 0 COMMENT 'The total time to perform the operation in seconds.' ,
-  `datetime` TIMESTAMP NOT NULL ,
+  `datetime` DATETIME NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_role_id` (`role_id` ASC) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
@@ -627,7 +650,8 @@ DROP TABLE IF EXISTS `setting` ;
 
 CREATE  TABLE IF NOT EXISTS `setting` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `category` VARCHAR(45) NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
   `type` ENUM( 'boolean', 'integer', 'float', 'string' ) NOT NULL ,
@@ -647,7 +671,8 @@ DROP TABLE IF EXISTS `appointment` ;
 
 CREATE  TABLE IF NOT EXISTS `appointment` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `phone_id` INT UNSIGNED NULL DEFAULT NULL ,
   `assignment_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'This appointment\'s assignment.' ,
@@ -683,7 +708,8 @@ DROP TABLE IF EXISTS `setting_value` ;
 
 CREATE  TABLE IF NOT EXISTS `setting_value` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `setting_id` INT UNSIGNED NOT NULL ,
   `site_id` INT UNSIGNED NOT NULL ,
   `value` VARCHAR(45) NOT NULL ,
@@ -712,7 +738,8 @@ DROP TABLE IF EXISTS `away_time` ;
 
 CREATE  TABLE IF NOT EXISTS `away_time` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `timestamp` TIMESTAMP NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
   `start_datetime` DATETIME NOT NULL ,
   `end_datetime` DATETIME NULL DEFAULT NULL ,
@@ -733,6 +760,8 @@ DROP TABLE IF EXISTS `shift_template` ;
 
 CREATE  TABLE IF NOT EXISTS `shift_template` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `site_id` INT UNSIGNED NOT NULL ,
   `start_time` TIME NOT NULL ,
   `end_time` TIME NOT NULL ,
@@ -792,6 +821,11 @@ CREATE TABLE IF NOT EXISTS `participant_last_consent` (`participant_id` INT, `co
 -- Placeholder table for view `participant_primary_address`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `participant_primary_address` (`participant_id` INT, `address_id` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `participant_last_contacted_phone_call`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `participant_last_contacted_phone_call` (`participant_id` INT, `phone_call_id` INT);
 
 -- -----------------------------------------------------
 -- View `participant_first_address`
@@ -1002,6 +1036,25 @@ WHERE t1.rank = (
   AND region.site_id IS NOT NULL
   AND t1.participant_id = t2.participant_id
   GROUP BY t2.participant_id );
+
+-- -----------------------------------------------------
+-- View `participant_last_contacted_phone_call`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `participant_last_contacted_phone_call` ;
+DROP TABLE IF EXISTS `participant_last_contacted_phone_call`;
+CREATE  OR REPLACE VIEW `participant_last_contacted_phone_call` AS
+SELECT interview_1.participant_id, phone_call_1.id as phone_call_id
+FROM phone_call AS phone_call_1, assignment AS assignment_1, interview AS interview_1
+WHERE phone_call_1.assignment_id = assignment_1.id
+AND interview_1.id = assignment_1.interview_id
+AND phone_call_1.start_datetime = (
+  SELECT MAX( phone_call_2.start_datetime )
+  FROM phone_call AS phone_call_2, assignment AS assignment_2, interview AS interview_2
+  WHERE phone_call_2.status = "contact"
+  AND phone_call_2.assignment_id = assignment_2.id
+  AND assignment_2.interview_id = interview_2.id
+  AND interview_1.participant_id = interview_2.participant_id
+  GROUP BY interview_2.participant_id );
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

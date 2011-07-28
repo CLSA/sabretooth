@@ -13,7 +13,7 @@
     $( function () {
       // add button
       $( "#{{ widget.compound }}_add" ).click( function () {
-        // submit the form information as a new action
+        // push the form information
         var args = new Object();
         var columns = new Object();
         $( "#{{ widget.full }}_add_form :input" ).each( function() {
@@ -25,7 +25,7 @@
         } );
         args.columns = columns;
     
-        if( send_action( "{{ widget.subject }}", "new", args ) ) slot_prev( {{ slot }} );
+        if( ajax_push( "{{ widget.subject }}", "new", args ) ) slot_prev( {{ slot }} );
       } );
     } );
   </script>

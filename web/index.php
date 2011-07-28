@@ -108,6 +108,12 @@ if( true == $result_array['success'] )
 }
 else
 {
+  // make sure to fail any active transaction
+  if( class_exists( 'business\session' ) &&
+      business\session::exists() &&
+      business\session::self()->is_initialized() )
+    business\session::self()->get_database()->fail_transaction();
+
   // Since the error may have been caused by the template engine, output using a php template
   include TPL_PATH.'/index_error.php';
 }

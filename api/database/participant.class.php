@@ -137,12 +137,12 @@ class participant extends has_note
   }
 
   /**
-   * Get the participant's current defining consent
+   * Get the participant's last consent
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return consent
    * @access public
    */
-  public function get_current_consent()
+  public function get_last_consent()
   {
     // check the primary key value
     if( is_null( $this->id ) )
@@ -151,18 +151,13 @@ class participant extends has_note
       return NULL;
     }
     
-    $modifier = new modifier();
-    $modifier->where( 'participant_id', '=', $this->id );
-    $modifier->where( 'event', 'in', array( 'verbal accept',
-                                            'verbal deny',
-                                            'written accept',
-                                            'written deny',
-                                            'retract' ) );
-    $modifier->order_desc( 'date' );
-    $modifier->limit( 1 );
-    $consent_list = consent::select( $modifier );
-
-    return 0 == count( $consent_list ) ? NULL : current( $consent_list );
+    // need custom SQL
+    $consent_id = static::db()->get_one(
+      sprintf( 'SELECT consent_id '.
+               'FROM participant_last_consent '.
+               'WHERE participant_id = %s',
+               database::format_string( $this->id ) ) );
+    return $consent_id ? new consent( $consent_id ) : NULL;
   }
 
   /**
@@ -219,6 +214,13 @@ class participant extends has_note
    */
   public function get_primary_site()
   {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to query participant with no id.' );
+      return NULL;
+    }
+    
     $db_site = NULL;
 
     if( !is_null( $this->site_id ) )
@@ -237,6 +239,28 @@ class participant extends has_note
     return $db_site;
   }
   
+  /**
+   * Get the last phone call which reached the participant
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return phone_call
+   * @access public
+   */
+  public function get_last_contacted_phone_call()
+  {
+    // check the primary key value
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to query participant with no id.' );
+      return NULL;
+    }
+    
+    // need custom SQL
+    $phone_call_id = static::db()->get_one(
+      sprintf( 'SELECT phone_call_id FROM participant_last_contacted_phone_call WHERE participant_id = %s',
+               database::format_string( $this->id ) ) );
+    return $phone_call_id ? new phone_call( $phone_call_id ) : NULL;
+  }
+
   /**
    * Override parent's magic get method so that supplementary data can be retrieved
    * @author Patrick Emond <emondpd@mcmaster.ca>

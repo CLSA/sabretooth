@@ -77,5 +77,19 @@ abstract class has_note extends record
     $db_note->note = $note;
     $db_note->save();
   }
+  
+  /**
+   * Gets a note record (new or existing) for this record type.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param integer $id
+   * @return note record
+   * @static
+   * @access public
+   */
+  static public function get_note( $id = NULL )
+  {
+    $note_class_name = '\\sabretooth\\database\\'.static::get_table_name().'_note';
+    return new $note_class_name( $id );
+  }
 }
 ?>

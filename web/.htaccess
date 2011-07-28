@@ -1,0 +1,25 @@
+AuthType basic
+AuthBasicProvider ldap
+
+AuthLDAPURL "ldap://localhost/ou=Users,dc=clsadev,dc=rhpcs,dc=McMaster,dc=CA"
+
+Require valid-user
+
+AuthzLDAPAuthoritative off
+AuthName "clsadev"
+SSLRequireSSL
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_URI} !/$
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_METHOD} GET
+  RewriteRule .* pull.php [L,QSA]
+  RewriteCond %{REQUEST_URI} !/$
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_METHOD} POST
+  RewriteRule .* push.php [L,QSA]
+</IfModule>
+
