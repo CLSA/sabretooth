@@ -35,11 +35,11 @@
        style="text-align: {{ align|default('left') }};">
 
   {% for button in buttons %}
-    <button id="{{ name }}_{{ button }}" style="width:100px">{{ button|capitalize }}</button>
+    <button id="{{ name }}_{{ button }}" style="width:120px">{{ button|capitalize }}</button>
   {% endfor %}
   
   {% if back|default(false) %}
-    <button id="{{ name }}_back" style="width:100px">{{ back }}</button>
+    <button id="{{ name }}_back" style="width:120px">{{ back }}</button>
   {% endif %}
   </div>
 {% endmacro %}

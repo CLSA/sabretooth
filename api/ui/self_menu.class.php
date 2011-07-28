@@ -89,8 +89,23 @@ class self_menu extends widget
                           'widget' => 'participant_tree' );
     }
 
+    // get all report widgets that the user has access to
+    $reports = array();
+
+    $modifier = new db\modifier();
+    $modifier->where( 'operation.type', '=', 'widget' );
+    $modifier->where( 'operation.name', '=', 'report' );
+    $widgets = $db_role->get_operation_list( $modifier );
+    
+    foreach( $widgets as $db_widget )
+    {
+      $reports[] = array( 'heading' => str_replace( '_', ' ', $db_widget->subject ),
+                            'widget' => $db_widget->subject.'_'.$db_widget->name );
+    }
+
     $this->set_variable( 'calendars', $calendars );
     $this->set_variable( 'lists', $lists );
+    $this->set_variable( 'reports', $reports );
   }
 }
 ?>
