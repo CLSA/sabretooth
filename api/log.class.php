@@ -351,7 +351,7 @@ final class log extends singleton
       }
       else
       { // output the error using the basic php template
-        include TPL_PATH.'/index_error.php';
+        include 'error.php';
       }
       exit;
     }

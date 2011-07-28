@@ -99,6 +99,6 @@ else
 
   if( !isset( $data_type ) || 'json' == $data_type )
     util::send_http_error( json_encode( $result_array ) );
-  else include TPL_PATH.'/index_error.php';
+  else include 'error.php';
 }
 ?>
