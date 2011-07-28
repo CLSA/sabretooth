@@ -40,7 +40,7 @@ class database extends \sabretooth\base_object
    */
   public function __construct( $driver, $server, $username, $password, $database, $prefix )
   {
-    $this->driver = $driver;
+    $this->driver = 'mysql' == $driver ? 'mysqlt' : $driver;
     $this->server = $server;
     $this->username = $username;
     $this->password = $password;
@@ -51,10 +51,11 @@ class database extends \sabretooth\base_object
     $this->connection = ADONewConnection( $this->driver );
     $this->connection->SetFetchMode( ADODB_FETCH_ASSOC );
     
-    if( false == $this->connection->Connect(
-                   $this->server, $this->username, $this->password, $this->name ) )
-      throw new exc\runtime(
-        sprintf( "Unable to connect to the '%s' database.", $this->name ), __METHOD__ );
+    $this->connect();
+
+    // only start a transaction for the main database (this is an ADOdb limitation)
+    if( bus\setting_manager::self()->get_setting( 'db', 'database' ) == $database )
+      $this->connection->StartTrans();
 
     $modifier = new modifier();
     $modifier->where( 'TABLE_SCHEMA', '=', $this->name );
@@ -88,6 +89,37 @@ class database extends \sabretooth\base_object
                  'key' => $column_key );
       }
     }
+  }
+
+  /**
+   * Destructor
+   * 
+   * The main application database completes its transaction at destruction.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function __destruct()
+  {
+    // only complete a transaction for the main database (this is an ADOdb limitation)
+    if( class_exists( '\sabretooth\business\setting_manager' ) &&
+        bus\setting_manager::exists() &&
+        bus\setting_manager::self()->get_setting( 'db', 'database' ) == $this->name )
+      $this->connection->CompleteTrans();
+  }
+  
+  /**
+   * Fail the current transaction
+   * 
+   * Calling this method causes the current transaction to fail, causing any changes to the
+   * database to be rolled back when the transaction completes.
+   * The transaction will automatically fail if there is a database error, this method should
+   * only be used when a transaction should fail because of a non-database error.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function fail_transaction()
+  {
+    $this->connection->FailTrans();
   }
 
   /**
@@ -486,7 +518,7 @@ class database extends \sabretooth\base_object
       if( false == $this->connection->Connect(
         $this->server, $this->username, $this->password, $this->name ) )
         throw new exc\runtime(
-          "Unable to connect to the '$database' database.", __METHOD__ );
+          sprintf( 'Unable to connect to the "%s" database.', $this->name ), __METHOD__ );
       static::$current_database = $this->name;
     }
   }

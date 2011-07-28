@@ -70,6 +70,12 @@ if( true == $result_array['success'] )
 }
 else
 {
+  // make sure to fail any active transaction
+  if( class_exists( 'business\session' ) &&
+      business\session::exists() &&
+      business\session::self()->is_initialized() )
+    business\session::self()->get_database()->fail_transaction();
+
   util::send_http_error( json_encode( $result_array ) );
 }
 ?>
