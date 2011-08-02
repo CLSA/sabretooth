@@ -197,11 +197,10 @@ abstract class record extends \sabretooth\base_object
     // add the create_timestamp column if this is a new record
     if( is_null( $this->column_values[static::get_primary_key_name()] ) )
     {
-      $sets .= sprintf( 'create_timestamp = %s',
-                        database::format_string( $val ) );
+      $sets .= 'create_timestamp = NULL';
       $first = false;
     }
-    
+
     // now add the rest of the columns
     foreach( $this->column_values as $key => $val )
     {
