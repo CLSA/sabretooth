@@ -61,6 +61,7 @@ $SETTINGS[ 'path' ][ 'API' ] = $SETTINGS[ 'path' ][ 'SABRETOOTH' ].'/api';
 $SETTINGS[ 'path' ][ 'DOC' ] = $SETTINGS[ 'path' ][ 'SABRETOOTH' ].'/doc';
 $SETTINGS[ 'path' ][ 'SQL' ] = $SETTINGS[ 'path' ][ 'SABRETOOTH' ].'/sql';
 $SETTINGS[ 'path' ][ 'TPL' ] = $SETTINGS[ 'path' ][ 'SABRETOOTH' ].'/tpl';
+$SETTINGS[ 'path' ][ 'WEB' ] = $SETTINGS[ 'path' ][ 'SABRETOOTH' ].'/web';
 
 foreach( $SETTINGS[ 'path' ] as $path_name => $path_value ) define( $path_name.'_PATH', $path_value );
 foreach( $SETTINGS[ 'url' ] as $path_name => $path_value ) define( $path_name.'_URL', $path_value );
@@ -75,7 +76,9 @@ include_file( API_PATH.'/autoloader.class.php' );
 // registers an autoloader so classes don't have to be included manually
 autoloader::register();
 
-// set up the session and voip manager
+
+// set up the logger, session and voip manager
+log::self();
 $session = business\session::self( $SETTINGS );
 $session->initialize();
 $voip = business\voip_manager::self();

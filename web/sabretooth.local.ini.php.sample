@@ -18,7 +18,10 @@ $SETTINGS[ 'path' ][ 'LOG_FILE' ] = '/path/to/log/file';
 // Whether or not to run the application in development mode
 $SETTINGS[ 'general' ][ 'development_mode' ] = true;
 
-// The path and url of Limesurvey
+// The url of Mastodon (may be relative)
+$SETTINGS[ 'url' ][ 'MASTODON' ] = 'http://url/to/mastodon';
+
+// The path and url of Limesurvey (the url may be relative)
 $SETTINGS[ 'path' ][ 'LIMESURVEY' ] = '/path/to/limesurvey';
 $SETTINGS[ 'url' ][ 'LIMESURVEY' ] = '/url/to/limesurvey';
 

@@ -1,7 +1,9 @@
 <?php
 if( !isset( $result_array ) || !is_array( $result_array ) )
 {
-  $code = sabretooth\util::convert_number_to_code( SYSTEM_BASE_ERROR_NUMBER );
+  $code = class_exists( '\sabretooth\util' )
+        ? sabretooth\util::convert_number_to_code( SYSTEM_BASE_ERROR_NUMBER )
+        : 0;
   $result_array = array( 'error_type' => 'System',
                          'error_code' => $code,
                          'error_message' => '' );
