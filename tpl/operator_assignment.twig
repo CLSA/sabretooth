@@ -127,7 +127,11 @@
           <tr>
             <td class="heading">Appointment:</td>
             <td class="content" style="font-style: italic">
-              This assignment is fulfilling an appointment scheduled for {{ appointment }}.<br>
+              {% if appointment_missed|default( false ) %}
+                This assignment is fulfilling a missed appointment which had been scheduled for {{ appointment }}.<br>
+              {% else %}
+                This assignment is fulfilling an appointment scheduled for {{ appointment }}.<br>
+              {% endif %}
               {% if phone_id %}
                 The participant specified to be called at: {{ phone_list[phone_id] }}.
               {% else %}
