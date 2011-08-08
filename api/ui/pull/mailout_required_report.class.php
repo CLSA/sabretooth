@@ -102,7 +102,7 @@ class mailout_required_report extends base_report
             }
             else $survey_mod->where( 'token', '=', $token );
 
-            db\limesurvey\survey::$table_sid = $db_phase->sid;
+            db\limesurvey\survey::set_sid( $db_phase->sid );
             foreach( db\limesurvey\survey::select( $survey_mod ) as $db_survey )
             {
               if( $db_survey && 'Y' == $db_survey->get_response( $question_code ) )
