@@ -269,7 +269,7 @@ class appointment extends record
    * @return string
    * @access public
    */
-  public function get_state()
+  public function get_state( $ignore_assignments = false )
   {
     if( is_null( $this->id ) )
     {
@@ -292,7 +292,7 @@ class appointment extends record
 
     // get the status of the appointment
     $db_assignment = $this->get_assignment();
-    if( !is_null( $db_assignment ) )
+    if( !$ignore_assignments && !is_null( $db_assignment ) )
     {
       if( !is_null( $db_assignment->end_datetime ) )
       { // assignment closed but appointment never completed

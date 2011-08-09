@@ -193,12 +193,15 @@ abstract class record extends \sabretooth\base_object
     // building the SET list since it is identical for inserts and updates
     $sets = '';
     $first = true;
-
-    // add the create_timestamp column if this is a new record
-    if( is_null( $this->column_values[static::get_primary_key_name()] ) )
+    
+    if( $this->include_timestamps )
     {
-      $sets .= 'create_timestamp = NULL';
-      $first = false;
+      // add the create_timestamp column if this is a new record
+      if( is_null( $this->column_values[static::get_primary_key_name()] ) )
+      {
+        $sets .= 'create_timestamp = NULL';
+        $first = false;
+      }
     }
 
     // now add the rest of the columns
@@ -672,14 +675,18 @@ abstract class record extends \sabretooth\base_object
     foreach( $ids as $foreign_key_value )
     {
       if( !$first ) $values .= ', ';
-      $values .= sprintf( '(NULL, %s, %s)',
-                       database::format_string( $primary_key_value ),
-                       database::format_string( $foreign_key_value ) );
+      $values .= sprintf( $this->include_timestamps
+                          ? '(%s, %s)'
+                          : '(NULL, %s, %s)',
+                          database::format_string( $primary_key_value ),
+                          database::format_string( $foreign_key_value ) );
       $first = false;
     }
 
     static::db()->execute(
-      sprintf( 'INSERT INTO %s (create_timestamp, %s_id, %s_id) VALUES %s',
+      sprintf( $this->include_timestamps
+               ? 'INSERT INTO %s (create_timestamp, %s_id, %s_id) VALUES %s'
+               : 'INSERT INTO %s (%s_id, %s_id) VALUES %s',
                $joining_table_name,
                static::get_table_name(),
                $record_type,
@@ -1064,5 +1071,14 @@ abstract class record extends \sabretooth\base_object
    * @access public
    */
   public static $auto_save = false;
+
+  /**
+   * Determines whether or not to include create_timestamp and update_timestamp when writing
+   * records to the database.
+   * @var boolean
+   * @static
+   * @access protected
+   */
+  protected $include_timestamps = true;
 }
 ?>
