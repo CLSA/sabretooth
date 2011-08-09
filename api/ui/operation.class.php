@@ -46,7 +46,10 @@ abstract class operation extends \sabretooth\base_object
       db\operation::get_operation( $type, $subject, $name );
     
     if( is_null( $this->operation_record ) )
-      throw new exc\runtime( 'Unable to create operation record', __METHOD__ );
+      throw new exc\runtime(
+        sprintf( 'Unable to create operation record for %s: %s_%s',
+                 $type, $subject, $name ),
+        __METHOD__ );
 
     if( is_array( $args ) ) $this->arguments = $args;
     
