@@ -48,8 +48,12 @@ class appointment_new extends base_new
     
     // make sure there is a slot available for the appointment
     $columns = $this->get_argument( 'columns', array() );
+    
     foreach( $columns as $column => $value ) $this->get_record()->$column = $value;
-    if( !$this->get_record()->validate_date() )
+    
+    $force = $this->get_argument( 'force' );
+    
+    if( !$force && !$this->get_record()->validate_date() )
       throw new exc\notice( 'There are no operators available during that time.', __METHOD__ );
     
     // no errors, go ahead and make the change

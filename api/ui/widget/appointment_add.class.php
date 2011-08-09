@@ -98,6 +98,10 @@ class appointment_add extends base_appointment_view
     $this->set_item( 'phone_id', '', false, $phones );
     $this->set_item( 'datetime', '', true, $datetime_limits );
 
+    $this->set_variable( 
+      'is_supervisor', 
+      'supervisor' == bus\session::self()->get_role()->name );
+
     $this->finish_setting_items();
   }
 }
