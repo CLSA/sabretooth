@@ -112,15 +112,16 @@
       {% if survey_url %}
         // Defines the layout when showing the survey pane.
         // Should only be visible when there is an active survey.
+
+        // ui-layout-south
         var layout = $( "body" ).layout( {
-          defaults: {
-            applyDefaultStyles: true,
-            spacing_open: 8,
-            spacing_closed: 16 },
-          south: {
-            slidable: true,
-            size: 500,
-            initClosed: false }
+          south__maskIframesOnResize: ".ui-layout-south",
+          applyDefaultStyles: true,
+          spacing_open: 8,
+          spacing_closed: 16,
+          slidable: true,
+          size: 500,
+          initClosed: false
         } );
       {% endif %}
     } );
