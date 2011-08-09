@@ -417,4 +417,8 @@ VALUES( "push", "user", "reset_password", true, "Resets a user's password." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "user", "primary", true, "Retrieves base user information." );
 
+-- voip
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "voip", "dtmf", true, "Sends a DTMF tone to the Asterisk server." );
+
 COMMIT;
