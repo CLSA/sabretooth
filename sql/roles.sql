@@ -794,6 +794,18 @@ INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "push" AND subject = "voip" AND name = "dtmf" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "push" AND subject = "voip" AND name = "play" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "push" AND subject = "voip" AND name = "begin_monitor" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "push" AND subject = "voip" AND name = "end_monitor" );
 
 -- participant
 INSERT INTO role_has_operation

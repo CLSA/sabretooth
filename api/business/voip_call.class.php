@@ -177,7 +177,16 @@ class voip_call extends \sabretooth\base_object
   {
     if( !voip_manager::self()->get_enabled() ) return;
 
-    $filename = sprintf( '%s/%s.wav', VOIP_MONITOR_PATH, $file );
+    $filename = sprintf( '%s/%s', VOIP_MONITOR_PATH, $file );
+
+    // make sure to not overwrite any existing recordings
+    if( file_exists( $filename.'-in.wav' ) )
+    {
+      $index = 1;
+      while( file_exists( $filename.'-'.$index.'-in.wav' ) ) $index++;
+      $filename .= '-'.$index; 
+    }
+
     if( false == $this->manager->monitor( $this->get_channel(), $filename, 'wav' ) )
       throw new exc\voip( $this->manager->getLastError(), __METHOD__ );
   }
