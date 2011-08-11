@@ -39,6 +39,7 @@ class qnaire_view extends base_view
       'The questionnaire which must be finished before this one begins.' );
     $this->add_item( 'delay', 'number', 'Delay (weeks)',
       'How many weeks after the previous questionnaire is completed before this one may begin.' );
+    $this->add_item( 'withdraw_sid', 'enum', 'Withdraw Survey' );
     $this->add_item( 'phases', 'constant', 'Number of phases' );
     $this->add_item( 'description', 'text', 'Description' );
 
@@ -74,12 +75,20 @@ class qnaire_view extends base_view
     $ranks = array();
     for( $rank = 1; $rank <= ( $num_ranks + 1 ); $rank++ ) $ranks[] = $rank;
     $ranks = array_combine( $ranks, $ranks );
+    $surveys = array();
+    $modifier = new db\modifier();
+    $modifier->where( 'active', '=', 'Y' );
+    $modifier->where( 'anonymized', '=', 'N' );
+    $modifier->where( 'tokenanswerspersistence', '=', 'Y' );
+    foreach( db\limesurvey\surveys::select( $modifier ) as $db_survey )
+      $surveys[$db_survey->sid] = $db_survey->get_title();
 
     // set the view's items
     $this->set_item( 'name', $this->get_record()->name, true );
     $this->set_item( 'rank', $this->get_record()->rank, true, $ranks );
     $this->set_item( 'prev_qnaire_id', $this->get_record()->prev_qnaire_id, false, $qnaires );
     $this->set_item( 'delay', $this->get_record()->delay, true );
+    $this->set_item( 'withdraw_sid', $this->get_record()->withdraw_sid, true, $surveys );
     $this->set_item( 'phases', $this->get_record()->get_phase_count() );
     $this->set_item( 'description', $this->get_record()->description );
 

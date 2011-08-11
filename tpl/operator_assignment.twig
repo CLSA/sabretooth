@@ -38,6 +38,14 @@
           if( ajax_push( "assignment", "end" ) ) slot_refresh( {{ slot }} );
         } );
         
+        // withdraw button
+        $( "#{{ widget.full }}__withdraw" ).click( function() {
+          if( ajax_push( "participant", "withdraw",
+                         { "id": {{ participant_id }},
+                           "cancel": {{ "withdraw" == participant_consent ? "1" : "0" }} } ) )
+            window.location.reload();
+        } );
+        
         // call/end-call button
         $( "#{{ widget.full }}__call" ).button( {
           text: true,
@@ -50,14 +58,10 @@
           args = new Object();
           {% if on_call %}
             args.status = $( "#{{ widget.full }}__parameter" ).val();
-            if( ajax_push( "phone_call", "end", args ) ) {
-              window.location.reload();
-            }
+            if( ajax_push( "phone_call", "end", args ) ) window.location.reload();
           {% else %}
             args.phone_id = $( "#{{ widget.full }}__parameter" ).val();
-            if( ajax_push( "phone_call", "begin", args ) ) {
-              window.location.reload();
-            }
+            if( ajax_push( "phone_call", "begin", args ) ) window.location.reload();
           {% endif %}
         } );
     
@@ -201,7 +205,12 @@
             {{ note_widget( widget.full, "assignment", assignment_id,
                             false, "Assignment Notes" ) }}
           </td>
-          <td align="right"></td>
+          <td align="right">
+            <button id="{{ widget.full }}__withdraw"
+                    {{ on_call ? "" : "disabled" }}
+                    style="width: 180px;"
+                    >{{ "withdraw" == participant_consent ? "Cancel " : "" }}Withdraw</button>
+          </td>
         </tr>
       </table>
     {% else %}

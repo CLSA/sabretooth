@@ -96,6 +96,7 @@ CREATE  TABLE IF NOT EXISTS `qnaire` (
   `rank` INT NOT NULL ,
   `prev_qnaire_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The qnaire which must be completed before this one begins.' ,
   `delay` INT NOT NULL DEFAULT 0 COMMENT 'How many weeks after then end of the previous qnaire before starting.' ,
+  `withdraw_sid` INT NOT NULL ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) ,

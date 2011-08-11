@@ -57,7 +57,9 @@ class interview extends has_note
       $db_assignment = new assignment();
       $db_assignment->interview_id = $this->id;
     }
-    $token = $db_assignment->get_token( $db_phase );
+    $token = limesurvey\tokens::determine_token_string(
+               $this,
+               $db_phase->repeated ? $db_assignment : NULL );
     $survey_db = bus\session::self()->get_survey_database();
     return (float) $survey_db->get_one(
       sprintf( ' SELECT timing.interviewTime'.
@@ -66,7 +68,7 @@ class interview extends has_note
                ' AND survey.token = %s',
                $db_phase->sid,
                $db_phase->sid,
-               database::format_string( $db_assignment->get_token( $db_phase ) ) ) );
+               database::format_string( $token ) ) );
   }
 }
 ?>
