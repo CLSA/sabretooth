@@ -52,24 +52,21 @@ class participant_status_report extends base_report
       'Withdrawn from study' => 0,
       'Hard refusal' => 0,
       'Soft refusal' => 0,
-      '10+ Unproductive Call Attempts' => 0,
-      'Answering machine - Message left' => 0,
-      'Answering machine - No message left' => 0,
-      'Busy' => 0,
       'Appointment' => 0,
-      'Deceased' => 0,
-      'Disconnected or not in service' => 0,
-      'Fax/data line' => 0,
-      'Not reached' => 0,
-      'No answer - Ring out' => 0,
+      '10+ Unproductive Call Attempts' => 0 );
+      
+    // add call results (not including "contacted")
+    foreach( db\phone_call::get_enum_values( 'status' ) as $status )
+      if( 'contacted' != $status ) $region_totals[ ucfirst( $status ) ] = 0;
+
+    $region_totals = array_merge( $region_totals, array(
       'Not yet called' => 0,
+      'Deceased' => 0,
       'Permanent condition (excl. deceased)' => 0,
-      'Wrong or business number' => 0,
       'Grand Total Attempted' => 0,
       'Total completed interviews' => 0,
       'Response rate (incl. soft refusals)' => 0,
-      'Response rate (excl. soft refusals)' => 0
-      );
+      'Response rate (excl. soft refusals)' => 0 ) );
 
     $region_mod = new db\modifier();
     $region_mod->order( 'abbreviation' );
@@ -192,38 +189,7 @@ class participant_status_report extends base_report
             }
             else if( !is_null( $db_recent_failed_call ) )
             {              
-              if( 'machine message' == $db_recent_failed_call->status )
-              {
-                $grand_totals[ $province ][ 'Answering machine - Message left' ]++;
-              }
-              else if( 'machine no message' == $db_recent_failed_call->status )
-              {
-                $grand_totals[ $province ][ 'Answering machine - No message left' ]++;
-              }
-              else if( 'busy' == $db_recent_failed_call->status )
-              {
-                $grand_totals[ $province ][ 'Busy' ]++;
-              }
-              else if( 'disconnected' == $db_recent_failed_call->status )
-              {
-                $grand_totals[ $province ][ 'Disconnected or not in service' ]++;
-              }
-              else if( 'fax' == $db_recent_failed_call->status )
-              {
-                $grand_totals[ $province ][ 'Fax/data line' ]++;
-              }
-              else if( 'not reached' == $db_recent_failed_call->status )
-              {
-                $grand_totals[ $province ][ 'Not reached' ]++;
-              }
-              else if( 'no answer' == $db_recent_failed_call->status ) 
-              {
-                $grand_totals[ $province ][ 'No answer - Ring out' ]++;
-              }
-              else if( 'wrong number' == $db_recent_failed_call->status )
-              {
-                $grand_totals[ $province ][ 'Wrong or business number' ]++;
-              }
+              $grand_totals[ $province ][ ucfirst( $db_recent_failed_call->status ) ]++;
             }  
           }// end interview not completed
         }// end non empty interview list
