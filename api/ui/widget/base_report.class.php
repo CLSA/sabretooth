@@ -218,7 +218,7 @@ abstract class base_report extends \sabretooth\ui\widget
   public static function may_restrict_by_site()
   {
     $role_name = bus\session::self()->get_role()->name;
-    return 'administrator' == $role_name || 'technician' == $role_name;
+    return 'administrator' == $role_name;
   }
 
   /**
