@@ -50,6 +50,7 @@ class assignment extends has_note
    * script or a questionnaire.  It then determines whether the appropriate script has been
    * completed or not.
    * Note: This method will create tokens in the limesurvey database as necessary.
+   * This is also where interviews are marked as complete once all phases are finished.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
@@ -144,6 +145,13 @@ class assignment extends has_note
             break;
           }
         }
+      }
+
+      // complete the interview if all phases are complete
+      if( false === $this->current_sid )
+      {
+        $db_interview->completed = true;
+        $db_interview->save();
       }
     }
   }
