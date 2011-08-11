@@ -668,8 +668,12 @@ final class session extends \sabretooth\singleton
     $sid = $db_assignment->get_current_sid();
     $token = $db_assignment->get_current_token();
     if( false === $sid || false == $token ) return false;
-
-    return LIMESURVEY_URL.sprintf( '/index.php?sid=%s&token=%s', $sid, $token );
+    
+    // determine which language to use
+    $lang = $db_assignment->get_interview()->get_participant()->language;
+    if( !$lang ) $lang = 'en';
+    
+    return LIMESURVEY_URL.sprintf( '/index.php?sid=%s&lang=%s&token=%s', $sid, $lang, $token );
   }
 
   /**
