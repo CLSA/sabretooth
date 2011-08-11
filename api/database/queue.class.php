@@ -352,7 +352,7 @@ class queue extends record
       foreach( phone_call::get_enum_values( 'status' ) as $phone_call_status )
       {
         // ignore statuses which result in deactivating phone numbers
-        if( 'disconnected' == $phone_call_status || 'wrong number' == $phone_call_status )
+        if( 'disconnected' != $phone_call_status && 'wrong number' != $phone_call_status )
         {
           // Main phone call status grouping
           self::$query_list[$phone_call_status] = sprintf(
