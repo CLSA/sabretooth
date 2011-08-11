@@ -158,7 +158,6 @@ class participant_status_report extends base_report
           }
           else 
           {
-            // TODO: soft refusals currently not being determined by the software
             $assignment_mod = new db\modifier();
             $assignment_mod->order_desc( 'start_datetime' );
             $failed_calls = 0;
