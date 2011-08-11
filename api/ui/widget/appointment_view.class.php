@@ -39,7 +39,8 @@ class appointment_view extends base_appointment_view
     $this->add_item( 'datetime', 'datetime', 'Date' );
     $this->add_item( 'assignment.user', 'constant', 'Assigned to' );
     $this->add_item( 'state', 'constant', 'State',
-      '(One of upcoming, assignable, missed, assigned, in progress, complete or incomplete)' );
+      '(One of reached, not reached, upcoming, assignable, missed, incomplete, assigned '.
+      'or in progress)' );
   }
 
   /**
