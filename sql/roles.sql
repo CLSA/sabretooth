@@ -179,19 +179,7 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "push" AND subject = "participant" AND name = "delete" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
-    operation_id = ( SELECT id FROM operation WHERE
       type = "push" AND subject = "participant" AND name = "edit" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "push" AND subject = "participant" AND name = "new" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "widget" AND subject = "participant" AND name = "add" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
@@ -474,19 +462,7 @@ AND operation.subject = "clerk";
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "push" AND subject = "participant" AND name = "delete" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
-    operation_id = ( SELECT id FROM operation WHERE
       type = "push" AND subject = "participant" AND name = "edit" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "push" AND subject = "participant" AND name = "new" );
-INSERT INTO role_has_operation
-SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
-    operation_id = ( SELECT id FROM operation WHERE
-      type = "widget" AND subject = "participant" AND name = "add" );
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE

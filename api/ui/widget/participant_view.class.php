@@ -34,7 +34,7 @@ class participant_view extends base_view
     
     // create an associative array with everything we want to display about the participant
     $this->add_item( 'active', 'boolean', 'Active' );
-    $this->add_item( 'uid', 'string', 'Unique ID' );
+    $this->add_item( 'uid', 'constant', 'Unique ID' );
     $this->add_item( 'first_name', 'string', 'First Name' );
     $this->add_item( 'last_name', 'string', 'Last Name' );
     $this->add_item( 'language', 'enum', 'Preferred Language' );
