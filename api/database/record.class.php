@@ -488,7 +488,7 @@ abstract class record extends \sabretooth\base_object
    * relationships.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
-   * @param modifier $modifier A modifier to apply to the count.
+   * @param modifier $modifier A modifier to apply to the list or count.
    * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
    * @param boolean $count If true then this method returns the count instead of list of records.
    * @return array( record ) | int
@@ -676,13 +676,14 @@ abstract class record extends \sabretooth\base_object
     {
       if( !$first ) $values .= ', ';
       $values .= sprintf( $this->include_timestamps
-                          ? '(%s, %s)'
-                          : '(NULL, %s, %s)',
+                          ? '(NULL, %s, %s)'
+                          : '(%s, %s)',
                           database::format_string( $primary_key_value ),
                           database::format_string( $foreign_key_value ) );
       $first = false;
     }
-
+    
+    log::debug( $values );
     static::db()->execute(
       sprintf( $this->include_timestamps
                ? 'INSERT INTO %s (create_timestamp, %s_id, %s_id) VALUES %s'
