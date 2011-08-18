@@ -23,7 +23,6 @@ class mastodon_manager extends \sabretooth\singleton
    * Constructor.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\argument
    * @access protected
    */
   protected function __construct()
