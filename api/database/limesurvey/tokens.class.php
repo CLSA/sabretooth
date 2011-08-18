@@ -30,53 +30,18 @@ class tokens extends sid_record
    */
   public function update_attributes( $db_participant, $extended = false )
   {
-    $db_site = bus\session::self()->get_site();
-    $db_role = bus\session::self()->get_role();
+    $mastodon_manager = bus\mastodon_manager::self();
     $db_user = bus\session::self()->get_user();
     
-    if( !is_null( MASTODON_URL ) )
+    if( $mastodon_manager->is_enabled() )
     { // get attributes from mastodon
-      // determine mastodon's base url (using basic authentication)
-      $base_url = SABRETOOTH_URL.'/'.MASTODON_URL.'/';
-      $base_url = preg_replace(
-        '#://#', '://'.$_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'].'@', $base_url );
-  
-      $request = new \HttpRequest();
-      $request->enableCookies();
-    
-      // set the site
-      $request->setUrl( $base_url.'self/set_site' );
-      $request->setMethod( \HttpRequest::METH_POST );
-      $request->setPostFields( array( 'name' => $db_site->name, 'cohort' => 'tracking' ) );
-  
-      if( 200 != $request->send()->getResponseCode() )
-        throw new exc\runtime( 'Unable to connect to Mastodon', __METHOD__ );
       
-      // set the role
-      $request->setUrl( $base_url.'self/set_role' );
-      $request->setMethod( \HttpRequest::METH_POST );
-      $request->setPostFields( array( 'name' => $db_role->name ) );
-      if( 200 != $request->send()->getResponseCode() )
-        throw new exc\runtime( 'Unable to connect to Mastodon', __METHOD__ );
+      // get the participant's information
+      $participant_info = $mastodon_manager->pull(
+        'participant', 'primary', array( 'uid' => $db_participant->uid ) );
+      $consent_info = $mastodon_manager->pull(
+        'participant', 'list_consent', array( 'uid' => $db_participant->uid ) );
       
-      // get the participant's primary information
-      $request->setUrl( $base_url.'participant/primary' );
-      $request->setMethod( \HttpRequest::METH_GET );
-      $request->setQueryData( array( 'uid' => $db_participant->uid ) );
-      $message = $request->send();
-      if( 200 != $message->getResponseCode() )
-        throw new exc\runtime( 'Unable to fetch participant info from Mastodon', __METHOD__ );
-      $participant_info = json_decode( $message->getBody() );
-      
-      // get the participant's consent information
-      $request->setUrl( $base_url.'participant/list_consent' );
-      $request->setMethod( \HttpRequest::METH_GET );
-      $request->setQueryData( array( 'uid' => $db_participant->uid ) );
-      $message = $request->send();
-      if( 200 != $message->getResponseCode() )
-        throw new exc\runtime( 'Unable to fetch consent info from Mastodon', __METHOD__ );
-      $consent_info = json_decode( $message->getBody() );
-
       $written_consent = false;
       foreach( $consent_info->data as $consent )
       {
@@ -122,7 +87,7 @@ class tokens extends sid_record
     if( !$extended )
     {
       // age
-      if( !is_null( MASTODON_URL ) )
+      if( $mastodon_manager->is_enabled() )
       { // get age from mastodon
         $dob = util::get_datetime_object( $participant_info->data->date_of_birth );
         $this->attribute_1 = util::get_interval( $dob )->y;
@@ -139,15 +104,10 @@ class tokens extends sid_record
     else
     {
       // get the participant's alternate contact information (if using mastodon)
-      if( !is_null( MASTODON_URL ) )
+      if( $mastodon_manager->is_enabled() )
       {
-        $request->setUrl( $base_url.'participant/list_alternate' );
-        $request->setMethod( \HttpRequest::METH_GET );
-        $request->setQueryData( array( 'uid' => $db_participant->uid ) );
-        $message = $request->send();
-        if( 200 != $message->getResponseCode() )
-          throw new exc\runtime( 'Unable to fetch alternate info from Mastodon', __METHOD__ );
-        $alternate_info = json_decode( $message->getBody() );
+        $alternate_info = $mastodon_manager->pull(
+          'participant', 'list_alternate', array( 'uid' => $db_participant->uid ) );
       }
       else
       {
