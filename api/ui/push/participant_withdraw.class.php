@@ -45,7 +45,6 @@ class participant_withdraw extends base_record_push
       $consent_mod->order_desc( 'date' );
       $consent_mod->limit( 1 );
       $db_consent = current( $this->get_record()->get_consent_list( $consent_mod ) );
-      log::debug( $db_consent );
       if( $db_consent && 'withdraw' == $db_consent->event ) $db_consent->delete();
       else throw new exc\runtime(
         sprintf( 'Trying to cancel withdraw for participant id %d but most recent consent is not '.

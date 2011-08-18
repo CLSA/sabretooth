@@ -683,7 +683,6 @@ abstract class record extends \sabretooth\base_object
       $first = false;
     }
     
-    log::debug( $values );
     static::db()->execute(
       sprintf( $this->include_timestamps
                ? 'INSERT INTO %s (create_timestamp, %s_id, %s_id) VALUES %s'
