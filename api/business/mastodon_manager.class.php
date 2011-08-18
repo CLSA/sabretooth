@@ -113,7 +113,8 @@ class mastodon_manager extends \sabretooth\singleton
       $request->setPostFields( $arguments );
     }
 
-    if( 200 != $request->send()->getResponseCode() )
+    $message = $request->send();
+    if( 200 != $message->getResponseCode() )
       throw new exc\runtime( 'Unable to connect to Mastodon', __METHOD__ );
   }
 

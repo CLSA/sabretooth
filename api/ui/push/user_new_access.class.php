@@ -69,7 +69,6 @@ class user_new_access extends base_new_record
     $args['role_name_list'] = $role_name_list;
     $args['site_name_list'] = $site_name_list;
   
-    log::debug( $args );
     // now send the same request to mastodon
     $mastodon_manager = bus\mastodon_manager::self();
     $mastodon_manager->push( 'user', 'new_access', $args );

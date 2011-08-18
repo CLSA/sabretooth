@@ -30,5 +30,34 @@ class site_delete_access extends base_delete_record
   {
     parent::__construct( 'site', 'access', $args );
   }
+  
+  /**
+   * Executes the push.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function finish()
+  {
+    // we'll need the arguments to send to mastodon
+    $args = $this->arguments;
+
+    // replace the site's id with their name
+    $db_site = new db\site( $this->get_argument('id') );
+    unset( $args['id'] );
+    $args['site'] = $db_site->name;
+    $args['cohort'] = 'tracking';
+    
+    // replace the access id (remove_id) with the user and role
+    $db_access = new db\access( $this->get_argument('remove_id') );
+    unset( $args['remove_id'] );
+    $args['user'] = $db_access->get_user()->name;
+    $args['role'] = $db_access->get_role()->name;
+    
+    parent::finish();
+
+    // now send the same request to mastodon
+    $mastodon_manager = bus\mastodon_manager::self();
+    $mastodon_manager->push( 'site', 'delete_access', $args );
+  }
 }
 ?>

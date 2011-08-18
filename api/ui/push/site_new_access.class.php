@@ -38,10 +38,40 @@ class site_new_access extends base_new_record
    */
   public function finish()
   {
+    // we'll need the arguments to send to mastodon
+    $args = $this->arguments;
+
+    // replace the site's id with their name
+    $db_site = new db\site( $this->get_argument('id') );
+    unset( $args['id'] );
+
+    $args['site'] = $db_site->name;
+    $args['cohort'] = 'tracking';
+    
     foreach( $this->get_argument( 'role_id_list' ) as $role_id )
     {
       $this->get_record()->add_access( $this->get_argument( 'user_id_list' ), $role_id );
+
+      // build a list of role names for mastodon
+      $db_role = new db\role( $role_id );
+      $role_name_list[] = $db_role->name;
     }
+
+    // build a list of user names for mastodon
+    foreach( $this->get_argument( 'user_id_list' ) as $user_id )
+    {
+      $db_user = new db\user( $user_id );
+      $user_name_list[] = $db_user->name;
+    }
+
+    unset( $args['role_id_list'] );
+    unset( $args['user_id_list'] );
+    $args['role_name_list'] = $role_name_list;
+    $args['user_name_list'] = $user_name_list;
+  
+    // now send the same request to mastodon
+    $mastodon_manager = bus\mastodon_manager::self();
+    $mastodon_manager->push( 'site', 'new_access', $args );
   }
 }
 ?>
