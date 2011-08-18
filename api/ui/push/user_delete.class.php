@@ -30,5 +30,28 @@ class user_delete extends base_delete
   {
     parent::__construct( 'user', $args );
   }
+  
+  /**
+   * Executes the push.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function finish()
+  {
+    // we'll need the arguments to send to mastodon
+    $args = $this->arguments;
+
+    // replace the user's id with their name
+    $db_user = new db\user( $this->get_argument('id') );
+    unset( $args['id'] );
+
+    $args['user'] = $db_user->name;
+    
+    parent::finish();
+
+    // now send the same request to mastodon
+    $mastodon_manager = bus\mastodon_manager::self();
+    $mastodon_manager->push( 'user', 'delete', $args );
+  }
 }
 ?>
