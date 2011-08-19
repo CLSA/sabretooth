@@ -41,17 +41,17 @@ class user_delete_access extends base_delete_record
     // we'll need the arguments to send to mastodon
     $args = $this->arguments;
 
-    // replace the user's id with their name
+    // replace the user id with a unique key
     $db_user = new db\user( $this->get_argument('id') );
     unset( $args['id'] );
-    $args['user'] = $db_user->name;
+    $args['noid']['user.name'] = $db_user->name;
     
-    // replace the access id (remove_id) with the role, site and cohort
+    // replace the access id with identifying names of the unique key
     $db_access = new db\access( $this->get_argument('remove_id') );
     unset( $args['remove_id'] );
-    $args['role'] = $db_access->get_role()->name;
-    $args['site'] = $db_access->get_site()->name;
-    $args['cohort'] = 'tracking';
+    $args['noid']['role.name'] = $db_access->get_role()->name;
+    $args['noid']['site.name'] = $db_access->get_site()->name;
+    $args['noid']['site.cohort'] = 'tracking';
     
     parent::finish();
 

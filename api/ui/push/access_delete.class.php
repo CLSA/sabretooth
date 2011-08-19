@@ -41,13 +41,13 @@ class access_delete extends base_delete
     // we'll need the arguments to send to mastodon
     $args = $this->arguments;
 
-    // replace the user's id with their name
+    // replace the access id with a unique key
     $db_access = new db\access( $this->get_argument('id') );
     unset( $args['id'] );
-    $args['user'] = $db_access->get_user()->name;
-    $args['role'] = $db_access->get_role()->name;
-    $args['site'] = $db_access->get_site()->name;
-    $args['cohort'] = 'tracking';
+    $args['noid']['user.name'] = $db_access->get_user()->name;
+    $args['noid']['role.name'] = $db_access->get_role()->name;
+    $args['noid']['site.name'] = $db_access->get_site()->name;
+    $args['noid']['site.cohort'] = 'tracking';
 
     parent::finish();
 

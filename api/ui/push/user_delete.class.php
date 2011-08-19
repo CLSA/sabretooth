@@ -41,11 +41,10 @@ class user_delete extends base_delete
     // we'll need the arguments to send to mastodon
     $args = $this->arguments;
 
-    // replace the user's id with their name
+    // replace the user id with a unique key
     $db_user = new db\user( $this->get_argument('id') );
     unset( $args['id'] );
-
-    $args['user'] = $db_user->name;
+    $args['noid']['user.name'] = $db_user->name;
     
     parent::finish();
 

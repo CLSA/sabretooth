@@ -41,12 +41,11 @@ class site_new_access extends base_new_record
     // we'll need the arguments to send to mastodon
     $args = $this->arguments;
 
-    // replace the site's id with their name
+    // replace the site id with a unique key
     $db_site = new db\site( $this->get_argument('id') );
     unset( $args['id'] );
-
-    $args['site'] = $db_site->name;
-    $args['cohort'] = 'tracking';
+    $args['noid']['site.name'] = $db_site->name;
+    $args['noid']['site.cohort'] = 'tracking';
     
     foreach( $this->get_argument( 'role_id_list' ) as $role_id )
     {
@@ -66,8 +65,8 @@ class site_new_access extends base_new_record
 
     unset( $args['role_id_list'] );
     unset( $args['user_id_list'] );
-    $args['role_name_list'] = $role_name_list;
-    $args['user_name_list'] = $user_name_list;
+    $args['noid']['role_name_list'] = $role_name_list;
+    $args['noid']['user_name_list'] = $user_name_list;
   
     // now send the same request to mastodon
     $mastodon_manager = bus\mastodon_manager::self();

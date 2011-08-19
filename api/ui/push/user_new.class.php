@@ -91,9 +91,9 @@ class user_new extends base_new
       $db_role = new db\role( $this->role_id );
 
       // add the site, cohort and role to the arguments for mastodon
-      $args['columns']['site'] = $db_site->name;
-      $args['columns']['cohort'] = 'tracking';
-      $args['columns']['role'] = $db_role->name;
+      $args['noid']['site.name'] = $db_site->name;
+      $args['noid']['site.cohort'] = 'tracking';
+      $args['noid']['role.name'] = $db_role->name;
     }
 
     // now send the same request to mastodon
