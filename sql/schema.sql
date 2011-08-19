@@ -96,6 +96,7 @@ CREATE  TABLE IF NOT EXISTS `qnaire` (
   `rank` INT NOT NULL ,
   `prev_qnaire_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The qnaire which must be completed before this one begins.' ,
   `delay` INT NOT NULL DEFAULT 0 COMMENT 'How many weeks after then end of the previous qnaire before starting.' ,
+  `withdraw_sid` INT NOT NULL ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) ,
@@ -303,6 +304,7 @@ CREATE  TABLE IF NOT EXISTS `address` (
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
   INDEX `fk_region_id` (`region_id` ASC) ,
+  UNIQUE INDEX `uq_participant_id_rank` (`participant_id` ASC, `rank` ASC) ,
   CONSTRAINT `fk_address_participant_id`
     FOREIGN KEY (`participant_id` )
     REFERENCES `participant` (`id` )
@@ -335,6 +337,7 @@ CREATE  TABLE IF NOT EXISTS `phone` (
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
   INDEX `fk_address_id` (`address_id` ASC) ,
+  UNIQUE INDEX `uq_participant_id_rank` (`participant_id` ASC, `rank` ASC) ,
   CONSTRAINT `fk_phone_participant_id`
     FOREIGN KEY (`participant_id` )
     REFERENCES `participant` (`id` )
@@ -343,8 +346,8 @@ CREATE  TABLE IF NOT EXISTS `phone` (
   CONSTRAINT `fk_phone_address_id`
     FOREIGN KEY (`address_id` )
     REFERENCES `address` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
+    ON DELETE SET NULL
+    ON UPDATE SET NULL)
 ENGINE = InnoDB;
 
 

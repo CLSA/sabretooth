@@ -45,6 +45,12 @@ abstract class operation extends \sabretooth\base_object
     $this->operation_record =
       db\operation::get_operation( $type, $subject, $name );
     
+    if( is_null( $this->operation_record ) )
+      throw new exc\runtime(
+        sprintf( 'Unable to create operation record for %s: %s_%s',
+                 $type, $subject, $name ),
+        __METHOD__ );
+
     if( is_array( $args ) ) $this->arguments = $args;
     
     // throw a permission exception if the user is not allowed to perform this operation

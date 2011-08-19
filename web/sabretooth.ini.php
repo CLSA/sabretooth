@@ -14,7 +14,7 @@ namespace sabretooth;
 global $SETTINGS;
 
 // tagged version
-$SETTINGS[ 'general' ][ 'version' ] = '0.2.2b';
+$SETTINGS[ 'general' ][ 'version' ] = '0.2.3';
 
 // always leave as false when running as production server
 $SETTINGS[ 'general' ][ 'development_mode' ] = false;
@@ -23,24 +23,31 @@ $SETTINGS[ 'general' ][ 'development_mode' ] = false;
 $script = $_SERVER['SCRIPT_NAME'];
 if( false !== strpos( $script, 'slot/index.php' ) )
 {
-  $SETTINGS[ 'path' ][ 'COOKIE' ] = substr( $_SERVER['SCRIPT_NAME'], 0, -14 );
+  $base_url = substr( $_SERVER['SCRIPT_NAME'], 0, -15 );
   $SETTINGS[ 'general' ][ 'operation_type' ] = 'widget';
 }
 else if( false !== strpos( $script, 'pull.php' ) )
 {
-  $SETTINGS[ 'path' ][ 'COOKIE' ] = substr( $_SERVER['SCRIPT_NAME'], 0, -8 );
+  $base_url = substr( $_SERVER['SCRIPT_NAME'], 0, -9 );
   $SETTINGS[ 'general' ][ 'operation_type' ] = 'pull';
 }
 else if( false !== strpos( $script, 'push.php' ) )
 {
-  $SETTINGS[ 'path' ][ 'COOKIE' ] = substr( $_SERVER['SCRIPT_NAME'], 0, -8 );
+  $base_url = substr( $_SERVER['SCRIPT_NAME'], 0, -9 );
   $SETTINGS[ 'general' ][ 'operation_type' ] = 'push';
 }
 else
 {
-  $SETTINGS[ 'path' ][ 'COOKIE' ] = substr( $_SERVER['SCRIPT_NAME'], 0, -9 );
+  $base_url = substr( $_SERVER['SCRIPT_NAME'], 0, -10 );
   $SETTINGS[ 'general' ][ 'operation_type' ] = 'index';
 }
+
+$SETTINGS[ 'url' ][ 'SABRETOOTH' ] = 'http'.
+                                     ( 'on' == $_SERVER["HTTPS"] ? 's' : '' ).
+                                     '://'.$_SERVER["HTTP_HOST"].$base_url;
+$SETTINGS[ 'path' ][ 'COOKIE' ] = $base_url.'/';
+unset( $script );
+unset( $base_url );
 
 // the location of sabretooth internal path
 $SETTINGS[ 'path' ][ 'SABRETOOTH' ] = '/usr/local/lib/sabretooth';
@@ -50,6 +57,9 @@ $SETTINGS[ 'path' ][ 'ADODB' ] = '/usr/local/lib/adodb';
 $SETTINGS[ 'path' ][ 'SHIFT8' ] = '/usr/local/lib/shift8';
 $SETTINGS[ 'path' ][ 'JS' ] = 'js';
 $SETTINGS[ 'path' ][ 'CSS' ] = 'css';
+
+// the url of mastodon (set to NULL to disable mastodon support)
+$SETTINGS[ 'url' ][ 'MASTODON' ] = NULL;
 
 // the url of limesurvey
 $SETTINGS[ 'path' ][ 'LIMESURVEY' ] = '/var/www/limesurvey';
@@ -99,6 +109,8 @@ $SETTINGS[ 'url' ][ 'JQUERY_FULLCALENDAR_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/fullcalendar.js';
 $SETTINGS[ 'url' ][ 'JQUERY_FONTSCALE_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/fontscale.js';
+$SETTINGS[ 'url' ][ 'JQUERY_TIMERS_JS' ] =
+  $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/timers.js';
 
 // css files
 $SETTINGS[ 'url' ][ 'JQUERY_UI_THEMES' ] = $SETTINGS[ 'url' ][ 'JQUERY_UI' ].'/css';

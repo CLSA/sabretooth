@@ -22,6 +22,20 @@ use sabretooth\exception as exc;
 abstract class record extends db\record
 {
   /**
+   * Constructor
+   * 
+   * See parent class's constructor.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param integer $id The primary key for this object.
+   * @access public
+   */
+  public function __construct( $id = NULL )
+  {
+    parent::__construct( $id );
+    $this->include_timestamps = false;
+  }
+
+  /**
    * Magic call method.
    * 
    * Disables the parent method so that it is compatible with limesurvey tables.
@@ -78,24 +92,6 @@ abstract class record extends db\record
   public static function db()
   {
     return bus\session::self()->get_survey_database();
-  }
-
-  /**
-   * Returns the token name for a particular interview, phase and assignment
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\interview $db_interview 
-   * @param database\interview $db_phase 
-   * @param database\interview $db_assignment (only used if the phase is repeated)
-   * @static
-   * @access public
-   */
-  public static function get_token( $db_interview, $db_phase, $db_assignment = NULL )
-  {
-    return sprintf( '%s_%s_%s',
-                    $db_interview->id,
-                    $db_phase->id,
-                    // repeated phases have the assignment id as the last part of the token
-                    $db_phase->repeated && !is_null( $db_assignment ) ? $db_assignment->id : 0 );
   }
 }
 ?>

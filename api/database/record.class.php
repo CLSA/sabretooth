@@ -193,15 +193,17 @@ abstract class record extends \sabretooth\base_object
     // building the SET list since it is identical for inserts and updates
     $sets = '';
     $first = true;
-
-    // add the create_timestamp column if this is a new record
-    if( is_null( $this->column_values[static::get_primary_key_name()] ) )
-    {
-      $sets .= sprintf( 'create_timestamp = %s',
-                        database::format_string( $val ) );
-      $first = false;
-    }
     
+    if( $this->include_timestamps )
+    {
+      // add the create_timestamp column if this is a new record
+      if( is_null( $this->column_values[static::get_primary_key_name()] ) )
+      {
+        $sets .= 'create_timestamp = NULL';
+        $first = false;
+      }
+    }
+
     // now add the rest of the columns
     foreach( $this->column_values as $key => $val )
     {
@@ -486,7 +488,7 @@ abstract class record extends \sabretooth\base_object
    * relationships.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $record_type The type of record.
-   * @param modifier $modifier A modifier to apply to the count.
+   * @param modifier $modifier A modifier to apply to the list or count.
    * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
    * @param boolean $count If true then this method returns the count instead of list of records.
    * @return array( record ) | int
@@ -673,14 +675,18 @@ abstract class record extends \sabretooth\base_object
     foreach( $ids as $foreign_key_value )
     {
       if( !$first ) $values .= ', ';
-      $values .= sprintf( '(NULL, %s, %s)',
-                       database::format_string( $primary_key_value ),
-                       database::format_string( $foreign_key_value ) );
+      $values .= sprintf( $this->include_timestamps
+                          ? '(NULL, %s, %s)'
+                          : '(%s, %s)',
+                          database::format_string( $primary_key_value ),
+                          database::format_string( $foreign_key_value ) );
       $first = false;
     }
-
+    
     static::db()->execute(
-      sprintf( 'INSERT INTO %s (create_timestamp, %s_id, %s_id) VALUES %s',
+      sprintf( $this->include_timestamps
+               ? 'INSERT INTO %s (create_timestamp, %s_id, %s_id) VALUES %s'
+               : 'INSERT INTO %s (%s_id, %s_id) VALUES %s',
                $joining_table_name,
                static::get_table_name(),
                $record_type,
@@ -921,12 +927,13 @@ abstract class record extends \sabretooth\base_object
   }
 
   /**
-   * Get record using unique key.
+   * Get record using the columns from a unique key.
    * 
-   * This method returns an instance of the record using the name and value of a unique key.
+   * This method returns an instance of the record using the name(s) and value(s) of a unique key.
+   * If the unique key has multiple columns then the $column and $value arguments should be arrays.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $column a column with the unique key property
-   * @param string $value the value of the column to match
+   * @param string|array $column A column with the unique key property (or array of columns)
+   * @param string|array $value The value of the column to match (or array of values)
    * @return database\record
    * @static
    * @access public
@@ -934,14 +941,39 @@ abstract class record extends \sabretooth\base_object
   public static function get_unique_record( $column, $value )
   {
     $record = NULL;
+    
+    $columns = !is_array( $column ) ? array( $column ) : sort( $column );
+    $values = !is_array( $value ) ? array( $value ) : sort( $value );
+
+    // make sure the column(s) complete a unique key
+    $found = false;
+    foreach( static::db()->get_unique_keys( static::get_table_name() ) as $unique_key )
+    {
+      if( count( $columns ) == count( $unique_key ) )
+      {
+        foreach( $columns as $index => $col )
+        {
+          $found = $col == $unique_key[$index];
+          if( !$found ) break;
+        }
+      }
+
+      if( $found ) break;
+    }
 
     // make sure the column is unique
-    if( 'UNI' == static::db()->get_column_key( static::get_table_name(), $column ) )
+    if( !$found )
     {
-      // this returns null if no records are found
+      log::err( 'Tried to get unique record from table "'.
+                static::get_table_name().'" using invalid columns.' );
+    }
+    else
+    {
       $modifier = new modifier();
-      $modifier->where( $column, '=', $value );
+      foreach( $columns as $index => $col )
+        $modifier->where( $columns[$index], '=', $values[$index] );
 
+      // this returns null if no records are found
       $id = static::db()->get_one(
         sprintf( 'SELECT %s FROM %s %s',
                  static::get_primary_key_name(),
@@ -950,8 +982,10 @@ abstract class record extends \sabretooth\base_object
 
       if( !is_null( $id ) ) $record = new static( $id );
     }
+
     return $record;
   }
+
 
   /**
    * Returns the name of the table associated with this record.
@@ -1065,5 +1099,14 @@ abstract class record extends \sabretooth\base_object
    * @access public
    */
   public static $auto_save = false;
+
+  /**
+   * Determines whether or not to include create_timestamp and update_timestamp when writing
+   * records to the database.
+   * @var boolean
+   * @static
+   * @access protected
+   */
+  protected $include_timestamps = true;
 }
 ?>

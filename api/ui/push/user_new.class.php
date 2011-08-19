@@ -75,6 +75,9 @@ class user_new extends base_new
 
     parent::finish();
 
+    // need this for mastodon, below
+    $args = $this->arguments;
+
     if( !is_null( $this->site_id ) && !is_null( $this->role_id ) )
     { // add the initial role to the new user
       $db_user = db\user::get_unique_record( 'name', $columns['name'] );
@@ -83,7 +86,19 @@ class user_new extends base_new
       $db_access->site_id = $this->site_id;
       $db_access->role_id = $this->role_id;
       $db_access->save();
+
+      $db_site = new db\site( $this->site_id );
+      $db_role = new db\role( $this->role_id );
+
+      // add the site, cohort and role to the arguments for mastodon
+      $args['noid']['site.name'] = $db_site->name;
+      $args['noid']['site.cohort'] = 'tracking';
+      $args['noid']['role.name'] = $db_role->name;
     }
+
+    // now send the same request to mastodon
+    $mastodon_manager = bus\mastodon_manager::self();
+    $mastodon_manager->push( 'user', 'new', $args );
   }
 
   /**

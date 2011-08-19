@@ -135,11 +135,11 @@ abstract class site_restricted_list extends base_list_widget
   public static function may_restrict()
   {
     $role_name = bus\session::self()->get_role()->name;
-    return 'administrator' == $role_name || 'technician' == $role_name;
+    return 'administrator' == $role_name;
   }
 
   /**
-   * The site to restrict to (for all but administrators and technicians this is automatically set
+   * The site to restrict to (for all but administrators this is automatically set
    * to the current site).
    * @var database\site
    * @access private

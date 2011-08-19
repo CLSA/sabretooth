@@ -349,54 +349,50 @@ class queue extends record
         ' AND participant.start_qnaire_date IS NULL';
        
       // now add the sql for each call back status
-      $phone_call_statuses = array( 'contacted',
-                                    'busy',
-                                    'no answer',
-                                    'machine message',
-                                    'machine no message',
-                                    'fax',
-                                    'not reached' );
-
-      foreach( $phone_call_statuses as $phone_call_status )
+      foreach( phone_call::get_enum_values( 'status' ) as $phone_call_status )
       {
-        // Main phone call status grouping
-        self::$query_list[$phone_call_status] = sprintf(
-          ' %s'.
-          ' AND phone_call.status = "%s"',
-          self::$query_list['old participant'],
-          $phone_call_status );
-        
-        // Waiting for call-back delay
-        self::$query_list[$phone_call_status.' waiting'] = sprintf(
-          ' %s'.
-          ' AND UTC_TIMESTAMP() < phone_call.end_datetime + INTERVAL <CALLBACK_%s> MINUTE',
-          self::$query_list[$phone_call_status],
-          str_replace( ' ', '_', strtoupper( $phone_call_status ) ) );
-        
-        // Ready for call-back
-        self::$query_list[$phone_call_status.' ready'] = sprintf(
-          ' %s'.
-          ' AND UTC_TIMESTAMP() >= phone_call.end_datetime + INTERVAL <CALLBACK_%s> MINUTE',
-          self::$query_list[$phone_call_status],
-          str_replace( ' ', '_', strtoupper( $phone_call_status ) ) );
-        
-        // Do not have availability
-        self::$query_list[$phone_call_status.' always available'] = sprintf(
-          ' %s'.
-          ' AND participant_available.available IS NULL',
-          self::$query_list[$phone_call_status.' ready'] );
-  
-        // Are not currently available
-        self::$query_list[$phone_call_status.' not available'] = sprintf(
-          ' %s'.
-          ' AND participant_available.available = false',
-          self::$query_list[$phone_call_status.' ready'] );
-  
-        // Are currently available
-        self::$query_list[$phone_call_status.' available'] = sprintf(
-          ' %s'.
-          ' AND participant_available.available = true',
-          self::$query_list[$phone_call_status.' ready'] );
+        // ignore statuses which result in deactivating phone numbers
+        if( 'disconnected' != $phone_call_status && 'wrong number' != $phone_call_status )
+        {
+          // Main phone call status grouping
+          self::$query_list[$phone_call_status] = sprintf(
+            ' %s'.
+            ' AND phone_call.status = "%s"',
+            self::$query_list['old participant'],
+            $phone_call_status );
+          
+          // Waiting for call-back delay
+          self::$query_list[$phone_call_status.' waiting'] = sprintf(
+            ' %s'.
+            ' AND UTC_TIMESTAMP() < phone_call.end_datetime + INTERVAL <CALLBACK_%s> MINUTE',
+            self::$query_list[$phone_call_status],
+            str_replace( ' ', '_', strtoupper( $phone_call_status ) ) );
+          
+          // Ready for call-back
+          self::$query_list[$phone_call_status.' ready'] = sprintf(
+            ' %s'.
+            ' AND UTC_TIMESTAMP() >= phone_call.end_datetime + INTERVAL <CALLBACK_%s> MINUTE',
+            self::$query_list[$phone_call_status],
+            str_replace( ' ', '_', strtoupper( $phone_call_status ) ) );
+          
+          // Do not have availability
+          self::$query_list[$phone_call_status.' always available'] = sprintf(
+            ' %s'.
+            ' AND participant_available.available IS NULL',
+            self::$query_list[$phone_call_status.' ready'] );
+    
+          // Are not currently available
+          self::$query_list[$phone_call_status.' not available'] = sprintf(
+            ' %s'.
+            ' AND participant_available.available = false',
+            self::$query_list[$phone_call_status.' ready'] );
+    
+          // Are currently available
+          self::$query_list[$phone_call_status.' available'] = sprintf(
+            ' %s'.
+            ' AND participant_available.available = true',
+            self::$query_list[$phone_call_status.' ready'] );
+        }
       }
     }
   }
@@ -505,20 +501,17 @@ class queue extends record
     $sql = str_replace( '<APPOINTMENT_PRE_WINDOW>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'appointment', 'call post-window' );
     $sql = str_replace( '<APPOINTMENT_POST_WINDOW>', $setting, $sql );
-    $setting = $setting_manager->get_setting( 'callback timing', 'contacted' );
-    $sql = str_replace( '<CALLBACK_CONTACTED>', $setting, $sql );
-    $setting = $setting_manager->get_setting( 'callback timing', 'busy' );
-    $sql = str_replace( '<CALLBACK_BUSY>', $setting, $sql );
-    $setting = $setting_manager->get_setting( 'callback timing', 'fax' );
-    $sql = str_replace( '<CALLBACK_FAX>', $setting, $sql );
-    $setting = $setting_manager->get_setting( 'callback timing', 'not reached' );
-    $sql = str_replace( '<CALLBACK_NOT_REACHED>', $setting, $sql );
-    $setting = $setting_manager->get_setting( 'callback timing', 'no answer' );
-    $sql = str_replace( '<CALLBACK_NO_ANSWER>', $setting, $sql );
-    $setting = $setting_manager->get_setting( 'callback timing', 'machine message' );
-    $sql = str_replace( '<CALLBACK_MACHINE_MESSAGE>', $setting, $sql );
-    $setting = $setting_manager->get_setting( 'callback timing', 'machine no message' );
-    $sql = str_replace( '<CALLBACK_MACHINE_NO_MESSAGE>', $setting, $sql );
+
+    // fill in all callback timing settings
+    $select_mod = new modifier();
+    $select_mod->where( 'category', '=', 'callback timing' );
+    foreach( setting::select( $select_mod ) as $db_setting )
+    {
+      $setting = $setting_manager->get_setting( 'callback timing', $db_setting->name );
+      $template = sprintf( '<CALLBACK_%s>',
+                           str_replace( ' ', '_', strtoupper( $db_setting->name ) ) );
+      $sql = str_replace( $template, $setting, $sql );
+    }
     return $sql;
   }
   

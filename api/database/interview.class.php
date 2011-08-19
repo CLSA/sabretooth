@@ -51,22 +51,27 @@ class interview extends has_note
       return 0.0;
     }
     
-    // create a new assignment to determine the phase from if none is provided
-    if( is_null( $db_assignment ) )
-    {
-      $db_assignment = new assignment();
-      $db_assignment->interview_id = $this->id;
-    }
-    $token = $db_assignment->get_token( $db_phase );
-    $survey_db = bus\session::self()->get_survey_database();
-    return (float) $survey_db->get_one(
-      sprintf( ' SELECT timing.interviewTime'.
-               ' FROM survey_%s_timings AS timing, survey_%s AS survey'.
-               ' WHERE timing.id = survey.id'.
-               ' AND survey.token = %s',
-               $db_phase->sid,
-               $db_phase->sid,
-               database::format_string( $db_assignment->get_token( $db_phase ) ) ) );
+    limesurvey\survey::set_sid( $db_phase->sid );
+    $survey_mod = new modifier();
+    $survey_mod->where( 'token', '=',
+      limesurvey\tokens::determine_token_string( $this, $db_assignment ) );
+    $survey_list = limesurvey\survey::select( $survey_mod );
+
+    if( 0 == count( $survey_list ) ) return 0.0;
+
+    if( 1 < count( $survey_list ) ) log::alert( sprintf(
+      'There are %d surveys using the same token (%s)! for SID %d',
+      count( $survey_list ),
+      $token,
+      $db_phase->sid ) );
+
+    $db_survey = current( $survey_list );
+
+    limesurvey\survey_timings::set_sid( $db_phase->sid );
+    $timing_mod = new modifier();
+    $timing_mod->where( 'id', '=', $db_survey->id );
+    $db_timings = current( limesurvey\survey_timings::select( $timing_mod ) );
+    return $db_timings ? (float) $db_timings->interviewTime : 0.0;
   }
 }
 ?>

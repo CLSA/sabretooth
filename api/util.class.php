@@ -305,8 +305,8 @@ final class util
   public static function get_interval( $date, $date2 = NULL )
   {
     // we need to convert to server time since we will compare to the server's "now" time
-    $datetime_obj = self::get_datetime_object( $date );
-    $date2_obj = self::get_datetime_object( $date2 );
+    $datetime_obj = is_object( $date ) ? $date : self::get_datetime_object( $date );
+    $date2_obj = is_object( $date2 ) ? $date2 : self::get_datetime_object( $date2 );
     return $datetime_obj->diff( $date2_obj );
   }
 

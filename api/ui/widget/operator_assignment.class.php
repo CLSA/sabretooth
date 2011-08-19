@@ -126,8 +126,22 @@ class operator_assignment extends \sabretooth\ui\widget
       $db_appointment = 0 == count( $appointment_list ) ? NULL : $appointment_list[0];
       if( !is_null( $db_appointment ) )
       {
-        $this->set_variable( 'appointment',
-          util::get_formatted_time( $db_appointment->datetime, false ) );
+        // Determine whether the appointment was missed by calling get_state( true )
+        // The 'true' argument ignores the fact that the appointment is currently assigned to
+        // the operator.
+        if( 'missed' == $db_appointment->get_state( true ) )
+        {
+          $this->set_variable( 'appointment_missed', true );
+          $this->set_variable( 'appointment',
+            util::get_formatted_date( $db_appointment->datetime ).' at '.
+            util::get_formatted_time( $db_appointment->datetime, false ) );
+        }
+        else
+        {
+          $this->set_variable( 'appointment_missed', false );
+          $this->set_variable( 'appointment',
+            util::get_formatted_time( $db_appointment->datetime, false ) );
+        }
         $this->set_variable( 'phone_id',
           is_null( $db_appointment->phone_id ) ? false : $db_appointment->phone_id );
       }
@@ -150,7 +164,6 @@ class operator_assignment extends \sabretooth\ui\widget
       $this->set_variable( 'previous_call_list', $previous_call_list );
       $this->set_variable( 'interview_completed', $db_interview->completed );
       $this->set_variable( 'allow_call', $session->get_allow_call() );
-
       $this->set_variable( 'on_call', $on_call );
       
       // only allow an assignment to be ended if the operator is not in a call and

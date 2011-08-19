@@ -1,6 +1,6 @@
 <?php
 /**
- * user_delete.class.php
+ * voip_end_monitor.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -14,11 +14,13 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * push: user delete
- * 
+ * push: voip end_monitor
+ *
+ * Changes the current user's theme.
+ * Arguments must include 'theme'.
  * @package sabretooth\ui
  */
-class user_delete extends base_delete
+class voip_end_monitor extends \sabretooth\ui\push
 {
   /**
    * Constructor.
@@ -28,7 +30,7 @@ class user_delete extends base_delete
    */
   public function __construct( $args )
   {
-    parent::__construct( 'user', $args );
+    parent::__construct( 'voip', 'end_monitor', $args );
   }
   
   /**
@@ -38,19 +40,7 @@ class user_delete extends base_delete
    */
   public function finish()
   {
-    // we'll need the arguments to send to mastodon
-    $args = $this->arguments;
-
-    // replace the user id with a unique key
-    $db_user = new db\user( $this->get_argument('id') );
-    unset( $args['id'] );
-    $args['noid']['user.name'] = $db_user->name;
-    
-    parent::finish();
-
-    // now send the same request to mastodon
-    $mastodon_manager = bus\mastodon_manager::self();
-    $mastodon_manager->push( 'user', 'delete', $args );
+    bus\voip_manager::self()->get_call()->stop_monitoring();
   }
 }
 ?>

@@ -33,6 +33,25 @@
         } );
       {% endif %}
       
+      {% if timer %}
+        $( "#{{ widget.full }}_timer" ).button( {
+          text: false,
+          icons: {
+            primary: "ui-icon-clock"
+          }
+        } ).click( function() {
+          // open the timber dialog
+          $( "#timer_slot" ).dialog( {
+            title: "Timer and Recording",
+            modal: false,
+            width: 400,
+            height: 235,
+            autoOpen: true
+          } );
+          slot_load( "timer", "self", "timer" );
+        } );
+      {% endif %}
+      
       {% if calculator %}
         $( "#{{ widget.full }}_calculator" ).button( {
           text: false,
@@ -119,6 +138,9 @@
   <span>
     {% if dialpad %}
       <button id="{{ widget.full }}_dialpad">dialing pad</button>
+    {% endif %}
+    {% if timer %}
+      <button id="{{ widget.full }}_timer">timer</button>
     {% endif %}
     {% if calculator %}<button id="{{ widget.full }}_calculator">calculator</button>{% endif %}
     {% if navigation %}

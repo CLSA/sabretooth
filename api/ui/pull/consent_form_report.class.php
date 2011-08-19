@@ -70,7 +70,7 @@ class consent_form_report extends base_report
           foreach( $db_interview->get_qnaire()->get_phase_list() as $db_phase )
           {
             // figure out the token
-            $token = db\limesurvey\record::get_token( $db_interview, $db_phase );
+            $token = db\limesurvey\tokens::determine_token_string( $db_interview );
 
             // determine if the participant answered yes to the consent question
             $survey_mod = new db\modifier();
@@ -82,7 +82,7 @@ class consent_form_report extends base_report
             }
             else $survey_mod->where( 'token', '=', $token );
 
-            db\limesurvey\survey::$table_sid = $db_phase->sid;
+            db\limesurvey\survey::set_sid( $db_phase->sid );
             foreach( db\limesurvey\survey::select( $survey_mod ) as $db_survey )
             {
               if( $db_survey && 'Y' == $db_survey->get_response( $question_code ) )

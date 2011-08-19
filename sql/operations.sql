@@ -158,6 +158,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "tree", true, "Displays participants in a tree format, revealing which queue the belong to." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant", "primary", true, "Retrieves base participant information." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "participant", "withdraw", true, "Withdraws the participant (or cancels the withdraw).  This is meant to be used during an interview if the participant suddenly wishes to withdraw." );
 
 -- phase
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -297,6 +299,8 @@ VALUES( "widget", "self", "password", false, "Dialog for changing the user's pas
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "self", "set_password", false, "Changes the user's password." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "self", "timer", false, "A timer widget used to count time and play sounds." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "dialing_pad", false, "A telephone dialing pad widget." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "calculator", false, "A calculator widget." );
@@ -416,5 +420,15 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "user", "reset_password", true, "Resets a user's password." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "user", "primary", true, "Retrieves base user information." );
+
+-- voip
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "voip", "dtmf", true, "Sends a DTMF tone to the Asterisk server." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "voip", "play", true, "Plays a sound over the Asterisk server." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "voip", "begin_monitor", true, "Starts monitoring the active call." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "voip", "end_monitor", true, "Stops monitoring the active call." );
 
 COMMIT;

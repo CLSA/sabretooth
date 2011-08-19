@@ -658,19 +658,22 @@ final class session extends \sabretooth\singleton
     $db_assignment = $this->get_current_assignment();
     if( is_null( $db_assignment ) ) return false;
     
-    // the assignment's must be in a phase
-    $db_phase = $db_assignment->get_current_phase();
-    if( is_null( $db_phase ) ) return false;
-    
     // the assignment must have an open call
     $modifier = new db\modifier();
     $modifier->where( 'end_datetime', '=', NULL );
     $call_list = $db_assignment->get_phone_call_list( $modifier );
     if( 0 == count( $call_list ) ) return false;
 
-    return LIMESURVEY_URL.sprintf( '/index.php?sid=%s&token=%s',
-                                   $db_phase->sid,
-                                   $db_assignment->get_current_token() );
+    // determine the current sid and token
+    $sid = $db_assignment->get_current_sid();
+    $token = $db_assignment->get_current_token();
+    if( false === $sid || false == $token ) return false;
+    
+    // determine which language to use
+    $lang = $db_assignment->get_interview()->get_participant()->language;
+    if( !$lang ) $lang = 'en';
+    
+    return LIMESURVEY_URL.sprintf( '/index.php?sid=%s&lang=%s&token=%s', $sid, $lang, $token );
   }
 
   /**

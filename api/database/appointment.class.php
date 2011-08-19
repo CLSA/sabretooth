@@ -138,17 +138,21 @@ class appointment extends record
     if( !is_null( $this->id ) ) $modifier->where( 'appointment.id', '!=', $this->id );
     foreach( appointment::select_for_site( $db_site, $modifier ) as $db_appointment )
     {
-      $appointment_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
-
-      $start_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
-      // increment slot one hour later
-      $appointment_datetime_obj->add( new \DateInterval( 'PT1H' ) );
-      $end_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
-
-      if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
-      $diffs[ $start_time_as_int ]--;
-      if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[ $end_time_as_int ] = 0;
-      $diffs[ $end_time_as_int ]++;
+      $state = $db_appointment->get_state();
+      if( 'reached' != $state && 'not reached' != $state )
+      { // incomplete appointments only
+        $appointment_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
+  
+        $start_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
+        // increment slot one hour later
+        $appointment_datetime_obj->add( new \DateInterval( 'PT1H' ) );
+        $end_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
+  
+        if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
+        $diffs[ $start_time_as_int ]--;
+        if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[ $end_time_as_int ] = 0;
+        $diffs[ $end_time_as_int ]++;
+      }
     }
     
     // if we have no diffs on this day, then we have no slots
@@ -269,7 +273,7 @@ class appointment extends record
    * @return string
    * @access public
    */
-  public function get_state()
+  public function get_state( $ignore_assignments = false )
   {
     if( is_null( $this->id ) )
     {
@@ -292,7 +296,7 @@ class appointment extends record
 
     // get the status of the appointment
     $db_assignment = $this->get_assignment();
-    if( !is_null( $db_assignment ) )
+    if( !$ignore_assignments && !is_null( $db_assignment ) )
     {
       if( !is_null( $db_assignment->end_datetime ) )
       { // assignment closed but appointment never completed
