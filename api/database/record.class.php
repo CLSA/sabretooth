@@ -927,12 +927,13 @@ abstract class record extends \sabretooth\base_object
   }
 
   /**
-   * Get record using unique key.
+   * Get record using the columns from a unique key.
    * 
-   * This method returns an instance of the record using the name and value of a unique key.
+   * This method returns an instance of the record using the name(s) and value(s) of a unique key.
+   * If the unique key has multiple columns then the $column and $value arguments should be arrays.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $column a column with the unique key property
-   * @param string $value the value of the column to match
+   * @param string|array $column A column with the unique key property (or array of columns)
+   * @param string|array $value The value of the column to match (or array of values)
    * @return database\record
    * @static
    * @access public
@@ -940,14 +941,39 @@ abstract class record extends \sabretooth\base_object
   public static function get_unique_record( $column, $value )
   {
     $record = NULL;
+    
+    $columns = !is_array( $column ) ? array( $column ) : sort( $column );
+    $values = !is_array( $value ) ? array( $value ) : sort( $value );
+
+    // make sure the column(s) complete a unique key
+    $found = false;
+    foreach( static::db()->get_unique_keys( static::get_table_name() ) as $unique_key )
+    {
+      if( count( $columns ) == count( $unique_key ) )
+      {
+        foreach( $columns as $index => $col )
+        {
+          $found = $col == $unique_key[$index];
+          if( !$found ) break;
+        }
+      }
+
+      if( $found ) break;
+    }
 
     // make sure the column is unique
-    if( 'UNI' == static::db()->get_column_key( static::get_table_name(), $column ) )
+    if( !$found )
     {
-      // this returns null if no records are found
+      log::err( 'Tried to get unique record from table "'.
+                static::get_table_name().'" using invalid columns.' );
+    }
+    else
+    {
       $modifier = new modifier();
-      $modifier->where( $column, '=', $value );
+      foreach( $columns as $index => $col )
+        $modifier->where( $columns[$index], '=', $values[$index] );
 
+      // this returns null if no records are found
       $id = static::db()->get_one(
         sprintf( 'SELECT %s FROM %s %s',
                  static::get_primary_key_name(),
@@ -956,8 +982,10 @@ abstract class record extends \sabretooth\base_object
 
       if( !is_null( $id ) ) $record = new static( $id );
     }
+
     return $record;
   }
+
 
   /**
    * Returns the name of the table associated with this record.
