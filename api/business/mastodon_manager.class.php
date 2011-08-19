@@ -60,16 +60,16 @@ class mastodon_manager extends \sabretooth\singleton
     // set the site
     $request->setUrl( $this->base_url.'self/set_site' );
     $request->setMethod( \HttpRequest::METH_POST );
-    $request->setPostFields( array( 'name' => $db_site->name, 'cohort' => 'tracking' ) );
-    if( 200 != $request->send()->getResponseCode() )
-      throw new exc\runtime( 'Unable to connect to Mastodon', __METHOD__ );
-    
+    $request->setPostFields(
+      array( 'noid' => array( 'site.name' => $db_site->name, 'site.cohort' => 'tracking' ) ) );
+    static::send( $request );
+
     // set the role
     $request->setUrl( $this->base_url.'self/set_role' );
     $request->setMethod( \HttpRequest::METH_POST );
-    $request->setPostFields( array( 'name' => $db_role->name ) );
-    if( 200 != $request->send()->getResponseCode() )
-      throw new exc\runtime( 'Unable to connect to Mastodon', __METHOD__ );
+    $request->setPostFields(
+      array( 'noid' => array( 'role.name' => $db_role->name ) ) );
+    static::send( $request );
       
     $this->logged_in = true;
   }
@@ -90,11 +90,7 @@ class mastodon_manager extends \sabretooth\singleton
       $request->setQueryData( $arguments );
     }
     
-    $message = $request->send();
-    if( 200 != $message->getResponseCode() )
-      throw new exc\runtime( 'Unable to connect to Mastodon', __METHOD__ );
-
-    return json_decode( $message->getBody() );
+    return json_decode( static::send( $request ) );
   }
 
   // TODO: document
@@ -113,9 +109,26 @@ class mastodon_manager extends \sabretooth\singleton
       $request->setPostFields( $arguments );
     }
 
+    static::send( $request );
+  }
+
+  protected static function send( $request )
+  {
     $message = $request->send();
-    if( 200 != $message->getResponseCode() )
-      throw new exc\runtime( 'Unable to connect to Mastodon', __METHOD__ );
+    $code = $message->getResponseCode();
+
+    if( 400 == $code )
+    { // duplicate mastodon exception
+      $body = json_decode( $message->body );
+      $e = new exc\mastodon( $body->error_type, $body->error_code, $body->error_message );
+      throw $e;
+    }
+    else if( 200 != $code )
+    { // A non-mastodon error has happened
+      throw new exc\runtime( 'Unable to connect to Mastodon (code: '.$code.')', __METHOD__ );
+    }
+
+    return $message;
   }
 
   // TODO: document
