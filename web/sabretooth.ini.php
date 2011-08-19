@@ -58,8 +58,8 @@ $SETTINGS[ 'path' ][ 'SHIFT8' ] = '/usr/local/lib/shift8';
 $SETTINGS[ 'path' ][ 'JS' ] = 'js';
 $SETTINGS[ 'path' ][ 'CSS' ] = 'css';
 
-// the url of mastodon
-$SETTINGS[ 'url' ][ 'MASTODON' ] = '../mastodon';
+// the url of mastodon (set to NULL to disable mastodon support)
+$SETTINGS[ 'url' ][ 'MASTODON' ] = NULL;
 
 // the url of limesurvey
 $SETTINGS[ 'path' ][ 'LIMESURVEY' ] = '/var/www/limesurvey';

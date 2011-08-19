@@ -30,58 +30,18 @@ class tokens extends sid_record
    */
   public function update_attributes( $db_participant, $extended = false )
   {
-    $db_site = bus\session::self()->get_site();
-    $db_role = bus\session::self()->get_role();
+    $mastodon_manager = bus\mastodon_manager::self();
     $db_user = bus\session::self()->get_user();
-
-    // determine mastodon's base url (using basic authentication)
-    $base_url = SABRETOOTH_URL.'/'.MASTODON_URL.'/';
-    $base_url = preg_replace(
-      '#://#', '://'.$_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'].'@', $base_url );
-
-    $request = new \HttpRequest();
-    $request->enableCookies();
     
-    // set the site
-    $request->setUrl( $base_url.'self/set_site' );
-    $request->setMethod( \HttpRequest::METH_POST );
-    $request->setPostFields( array( 'name' => $db_site->name, 'cohort' => 'tracking' ) );
-
-    if( 200 != $request->send()->getResponseCode() )
-      throw new exc\runtime( 'Unable to connect to Mastodon', __METHOD__ );
-    
-    // set the role
-    $request->setUrl( $base_url.'self/set_role' );
-    $request->setMethod( \HttpRequest::METH_POST );
-    $request->setPostFields( array( 'name' => $db_role->name ) );
-    if( 200 != $request->send()->getResponseCode() )
-      throw new exc\runtime( 'Unable to connect to Mastodon', __METHOD__ );
-    
-    // get the participant's primary information
-    $request->setUrl( $base_url.'participant/primary' );
-    $request->setMethod( \HttpRequest::METH_GET );
-    $request->setQueryData( array( 'uid' => $db_participant->uid ) );
-    $message = $request->send();
-    if( 200 != $message->getResponseCode() )
-      throw new exc\runtime( 'Unable to fetch participant info from Mastodon', __METHOD__ );
-    $participant_info = json_decode( $message->getBody() );
-    
-    // get the participant's consent information
-    $request->setUrl( $base_url.'participant/list_consent' );
-    $request->setMethod( \HttpRequest::METH_GET );
-    $request->setQueryData( array( 'uid' => $db_participant->uid ) );
-    $message = $request->send();
-    if( 200 != $message->getResponseCode() )
-      throw new exc\runtime( 'Unable to fetch consent info from Mastodon', __METHOD__ );
-    $consent_info = json_decode( $message->getBody() );
-    
-    if( !$extended )
-    {
-      // age
-      $dob = util::get_datetime_object( $participant_info->data->date_of_birth );
-      $this->attribute_1 = util::get_interval( $dob )->y;
+    if( $mastodon_manager->is_enabled() )
+    { // get attributes from mastodon
       
-      // written consent received
+      // get the participant's information
+      $participant_info = $mastodon_manager->pull(
+        'participant', 'primary', array( 'uid' => $db_participant->uid ) );
+      $consent_info = $mastodon_manager->pull(
+        'participant', 'list_consent', array( 'uid' => $db_participant->uid ) );
+      
       $written_consent = false;
       foreach( $consent_info->data as $consent )
       {
@@ -91,19 +51,69 @@ class tokens extends sid_record
           break;
         }
       }
+    }
+    else
+    { // get attributes from sabretooth
+      $db_address = $db_participant->get_primary_address();
+      if( is_null( $db_address ) )
+      {
+        $participant_info->data->street = "";
+        $participant_info->data->city = "";
+        $participant_info->data->region = "";
+        $participant_info->data->postcode = "";
+      }
+      else
+      {
+        $participant_info->data->street = $db_address->address1;
+        if( !is_null( $db_address->address2 ) )
+          $participant_info->data->street .= ' '.$db_address->address2;
+        $participant_info->data->city = $db_address->city;
+        $participant_info->data->region = $db_address->get_region()->get_name();
+        $participant_info->data->postcode = $db_address->postcode;
+      }
+
+      // written consent received
+      $consent_mod = new modifier();
+      $consent_mod->where( 'event', 'like', 'written %' );
+      $written_consent = 0 < $db_participant->get_consent_count( $consent_mod );
+
+      // sabretooth doesn't track the following information
+      $participant_info->data->date_of_birth = "";
+      $participant_info->data->email = "";
+      $participant_info->data->hin_access = "";
+      $participant_info->data->prior_contact_date = "";
+    }
+
+    if( !$extended )
+    {
+      // age
+      if( $mastodon_manager->is_enabled() )
+      { // get age from mastodon
+        $dob = util::get_datetime_object( $participant_info->data->date_of_birth );
+        $this->attribute_1 = util::get_interval( $dob )->y;
+      }
+      else
+      {
+        // sabretooth doesn't track date of birth or age
+        $this->attribute_1 = "";
+      }
+
+      // written_consent determined above
       $this->attribute_2 = $written_consent;
     }
     else
     {
-      // get the participant's alternate contact information
-      $request->setUrl( $base_url.'participant/list_alternate' );
-      $request->setMethod( \HttpRequest::METH_GET );
-      $request->setQueryData( array( 'uid' => $db_participant->uid ) );
-      $message = $request->send();
-      if( 200 != $message->getResponseCode() )
-        throw new exc\runtime( 'Unable to fetch alternate info from Mastodon', __METHOD__ );
-      $alternate_info = json_decode( $message->getBody() );
-      
+      // get the participant's alternate contact information (if using mastodon)
+      if( $mastodon_manager->is_enabled() )
+      {
+        $alternate_info = $mastodon_manager->pull(
+          'participant', 'list_alternate', array( 'uid' => $db_participant->uid ) );
+      }
+      else
+      {
+        $alternate_info->data = array();
+      }
+
       // email address
       $this->attribute_1 = $participant_info->data->email;
       
@@ -123,16 +133,7 @@ class tokens extends sid_record
       $dob = util::get_datetime_object( $participant_info->data->date_of_birth );
       $this->attribute_6 = util::get_interval( $dob )->y;
       
-      // written consent received
-      $written_consent = false;
-      foreach( $consent_info->data as $consent )
-      {
-        if( 'written' == substr( $consent->event, 0, 7 ) )
-        {
-          $written_consent = true;
-          break;
-        }
-      }
+      // written consent received (determined above)
       $this->attribute_6 = $written_consent;
       
       // consented to provide HIN

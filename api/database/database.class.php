@@ -57,10 +57,10 @@ class database extends \sabretooth\base_object
     if( bus\setting_manager::self()->get_setting( 'db', 'database' ) == $database )
       $this->connection->StartTrans();
 
-    $modifier = new modifier();
-    $modifier->where( 'TABLE_SCHEMA', '=', $this->name );
-    $modifier->order( 'TABLE_NAME' );
-    $modifier->order( 'COLUMN_NAME' );
+    $column_mod = new modifier();
+    $column_mod->where( 'TABLE_SCHEMA', '=', $this->name );
+    $column_mod->order( 'TABLE_NAME' );
+    $column_mod->order( 'COLUMN_NAME' );
 
     $rows = $this->get_all(
       sprintf( 'SELECT TABLE_NAME AS table_name, '.
@@ -70,7 +70,7 @@ class database extends \sabretooth\base_object
                       'COLUMN_KEY AS column_key, '.
                       'COLUMN_DEFAULT AS column_default '.
                'FROM information_schema.COLUMNS %s',
-               $modifier->get_sql() ) );
+               $column_mod->get_sql() ) );
     
     // record the tables, columns and types
     foreach( $rows as $row )
@@ -88,6 +88,38 @@ class database extends \sabretooth\base_object
                  'default' => $column_default,
                  'key' => $column_key );
       }
+    }
+
+    $constraint_mod = new modifier();
+    $constraint_mod->where( 'TABLE_CONSTRAINTS.TABLE_SCHEMA', '=', $this->name );
+    $constraint_mod->where( 'KEY_COLUMN_USAGE.TABLE_SCHEMA', '=', $this->name );
+    $constraint_mod->where( 'TABLE_CONSTRAINTS.CONSTRAINT_TYPE', '=', 'UNIQUE' );
+    $constraint_mod->where(
+      'TABLE_CONSTRAINTS.CONSTRAINT_NAME', '=', 'KEY_COLUMN_USAGE.CONSTRAINT_NAME', false );
+    $constraint_mod->group( 'table_name' );
+    $constraint_mod->group( 'constraint_name' );
+    $constraint_mod->group( 'column_name' );
+    $constraint_mod->order( 'table_name' );
+    $constraint_mod->order( 'constraint_name' );
+    $constraint_mod->order( 'column_name' );
+    
+    $rows = $this->get_all(
+      sprintf( 'SELECT TABLE_CONSTRAINTS.TABLE_NAME table_name, '.
+                      'TABLE_CONSTRAINTS.CONSTRAINT_NAME AS constraint_name, '.
+                      'KEY_COLUMN_USAGE.COLUMN_NAME AS column_name '.
+               'FROM information_schema.TABLE_CONSTRAINTS, information_schema.KEY_COLUMN_USAGE %s',
+               $constraint_mod->get_sql() ) );
+    
+    // record the tables, columns and types
+    foreach( $rows as $row )
+    {
+      extract( $row ); // defines $table_name, $constraint_name and $column_name
+      if( !array_key_exists( $table_name, $this->tables ) )
+        $this->tables[$table_name] = array();
+      if( !array_key_exists( 'constraints', $this->tables[$table_name] ) )
+        $this->tables[$table_name]['constraints'] = array();
+
+      $this->tables[$table_name]['constraints'][$constraint_name][] = $column_name;
     }
   }
 
@@ -262,6 +294,25 @@ class database extends \sabretooth\base_object
 
     $table_name = $this->prefix.$table_name;
     return $this->columns[$table_name][$column_name]['default'];
+  }
+  
+  /**
+   * This method returns an array of unique keys with the key-value pair being the key's name
+   * and an array of column names belonging to that key, respectively.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $table_name The name of the table to check for.
+   * @return associative array.
+   * @access public
+   */
+  public function get_unique_keys( $table_name )
+  {
+    if( !$this->table_exists( $table_name ) )
+      throw new exc\runtime(
+        sprintf( "Tried to get unique keys for table '%s' which doesn't exist.", $table_name ),
+        __METHOD__ );
+
+    $table_name = $this->prefix.$table_name;
+    return $this->tables[$table_name]['constraints'];
   }
   
   /**
@@ -525,12 +576,17 @@ class database extends \sabretooth\base_object
 
   /**
    * Holds all table column types in an associate array where table => ( column => type )
-   * This member is defined on demand, not when the class is created or a
-   * record is loaded.
    * @var array
    * @access private
    */
   private $columns = array();
+
+  /**
+   * Holds all table information including unique key constraints.
+   * @var array
+   * @access private
+   */
+  private $tables = array();
 
   /**
    * A reference to the ADODB resource.
