@@ -38,14 +38,16 @@
           if( ajax_push( "assignment", "end" ) ) slot_refresh( {{ slot }} );
         } );
         
-        // withdraw button
-        $( "#{{ widget.full }}__withdraw" ).click( function() {
-          if( ajax_push( "participant", "withdraw",
-                         { "id": {{ participant_id }},
-                           "cancel": {{ "withdraw" == participant_consent ? "1" : "0" }} } ) )
-            window.location.reload();
-        } );
-        
+        {% if allow_withdraw %}
+          // withdraw button
+          $( "#{{ widget.full }}__withdraw" ).click( function() {
+            if( ajax_push( "participant", "withdraw",
+                           { "id": {{ participant_id }},
+                             "cancel": {{ "withdraw" == participant_consent ? "1" : "0" }} } ) )
+              window.location.reload();
+          } );
+        {% endif %}
+
         // call/end-call button
         $( "#{{ widget.full }}__call" ).button( {
           text: true,
@@ -206,10 +208,12 @@
                             false, "Assignment Notes" ) }}
           </td>
           <td align="right">
-            <button id="{{ widget.full }}__withdraw"
-                    {{ on_call ? "" : "disabled" }}
-                    style="width: 180px;"
-                    >{{ "withdraw" == participant_consent ? "Cancel " : "" }}Withdraw</button>
+            {% if allow_withdraw %}
+              <button id="{{ widget.full }}__withdraw"
+                      {{ on_call ? "" : "disabled" }}
+                      style="width: 180px;"
+                      >{{ "withdraw" == participant_consent ? "Cancel " : "" }}Withdraw</button>
+            {% endif %}
           </td>
         </tr>
       </table>

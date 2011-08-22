@@ -118,6 +118,8 @@ class operator_assignment extends \sabretooth\ui\widget
       $this->set_variable( 'participant_name', $name );
       $this->set_variable( 'participant_language', $language );
       $this->set_variable( 'participant_consent', $consent );
+      $this->set_variable(
+        'allow_withdraw', !is_null( $db_interview->get_qnaire()->withdraw_sid ) );
       
       // set the appointment variable
       $modifier = new db\modifier();
