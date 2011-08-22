@@ -90,7 +90,8 @@ class mastodon_manager extends \sabretooth\singleton
       $request->setQueryData( $arguments );
     }
     
-    return json_decode( static::send( $request ) );
+    $message = static::send( $request );
+    return json_decode( $message->body );
   }
 
   // TODO: document
