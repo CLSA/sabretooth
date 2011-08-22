@@ -88,7 +88,7 @@ class qnaire_view extends base_view
     $this->set_item( 'rank', $this->get_record()->rank, true, $ranks );
     $this->set_item( 'prev_qnaire_id', $this->get_record()->prev_qnaire_id, false, $qnaires );
     $this->set_item( 'delay', $this->get_record()->delay, true );
-    $this->set_item( 'withdraw_sid', $this->get_record()->withdraw_sid, true, $surveys );
+    $this->set_item( 'withdraw_sid', $this->get_record()->withdraw_sid, false, $surveys );
     $this->set_item( 'phases', $this->get_record()->get_phase_count() );
     $this->set_item( 'description', $this->get_record()->description );
 
