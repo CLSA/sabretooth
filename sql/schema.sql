@@ -791,6 +791,33 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `queue_restriction`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `queue_restriction` ;
+
+CREATE  TABLE IF NOT EXISTS `queue_restriction` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `site_id` INT UNSIGNED NULL DEFAULT NULL ,
+  `city` VARCHAR(100) NULL DEFAULT NULL ,
+  `region_id` INT UNSIGNED NULL DEFAULT NULL ,
+  `postcode` VARCHAR(10) NULL DEFAULT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_site_id1` (`site_id` ASC) ,
+  INDEX `fk_region_id1` (`region_id` ASC) ,
+  CONSTRAINT `fk_site_id1`
+    FOREIGN KEY (`site_id` )
+    REFERENCES `site` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_region_id1`
+    FOREIGN KEY (`region_id` )
+    REFERENCES `region` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Placeholder table for view `participant_first_address`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `participant_first_address` (`participant_id` INT, `address_id` INT);
@@ -803,7 +830,7 @@ CREATE TABLE IF NOT EXISTS `participant_last_assignment` (`participant_id` INT, 
 -- -----------------------------------------------------
 -- Placeholder table for view `participant_for_queue`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `active` INT, `uid` INT, `language` INT, `status` INT, `prior_contact_date` INT, `phone_number_count` INT, `last_consent` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT, `current_qnaire_id` INT, `start_qnaire_date` INT);
+CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `active` INT, `uid` INT, `language` INT, `status` INT, `prior_contact_date` INT, `city` INT, `region_id` INT, `postcode` INT, `phone_number_count` INT, `last_consent` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT, `current_qnaire_id` INT, `start_qnaire_date` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `assignment_last_phone_call`
@@ -887,6 +914,9 @@ SELECT participant.id,
        participant.language,
        participant.status,
        participant.prior_contact_date,
+       first_address.city,
+       first_address.region_id,
+       first_address.postcode,
        COUNT( DISTINCT phone.id ) as phone_number_count,
        consent.event AS last_consent,
        assignment.id AS last_assignment_id,
@@ -924,6 +954,10 @@ LEFT JOIN address AS primary_address
 ON participant_primary_address.address_id = primary_address.id
 LEFT JOIN region AS primary_region
 ON primary_address.region_id = primary_region.id
+LEFT JOIN participant_first_address
+ON participant.id = participant_first_address.participant_id 
+LEFT JOIN address AS first_address
+ON participant_first_address.address_id = first_address.id
 LEFT JOIN participant_last_consent
 ON participant.id = participant_last_consent.participant_id 
 LEFT JOIN consent
