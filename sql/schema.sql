@@ -797,6 +797,8 @@ DROP TABLE IF EXISTS `queue_restriction` ;
 
 CREATE  TABLE IF NOT EXISTS `queue_restriction` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
   `site_id` INT UNSIGNED NULL DEFAULT NULL ,
   `city` VARCHAR(100) NULL DEFAULT NULL ,
   `region_id` INT UNSIGNED NULL DEFAULT NULL ,
