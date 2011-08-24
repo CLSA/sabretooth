@@ -71,17 +71,19 @@ class demographics_report extends base_report
       $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id ); 
       $db_interview = current( $db_participant->get_interview_list( $interview_mod ) );
 
-      // TODO recover from Mastodon
-      $age = 'TBD';
-      $gender = 'TBD';
+      $mastodon_manager = bus\mastodon_manager::self();
+
+      $participant_info = $mastodon_manager->pull( 'participant', 'primary', 
+        array( 'uid' => $db_participant->uid ) );
+
       $proxy = 'TBD';
       if( $db_interview && $db_interview->completed )
       {
         $contents[] = array(
           $db_participant->uid,
           $prov,
-          $gender,
-          $age,
+          $participant_info->gender,
+          $participant_info->age,
           $proxy );
       }
     }
