@@ -228,6 +228,20 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "queue", "list", true, "List queues in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "queue", "primary", true, "Retrieves base queue information." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "queue_restriction", "delete", true, "Removes a queue restriction from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "queue_restriction", "edit", true, "Edits a queue restriction's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "queue_restriction", "new", true, "Add a new queue restriction to the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "queue_restriction", "add", true, "View a form for creating a new queue restriction." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "queue_restriction", "view", true, "View a queue restriction's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "queue_restriction", "list", true, "List queue restrictions in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "queue_restriction", "primary", true, "Retrieves base queue restriction information." );
 
 -- reports
 INSERT INTO operation( type, subject, name, restricted, description )
