@@ -32,16 +32,11 @@ class daily_shift_report extends base_report
   {
     parent::__construct( 'daily_shift', $args );
 
-    $this->restrict_by_site();
-    
     $this->set_variable( 'description',
-      'This report lists operator daily_shift.  The report can either be generated for a '.
-      'particilar day (which will include start and end times), or overall.  The report '.
-      'includes the number of completed interviews, total working time calls per hour and '.
-      'average interview length.' );
-
-    // add paramters to the report
-    $this->add_parameter( 'date', 'date', 'Date', 'Leave blank for an overall report.' );
+      'This report is for supervisors to complete at the end of their shift for remittance to the '.
+      'NCC on a daily basis. The report includes operator activity data with operators '.
+      'subclassified by language.  Areas are provided for questions/concerns and additional '.
+      'comments.' );
 
   }
 
@@ -52,9 +47,6 @@ class daily_shift_report extends base_report
   public function finish()
   {
     parent::finish();
-
-    $this->set_parameter( 'date', '', false );
-    
     $this->finish_setting_parameters();
   }
 }
