@@ -73,17 +73,19 @@ abstract class site_restricted_list extends base_list_widget
         $this->set_variable( 'sites', $sites );
       }
     }
-    else
+
+    if( is_null( $this->db_restrict_site ) )
     {
-      // we're restricting to the user's site, so remove the site column
+      $this->set_variable( 'restrict_site_id', 0 );
+    }
+    else
+    { // we're restricting to the user's site, so remove the site column
       $this->remove_column( 'site.name' );
+      $this->set_variable( 'restrict_site_id', $this->db_restrict_site->id );
     }
     
     // this has to be done AFTER the remove_column() call above
     parent::finish();
-
-    $this->set_variable( 'restrict_site_id',
-      is_null( $this->db_restrict_site ) ? 0 : $this->db_restrict_site->id );
   }
 
   /**
