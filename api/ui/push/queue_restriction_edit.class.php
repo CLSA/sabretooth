@@ -40,6 +40,16 @@ class queue_restriction_edit extends base_edit
    */
   public function finish()
   {
+    // make sure that only admins can edit queue restrictions not belonging to the current site
+    $session = bus\session::self();
+    $is_administrator = 'administrator' == $session->get_role()->name;
+
+    if( !$is_administrator && $session->get_site()->id != $this->get_record()->site_id )
+    {
+      throw new exc\notice(
+        'You do not have access to edit this queue restriction.', __METHOD__ );
+    }
+
     // make that at least one of columns is not null
     $columns = $this->get_argument( 'columns' );
     if( ( ( array_key_exists( 'site_id', $columns ) && !$columns['site_id'] ) ||

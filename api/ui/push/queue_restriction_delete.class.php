@@ -30,5 +30,26 @@ class queue_restriction_delete extends base_delete
   {
     parent::__construct( 'queue_restriction', $args );
   }
+
+  /**
+   * Executes the push.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access public
+   */
+  public function finish()
+  {
+    // make sure that only admins can remove queue restrictions not belonging to the current site
+    $session = bus\session::self();
+    $is_administrator = 'administrator' == $session->get_role()->name;
+
+    if( !$is_administrator && $session->get_site()->id != $this->get_record()->site_id )
+    {
+      throw new exc\notice(
+        'You do not have access to remove this queue restriction.', __METHOD__ );
+    }
+
+    parent::finish();
+  }
 }
 ?>

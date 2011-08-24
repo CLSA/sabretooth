@@ -18,7 +18,7 @@ use sabretooth\exception as exc;
  * 
  * @package sabretooth\ui
  */
-class queue_restriction_list extends base_list_widget
+class queue_restriction_list extends site_restricted_list
 {
   /**
    * Constructor
@@ -62,6 +62,50 @@ class queue_restriction_list extends base_list_widget
     }
 
     $this->finish_setting_rows();
+  }
+
+  /**
+   * Overrides the parent class method to also include queue restrictions with no site
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return int
+   * @access protected
+   */
+  protected function determine_record_count( $modifier = NULL )
+  {
+    if( !is_null( $this->db_restrict_site ) )
+    {
+      if( NULL == $modifier ) $modifier = new db\modifier();
+      $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
+      $modifier->or_where( 'site_id', '=', NULL );
+    }
+    
+    // skip the parent method
+    // php doesn't allow parent::parent::method() so we have to do the less safe code below
+    return base_list_widget::determine_record_count( $modifier );
+  }
+
+  /**
+   * Overrides the parent class method based on the restrict site member.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return array( record )
+   * @access protected
+   */
+  protected function determine_record_list( $modifier = NULL )
+  {
+    if( !is_null( $this->db_restrict_site ) )
+    {
+      if( NULL == $modifier ) $modifier = new db\modifier();
+      $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
+      $modifier->or_where( 'site_id', '=', NULL );
+    }
+    
+    // skip the parent method
+    // php doesn't allow parent::parent::method() so we have to do the less safe code below
+    return base_list_widget::determine_record_list( $modifier );
   }
 }
 ?>

@@ -33,7 +33,9 @@ class queue_restriction_view extends base_view
     parent::__construct( 'queue_restriction', 'view', $args );
 
     // define all columns defining this record
-    $this->add_item( 'site_id', 'enum', 'Site' );
+
+    $type = 'administrator' == bus\session::self()->get_role()->name ? 'enum' : 'hidden';
+    $this->add_item( 'site_id', $type, 'Site' );
     $this->add_item( 'city', 'string', 'City' );
     $this->add_item( 'region_id', 'enum', 'Region' );
     $this->add_item( 'postcode', 'string', 'Postcode' );
@@ -48,15 +50,21 @@ class queue_restriction_view extends base_view
   public function finish()
   {
     parent::finish();
+    $session = bus\session::self();
+    $is_administrator = 'administrator' == $session->get_role()->name;
 
     // create enum arrays
-    $sites = array();
-    foreach( db\site::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
+    if( $is_administrator )
+    {
+      $sites = array();
+      foreach( db\site::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
+    }
     $regions = array();
     foreach( db\region::select() as $db_region ) $regions[$db_region->id] = $db_region->name;
 
     // set the view's items
-    $this->set_item( 'site_id', $this->get_record()->site_id, false, $sites );
+    $this->set_item(
+      'site_id', $this->get_record()->site_id, false, $is_administrator ? $sites : NULL );
     $this->set_item( 'city', $this->get_record()->city, false );
     $this->set_item( 'region_id', $this->get_record()->region_id, false, $regions );
     $this->set_item( 'postcode', $this->get_record()->postcode, false );
