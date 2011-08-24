@@ -11,7 +11,7 @@ if( !isset( $result_array ) || !is_array( $result_array ) )
 
 // set template variables
 $type = $result_array['error_type'];
-$notice = 0 < strlen( $result_array['error_message'] )
+$notice = 'Notice' == $result_array['error_type'] && 0 < strlen( $result_array['error_message'] )
         ? $result_array['error_message']
         : 'There was an error while trying to communicate with the server.<br>'.
           'Please notify a supervisor with the error code.';

@@ -29,16 +29,16 @@
             "Error: Nothing selected",
             "<p>You must select at least one {{ list_subject }}.<br>" +
             "Please select {{ list_subjects }} to add to the " +
-            "{{ widget.subject }}, or click cancel.</p>" );
+            "{{ widget.subject_name }}, or click cancel.</p>" );
         } else {
           var args = new Object();
           args.id = {{ id }};
           args.id_list = ids;
           confirm_dialog(
-            "Add {{ list_subjects }} to the {{ widget.subject }}?",
+            "Add {{ list_subjects }} to the {{ widget.subject_name }}?",
             "<p>You have selected " + 
             ( 1 == ids.length ? "one {{ list_subject }}" : ids.length + " {{ list_subjects }}" ) +
-            " to be added to the {{ widget.subject }}.<br>" +
+            " to be added to the {{ widget.subject_name }}.<br>" +
             "Are you sure you want to continue?</p>",
             function() {
               if( ajax_push( "{{ widget.subject }}", "new_{{ list_subject }}", args ) ) {

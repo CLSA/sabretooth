@@ -90,7 +90,7 @@ class mailout_required_report extends base_report
           foreach( $db_interview->get_qnaire()->get_phase_list() as $db_phase )
           {
             // figure out the token
-            $token = db\limesurvey\record::get_token( $db_interview, $db_phase );
+            $token = db\limesurvey\tokens::determine_token_string( $db_interview );
 
             // determine if the participant answered yes to the consent question
             $survey_mod = new db\modifier();

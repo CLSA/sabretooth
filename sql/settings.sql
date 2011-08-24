@@ -62,4 +62,9 @@ VALUES( "callback timing", "machine no message", "integer", "4320",
 "Number of minutes to wait before calling back a participant where the previous call was an
 answering machine ano no message was left." );
 
+INSERT INTO setting( category, name, type, value, description )
+VALUES( "callback timing", "soft refusal", "integer", "525600",
+"Number of minutes to wait before calling back a participant where the previous call was a fax
+machine." );
+
 COMMIT;

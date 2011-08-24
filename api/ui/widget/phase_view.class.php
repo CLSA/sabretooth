@@ -50,7 +50,11 @@ class phase_view extends base_view
 
     // create enum arrays
     $surveys = array();
-    foreach( db\limesurvey\surveys::select() as $db_survey )
+    $modifier = new db\modifier();
+    $modifier->where( 'active', '=', 'Y' );
+    $modifier->where( 'anonymized', '=', 'N' );
+    $modifier->where( 'tokenanswerspersistence', '=', 'Y' );
+    foreach( db\limesurvey\surveys::select( $modifier ) as $db_survey )
       $surveys[$db_survey->sid] = $db_survey->get_title();
     $num_phases = $this->get_record()->get_qnaire()->get_phase_count();
     $ranks = array();

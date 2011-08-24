@@ -110,7 +110,7 @@ catch( exception\base_exception $e )
   $result_array['success'] = false;
   $result_array['error_type'] = ucfirst( $type );
   $result_array['error_code'] = $e->get_code();
-  $result_array['error_message'] = 'notice' == $type ? $e->get_notice() : '';
+  $result_array['error_message'] = $e->get_raw_message();
 
   if( 'notice' != $type ) log::err( ucwords( $type )." ".$e );
 }
@@ -126,7 +126,7 @@ catch( \Twig_Error $e )
   $result_array['success'] = false;
   $result_array['error_type'] = 'Template';
   $result_array['error_code'] = $code;
-  $result_array['error_message'] = '';
+  $result_array['error_message'] = $e->getMessage();
 
   log::err( "Template ".$e );
 }
@@ -136,7 +136,7 @@ catch( \Exception $e )
   $result_array['success'] = false;
   $result_array['error_type'] = 'System';
   $result_array['error_code'] = $code;
-  $result_array['error_message'] = '';
+  $result_array['error_message'] = $e->getMessage();
 
   if( class_exists( 'sabretooth\log' ) ) log::err( "Last minute ".$e );
 }

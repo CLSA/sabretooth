@@ -118,6 +118,8 @@ class operator_assignment extends \sabretooth\ui\widget
       $this->set_variable( 'participant_name', $name );
       $this->set_variable( 'participant_language', $language );
       $this->set_variable( 'participant_consent', $consent );
+      $this->set_variable(
+        'allow_withdraw', !is_null( $db_interview->get_qnaire()->withdraw_sid ) );
       
       // set the appointment variable
       $modifier = new db\modifier();
@@ -164,7 +166,6 @@ class operator_assignment extends \sabretooth\ui\widget
       $this->set_variable( 'previous_call_list', $previous_call_list );
       $this->set_variable( 'interview_completed', $db_interview->completed );
       $this->set_variable( 'allow_call', $session->get_allow_call() );
-
       $this->set_variable( 'on_call', $on_call );
       
       // only allow an assignment to be ended if the operator is not in a call and

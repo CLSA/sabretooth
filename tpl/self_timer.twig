@@ -1,0 +1,173 @@
+{##
+ # self_timer.twig
+ # 
+ # Creates a timer widget.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ #}
+{% extends "widget.twig" %}
+
+{% block javascript %}
+
+  <script type="text/javascript">
+    $( function() {
+      var $time = $( "#{{ widget.full }}__time" );
+
+      // play button is pushed
+      $( "#{{ widget.full }}__play" ).click( function() {
+        var $sound = $( "#{{ widget.full }}__sound" );
+        var $volume = $( "#{{ widget.full }}__volume" );
+
+        if( {{ on_call ? "true" : "false" }} )
+          ajax_push( "voip", "play", {
+            "sound": $sound.val(),
+            "volume": $volume.val() } );
+      } );
+      
+      // monitor button is pushed
+      $( "#{{ widget.full }}__monitor" ).click( function() {
+        if( "Stop Recording Participant" == $(this).html() ) {
+          ajax_push( "voip", "end_monitor" );
+          $(this).html( "Begin Recording Participant" );
+        } else if ( {{ on_call ? "true" : "false" }} ) {
+          ajax_push( "voip", "begin_monitor" );
+          $(this).html( "Stop Recording Participant" );
+        }
+      } );
+      
+      // timer type is changed
+      $( "#{{ widget.full }}__type" ).change( function() {
+        $time.html( "up" == $(this).val() ? 0 : $( "#{{ widget.full }}__duration" ).val() );
+      } );
+
+      // timer duration is changed
+      $( "#{{ widget.full }}__duration" ).change( function() {
+        $time.html( "up" == $( "#{{ widget.full }}__type" ).val() ? 0 : $(this).val() );
+      } );
+
+      // timer's start button is pushed
+      $( "#{{ widget.full }}__start" ).click( function() {
+        var $type = $( "#{{ widget.full }}__type" );
+        var $duration = $( "#{{ widget.full }}__duration" );
+        var $beep = $( "#{{ widget.full }}__beep" );
+        var iterations = $duration.val();
+
+        if( "Stop" == $(this).html() ) {
+          // re-enable controls and rename button
+          $type.removeAttr( "disabled" );
+          $duration.removeAttr( "disabled" );
+          $beep.removeAttr( "disabled" );
+          $time.stopTime( "{{ widget.full }}" );
+          $(this).html( "Start" );
+        } else {
+          // set the time
+          $time.html( "up" == $type.val() ? 0 : $duration.val() );
+
+          // disable the timer settings
+          $type.attr( "disabled", "disabled" );
+          $duration.attr( "disabled", "disabled" );
+          $beep.attr( "disabled", "disabled" );
+
+          // start the timer
+          $time.everyTime( "1s", "{{ widget.full }}", function( iteration ) {
+            $(this).html( "up" == $type.val() ? iteration : $duration.val() - iteration );
+          }, parseInt( $duration.val() ) );
+          $(this).html( "Stop" );
+
+          // add a beep action when the timer completes, if necessary
+          $time.oneTime( $duration.val() + "s", "{{ widget.full }}", function() {
+            if( 1 == $beep.val() && {{ on_call ? "true" : "false" }} )
+              ajax_push( "voip", "play", {
+                "sound": "beep",
+                "volume": $( "#{{ widget.full }}__volume" ).val() } );
+
+            // re-enable controls and rename button
+            $type.removeAttr( "disabled" );
+            $duration.removeAttr( "disabled" );
+            $beep.removeAttr( "disabled" );
+            $time.stopTime( "{{ widget.full }}" );
+            $( "#{{ widget.full }}__start" ).html( "Start" );
+          } );
+        }
+      } );
+    } );
+  </script>
+
+{% endblock javascript %}
+
+{% block widget %}
+
+  <table>
+    <tr>
+      <td>
+        <select id="{{ widget.full }}__sound" style="width:100%" class="ui-state-default">
+          <option value="custom/english_sentence_mono_fixed.v1">english sound test</option>
+          <option value="custom/english_wordlist_mono_fixed.v1">english word list</option>
+          <option value="custom/french_sentence_mono_fixed.v1">french sound test</option>
+          <option value="custom/french_wordlist_mono_fixed.v1">french word list</option>
+        </select>
+      </td>
+      <td>
+        <select id="{{ widget.full }}__volume" style="width:100%" class="ui-state-default">
+          <option value="-4">-4</option>
+          <option value="-3">-3</option>
+          <option value="-2">-2</option>
+          <option value="-1">-1</option>
+          <option value="+0" selected>+0</option>
+          <option value="+1">+1</option>
+          <option value="+2">+2</option>
+          <option value="+3">+3</option>
+          <option value="+4">+4</option>
+        </select>
+      </td>
+      <td style="padding-left: 4px">
+        <button id="{{ widget.full }}__play" style="width: 100%">Play</button>
+      </td>
+    </tr>
+  </table>
+  <hr class="ui-widget ui-widget-content">
+  <table>
+    <tr>
+      <td><button id="{{ widget.full }}__monitor"
+                  style="width: 100%; font-weight: bold;">Begin Recording Participant</button></td>
+    </tr>
+  </table>
+  <hr class="ui-widget ui-widget-content">
+  <table>
+    <tr>
+      <td class="heading">Type:</td>
+      <td style="width:90%">
+        <select id="{{ widget.full }}__type" style="width:100%" class="ui-state-default">
+          <option value="up">up</option>
+          <option value="down" selected>down</option>
+        </select>
+      </td>
+      <td rowspan="2" style="padding-left: 4px">
+        <span id="{{ widget.full }}__time" style="font-size: 2.8em; font-family:monospace">90</span>
+      </td>
+    </tr>
+    <tr>
+      <td class="heading">Duration:</td>
+      <td>
+        <select id="{{ widget.full }}__duration" style="width:100%" class="ui-state-default">
+          <option value="15">15 sec</option>
+          <option value="30">30 sec</option>
+          <option value="60">60 sec</option>
+          <option value="90" selected>90 sec</option>
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td class="heading">Beep:</td>
+      <td>
+        <select id="{{ widget.full }}__beep" style="width:100%" class="ui-state-default">
+          <option value="1">yes</option>
+          <option value="0">no</option>
+        </select>
+      </td>
+      <td style="padding-left: 4px">
+        <button id="{{ widget.full }}__start" style="width: 100px">Start</button>
+      </td>
+    </tr>
+  </table>
+
+{% endblock widget %}
