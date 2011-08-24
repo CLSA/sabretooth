@@ -226,6 +226,49 @@ class daily_shift_report extends base_report
 
     $this->add_table( NULL, NULL, NULL, $grand_totals );
 
+    // add in some empty space for Questions/Concerns
+
+    $this->add_table( NULL,
+      array_merge( array('Questions/Concerns'), array_fill( 0, sizeof( $header )-1, ' ' ) ),
+      NULL, NULL );
+
+    // add in some empty space for Comments
+
+    $this->add_table( NULL,
+      array_merge( array('Comments'), array_fill( 0, sizeof( $header )-1, ' ' ) ), 
+      NULL, NULL );
+
+    // add in a legend
+
+    $legend = array( 
+     array( 'Date = date of shift, not the date the report was prepared (if done on a different '.
+     'day)' ),
+     array( 'Shift = record the start and end times as per the schedule' ),
+     array( 'Supervisor Hours = total shift time less any interviewing time' ),
+     array( 'Completes = total interviews completed during the shift' ),
+     array( 'Calling Hours is automatically populated; do not overwrite' ),
+     array( 'Downtime Hours is automatically populated; do not overwrite' ),
+     array( 'Training Hours is automatically populated; do not overwrite' ),
+     array( 'Shift CPH is automatically populated; do not overwrite' ),
+     array( 'Interviewer = record the names of the interviewers that were assigned the shift. '.
+     'Also include the supervisor if s/he made any calls' ),
+     array( 'Start Time = the time the interviewer actually started his/her shift' ),
+     array( 'End Time = the time the interviewer actually ended his/her shift' ),
+     array( 'Calling Hours = the total shift time less any training and/or downtime hours '.
+     '(breaks included)' ),
+     array( 'Training Hours = any time spent NOT on the phones or lost to downtime (incl. '.
+     'briefings)' ),
+     array( 'Downtime Hours = time lost due to technical issues. Note if the issues were '.
+     'internal (at your site) or external (McMaster)' ),
+     array( 'Total Shift Hours =  the total shift time (e.g. 3pm to 8pm = 5 hours). This is '.
+     'based on actual time worked, not scheduled' ),
+     array( 'Comments = anything specific to an interviewer, such as the number of interviews '.
+     'they completed, downtime, etc.' ) );
+
+    $this->add_table( NULL, 
+      array_merge( array( 'Legend' ), array_fill( 0, sizeof( $header ) -1, ' ' ) ),
+      $legend, NULL );
+
     return parent::finish();
   }
 }
