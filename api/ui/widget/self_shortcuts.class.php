@@ -43,9 +43,12 @@ class self_shortcuts extends \sabretooth\ui\widget
   {
     parent::finish();
     
+    $is_operator = 'operator' == bus\session::self()->get_role()->name;
     $this->set_variable( 'dialpad', !is_null( bus\voip_manager::self()->get_call() ) );
+    $this->set_variable( 'timer',
+      $is_operator && !is_null( bus\session::self()->get_current_phone_call() ) );
     $this->set_variable( 'calculator', true );
-    $this->set_variable( 'navigation', 'operator' != bus\session::self()->get_role()->name );
+    $this->set_variable( 'navigation', !$is_operator );
     $this->set_variable( 'refresh', true );
     $this->set_variable( 'home', false );
   }

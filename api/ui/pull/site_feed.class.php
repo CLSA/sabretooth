@@ -123,28 +123,32 @@ class site_feed extends base_feed
       unset( $diffs );
     }
 
-    // fill in the appointments
+    // fill in the appointments which have not been completed
     $modifier = new db\modifier();
     $modifier->where( 'datetime', '>=', $this->start_datetime );
     $modifier->where( 'datetime', '<', $this->end_datetime );
     $modifier->order( 'datetime' );
     foreach( db\appointment::select_for_site( $db_site, $modifier ) as $db_appointment )
     {
-      $appointment_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
-      $diffs = &$days[ $appointment_datetime_obj->format( 'Y-m-d' ) ]['diffs'];
-
-      $start_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
-      // increment slot one hour later
-      $appointment_datetime_obj->add( new \DateInterval( 'PT1H' ) );
-      $end_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
-
-      if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
-      $diffs[ $start_time_as_int ]--;
-      if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[ $end_time_as_int ] = 0;
-      $diffs[ $end_time_as_int ]++;
-
-      // unset diffs since it is a reference
-      unset( $diffs );
+      $state = $db_appointment->get_state();
+      if( 'reached' != $state && 'not reached' != $state )
+      { // incomplete appointments only
+        $appointment_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
+        $diffs = &$days[ $appointment_datetime_obj->format( 'Y-m-d' ) ]['diffs'];
+  
+        $start_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
+        // increment slot one hour later
+        $appointment_datetime_obj->add( new \DateInterval( 'PT1H' ) );
+        $end_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
+  
+        if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
+        $diffs[ $start_time_as_int ]--;
+        if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[ $end_time_as_int ] = 0;
+        $diffs[ $end_time_as_int ]++;
+  
+        // unset diffs since it is a reference
+        unset( $diffs );
+      }
     }
     
     // use the 'diff' arrays to define the 'times' array

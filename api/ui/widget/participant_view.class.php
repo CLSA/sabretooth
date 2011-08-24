@@ -34,13 +34,13 @@ class participant_view extends base_view
     
     // create an associative array with everything we want to display about the participant
     $this->add_item( 'active', 'boolean', 'Active' );
-    $this->add_item( 'uid', 'string', 'Unique ID' );
+    $this->add_item( 'uid', 'constant', 'Unique ID' );
     $this->add_item( 'first_name', 'string', 'First Name' );
     $this->add_item( 'last_name', 'string', 'Last Name' );
     $this->add_item( 'language', 'enum', 'Preferred Language' );
     $this->add_item( 'status', 'enum', 'Condition' );
     $this->add_item( 'site_id', 'enum', 'Prefered Site' );
-    $this->add_item( 'prior_contact_date', 'date', 'Prior Contact Date' );
+    $this->add_item( 'prior_contact_date', 'constant', 'Prior Contact Date' );
     $this->add_item( 'current_qnaire_name', 'constant', 'Current Questionnaire' );
     $this->add_item( 'start_qnaire_date', 'constant', 'Delay Questionnaire Until' );
     
@@ -154,13 +154,13 @@ class participant_view extends base_view
     
     // set the view's items
     $this->set_item( 'active', $this->get_record()->active, true );
-    $this->set_item( 'uid', $this->get_record()->uid, false );
+    $this->set_item( 'uid', $this->get_record()->uid );
     $this->set_item( 'first_name', $this->get_record()->first_name );
     $this->set_item( 'last_name', $this->get_record()->last_name );
     $this->set_item( 'language', $this->get_record()->language, false, $languages );
     $this->set_item( 'status', $this->get_record()->status, false, $statuses );
     $this->set_item( 'site_id', $site_id, false, $sites );
-    $this->set_item( 'prior_contact_date', $this->get_record()->prior_contact_date, false );
+    $this->set_item( 'prior_contact_date', $this->get_record()->prior_contact_date );
     $this->set_item( 'current_qnaire_name', $current_qnaire_name );
     $this->set_item( 'start_qnaire_date', $start_qnaire_date );
 

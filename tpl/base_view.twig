@@ -84,8 +84,8 @@
       $( function () {
         $( "button.{{ widget.full }}_remove" ).click( function() {
         confirm_dialog(
-          "Delete {{ widget.subject }}?",
-          "Are you sure you want to remove this {{ widget.subject }}?",
+          "Delete {{ widget.subject_name }}?",
+          "Are you sure you want to remove this {{ widget.subject_name }}?",
           function() {
             if( ajax_push( "{{ widget.subject }}", "delete", { "id": {{ id|default(0) }} } ) ) {
               $slot = $( "#" + {{ slot }} + "_slot" );

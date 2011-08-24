@@ -14,7 +14,7 @@ namespace sabretooth;
 global $SETTINGS;
 
 // tagged version
-$SETTINGS[ 'general' ][ 'version' ] = '0.2.2b';
+$SETTINGS[ 'general' ][ 'version' ] = '0.2.3c';
 
 // always leave as false when running as production server
 $SETTINGS[ 'general' ][ 'development_mode' ] = false;
@@ -58,8 +58,8 @@ $SETTINGS[ 'path' ][ 'SHIFT8' ] = '/usr/local/lib/shift8';
 $SETTINGS[ 'path' ][ 'JS' ] = 'js';
 $SETTINGS[ 'path' ][ 'CSS' ] = 'css';
 
-// the url of mastodon
-$SETTINGS[ 'url' ][ 'MASTODON' ] = '../mastodon';
+// the url of mastodon (set to NULL to disable mastodon support)
+$SETTINGS[ 'url' ][ 'MASTODON' ] = NULL;
 
 // the url of limesurvey
 $SETTINGS[ 'path' ][ 'LIMESURVEY' ] = '/var/www/limesurvey';
@@ -109,6 +109,8 @@ $SETTINGS[ 'url' ][ 'JQUERY_FULLCALENDAR_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/fullcalendar.js';
 $SETTINGS[ 'url' ][ 'JQUERY_FONTSCALE_JS' ] =
   $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/fontscale.js';
+$SETTINGS[ 'url' ][ 'JQUERY_TIMERS_JS' ] =
+  $SETTINGS[ 'url' ][ 'JQUERY_PLUGINS' ].'/timers.js';
 
 // css files
 $SETTINGS[ 'url' ][ 'JQUERY_UI_THEMES' ] = $SETTINGS[ 'url' ][ 'JQUERY_UI' ].'/css';

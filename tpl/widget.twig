@@ -5,12 +5,14 @@
  # @author Patrick Emond <emondpd@mcmaster.ca>
  # @param string slot The widget's slot name (defined in this template)
  # @param string widget.subject The widget's subject.
- # @param string widget.subjects The widget's subject, pluralized.
+ # @param string widget.subject_name The widget's subject with underscores replaced by spaces.
+ # @param string widget.subject_names The widget's subject pluralized and with underscores replaced
+ #                                    by spaces.
  # @param string widget.name The widget's name (action performed on the subject)
  # @param string widget.full The widget's full name: <subject>_<name>
  # @param string widget.compound The fully qualified name.  If the widget has a parent then this
-                                 value is <parent_full>_<widget_full>, if not then it is simply
-                                 the widget's full name.
+ #                               value is <parent_full>_<widget_full>, if not then it is simply
+ #                               the widget's full name.
  # @param string parent.exists Whether the widget has a parent.
  # @param string parent.subject The parent's subject.
  # @param string parent.subjects The parent's subject, pluralized.

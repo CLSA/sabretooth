@@ -31,5 +31,30 @@ class participant_edit extends base_edit
   {
     parent::__construct( 'participant', $args );
   }
+  
+  /**
+   * Extends the base action by sending the same request to Mastodon
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function finish()
+  {
+    // we'll need the arguments to send to mastodon
+    $args = $this->arguments;
+
+    // replace the participant id with a unique key
+    $db_participant = new db\participant( $this->get_argument( 'id' ) );
+    unset( $args['id'] );
+    $args['noid']['participant.uid'] = $db_participant->uid;
+
+    parent::finish();
+
+    // now send the same request to mastodon (unless we are setting the site)
+    if( !array_key_exists( 'site_id', $args['columns'] ) )
+    {
+      $mastodon_manager = bus\mastodon_manager::self();
+      $mastodon_manager->push( 'participant', 'edit', $args );
+    }
+  }
 }
 ?>

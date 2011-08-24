@@ -167,6 +167,18 @@ parent_queue_id = (
 description = "Eligible participants who are currently assigned to the questionnaire.";
 
 INSERT INTO queue SET
+name = "restricted",
+title = "Restricted from calling",
+rank = NULL,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "qnaire" ) AS tmp ),
+description = "Eligible participants whose city, province or postcode have been restricted.";
+
+INSERT INTO queue SET
 name = "qnaire waiting",
 title = "Waiting to begin",
 rank = NULL,
@@ -961,6 +973,95 @@ parent_queue_id = (
     WHERE name = "machine no message ready" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine, a message was not left
 and the scheduled call back time has been reached.
+This list only includes participants who do not have an appointment, have no availability times
+and are not currently assigned to an operator.";
+
+INSERT INTO queue SET
+name = "soft refusal",
+title = "Last call: soft refusal",
+rank = NULL,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "old participant" ) AS tmp ),
+description = "Participants who's last call resulted in a soft refusal.
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
+
+INSERT INTO queue SET
+name = "soft refusal waiting",
+title = "Last call: soft refusal (waiting)",
+rank = NULL,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "soft refusal" ) AS tmp ),
+description = "Participants who's last call resulted in a soft refusal and the scheduled call back
+time has not yet been reached.
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
+
+INSERT INTO queue SET
+name = "soft refusal ready",
+title = "Last call: soft refusal (ready)",
+rank = NULL,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "soft refusal" ) AS tmp ),
+description = "Participants who's last call resulted in a soft refusal and the scheduled call back
+time has been reached.
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
+
+INSERT INTO queue SET
+name = "soft refusal not available",
+title = "Last Call: soft refusal (not available)",
+rank = NULL,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "soft refusal ready" ) AS tmp ),
+description = "Participants who's last call resulted in a soft refusal and the scheduled call back
+time has been reached.
+This list only includes participants who do not have an appointment, are not currently available
+and are not currently assigned to an operator.";
+
+INSERT INTO queue SET
+name = "soft refusal available",
+title = "Last Call: soft refusal (available)",
+rank = 19,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "soft refusal ready" ) AS tmp ),
+description = "Participants who's last call resulted in a soft refusal and the scheduled call back
+time has been reached.
+This list only includes participants who do not have an appointment, are currently available
+and are not currently assigned to an operator.";
+
+INSERT INTO queue SET
+name = "soft refusal always available",
+title = "Last Call: soft refusal (without availability)",
+rank = 20,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "soft refusal ready" ) AS tmp ),
+description = "Participants who's last call resulted in a soft refusal and the scheduled call back
+time has been reached.
 This list only includes participants who do not have an appointment, have no availability times
 and are not currently assigned to an operator.";
 
