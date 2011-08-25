@@ -75,7 +75,7 @@ class call_history_report extends base_report
           $db_phone_call->status );
 
         // remove the site if we are restricting the report
-        if( $restrict_site_id ) array_shift( current( $contents ) );
+        if( $restrict_site_id ) array_shift( $contents[ count($contents)-1 ] );
       }
     }
     
