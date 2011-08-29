@@ -38,7 +38,7 @@ class call_history_report extends base_report
   {
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
     
-    $title = 'Call Attempts Report';
+    $title = 'Call History Report';
     if( $restrict_site_id )
     {
       $db_site = new db\site( $restrict_site_id );
@@ -73,9 +73,6 @@ class call_history_report extends base_report
           substr( $db_phone_call->end_datetime,
                   strpos( $db_phone_call->end_datetime, ' ' ) + 1 ),
           $db_phone_call->status );
-
-        // remove the site if we are restricting the report
-        if( $restrict_site_id ) array_shift( current( $contents ) );
       }
     }
     
@@ -90,7 +87,11 @@ class call_history_report extends base_report
       'Call Result' );
     
     // remove the site if we are restricting the report
-    if( $restrict_site_id ) array_shift( $header );
+    if( $restrict_site_id )
+    {
+      array_shift( $header );
+      foreach( $contents as $index => $content ) array_shift( $contents[$index] );
+    }
 
     $this->add_table( NULL, $header, $contents, NULL );
 
