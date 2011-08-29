@@ -141,20 +141,12 @@ class daily_shift_report extends base_report
       {
         $db_interview = $db_assignment->get_interview();
         if( $db_interview->completed ) $num_user_completes++;
-
-      // TODO do operators only work in one language?
-      // what if the interview is with a proxy and their language is different?
-        $language = $db_interview->get_participant()->language;
       }
+      
       //TODO ask if user completes should be a column in the operators table
       $total_completes += $num_user_completes;
 
     }
-    // dummy test data
-    $contents_operator_en[] = array(
-      'Annette','9:30','3:15','5','0','0','5','4 completes');
-    $contents_operator_en[] = array(
-      'Lise','10:00','2:30','4.25','0','0','4.25','2 completes, .25 unpaid break');
 
     $contents_shift['Completes'] = $total_completes;
 

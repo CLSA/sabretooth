@@ -280,10 +280,10 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "demographics", "report", true, "Set up a new demographics report." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "demographics", "report", true, "Download a new demographics report." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "daily_shift", "report", true, "Set up a new daily shift report." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "daily_shift", "report", true, "Download a new daily shift report." );
+-- INSERT INTO operation( type, subject, name, restricted, description )
+-- VALUES( "widget", "daily_shift", "report", true, "Set up a new daily shift report." );
+-- INSERT INTO operation( type, subject, name, restricted, description )
+-- VALUES( "pull", "daily_shift", "report", true, "Download a new daily shift report." );
 
 -- role
 INSERT INTO operation( type, subject, name, restricted, description )
