@@ -36,12 +36,12 @@ class demographics_report extends base_report
     
     $this->set_variable( 'description',
       'This report lists participant demographics.  The report can be moderated by site, '.
-      ' province and consent status.' );
+      'questionnaire, province and consent status.' );
 
     // add parameters to the report
     $this->add_parameter( 'qnaire_id', 'enum', 'Questionnaire' );
     $this->add_parameter( 'consent_type', 'enum', 'Consent Status' );
-    $this->add_parameter( 'region_type', 'enum', 'Province' );
+    $this->add_parameter( 'province_id', 'enum', 'Province' );
   }
 
   /**
@@ -66,12 +66,12 @@ class demographics_report extends base_report
     $region_mod = new db\modifier();
     $region_mod->order( 'abbreviation' );
     $region_mod->where( 'country', '=', 'Canada' );
-    $region_types = array('All provinces' );
+    $region_types = array( 'All provinces' );
     foreach( db\region::select($region_mod) as $db_region )
-      array_push( $region_types,  $db_region->abbreviation );
+      $region_types[ $db_region->id ] = $db_region->name;
       
-    $this->set_parameter( 'region_type', current( $region_types ), true, $region_types );  
-    
+    $this->set_parameter( 'province_id', current( $region_types ), true, $region_types );  
+  
     $this->finish_setting_parameters();
   }
 }

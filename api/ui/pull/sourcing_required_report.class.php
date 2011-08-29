@@ -132,7 +132,7 @@ class sourcing_required_report extends base_report
     } // end loop on participants 
 
     // TODO we need two alternate contacts added to the report fields
-    // but this functionality will have to come from Mastodon
+    // but this functionality will have to come from mastodon manager
     $header = array(
       "UID",
       "First Name",

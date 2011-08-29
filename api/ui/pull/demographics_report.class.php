@@ -39,9 +39,9 @@ class demographics_report extends base_report
     // get the report arguments
     $db_qnaire = new db\qnaire( $this->get_argument( 'qnaire_id' ) );
     $consent_status = $this->get_argument( 'consent_type' );
-    $province = $this->get_argument( 'region_type' );
+    $province_id = $this->get_argument( 'province_id' );
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-    
+
     $title = 'Participant Demographics Report';
     if( $restrict_site_id )
     {
@@ -53,13 +53,7 @@ class demographics_report extends base_report
     $this->add_title( $title );
 
     $contents = array();
-/*    
-    $participant_mod = new db\modifier();
-    $participant_mod->limit(10);
-    $participant_list = $restrict_site_id
-                      ? db\participant::select_for_site( $db_site, $participant_mod )
-                      : db\participant::select( $participant_mod );
-*/                      
+    
     $participant_list = $restrict_site_id
                       ? db\participant::select_for_site( $db_site )
                       : db\participant::select();
@@ -69,10 +63,11 @@ class demographics_report extends base_report
       $db_consent = $db_participant->get_last_consent();
       if( is_null( $db_consent ) && $consent_status != 'Any' ) continue;
       
-      $prov = $db_participant->get_primary_address()->get_region()->name;
+      $region_id = $db_participant->get_primary_address()->get_region()->id;
+      $region_name = $db_participant->get_primary_address()->get_region()->name;
 
       if( ( 'deceased' == $db_participant->status ) ||   
-          ( $province != 'All provinces' && $province != $prov ) ||
+          ( $province_id && $province_id != $region_id ) ||
           ( $consent_status != 'Any' && $consent_status != $db_consent->event ) ) continue;
 
       $interview_mod = new db\modifier();
@@ -84,20 +79,41 @@ class demographics_report extends base_report
         $mastodon_manager = bus\mastodon_manager::self();
         $participant_obj = $mastodon_manager->pull( 'participant', 'primary', 
           array( 'uid' => $db_participant->uid ) );
-        
+       
+        $alternate_list = $mastodon_manager->pull( 'participant','list_alternate',
+          array( 'uid' => $db_participant->uid ) );
+
+        $proxy = 0;
+        $age = 'TBD';
+        $gender = 'TBD';
+
         if( !is_null( $participant_obj ) && $participant_obj->success == true )
-        {
-          // TODO: proxy is a yes/no to be determined from limesurvey question response(?)
-          $proxy = 'TBD';
+        {          
           $gender = $participant_obj->data->gender;
-          $age = util::get_interval( $participant_obj->data->date_of_birth );
-          $contents[] = array(
-            $db_participant->uid,
-            $prov,
-            $gender,
-            $age->format('%y'),
-            $proxy );
+          $interval = util::get_interval( $participant_obj->data->date_of_birth );
+          $age = $interval->format('%y');
         }
+
+        if( !is_null( $alternate_list ) && $alternate_list->success == true )
+        {
+          foreach( $alternate_list->data as $alternate )
+          {
+            // mastodon returns values as strings
+            if( $alternate->proxy == '1' )
+            {
+              $proxy = 1;
+              break;
+            }
+          }
+        }
+       
+        $contents[] = array(
+          $db_participant->uid,
+          $region_name,
+          $gender,
+          $age,
+          $proxy );
+
       }
     }
     
