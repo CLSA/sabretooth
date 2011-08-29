@@ -51,7 +51,7 @@ class consent_outstanding_report extends base_report
 
     $contents = array();
 
-    $participant_list = $restric_site_id
+    $participant_list = $restrict_site_id
                       ? db\participant::select_for_site( $db_site )
                       : db\participant::select();
 
