@@ -32,7 +32,7 @@ CREATE  TABLE IF NOT EXISTS `participant` (
   `uid` VARCHAR(45) NULL COMMENT 'External unique ID' ,
   `first_name` VARCHAR(45) NOT NULL ,
   `last_name` VARCHAR(45) NOT NULL ,
-  `status` ENUM('deceased', 'deaf', 'mentally unfit','language barrier','other') NULL DEFAULT NULL ,
+  `status` ENUM('deceased', 'deaf', 'mentally unfit','language barrier','age range','other') NULL DEFAULT NULL ,
   `language` ENUM('en','fr') NULL DEFAULT NULL ,
   `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'If not null then force all calls to this participant to the site.' ,
   `prior_contact_date` DATE NULL DEFAULT NULL ,

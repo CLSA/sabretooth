@@ -91,19 +91,6 @@ description = "Participants who are not eligible for answering questionnaires be
 deceased.";
 
 INSERT INTO queue SET
-name = "language barrier",
-title = "Participants with a language barrier",
-rank = NULL,
-qnaire_specific = false,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "ineligible" ) AS tmp ),
-description = "Participants who are not eligible for answering questionnaires because of a language
-barrier.";
-
-INSERT INTO queue SET
 name = "deaf",
 title = "Deaf participants",
 rank = NULL,
@@ -128,6 +115,32 @@ parent_queue_id = (
     WHERE name = "ineligible" ) AS tmp ),
 description = "Participants who are not eligible for answering questionnaires because they are
 mentally unfit.";
+
+INSERT INTO queue SET
+name = "language barrier",
+title = "Participants with a language barrier",
+rank = NULL,
+qnaire_specific = false,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "ineligible" ) AS tmp ),
+description = "Participants who are not eligible for answering questionnaires because of a language
+barrier.";
+
+INSERT INTO queue SET
+name = "age range",
+title = "Participants whose age is outside of the valid range",
+rank = NULL,
+qnaire_specific = false,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "ineligible" ) AS tmp ),
+description = "Participants who are not eligible for answering questionnaires because their age is
+not within the valid range.";
 
 INSERT INTO queue SET
 name = "other",
