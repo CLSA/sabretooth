@@ -72,27 +72,29 @@ class call_attempts_report extends base_report
         $assignment_mod = new db\modifier();
         $assignment_mod->where( 'end_datetime', '!=', NULL );
         $assignment_mod->order( 'start_datetime' );
+        $db_last_assignment = NULL;
         foreach( $db_interview->get_assignment_list( $assignment_mod ) as $db_assignment )
         {
           $total_calls += $db_assignment->get_phone_call_count();
+          $db_last_assignment = $db_assignment;
         }
+
+        if( is_null( $db_last_assignment ) ) continue;
 
         // get the status of the last call from the last assignment
         $phone_call_mod = new db\modifier();
         $phone_call_mod->order_desc( 'start_datetime' );
         $phone_call_mod->limit( 1 );
-        $db_phone_call = current( $db_assignment->get_phone_call_list( $phone_call_mod ) );
+        $db_phone_call = current( $db_last_assignment->get_phone_call_list( $phone_call_mod ) );
 
         $contents[] = array(
           $db_participant->get_primary_site()->name,
           $db_participant->uid,
-          $db_assignment->get_user()->first_name.' '.$db_assignment->get_user()->last_name,
-          $db_assignment->start_datetime,
+          $db_last_assignment->get_user()->first_name.' '.
+            $db_last_assignment->get_user()->last_name,
+          $db_last_assignment->start_datetime,
           $db_phone_call->status,
           $total_calls );
-
-        // remove the site if we are restricting the report
-        if( $restrict_site_id ) array_shift( current( $contents ) );
       }
     }
     
@@ -105,7 +107,11 @@ class call_attempts_report extends base_report
       '# Calls' );
     
     // remove the site if we are restricting the report
-    if( $restrict_site_id ) array_shift( $header );
+    if( $restrict_site_id )
+    {
+      array_shift( $header );
+      foreach( $contents as $index => $content ) array_shift( $contents[$index] );
+    }
 
     $this->add_table( NULL, $header, $contents, NULL );
 

@@ -36,6 +36,7 @@ abstract class base_report extends \sabretooth\ui\widget
   {
     parent::__construct( $subject, 'report', $args );
     $this->set_heading( $this->get_subject().' report' );
+    $this->is_restricted_by_site = false;
   }
  
   //TODO doc
