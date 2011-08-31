@@ -31,6 +31,9 @@ class queue_list extends base_list_widget
   public function __construct( $args )
   {
     parent::__construct( 'queue', $args );
+
+    // make sure to display all queues on the same page
+    $this->set_items_per_page( 1000 );
     
     $this->add_column( 'rank', 'number', 'Rank', true );
     $this->add_column( 'enabled', 'boolean', 'Enabled', false );

@@ -51,7 +51,7 @@ class appointment_new extends base_new
     
     foreach( $columns as $column => $value ) $this->get_record()->$column = $value;
     
-    $force = $this->get_argument( 'force' );
+    $force = $this->get_argument( 'force', false );
     
     if( !$force && !$this->get_record()->validate_date() )
       throw new exc\notice( 'There are no operators available during that time.', __METHOD__ );

@@ -324,7 +324,7 @@ and are not currently assigned to an operator.";
 INSERT INTO queue SET
 name = "new participant available",
 title = "New participants, available",
-rank = 17,
+rank = 21,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
@@ -338,7 +338,7 @@ and are not currently assigned to an operator.";
 INSERT INTO queue SET
 name = "new participant always available",
 title = "New participants without availability",
-rank = 18,
+rank = 22,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
@@ -986,6 +986,95 @@ parent_queue_id = (
     WHERE name = "machine no message ready" ) AS tmp ),
 description = "Participants who's last call resulted in an answering machine, a message was not left
 and the scheduled call back time has been reached.
+This list only includes participants who do not have an appointment, have no availability times
+and are not currently assigned to an operator.";
+
+INSERT INTO queue SET
+name = "hang up",
+title = "Last call: hang up",
+rank = NULL,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "old participant" ) AS tmp ),
+description = "Participants who's last call resulted in a hang up.
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
+
+INSERT INTO queue SET
+name = "hang up waiting",
+title = "Last call: hang up (waiting)",
+rank = NULL,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "hang up" ) AS tmp ),
+description = "Participants who's last call resulted in a hang up and the scheduled call back
+time has not yet been reached.
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
+
+INSERT INTO queue SET
+name = "hang up ready",
+title = "Last call: hang up (ready)",
+rank = NULL,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "hang up" ) AS tmp ),
+description = "Participants who's last call resulted in a hang up and the scheduled call back
+time has been reached.
+This list only includes participants who do not have an appointment and are not currently assigned
+to an operator.";
+
+INSERT INTO queue SET
+name = "hang up not available",
+title = "Last Call: hang up (not available)",
+rank = NULL,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "hang up ready" ) AS tmp ),
+description = "Participants who's last call resulted in a hang up and the scheduled call back
+time has been reached.
+This list only includes participants who do not have an appointment, are not currently available
+and are not currently assigned to an operator.";
+
+INSERT INTO queue SET
+name = "hang up available",
+title = "Last Call: hang up (available)",
+rank = 17,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "hang up ready" ) AS tmp ),
+description = "Participants who's last call resulted in a hang up and the scheduled call back
+time has been reached.
+This list only includes participants who do not have an appointment, are currently available
+and are not currently assigned to an operator.";
+
+INSERT INTO queue SET
+name = "hang up always available",
+title = "Last Call: hang up (without availability)",
+rank = 18,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "hang up ready" ) AS tmp ),
+description = "Participants who's last call resulted in a hang up and the scheduled call back
+time has been reached.
 This list only includes participants who do not have an appointment, have no availability times
 and are not currently assigned to an operator.";
 
