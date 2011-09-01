@@ -167,12 +167,16 @@ class appointment extends record
       $num_operators += $diff;
       $times[$time] = $num_operators;
     }
+    
 
     // Now search the times array for any 0's inside the appointment time
     // NOTE: we need to include the time immediately prior to the appointment start time
     $start_time_as_int = intval( $start_datetime_obj->format( 'Gi' ) );
     $end_time_as_int = intval( $end_datetime_obj->format( 'Gi' ) );
     $match = false;
+    $last_slots = 0;
+    $last_time = 0;
+
     foreach( $times as $time => $slots )
     {
       if( $start_time_as_int <= $time && $time < $end_time_as_int )
@@ -181,16 +185,22 @@ class appointment extends record
 
         if( !$match )
         {
-          if( $time != $start_time_as_int && 1 > $last_slot ) return false;
+          if( $time != $start_time_as_int && 1 > $last_slots ) return false;
           $match = true;
         }
       }
 
-      $last_slot = $slots;
+      if( $start_time_as_int <= $time && $end_time_as_int <= $time )
+      { // we have passed both the start and end time
+        return $start_time_as_int >= $last_time && 1 <= $last_slots;
+      }
+
+      $last_slots = $slots;
+      $last_time = $time;
     }
 
-    // if we get here then there is at least one available slot
-    return true;
+    // make sure the last time has at least one slot
+    return 1 <= $slots;
   }
 
   /**
