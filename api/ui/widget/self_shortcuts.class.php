@@ -48,6 +48,7 @@ class self_shortcuts extends \sabretooth\ui\widget
     $this->set_variable( 'timer',
       $is_operator && !is_null( bus\session::self()->get_current_phone_call() ) );
     $this->set_variable( 'calculator', true );
+    $this->set_variable( 'timezone_calculator', true );
     $this->set_variable( 'navigation', !$is_operator );
     $this->set_variable( 'refresh', true );
     $this->set_variable( 'home', false );

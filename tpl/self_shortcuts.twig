@@ -70,6 +70,24 @@
         } );
       {% endif %}
       
+      {% if timezone_calculator %}
+        $( "#{{ widget.full }}_timezone_calculator" ).button( {
+          text: false,
+          icons: {
+            primary: "ui-icon-contact"
+          }
+        } ).click( function() {
+          $( "#timezone_calculator_slot" ).dialog( {
+            title: "Timezone Calculator",
+            modal: false,
+            width: 300,
+            height: 250,
+            autoOpen: true
+          } );
+          slot_load( "timezone_calculator", "self", "timezone_calculator" );
+        } );
+      {% endif %}
+      
       {% if navigation %}
         $( "#{{ widget.full }}_prev" ).button( {
           text: false,
@@ -142,7 +160,12 @@
     {% if timer %}
       <button id="{{ widget.full }}_timer">timer</button>
     {% endif %}
-    {% if calculator %}<button id="{{ widget.full }}_calculator">calculator</button>{% endif %}
+    {% if calculator %}
+      <button id="{{ widget.full }}_calculator">calculator</button>
+    {% endif %}
+    {% if timezone_calculator %}
+      <button id="{{ widget.full }}_timezone_calculator">timezone calculator</button>
+    {% endif %}
     {% if navigation %}
       <span>
         <button id="{{ widget.full }}_prev">back</button>
