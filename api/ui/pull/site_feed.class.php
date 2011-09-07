@@ -44,6 +44,10 @@ class site_feed extends base_feed
   {
     $db_site = bus\session::self()->get_site();
 
+    // determine the appointment interval
+    $interval = sprintf( 'PT%dM',
+                         bus\setting_manager::self()->get_setting( 'appointment', 'duration' ) );
+
     // start by creating an array with one element per day in the time span
     $start_datetime_obj = util::get_datetime_object( $this->start_datetime );
     $end_datetime_obj = util::get_datetime_object( $this->end_datetime );
@@ -138,7 +142,7 @@ class site_feed extends base_feed
   
         $start_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
         // increment slot one hour later
-        $appointment_datetime_obj->add( new \DateInterval( 'PT1H' ) );
+        $appointment_datetime_obj->add( new \DateInterval( $interval ) );
         $end_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
   
         if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
