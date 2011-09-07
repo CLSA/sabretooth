@@ -1,1 +1,5 @@
-reloading page brings back to main page, slot history not working since change to REST
+admin/super: assign operators to specific surveys
+admin/super: assign queue to specific operator(s)
+admin/super: change survey responses
+Incorperate asset management: https://github.com/kriswallsmith/assetic (low priority)
+list VOIP info (SIP peers, active calls, etc) (low priority)
