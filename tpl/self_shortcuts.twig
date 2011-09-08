@@ -14,6 +14,29 @@
   <script type="text/javascript">
     $( function() {
       // make button icons
+      {% if webphone %}
+        $( "#{{ widget.full }}_webphone" ).button( {
+          text: false,
+          icons: {
+            primary: "ui-icon-power"
+          }
+        } ).click( function() {
+          // open the web phone in a new tab
+          window.open(
+            "/webphone/?{{ webphone_parameters|raw }}",
+            "other_tab",
+            "status=0," +
+            "toolbar=0," +
+            "location=0," +
+            "menubar=0," +
+            "directories=0," +
+            "resizable=0," +
+            "width=330," +
+            "height=230" );
+          window.location.reload();
+        } );
+      {% endif %}
+      
       {% if dialpad %}
         $( "#{{ widget.full }}_dialpad" ).button( {
           text: false,
@@ -30,7 +53,7 @@
             autoOpen: true
           } );
           slot_load( "dialing_pad", "self", "dialing_pad" );
-        } );
+        } ).parent().buttonset();
       {% endif %}
       
       {% if timer %}
@@ -49,7 +72,7 @@
             autoOpen: true
           } );
           slot_load( "timer", "self", "timer" );
-        } );
+        } ).parent().buttonset();
       {% endif %}
       
       {% if calculator %}
@@ -67,7 +90,7 @@
             autoOpen: true
           } );
           slot_load( "calculator", "self", "calculator" );
-        } );
+        } ).parent().buttonset();
       {% endif %}
       
       {% if timezone_calculator %}
@@ -85,7 +108,7 @@
             autoOpen: true
           } );
           slot_load( "timezone_calculator", "self", "timezone_calculator" );
-        } );
+        } ).parent().buttonset();
       {% endif %}
       
       {% if navigation %}
@@ -154,18 +177,25 @@
 {% block widget %}
 
   <span>
-    {% if dialpad %}
-      <button id="{{ widget.full }}_dialpad">dialing pad</button>
-    {% endif %}
-    {% if timer %}
-      <button id="{{ widget.full }}_timer">timer</button>
-    {% endif %}
-    {% if calculator %}
-      <button id="{{ widget.full }}_calculator">calculator</button>
-    {% endif %}
-    {% if timezone_calculator %}
-      <button id="{{ widget.full }}_timezone_calculator">timezone calculator</button>
-    {% endif %}
+    <span>
+      {% if webphone %}
+        <button id="{{ widget.full }}_webphone">start web phone</button>
+      {% endif %}
+      {% if dialpad %}
+        <button id="{{ widget.full }}_dialpad">dialing pad</button>
+      {% endif %}
+    </span>
+    <span>
+      {% if timer %}
+        <button id="{{ widget.full }}_timer">timer</button>
+      {% endif %}
+      {% if calculator %}
+        <button id="{{ widget.full }}_calculator">calculator</button>
+      {% endif %}
+      {% if timezone_calculator %}
+        <button id="{{ widget.full }}_timezone_calculator">timezone calculator</button>
+      {% endif %}
+    </span>
     {% if navigation %}
       <span>
         <button id="{{ widget.full }}_prev">back</button>

@@ -43,7 +43,15 @@ class self_shortcuts extends \sabretooth\ui\widget
   {
     parent::finish();
     
+    $voip_enabled = bus\setting_manager::self()->get_setting( 'voip', 'enabled' );
+
     $is_operator = 'operator' == bus\session::self()->get_role()->name;
+    $this->set_variable( 'webphone_parameters', sprintf(
+      'username=%s&password=%s',
+      $_SERVER['PHP_AUTH_USER'],
+      base64_encode( crypt( $_SERVER['PHP_AUTH_PW'] ) ) ) );
+    $this->set_variable( 'webphone',
+      $voip_enabled && !bus\voip_manager::self()->get_sip_enabled() );
     $this->set_variable( 'dialpad', !is_null( bus\voip_manager::self()->get_call() ) );
     $this->set_variable( 'timer',
       $is_operator && !is_null( bus\session::self()->get_current_phone_call() ) );
