@@ -49,6 +49,7 @@ $SETTINGS[ 'voip' ][ 'url' ] = 'put your AJAM url here';
 $SETTINGS[ 'voip' ][ 'username' ] = 'put your asterisk admin username here';
 $SETTINGS[ 'voip' ][ 'password' ] = 'put your asterisk admin password here';
 $SETTINGS[ 'voip' ][ 'prefix' ] = 'put your dialing prefix here';
+$SETTINGS[ 'voip' ][ 'xor_key' ] = 'put your webphone xor key here';
 
 // the directory to write recorded calls
 // (must be an absolute path that the asterisk server's user has access to)
