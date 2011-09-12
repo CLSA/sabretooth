@@ -49,7 +49,14 @@ class self_shortcuts extends \sabretooth\ui\widget
     // get the xor key and make sure it is at least as long as the password
     $xor_key = bus\setting_manager::self()->get_setting( 'voip', 'xor_key' );
     $password = $_SERVER['PHP_AUTH_PW'];
-    while( strlen( $xor_key ) < strlen( $password ) ) $xor_key .= $xor_key;
+
+    // avoid infinite loops by using a counter
+    $counter = 0;
+    while( strlen( $xor_key ) < strlen( $password ) )
+    {
+      $xor_key .= $xor_key;
+      if( 1000 < $counter++ ) break;
+    }
     
     $this->set_variable( 'webphone_parameters', sprintf(
       'username=%s&password=%s',
