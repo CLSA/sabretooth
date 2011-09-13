@@ -167,6 +167,24 @@ class voip_manager extends \sabretooth\singleton
   }
 
   /**
+   * Flushes a user's details using a sip prune command.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\user $db_user Which user to flush.
+   * @access public
+   */
+  public function sip_prune( $db_user )
+  {
+    if( !$this->enabled || is_null( $db_user ) ) return;
+    
+    // there is no way to send a sip prune command to asterisk using AMI so we need to use the CLI
+    $output = array();
+    $return_value = 0;
+    exec( 'asterisk -rx "sip prune realtime peer patrick"', $output, $return_value );
+    if( 0 != $return_value ) log::err( $output[0] );
+  }
+
+  /**
    * Determines whether a SIP connection is detected with the client
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
