@@ -102,17 +102,17 @@ class voip_manager extends \sabretooth\singleton
    * Gets a user's active call.  If the user isn't currently on a call then null is returned.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $user Which user's call to retrieve.  If this parameter is null then the current
-   *               user's call is returned.
+   * @param database\user $db_user Which user's call to retrieve.  If this parameter is null then
+   *        the current user's call is returned.
    * @return voip_call
    * @access public
    */
-  public function get_call( $user = NULL )
+  public function get_call( $db_user = NULL )
   {
     if( !$this->enabled ) return NULL;
     if( is_null( $this->call_list ) ) $this->rebuild_call_list();
 
-    $peer = is_null( $user ) ? session::self()->get_user()->name : $user;
+    $peer = is_null( $db_user ) ? session::self()->get_user()->name : $db_user->name;
 
     // build the call list
     $calls = array();
