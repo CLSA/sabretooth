@@ -70,8 +70,8 @@ catch( exception\base_exception $e )
   $result_array['error_code'] = $e->get_code();
   $result_array['error_message'] = $e->get_raw_message();
   
-  // log all but notice exceptions
-  if( 'notice' != $type ) log::err( ucwords( $type )." ".$e );
+  // log all but notice and permission exceptions
+  if( 'notice' != $type && 'permission' != $type ) log::err( ucwords( $type )." ".$e );
 }
 catch( \Twig_Error $e )
 {
