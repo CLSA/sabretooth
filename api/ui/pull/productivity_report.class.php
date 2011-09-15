@@ -107,9 +107,11 @@ class productivity_report extends base_report
         
         $completes = 0;
         $interview_time = 0;
+        $calls = 0;
         foreach( $db_user->get_assignment_list( $assignment_mod ) as $db_assignment )
         {
           $db_interview = $db_assignment->get_interview();
+          $calls += $db_assignment->get_phone_call_count();
           if( $db_interview->completed )
           {
             $last_assignment_mod = new db\modifier();
@@ -129,7 +131,7 @@ class productivity_report extends base_report
               }
             }
           }
-        }
+        } // end loop on assignments
 
         // Determine the total working time.
         // This is done by finding the minimum and maximum activity time for every day included in
@@ -176,7 +178,8 @@ class productivity_report extends base_report
             $max_datetime_obj->format( "H:i" ),
             $total_time,
             $total_time > 0 ? sprintf( '%0.2f', $completes / $total_time ) : '',
-            $completes > 0 ? sprintf( '%0.2f', $interview_time / $completes / 60 ) : '' );
+            $completes > 0 ? sprintf( '%0.2f', $interview_time / $completes / 60 ) : '',
+            $total_time > 0 ? sprintf( '%0.2f', $calls / $total_time ) : '' );
         }
         else
         {
@@ -185,7 +188,8 @@ class productivity_report extends base_report
             $completes,
             $total_time,
             $total_time > 0 ? sprintf( '%0.2f', $completes / $total_time ) : '',
-            $completes > 0 ? sprintf( '%0.2f', $interview_time / $completes / 60 ) : '' );
+            $completes > 0 ? sprintf( '%0.2f', $interview_time / $completes / 60 ) : '',
+            $total_time > 0 ? sprintf( '%0.2f', $calls / $total_time ) : '' );
         }
       }
 
@@ -197,8 +201,9 @@ class productivity_report extends base_report
           "Start Time",
           "End Time",
           "Total Time",
-          "CPH",
-          "Avg. Length" );
+          "CompPH",
+          "Avg. Length",
+          "CallPH" );
 
         $footer = array(
           "Total",
@@ -206,6 +211,7 @@ class productivity_report extends base_report
           "--",
           "--",
           "sum()",
+          "average()",
           "average()",
           "average()" );
       }
@@ -215,13 +221,15 @@ class productivity_report extends base_report
           "Operator",
           "Completes",
           "Total Time",
-          "CPH",
-          "Avg. Length" );
+          "CompPH",
+          "Avg. Length",
+          "CallPH" );
 
         $footer = array(
           "Total",
           "sum()",
           "sum()",
+          "average()",
           "average()",
           "average()" );
       }
