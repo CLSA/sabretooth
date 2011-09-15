@@ -102,17 +102,17 @@ class voip_manager extends \sabretooth\singleton
    * Gets a user's active call.  If the user isn't currently on a call then null is returned.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $user Which user's call to retrieve.  If this parameter is null then the current
-   *               user's call is returned.
+   * @param database\user $db_user Which user's call to retrieve.  If this parameter is null then
+   *        the current user's call is returned.
    * @return voip_call
    * @access public
    */
-  public function get_call( $user = NULL )
+  public function get_call( $db_user = NULL )
   {
     if( !$this->enabled ) return NULL;
     if( is_null( $this->call_list ) ) $this->rebuild_call_list();
 
-    $peer = is_null( $user ) ? session::self()->get_user()->name : $user;
+    $peer = is_null( $db_user ) ? session::self()->get_user()->name : $db_user->name;
 
     // build the call list
     $calls = array();
@@ -164,6 +164,24 @@ class voip_manager extends \sabretooth\singleton
     // rebuild the call list and return (what should be) the peer's only call
     $this->rebuild_call_list();
     return $this->get_call();
+  }
+
+  /**
+   * Flushes a user's details using a sip prune command.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\user $db_user Which user to flush.
+   * @access public
+   */
+  public function sip_prune( $db_user )
+  {
+    if( !$this->enabled || is_null( $db_user ) ) return;
+    
+    // there is no way to send a sip prune command to asterisk using AMI so we need to use the CLI
+    $output = array();
+    $return_value = 0;
+    exec( 'asterisk -rx "sip prune realtime peer patrick"', $output, $return_value );
+    if( 0 != $return_value ) log::err( $output[0] );
   }
 
   /**

@@ -42,18 +42,18 @@ class assignment_begin extends \sabretooth\ui\push
     $session = bus\session::self();
 
     // search through every queue for a new assignment until one is found
-    $modifier = new db\modifier();
-    $modifier->where( 'rank', '!=', NULL );
-    $modifier->order( 'rank' );
+    $queue_mod = new db\modifier();
+    $queue_mod->where( 'rank', '!=', NULL );
+    $queue_mod->order( 'rank' );
     $db_origin_queue = NULL;
     $db_participant = NULL;
     $db_appointment_id = NULL;
-    foreach( db\queue::select( $modifier ) as $db_queue )
+    foreach( db\queue::select( $queue_mod ) as $db_queue )
     {
-      $mod = new db\modifier();
-      $mod->limit( 1 );
+      $participant_mod = new db\modifier();
+      $participant_mod->limit( 1 );
       $db_queue->set_site( $session->get_site() );
-      $participant_list = $db_queue->get_participant_list( $mod );
+      $participant_list = $db_queue->get_participant_list( $participant_mod );
       if( 1 == count( $participant_list ) )
       {
         $db_origin_queue = $db_queue;
@@ -76,11 +76,11 @@ class assignment_begin extends \sabretooth\ui\push
         __METHOD__ );
     
     // get this participant's interview or create a new one if none exists yet
-    $modifier = new db\modifier();
-    $modifier->where( 'participant_id', '=', $db_participant->id );
-    $modifier->where( 'qnaire_id', '=', $db_participant->current_qnaire_id );
+    $interview_mod = new db\modifier();
+    $interview_mod->where( 'participant_id', '=', $db_participant->id );
+    $interview_mod->where( 'qnaire_id', '=', $db_participant->current_qnaire_id );
 
-    $db_interview_list = db\interview::select( $modifier );
+    $db_interview_list = db\interview::select( $interview_mod );
     
     if( 0 == count( $db_interview_list ) )
     {
@@ -105,11 +105,11 @@ class assignment_begin extends \sabretooth\ui\push
     if( $db_origin_queue->from_appointment() )
     { // if this is an appointment queue, mark the appointment now associated with the appointment
       // this should always be the appointment with the earliest date
-      $mod = new db\modifier();
-      $mod->where( 'assignment_id', '=', NULL );
-      $mod->order( 'datetime' );
-      $mod->limit( 1 );
-      $appointment_list = $db_participant->get_appointment_list( $mod );
+      $appointment_mod = new db\modifier();
+      $appointment_mod->where( 'assignment_id', '=', NULL );
+      $appointment_mod->order( 'datetime' );
+      $appointment_mod->limit( 1 );
+      $appointment_list = $db_participant->get_appointment_list( $appointment_mod );
 
       if( 0 == count( $appointment_list ) )
       {

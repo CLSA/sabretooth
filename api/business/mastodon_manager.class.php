@@ -32,7 +32,7 @@ class mastodon_manager extends \sabretooth\singleton
 
     if( $this->enabled )
     {
-      $base_url = SABRETOOTH_URL.'/'.MASTODON_URL.'/';
+      $base_url = MASTODON_URL.'/';
       $base_url = preg_replace(
         '#://#', '://'.$_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'].'@', $base_url );
       $this->base_url = $base_url;

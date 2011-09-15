@@ -18,8 +18,8 @@ $SETTINGS[ 'path' ][ 'LOG_FILE' ] = '/path/to/log/file';
 // Whether or not to run the application in development mode
 $SETTINGS[ 'general' ][ 'development_mode' ] = true;
 
-// The url of Mastodon (may be relative).  Set to NULL to disable mastodon support.
-$SETTINGS[ 'url' ][ 'MASTODON' ] = 'http://url/to/mastodon';
+// The url of Mastodon (cannot be relative).  Set to NULL to disable mastodon support.
+$SETTINGS[ 'url' ][ 'MASTODON' ] = 'http://usr/to/mastodon';
 
 // The path and url of Limesurvey (the url may be relative)
 $SETTINGS[ 'path' ][ 'LIMESURVEY' ] = '/path/to/limesurvey';
@@ -49,6 +49,7 @@ $SETTINGS[ 'voip' ][ 'url' ] = 'put your AJAM url here';
 $SETTINGS[ 'voip' ][ 'username' ] = 'put your asterisk admin username here';
 $SETTINGS[ 'voip' ][ 'password' ] = 'put your asterisk admin password here';
 $SETTINGS[ 'voip' ][ 'prefix' ] = 'put your dialing prefix here';
+$SETTINGS[ 'voip' ][ 'xor_key' ] = 'put your webphone xor key here';
 
 // the directory to write recorded calls
 // (must be an absolute path that the asterisk server's user has access to)
