@@ -81,3 +81,31 @@ Add the dialplans listed in aux/extensions.conf to the Asterisk server's extensi
 (/etc/asterisk/extensions.conf)
 Copy all .sln files from the aux/ directory to asterisk's custom sound directory
 (/usr/share/asterisk/sounds/custom)
+
+G) OPTIONAL DETAILS
+===================
+
+In order for limesurvey to allow for long-style question and answer
+titles/codes the following edits must be performed:
+
+Search and replace all maxlength='5' with maxlength='65' in the following files:
+  admin/editansweroptions.php
+  admin/editsubjequestions.php
+  admin/labels.php
+Search and replace all maxlength='20' with maxlength='65' in the following files:
+  admin/questionhandling.php
+Search and replace all maxlength="5" with maxlength="65" in the following files:
+  admin/scripts/subquestions.js
+  admin/scripts/answers.js
+Search and replace all C(5) with C(65) in the following files:
+  admin/activate_functions.php
+
+Alter limesurvey's answers and questions tables as follows:
+ALTER TABLE answers CHANGE code code VARCHAR(65) NOT NULL;
+ALTER TABLE questions CHANGE title title VARCHAR(65) NULL DEFAULT NULL;
+
+In general, you may also need to change the following parameters in your php.ini file:
+  session.cookie_lifetime
+  max_execution_time
+  post_max_size
+  upload_max_filesize 

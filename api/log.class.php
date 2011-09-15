@@ -227,7 +227,7 @@ final class log extends singleton
       {
         // log major stuff to an error log
         $this->initialize_logger( 'file' );
-        $this->loggers[ 'file' ]->log( $this->backtrace()."\n".$message, $type );
+        $this->loggers[ 'file' ]->log( $this->backtrace().$message."\n", $type );
       }
       else // PEAR_LOG_WARNING, PEAR_LOG_NOTICE, PEAR_LOG_DEBUG
       {

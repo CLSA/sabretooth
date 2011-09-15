@@ -327,6 +327,8 @@ VALUES( "widget", "self", "dialing_pad", false, "A telephone dialing pad widget.
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "calculator", false, "A calculator widget." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "self", "timezone_calculator", false, "A timezone calculator widget." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "self", "set_site", false, "Change the current user's active site." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "self", "set_role", false, "Change the current user's active role." );

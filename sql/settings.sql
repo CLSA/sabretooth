@@ -18,6 +18,10 @@ ORDER BY rank;
 
 -- appointment
 INSERT INTO setting( category, name, type, value, description )
+VALUES( "appointment", "duration", "integer", "45",
+"The length of time an appointment is estimated to take, in minutes." );
+
+INSERT INTO setting( category, name, type, value, description )
 VALUES( "appointment", "call pre-window", "integer", "5",
 "Number of minutes before an appointment when it is considered assignable." );
 
@@ -38,17 +42,7 @@ VALUES( "callback timing", "busy", "integer", "15",
 signal." );
 
 INSERT INTO setting( category, name, type, value, description )
-VALUES( "callback timing", "fax", "integer", "15",
-"Number of minutes to wait before calling back a participant where the previous call was a fax
-machine." );
-
-INSERT INTO setting( category, name, type, value, description )
-VALUES( "callback timing", "not reached", "integer", "4320",
-"Number of minutes to wait before calling back a participant where the previous call reached a
-person other than the participant." );
-
-INSERT INTO setting( category, name, type, value, description )
-VALUES( "callback timing", "no answer", "integer", "2160",
+VALUES( "callback timing", "no answer", "integer", "1440",
 "Number of minutes to wait before calling back a participant where there was no answer during the
 previous call." );
 
@@ -61,6 +55,21 @@ INSERT INTO setting( category, name, type, value, description )
 VALUES( "callback timing", "machine no message", "integer", "4320",
 "Number of minutes to wait before calling back a participant where the previous call was an
 answering machine ano no message was left." );
+
+INSERT INTO setting( category, name, type, value, description )
+VALUES( "callback timing", "fax", "integer", "15",
+"Number of minutes to wait before calling back a participant where the previous call was a fax
+machine." );
+
+INSERT INTO setting( category, name, type, value, description )
+VALUES( "callback timing", "not reached", "integer", "4320",
+"Number of minutes to wait before calling back a participant where the previous call reached a
+person other than the participant." );
+
+INSERT INTO setting( category, name, type, value, description )
+VALUES( "callback timing", "hang up", "integer", "2880",
+"Number of minutes to wait before calling back a participant where the previous call was a hang
+up." );
 
 INSERT INTO setting( category, name, type, value, description )
 VALUES( "callback timing", "soft refusal", "integer", "525600",
