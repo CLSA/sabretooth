@@ -840,11 +840,6 @@ CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `active` INT, `uid
 CREATE TABLE IF NOT EXISTS `assignment_last_phone_call` (`assignment_id` INT, `phone_call_id` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `participant_available`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `participant_available` (`participant_id` INT, `available` INT);
-
--- -----------------------------------------------------
 -- Placeholder table for view `participant_last_consent`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `participant_last_consent` (`participant_id` INT, `consent_id` INT);
@@ -1016,42 +1011,6 @@ AND phone_call_1.start_datetime = (
   AND assignment_1.id = assignment_2.id
   AND phone_call_2.end_datetime IS NOT NULL
   GROUP BY assignment_2.id );
-
--- -----------------------------------------------------
--- View `participant_available`
--- -----------------------------------------------------
-DROP VIEW IF EXISTS `participant_available` ;
-DROP TABLE IF EXISTS `participant_available`;
-CREATE  OR REPLACE VIEW `participant_available` AS
-SELECT participant.id as participant_id,
-  IF( availability.id IS NULL,
-      NULL,
-      MAX(
-        CASE DAYOFWEEK( UTC_TIMESTAMP() )
-          WHEN 1 THEN availability.sunday
-          WHEN 2 THEN availability.monday
-          WHEN 3 THEN availability.tuesday
-          WHEN 4 THEN availability.wednesday
-          WHEN 5 THEN availability.thursday
-          WHEN 6 THEN availability.friday
-          WHEN 7 THEN availability.saturday
-          ELSE 0 END = 1
-        AND IF( TIME( UTC_TIMESTAMP() ) < availability.start_time,
-                24*60*60 + TIME_TO_SEC( TIME( UTC_TIMESTAMP() ) ),
-                TIME_TO_SEC( TIME( UTC_TIMESTAMP() ) ) ) >=
-            TIME_TO_SEC( availability.start_time )
-        AND IF( TIME( UTC_TIMESTAMP() ) < availability.start_time,
-                24*60*60 + TIME_TO_SEC( TIME( UTC_TIMESTAMP() ) ),
-                TIME_TO_SEC( TIME( UTC_TIMESTAMP() ) ) ) <
-            IF( availability.end_time < availability.start_time,
-                24*60*60 + TIME_TO_SEC( availability.end_time ),
-                TIME_TO_SEC( availability.end_time ) )
-      )
-    ) AS available
-FROM participant
-LEFT JOIN availability
-ON availability.participant_id = participant.id
-GROUP BY participant.id;
 
 -- -----------------------------------------------------
 -- View `participant_last_consent`

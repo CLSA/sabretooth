@@ -27,6 +27,22 @@
         slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}",
                    { "restrict_qnaire_id": qnaire_id } );
       } );
+
+      // create the datepicker UI for the viewing date
+      $( "#{{ widget.full }}__viewing_date" ).datepicker( {
+        dateFormat: 'yy-mm-dd',
+        showAnim: 'slideDown',
+        defaultDate: 'current',
+        onClose: function( dateText, inst ) {
+          var viewing_date = $( "#{{ widget.full }}__viewing_date" ).val();
+          
+          // if today's date is selected change it to "current"
+          if( "{{ current_date }}" == viewing_date ) viewing_date = "current";
+
+          slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}",
+                     { "viewing_date": viewing_date } );
+        }
+      } );
     } );
   </script>
 
@@ -61,6 +77,13 @@
                   value="{{ id }}">{{ name }}</option>
         {% endfor %}
       </select>
+    </span>
+  
+    {% set viewing_date = viewing_date|default('current') %}
+    <span>
+      Viewing date:
+      <input id="{{ widget.full }}__viewing_date" class="ui-state-default"
+             value="{{ viewing_date }}" style="width: 7em;" readonly />
     </span>
   </div>
 
