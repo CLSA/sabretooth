@@ -67,7 +67,7 @@ class queue_list extends base_list_widget
       $this->set_variable( 'sites', $sites );
     }
 
-    $restrict_site_id = $this->get_argument( "restrict_site_id", 0 );
+    $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
     $this->set_variable( 'restrict_site_id', $restrict_site_id );
     $db_restrict_site = $restrict_site_id
                       ? new db\site( $restrict_site_id )
@@ -78,12 +78,18 @@ class queue_list extends base_list_widget
       $qnaires[$db_qnaire->id] = $db_qnaire->name;
     $this->set_variable( 'qnaires', $qnaires );
     
-    $restrict_qnaire_id = $this->get_argument( "restrict_qnaire_id", 0 );
+    $restrict_qnaire_id = $this->get_argument( 'restrict_qnaire_id', 0 );
     $this->set_variable( 'restrict_qnaire_id', $restrict_qnaire_id );
     $db_restrict_qnaire = $restrict_qnaire_id
                         ? new db\qnaire( $restrict_qnaire_id )
                         : NULL;
     
+    $current_date = util::get_datetime_object()->format( 'Y-m-d' );
+    $this->set_variable( 'current_date', $current_date );
+    $viewing_date = $this->get_argument( 'viewing_date', 'current' );
+    if( $current_date == $viewing_date ) $viewing_date = 'current';
+    $this->set_variable( 'viewing_date', $viewing_date );
+
     $setting_manager = bus\setting_manager::self();
     foreach( $this->get_record_list() as $record )
     {
@@ -93,6 +99,9 @@ class queue_list extends base_list_widget
       
       // restrict to the current qnaire
       $record->set_qnaire( $db_restrict_qnaire );
+
+      // set the viewing date if it is not "current"
+      if( 'current' != $viewing_date ) $record->set_viewing_date( $viewing_date );
 
       $this->add_row( $record->id,
         array( 'rank' => $record->rank,
