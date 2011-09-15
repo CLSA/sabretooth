@@ -71,14 +71,6 @@ class queue extends record
       {
         $parts = $this->get_query_parts( $queue );
         
-        $select_sql = '';
-        $first = true;
-        foreach( $parts['select'] as $select )
-        {
-          $select_sql .= sprintf( $first ? 'SELECT %s' : ', %s', $select );
-          $first = false;
-        }
-        
         $from_sql = '';
         $first = true;
         // reverse order to make sure join to participant_for_queue table works
@@ -93,9 +85,12 @@ class queue extends record
         
         $where_sql = 'WHERE true';
         foreach( $parts['where'] as $where ) $where_sql .= ' AND '.$where;
-
+        
         self::$query_list[$queue] =
-          sprintf( '%s %s %s %s', $select_sql, $from_sql, $join_sql, $where_sql );
+          sprintf( 'SELECT <SELECT_PARTICIPANT> %s %s %s',
+                   $from_sql,
+                   $join_sql,
+                   $where_sql );
       }
       
       // now add the sql for each call back status
@@ -116,14 +111,6 @@ class queue extends record
           {
             $parts = $this->get_query_parts( $queue, $phone_call_status );
             
-            $select_sql = '';
-            $first = true;
-            foreach( $parts['select'] as $select )
-            {
-              $select_sql .= sprintf( $first ? 'SELECT %s' : ', %s', $select );
-              $first = false;
-            }
-            
             $from_sql = '';
             $first = true;
             // reverse order to make sure join to participant_for_queue table works
@@ -141,7 +128,10 @@ class queue extends record
             
             $queue_name = str_replace( 'phone call status', $phone_call_status, $queue );
             self::$query_list[$queue_name] =
-              sprintf( '%s %s %s %s', $select_sql, $from_sql, $join_sql, $where_sql );
+              sprintf( 'SELECT <SELECT_PARTICIPANT> %s %s %s',
+                       $from_sql,
+                       $join_sql,
+                       $where_sql );
           }
         }
       }
@@ -287,12 +277,37 @@ class queue extends record
       '    queue_restriction.postcode != participant.postcode'.
       '  )'.
       ')';
+    
+    // checks a participant's availability
+    $check_availability_sql =
+      '( SELECT MAX( '.
+      '    CASE DAYOFWEEK( UTC_TIMESTAMP() ) '.
+      '      WHEN 1 THEN availability.sunday '.
+      '      WHEN 2 THEN availability.monday '.
+      '      WHEN 3 THEN availability.tuesday '.
+      '      WHEN 4 THEN availability.wednesday '.
+      '      WHEN 5 THEN availability.thursday '.
+      '      WHEN 6 THEN availability.friday '.
+      '      WHEN 7 THEN availability.saturday '.
+      '      ELSE 0 END '.
+      '    * IF( IF( TIME( UTC_TIMESTAMP() ) < availability.start_time, '.
+      '            24*60*60 + TIME_TO_SEC( TIME( UTC_TIMESTAMP() ) ), '.
+      '            TIME_TO_SEC( TIME( UTC_TIMESTAMP() ) ) ) >= '.
+      '        TIME_TO_SEC( availability.start_time ), 1, 0 ) '.
+      '    * IF( IF( TIME( UTC_TIMESTAMP() ) < availability.start_time, '.
+      '            24*60*60 + TIME_TO_SEC( TIME( UTC_TIMESTAMP() ) ), '.
+      '            TIME_TO_SEC( TIME( UTC_TIMESTAMP() ) ) ) < '.
+      '        IF( availability.end_time < availability.start_time, '.
+      '            24*60*60 + TIME_TO_SEC( availability.end_time ), '.
+      '            TIME_TO_SEC( availability.end_time ) ), 1, 0 ) '.
+      '  ) '.
+      '  FROM availability '.
+      '  WHERE availability.participant_id = participant.id )';
 
     // now determine the sql parts for the given queue
     if( 'all' == $queue )
     {
       $parts = array(
-        'select' => array( '<SELECT_PARTICIPANT>' ),
         'from' => array( 'participant_for_queue AS participant' ),
         'join' => array(),
         'where' => array() );
@@ -484,34 +499,22 @@ class queue extends record
     else if( 'new participant always available' == $queue )
     {
       $parts = $this->get_query_parts( 'new participant' );
-      // join to the participant's availability
-      $parts['join'][] =
-        'LEFT JOIN participant_available '.
-        'ON participant_available.participant_id = participant.id';
-      // make sure no availability exists
-      $parts['where'][] = 'participant_available.available IS NULL';
+      // make sure the participant doesn't specify availability
+      $parts['where'][] = $check_availability_sql.' IS NULL';
       return $parts;
     }
     else if( 'new participant available' == $queue )
     {
       $parts = $this->get_query_parts( 'new participant' );
-      // join to the participant's availability
-      $parts['join'][] =
-        'LEFT JOIN participant_available '.
-        'ON participant_available.participant_id = participant.id';
-      // make sure participant is available
-      $parts['where'][] = 'participant_available.available = true';
+      // make sure the participant has availability and is currently available
+      $parts['where'][] = $check_availability_sql.' = true';
       return $parts;
     }
     else if( 'new participant not available' == $queue )
     {
       $parts = $this->get_query_parts( 'new participant' );
-      // join to the participant's availability
-      $parts['join'][] =
-        'LEFT JOIN participant_available '.
-        'ON participant_available.participant_id = participant.id';
-      // make sure participant is not available
-      $parts['where'][] = 'participant_available.available = false';
+      // make sure the participant has availability and is currently not available
+      $parts['where'][] = $check_availability_sql.' = false';
       return $parts;
     }
     else if( 'old participant' == $queue )
@@ -553,9 +556,6 @@ class queue extends record
       else if( 'phone call status ready' == $queue )
       {
         $parts = $this->get_query_parts( 'phone call status', $phone_call_status );
-        $parts['join'][] =
-          'LEFT JOIN participant_available '.
-          'ON participant_available.participant_id = participant.id';
         $parts['where'][] =
           sprintf( 'UTC_TIMESTAMP() >= phone_call.end_datetime + '.
                                           'INTERVAL <CALLBACK_%s> MINUTE',
@@ -565,19 +565,22 @@ class queue extends record
       else if( 'phone call status always available' == $queue )
       {
         $parts = $this->get_query_parts( 'phone call status ready', $phone_call_status );
-        $parts['where'][] = 'participant_available.available IS NULL';
+        // make sure the participant doesn't specify availability
+        $parts['where'][] = $check_availability_sql.' IS NULL';
         return $parts;
       }
       else if( 'phone call status not available' == $queue )
       {
         $parts = $this->get_query_parts( 'phone call status ready', $phone_call_status );
-        $parts['where'][] = 'participant_available.available = false';
+        // make sure the participant has availability and is currently not available
+        $parts['where'][] = $check_availability_sql.' = false';
         return $parts;
       }
       else if( 'phone call status available' == $queue )
       {
         $parts = $this->get_query_parts( 'phone call status ready', $phone_call_status );
-        $parts['where'][] = 'participant_available.available = true';
+        // make sure the participant has availability and is currently available
+        $parts['where'][] = $check_availability_sql.' = true';
         return $parts;
       }
       else // invalid queue name
