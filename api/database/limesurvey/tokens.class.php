@@ -124,11 +124,11 @@ class tokens extends sid_record
         }
         else if( 'written consent received' == $value )
         {
-          $this->$key = $written_consent;
+          $this->$key = $written_consent ? "1" : "0";
         }
         else if( 'consented to provide HIN' == $value )
         {
-          $this->$key = true == $participant_info->data->hin_access;
+          $this->$key = true == $participant_info->data->hin_access ? "1" : "0";
         }
         else if( 'operator first_name' == $value )
         {
