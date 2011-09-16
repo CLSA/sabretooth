@@ -26,4 +26,18 @@
     <div class="spacer"></div>
   </div>
 
+  <div class="ui-widget-header ui-state-hover app-widget-header">System Messages</div>
+  <div class="ui-widget ui-widget-content app-widget-content">
+    {% if message_list|count %}
+      <div class="spacer" />
+      {% for message in message_list %}
+        <div class="ui-widget ui-widget-header">{{ message.title }}</div>
+        <div style="padding: 1em; padding-left: 2em;"
+             class="ui-widget ui-widget-content">{{ message.note|nl2br|raw }}</div>
+      {% endfor %}
+      <div class="spacer" />
+    {% else %}
+      <div style="padding: 1em;">There are no system messages.</div>
+    {% endif %}
+  </div>
 {% endblock widget %}

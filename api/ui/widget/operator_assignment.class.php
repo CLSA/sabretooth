@@ -45,10 +45,56 @@ class operator_assignment extends \sabretooth\ui\widget
     parent::finish();
     
     $session = bus\session::self();
+    $db_role = $session->get_role();
+    $db_site = $session->get_site();
+
+    // add any messages that apply to this user
+    $message_list = array();
+
+    // global messages go first
+    $modifier = new db\modifier();
+    $modifier->where( 'site_id', '=', NULL );
+    $modifier->where( 'role_id', '=', NULL );
+    foreach( db\system_message::select( $modifier ) as $db_system_message )
+    {
+      $message_list[] = array( 'title' => $db_system_message->title,
+                               'note' => $db_system_message->note );
+    }
+    
+    // then all-site messages
+    $modifier = new db\modifier();
+    $modifier->where( 'site_id', '=', NULL );
+    $modifier->where( 'role_id', '=', $db_role->id );
+    foreach( db\system_message::select( $modifier ) as $db_system_message )
+    {
+      $message_list[] = array( 'title' => $db_system_message->title,
+                               'note' => $db_system_message->note );
+    }
+
+    // then all-role site-specific messages
+    $modifier = new db\modifier();
+    $modifier->where( 'site_id', '=', $db_site->id );
+    $modifier->where( 'role_id', '=', NULL );
+    foreach( db\system_message::select( $modifier ) as $db_system_message )
+    {
+      $message_list[] = array( 'title' => $db_system_message->title,
+                               'note' => $db_system_message->note );
+    }
+
+    // then role-specific site-specific messages
+    $modifier = new db\modifier();
+    $modifier->where( 'site_id', '=', $db_site->id );
+    $modifier->where( 'role_id', '=', $db_role->id );
+    foreach( db\system_message::select( $modifier ) as $db_system_message )
+    {
+      $message_list[] = array( 'title' => $db_system_message->title,
+                               'note' => $db_system_message->note );
+    }
+
+    $this->set_variable( 'message_list', $message_list );
 
     // see if this user has an open assignment
     $db_assignment = $session->get_current_assignment();
-
     if( !is_null( $db_assignment ) )
     { // fill out the participant's details
       $db_interview = $db_assignment->get_interview();
