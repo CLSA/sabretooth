@@ -32,20 +32,29 @@ class mastodon_manager extends \sabretooth\singleton
 
     if( $this->enabled )
     {
-      $base_url = SABRETOOTH_URL.'/'.MASTODON_URL.'/';
+      $base_url = MASTODON_URL.'/';
       $base_url = preg_replace(
         '#://#', '://'.$_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'].'@', $base_url );
       $this->base_url = $base_url;
     }
   }
   
-  // TODO: document
+  /**
+   * Determines if Mastodon is enabled.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
   public function is_enabled()
   {
     return $this->enabled;
   }
   
-  // TODO: document
+  /**
+   * Logs into Mastodon via HTTP POST
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
   protected function login()
   {
     if( !$this->enabled || $this->logged_in ) return;
@@ -74,7 +83,16 @@ class mastodon_manager extends \sabretooth\singleton
     $this->logged_in = true;
   }
 
-  // TODO: document
+  /**
+   * Pulls information from Mastodon via HTTP GET
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $subject The pull's subject
+   * @param string $name The pull's name
+   * @param array $arguments The query data
+   * @throws exception\argument
+   * @return \StdObject
+   * @access public
+   */
   public function pull( $subject, $name, $arguments = NULL )
   {
     if( !$this->enabled ) return NULL;
@@ -94,7 +112,15 @@ class mastodon_manager extends \sabretooth\singleton
     return json_decode( $message->body );
   }
 
-  // TODO: document
+  /**
+   * Pushes information to Mastodon via HTTP POST
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $subject The push's subject
+   * @param string $name The push's name
+   * @param array $arguments The post fields
+   * @throws exception\argument
+   * @access public
+   */
   public function push( $subject, $name, $arguments = NULL )
   {
     if( !$this->enabled ) return;
@@ -113,6 +139,14 @@ class mastodon_manager extends \sabretooth\singleton
     static::send( $request );
   }
 
+  /**
+   * Sends an HTTP request to Mastodon.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param \HttpRequest $request The request to send
+   * @throws exception\mastodon, exception\runtime
+   * @return \HttpMessage
+   * @access protected
+   */
   protected static function send( $request )
   {
     $message = $request->send();
@@ -121,8 +155,7 @@ class mastodon_manager extends \sabretooth\singleton
     if( 400 == $code )
     { // duplicate mastodon exception
       $body = json_decode( $message->body );
-      $e = new exc\mastodon( $body->error_type, $body->error_code, $body->error_message );
-      throw $e;
+      throw new exc\mastodon( $body->error_type, $body->error_code, $body->error_message );
     }
     else if( 200 != $code )
     { // A non-mastodon error has happened
@@ -132,12 +165,24 @@ class mastodon_manager extends \sabretooth\singleton
     return $message;
   }
 
-  // TODO: document
+  /**
+   * Whether or not Mastodon is enabled
+   * @var boolean
+   * @access protected
+   */
   protected $enbled = false;
 
-  // TODO: document
+  /**
+   * The base URL to Mastodon
+   * @var string
+   * @access protected
+   */
   protected $base_url = NULL;
 
-  // TODO: document
+  /**
+   * Whether Mastodon has been logged into or not
+   * @var boolean
+   * @access protected
+   */
   protected $logged_in = false;
 }

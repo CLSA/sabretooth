@@ -611,9 +611,9 @@ class queue extends record
     $sql = str_replace( '<APPOINTMENT_POST_WINDOW>', $setting, $sql );
 
     // fill in all callback timing settings
-    $select_mod = new modifier();
-    $select_mod->where( 'category', '=', 'callback timing' );
-    foreach( setting::select( $select_mod ) as $db_setting )
+    $setting_mod = new modifier();
+    $setting_mod->where( 'category', '=', 'callback timing' );
+    foreach( setting::select( $setting_mod ) as $db_setting )
     {
       $setting = $setting_manager->get_setting( 'callback timing', $db_setting->name );
       $template = sprintf( '<CALLBACK_%s>',

@@ -1036,8 +1036,16 @@ SELECT participant.id as participant_id,
           WHEN 6 THEN availability.friday
           WHEN 7 THEN availability.saturday
           ELSE 0 END = 1
-        AND availability.start_time < TIME( UTC_TIMESTAMP() )
-        AND availability.end_time > TIME( UTC_TIMESTAMP() )
+        AND IF( TIME( UTC_TIMESTAMP() ) < availability.start_time,
+                24*60*60 + TIME_TO_SEC( TIME( UTC_TIMESTAMP() ) ),
+                TIME_TO_SEC( TIME( UTC_TIMESTAMP() ) ) ) >=
+            TIME_TO_SEC( availability.start_time )
+        AND IF( TIME( UTC_TIMESTAMP() ) < availability.start_time,
+                24*60*60 + TIME_TO_SEC( TIME( UTC_TIMESTAMP() ) ),
+                TIME_TO_SEC( TIME( UTC_TIMESTAMP() ) ) ) <
+            IF( availability.end_time < availability.start_time,
+                24*60*60 + TIME_TO_SEC( availability.end_time ),
+                TIME_TO_SEC( availability.end_time ) )
       )
     ) AS available
 FROM participant

@@ -14,7 +14,7 @@ namespace sabretooth;
 global $SETTINGS;
 
 // tagged version
-$SETTINGS[ 'general' ][ 'version' ] = '0.2.4b';
+$SETTINGS[ 'general' ][ 'version' ] = '0.2.5';
 
 // always leave as false when running as production server
 $SETTINGS[ 'general' ][ 'development_mode' ] = false;
@@ -155,6 +155,7 @@ $SETTINGS[ 'voip' ][ 'url' ] = 'http://localhost:8088/mxml';
 $SETTINGS[ 'voip' ][ 'username' ] = '';
 $SETTINGS[ 'voip' ][ 'password' ] = '';
 $SETTINGS[ 'voip' ][ 'prefix' ] = '';
+$SETTINGS[ 'voip' ][ 'xor_key' ] = '';
 
 // the directory to write recorded calls
 // (must be an absolute path that the asterisk server's user has access to)

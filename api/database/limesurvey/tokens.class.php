@@ -28,20 +28,22 @@ class tokens extends sid_record
    * @param boolean $extended Whether or not to included extended parameters.
    * @access public
    */
-  public function update_attributes( $db_participant, $extended = false )
+  public function update_attributes( $db_participant )
   {
     $mastodon_manager = bus\mastodon_manager::self();
     $db_user = bus\session::self()->get_user();
     
+    // try getting the attributes from mastodon or sabretooth
     if( $mastodon_manager->is_enabled() )
-    { // get attributes from mastodon
-      
-      // get the participant's information
+    {
       $participant_info = $mastodon_manager->pull(
         'participant', 'primary', array( 'uid' => $db_participant->uid ) );
       $consent_info = $mastodon_manager->pull(
         'participant', 'list_consent', array( 'uid' => $db_participant->uid ) );
+      $alternate_info = $mastodon_manager->pull(
+        'participant', 'list_alternate', array( 'uid' => $db_participant->uid ) );
       
+      // written consent received
       $written_consent = false;
       foreach( $consent_info->data as $consent )
       {
@@ -53,7 +55,7 @@ class tokens extends sid_record
       }
     }
     else
-    { // get attributes from sabretooth
+    {
       $db_address = $db_participant->get_primary_address();
       if( is_null( $db_address ) )
       {
@@ -82,100 +84,77 @@ class tokens extends sid_record
       $participant_info->data->email = "";
       $participant_info->data->hin_access = "";
       $participant_info->data->prior_contact_date = "";
+      $alternate_info->data = array();
     }
+    
+    // determine the attributes from the survey with the same ID
+    $db_surveys = new surveys( static::$table_sid );
 
-    if( !$extended )
+    foreach( explode( "\n", $db_surveys->attributedescriptions ) as $attribute )
     {
-      // age
-      if( $mastodon_manager->is_enabled() )
-      { // get age from mastodon
-        $dob = util::get_datetime_object( $participant_info->data->date_of_birth );
-        $this->attribute_1 = util::get_interval( $dob )->y;
-      }
-      else
+      if( 10 < strlen( $attribute ) )
       {
-        // sabretooth doesn't track date of birth or age
-        $this->attribute_1 = "";
-      }
+        $key = 'attribute_'.substr( $attribute, 10, strpos( $attribute, '=' ) - 10 );
+        $value = substr( $attribute, strpos( $attribute, '=' ) + 1 );
+        $matches = array(); // for pregs below
+        
+        // now get the info based on the attribute name
+        if( 'address street' == $value )
+        {
+          $this->$key = $participant_info->data->street;
+        }
+        else if( 'address city' == $value )
+        {
+          $this->$key = $participant_info->data->city;
+        }
+        else if( 'address province' == $value )
+        {
+          $this->$key = $participant_info->data->region;
+        }
+        else if( 'address postal code' == $value )
+        {
+          $this->$key = $participant_info->data->postcode;
+        }
+        else if( 'age' == $value )
+        {
+          $this->$key = strlen( $participant_info->data->date_of_birth )
+                      ? util::get_interval(
+                          util::get_datetime_object( $participant_info->data->date_of_birth ) )->y
+                      : "";
+        }
+        else if( 'written consent received' == $value )
+        {
+          $this->$key = $written_consent ? "1" : "0";
+        }
+        else if( 'consented to provide HIN' == $value )
+        {
+          $this->$key = true == $participant_info->data->hin_access ? "1" : "0";
+        }
+        else if( 'operator first_name' == $value )
+        {
+          $this->$key = $db_user->first_name;
+        }
+        else if( 'operator last_name' == $value )
+        {
+          $this->$key = $db_user->last_name;
+        }
+        else if( 'previous CCHS contact date' == $value )
+        {
+          $this->$key = $participant_info->data->prior_contact_date;
+        }
+        else if( 'number of alternate contacts' == $value )
+        {
+          $this->$key = count( $alternate_info->data );
+        }
+        else if( preg_match( '/alternate([0-9]+) (first_name|last_name|phone)/', $value, $matches ) )
+        {
+          $alt_number = intval( $matches[1] );
+          $aspect = $matches[2];
 
-      // written_consent determined above
-      $this->attribute_2 = $written_consent;
-    }
-    else
-    {
-      // get the participant's alternate contact information (if using mastodon)
-      if( $mastodon_manager->is_enabled() )
-      {
-        $alternate_info = $mastodon_manager->pull(
-          'participant', 'list_alternate', array( 'uid' => $db_participant->uid ) );
-      }
-      else
-      {
-        $alternate_info->data = array();
-      }
-
-      // email address
-      $this->attribute_1 = $participant_info->data->email;
-      
-      // address
-      $this->attribute_2 = $participant_info->data->street;
-      
-      // city
-      $this->attribute_3 = $participant_info->data->city;
-      
-      // province
-      $this->attribute_4 = $participant_info->data->region;
-      
-      // postcode
-      $this->attribute_5 = $participant_info->data->postcode;
-      
-      // age
-      $dob = util::get_datetime_object( $participant_info->data->date_of_birth );
-      $this->attribute_6 = util::get_interval( $dob )->y;
-      
-      // written consent received (determined above)
-      $this->attribute_6 = $written_consent;
-      
-      // consented to provide HIN
-      $this->attribute_7 = true == $participant_info->data->hin_access;
-      
-      // operator's firstname
-      $this->attribute_8 = $db_user->first_name;
-      
-      // operator's lastname
-      $this->attribute_9 = $db_user->last_name;
-      
-      // previous CCHS contact date
-      $this->attribute_10 = $participant_info->data->prior_contact_date;
-      
-      // number of alternate contacts
-      $number_of_alts = count( $alternate_info->data );
-      $this->attribute_11 = $number_of_alts;
-      
-      // add the first alternate contact
-      if( 0 < $number_of_alts )
-      {
-        // alternate's firstname
-        $this->attribute_12 = $alternate_info->data[0]->first_name;
-        
-        // alternate's lastname
-        $this->attribute_13 = $alternate_info->data[0]->last_name;
-        
-        // alternate's phone
-        $this->attribute_14 = $alternate_info->data[0]->phone;
-      }
-      
-      // add the second alternate contact
-      if( 1 < $number_of_alts )
-      {
-        // alternate's firstname
-        $this->attribute_15 = $alternate_info->data[1]->first_name;
-        
-        // alternate's lastname
-        $this->attribute_16 = $alternate_info->data[1]->last_name;
-        
-        // alternate's phone
-        $this->attribute_17 = $alternate_info->data[1]->phone;
+          $this->$key = $alt_number <= count( $alternate_info->data )
+                      ? $alternate_info->data[$alt_number - 1]->$aspect
+                      : "";
+        }
       }
     }
   }

@@ -74,9 +74,13 @@ class appointment extends record
       throw new exc\runtime(
         'Cannot validate an appointment date, participant has no primary address.', __METHOD__ );
     
+    // determine the appointment interval
+    $interval = sprintf( 'PT%dM',
+                         bus\setting_manager::self()->get_setting( 'appointment', 'duration' ) );
+
     $start_datetime_obj = util::get_datetime_object( $this->datetime );
     $end_datetime_obj = clone $start_datetime_obj;
-    $end_datetime_obj->add( new \DateInterval( 'PT1H' ) ); // appointments are one hour long
+    $end_datetime_obj->add( new \DateInterval( $interval ) ); // appointments are one hour long
 
     // determine whether to test for shifts or shift templates on the appointment day
     $modifier = new modifier();
@@ -145,7 +149,7 @@ class appointment extends record
   
         $start_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
         // increment slot one hour later
-        $appointment_datetime_obj->add( new \DateInterval( 'PT1H' ) );
+        $appointment_datetime_obj->add( new \DateInterval( $interval ) );
         $end_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
   
         if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
@@ -167,12 +171,15 @@ class appointment extends record
       $num_operators += $diff;
       $times[$time] = $num_operators;
     }
-
+    
     // Now search the times array for any 0's inside the appointment time
     // NOTE: we need to include the time immediately prior to the appointment start time
     $start_time_as_int = intval( $start_datetime_obj->format( 'Gi' ) );
     $end_time_as_int = intval( $end_datetime_obj->format( 'Gi' ) );
     $match = false;
+    $last_slots = 0;
+    $last_time = 0;
+
     foreach( $times as $time => $slots )
     {
       if( $start_time_as_int <= $time && $time < $end_time_as_int )
@@ -181,16 +188,22 @@ class appointment extends record
 
         if( !$match )
         {
-          if( $time != $start_time_as_int && 1 > $last_slot ) return false;
+          if( $time != $start_time_as_int && 1 > $last_slots ) return false;
           $match = true;
         }
       }
 
-      $last_slot = $slots;
+      if( $start_time_as_int <= $time && $end_time_as_int <= $time )
+      { // we have passed both the start and end time
+        return $start_time_as_int >= $last_time && 1 <= $last_slots;
+      }
+
+      $last_slots = $slots;
+      $last_time = $time;
     }
 
-    // if we get here then there is at least one available slot
-    return true;
+    // make sure the last time has at least one slot
+    return 1 <= $slots;
   }
 
   /**

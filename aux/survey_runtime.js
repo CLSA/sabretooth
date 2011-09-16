@@ -1,13 +1,18 @@
 // The following was added in order to integrate with Sabretooth
+/* NOTE: for now this is dissabled because it was causing error in certain situations
+         (attempt to run compile-and-go script on a cleared scope)
 jQuery(document).ready( function() {
-  $question = $( "div[id^=question]" )
-  if( $question && $question.html() ) {
+  var $question = $( "div[id^=question]" );
+  var html = $question.html();
+
+  if( $question && html && -1 != html.indexOf( "{periodofday}" ) ) {
     var now = new Date();
     var hour = now.getHours();
     var period = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
     $question.html( $question.html().replace( /{periodofday}/gi, period ) );
   }
 } );
+*/
 
 // numpad hotkeys
 var compound_number = "";
