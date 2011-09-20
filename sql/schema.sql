@@ -820,6 +820,23 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `system_message`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `system_message` ;
+
+CREATE  TABLE IF NOT EXISTS `system_message` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `site_id` VARCHAR(45) NULL DEFAULT NULL ,
+  `role_id` VARCHAR(45) NULL DEFAULT NULL ,
+  `title` VARCHAR(255) NOT NULL ,
+  `note` TEXT NOT NULL ,
+  PRIMARY KEY (`id`) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Placeholder table for view `participant_first_address`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `participant_first_address` (`participant_id` INT, `address_id` INT);

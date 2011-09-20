@@ -498,7 +498,7 @@ to an operator.";
 
 INSERT INTO queue SET
 name = "busy not available",
-title = "Last Call: busy (not available)",
+title = "Last call: busy (not available)",
 rank = NULL,
 qnaire_specific = true,
 parent_queue_id = (
@@ -513,7 +513,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "busy available",
-title = "Last Call: busy (available)",
+title = "Last call: busy (available)",
 rank = 5,
 qnaire_specific = true,
 parent_queue_id = (
@@ -528,7 +528,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "busy always available",
-title = "Last Call: busy (without availability)",
+title = "Last call: busy (without availability)",
 rank = 6,
 qnaire_specific = true,
 parent_queue_id = (
@@ -587,7 +587,7 @@ to an operator.";
 
 INSERT INTO queue SET
 name = "fax not available",
-title = "Last Call: fax (not available)",
+title = "Last call: fax (not available)",
 rank = NULL,
 qnaire_specific = true,
 parent_queue_id = (
@@ -602,7 +602,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "fax available",
-title = "Last Call: fax (available)",
+title = "Last call: fax (available)",
 rank = 7,
 qnaire_specific = true,
 parent_queue_id = (
@@ -617,7 +617,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "fax always available",
-title = "Last Call: fax (without availability)",
+title = "Last call: fax (without availability)",
 rank = 8,
 qnaire_specific = true,
 parent_queue_id = (
@@ -677,7 +677,7 @@ to an operator.";
 
 INSERT INTO queue SET
 name = "not reached not available",
-title = "Last Call: not reached (not available)",
+title = "Last call: not reached (not available)",
 rank = NULL,
 qnaire_specific = true,
 parent_queue_id = (
@@ -692,7 +692,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "not reached available",
-title = "Last Call: not reached (available)",
+title = "Last call: not reached (available)",
 rank = 9,
 qnaire_specific = true,
 parent_queue_id = (
@@ -707,7 +707,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "not reached always available",
-title = "Last Call: not reached (without availability)",
+title = "Last call: not reached (without availability)",
 rank = 10,
 qnaire_specific = true,
 parent_queue_id = (
@@ -766,7 +766,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "no answer not available",
-title = "Last Call: no answer (not available)",
+title = "Last call: no answer (not available)",
 rank = NULL,
 qnaire_specific = true,
 parent_queue_id = (
@@ -781,7 +781,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "no answer available",
-title = "Last Call: no answer (available)",
+title = "Last call: no answer (available)",
 rank = 11,
 qnaire_specific = true,
 parent_queue_id = (
@@ -796,7 +796,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "no answer always available",
-title = "Last Call: no answer (without availability)",
+title = "Last call: no answer (without availability)",
 rank = 12,
 qnaire_specific = true,
 parent_queue_id = (
@@ -856,7 +856,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine message not available",
-title = "Last Call: answering machine, message left (not available)",
+title = "Last call: answering machine, message left (not available)",
 rank = NULL,
 qnaire_specific = true,
 parent_queue_id = (
@@ -871,7 +871,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine message available",
-title = "Last Call: answering machine, message left (available)",
+title = "Last call: answering machine, message left (available)",
 rank = 13,
 qnaire_specific = true,
 parent_queue_id = (
@@ -886,7 +886,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine message always available",
-title = "Last Call: answering machine, message left (without availability)",
+title = "Last call: answering machine, message left (without availability)",
 rank = 14,
 qnaire_specific = true,
 parent_queue_id = (
@@ -946,7 +946,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine no message not available",
-title = "Last Call: answering machine, message not left (not available)",
+title = "Last call: answering machine, message not left (not available)",
 rank = NULL,
 qnaire_specific = true,
 parent_queue_id = (
@@ -961,7 +961,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine no message available",
-title = "Last Call: answering machine, message not left (available)",
+title = "Last call: answering machine, message not left (available)",
 rank = 15,
 qnaire_specific = true,
 parent_queue_id = (
@@ -976,7 +976,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "machine no message always available",
-title = "Last Call: answering machine, message not left (without availability)",
+title = "Last call: answering machine, message not left (without availability)",
 rank = 16,
 qnaire_specific = true,
 parent_queue_id = (
@@ -1035,7 +1035,7 @@ to an operator.";
 
 INSERT INTO queue SET
 name = "hang up not available",
-title = "Last Call: hang up (not available)",
+title = "Last call: hang up (not available)",
 rank = NULL,
 qnaire_specific = true,
 parent_queue_id = (
@@ -1050,7 +1050,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "hang up available",
-title = "Last Call: hang up (available)",
+title = "Last call: hang up (available)",
 rank = 17,
 qnaire_specific = true,
 parent_queue_id = (
@@ -1065,7 +1065,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "hang up always available",
-title = "Last Call: hang up (without availability)",
+title = "Last call: hang up (without availability)",
 rank = 18,
 qnaire_specific = true,
 parent_queue_id = (
@@ -1124,7 +1124,7 @@ to an operator.";
 
 INSERT INTO queue SET
 name = "soft refusal not available",
-title = "Last Call: soft refusal (not available)",
+title = "Last call: soft refusal (not available)",
 rank = NULL,
 qnaire_specific = true,
 parent_queue_id = (
@@ -1139,7 +1139,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "soft refusal available",
-title = "Last Call: soft refusal (available)",
+title = "Last call: soft refusal (available)",
 rank = 19,
 qnaire_specific = true,
 parent_queue_id = (
@@ -1154,7 +1154,7 @@ and are not currently assigned to an operator.";
 
 INSERT INTO queue SET
 name = "soft refusal always available",
-title = "Last Call: soft refusal (without availability)",
+title = "Last call: soft refusal (without availability)",
 rank = 20,
 qnaire_specific = true,
 parent_queue_id = (

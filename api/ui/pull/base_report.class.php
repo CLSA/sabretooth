@@ -82,7 +82,7 @@ abstract class base_report extends \sabretooth\ui\pull
       {
         $width = max(
           count( $table['header'] ),
-          count( $table['contents'] ),
+          is_array( $table['contents'] ) ? count( $table['contents'][0] ) : 0,
           count( $table['footer'] ) );
         if( $max < $width ) $max = $width;
       }
