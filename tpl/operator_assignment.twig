@@ -16,7 +16,7 @@
           slot_load( "{{ widget.full }}", "participant", "view", { id: {{ participant_id }} } );
           $( "#{{ widget.full }}_slot" ).dialog( {
             title: "Viewing details for {{ participant_name }}",
-            modal: true,
+            modal: false,
             width: 800,
             height: 600
           } );
@@ -27,7 +27,7 @@
           slot_load( "{{ widget.full }}", "assignment", "list", { id: {{ participant_id }} } );
           $( "#{{ widget.full }}_slot" ).dialog( {
             title: "Viewing call history for {{ participant_name }}",
-            modal: true,
+            modal: false,
             width: 800,
             height: 600
           } );
@@ -79,7 +79,7 @@
           slot_load( "{{ widget.full }}", "shift", "calendar" );
           $( "#{{ widget.full }}_slot" ).dialog( {
             title: "Schedule",
-            modal: true,
+            modal: false,
             width: 800,
             height: 600
           } );
