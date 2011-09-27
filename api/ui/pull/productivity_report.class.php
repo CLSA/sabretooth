@@ -76,7 +76,12 @@ class productivity_report extends base_report
     $this->add_title( 
       sprintf( 'Operator productivity for '.
                'the %s interview', $db_qnaire->name ) ) ;
-
+    
+    // we define the min and max datetime objects here, they get set in the next foreach loop, then
+    // used in the for loop below
+    $min_datetime_obj = NULL;
+    $max_datetime_obj = NULL;
+          
     // now create a table for every site included in the report
     foreach( db\site::select( $site_mod ) as $db_site )
     {
@@ -201,8 +206,8 @@ class productivity_report extends base_report
           $contents[] = array(
             $db_user->first_name.' '.$db_user->last_name,
             $completes,
-            $min_activity_datetime_obj->format( "H:i" ),
-            $max_activity_datetime_obj->format( "H:i" ),
+            is_null( $min_datetime_obj ) ? '??' : $min_datetime_obj->format( "H:i" ),
+            is_null( $max_datetime_obj ) ? '??' : $max_datetime_obj->format( "H:i" ),
             $total_time,
             $total_time > 0 ? sprintf( '%0.2f', $completes / $total_time ) : '',
             $completes > 0 ? sprintf( '%0.2f', $interview_time / $completes / 60 ) : '',
