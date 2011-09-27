@@ -70,7 +70,7 @@ class participant_tree_report extends base_report
         $row[] = $db_queue->get_participant_count();
       }
 
-      $contents[] = array( $db_queue->title, $db_queue->get_participant_count() );
+      $contents[] = $row;
     }
     
     if( $restrict_site_id )
@@ -80,7 +80,7 @@ class participant_tree_report extends base_report
     else
     {
       $header = array( 'Queue' );
-      foreach( db\site::select( $site_mod ) as $db_site ) $header[] = $site->name;
+      foreach( db\site::select( $site_mod ) as $db_site ) $header[] = $db_site->name;
       $header[] = 'Total';
     }
 

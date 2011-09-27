@@ -37,7 +37,7 @@
         $( "#{{ widget.full }}_slot" ).dialog( {
           autoOpen: false,
           title: "Edit event",
-          modal: true,
+          modal: false,
           width: 800,
           height: 600,
           close: function( event, ui ) { slot_refresh( {{ slot }} ); }
