@@ -45,9 +45,15 @@ class productivity_report extends base_report
     $restrict_start_date = $this->get_argument( 'restrict_start_date' );
     $restrict_end_date = $this->get_argument( 'restrict_end_date' );
     $now_datetime_obj = util::get_datetime_object();
+    
+    // determine whether we are running the report for a single date or not
+    $single_date = !is_null( $start_datetime_obj ) &&
+                   !is_null( $end_datetime_obj ) &&
+                   $start_datetime_obj == $end_datetime_obj;
+    if( $single_date ) $single_datetime_obj = clone $start_datetime_obj;
+
     $start_datetime_obj = clone $now_datetime_obj;
     $end_datetime_obj = clone $now_datetime_obj;
-
     if( $restrict_start_date )
     {
       $start_datetime_obj = util::get_datetime_object( $restrict_start_date );
@@ -67,10 +73,6 @@ class productivity_report extends base_report
       $end_datetime_obj = clone $temp_datetime_obj;
     }
 
-    $single_date = $start_datetime_obj == $end_datetime_obj;
-    if( $single_date ) $single_datetime_obj = clone $start_datetime_obj;
-
-    
     $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
     
     $this->add_title( 
