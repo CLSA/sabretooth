@@ -37,19 +37,17 @@ class consent_form_report extends base_report
   public function finish()
   {
     // get the report args
-    $db_qnaire = new db\qnaire( $this->get_argument( 'qnaire_id' ) );
+    $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
 
     // TODO: Change this to the title/code of the limesurvey question to check
     // (this should be the consent form question)
     $question_code = 'A';
 
-    $this->add_title( 'Consent Form Required Report' );
     $this->add_title(
       sprintf( 'A list of participant\'s who have indicated they require a new consent form '.
                'during the %s interview', $db_qnaire->name ) );
     
     $contents = array();
-
     // loop through every participant searching for those who have no written consent
     foreach( db\participant::select() as $db_participant )
     {
