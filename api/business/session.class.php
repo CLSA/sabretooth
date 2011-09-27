@@ -239,20 +239,44 @@ final class session extends \sabretooth\singleton
                                   new db\role( $_SESSION['current_role_id'] ) );
       }
       
-      // if we still don't have a site and role then pick the first one we can find
+      // we still don't have a site and role, we need to pick them
       if( is_null( $this->site ) || is_null( $this->role ) )
       {
-        $db_site_list = $this->user->get_site_list();
-        if( 0 == count( $db_site_list ) )
+        $db_site = NULL;
+        $db_role = NULL;
+
+        $site_list = $this->user->get_site_list();
+        if( 0 == count( $site_list ) )
           throw new exc\notice(
             'Your account does not have access to any site.<br>'.
             'Please contact a supervisor to be granted access to a site.', __METHOD__ );
+        
+        // if the user has logged in before, use whatever site/role they last used
+        $activity_mod = new db\modifier();
+        $activity_mod->where( 'user_id', '=', $this->user->id );
+        $activity_mod->order_desc( 'datetime' );
+        $activity_mod->limit( 1 );
+        $db_activity = current( db\activity::select( $activity_mod ) );
+        if( $db_activity )
+        {
+          // make sure the user still has access to the site/role
+          $role_mod = new db\modifier();
+          $role_mod->where( 'site_id', '=', $db_activity->site_id );
+          $role_mod->where( 'role_id', '=', $db_activity->role_id );
+          $db_role = current( $this->user->get_role_list( $role_mod ) );
+          
+          // only bother setting the site if the access exists
+          if( $db_role ) $db_site = new db\site( $db_activity->site_id );
+        }
 
-        $db_site = $db_site_list[0];
-        $modifier = new db\modifier();
-        $modifier->where( 'site_id', '=', $db_site->id );
-        $db_role_list = $this->user->get_role_list( $modifier );
-        $db_role = $db_role_list[0];
+        // if we still don't have a site/role then load the first one we can find
+        if( !$db_role || !$db_site ) 
+        {
+          $db_site = current( $site_list );
+          $role_mod = new db\modifier();
+          $role_mod->where( 'site_id', '=', $db_site->id );
+          $db_role = current( $this->user->get_role_list( $role_mod ) );
+        }
 
         $this->set_site_and_role( $db_site, $db_role );
       }
