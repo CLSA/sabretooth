@@ -94,9 +94,9 @@ class productivity_report extends base_report
         $assignment_mod = new db\modifier();
         if( $restrict_start_date && $restrict_end_date )
         {
-          $activity_mod->where( 'start_datetime', '>=',
+          $activity_mod->where( 'datetime', '>=',
             $start_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
-          $activity_mod->where( 'end_datetime', '<=',
+          $activity_mod->where( 'datetime', '<=',
             $end_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
           $assignment_mod->where( 'start_datetime', '>=',
             $start_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
@@ -105,14 +105,14 @@ class productivity_report extends base_report
         }
         else if( $restrict_start_date && !$restrict_end_date ) 
         {
-          $activity_mod->where( 'start_datetime', '>=',
+          $activity_mod->where( 'datetime', '>=',
             $start_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
           $assignment_mod->where( 'start_datetime', '>=',
             $start_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
         }
         else if( !$restrict_start_date && $restrict_end_date )
         {
-          $activity_mod->where( 'start_datetime', '<=',
+          $activity_mod->where( 'datetime', '<=',
             $end_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
           $assignment_mod->where( 'start_datetime', '<=',
             $end_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
