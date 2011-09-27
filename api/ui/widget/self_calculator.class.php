@@ -31,6 +31,7 @@ class self_calculator extends \sabretooth\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'self', 'calculator', $args );
+    $this->show_heading( false );
   }
 }
 ?>

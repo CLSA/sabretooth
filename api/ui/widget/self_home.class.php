@@ -31,6 +31,7 @@ class self_home extends \sabretooth\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'self', 'home', $args );
+    $this->show_heading( false );
   }
 
   /**

@@ -31,6 +31,7 @@ class self_dialing_pad extends \sabretooth\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'self', 'dialing_pad', $args );
+    $this->show_heading( false );
   }
 
   /**

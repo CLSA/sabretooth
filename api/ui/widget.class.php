@@ -82,6 +82,7 @@ abstract class widget extends operation
 
     $this->set_variable( 'widget', $widget_variable );
     $this->set_variable( 'widget_heading', $this->get_heading() );
+    $this->set_variable( 'show_heading', $this->show_heading );
   }
 
   /**
@@ -171,6 +172,18 @@ abstract class widget extends operation
   }
   
   /**
+   * Set whether or not to show the heading.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param bool $show
+   * @access public
+   */
+  public function show_heading( $show )
+  {
+    $this->show_heading = $show;
+  }
+
+  /**
    * The parent widget if this widget is embedded in another widget.
    * @var widget
    * @access protected
@@ -183,5 +196,12 @@ abstract class widget extends operation
    * @access private
    */
   private $variables = array();
+  
+  /**
+   * Determine whether or not to show the heading at the top of the widget
+   * @var boolean
+   * @access private
+   */
+  private $show_heading = true;
 }
 ?>

@@ -40,7 +40,7 @@
   
 {% block heading %}
   
-  {% if widget_heading %}
+  {% if show_heading and widget_heading %}
     <div class="ui-widget-header ui-state-hover app-widget-header">{{ widget_heading|ucwords }}</div>
   {% endif %}
 
