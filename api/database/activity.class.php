@@ -21,7 +21,8 @@ class activity extends record
 {
   public static function get_min_datetime( $modifier = NULL )
   {
-    $sql = sprintf( 'SELECT MIN( datetime ) FROM %s %s',
+    $sql = sprintf( 'SELECT MIN( datetime ) FROM %s '.
+                    'LEFT JOIN operation ON operation_id = operation.id %s',
                     static::get_table_name(),
                     is_null( $modifier ) ? '' : $modifier->get_sql() );
     $datetime = static::db()->get_one( $sql );
@@ -33,7 +34,8 @@ class activity extends record
 
   public static function get_max_datetime( $modifier = NULL )
   {
-    $sql = sprintf( 'SELECT MAX( datetime ) FROM %s %s',
+    $sql = sprintf( 'SELECT MAX( datetime ) FROM %s '.
+                    'LEFT JOIN operation ON operation_id = operation.id %s',
                     static::get_table_name(),
                     is_null( $modifier ) ? '' : $modifier->get_sql() );
 
