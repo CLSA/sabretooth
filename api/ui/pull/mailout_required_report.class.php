@@ -36,9 +36,15 @@ class mailout_required_report extends base_report
   public function finish()
   {
     // get the report arguments
-    $mailout_type = $this->get_argument( 'mailout_type' );
+    $mailout_type = $this->get_argument( 'restrict_mailout_id' );
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-    $db_qnaire = new db\qnaire( $this->get_argument( 'qnaire_id' ) );
+    $participant_list = db\participant::select();
+    if( $restrict_site_id ) 
+    {
+      $db_site = new db\site( $restrict_site_id );
+      $participant_list = db\participant::select_for_site( $db_site );
+    }
+    $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
 
     // TODO: Change this to the title/code of the limesurvey question to check
     // (this should be the new information package required question)
@@ -54,22 +60,11 @@ class mailout_required_report extends base_report
       $title = 'Proxy Information Package Required Report';
     }
 
-    if( $restrict_site_id )
-    {
-      $db_site = new db\site( $restrict_site_id );
-      $title = $title.' for '.$db_site->name;
-    }
-    $this->add_title( $title );
     $this->add_title( 
       sprintf( 'Listing of those who requested a new information package during '.
                'the %s interview', $db_qnaire->name ) ) ;
     
     $contents = array();
-
-    $participant_list = $restrict_site_id
-                      ? db\participant::select_for_site( $db_site )
-                      : db\participant::select();
-
     foreach( $participant_list as $db_participant )
     {
       $done = false;

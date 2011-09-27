@@ -81,7 +81,7 @@ abstract class widget extends operation
     }
 
     $this->set_variable( 'widget', $widget_variable );
-    $this->set_variable( 'widget_heading', $this->heading );
+    $this->set_variable( 'widget_heading', $this->get_heading() );
   }
 
   /**
@@ -170,31 +170,6 @@ abstract class widget extends operation
     return $this->variables;
   }
   
-  /**
-   * Get the widget's heading.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function get_heading() { return $this->heading; }
-
-  /**
-   * Set the widget's heading.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $heading
-   * @access public
-   */
-  public function set_heading( $heading )
-  {
-    $this->heading = str_replace( '_', ' ', $heading );
-  }
-
-  /**
-   * The widget's heading.
-   * @var string
-   * @access protected
-   */
-  private $heading = '';
-
   /**
    * The parent widget if this widget is embedded in another widget.
    * @var widget

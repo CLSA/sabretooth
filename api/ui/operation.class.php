@@ -56,6 +56,8 @@ abstract class operation extends \sabretooth\base_object
     // throw a permission exception if the user is not allowed to perform this operation
     if( !bus\session::self()->is_allowed( $this->operation_record ) )
       throw new exc\permission( $this->operation_record, __METHOD__ );
+
+    $this->set_heading( $this->get_subject().' '.$this->get_name() );  
   }
   
   /**
@@ -137,6 +139,32 @@ abstract class operation extends \sabretooth\base_object
 
     return $argument;
   }
+
+  /**
+   * Get the operation's heading.
+   * @author Dean Inglis <inglisdd@mcmaster.ca>
+   * @access public
+   */
+  public function get_heading() { return $this->heading; }
+
+  /**
+   * Set the operation's heading.
+   * @author Dean Inglis <inglisdd@mcmaster.ca>
+   * @param string $heading
+   * @access public
+   */
+  public function set_heading( $heading )
+  {
+    $this->heading = ucwords( str_replace( '_', ' ', $heading ) );
+  }
+
+  /**
+   * The operation's heading.
+   * @var string
+   * @access protected
+   */
+  private $heading = '';
+
 
   /**
    * The database record for this operation

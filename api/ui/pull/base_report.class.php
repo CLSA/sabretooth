@@ -91,40 +91,107 @@ abstract class base_report extends \sabretooth\ui\pull
     // add in the title(s)
     $row = 1;
     $max_col = 1 < $max ? chr( 64 + $max ) : false;
-    $first = true;
-    foreach( $this->report_titles as $title )
+
+    $main_title = $this->get_heading();
+    if( 'true' == $this->get_argument( 'has_restrict_site' ) )
     {
-      if( $first )
+      $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
+      if( $restrict_site_id )
       {
-        $this->report->set_size( 16 );
-        $this->report->set_bold( true );
-        $this->report->set_horizontal_alignment( 'center' );
+        $db_site = new db\site( $restrict_site_id );
+        $main_title = $main_title.' for '.$db_site->name;
       }
       else
       {
-        $this->report->set_size( 14 );
-        $this->report->set_bold( false );
+        $main_title = $main_title.' for All Sites';
       }
+    }
       
+    $this->report->set_size( 16 );
+    $this->report->set_bold( true );
+    $this->report->set_horizontal_alignment( 'center' );
+    if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
+    $this->report->set_cell( 'A'.$row, $main_title );
+
+    $row++;
+
+    $now_datetime_obj = util::get_datetime_object();
+    $time_title = 'Generated on '.$now_datetime_obj->format( 'Y-m-d' ).
+                   ' at '.$now_datetime_obj->format( 'H:i' );
+    $this->report->set_size( 14 );
+    $this->report->set_bold( false );
+    if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
+    $this->report->set_cell( 'A'.$row, $time_title );
+
+    $row++;
+
+    if( 'true' == $this->get_argument( 'has_restrict_dates' ) )
+    {
+      $restrict_start_date = $this->get_argument( 'restrict_start_date' );
+      $restrict_end_date = $this->get_argument( 'restrict_end_date' );
+      $now_datetime_obj = util::get_datetime_object();
+      if( $restrict_start_date )
+      {
+        $start_datetime_obj = util::get_datetime_object( $restrict_start_date );
+        if( $start_datetime_obj > $now_datetime_obj )
+        {
+          $start_datetime_obj = clone $now_datetime_obj;
+        }
+      }
+      if( $restrict_end_date )
+      {
+        $end_datetime_obj = util::get_datetime_object( $restrict_end_date );
+        if( $end_datetime_obj > $now_datetime_obj )
+        {
+          $end_datetime_obj = clone $now_datetime_obj;
+        }
+      }
+
+      $date_title = '';
+      if( $restrict_start_date && $restrict_end_date )
+      {
+        if( $end_datetime_obj < $start_datetime_obj )
+        {
+          $start_datetime_obj = util::get_datetime_object( $restrict_end_date );
+          $end_datetime_obj = util::get_datetime_object( $restrict_start_date );
+        }
+        if( $start_datetime_obj == $end_datetime_obj ) 
+        {
+          $date_title = 'Dated for '.$start_datetime_obj->format( 'Y-m-d' );
+        }
+        else
+        {
+          $date_title = 'Dated from '.$start_datetime_obj->format( 'Y-m-d' ).' to '.
+                   $end_datetime_obj->format( 'Y-m-d' );
+        }       
+      }
+      else if( $restrict_start_date && !$restrict_end_date ) 
+      {
+        $date_title = 'Dated from '.$start_datetime_obj->format( 'Y-m-d' ).' to '.
+          $now_datetime_obj->format( 'Y-m-d' );
+      }
+      else if( !$restrict_start_date && $restrict_end_date )
+      {
+        $date_title = 'Dated up to '.$end_datetime_obj->format( 'Y-m-d' );
+      }
+      else
+      {
+        $date_title = 'No date restriction';
+      }
+      if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
+      $this->report->set_cell( 'A'.$row, $date_title );
+      
+      $row++;
+    }
+
+    $this->report->set_size( 14 );
+    $this->report->set_bold( false );
+
+    foreach( $this->report_titles as $title )
+    {
       if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
       $this->report->set_cell( 'A'.$row, $title );
       $row++;
-
-      // add the time and date when the report was generated after the header 
-      if( $first )
-      {
-        $now_datetime_obj = util::get_datetime_object();
-        $time_title = 'Generated on '.$now_datetime_obj->format( 'Y-m-d' ).
-                     ' at '.$now_datetime_obj->format( 'H:i' );
-        $this->report->set_size( 14 );
-        $this->report->set_bold( false );
-        $this->report->set_horizontal_alignment( 'center' );
-        if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
-        $this->report->set_cell( 'A'.$row, $time_title );
-        $row++;
-      }
-
-      $first = false;
     }
 
     $this->report->set_size( NULL );
