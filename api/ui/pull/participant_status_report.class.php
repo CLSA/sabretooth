@@ -37,9 +37,8 @@ class participant_status_report extends base_report
   public function finish()
   {
     // get the report arguments
-    $db_qnaire = new db\qnaire( $this->get_argument( 'qnaire_id' ) );
+    $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
 
-    $this->add_title( 'Participant Status Report' );
     $this->add_title( 
       sprintf( 'Listing of categorical totals pertaining to '.
                'the %s interview', $db_qnaire->name ) ) ;
@@ -73,9 +72,8 @@ class participant_status_report extends base_report
     $region_mod->where( 'country', '=', 'Canada' );
     $grand_totals = array();
     foreach( db\region::select($region_mod) as $db_region )
-    {
       $grand_totals[ $db_region->abbreviation ] = $region_totals; 
-    }
+
     // the last column of the report sums totals row-wise
     $grand_totals[ 'Grand Total' ] = $region_totals;
     
@@ -221,9 +219,7 @@ class participant_status_report extends base_report
           $denom ? $tci / $denom : 'NA';
 
         foreach( $region_keys as $column )
-        {
           $grand_totals[ 'Grand Total' ][ $column ] += $grand_totals[ $prov ][ $column ];
-        }
       }
     }
 

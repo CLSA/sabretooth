@@ -37,21 +37,12 @@ class call_attempts_report extends base_report
   public function finish()
   {
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-    $db_qnaire = new db\qnaire( $this->get_argument( 'qnaire_id' ) );
-    
-    $title = 'Call Attempts Report';
-    if( $restrict_site_id )
-    {
-      $db_site = new db\site( $restrict_site_id );
-      $title = $title.' for '.$db_site->name;
-    }
-
-    $this->add_title( $title );
+    if( $restrict_stie_id ) $db_site = new db\site( $restrict_stie_id );
+    $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
+   
     $this->add_title(
       sprintf( 'Participant\'s who have started but not finished the "%s" interview',
                $db_qnaire->name ) );
-
-    $contents = array();
 
     // loop through every participant searching for those who have started an interview
     // which is not yet complete (restricting by site if necessary)
@@ -59,10 +50,11 @@ class call_attempts_report extends base_report
                       ? db\participant::select_for_site( $db_site )
                       : db\participant::select();
 
+    $contents = array();
     foreach( $participant_list as $db_participant )
     {
       $interview_mod = new db\modifier();
-      $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
+      $interview_mod->where( 'restrict_qnaire_id', '=', $db_qnaire->id );
       $interview_mod->where( 'completed', '=', false );
       $db_interview = current( $db_participant->get_interview_list( $interview_mod ) );
       if( $db_interview )

@@ -36,25 +36,18 @@ class sourcing_required_report extends base_report
   {
     // get the report args
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-    $db_qnaire = new db\qnaire( $this->get_argument( 'qnaire_id' ) );
-
-    $title = 'Sourcing Required Report';
+    $participant_list = db\participant::select();
     if( $restrict_site_id )
     {
       $db_site = new db\site( $restrict_site_id );
-      $title = $title.' for '.$db_site->name;
+      $participant_list = db\participant::select_for_site( $db_site );                      
     }
 
-    $this->add_title( $title );
+    $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
     $this->add_title( sprintf( 'Participants requiring sourcing for the '.
                                '%s interview', $db_qnaire->name ) ) ;
 
     $contents = array();
-
-    $participant_list = $restrict_site_id
-                      ? db\participant::select_for_site( $db_site )
-                      : db\participant::select();
-
     // loop through participants searching for those who have completed their most recent interview
     foreach( $participant_list as $db_participant )
     {

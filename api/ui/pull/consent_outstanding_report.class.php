@@ -36,25 +36,17 @@ class consent_outstanding_report extends base_report
   {
     // get report args
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-    $db_qnaire = new db\qnaire( $this->get_argument( 'qnaire_id' ) );
+    if( $restrict_site_id ) $db_site = new db\site( $restrict_site_id );
 
-    $title = 'Written Consent Outstanding Report';
-    if( $restrict_site_id )
-    {
-      $db_site = new db\site( $restrict_site_id );
-      $title = $title.' for '.$db_site->name;
-    }
-
-    $this->add_title( $title );
+    $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
     $this->add_title( sprintf( 'Participants who have not remitted written consent for the '.
                                '%s interview', $db_qnaire->name ) ) ;
-
-    $contents = array();
 
     $participant_list = $restrict_site_id
                       ? db\participant::select_for_site( $db_site )
                       : db\participant::select();
 
+    $contents = array();
     // loop through participants searching for those who have completed their most recent interview
     foreach( $participant_list as $db_participant )
     {
