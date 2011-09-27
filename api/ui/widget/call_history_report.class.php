@@ -31,16 +31,14 @@ class call_history_report extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'call_history', $args );
-    $this->restrict_by_site();
+
+    $this->add_restriction( 'site' );
+    $this->add_restriction( 'dates' );
 
     $this->set_variable( 'description',
       'This report chronologically lists assignment call attempts.  The report includes the '.
       'participant\'s UID, operator\'s name, date of the assignment, result, start and end time '.
       'of each call.' );
-
-    // add parameters to the report
-    $this->add_parameter( 'date', 'date', 'Date',
-      'Leave blank for an overall report (warning, an overall report may be a VERY large file).' );
   }
 
   /**
@@ -50,8 +48,6 @@ class call_history_report extends base_report
   public function finish()
   {
     parent::finish();
-    
-    $this->set_parameter( 'date', '', false );
 
     $this->finish_setting_parameters();
   }

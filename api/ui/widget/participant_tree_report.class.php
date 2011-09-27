@@ -31,14 +31,13 @@ class participant_tree_report extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'participant_tree', $args );
-    $this->restrict_by_site();
+
+    $this->add_restriction( 'site' );
+    $this->add_restriction( 'qnaire' );
 
     $this->set_variable( 'description',
       'This report lists the participant tree: where in the calling queue all participants '.
       'currently belong.' );
-
-    // add parameters to the report
-    $this->add_parameter( 'qnaire_id', 'enum', 'Questionnaire' );
   }
 
   /**
@@ -48,10 +47,6 @@ class participant_tree_report extends base_report
   public function finish()
   {
     parent::finish();
-    
-    $qnaires = array();
-    foreach( db\qnaire::select() as $db_qnaire ) $qnaires[$db_qnaire->id] = $db_qnaire->name;
-    $this->set_parameter( 'qnaire_id', current( $qnaires ), true, $qnaires );
 
     $this->finish_setting_parameters();
   }

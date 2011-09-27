@@ -125,64 +125,61 @@ abstract class base_report extends \sabretooth\ui\pull
 
     $row++;
 
-    if( 'true' == $this->get_argument( 'has_restrict_dates' ) )
+    $restrict_start_date = $this->get_argument( 'restrict_start_date' );
+    $restrict_end_date = $this->get_argument( 'restrict_end_date' );
+    $now_datetime_obj = util::get_datetime_object();
+    if( $restrict_start_date )
     {
-      $restrict_start_date = $this->get_argument( 'restrict_start_date' );
-      $restrict_end_date = $this->get_argument( 'restrict_end_date' );
-      $now_datetime_obj = util::get_datetime_object();
-      if( $restrict_start_date )
+      $start_datetime_obj = util::get_datetime_object( $restrict_start_date );
+      if( $start_datetime_obj > $now_datetime_obj )
       {
-        $start_datetime_obj = util::get_datetime_object( $restrict_start_date );
-        if( $start_datetime_obj > $now_datetime_obj )
-        {
-          $start_datetime_obj = clone $now_datetime_obj;
-        }
+        $start_datetime_obj = clone $now_datetime_obj;
       }
-      if( $restrict_end_date )
+    }
+    if( $restrict_end_date )
+    {
+      $end_datetime_obj = util::get_datetime_object( $restrict_end_date );
+      if( $end_datetime_obj > $now_datetime_obj )
       {
-        $end_datetime_obj = util::get_datetime_object( $restrict_end_date );
-        if( $end_datetime_obj > $now_datetime_obj )
-        {
-          $end_datetime_obj = clone $now_datetime_obj;
-        }
+        $end_datetime_obj = clone $now_datetime_obj;
       }
+    }
 
-      $date_title = '';
-      if( $restrict_start_date && $restrict_end_date )
+    $date_title = '';
+    if( $restrict_start_date && $restrict_end_date )
+    {
+      if( $end_datetime_obj < $start_datetime_obj )
       {
-        if( $end_datetime_obj < $start_datetime_obj )
-        {
-          $start_datetime_obj = util::get_datetime_object( $restrict_end_date );
-          $end_datetime_obj = util::get_datetime_object( $restrict_start_date );
-        }
-        if( $start_datetime_obj == $end_datetime_obj ) 
-        {
-          $date_title = 'Dated for '.$start_datetime_obj->format( 'Y-m-d' );
-        }
-        else
-        {
-          $date_title = 'Dated from '.$start_datetime_obj->format( 'Y-m-d' ).' to '.
-                   $end_datetime_obj->format( 'Y-m-d' );
-        }       
+        $start_datetime_obj = util::get_datetime_object( $restrict_end_date );
+        $end_datetime_obj = util::get_datetime_object( $restrict_start_date );
       }
-      else if( $restrict_start_date && !$restrict_end_date ) 
+      if( $start_datetime_obj == $end_datetime_obj ) 
       {
-        $date_title = 'Dated from '.$start_datetime_obj->format( 'Y-m-d' ).' to '.
-          $now_datetime_obj->format( 'Y-m-d' );
-      }
-      else if( !$restrict_start_date && $restrict_end_date )
-      {
-        $date_title = 'Dated up to '.$end_datetime_obj->format( 'Y-m-d' );
+        $date_title = 'Dated for '.$start_datetime_obj->format( 'Y-m-d' );
       }
       else
       {
-        $date_title = 'No date restriction';
-      }
-      if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
-      $this->report->set_cell( 'A'.$row, $date_title );
-      
-      $row++;
+        $date_title = 'Dated from '.$start_datetime_obj->format( 'Y-m-d' ).' to '.
+                 $end_datetime_obj->format( 'Y-m-d' );
+      }       
     }
+    else if( $restrict_start_date && !$restrict_end_date ) 
+    {
+      $date_title = 'Dated from '.$start_datetime_obj->format( 'Y-m-d' ).' to '.
+        $now_datetime_obj->format( 'Y-m-d' );
+    }
+    else if( !$restrict_start_date && $restrict_end_date )
+    {
+      $date_title = 'Dated up to '.$end_datetime_obj->format( 'Y-m-d' );
+    }
+    else
+    {
+      $date_title = 'No date restriction';
+    }
+    if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
+    $this->report->set_cell( 'A'.$row, $date_title );
+    
+    $row++;
 
     $this->report->set_size( 14 );
     $this->report->set_bold( false );
