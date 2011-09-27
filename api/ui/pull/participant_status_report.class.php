@@ -47,7 +47,7 @@ class participant_status_report extends base_report
     $region_totals = array(
       'Completed interview - Consent not received' => 0,
       'Completed interview - Consent received' => 0,
-      'Completed interview - Consent Retracted' => 0,
+      'Completed interview - Consent retracted' => 0,
       'Completed interview - No consent information' => 0,
       'Withdrawn from study' => 0,
       'Hard refusal' => 0,
@@ -56,8 +56,10 @@ class participant_status_report extends base_report
       '10+ Unproductive Call Attempts' => 0 );
       
     // add call results (not including "contacted")
+    $phone_call_status_start_index = count( $region_totals ) - 1; // includes 10+ above
     foreach( db\phone_call::get_enum_values( 'status' ) as $status )
       if( 'contacted' != $status ) $region_totals[ ucfirst( $status ) ] = 0;
+    $phone_call_status_count = count( $region_totals ) - $phone_call_status_start_index;
 
     $region_totals = array_merge( $region_totals, array(
       'Not yet called' => 0,
@@ -128,17 +130,17 @@ class participant_status_report extends base_report
             }
             else if( 'written accept' == $db_consent->event )
             {
-              $grand_totals[ $province ][ 'Completed interview - Written consent received' ]++;
+              $grand_totals[ $province ][ 'Completed interview - Consent received' ]++;
             }
             else if( 'verbal deny'   == $db_consent->event ||
                      'verbal accept' == $db_consent->event ||
                      'written deny'  == $db_consent->event )
             {
-              $grand_totals[ $province ][ 'Completed interview - Written consent not received' ]++;
+              $grand_totals[ $province ][ 'Completed interview - Consent not received' ]++;
             }
             else if( 'retract' == $db_consent->event )
             {
-              $grand_totals[ $province ][ 'Completed interview - Consent Retracted' ]++;
+              $grand_totals[ $province ][ 'Completed interview - Consent retracted' ]++;
             }
             else if( 'withdraw' == $db_consent->event )
             {
@@ -204,7 +206,8 @@ class participant_status_report extends base_report
       if( 'Grand Total' != $prov )
       {
         $grand_totals[ $prov ][ 'Grand Total Attempted' ] = 
-          array_sum( array_slice( $value, 8 ) );
+          array_sum( array_slice(
+            $value, $phone_call_status_start_index, $phone_call_status_count ) );
 
         $tci = array_sum( array_slice( $value, 0, 4 ) );
 
@@ -244,7 +247,7 @@ class participant_status_report extends base_report
 
     $grand_totals[ 'Grand Total' ][ 'Response rate (excl. soft refusals)' ] = 
       $denom ? $gtci / $denom : 'NA';
-
+    
     // build the final 2D content array
     $temp_content = array( $region_keys );
     foreach( $grand_totals as $key => $column )

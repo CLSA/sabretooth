@@ -71,7 +71,7 @@ class interview extends has_note
     $timing_mod = new modifier();
     $timing_mod->where( 'id', '=', $db_survey->id );
     $db_timings = current( limesurvey\survey_timings::select( $timing_mod ) );
-    return $db_timings ? (float) $db_timings->interviewTime : 0.0;
+    return $db_timings ? (float) $db_timings->interviewtime : 0.0;
   }
 }
 ?>
