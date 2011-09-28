@@ -180,7 +180,8 @@ final class util
    */
   public static function get_timezone_object( $server = false )
   {
-    return new \DateTimeZone( $server ? 'UTC' : business\session::self()->get_site()->timezone );
+    $db_site = business\session::self()->get_site();
+    return new \DateTimeZone( $server || !$db_site ? 'UTC' : $db_site->timezone );
   }
 
   /**
