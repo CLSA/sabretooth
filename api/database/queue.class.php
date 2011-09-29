@@ -332,32 +332,32 @@ class queue extends record
       '      ELSE 0 END ',
       $viewing_date );
 
-      if( $check_time )
-      {
-        $check_availability_sql .= sprintf(
-          '* IF( IF( TIME( %s ) < availability.start_time, '.
-          '        24*60*60 + TIME_TO_SEC( TIME( %s ) ), '.
-          '        TIME_TO_SEC( TIME( %s ) ) ) >= '.
-          '    TIME_TO_SEC( availability.start_time ), 1, 0 ) '.
-          '* IF( IF( TIME( %s ) < availability.start_time, '.
-          '        24*60*60 + TIME_TO_SEC( TIME( %s ) ), '.
-          '        TIME_TO_SEC( TIME( %s ) ) ) < '.
-          '    IF( availability.end_time < availability.start_time, '.
-          '        24*60*60 + TIME_TO_SEC( availability.end_time ), '.
-          '        TIME_TO_SEC( availability.end_time ) ), 1, 0 ) ',
-          $viewing_date,
-          $viewing_date,
-          $viewing_date,
-          $viewing_date,
-          $viewing_date,
-          $viewing_date );
-      }
-      
-      // finish the check availability sql
-      $check_availability_sql .=
-        ') '.
-        'FROM availability '.
-        'WHERE availability.participant_id = participant.id )';
+    if( $check_time )
+    {
+      $check_availability_sql .= sprintf(
+        '* IF( IF( TIME( %s ) < availability.start_time, '.
+        '        24*60*60 + TIME_TO_SEC( TIME( %s ) ), '.
+        '        TIME_TO_SEC( TIME( %s ) ) ) >= '.
+        '    TIME_TO_SEC( availability.start_time ), 1, 0 ) '.
+        '* IF( IF( TIME( %s ) < availability.start_time, '.
+        '        24*60*60 + TIME_TO_SEC( TIME( %s ) ), '.
+        '        TIME_TO_SEC( TIME( %s ) ) ) < '.
+        '    IF( availability.end_time < availability.start_time, '.
+        '        24*60*60 + TIME_TO_SEC( availability.end_time ), '.
+        '        TIME_TO_SEC( availability.end_time ) ), 1, 0 ) ',
+        $viewing_date,
+        $viewing_date,
+        $viewing_date,
+        $viewing_date,
+        $viewing_date,
+        $viewing_date );
+    }
+    
+    // finish the check availability sql
+    $check_availability_sql .=
+      ') '.
+      'FROM availability '.
+      'WHERE availability.participant_id = participant.id )';
 
     // now determine the sql parts for the given queue
     if( 'all' == $queue )
