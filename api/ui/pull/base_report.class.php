@@ -167,8 +167,15 @@ abstract class base_report extends \sabretooth\ui\pull
       }
       else if( $restrict_start_date && !$restrict_end_date ) 
       {
-        $date_title = 'Dated from '.$start_datetime_obj->format( 'Y-m-d' ).' to '.
-          $now_datetime_obj->format( 'Y-m-d' );
+        if( $start_datetime_obj == $now_datetime_obj )
+        {
+          $date_title = 'Dated for '.$start_datetime_obj->format( 'Y-m-d' );
+        }
+        else
+        {
+          $date_title = 'Dated from '.$start_datetime_obj->format( 'Y-m-d' ).' to '.
+            $now_datetime_obj->format( 'Y-m-d' );
+        }    
       }
       else if( !$restrict_start_date && $restrict_end_date )
       {
