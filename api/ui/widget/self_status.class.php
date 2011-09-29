@@ -46,6 +46,11 @@ class self_status extends \sabretooth\ui\widget
 
     $this->set_variable( 'sip_enabled', bus\voip_manager::self()->get_sip_enabled() );
     $this->set_variable( 'on_call', !is_null( bus\voip_manager::self()->get_call() ) );
+    
+    $datetime_obj = util::get_datetime_object();
+    $this->set_variable( 'timezone_name', $datetime_obj->format( 'T' ) );
+    $this->set_variable( 'timezone_offset',
+      util::get_timezone_object()->getOffset( $datetime_obj ) );
   }
 }
 ?>
