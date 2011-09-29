@@ -151,26 +151,6 @@ final class util
   }
   
   /**
-   * Returns timezone abbreviations
-   * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param string $timezone
-   * @return string
-   * @static
-   * @access public
-   */
-  public static function get_timezone_abbreviation( $timezone )
-  {
-    if( 'Canada/Pacific' == $timezone ) return 'PST';
-    else if( 'Canada/Mountain' == $timezone ) return 'MST';
-    else if( 'Canada/Central' == $timezone ) return 'CST';
-    else if( 'Canada/Eastern' == $timezone ) return 'EST';
-    else if( 'Canada/Atlantic' == $timezone ) return 'AST';
-    else if( 'Canada/Newfoundland' == $timezone ) return 'NST';
-    else '???';
-  }
-  
-  /**
    * Returns a DateTimeZone object for the user's current site's timezone
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

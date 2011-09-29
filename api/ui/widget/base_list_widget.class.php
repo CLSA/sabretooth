@@ -361,8 +361,7 @@ abstract class base_list_widget extends \sabretooth\ui\widget
     
     // specify column timezone for datetime columns
     if( 'datetime' == $type ) $heading .=
-      sprintf( ' (%s)', util::get_timezone_abbreviation(
-                         bus\session::self()->get_site()->timezone ) );
+      sprintf( ' (%s)', util::get_datetime_object()->format( 'T' ) );
 
     $column = array( 'id' => $column_id, 'type' => $type, 'heading' => $heading );
     if( $sortable ) $column['sortable'] = $sortable;
