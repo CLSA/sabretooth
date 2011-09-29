@@ -23,7 +23,7 @@ abstract class site_restricted_list extends base_list_widget
   /**
    * Constructor
    * 
-   * Defines all variables required by the appointment list.
+   * Defines all variables required by the site restricted list.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $subject The subject being listed.
    * @param array $args An associative array of arguments to be processed by the widget
