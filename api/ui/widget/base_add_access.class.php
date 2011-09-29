@@ -32,6 +32,7 @@ class base_add_access extends base_add_list
   public function __construct( $subject, $args )
   {
     parent::__construct( $subject, 'access', $args );
+    $this->show_heading( false );
     
     try
     {

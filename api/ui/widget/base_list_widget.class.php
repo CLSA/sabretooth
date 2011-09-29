@@ -43,7 +43,6 @@ abstract class base_list_widget extends \sabretooth\ui\widget
     $this->page = $this->get_argument( 'page', $this->page );
     $this->sort_column = $this->get_argument( 'sort_column', $this->sort_column );
     $this->sort_desc = 0 != $this->get_argument( 'sort_desc', $this->sort_desc );
-    $this->set_heading( ucfirst( $subject ).' list' );
     $this->restrictions = $this->get_argument( 'restrictions', $this->restrictions );
     
     // determine properties based on the current user's permissions

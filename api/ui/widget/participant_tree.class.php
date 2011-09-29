@@ -32,8 +32,8 @@ class participant_tree extends \sabretooth\ui\widget
   {
     parent::__construct( 'participant', 'tree', $args );
     $session = bus\session::self();
-    $this->set_heading( 'supervisor' == $session->get_role()->name ?
-      'Participant tree for '.$session->get_site()->name : 'Participant tree' );
+    if( 'supervisor' == $session->get_role()->name )
+      $this->set_heading( $this->get_heading().' for '.$session->get_site()->name );
   }
 
   /**
