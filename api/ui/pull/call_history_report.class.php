@@ -41,8 +41,8 @@ class call_history_report extends base_report
     $restrict_start_date = $this->get_argument( 'restrict_start_date' );
     $restrict_end_date = $this->get_argument( 'restrict_end_date' );
     $now_datetime_obj = util::get_datetime_object();
-    $start_datetime_obj = clone $now_datetime_obj;
-    $end_datetime_obj = clone $now_datetime_obj;
+    $start_datetime_obj = NULL;
+    $end_datetime_obj = NULL;
 
     if( $restrict_start_date )
     {
@@ -56,7 +56,7 @@ class call_history_report extends base_report
       if( $end_datetime_obj > $now_datetime_obj )
         $end_datetime_obj = clone $now_datetime_obj;
     }
-    if( $end_datetime_obj < $start_datetime_obj )
+    if( $restrict_start_date && $restrict_end_date && $end_datetime_obj < $start_datetime_obj )
     {
       $temp_datetime_obj = clone $start_datetime_obj;
       $start_datetime_obj = clone $end_datetime_obj;
