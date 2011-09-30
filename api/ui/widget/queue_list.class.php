@@ -90,6 +90,9 @@ class queue_list extends base_list_widget
     if( $current_date == $viewing_date ) $viewing_date = 'current';
     $this->set_variable( 'viewing_date', $viewing_date );
 
+    // set the viewing date if it is not "current"
+    if( 'current' != $viewing_date ) db\queue::set_viewing_date( $viewing_date );
+
     $setting_manager = bus\setting_manager::self();
     foreach( $this->get_record_list() as $record )
     {
@@ -99,9 +102,6 @@ class queue_list extends base_list_widget
       
       // restrict to the current qnaire
       $record->set_qnaire( $db_restrict_qnaire );
-
-      // set the viewing date if it is not "current"
-      if( 'current' != $viewing_date ) $record->set_viewing_date( $viewing_date );
 
       $this->add_row( $record->id,
         array( 'rank' => $record->rank,
