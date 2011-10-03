@@ -73,6 +73,8 @@ class queue extends record
       'missed appointment',
       'no appointment',
       'new participant',
+      'new participant outside calling time',
+      'new participant within calling time',
       'new participant always available',
       'new participant available',
       'new participant not available',
@@ -114,6 +116,8 @@ class queue extends record
           'phone call status',
           'phone call status waiting',
           'phone call status ready',
+          'phone call status outside calling time',
+          'phone call status within calling time',
           'phone call status always available',
           'phone call status not available',
           'phone call status available' );
@@ -214,23 +218,6 @@ class queue extends record
   public function set_site( $db_site = NULL )
   {
     $this->db_site = $db_site;
-  }
-  
-  /**
-   * The date (YYYY-MM-DD) with respect to check all queue states.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $date
-   * @access public
-   * @static
-   */
-  public static function set_viewing_date( $date = NULL )
-  {
-    // validate the input
-    $datetime_obj = util::get_datetime_object( $date );
-    if( $date != $datetime_obj->format( 'Y-m-d' ) )
-      log::err( 'The selected viewing date ('.$date.') may not be valid.' );
-    
-    self::$viewing_date = $datetime_obj->format( 'Y-m-d' );
   }
   
   /**
@@ -361,6 +348,28 @@ class queue extends record
       ') '.
       'FROM availability '.
       'WHERE availability.participant_id = participant.id )';
+
+    // checks to make sure a participant is within calling time hours
+    if( $check_time )
+    {
+      $localtime = localtime( time(), true );
+      $offset = $localtime['tm_isdst']
+              ? 'timezone_offset + daylight_savings'
+              : 'timezone_offset';
+      $calling_time_sql = sprintf(
+        '('.
+        '  timezone_offset IS NULL OR'.
+        '  daylight_savings IS NULL OR'.
+        '  ('.
+        '    TIME( %s + INTERVAL %s HOUR ) >= "<CALLING_START_TIME>" AND'.
+        '    TIME( %s + INTERVAL %s HOUR ) < "<CALLING_END_TIME>"'.
+        '  )'.
+        ')',
+        $viewing_date,
+        $offset,
+        $viewing_date,
+        $offset );
+    }
 
     // now determine the sql parts for the given queue
     if( 'all' == $queue )
@@ -562,23 +571,63 @@ class queue extends record
         ')';
       return $parts;
     }
-    else if( 'new participant always available' == $queue )
+    else if( 'new participant outside calling time' == $queue )
     {
       $parts = self::get_query_parts( 'new participant' );
+
+      if( self::use_calling_times() && $check_time )
+      {
+        // Need to join to the address_info database in order to determine the
+        // participant's local time
+        $parts['join'][] =
+          'LEFT JOIN address_info.postcode '.
+          'ON postcode.postcode = participant.postcode';
+        $parts['where'][] = 'NOT '.$calling_time_sql;
+      }
+      else
+      {
+        $parts['where'][] = 'NOT true'; // purposefully a negative tautology
+      }
+        
+      return $parts;
+    }
+    else if( 'new participant within calling time' == $queue )
+    {
+      $parts = self::get_query_parts( 'new participant' );
+
+      if( self::use_calling_times() && $check_time )
+      {
+        // Need to join to the address_info database in order to determine the
+        // participant's local time
+        $parts['join'][] =
+          'LEFT JOIN address_info.postcode '.
+          'ON postcode.postcode = participant.postcode';
+        $parts['where'][] = $calling_time_sql;
+      }
+      else
+      {
+        $parts['where'][] = 'true'; // purposefully a negative tautology
+      }
+        
+      return $parts;
+    }
+    else if( 'new participant always available' == $queue )
+    {
+      $parts = self::get_query_parts( 'new participant within calling time' );
       // make sure the participant doesn't specify availability
       $parts['where'][] = $check_availability_sql.' IS NULL';
       return $parts;
     }
     else if( 'new participant available' == $queue )
     {
-      $parts = self::get_query_parts( 'new participant' );
+      $parts = self::get_query_parts( 'new participant within calling time' );
       // make sure the participant has availability and is currently available
       $parts['where'][] = $check_availability_sql.' = true';
       return $parts;
     }
     else if( 'new participant not available' == $queue )
     {
-      $parts = self::get_query_parts( 'new participant' );
+      $parts = self::get_query_parts( 'new participant within calling time' );
       // make sure the participant has availability and is currently not available
       $parts['where'][] = $check_availability_sql.' = false';
       return $parts;
@@ -612,7 +661,8 @@ class queue extends record
       }
       else if( 'phone call status waiting' == $queue )
       {
-        $parts = self::get_query_parts( 'phone call status', $phone_call_status );
+        $parts = self::get_query_parts(
+          'phone call status', $phone_call_status );
         $parts['where'][] = sprintf(
           $check_time ? '%s < phone_call.end_datetime + INTERVAL <CALLBACK_%s> MINUTE' :
                         'DATE( %s ) < '.
@@ -623,7 +673,8 @@ class queue extends record
       }
       else if( 'phone call status ready' == $queue )
       {
-        $parts = self::get_query_parts( 'phone call status', $phone_call_status );
+        $parts = self::get_query_parts(
+          'phone call status', $phone_call_status );
         $parts['where'][] = sprintf(
           $check_time ? '%s >= phone_call.end_datetime + INTERVAL <CALLBACK_%s> MINUTE' :
                         'DATE( %s ) >= '.
@@ -632,23 +683,66 @@ class queue extends record
           str_replace( ' ', '_', strtoupper( $phone_call_status ) ) );
         return $parts;
       }
-      else if( 'phone call status always available' == $queue )
+      else if( 'phone call status outside calling time' == $queue )
       {
         $parts = self::get_query_parts( 'phone call status ready', $phone_call_status );
+
+        if( self::use_calling_times() && $check_time )
+        {
+          // Need to join to the address_info database in order to determine the
+          // participant's local time
+          $parts['join'][] =
+            'LEFT JOIN address_info.postcode '.
+            'ON postcode.postcode = participant.postcode';
+          $parts['where'][] = 'NOT '.$calling_time_sql;
+        }
+        else
+        {
+          $parts['where'][] = 'NOT true'; // purposefully a negative tautology
+        }
+          
+        return $parts;
+      }
+      else if( 'phone call status within calling time' == $queue )
+      {
+        $parts = self::get_query_parts( 'phone call status ready', $phone_call_status );
+
+        if( self::use_calling_times() && $check_time )
+        {
+          // Need to join to the address_info database in order to determine the
+          // participant's local time
+          $parts['join'][] =
+            'LEFT JOIN address_info.postcode '.
+            'ON postcode.postcode = participant.postcode';
+          $parts['where'][] = $calling_time_sql;
+        }
+        else
+        {
+          $parts['where'][] = 'true'; // purposefully a tautology
+        }
+          
+        return $parts;
+      }
+      else if( 'phone call status always available' == $queue )
+      {
+        $parts = self::get_query_parts(
+          'phone call status within calling time', $phone_call_status );
         // make sure the participant doesn't specify availability
         $parts['where'][] = $check_availability_sql.' IS NULL';
         return $parts;
       }
       else if( 'phone call status not available' == $queue )
       {
-        $parts = self::get_query_parts( 'phone call status ready', $phone_call_status );
+        $parts = self::get_query_parts(
+          'phone call status within calling time', $phone_call_status );
         // make sure the participant has availability and is currently not available
         $parts['where'][] = $check_availability_sql.' = false';
         return $parts;
       }
       else if( 'phone call status available' == $queue )
       {
-        $parts = self::get_query_parts( 'phone call status ready', $phone_call_status );
+        $parts = self::get_query_parts(
+          'phone call status within calling time', $phone_call_status );
         // make sure the participant has availability and is currently available
         $parts['where'][] = $check_availability_sql.' = true';
         return $parts;
@@ -685,6 +779,10 @@ class queue extends record
     $sql = str_replace( '<APPOINTMENT_PRE_WINDOW>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'appointment', 'call post-window' );
     $sql = str_replace( '<APPOINTMENT_POST_WINDOW>', $setting, $sql );
+    $setting = $setting_manager->get_setting( 'calling', 'start time' );
+    $sql = str_replace( '<CALLING_START_TIME>', $setting, $sql );
+    $setting = $setting_manager->get_setting( 'calling', 'end time' );
+    $sql = str_replace( '<CALLING_END_TIME>', $setting, $sql );
 
     // fill in all callback timing settings
     $setting_mod = new modifier();
@@ -699,6 +797,47 @@ class queue extends record
     return $sql;
   }
   
+  /**
+   * The date (YYYY-MM-DD) with respect to check all queue states.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $date
+   * @access public
+   * @static
+   */
+  public static function set_viewing_date( $date = NULL )
+  {
+    // validate the input
+    $datetime_obj = util::get_datetime_object( $date );
+    if( $date != $datetime_obj->format( 'Y-m-d' ) )
+      log::err( 'The selected viewing date ('.$date.') may not be valid.' );
+    
+    self::$viewing_date = $datetime_obj->format( 'Y-m-d' );
+  }
+  
+  /**
+   * Determines whether calling times are enabled.
+   * 
+   * In order to restrict calling times based on participant's local time zones an
+   * address_info database which lists timezones for postal and zip codes is needed.
+   * This method reports calling times as enabled if that database is found.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access protected
+   * @static
+   */
+  protected static function use_calling_times()
+  {
+    if( is_null( self::$calling_times_enabled ) )
+    {
+      self::$calling_times_enabled = 0 < static::db()->get_one(
+        'SELECT COUNT(*) '.
+        'FROM information_schema.schemata '.
+        'WHERE schema_name = "address_info"' );
+    }
+
+    return self::$calling_times_enabled;
+  }
+
   /**
    * The qnaire to restrict the queue to.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -720,6 +859,14 @@ class queue extends record
    * @static
    */
   protected static $viewing_date = NULL;
+
+  /**
+   * Whether or not calling times are enabled.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @var boolean
+   * @static
+   */
+  protected static $calling_times_enabled = NULL;
 
   /**
    * The queries for each queue
