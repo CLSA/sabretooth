@@ -148,7 +148,7 @@ class voip_call extends \sabretooth\base_object
     {
       // Sleep for 2 miliseconds to try and fix asterisk bug caused by playing two sounds
       // in quick succession
-      time_nanosleep( 0, 200000000 ) );
+      time_nanosleep( 0, 200000000 );
 
       // play sound in bridged channel
       if( !$this->manager->originate(
