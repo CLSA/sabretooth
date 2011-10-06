@@ -180,7 +180,7 @@ class voip_manager extends \sabretooth\singleton
     // there is no way to send a sip prune command to asterisk using AMI so we need to use the CLI
     $output = array();
     $return_value = 0;
-    exec( 'asterisk -rx "sip prune realtime peer patrick"', $output, $return_value );
+    exec( 'asterisk -rx "sip prune realtime peer '.$db_user->name.'"', $output, $return_value );
     if( 0 != $return_value ) log::err( $output[0] );
   }
 
