@@ -32,6 +32,10 @@ class tokens extends sid_record
   {
     $mastodon_manager = bus\mastodon_manager::self();
     $db_user = bus\session::self()->get_user();
+
+    // determine the first part of the token
+    $db_interview = bus\session::self()->get_current_assignment()->get_interview();
+    $token_part = substr( static::determine_token_string( $db_interview ), 0, -1 );
     
     // try getting the attributes from mastodon or sabretooth
     if( $mastodon_manager->is_enabled() )
@@ -75,7 +79,7 @@ class tokens extends sid_record
       }
 
       // written consent received
-      $consent_mod = new modifier();
+      $consent_mod = new db\modifier();
       $consent_mod->where( 'event', 'like', 'written %' );
       $written_consent = 0 < $db_participant->get_consent_count( $consent_mod );
 
@@ -146,7 +150,8 @@ class tokens extends sid_record
         {
           $this->$key = count( $alternate_info->data );
         }
-        else if( preg_match( '/alternate([0-9]+) (first_name|last_name|phone)/', $value, $matches ) )
+        else if(
+          preg_match( '/alternate([0-9]+) (first_name|last_name|phone)/', $value, $matches ) )
         {
           $alt_number = intval( $matches[1] );
           $aspect = $matches[2];
@@ -154,6 +159,14 @@ class tokens extends sid_record
           $this->$key = $alt_number <= count( $alternate_info->data )
                       ? $alternate_info->data[$alt_number - 1]->$aspect
                       : "";
+        }
+        else if( 'previously completed' == $value )
+        {
+          // no need to set the token sid since it should already be set before calling this method
+          $tokens_mod = new db\modifier();
+          $tokens_mod->where( 'token', 'like', $token_part.'%' );
+          $tokens_mod->where( 'completed', '!=', 'N' );
+          $this->$key = static::count( $tokens_mod );
         }
       }
     }

@@ -75,6 +75,7 @@ class productivity_report extends base_report
         $activity_mod->where( 'user_id', '=', $db_user->id );
         $activity_mod->where( 'site_id', '=', $db_site->id );
         $activity_mod->where( 'role_id', '=', $db_role->id );
+        $activity_mod->where( 'operation.subject', '!=', 'self' );
 
         if( $single_date )
         {
@@ -152,6 +153,7 @@ class productivity_report extends base_report
           $day_activity_mod->where( 'user_id', '=', $db_user->id );
           $day_activity_mod->where( 'site_id', '=', $db_site->id );
           $day_activity_mod->where( 'role_id', '=', $db_role->id );
+          $day_activity_mod->where( 'operation.subject', '!=', 'self' );
           $day_activity_mod->where( 'datetime', '>=',
             $datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
           $day_activity_mod->where( 'datetime', '<=',

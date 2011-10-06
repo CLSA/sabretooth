@@ -163,7 +163,7 @@ class appointment extends record
     if( 0 == count( $diffs ) ) return false;
 
     // use the 'diff' arrays to define the 'times' array
-    $times = array( 0 => 0 ); // start day with no operators
+    $times = array();
     ksort( $diffs );
     $num_operators = 0;
     foreach( $diffs as $time => $diff )
@@ -171,6 +171,9 @@ class appointment extends record
       $num_operators += $diff;
       $times[$time] = $num_operators;
     }
+
+    // end day with no operators (4800 is used because it is long after the end of the day)
+    $times[4800] = 0;
     
     // Now search the times array for any 0's inside the appointment time
     // NOTE: we need to include the time immediately prior to the appointment start time
@@ -182,28 +185,21 @@ class appointment extends record
 
     foreach( $times as $time => $slots )
     {
-      if( $start_time_as_int <= $time && $time < $end_time_as_int )
-      {
-        if( 1 > $slots ) return false;
+      // check the start time
+      if( $last_time <= $start_time_as_int &&
+          $time > $start_time_as_int &&
+          1 > $last_slots ) return false;
 
-        if( !$match )
-        {
-          if( $time != $start_time_as_int && 1 > $last_slots ) return false;
-          $match = true;
-        }
-      }
-
-      if( $start_time_as_int <= $time && $end_time_as_int <= $time )
-      { // we have passed both the start and end time
-        return $start_time_as_int >= $last_time && 1 <= $last_slots;
-      }
+      // check the end time
+      if( $last_time < $end_time_as_int &&
+          $time >= $end_time_as_int &&
+          1 > $last_slots ) return false;
 
       $last_slots = $slots;
       $last_time = $time;
     }
-
-    // make sure the last time has at least one slot
-    return 1 <= $slots;
+    
+    return true;
   }
 
   /**
