@@ -45,11 +45,6 @@ class participant_tree extends \sabretooth\ui\widget
   public function finish()
   {
     parent::finish();
-
-
-    //// just a test
-    $test = array('t1', 't2', 't3');
-    $this->set_variable( 'test', $test );
     
     $session = bus\session::self();
     $is_administrator = 'administrator' == $session->get_role()->name;
@@ -70,6 +65,15 @@ class participant_tree extends \sabretooth\ui\widget
                       ? new db\site( $restrict_site_id )
                       : NULL;
     
+    $current_date = util::get_datetime_object()->format( 'Y-m-d' );
+    $this->set_variable( 'current_date', $current_date );
+    $viewing_date = $this->get_argument( 'viewing_date', 'current' );
+    if( $current_date == $viewing_date ) $viewing_date = 'current';
+    $this->set_variable( 'viewing_date', $viewing_date );
+
+    // set the viewing date if it is not "current"
+    if( 'current' != $viewing_date ) db\queue::set_viewing_date( $viewing_date );
+
     $show_queue_index = $this->get_argument( 'show_queue_index', NULL );
     if( is_null( $show_queue_index ) )
     {
