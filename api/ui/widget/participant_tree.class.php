@@ -45,6 +45,11 @@ class participant_tree extends \sabretooth\ui\widget
   public function finish()
   {
     parent::finish();
+
+
+    //// just a test
+    $test = array('t1', 't2', 't3');
+    $this->set_variable( 'test', $test );
     
     $session = bus\session::self();
     $is_administrator = 'administrator' == $session->get_role()->name;

@@ -19,7 +19,32 @@
                      { "restrict_site_id": site_id } );
         } );
       {% endif %}
-      
+
+      $( "span[id^='{{ widget.full }}_nodespot__']" ).click( function() {
+        // extracting the qnaire and queue id from the id attribute        
+        var id_string = $(this).attr( "id" );
+        var pos1 = id_string.lastIndexOf('__') + 2;
+        var pos2 = id_string.lastIndexOf('_') + 1;
+        var qnaire_id = id_string.substring( pos1, pos2 - 1 );
+        var queue_id = id_string.substring( pos2 );
+        var args = new Object();
+        args.id = queue_id;
+        args.qnaire_id = qnaire_id;
+        {% if sites is defined %}
+          args.site_id = $( "#{{ widget.full }}__restrict_site option:selected" ).val();
+        {% else %}
+          args.site_id = 0;
+        {% endif %}
+        slot_load( "{{ widget.full }}", "queue", "view", args );
+
+        $("#{{ widget.full }}_slot").dialog( { 
+          title: "Viewing Queue Details",
+          modal: false,
+          width: 800,
+          height: 600
+        } );
+      } );
+
       // tree widget
       $( "#{{ widget.full }}_tree" ).jstree( {
         plugins: [ "html_data", "themeroller" ],
