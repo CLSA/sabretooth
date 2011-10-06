@@ -241,6 +241,8 @@ VALUES( "pull", "qnaire", "primary", true, "Retrieves base qnaire information." 
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "queue", "list", true, "List queues in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "queue", "view", true, "View a queue's details and list of participants." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "queue", "primary", true, "Retrieves base queue information." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "queue_restriction", "delete", true, "Removes a queue restriction from the system." );
