@@ -1,0 +1,23 @@
+{##
+ # interview_view.twig
+ # 
+ # View interview details.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @see base_view.twig for parameters
+ #}
+{% extends "base_view.twig" %}
+
+{% from 'macros.twig' import include_list, confirm_buttons %}
+{% block record %}
+
+  {{ parent() }}
+  {{ include_list( 'assignment', assignment_list|default(false), true ) }}
+
+{% endblock record %}
+
+{% block post_record %}
+
+  {{ parent() }}
+  {{ confirm_buttons( slot, widget.full, '', 'Back', 'right', true ) }}
+
+{% endblock post_record %}

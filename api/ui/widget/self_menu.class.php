@@ -74,6 +74,7 @@ class self_menu extends \sabretooth\ui\widget
       'appointment',
       'availability',
       'consent',
+      'interview',
       'operation',
       'phase',
       'phone',
