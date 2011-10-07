@@ -31,7 +31,6 @@ class queue_view extends base_view
   public function __construct( $args )
   {
     parent::__construct( 'queue', 'view', $args );
-    $this->show_heading( false );
     
     $site_id = $this->get_argument( 'site_id' );
     if( $site_id ) $this->db_site = new db\site( $site_id );
@@ -39,9 +38,17 @@ class queue_view extends base_view
     $qnaire_id = $this->get_argument( 'qnaire_id' );
     if( $qnaire_id ) $this->db_qnaire = new db\qnaire( $qnaire_id );
 
+    $current_date = util::get_datetime_object()->format( 'Y-m-d' );
+    $viewing_date = $this->get_argument( 'viewing_date', 'current' );
+    if( $current_date == $viewing_date ) $viewing_date = 'current';
+    $this->viewing_date = $viewing_date;
+
     // create an associative array with everything we want to display about the queue
-    $this->add_item( 'title', 'string', 'Title' );
-    $this->add_item( 'description', 'text', 'Description' );
+    $this->add_item( 'title', 'constant', 'Title' );
+    $this->add_item( 'description', 'constant', 'Description' );
+    $this->add_item( 'site', 'constant', 'Site' );
+    $this->add_item( 'qnaire', 'constant', 'Questionnaire' );
+    $this->add_item( 'viewing_date', 'constant', 'Viewing date' );
 
     try
     {
@@ -69,6 +76,9 @@ class queue_view extends base_view
     // set the view's items
     $this->set_item( 'title', $this->get_record()->title, true );
     $this->set_item( 'description', $this->get_record()->description );
+    $this->set_item( 'site', $this->db_site ? $this->db_site->name : 'All sites' );
+    $this->set_item( 'qnaire', $this->db_qnaire ? $this->db_qnaire->name : 'All questionnaires' );
+    $this->set_item( 'viewing_date', $this->viewing_date );
 
     $this->finish_setting_items();
 
@@ -132,5 +142,12 @@ class queue_view extends base_view
    * @access protected
    */
   protected $db_qnaire = NULL;
+
+  /**
+   * The viewing date to restrict the queue to
+   * @var string
+   * @access protected
+   */
+  protected $viewing_date;
 }
 ?>

@@ -20,8 +20,25 @@
         } );
       {% endif %}
 
-      $( "span[id^='{{ widget.full }}_nodespot__']" ).click( function() {
-        // extracting the qnaire and queue id from the id attribute        
+      // create the datepicker UI for the viewing date
+      $( "#{{ widget.full }}__viewing_date" ).datepicker( {
+        dateFormat: 'yy-mm-dd',
+        showAnim: 'slideDown',
+        defaultDate: 'current',
+        onClose: function( dateText, inst ) {
+          var viewing_date = $( "#{{ widget.full }}__viewing_date" ).val();
+          
+          // if today's date is selected change it to "current"
+          if( "{{ current_date }}" == viewing_date ) viewing_date = "current";
+
+          slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}",
+                     { "viewing_date": viewing_date } );
+        }
+      } );
+      
+      // make the queue participant counts buttons which pop up the queue view widget
+      $( "span[id^='{{ widget.full }}_nodespot__']" ).button().click( function() {
+        // extracting the qnaire and queue id from the id attribute
         var id_string = $(this).attr( "id" );
         var pos1 = id_string.lastIndexOf('__') + 2;
         var pos2 = id_string.lastIndexOf('_') + 1;
@@ -35,6 +52,10 @@
         {% else %}
           args.site_id = 0;
         {% endif %}
+        args.viewing_date = $( "#{{ widget.full }}__viewing_date" ).val();
+          
+        // if today's date is selected change it to "current"
+        if( "{{ current_date }}" == args.viewing_date ) args.viewing_date = "current";
         slot_load( "{{ widget.full }}", "queue", "view", args );
 
         $("#{{ widget.full }}_slot").dialog( { 
@@ -80,9 +101,9 @@
   
   <div id="{{ widget.full }}_slot" />
 
-  {% if sites is defined %}
-    {% set restrict_site_id = restrict_site_id|default(0) %}
-    <div style="padding-top: 4px; padding-bottom: 4px;">
+  <div style="padding-top: 4px; padding-bottom: 4px;">
+   {% if sites is defined %}
+      {% set restrict_site_id = restrict_site_id|default(0) %}
       Restrict to site:
       <select id="{{ widget.full }}__restrict_site" class="ui-state-default">
         <option {% if 0 == restrict_site_id %}selected{% endif %}
@@ -92,8 +113,15 @@
                   value="{{ id }}">{{ name }}</option>
         {% endfor %}
       </select>
-    </div>
-  {% endif %}
+    {% endif %}
+  
+    {% set viewing_date = viewing_date|default('current') %}
+    <span>
+      Viewing date:
+      <input id="{{ widget.full }}__viewing_date" class="ui-state-default"
+             value="{{ viewing_date }}" style="width: 7em;" readonly />
+    </span>
+  </div>
   
   <div id="{{ widget.full }}_tree">
     <ul>
