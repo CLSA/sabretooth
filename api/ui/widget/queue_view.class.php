@@ -32,8 +32,16 @@ class queue_view extends base_view
   {
     parent::__construct( 'queue', 'view', $args );
     
-    $site_id = $this->get_argument( 'site_id' );
-    if( $site_id ) $this->db_site = new db\site( $site_id );
+    $session = bus\session::self();
+    if( 'supervisor' == $session->get_role()->name )
+    {
+      $this->db_site = $session->get_site();
+    }
+    else
+    {
+      $site_id = $this->get_argument( 'site_id' );
+      if( $site_id ) $this->db_site = new db\site( $site_id );
+    }
 
     $qnaire_id = $this->get_argument( 'qnaire_id' );
     if( $qnaire_id ) $this->db_qnaire = new db\qnaire( $qnaire_id );
