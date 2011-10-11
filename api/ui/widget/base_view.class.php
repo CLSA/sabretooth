@@ -108,25 +108,29 @@ abstract class base_view extends base_record_widget
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $item_id The item's id, can be one of the record's column names.
    * @param mixed $value The item's value.
+   * @param boolean $required Whether the item can be left blank.
    * @param mixed $data For enum item types, an array of all possible values, for date types an
    *              associative array of min_date and/or max_date and for datetime types an
    *              associative array of min_datetime and/or max_datetime
+   * @param boolean $force Whether to show enums even if there is only one possible value.
    * @throws exception\argument
    * @access public
    */
-  public function set_item( $item_id, $value, $required = false, $data = NULL )
+  public function set_item( $item_id, $value, $required = false, $data = NULL, $force = false )
   {
     // make sure the item exists
     if( !array_key_exists( $item_id, $this->items ) )
       throw new exc\argument( 'item_id', $item_id, __METHOD__ );
-
+    
+    $type = $this->items[$item_id]['type'];
+    
     // process the value so that it displays correctly
-    if( 'boolean' == $this->items[$item_id]['type'] )
+    if( 'boolean' == $type )
     {
       if( is_null( $value ) ) $value = '';
       else $value = $value ? 'Yes' : 'No';
     }
-    else if( 'date' == $this->items[$item_id]['type'] )
+    else if( 'date' == $type )
     {
       if( strlen( $value ) )
       {
@@ -135,7 +139,7 @@ abstract class base_view extends base_record_widget
       }
       else $value = '';
     }
-    else if( 'time' == $this->items[$item_id]['type'] )
+    else if( 'time' == $type )
     {
       if( strlen( $value ) )
       {
@@ -144,29 +148,33 @@ abstract class base_view extends base_record_widget
       }
       else $value = '12:00';
     }
-    else if( 'hidden' == $this->items[$item_id]['type'] )
+    else if( 'hidden' == $type )
     {
       if( is_bool( $value ) ) $value = $value ? 'true' : 'false';
     }
-    else if( 'constant' == $this->items[$item_id]['type'] &&
+    else if( 'constant' == $type &&
              ( ( is_int( $value ) && 0 == $value ) ||
                ( is_string( $value ) && '0' == $value ) ) )
     {
       $value = ' 0';
     }
-    else if( 'number' == $this->items[$item_id]['type'] )
+    else if( 'number' == $type )
     {
       $value = floatval( $value );
     }
-
+    
     $this->items[$item_id]['value'] = $value;
-    if( 'enum' == $this->items[$item_id]['type'] )
+    $this->items[$item_id]['required'] = $required;
+    $this->items[$item_id]['force'] = $force;
+    
+    // if necessary process the $data argument
+    if( 'enum' == $type )
     {
       $enum = $data;
       if( is_null( $enum ) )
         throw new exc\runtime(
           'Trying to set enum item without enum values.', __METHOD__ );
-
+      
       // add a null entry (to the front of the array) if the item is not required
       if( !$required )
       {
@@ -176,8 +184,7 @@ abstract class base_view extends base_record_widget
       }
       $this->items[$item_id]['enum'] = $enum;
     }
-    else if( 'date' == $this->items[$item_id]['type'] ||
-             'datetime' == $this->items[$item_id]['type'] )
+    else if( 'date' == $type || 'datetime' == $type )
     {
       if( is_array( $data ) )
       {
@@ -188,8 +195,6 @@ abstract class base_view extends base_record_widget
           $this->items[$item_id]['max_date'] = $date_limits['max_date'];
       }
     }
-
-    $this->items[$item_id]['required'] = $required;
   }
 
   /**
