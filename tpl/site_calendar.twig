@@ -8,25 +8,6 @@
 
 {% block callbacks %}
 
-  {% if editable %}
-    dayClick: function( date, allDay, jsEvent, view ) {
-      // add a new shift template
-      var args = new Object();
-      args.date = date.getFullYear() + "-" + ( date.getMonth() + 1 ) + "-" + date.getDate();
-      if( !allDay ) {
-        args.start_time = date.getHours() + ":" + date.getMinutes();
-        date.setTime( date.getTime() + 4*60*60*1000 );
-        args.end_time = date.getHours() + ":" + date.getMinutes();
-      } else {
-        args.start_time = "9:00";
-        args.end_time = "13:00";
-      }
-  
-      slot_load( "{{ widget.full }}", "shift", "template_add", args );
-      $( "#{{ widget.full }}_slot" ).dialog( "open" );
-    },
-  {% endif %}
-
   events: function( start, end, callback ) {
     var args = new Object();
     args.start = start.getFullYear() + "-" + ( start.getMonth() + 1 ) + "-" + start.getDate();

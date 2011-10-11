@@ -14,7 +14,7 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * widget site calendar
+ * widget site template calendar
  * 
  * @package sabretooth\ui
  */
@@ -23,7 +23,7 @@ class shift_template_calendar extends base_calendar
   /**
    * Constructor
    * 
-   * Defines all variables required by the site calendar.
+   * Defines all variables required by the site template calendar.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
