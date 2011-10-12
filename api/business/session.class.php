@@ -51,7 +51,7 @@ final class session extends \sabretooth\singleton
    * 
    * This method should be called immediately after initial construct of the session.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\runtime
+   * @throws exception\permission
    * @access public
    */
   public function initialize()
@@ -319,10 +319,11 @@ final class session extends \sabretooth\singleton
   
   /**
    * Get the user's current assignment.
-   * Should only be called if the user is an operator, otherwise an \sabretooth\exception will be thrown.
+   * Should only be called if the user is an operator, otherwise an exception will be thrown.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\assignment
+   * @throws exception\runtime
    * @access public
    */
   public function get_current_assignment()
@@ -348,10 +349,11 @@ final class session extends \sabretooth\singleton
 
   /**
    * Get the user's current phone call.
-   * Should only be called if the user is an operator, otherwise an \sabretooth\exception will be thrown.
+   * Should only be called if the user is an operator, otherwise an exception will be thrown.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\phone_call
+   * @throws exception\runtime
    * @access public
    */
   public function get_current_phone_call()
