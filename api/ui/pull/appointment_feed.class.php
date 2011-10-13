@@ -54,7 +54,9 @@ class appointment_feed extends base_feed
       $start_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
       $end_datetime_obj = clone $start_datetime_obj;
       // assume appointments to be one hour long
-      $end_datetime_obj->modify( '+1 hour' );
+      $end_datetime_obj->modify(
+        sprintf( '+%d minute',
+        bus\setting_manager::self()->get_setting( 'appointment', 'duration' ) ) );
 
       $db_participant = $db_appointment->get_participant();
       $event_list[] = array(
