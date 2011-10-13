@@ -370,6 +370,7 @@ final class session extends \sabretooth\singleton
     // query for phone calls which do not have a end time
     $modifier = new db\modifier();
     $modifier->where( 'end_datetime', '=', NULL );
+    $modifier->order_desc( 'start_datetime' );
     $phone_call_list = $db_assignment->get_phone_call_list( $modifier );
 
     // only one phone call should ever be open at a time, warn if this isn't the case
@@ -379,7 +380,7 @@ final class session extends \sabretooth\singleton
                  $this->get_user()->id,
                  $this->get_user()->name ) );
 
-    return 1 == count( $phone_call_list ) ? current( $phone_call_list ) : NULL;
+    return 1 <= count( $phone_call_list ) ? current( $phone_call_list ) : NULL;
   }
 
   /**
