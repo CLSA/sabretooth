@@ -335,6 +335,7 @@ final class session extends \sabretooth\singleton
     // query for assignments which do not have a end time
     $modifier = new db\modifier();
     $modifier->where( 'end_datetime', '=', NULL );
+    $modifier->order_desc( 'start_datetime' );
     $assignment_list = $this->get_user()->get_assignment_list( $modifier );
 
     // only one assignment should ever be open at a time, warn if this isn't the case
@@ -344,7 +345,7 @@ final class session extends \sabretooth\singleton
                  $this->get_user()->id,
                  $this->get_user()->name ) );
 
-    return 1 == count( $assignment_list ) ? current( $assignment_list ) : NULL;
+    return 1 <= count( $assignment_list ) ? current( $assignment_list ) : NULL;
   }
 
   /**
