@@ -35,11 +35,30 @@ class assignment_begin extends \sabretooth\ui\push
   /**
    * Executes the push.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\runtime exception\notice
    * @access public
    */
   public function finish()
   {
     $session = bus\session::self();
+
+    if( !is_null( $session->get_current_assignment() ) )
+      throw new exc\notice(
+        'Please click the refresh button.  If this message appears more than twice '.
+        'consecutively report this error to a supervisor.', __METHOD__ );
+    
+    // we need to use a semaphore to avoid race conditions
+    $semaphore = sem_get( getmyinode() );
+    if( !sem_acquire( $semaphore ) )
+    {
+      log::err( sprintf(
+        'Unable to aquire semaphore key "%s" for user id %d',
+        $sem_key,
+        $session->get_user()->id ) );
+      throw new exc\notice(
+        'The server is busy, please wait a few seconds then click the refresh button.',
+        __METHOD__ );
+    }
 
     // search through every queue for a new assignment until one is found
     $queue_mod = new db\modifier();
@@ -122,6 +141,15 @@ class assignment_begin extends \sabretooth\ui\push
         $db_appointment->assignment_id = $db_assignment->id;
         $db_appointment->save();
       }
+    }
+
+    // release the semaphore
+    if( !sem_release( $semaphore ) )
+    {
+      log::err( sprintf(
+        'Unable to release semaphore key "%s" for user id %d',
+        $sem_key,
+        $session->get_user()->id ) );
     }
   }
 }
