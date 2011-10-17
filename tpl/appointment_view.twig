@@ -10,8 +10,10 @@
 {% block record %}
   
   {{ parent() }}
-  {% from 'macros.twig' import include_calendar %}
-  {{ include_calendar( 'site', site_calendar|default(false), true ) }}
+  {% if not hide_calendar %}
+    {% from 'macros.twig' import include_calendar %}
+    {{ include_calendar( 'site', site_calendar|default(false), true ) }}
+  {% endif %}
 
 {% endblock record %}
 
