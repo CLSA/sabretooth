@@ -64,6 +64,7 @@ class call_history_report extends base_report
     }
 
     $assignment_mod = new db\modifier();
+    if( $restrict_site_id ) $assignment_mod->where( 'site_id', '=', $restrict_site_id );
     $assignment_mod->order( 'start_datetime' );
     if( $restrict_start_date && $restrict_end_date )
     {
