@@ -106,7 +106,27 @@ class assignment_begin extends \sabretooth\ui\push
       $db_interview = new db\interview();
       $db_interview->participant_id = $db_participant->id;
       $db_interview->qnaire_id = $db_participant->current_qnaire_id;
-      $db_interview->save();
+
+      // Even though we have made sure this interview isn't a duplicate, it seems to happen from
+      // time to time anyway, so catch it and tell the operator to try requesting the assignment
+      // again
+      try
+      {
+        $db_interview->save();
+      }
+      catch( exc\database $e )
+      {
+        if( $e->is_duplicate_entry() )
+        {
+          throw new exc\notice(
+            'The server was too busy to assign a new participant, please wait a few seconds then '.
+            'try requesting an assignment again.  If this message appears several times in a row '.
+            'please report the error code to your supervisor.',
+            __METHOD__ );
+        }
+
+        throw $e;
+      }
     }
     else
     {
