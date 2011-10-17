@@ -6,3 +6,4 @@ SOURCE queue.sql
 SOURCE setting.sql
 SOURCE operation.sql
 SOURCE role_has_operation.sql
+SOURCE participant_for_queue.sql
