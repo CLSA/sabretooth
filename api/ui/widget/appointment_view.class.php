@@ -117,6 +117,9 @@ class appointment_view extends base_appointment_view
     $this->set_item( 'state', $this->get_record()->get_state(), false );
 
     $this->finish_setting_items();
+
+    // hide the calendar if requested to
+    $this->set_variable( 'hide_calendar', $this->get_argument( 'hide_calendar', false ) );
   }
 }
 ?>

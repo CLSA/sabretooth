@@ -80,7 +80,7 @@ class appointment extends record
 
     $start_datetime_obj = util::get_datetime_object( $this->datetime );
     $end_datetime_obj = clone $start_datetime_obj;
-    $end_datetime_obj->add( new \DateInterval( $interval ) ); // appointments are one hour long
+    $end_datetime_obj->add( new \DateInterval( $interval ) );
 
     // determine whether to test for shifts or shift templates on the appointment day
     $modifier = new modifier();
@@ -148,7 +148,6 @@ class appointment extends record
         $appointment_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
   
         $start_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
-        // increment slot one hour later
         $appointment_datetime_obj->add( new \DateInterval( $interval ) );
         $end_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
   

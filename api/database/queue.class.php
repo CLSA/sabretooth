@@ -471,7 +471,7 @@ class queue extends record
       $parts = self::get_query_parts( 'qnaire' );
       // make sure to only include participants who are not restricted
       $parts['join'][] = $restriction_join;
-      $parts['where'][] = ''.$check_restriction_sql;
+      $parts['where'][] = $check_restriction_sql;
       // the current qnaire cannot start before start_qnaire_date
       $parts['where'][] = 'participant.start_qnaire_date IS NOT NULL';
       $parts['where'][] = sprintf( 'DATE( participant.start_qnaire_date ) > DATE( %s )',
@@ -483,7 +483,7 @@ class queue extends record
       $parts = self::get_query_parts( 'qnaire' );
       // make sure to only include participants who are not restricted
       $parts['join'][] = $restriction_join;
-      $parts['where'][] = ''.$check_restriction_sql;
+      $parts['where'][] = $check_restriction_sql;
       // assigned participants
       $parts['where'][] = 'participant.assigned = true';
       return $parts;
@@ -493,7 +493,7 @@ class queue extends record
       $parts = self::get_query_parts( 'qnaire' );
       // make sure to only include participants who are not restricted
       $parts['join'][] = $restriction_join;
-      $parts['where'][] = ''.$check_restriction_sql;
+      $parts['where'][] = $check_restriction_sql;
       // the qnaire is ready to start if the start_qnaire_date is null or we have reached that date
       $parts['where'][] = sprintf(
         '('.

@@ -54,7 +54,7 @@ class call_attempts_report extends base_report
     foreach( $participant_list as $db_participant )
     {
       $interview_mod = new db\modifier();
-      $interview_mod->where( 'restrict_qnaire_id', '=', $db_qnaire->id );
+      $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
       $interview_mod->where( 'completed', '=', false );
       $db_interview = current( $db_participant->get_interview_list( $interview_mod ) );
       if( $db_interview )
