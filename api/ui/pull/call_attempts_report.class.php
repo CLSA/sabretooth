@@ -37,7 +37,7 @@ class call_attempts_report extends base_report
   public function finish()
   {
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-    if( $restrict_stie_id ) $db_site = new db\site( $restrict_stie_id );
+    if( $restrict_site_id ) $db_site = new db\site( $restrict_site_id );
     $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
    
     $this->add_title(
