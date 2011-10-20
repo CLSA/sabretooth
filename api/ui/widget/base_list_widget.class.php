@@ -349,6 +349,8 @@ abstract class base_list_widget extends \sabretooth\ui\widget
    * Add a column to the list.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_id The column's id, either in column or table.column format
+   * @param string $type One of 'string', 'text', 'number', 'boolean', 'time', 'date', 'datetime'
+   *               or 'fuzzy'
    * @param string $heading The column's heading as it will appear in the list
    * @param boolean $sortable Whether or not the column is sortable.
    * @param string $align Which way to align the column (left, right or center)
