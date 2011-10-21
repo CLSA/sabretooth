@@ -35,6 +35,7 @@ class productivity_report extends base_report
     $this->add_restriction( 'site' );
     $this->add_restriction( 'qnaire' );
     $this->add_restriction( 'dates' );
+    $this->add_parameter( 'round_times', 'boolean', 'Round Times' );
     
     $this->set_variable( 'description',
       'This report lists operator productivity.  The report can either be generated for a '.
@@ -50,7 +51,7 @@ class productivity_report extends base_report
   public function finish()
   {
     parent::finish();
-  
+    $this->set_parameter( 'round_times', true, true );
     $this->finish_setting_parameters();
   }
 }

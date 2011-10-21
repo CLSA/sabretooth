@@ -36,6 +36,9 @@ class productivity_report extends base_report
 
   public function finish()
   {
+    // determine whether or not to round time to 15 minute increments
+    $round_times = $this->get_argument( 'round_times', true );
+
     $db_role = db\role::get_unique_record( 'name', 'operator' );
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
     $site_mod = new db\modifier();
@@ -186,36 +189,35 @@ class productivity_report extends base_report
           // if reporting a single date restrict the count to that day only
           if( $single_date && $single_datetime_obj != $datetime_obj ) continue;
 
-          $day_activity_mod = new db\modifier();
-          $day_activity_mod->where( 'user_id', '=', $db_user->id );
-          $day_activity_mod->where( 'site_id', '=', $db_site->id );
-          $day_activity_mod->where( 'role_id', '=', $db_role->id );
-          $day_activity_mod->where( 'operation.subject', '!=', 'self' );
-          $day_activity_mod->where( 'datetime', '>=',
-            $datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
-          $day_activity_mod->where( 'datetime', '<=',
-            $datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
-          
-          $min_datetime_obj = db\activity::get_min_datetime( $day_activity_mod );
-          $max_datetime_obj = db\activity::get_max_datetime( $day_activity_mod );
-          
-          if( !is_null( $min_datetime_obj ) && !is_null( $max_datetime_obj ) )
-          {
-            $diff_obj = $max_datetime_obj->diff( $min_datetime_obj );
-            $total_time += $diff_obj->h + round( $diff_obj->i / 15 ) * 0.25;
-          }
+          // get the elapsed time and round to 15 minute increments (if necessary)
+          $time += db\activity::get_elapsed_time(
+            $db_user, $db_site, $db_role, $datetime_obj->format( 'Y-m-d' ) );
+          $total_time = $round_times ? floor( 4 * $time ) / 4 : $time;
         }
 
         // Now we can use all the information gathered above to fill in the contents of the table.
         ///////////////////////////////////////////////////////////////////////////////////////////
         if( $single_date )
         {
+          $day_activity_mod = new db\modifier();
+          $day_activity_mod->where( 'user_id', '=', $db_user->id );
+          $day_activity_mod->where( 'site_id', '=', $db_site->id );
+          $day_activity_mod->where( 'role_id', '=', $db_role->id );
+          $day_activity_mod->where( 'operation.subject', '!=', 'self' );
+          $day_activity_mod->where( 'datetime', '>=',
+            $min_activity_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
+          $day_activity_mod->where( 'datetime', '<=',
+            $min_activity_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
+          
+          $min_datetime_obj = db\activity::get_min_datetime( $day_activity_mod );
+          $max_datetime_obj = db\activity::get_max_datetime( $day_activity_mod );
+
           $contents[] = array(
             $db_user->first_name.' '.$db_user->last_name,
             $completes,
             is_null( $min_datetime_obj ) ? '??' : $min_datetime_obj->format( "H:i" ),
             is_null( $max_datetime_obj ) ? '??' : $max_datetime_obj->format( "H:i" ),
-            $total_time,
+            sprintf( '%0.2f', $total_time ),
             $total_time > 0 ? sprintf( '%0.2f', $completes / $total_time ) : '',
             $completes > 0 ? sprintf( '%0.2f', $interview_time / $completes / 60 ) : '',
             $total_time > 0 ? sprintf( '%0.2f', $calls / $total_time ) : '' );
@@ -225,7 +227,7 @@ class productivity_report extends base_report
           $contents[] = array(
             $db_user->first_name.' '.$db_user->last_name,
             $completes,
-            $total_time,
+            sprintf( '%0.2f', $total_time ),
             $total_time > 0 ? sprintf( '%0.2f', $completes / $total_time ) : '',
             $completes > 0 ? sprintf( '%0.2f', $interview_time / $completes / 60 ) : '',
             $total_time > 0 ? sprintf( '%0.2f', $calls / $total_time ) : '' );
