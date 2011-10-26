@@ -178,6 +178,7 @@ class productivity_report extends base_report
         // This is done by finding the minimum and maximum activity time for every day included in
         // the report and calculating the difference between the two times.
         ///////////////////////////////////////////////////////////////////////////////////////////
+        $time = 0;
         $total_time = 0;
         $min_activity_datetime_obj->setTime( 0, 0 );
         $max_activity_datetime_obj->setTime( 0, 0 );
