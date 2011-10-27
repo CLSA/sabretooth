@@ -147,7 +147,7 @@ abstract class base_list_widget extends \sabretooth\ui\widget
     // determine the record count and list
     $method_name = 'determine_'.$this->get_subject().'_count';
     $this->record_count = $this->parent && method_exists( $this->parent, $method_name )
-                        ? $this->parent->$method_name()
+                        ? $this->parent->$method_name( $modifier )
                         : $this->determine_record_count( $modifier );
 
     // make sure the page is valid, then set the rows array based on the page
