@@ -208,6 +208,39 @@ abstract class base_view extends base_record
   }
 
   /**
+   * Set whether a new record can be added.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $enable
+   * @access public
+   */
+  public function set_addable( $enable )
+  {
+    $this->addable = $enable;
+  }
+
+  /**
+   * Set whether the record can be edited.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $enable
+   * @access public
+   */
+  public function set_editable( $enable )
+  {
+    $this->editable = $enable;
+  }
+
+  /**
+   * Set whether the record can be removed.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $enable
+   * @access public
+   */
+  public function set_removable( $enable )
+  {
+    $this->removable = $enable;
+  }
+  
+  /**
    * Determines which mode the widget is in.
    * Must be one of 'view', 'edit' or 'add'.
    * @var string
