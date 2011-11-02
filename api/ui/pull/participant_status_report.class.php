@@ -70,9 +70,12 @@ class participant_status_report extends base_report
       'Total completed interviews' => 0,
       'Response rate (incl. soft refusals)' => 0,
       'Response rate (excl. soft refusals)' => 0,
-      ' ' => '',
       'Total number of calls' => 0,
       'Completed interviews / total number of calls' => 0 ) );
+
+    // insert a blank line before Total number of calls
+    $blank = array();
+    $blank[] = count( $totals) - 3;
 
     $grand_totals = array();
     if( $restrict_by_site )
@@ -224,7 +227,7 @@ class participant_status_report extends base_report
       }// end if not deceased or some condition
     }// end participants
     
-    $region_keys = array_keys( $totals );
+    $totals_keys = array_keys( $totals );
     $header = array( 'Current Outcome' );
    
     foreach( $grand_totals as $locale => $value )
@@ -252,7 +255,7 @@ class participant_status_report extends base_report
         $grand_totals[ $locale ][ 'Response rate (excl. soft refusals)' ] = 
           $denom ? sprintf( '%0.2f', $tci / $denom ) : 'NA';
 
-        foreach( $region_keys as $column )
+        foreach( $totals_keys as $column )
           $grand_totals[ 'Grand Total' ][ $column ] += $grand_totals[ $locale ][ $column ];
         
         $tc = $grand_totals[ $locale ][ 'Total number of calls' ];
@@ -284,7 +287,7 @@ class participant_status_report extends base_report
       0 < $gtc ? sprintf( '%0.2f', $gtci / $gtc ) : 'NA';
 
     // build the final 2D content array
-    $temp_content = array( $region_keys );
+    $temp_content = array( $totals_keys );
     foreach( $grand_totals as $key => $column )
     {
       $temp_array = array();
@@ -305,7 +308,7 @@ class participant_status_report extends base_report
       }
     }
    
-    $this->add_table( NULL, $header, $content, NULL );
+    $this->add_table( NULL, $header, $content, NULL, $blank );
 
     return parent::finish();
   }// end constructor
