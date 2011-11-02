@@ -56,13 +56,14 @@ abstract class base_report extends \sabretooth\ui\pull
   }
 
   protected function add_table(
-    $title = NULL, $header = array(), $contents = array(), $footer = array() )
+    $title = NULL, $header = array(), $contents = array(), $footer = array(), $blanks = array() )
   {
     array_push( $this->report_tables,
       array( 'title' => $title,
              'header' => $header,
              'contents' => $contents,
-             'footer' => $footer ) );
+             'footer' => $footer,
+             'blanks' => $blanks ) );
   }
 
   /**
@@ -250,6 +251,8 @@ abstract class base_report extends \sabretooth\ui\pull
       unset( $contents_are_numeric );
       if( count( $table['contents'] ) )
       {
+        $content_row = 0;
+        $insert_row = count( $table['blanks'] ) > 0 ? true : false;
         foreach( $table['contents'] as $contents )
         {
           $col = 'A';
@@ -261,6 +264,10 @@ abstract class base_report extends \sabretooth\ui\pull
             $contents_are_numeric[$col] = $contents_are_numeric[$col] || is_numeric( $content );
             $col++;
           }
+          
+          if( $insert_row && in_array( $content_row, $table['blanks'] ) ) $row++;    
+                    
+          $content_row++;
           $row++;
         }
       }
