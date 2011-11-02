@@ -244,13 +244,13 @@ class participant_status_report extends base_report
                       + $value[ 'Withdrawn from study' ];
 
         $grand_totals[ $locale ][ 'Response rate (incl. soft refusals)' ] =  
-          $denom ? $tci / $denom : 'NA';
+          $denom ? sprintf( '%0.2f', $tci / $denom ) : 'NA';
                   
         $denom = $tci + $value[ 'Withdrawn from study' ] 
                       + $value[ 'Hard refusal' ];
 
         $grand_totals[ $locale ][ 'Response rate (excl. soft refusals)' ] = 
-          $denom ? $tci / $denom : 'NA';
+          $denom ? sprintf( '%0.2f', $tci / $denom ) : 'NA';
 
         foreach( $region_keys as $column )
           $grand_totals[ 'Grand Total' ][ $column ] += $grand_totals[ $locale ][ $column ];
