@@ -38,12 +38,13 @@ class participant_status_report extends base_report
   {
     // get the report arguments
     $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
-
+    $restrict_by_site = 
+      $this->get_argument( 'restrict_site_or_province_id' ) == 'Site' ? true : false;
     $this->add_title( 
       sprintf( 'Listing of categorical totals pertaining to '.
                'the %s interview', $db_qnaire->name ) ) ;
 
-    $region_totals = array(
+    $totals = array(
       'Completed interview - Consent not received' => 0,
       'Completed interview - Consent received' => 0,
       'Completed interview - Consent retracted' => 0,
@@ -55,12 +56,12 @@ class participant_status_report extends base_report
       '10+ Unproductive Call Attempts' => 0 );
       
     // add call results (not including "contacted")
-    $phone_call_status_start_index = count( $region_totals ) - 1; // includes 10+ above
+    $phone_call_status_start_index = count( $totals ) - 1; // includes 10+ above
     foreach( db\phone_call::get_enum_values( 'status' ) as $status )
-      if( 'contacted' != $status ) $region_totals[ ucfirst( $status ) ] = 0;
-    $phone_call_status_count = count( $region_totals ) - $phone_call_status_start_index;
+      if( 'contacted' != $status ) $totals[ ucfirst( $status ) ] = 0;
+    $phone_call_status_count = count( $totals ) - $phone_call_status_start_index;
 
-    $region_totals = array_merge( $region_totals, array(
+    $totals = array_merge( $totals, array(
       'Not yet called' => 0,
       'Deceased' => 0,
       'Permanent condition (excl. deceased)' => 0,
@@ -69,27 +70,42 @@ class participant_status_report extends base_report
       'Response rate (incl. soft refusals)' => 0,
       'Response rate (excl. soft refusals)' => 0 ) );
 
-    $region_mod = new db\modifier();
-    $region_mod->order( 'abbreviation' );
-    $region_mod->where( 'country', '=', 'Canada' );
     $grand_totals = array();
-    foreach( db\region::select($region_mod) as $db_region )
-      $grand_totals[ $db_region->abbreviation ] = $region_totals; 
+    if( $restrict_by_site )
+    {
+      foreach( db\site::select() as $db_site )
+        $grand_totals[ $db_site->name ] = $totals; 
+    }
+    else
+    {
+      $region_mod = new db\modifier();
+      $region_mod->order( 'abbreviation' );
+      $region_mod->where( 'country', '=', 'Canada' );
+      foreach( db\region::select($region_mod) as $db_region )
+        $grand_totals[ $db_region->abbreviation ] = $totals; 
+    }  
 
     // the last column of the report sums totals row-wise
-    $grand_totals[ 'Grand Total' ] = $region_totals;
+    $grand_totals[ 'Grand Total' ] = $totals;
     
     foreach( db\participant::select() as $db_participant )
     {
-      $province = $db_participant->get_primary_address()->get_region()->abbreviation;
+      if( $restrict_by_site )
+      {
+        $locale = $db_participant->get_primary_site()->name;
+      }
+      else
+      {
+        $locale = $db_participant->get_primary_address()->get_region()->abbreviation;
+      }
 
       if( 'deceased' == $db_participant->status )
       {
-        $grand_totals[ $province ][ 'Deceased' ]++;
+        $grand_totals[ $locale ][ 'Deceased' ]++;
       }
       else if( !is_null( $db_participant->status ) )
       {
-        $grand_totals[ $province ][ 'Permanent condition (excl. deceased)' ]++;    
+        $grand_totals[ $locale ][ 'Permanent condition (excl. deceased)' ]++;    
       }
       else
       {
@@ -102,7 +118,7 @@ class participant_status_report extends base_report
         {
           if( 'upcoming' == $db_appointment->get_state() )
           {
-            $grand_totals[ $province ][ 'Appointment' ]++;
+            $grand_totals[ $locale ][ 'Appointment' ]++;
             $has_appointment = true;
             break;
           }
@@ -114,7 +130,7 @@ class participant_status_report extends base_report
         $interview_list = $db_participant->get_interview_list( $interview_mod );
         if( 0 == count( $interview_list ) )
         {
-          $grand_totals[ $province ][ 'Not yet called' ]++;
+          $grand_totals[ $locale ][ 'Not yet called' ]++;
         }
         else
         {
@@ -124,25 +140,25 @@ class participant_status_report extends base_report
           {
             if( is_null( $db_consent ) )
             {
-              $grand_totals[ $province ][ 'Completed interview - No consent information' ]++;
+              $grand_totals[ $locale ][ 'Completed interview - No consent information' ]++;
             }
             else if( 'written accept' == $db_consent->event )
             {
-              $grand_totals[ $province ][ 'Completed interview - Consent received' ]++;
+              $grand_totals[ $locale ][ 'Completed interview - Consent received' ]++;
             }
             else if( 'verbal deny'   == $db_consent->event ||
                      'verbal accept' == $db_consent->event ||
                      'written deny'  == $db_consent->event )
             {
-              $grand_totals[ $province ][ 'Completed interview - Consent not received' ]++;
+              $grand_totals[ $locale ][ 'Completed interview - Consent not received' ]++;
             }
             else if( 'retract' == $db_consent->event )
             {
-              $grand_totals[ $province ][ 'Completed interview - Consent retracted' ]++;
+              $grand_totals[ $locale ][ 'Completed interview - Consent retracted' ]++;
             }
             else if( 'withdraw' == $db_consent->event )
             {
-              $grand_totals[ $province ][ 'Withdrawn from study' ]++;
+              $grand_totals[ $locale ][ 'Withdrawn from study' ]++;
             }
             else
             {
@@ -154,7 +170,7 @@ class participant_status_report extends base_report
                    'retract'      == $db_consent->event ||
                    'withdraw'     == $db_consent->event )
           {
-            $grand_totals[ $province ][ 'Hard refusal' ]++;
+            $grand_totals[ $locale ][ 'Hard refusal' ]++;
           }
           else 
           {
@@ -184,45 +200,47 @@ class participant_status_report extends base_report
             
             if( 10 <= $failed_calls )
             {
-              $grand_totals[ $province ][ '10+ Unproductive Call Attempts' ]++;
+              $grand_totals[ $locale ][ '10+ Unproductive Call Attempts' ]++;
             }
             else if( !is_null( $db_recent_failed_call ) )
             {              
-              $grand_totals[ $province ][ ucfirst( $db_recent_failed_call->status ) ]++;
+              $grand_totals[ $locale ][ ucfirst( $db_recent_failed_call->status ) ]++;
             }  
           }// end interview not completed
         }// end non empty interview list
       }// end if not deceased or some condition
     }// end participants
     
-    $region_keys = array_keys( $region_totals );
+    $region_keys = array_keys( $totals );
     $header = array( 'Current Outcome' );
    
-    foreach( $grand_totals as $prov => $value )
+    foreach( $grand_totals as $locale => $value )
     {
-      $header[] = $prov;
-      if( 'Grand Total' != $prov )
+      $header[] = $locale;
+      if( 'Grand Total' != $locale )
       {
-        $grand_totals[ $prov ][ 'Grand Total Attempted' ] = 
+        $grand_totals[ $locale ][ 'Grand Total Attempted' ] = 
           array_sum( array_slice(
             $value, $phone_call_status_start_index, $phone_call_status_count ) );
 
         $tci = array_sum( array_slice( $value, 0, 4 ) );
 
-        $grand_totals[ $prov ][ 'Total completed interviews' ] = $tci;
-        $denom = $tci + $value[ 'Hard refusal' ] + $value[ 'Soft refusal' ];
+        $grand_totals[ $locale ][ 'Total completed interviews' ] = $tci;
+        $denom = $tci + $value[ 'Hard refusal' ] 
+                      + $value[ 'Soft refusal' ] 
+                      + $value[ 'Withdrawn from study' ];
 
-        $grand_totals[ $prov ][ 'Response rate (incl. soft refusals)' ] =  
+        $grand_totals[ $locale ][ 'Response rate (incl. soft refusals)' ] =  
           $denom ? $tci / $denom : 'NA';
                   
         $denom = $tci + $value[ 'Withdrawn from study' ] 
-                      + $value[ '10+ Unproductive Call Attempts' ];
+                      + $value[ 'Hard refusal' ];
 
-        $grand_totals[ $prov ][ 'Response rate (excl. soft refusals)' ] = 
+        $grand_totals[ $locale ][ 'Response rate (excl. soft refusals)' ] = 
           $denom ? $tci / $denom : 'NA';
 
         foreach( $region_keys as $column )
-          $grand_totals[ 'Grand Total' ][ $column ] += $grand_totals[ $prov ][ $column ];
+          $grand_totals[ 'Grand Total' ][ $column ] += $grand_totals[ $locale ][ $column ];
       }
     }
 
@@ -230,7 +248,7 @@ class participant_status_report extends base_report
 
     $denom =
           $gtci + 
-          $grand_totals[ 'Grand Total' ]['Hard refusal' ] + 
+          $grand_totals[ 'Grand Total' ][ 'Hard refusal' ] + 
           $grand_totals[ 'Grand Total' ][ 'Soft refusal' ];
 
     $grand_totals[ 'Grand Total' ][ 'Response rate (incl. soft refusals)' ] = 
@@ -239,7 +257,7 @@ class participant_status_report extends base_report
     $denom = 
           $gtci + 
           $grand_totals[ 'Grand Total' ][ 'Withdrawn from study' ] + 
-          $grand_totals[ 'Grand Total' ][ '10+ Unproductive Call Attempts' ];
+          $grand_totals[ 'Grand Total' ][ 'Hard refusal' ];
 
     $grand_totals[ 'Grand Total' ][ 'Response rate (excl. soft refusals)' ] = 
       $denom ? $gtci / $denom : 'NA';
