@@ -15,7 +15,6 @@
 
       // month checkbox changed
       $( "[id^='{{ widget.full }}__']:checkbox" ).change( function () {
-      //$( ":checkbox" ).change( function () {
         var month = $(this).attr( "name" );
         var checked = $(this).attr( "checked" ) ? 1 : 0;
         var args = new Object();

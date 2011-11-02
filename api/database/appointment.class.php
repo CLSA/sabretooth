@@ -229,8 +229,9 @@ class appointment extends record
     $sql = sprintf( ( $count ? 'SELECT COUNT( %s.%s ) ' : 'SELECT %s.%s ' ).
                     'FROM %s '.
                     'WHERE ( participant.site_id = %d '.
-                    '  OR address.region_id IN '.
-                    '  ( SELECT id FROM region WHERE site_id = %d ) ) %s',
+                    '  OR ( participant.site_id IS NULL '.
+                    '    AND address.region_id IN ( '.
+                    '      SELECT id FROM region WHERE site_id = %d ) ) ) %s',
                     static::get_table_name(),
                     static::get_primary_key_name(),
                     $select_tables,

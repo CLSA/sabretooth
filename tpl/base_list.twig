@@ -216,25 +216,31 @@
     
       // left-clicking a header button sorts by that column
       $header_buttons.click( function() {
+        var sort_column = $(this).parent( "th" ).attr("id");
         var args = new Object();
-        args.sort_column = $(this).parent( "th" ).attr("id");
-        args.sort_desc = "{{ sort_column }}" == args.sort_column ? {{ sort_desc ? 0 : 1 }} : 0;
-        slot_load( {{ slot }},
-                   "{{ parent.exists ? parent.subject : widget.subject }}",
-                   "{{ parent.exists ? parent.name : widget.name }}",
-                   args,
-                   "{{ widget.full }}" );
+        {% if parent.exists %}
+          args.{{ parent.full }} = { "id": {{ parent.id }} };
+          args.{{ widget.full }} = {
+            "sort_column": sort_column,
+            "sort_desc": "{{ sort_column }}" == sort_column ? {{ sort_desc ? 0 : 1 }} : 0
+          };
+          slot_load( {{ slot }}, "{{ parent.subject }}", "{{ parent.name }}", args, true );
+        {% else %}
+          args.sort_column = sort_column;
+          args.sort_desc = "{{ sort_column }}" == sort_column ? {{ sort_desc ? 0 : 1 }} : 0;
+          slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}", args );
+        {% endif %}
       } );
     
       // right-clicking a header button adds a new restriction
       $header_buttons.rightClick( function( event ) {
         var column = $(this).parent( "th" ).attr( "id" );
         var column_name = $(this).button().text();
-        $( "#{{ widget.full }}_restrict_dialog_label" ).html( column_name );
-        $( "#{{ widget.full }}_restrict_dialog_id" ).val( column );
-        $( "#{{ widget.full }}_restrict_dialog_value" ).val( "" );
-        $( "#{{ widget.full }}_restrict_dialog" ).dialog( "open" );
-        $( "#{{ widget.full }}_restrict_dialog" ).parent().keypress( function(e) {
+        $( "#{{ widget.compound }}__restrict_dialog_label" ).html( column_name );
+        $( "#{{ widget.compound }}__restrict_dialog_id" ).val( column );
+        $( "#{{ widget.compound }}__restrict_dialog_value" ).val( "" );
+        $( "#{{ widget.compound }}__restrict_dialog" ).dialog( "open" );
+        $( "#{{ widget.compound }}__restrict_dialog" ).parent().keypress( function(e) {
           if( ( e.which && e.which == 13 ) || ( e.keyCode && e.keyCode == 13 ) ) {
             $(this).find( "button" ).eq(0).click();
             return false;
@@ -253,18 +259,20 @@
             value: "{{ id }}" == column ? "" : "{{ restrict.value }}"
           };
         {% endfor %}
-
+        
         var args = new Object();
-        args.restrictions = restrictions;
-        slot_load( {{ slot }},
-                   "{{ parent.exists ? parent.subject : widget.subject }}",
-                   "{{ parent.exists ? parent.name : widget.name }}",
-                   args,
-                   "{{ widget.full }}" );
+        {% if parent.exists %}
+          args.{{ parent.full }} = { "id": {{ parent.id }} };
+          args.{{ widget.full }} = { "restrictions": restrictions };
+          slot_load( {{ slot }}, "{{ parent.subject }}", "{{ parent.name }}", args, true );
+        {% else %}
+          args.restrictions = restrictions;
+          slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}", args );
+        {% endif %}
       } );
 
       // the add-restriction dialog
-      $( "#{{ widget.full }}_restrict_dialog" ).dialog( {
+      $( "#{{ widget.compound }}__restrict_dialog" ).dialog( {
         title: "Restrict list",
         autoOpen: false,
         height: 150,
@@ -280,18 +288,20 @@
                 value: "{{ restrict.value }}"
               };
             {% endfor %}
-            restrictions[$( "#{{ widget.full }}_restrict_dialog_id" ).val()] = {
-              compare: $( "#{{ widget.full }}_restrict_dialog_compare" ).val(),
-              value: $( "#{{ widget.full }}_restrict_dialog_value" ).val()
+            restrictions[$( "#{{ widget.compound }}__restrict_dialog_id" ).val()] = {
+              compare: $( "#{{ widget.compound }}__restrict_dialog_compare" ).val(),
+              value: $( "#{{ widget.compound }}__restrict_dialog_value" ).val()
             };
     
             var args = new Object();
-            args.restrictions = restrictions;
-            slot_load( {{ slot }},
-                       "{{ parent.exists ? parent.subject : widget.subject }}",
-                       "{{ parent.exists ? parent.name : widget.name }}",
-                       args,
-                       "{{ widget.full }}" );
+            {% if parent.exists %}
+              args.{{ parent.full }} = { "id": {{ parent.id }} };
+              args.{{ widget.full }} = { "restrictions": restrictions };
+              slot_load( {{ slot }}, "{{ parent.subject }}", "{{ parent.name }}", args, true );
+            {% else %}
+              args.restrictions = restrictions;
+              slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}", args );
+            {% endif %}
     
             $(this).dialog( "close" );
           },
@@ -305,23 +315,27 @@
         // previous page button
         $( "#{{ widget.full }}_page_prev" ).click( function() {
           var args = new Object();
-          args.page = {{ page - 1 }};
-          slot_load( {{ slot }},
-                     "{{ parent.exists ? parent.subject : widget.subject }}",
-                     "{{ parent.exists ? parent.name : widget.name }}",
-                     args,
-                     "{{ widget.full }}" );
+          {% if parent.exists %}
+            args.{{ parent.full }} = { "id": {{ parent.id }} };
+            args.{{ widget.full }} = { "page": {{ page - 1 }} };
+            slot_load( {{ slot }}, "{{ parent.subject }}", "{{ parent.name }}", args, true );
+          {% else %}
+            args.page = {{ page - 1 }};
+            slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}", args );
+          {% endif %}
         } );
       
         // next page button
         $( "#{{ widget.full }}_page_next" ).click( function() {
           var args = new Object();
-          args.page = {{ page + 1 }};
-          slot_load( {{ slot }},
-                     "{{ parent.exists ? parent.subject : widget.subject }}",
-                     "{{ parent.exists ? parent.name : widget.name }}",
-                     args,
-                     "{{ widget.full }}" );
+          {% if parent.exists %}
+            args.{{ parent.full }} = { "id": {{ parent.id }} };
+            args.{{ widget.full }} = { "page": {{ page + 1 }} };
+            slot_load( {{ slot }}, "{{ parent.subject }}", "{{ parent.name }}", args, true );
+          {% else %}
+            args.page = {{ page + 1 }};
+            slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}", args );
+          {% endif %}
         } );
       
         // create a button set
@@ -334,16 +348,16 @@
 
 {% block widget %}
 
-  <div id="{{ widget.full }}_restrict_dialog">
+  <div id="{{ widget.compound }}__restrict_dialog">
     <form>
-      <input type="hidden" id="{{ widget.full }}_restrict_dialog_id" value="" />
+      <input type="hidden" id="{{ widget.compound }}__restrict_dialog_id" value="" />
       <table>
         <tr>
           <td style="white-space:nowrap;">
-            <div id="{{ widget.full }}_restrict_dialog_label">Value</div>
+            <div id="{{ widget.compound }}__restrict_dialog_label">Value</div>
           </td>
           <td>
-            <select id="{{ widget.full }}_restrict_dialog_compare">
+            <select id="{{ widget.compound }}__restrict_dialog_compare">
               <option selected>is</option>
               <option>is not</option>
               <option>like</option>
@@ -351,7 +365,7 @@
             </select>
           </td>
           <td width="95%">
-            <input type="text" id="{{ widget.full }}_restrict_dialog_value" value=""
+            <input type="text" id="{{ widget.compound }}__restrict_dialog_value" value=""
                    class="text ui-widget-content ui-corner-all" style="width:100%" />
           </td>
         </tr>

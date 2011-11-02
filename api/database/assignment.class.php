@@ -89,7 +89,9 @@ class assignment extends has_note
         $db_tokens->token = $token;
         $db_tokens->firstname = $db_participant->first_name;
         $db_tokens->lastname = $db_participant->last_name;
+        $db_tokens->update_attributes( $db_participant );
         $db_tokens->save();
+
         $this->current_sid = $db_qnaire->withdraw_sid;
         $this->current_token = $token;
       }
@@ -129,8 +131,6 @@ class assignment extends has_note
             $db_tokens->token = $token;
             $db_tokens->firstname = $db_participant->first_name;
             $db_tokens->lastname = $db_participant->last_name;
-  
-            // repeated phases require extra token information
             $db_tokens->update_attributes( $db_participant );
             $db_tokens->save();
   

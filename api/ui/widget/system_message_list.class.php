@@ -32,8 +32,8 @@ class system_message_list extends site_restricted_list
   {
     parent::__construct( 'system_message', $args );
     
-    $this->add_column( 'site.name', 'enum', 'Site', true );
-    $this->add_column( 'role.name', 'enum', 'Role', true );
+    $this->add_column( 'site.name', 'string', 'Site', true );
+    $this->add_column( 'role.name', 'string', 'Role', true );
     $this->add_column( 'title', 'string', 'Title', true );
   }
   
