@@ -18,7 +18,7 @@ use sabretooth\exception as exc;
  * 
  * @package sabretooth\ui
  */
-class phone_call_list extends base_list_widget
+class phone_call_list extends base_list
 {
   /**
    * Constructor

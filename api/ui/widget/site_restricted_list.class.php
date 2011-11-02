@@ -18,7 +18,7 @@ use sabretooth\exception as exc;
  * 
  * @package sabretooth\ui
  */
-abstract class site_restricted_list extends base_list_widget
+abstract class site_restricted_list extends base_list
 {
   /**
    * Constructor

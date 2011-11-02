@@ -18,7 +18,7 @@ use sabretooth\exception as exc;
  * 
  * @package sabretooth\ui
  */
-class user_reset_password extends base_record_push
+class user_reset_password extends base_record
 {
   /**
    * Constructor.

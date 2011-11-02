@@ -1,6 +1,6 @@
 <?php
 /**
- * base_record_pull.class.php
+ * base_record.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -19,7 +19,7 @@ use sabretooth\exception as exc;
  * @abstract
  * @package sabretooth\ui
  */
-abstract class base_record_pull
+abstract class base_record
   extends \sabretooth\ui\pull
   implements \sabretooth\ui\contains_record
 {

@@ -1,6 +1,6 @@
 <?php
 /**
- * base_list_widget.class.php
+ * base_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -24,7 +24,7 @@ use sabretooth\exception as exc;
  * @abstract
  * @package sabretooth\ui
  */
-abstract class base_list_widget extends \sabretooth\ui\widget
+abstract class base_list extends \sabretooth\ui\widget
 {
   /**
    * Constructor

@@ -19,7 +19,7 @@ use sabretooth\exception as exc;
  * @abstract
  * @package sabretooth\ui
  */
-abstract class base_view extends base_record_widget
+abstract class base_view extends base_record
 {
   /**
    * Constructor

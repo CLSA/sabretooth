@@ -18,7 +18,7 @@ use sabretooth\exception as exc;
  * 
  * @package sabretooth\ui
  */
-abstract class base_new extends base_record_push
+abstract class base_new extends base_record
 {
   /**
    * Constructor.

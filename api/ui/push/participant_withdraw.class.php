@@ -19,7 +19,7 @@ use sabretooth\exception as exc;
  * Edit a participant.
  * @package sabretooth\ui
  */
-class participant_withdraw extends base_record_push
+class participant_withdraw extends base_record
 {
   /**
    * Constructor.

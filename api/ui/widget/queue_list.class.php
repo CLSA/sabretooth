@@ -18,7 +18,7 @@ use sabretooth\exception as exc;
  * 
  * @package sabretooth\ui
  */
-class queue_list extends base_list_widget
+class queue_list extends base_list
 {
   /**
    * Constructor
