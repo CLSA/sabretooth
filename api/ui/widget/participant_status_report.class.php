@@ -33,12 +33,12 @@ class participant_status_report extends base_report
     parent::__construct( 'participant_status', $args );
 
     $this->add_restriction( 'qnaire' );
+    $this->add_restriction( 'site_or_province' );
 
     $this->set_variable( 'description',
-      'This report provides totals of various status types.  Currently, only an overall '.
-      'report can be generated.  In the near future reports for a single day or date range can be '.
-      'generated.  Populations are broken down by province and various call, participant and '.
-      'consent statuses.' );
+      'This report provides totals of various status types.  In future, reports for a single '.
+      'day or date range may be generated.  Populations are broken down by province or by site '.
+      'and various call, participant and consent statuses.' );
   }
 
   /**
