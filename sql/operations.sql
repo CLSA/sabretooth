@@ -476,6 +476,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "user", "reset_password", true, "Resets a user's password." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "user", "primary", true, "Retrieves base user information." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "user", "list", true, "Retrieves information on lists of users." );
 
 -- voip
 INSERT INTO operation( type, subject, name, restricted, description )

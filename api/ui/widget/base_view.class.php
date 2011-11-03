@@ -73,6 +73,10 @@ abstract class base_view extends base_record
     $this->set_variable( 'editable', $this->editable );
     $this->set_variable( 'removable', $this->removable );
     $this->set_variable( 'addable', $this->addable );
+
+    // keep track of now many of these widgets have been finished
+    self::$base_view_count++;
+    $this->set_variable( 'base_view_count', self::$base_view_count );
   }
   
   /**
@@ -281,5 +285,12 @@ abstract class base_view extends base_record
    * @access private
    */
   private $items = array();
+  
+  /**
+   * Keeps track of how many base_view widgets have been finished
+   * @var integer
+   * @access private
+   */
+  private static $base_view_count = 0;
 }
 ?>

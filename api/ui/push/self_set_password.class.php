@@ -67,12 +67,5 @@ class self_set_password extends \sabretooth\ui\push
     // now flush the voip account
     bus\voip_manager::self()->sip_prune( $db_user->name );
   }
-  
-  /**
-   * The name of the password to set.
-   * @var string
-   * @access protected
-   */
-  protected $password_name = NULL;
 }
 ?>

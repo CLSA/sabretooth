@@ -45,6 +45,20 @@
 {% endmacro %}
 
 {##
+ # Includes a view widget, if view is set.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @param string subject The view's subject.
+ # @param array view The view's arguments.
+ # @param boolean spacer Whether to include spacing before including the view.
+ #}
+{% macro include_view( subject, view, spacer ) %}
+  {% if view|default(false) %}
+    {% if spacer|default(false) %}<div class="spacer" />{% endif %}
+    {% include [ subject, "view.twig" ]|join("_") with view %}
+  {% endif %}
+{% endmacro %}
+
+{##
  # Includes a list widget, if list is set.
  # @author Patrick Emond <emondpd@mcmaster.ca>
  # @param string subject The list's subject.
