@@ -11,6 +11,7 @@
  */
 namespace sabretooth;
 ob_start();
+set_time_limit( 0 );
  
 // the array to return, encoded as JSON
 $result_array = array( 'success' => true );
