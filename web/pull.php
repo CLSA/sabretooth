@@ -73,7 +73,10 @@ if( true == $result_array['success'] )
   if( 'json' == $data_type )
   {
     $result_array['data'] = $data;
-    print json_encode( $result_array );
+    $output = json_encode( $result_array );
+    header( 'Content-Type: application/json' );
+    header( 'Content-Length: '.strlen( $output ) );
+    print $output;
   }
   else
   {
