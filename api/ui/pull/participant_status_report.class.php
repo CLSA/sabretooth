@@ -47,8 +47,8 @@ class participant_status_report extends base_report
     $totals = array(
       'Completed interview - Consent not received' => 0,
       'Completed interview - Consent received' => 0,
-      'Completed interview - Consent retracted' => 0,
       'Completed interview - No consent information' => 0,
+      'Retracted from study' => 0,
       'Withdrawn from study' => 0,
       'Hard refusal' => 0,
       'Soft refusal' => 0,
@@ -144,14 +144,24 @@ class participant_status_report extends base_report
         $interview_mod = new db\modifier();
         $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id ); 
         $interview_list = $db_participant->get_interview_list( $interview_mod );
-        if( 0 == count( $interview_list ) )
+
+        // first deal with withdrawn and retracted participants
+        $db_consent = $db_participant->get_last_consent();
+        if( !is_null( $db_consent ) && 'retract' == $db_consent->event )
+        {
+          $grand_totals[ $locale ][ 'Retracted from study' ]++;
+        }
+        else if( !is_null( $db_consent ) && 'withdraw' == $db_consent->event )
+        {
+          $grand_totals[ $locale ][ 'Withdrawn from study' ]++;
+        }
+        else if( 0 == count( $interview_list ) )
         {
           $grand_totals[ $locale ][ 'Not yet called' ]++;
         }
         else
         {
           $db_interview = current( $interview_list );
-          $db_consent = $db_participant->get_last_consent();
           if( $db_interview->completed )
           {
             if( is_null( $db_consent ) )
@@ -168,23 +178,10 @@ class participant_status_report extends base_report
             {
               $grand_totals[ $locale ][ 'Completed interview - Consent not received' ]++;
             }
-            else if( 'retract' == $db_consent->event )
-            {
-              $grand_totals[ $locale ][ 'Completed interview - Consent retracted' ]++;
-            }
-            else if( 'withdraw' == $db_consent->event )
-            {
-              $grand_totals[ $locale ][ 'Withdrawn from study' ]++;
-            }
-            else
-            {
-              log::err( sprintf( 'Unknown consent type "%s" found.', $db_consent->event ) );
-            }
           }
-          else if( 'verbal deny'  == $db_consent->event ||
-                   'written deny' == $db_consent->event ||
-                   'retract'      == $db_consent->event ||
-                   'withdraw'     == $db_consent->event )
+          else if( !is_null( $db_consent ) &&
+                   ( 'verbal deny'  == $db_consent->event ||
+                     'written deny' == $db_consent->event ) )
           {
             $grand_totals[ $locale ][ 'Hard refusal' ]++;
           }
