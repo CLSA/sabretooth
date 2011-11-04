@@ -219,7 +219,9 @@
         var sort_column = $(this).parent( "th" ).attr("id");
         var args = new Object();
         {% if parent.exists %}
-          args.{{ parent.full }} = { "id": {{ parent.id }} };
+          {% if parent.id|default(false) %}
+            args.{{ parent.full }} = { "id": {{ parent.id }} };
+          {% endif %}
           args.{{ widget.full }} = {
             "sort_column": sort_column,
             "sort_desc": "{{ sort_column }}" == sort_column ? {{ sort_desc ? 0 : 1 }} : 0
@@ -262,7 +264,9 @@
         
         var args = new Object();
         {% if parent.exists %}
-          args.{{ parent.full }} = { "id": {{ parent.id }} };
+          {% if parent.id|default(false) %}
+            args.{{ parent.full }} = { "id": {{ parent.id }} };
+          {% endif %}
           args.{{ widget.full }} = { "restrictions": restrictions };
           slot_load( {{ slot }}, "{{ parent.subject }}", "{{ parent.name }}", args, true );
         {% else %}
@@ -295,7 +299,9 @@
     
             var args = new Object();
             {% if parent.exists %}
-              args.{{ parent.full }} = { "id": {{ parent.id }} };
+              {% if parent.id|default(false) %}
+                args.{{ parent.full }} = { "id": {{ parent.id }} };
+              {% endif %}
               args.{{ widget.full }} = { "restrictions": restrictions };
               slot_load( {{ slot }}, "{{ parent.subject }}", "{{ parent.name }}", args, true );
             {% else %}
@@ -316,7 +322,9 @@
         $( "#{{ widget.full }}_page_prev" ).click( function() {
           var args = new Object();
           {% if parent.exists %}
-            args.{{ parent.full }} = { "id": {{ parent.id }} };
+            {% if parent.id|default(false) %}
+              args.{{ parent.full }} = { "id": {{ parent.id }} };
+            {% endif %}
             args.{{ widget.full }} = { "page": {{ page - 1 }} };
             slot_load( {{ slot }}, "{{ parent.subject }}", "{{ parent.name }}", args, true );
           {% else %}
@@ -329,7 +337,9 @@
         $( "#{{ widget.full }}_page_next" ).click( function() {
           var args = new Object();
           {% if parent.exists %}
-            args.{{ parent.full }} = { "id": {{ parent.id }} };
+            {% if parent.id|default(false) %}
+              args.{{ parent.full }} = { "id": {{ parent.id }} };
+            {% endif %}
             args.{{ widget.full }} = { "page": {{ page + 1 }} };
             slot_load( {{ slot }}, "{{ parent.subject }}", "{{ parent.name }}", args, true );
           {% else %}
