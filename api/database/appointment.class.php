@@ -79,14 +79,17 @@ class appointment extends record
                          bus\setting_manager::self()->get_setting( 'appointment', 'duration' ) );
 
     $start_datetime_obj = util::get_datetime_object( $this->datetime );
+    $next_day_datetime_obj = clone $start_datetime_obj;
+    $next_day_datetime_obj->add( new\DateInterval( 'P1D' ) );
     $end_datetime_obj = clone $start_datetime_obj;
     $end_datetime_obj->add( new \DateInterval( $interval ) );
 
     // determine whether to test for shifts or shift templates on the appointment day
     $modifier = new modifier();
     $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'DATE( start_datetime )', '=', $start_datetime_obj->format( 'Y-m-d' ) );
-    
+    $modifier->where( 'start_datetime', '>=', $start_datetime_obj->format( 'Y-m-d' ) );
+    $modifier->where( 'start_datetime', '<', $next_day_datetime_obj->format( 'Y-m-d' ) );
+
     $diffs = array();
 
     if( 0 == shift::count( $modifier ) )
@@ -138,7 +141,8 @@ class appointment extends record
     
     // and how many appointments are during this time?
     $modifier = new modifier();
-    $modifier->where( 'DATE( datetime )', '=', $start_datetime_obj->format( 'Y-m-d' ) );
+    $modifier->where( 'datetime', '>=', $start_datetime_obj->format( 'Y-m-d' ) );
+    $modifier->where( 'datetime', '<', $next_day_datetime_obj->format( 'Y-m-d' ) );
     if( !is_null( $this->id ) ) $modifier->where( 'appointment.id', '!=', $this->id );
     foreach( appointment::select_for_site( $db_site, $modifier ) as $db_appointment )
     {
