@@ -38,8 +38,6 @@ class shift_template_view extends base_view
     $this->add_item( 'operators', 'number', 'Operators' );
     $this->add_item( 'start_date', 'date', 'Start Date' );
     $this->add_item( 'end_date', 'date', 'End Date' );
-
-//    $this->set_heading( 'Creating a new shift template' );
   }
 
   /**

@@ -10,7 +10,7 @@
 
         eventClick: function( event, jsEvent, view ) {
           // edit the appointment
-          slot_load( "{{ widget.full }}", "appointment", "view", { id: event.id } );
+          slot_load( "{{ widget.full }}", "appointment", "view", { id: event.id, hide_calendar: true } );
           $( "#{{ widget.full }}_slot" ).dialog( "open" );
         },
         events: function( start, end, callback ) {

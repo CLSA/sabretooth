@@ -43,7 +43,6 @@ abstract class base_list_widget extends \sabretooth\ui\widget
     $this->page = $this->get_argument( 'page', $this->page );
     $this->sort_column = $this->get_argument( 'sort_column', $this->sort_column );
     $this->sort_desc = 0 != $this->get_argument( 'sort_desc', $this->sort_desc );
-    $this->set_heading( ucfirst( $subject ).' list' );
     $this->restrictions = $this->get_argument( 'restrictions', $this->restrictions );
     
     // determine properties based on the current user's permissions
@@ -148,7 +147,7 @@ abstract class base_list_widget extends \sabretooth\ui\widget
     // determine the record count and list
     $method_name = 'determine_'.$this->get_subject().'_count';
     $this->record_count = $this->parent && method_exists( $this->parent, $method_name )
-                        ? $this->parent->$method_name()
+                        ? $this->parent->$method_name( $modifier )
                         : $this->determine_record_count( $modifier );
 
     // make sure the page is valid, then set the rows array based on the page
@@ -350,6 +349,8 @@ abstract class base_list_widget extends \sabretooth\ui\widget
    * Add a column to the list.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_id The column's id, either in column or table.column format
+   * @param string $type One of 'string', 'text', 'number', 'boolean', 'time', 'date', 'datetime'
+   *               or 'fuzzy'
    * @param string $heading The column's heading as it will appear in the list
    * @param boolean $sortable Whether or not the column is sortable.
    * @param string $align Which way to align the column (left, right or center)
@@ -362,8 +363,7 @@ abstract class base_list_widget extends \sabretooth\ui\widget
     
     // specify column timezone for datetime columns
     if( 'datetime' == $type ) $heading .=
-      sprintf( ' (%s)', util::get_timezone_abbreviation(
-                         bus\session::self()->get_site()->timezone ) );
+      sprintf( ' (%s)', util::get_datetime_object()->format( 'T' ) );
 
     $column = array( 'id' => $column_id, 'type' => $type, 'heading' => $heading );
     if( $sortable ) $column['sortable'] = $sortable;

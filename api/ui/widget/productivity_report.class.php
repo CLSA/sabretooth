@@ -32,18 +32,16 @@ class productivity_report extends base_report
   {
     parent::__construct( 'productivity', $args );
 
-    $this->restrict_by_site();
+    $this->add_restriction( 'site' );
+    $this->add_restriction( 'qnaire' );
+    $this->add_restriction( 'dates' );
+    $this->add_parameter( 'round_times', 'boolean', 'Round Times' );
     
     $this->set_variable( 'description',
       'This report lists operator productivity.  The report can either be generated for a '.
       'particilar day (which will include start and end times), or overall.  The report '.
       'includes the number of completed interviews, total working time calls per hour and '.
       'average interview length.' );
-
-    // add paramters to the report
-    $this->add_parameter( 'date', 'date', 'Date', 'Leave blank for an overall report.' );
-
-    $this->add_parameter( 'qnaire_id', 'enum', 'Questionnaire' );
   }
 
   /**
@@ -53,13 +51,7 @@ class productivity_report extends base_report
   public function finish()
   {
     parent::finish();
-
-    $this->set_parameter( 'date', '', false );
-    
-    $qnaires = array();
-    foreach( db\qnaire::select() as $db_qnaire ) $qnaires[$db_qnaire->id] = $db_qnaire->name;
-    $this->set_parameter( 'qnaire_id', current( $qnaires ), true, $qnaires );
-  
+    $this->set_parameter( 'round_times', true, true );
     $this->finish_setting_parameters();
   }
 }

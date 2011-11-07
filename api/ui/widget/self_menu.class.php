@@ -31,6 +31,7 @@ class self_menu extends \sabretooth\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'self', 'menu', $args );
+    $this->show_heading( false );
   }
 
   /**
@@ -73,6 +74,7 @@ class self_menu extends \sabretooth\ui\widget
       'appointment',
       'availability',
       'consent',
+      'interview',
       'operation',
       'phase',
       'phone',

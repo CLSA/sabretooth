@@ -31,6 +31,7 @@ class shift_add extends base_view
   public function __construct( $args )
   {
     parent::__construct( 'shift', 'add', $args );
+    $this->show_heading( false );
     
     // check for initial values
     $this->date = $this->get_argument( 'date', NULL );

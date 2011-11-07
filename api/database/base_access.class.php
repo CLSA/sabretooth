@@ -184,12 +184,13 @@ abstract class base_access extends record
     // parse the function call name
     $name_parts = explode( '_', $name );
     $related_name = $name_parts[1];
-    $action = $name_parts[2];
+    $action = 3 <= count( $name_parts ) ? $name_parts[2] : NULL;
     
     // make sure the method name is one which we want to process
     if( 3 != count( $name_parts ) ||
         'get' != $name_parts[0] ||
         ( 'user' != $related_name && 'role' != $related_name && 'site' != $related_name ) ||
+        is_null( $action ) ||
         ( 'count' != $action && 'list' != $action ) ||
         $subject_name == $related_name )
     {

@@ -43,8 +43,9 @@ class queue extends record
    * methods.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
+   * @static
    */
-  protected function generate_query_list()
+  protected static function generate_query_list()
   {
     // define the SQL for each queue
     $queue_list = array(
@@ -72,6 +73,8 @@ class queue extends record
       'missed appointment',
       'no appointment',
       'new participant',
+      'new participant outside calling time',
+      'new participant within calling time',
       'new participant always available',
       'new participant available',
       'new participant not available',
@@ -79,7 +82,7 @@ class queue extends record
      
     foreach( $queue_list as $queue )
     {
-      $parts = $this->get_query_parts( $queue );
+      $parts = self::get_query_parts( $queue );
       
       $from_sql = '';
       $first = true;
@@ -113,13 +116,15 @@ class queue extends record
           'phone call status',
           'phone call status waiting',
           'phone call status ready',
+          'phone call status outside calling time',
+          'phone call status within calling time',
           'phone call status always available',
           'phone call status not available',
           'phone call status available' );
 
         foreach( $queue_list as $queue )
         {
-          $parts = $this->get_query_parts( $queue, $phone_call_status );
+          $parts = self::get_query_parts( $queue, $phone_call_status );
           
           $from_sql = '';
           $first = true;
@@ -216,22 +221,6 @@ class queue extends record
   }
   
   /**
-   * The date (YYYY-MM-DD) with respect to check the queue's state.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $date
-   * @access public
-   */
-  public function set_viewing_date( $date = NULL )
-  {
-    // validate the input
-    $datetime_obj = util::get_datetime_object( $date );
-    if( $date != $datetime_obj->format( 'Y-m-d' ) )
-      log::err( 'The selected viewing date ('.$date.') may not be valid.' );
-    
-    $this->viewing_date = $datetime_obj->format( 'Y-m-d' );
-  }
-  
-  /**
    * Get whether this queue is related to an appointment
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
@@ -251,11 +240,12 @@ class queue extends record
    * @return associative array
    * @throws exception\argument
    * @access protected
+   * @static
    */
-  protected function get_query_parts( $queue, $phone_call_status = NULL )
+  protected static function get_query_parts( $queue, $phone_call_status = NULL )
   {
     // determine what date/time to view the queues
-    if( is_null( $this->viewing_date ) )
+    if( is_null( self::$viewing_date ) )
     {
       $viewing_date = 'UTC_TIMESTAMP()';
       $check_time = true;
@@ -263,7 +253,7 @@ class queue extends record
     else
     {
       // put double quotes around the date since it is being inserted into sql below
-      $viewing_date = sprintf( '"%s"', $this->viewing_date );
+      $viewing_date = sprintf( '"%s"', self::$viewing_date );
       $check_time = false;
     }
 
@@ -332,32 +322,54 @@ class queue extends record
       '      ELSE 0 END ',
       $viewing_date );
 
-      if( $check_time )
-      {
-        $check_availability_sql .= sprintf(
-          '* IF( IF( TIME( %s ) < availability.start_time, '.
-          '        24*60*60 + TIME_TO_SEC( TIME( %s ) ), '.
-          '        TIME_TO_SEC( TIME( %s ) ) ) >= '.
-          '    TIME_TO_SEC( availability.start_time ), 1, 0 ) '.
-          '* IF( IF( TIME( %s ) < availability.start_time, '.
-          '        24*60*60 + TIME_TO_SEC( TIME( %s ) ), '.
-          '        TIME_TO_SEC( TIME( %s ) ) ) < '.
-          '    IF( availability.end_time < availability.start_time, '.
-          '        24*60*60 + TIME_TO_SEC( availability.end_time ), '.
-          '        TIME_TO_SEC( availability.end_time ) ), 1, 0 ) ',
-          $viewing_date,
-          $viewing_date,
-          $viewing_date,
-          $viewing_date,
-          $viewing_date,
-          $viewing_date );
-      }
-      
-      // finish the check availability sql
-      $check_availability_sql .=
-        ') '.
-        'FROM availability '.
-        'WHERE availability.participant_id = participant.id )';
+    if( $check_time )
+    {
+      $check_availability_sql .= sprintf(
+        '* IF( IF( TIME( %s ) < availability.start_time, '.
+        '        24*60*60 + TIME_TO_SEC( TIME( %s ) ), '.
+        '        TIME_TO_SEC( TIME( %s ) ) ) >= '.
+        '    TIME_TO_SEC( availability.start_time ), 1, 0 ) '.
+        '* IF( IF( TIME( %s ) < availability.start_time, '.
+        '        24*60*60 + TIME_TO_SEC( TIME( %s ) ), '.
+        '        TIME_TO_SEC( TIME( %s ) ) ) < '.
+        '    IF( availability.end_time < availability.start_time, '.
+        '        24*60*60 + TIME_TO_SEC( availability.end_time ), '.
+        '        TIME_TO_SEC( availability.end_time ) ), 1, 0 ) ',
+        $viewing_date,
+        $viewing_date,
+        $viewing_date,
+        $viewing_date,
+        $viewing_date,
+        $viewing_date );
+    }
+    
+    // finish the check availability sql
+    $check_availability_sql .=
+      ') '.
+      'FROM availability '.
+      'WHERE availability.participant_id = participant.id )';
+
+    // checks to make sure a participant is within calling time hours
+    if( $check_time )
+    {
+      $localtime = localtime( time(), true );
+      $offset = $localtime['tm_isdst']
+              ? 'timezone_offset + daylight_savings'
+              : 'timezone_offset';
+      $calling_time_sql = sprintf(
+        '('.
+        '  timezone_offset IS NULL OR'.
+        '  daylight_savings IS NULL OR'.
+        '  ('.
+        '    TIME( %s + INTERVAL %s HOUR ) >= "<CALLING_START_TIME>" AND'.
+        '    TIME( %s + INTERVAL %s HOUR ) < "<CALLING_END_TIME>"'.
+        '  )'.
+        ')',
+        $viewing_date,
+        $offset,
+        $viewing_date,
+        $offset );
+    }
 
     // now determine the sql parts for the given queue
     if( 'all' == $queue )
@@ -370,14 +382,14 @@ class queue extends record
     }
     else if( 'finished' == $queue )
     {
-      $parts = $this->get_query_parts( 'all' );
+      $parts = self::get_query_parts( 'all' );
       // no current_qnaire_id means no qnaires left to complete
       $parts['where'][] = 'current_qnaire_id IS NULL';
       return $parts;
     }
     else if( 'ineligible' == $queue )
     {
-      $parts = $this->get_query_parts( 'all' );
+      $parts = self::get_query_parts( 'all' );
       // current_qnaire_id is the either the next qnaire to work on or the one in progress
       $parts['where'][] = 'current_qnaire_id IS NOT NULL';
       // ineligible means either inactive or with a "final" status
@@ -392,13 +404,13 @@ class queue extends record
     }
     else if( 'inactive' == $queue )
     {
-      $parts = $this->get_query_parts( 'all' );
+      $parts = self::get_query_parts( 'all' );
       $parts['where'][] = 'participant.active = false';
       return $parts;
     }
     else if( 'refused consent' == $queue )
     {
-      $parts = $this->get_query_parts( 'all' );
+      $parts = self::get_query_parts( 'all' );
       $parts['where'][] = 'participant.active = true';
       $parts['where'][] =
         'last_consent IN( "verbal deny", "written deny", "retract", "withdraw" )';
@@ -406,7 +418,7 @@ class queue extends record
     }
     else if( 'sourcing required' == $queue )
     {
-      $parts = $this->get_query_parts( 'all' );
+      $parts = self::get_query_parts( 'all' );
       $parts['where'][] = 'participant.active = true';
       $parts['where'][] =
         '('.
@@ -419,14 +431,14 @@ class queue extends record
     }
     else if( in_array( $queue, $participant_status_list ) )
     {
-      $parts = $this->get_query_parts( 'all' );
+      $parts = self::get_query_parts( 'all' );
       $parts['where'] = array_merge( $parts['where'], $status_where_list );
       $parts['where'][] = 'participant.status = "'.$queue.'"'; // queue name is same as status name
       return $parts;
     }
     else if( 'eligible' == $queue )
     {
-      $parts = $this->get_query_parts( 'all' );
+      $parts = self::get_query_parts( 'all' );
       // current_qnaire_id is the either the next qnaire to work on or the one in progress
       $parts['where'][] = 'current_qnaire_id IS NOT NULL';
       // active participant who does not have a "final" status and has at least one phone number
@@ -442,13 +454,13 @@ class queue extends record
     }
     else if( 'qnaire' == $queue )
     {
-      $parts = $this->get_query_parts( 'eligible' );
+      $parts = self::get_query_parts( 'eligible' );
       $parts['where'][] = 'participant.current_qnaire_id <QNAIRE_TEST>';
       return $parts;
     }
     else if( 'restricted' == $queue )
     {
-      $parts = $this->get_query_parts( 'qnaire' );
+      $parts = self::get_query_parts( 'qnaire' );
       // make sure to only include participants who are restricted
       $parts['join'][] = $restriction_join;
       $parts['where'][] = 'NOT '.$check_restriction_sql;
@@ -456,10 +468,10 @@ class queue extends record
     }
     else if( 'qnaire waiting' == $queue )
     {
-      $parts = $this->get_query_parts( 'qnaire' );
+      $parts = self::get_query_parts( 'qnaire' );
       // make sure to only include participants who are not restricted
       $parts['join'][] = $restriction_join;
-      $parts['where'][] = ''.$check_restriction_sql;
+      $parts['where'][] = $check_restriction_sql;
       // the current qnaire cannot start before start_qnaire_date
       $parts['where'][] = 'participant.start_qnaire_date IS NOT NULL';
       $parts['where'][] = sprintf( 'DATE( participant.start_qnaire_date ) > DATE( %s )',
@@ -468,20 +480,20 @@ class queue extends record
     }
     else if( 'assigned' == $queue )
     {
-      $parts = $this->get_query_parts( 'qnaire' );
+      $parts = self::get_query_parts( 'qnaire' );
       // make sure to only include participants who are not restricted
       $parts['join'][] = $restriction_join;
-      $parts['where'][] = ''.$check_restriction_sql;
+      $parts['where'][] = $check_restriction_sql;
       // assigned participants
       $parts['where'][] = 'participant.assigned = true';
       return $parts;
     }
     else if( 'not assigned' == $queue )
     {
-      $parts = $this->get_query_parts( 'qnaire' );
+      $parts = self::get_query_parts( 'qnaire' );
       // make sure to only include participants who are not restricted
       $parts['join'][] = $restriction_join;
-      $parts['where'][] = ''.$check_restriction_sql;
+      $parts['where'][] = $check_restriction_sql;
       // the qnaire is ready to start if the start_qnaire_date is null or we have reached that date
       $parts['where'][] = sprintf(
         '('.
@@ -494,7 +506,7 @@ class queue extends record
     }
     else if( 'appointment' == $queue )
     {
-      $parts = $this->get_query_parts( 'not assigned' );
+      $parts = self::get_query_parts( 'not assigned' );
       // link to appointment table and make sure the appointment hasn't been assigned
       // (by design, there can only ever one unassigned appointment per participant)
       $parts['from'][] = 'appointment';
@@ -504,7 +516,7 @@ class queue extends record
     }
     else if( 'upcoming appointment' == $queue )
     {
-      $parts = $this->get_query_parts( 'appointment' );
+      $parts = self::get_query_parts( 'appointment' );
       // appointment time (in UTC) is in the future
       $parts['where'][] = sprintf(
         $check_time ? '%s < appointment.datetime - INTERVAL <APPOINTMENT_PRE_WINDOW> MINUTE'
@@ -514,7 +526,7 @@ class queue extends record
     }
     else if( 'assignable appointment' == $queue )
     {
-      $parts = $this->get_query_parts( 'appointment' );
+      $parts = self::get_query_parts( 'appointment' );
       // appointment time (in UTC) is in the calling window
       $parts['where'][] = sprintf(
         $check_time ? '%s >= appointment.datetime - INTERVAL <APPOINTMENT_PRE_WINDOW> MINUTE AND '.
@@ -526,7 +538,7 @@ class queue extends record
     }
     else if( 'missed appointment' == $queue )
     {
-      $parts = $this->get_query_parts( 'appointment' );
+      $parts = self::get_query_parts( 'appointment' );
       // appointment time (in UTC) is in the past
       $parts['where'][] = sprintf(
         $check_time ? '%s > appointment.datetime + INTERVAL <APPOINTMENT_POST_WINDOW> MINUTE'
@@ -536,7 +548,7 @@ class queue extends record
     }
     else if( 'no appointment' == $queue )
     {
-      $parts = $this->get_query_parts( 'not assigned' );
+      $parts = self::get_query_parts( 'not assigned' );
       // make sure there is no unassigned appointment.  By design there can only be one of per
       // participant, so if the appointment is null then the participant has no pending
       // appointments.
@@ -549,7 +561,7 @@ class queue extends record
     }
     else if( 'new participant' == $queue )
     {
-      $parts = $this->get_query_parts( 'no appointment' );
+      $parts = self::get_query_parts( 'no appointment' );
       // If there is a start_qnaire_date then the current qnaire has never been started,
       // the exception is for participants who have never been assigned
       $parts['where'][] =
@@ -559,30 +571,70 @@ class queue extends record
         ')';
       return $parts;
     }
+    else if( 'new participant outside calling time' == $queue )
+    {
+      $parts = self::get_query_parts( 'new participant' );
+
+      if( self::use_calling_times() && $check_time )
+      {
+        // Need to join to the address_info database in order to determine the
+        // participant's local time
+        $parts['join'][] =
+          'LEFT JOIN address_info.postcode '.
+          'ON postcode.postcode = participant.postcode';
+        $parts['where'][] = 'NOT '.$calling_time_sql;
+      }
+      else
+      {
+        $parts['where'][] = 'NOT true'; // purposefully a negative tautology
+      }
+        
+      return $parts;
+    }
+    else if( 'new participant within calling time' == $queue )
+    {
+      $parts = self::get_query_parts( 'new participant' );
+
+      if( self::use_calling_times() && $check_time )
+      {
+        // Need to join to the address_info database in order to determine the
+        // participant's local time
+        $parts['join'][] =
+          'LEFT JOIN address_info.postcode '.
+          'ON postcode.postcode = participant.postcode';
+        $parts['where'][] = $calling_time_sql;
+      }
+      else
+      {
+        $parts['where'][] = 'true'; // purposefully a negative tautology
+      }
+        
+      return $parts;
+    }
     else if( 'new participant always available' == $queue )
     {
-      $parts = $this->get_query_parts( 'new participant' );
+      $parts = self::get_query_parts( 'new participant within calling time' );
       // make sure the participant doesn't specify availability
       $parts['where'][] = $check_availability_sql.' IS NULL';
       return $parts;
     }
     else if( 'new participant available' == $queue )
     {
-      $parts = $this->get_query_parts( 'new participant' );
+      $parts = self::get_query_parts( 'new participant within calling time' );
       // make sure the participant has availability and is currently available
       $parts['where'][] = $check_availability_sql.' = true';
       return $parts;
     }
     else if( 'new participant not available' == $queue )
     {
-      $parts = $this->get_query_parts( 'new participant' );
+      $parts = self::get_query_parts( 'new participant within calling time' );
       // make sure the participant has availability and is currently not available
       $parts['where'][] = $check_availability_sql.' = false';
       return $parts;
     }
     else if( 'old participant' == $queue )
     {
-      $parts = $this->get_query_parts( 'no appointment' );
+      $parts = self::get_query_parts( 'no appointment' );
       // add the last phone call's information
       $parts['from'][] = 'phone_call';
       $parts['from'][] = 'assignment_last_phone_call';
@@ -602,14 +654,15 @@ class queue extends record
 
       if( 'phone call status' == $queue )
       {
-        $parts = $this->get_query_parts( 'old participant' );
+        $parts = self::get_query_parts( 'old participant' );
         $parts['where'][] =
           sprintf( 'phone_call.status = "%s"', $phone_call_status );
         return $parts;
       }
       else if( 'phone call status waiting' == $queue )
       {
-        $parts = $this->get_query_parts( 'phone call status', $phone_call_status );
+        $parts = self::get_query_parts(
+          'phone call status', $phone_call_status );
         $parts['where'][] = sprintf(
           $check_time ? '%s < phone_call.end_datetime + INTERVAL <CALLBACK_%s> MINUTE' :
                         'DATE( %s ) < '.
@@ -620,7 +673,8 @@ class queue extends record
       }
       else if( 'phone call status ready' == $queue )
       {
-        $parts = $this->get_query_parts( 'phone call status', $phone_call_status );
+        $parts = self::get_query_parts(
+          'phone call status', $phone_call_status );
         $parts['where'][] = sprintf(
           $check_time ? '%s >= phone_call.end_datetime + INTERVAL <CALLBACK_%s> MINUTE' :
                         'DATE( %s ) >= '.
@@ -629,23 +683,66 @@ class queue extends record
           str_replace( ' ', '_', strtoupper( $phone_call_status ) ) );
         return $parts;
       }
+      else if( 'phone call status outside calling time' == $queue )
+      {
+        $parts = self::get_query_parts( 'phone call status ready', $phone_call_status );
+
+        if( self::use_calling_times() && $check_time )
+        {
+          // Need to join to the address_info database in order to determine the
+          // participant's local time
+          $parts['join'][] =
+            'LEFT JOIN address_info.postcode '.
+            'ON postcode.postcode = participant.postcode';
+          $parts['where'][] = 'NOT '.$calling_time_sql;
+        }
+        else
+        {
+          $parts['where'][] = 'NOT true'; // purposefully a negative tautology
+        }
+          
+        return $parts;
+      }
+      else if( 'phone call status within calling time' == $queue )
+      {
+        $parts = self::get_query_parts( 'phone call status ready', $phone_call_status );
+
+        if( self::use_calling_times() && $check_time )
+        {
+          // Need to join to the address_info database in order to determine the
+          // participant's local time
+          $parts['join'][] =
+            'LEFT JOIN address_info.postcode '.
+            'ON postcode.postcode = participant.postcode';
+          $parts['where'][] = $calling_time_sql;
+        }
+        else
+        {
+          $parts['where'][] = 'true'; // purposefully a tautology
+        }
+          
+        return $parts;
+      }
       else if( 'phone call status always available' == $queue )
       {
-        $parts = $this->get_query_parts( 'phone call status ready', $phone_call_status );
+        $parts = self::get_query_parts(
+          'phone call status within calling time', $phone_call_status );
         // make sure the participant doesn't specify availability
         $parts['where'][] = $check_availability_sql.' IS NULL';
         return $parts;
       }
       else if( 'phone call status not available' == $queue )
       {
-        $parts = $this->get_query_parts( 'phone call status ready', $phone_call_status );
+        $parts = self::get_query_parts(
+          'phone call status within calling time', $phone_call_status );
         // make sure the participant has availability and is currently not available
         $parts['where'][] = $check_availability_sql.' = false';
         return $parts;
       }
       else if( 'phone call status available' == $queue )
       {
-        $parts = $this->get_query_parts( 'phone call status ready', $phone_call_status );
+        $parts = self::get_query_parts(
+          'phone call status within calling time', $phone_call_status );
         // make sure the participant has availability and is currently available
         $parts['where'][] = $check_availability_sql.' = true';
         return $parts;
@@ -668,7 +765,7 @@ class queue extends record
   protected function get_sql( $select_participant_sql )
   {
     // start by making sure the query list has been generated
-    if( 0 == count( self::$query_list ) ) $this->generate_query_list();
+    if( 0 == count( self::$query_list ) ) self::generate_query_list();
 
     $sql = self::$query_list[ $this->name ];
     $sql = preg_replace( '/\<SELECT_PARTICIPANT\>/', $select_participant_sql, $sql, 1 );
@@ -682,6 +779,10 @@ class queue extends record
     $sql = str_replace( '<APPOINTMENT_PRE_WINDOW>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'appointment', 'call post-window' );
     $sql = str_replace( '<APPOINTMENT_POST_WINDOW>', $setting, $sql );
+    $setting = $setting_manager->get_setting( 'calling', 'start time' );
+    $sql = str_replace( '<CALLING_START_TIME>', $setting, $sql );
+    $setting = $setting_manager->get_setting( 'calling', 'end time' );
+    $sql = str_replace( '<CALLING_END_TIME>', $setting, $sql );
 
     // fill in all callback timing settings
     $setting_mod = new modifier();
@@ -697,6 +798,47 @@ class queue extends record
   }
   
   /**
+   * The date (YYYY-MM-DD) with respect to check all queue states.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $date
+   * @access public
+   * @static
+   */
+  public static function set_viewing_date( $date = NULL )
+  {
+    // validate the input
+    $datetime_obj = util::get_datetime_object( $date );
+    if( $date != $datetime_obj->format( 'Y-m-d' ) )
+      log::err( 'The selected viewing date ('.$date.') may not be valid.' );
+    
+    self::$viewing_date = $datetime_obj->format( 'Y-m-d' );
+  }
+  
+  /**
+   * Determines whether calling times are enabled.
+   * 
+   * In order to restrict calling times based on participant's local time zones an
+   * address_info database which lists timezones for postal and zip codes is needed.
+   * This method reports calling times as enabled if that database is found.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access protected
+   * @static
+   */
+  protected static function use_calling_times()
+  {
+    if( is_null( self::$calling_times_enabled ) )
+    {
+      self::$calling_times_enabled = 0 < static::db()->get_one(
+        'SELECT COUNT(*) '.
+        'FROM information_schema.schemata '.
+        'WHERE schema_name = "address_info"' );
+    }
+
+    return self::$calling_times_enabled;
+  }
+
+  /**
    * The qnaire to restrict the queue to.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @var qnaire $db_qnaire
@@ -711,16 +853,26 @@ class queue extends record
   protected $db_site = NULL;
 
   /**
-   * The date (YYYY-MM-DD) with respect to check the queue's state.
+   * The date (YYYY-MM-DD) with respect to check all queue states.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @var string
+   * @static
    */
-  protected $viewing_date = NULL;
+  protected static $viewing_date = NULL;
+
+  /**
+   * Whether or not calling times are enabled.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @var boolean
+   * @static
+   */
+  protected static $calling_times_enabled = NULL;
 
   /**
    * The queries for each queue
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @var associative array
+   * @static
    */
   protected static $query_list = array();
 }

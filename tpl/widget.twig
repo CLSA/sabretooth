@@ -15,7 +15,9 @@
  #                               the widget's full name.
  # @param string parent.exists Whether the widget has a parent.
  # @param string parent.subject The parent's subject.
- # @param string parent.subjects The parent's subject, pluralized.
+ # @param string widget.subject_name The parent's subject with underscores replaced by spaces.
+ # @param string widget.subject_names The parent's subject pluralized and with underscores replaced
+ #                                    by spaces.
  # @param string parent.name The parent's name (action performed on the parent's subject)
  # @param string parent.full The parent's full name: <parent_subject>_<parent_name>
  # @param string widget_heading The widget's heading (can be an empty string).
@@ -40,7 +42,7 @@
   
 {% block heading %}
   
-  {% if widget_heading %}
+  {% if show_heading and widget_heading %}
     <div class="ui-widget-header ui-state-hover app-widget-header">{{ widget_heading|ucwords }}</div>
   {% endif %}
 

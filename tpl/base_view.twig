@@ -134,7 +134,7 @@
               <script type="text/javascript">
                 $( function () {
                   // create the dialog
-                  $( "#{{ widget.full }}_dialog__{{ item_id }}" ).dialog( {
+                  $( "#{{ widget.full }}_dialog_{{ id|default(0) }}__{{ item_id }}" ).dialog( {
                     title: "Edit {{ item_id }}",
                     modal: true,
                     width: 450,
@@ -164,13 +164,14 @@
                 
                   // open the dialog when the text is clicked
                   $( "div.editable_text" ).click( function () {
-                    $( "#{{ widget.full }}_dialog__{{ item_id }}" ).dialog( "open" );
+                    $( "#{{ widget.full }}_dialog_{{ id|default(0) }}__{{ item_id }}" )
+                      .dialog( "open" );
                   } );
                 } );
               </script>
         
               <hr class="ui-widget ui-widget-content">
-              <div id="{{ widget.full }}_dialog__{{ item_id }}">
+              <div id="{{ widget.full }}_dialog_{{ id|default(0) }}__{{ item_id }}">
                 <textarea id="{{ widget.full }}__{{ item_id }}">{{ entry_value|e }}</textarea>
               </div>
               {% autoescape false %}

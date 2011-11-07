@@ -31,6 +31,7 @@ class self_timer extends \sabretooth\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'self', 'timer', $args );
+    $this->show_heading( false );
   }
 
   /**

@@ -32,9 +32,9 @@ class queue_restriction_list extends site_restricted_list
   {
     parent::__construct( 'queue_restriction', $args );
     
-    $this->add_column( 'site.name', 'enum', 'Site', true );
+    $this->add_column( 'site.name', 'string', 'Site', true );
     $this->add_column( 'city', 'string', 'City', true );
-    $this->add_column( 'region.name', 'enum', 'Region', true );
+    $this->add_column( 'region.name', 'string', 'Region', true );
     $this->add_column( 'postcode', 'string', 'Postcode', true );
   }
   

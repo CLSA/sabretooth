@@ -41,7 +41,7 @@ VALUES( "push", "appointment", "delete", true, "Removes a participant's appointm
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "appointment", "edit", true, "Edits the details of a participant's appointment." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "appointment", "new", true, "Creates new appointment enry for a participant." );
+VALUES( "push", "appointment", "new", true, "Creates new appointment entry for a participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "appointment", "add", true, "View a form for creating new appointments for a participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -103,7 +103,7 @@ VALUES( "push", "consent", "delete", true, "Removes a participant's consent entr
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "consent", "edit", true, "Edits the details of a participant's consent entry." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "consent", "new", true, "Creates new consent enry for a participant." );
+VALUES( "push", "consent", "new", true, "Creates new consent entry for a participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "consent", "add", true, "View a form for creating new consent entry for a participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -112,6 +112,14 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "consent", "list", true, "Lists a participant's consent entries." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "consent", "primary", true, "Retrieves base consent information." );
+
+-- interview
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "interview", "view", true, "View interview details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "interview", "list", true, "Lists interviews." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "interview", "edit", true, "Edits the details of an interview." );
 
 -- notes
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -240,6 +248,8 @@ VALUES( "pull", "qnaire", "primary", true, "Retrieves base qnaire information." 
 -- queue
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "queue", "list", true, "List queues in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "queue", "view", true, "View a queue's details and list of participants." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "queue", "primary", true, "Retrieves base queue information." );
 INSERT INTO operation( type, subject, name, restricted, description )

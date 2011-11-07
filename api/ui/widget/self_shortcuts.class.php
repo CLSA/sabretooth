@@ -31,6 +31,7 @@ class self_shortcuts extends \sabretooth\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'self', 'shortcuts', $args );
+    $this->show_heading( false );
   }
 
   /**

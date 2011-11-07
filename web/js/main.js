@@ -153,16 +153,25 @@ function ajax_slot( slot, action, subject, name, args ) {
  * @param string slot The slot to place the widget into.
  * @param string subject The widget's subject.
  * @param string name The widget's name.
- * @param string namespace The namespace to pass the args under.
  * @param JSON-array $args The arguments to pass to the widget object
+ * @param string no_namespace If true then namespaces are being set manually
  */
-function slot_load( slot, subject, name, args, namespace ) {
+function slot_load( slot, subject, name, args, no_namespace ) {
   // build the url (args is an associative array)
-  if( undefined == namespace ) namespace = subject + '_' + name;
-  if( undefined != args ) {
-    var namespace_args = new Object();
-    namespace_args[namespace] = args;
+  var namespace_args = new Object();
+  if( undefined !== args )
+  {
+    if( undefined === no_namespace || false == no_namespace )
+    {
+      var namespace = subject + "_" + name;
+      namespace_args[namespace] = args;
+    }
+    else
+    {
+      namespace_args = args;
+    }
   }
+
   ajax_slot( slot, 'load', subject, name, namespace_args );
 }
 

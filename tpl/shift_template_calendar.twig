@@ -22,12 +22,12 @@
         args.end_time = "13:00";
       }
   
-      slot_load( "{{ widget.full }}", "shift", "template_add", args );
+      slot_load( "{{ widget.full }}", "shift_template", "add", args );
       $( "#{{ widget.full }}_slot" ).dialog( "open" );
     },
     eventClick: function( event, jsEvent, view ) {
       // edit the shift template
-      slot_load( "{{ widget.full }}", "shift", "template_view", { id: event.id } );
+      slot_load( "{{ widget.full }}", "shift_template", "view", { id: event.id } );
       $( "#{{ widget.full }}_slot" ).dialog( "open" );
     },
   {% endif %}

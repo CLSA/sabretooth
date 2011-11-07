@@ -35,6 +35,7 @@ abstract class base_add_record extends base_record_widget
   public function __construct( $subject, $child, $args )
   {
     parent::__construct( $subject, 'add_'.$child, $args );
+    $this->show_heading( false );
     
     // make sure we have an id (we don't actually need to use it since the parent does)
     $this->get_argument( 'id' );

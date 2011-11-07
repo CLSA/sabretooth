@@ -37,27 +37,18 @@ class demographics_report extends base_report
   public function finish()
   {
     // get the report arguments
-    $db_qnaire = new db\qnaire( $this->get_argument( 'qnaire_id' ) );
-    $consent_status = $this->get_argument( 'consent_type' );
-    $province_id = $this->get_argument( 'province_id' );
+    $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
+    $consent_status = $this->get_argument( 'restrict_consent_id' );
+    $province_id = $this->get_argument( 'restrict_province_id' );
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-
-    $title = 'Participant Demographics Report';
+    $participant_list = db\participant::select();
     if( $restrict_site_id )
     {
       $db_site = new db\site( $restrict_site_id );
-      $title = $title.' for '.$db_site->name;
+      $participant_list = db\participant::select_for_site( $db_site );
     }
-    else $title = $title.' for all sites';
-
-    $this->add_title( $title );
 
     $contents = array();
-    
-    $participant_list = $restrict_site_id
-                      ? db\participant::select_for_site( $db_site )
-                      : db\participant::select();
-    
     foreach( $participant_list as $db_participant )
     {
       $db_consent = $db_participant->get_last_consent();

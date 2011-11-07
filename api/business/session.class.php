@@ -51,7 +51,7 @@ final class session extends \sabretooth\singleton
    * 
    * This method should be called immediately after initial construct of the session.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\runtime
+   * @throws exception\permission
    * @access public
    */
   public function initialize()
@@ -239,20 +239,44 @@ final class session extends \sabretooth\singleton
                                   new db\role( $_SESSION['current_role_id'] ) );
       }
       
-      // if we still don't have a site and role then pick the first one we can find
+      // we still don't have a site and role, we need to pick them
       if( is_null( $this->site ) || is_null( $this->role ) )
       {
-        $db_site_list = $this->user->get_site_list();
-        if( 0 == count( $db_site_list ) )
+        $db_site = NULL;
+        $db_role = NULL;
+
+        $site_list = $this->user->get_site_list();
+        if( 0 == count( $site_list ) )
           throw new exc\notice(
             'Your account does not have access to any site.<br>'.
             'Please contact a supervisor to be granted access to a site.', __METHOD__ );
+        
+        // if the user has logged in before, use whatever site/role they last used
+        $activity_mod = new db\modifier();
+        $activity_mod->where( 'user_id', '=', $this->user->id );
+        $activity_mod->order_desc( 'datetime' );
+        $activity_mod->limit( 1 );
+        $db_activity = current( db\activity::select( $activity_mod ) );
+        if( $db_activity )
+        {
+          // make sure the user still has access to the site/role
+          $role_mod = new db\modifier();
+          $role_mod->where( 'site_id', '=', $db_activity->site_id );
+          $role_mod->where( 'role_id', '=', $db_activity->role_id );
+          $db_role = current( $this->user->get_role_list( $role_mod ) );
+          
+          // only bother setting the site if the access exists
+          if( $db_role ) $db_site = new db\site( $db_activity->site_id );
+        }
 
-        $db_site = $db_site_list[0];
-        $modifier = new db\modifier();
-        $modifier->where( 'site_id', '=', $db_site->id );
-        $db_role_list = $this->user->get_role_list( $modifier );
-        $db_role = $db_role_list[0];
+        // if we still don't have a site/role then load the first one we can find
+        if( !$db_role || !$db_site ) 
+        {
+          $db_site = current( $site_list );
+          $role_mod = new db\modifier();
+          $role_mod->where( 'site_id', '=', $db_site->id );
+          $db_role = current( $this->user->get_role_list( $role_mod ) );
+        }
 
         $this->set_site_and_role( $db_site, $db_role );
       }
@@ -295,10 +319,11 @@ final class session extends \sabretooth\singleton
   
   /**
    * Get the user's current assignment.
-   * Should only be called if the user is an operator, otherwise an \sabretooth\exception will be thrown.
+   * Should only be called if the user is an operator, otherwise an exception will be thrown.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\assignment
+   * @throws exception\runtime
    * @access public
    */
   public function get_current_assignment()
@@ -310,6 +335,7 @@ final class session extends \sabretooth\singleton
     // query for assignments which do not have a end time
     $modifier = new db\modifier();
     $modifier->where( 'end_datetime', '=', NULL );
+    $modifier->order_desc( 'start_datetime' );
     $assignment_list = $this->get_user()->get_assignment_list( $modifier );
 
     // only one assignment should ever be open at a time, warn if this isn't the case
@@ -319,15 +345,16 @@ final class session extends \sabretooth\singleton
                  $this->get_user()->id,
                  $this->get_user()->name ) );
 
-    return 1 == count( $assignment_list ) ? current( $assignment_list ) : NULL;
+    return 1 <= count( $assignment_list ) ? current( $assignment_list ) : NULL;
   }
 
   /**
    * Get the user's current phone call.
-   * Should only be called if the user is an operator, otherwise an \sabretooth\exception will be thrown.
+   * Should only be called if the user is an operator, otherwise an exception will be thrown.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\phone_call
+   * @throws exception\runtime
    * @access public
    */
   public function get_current_phone_call()
@@ -343,6 +370,7 @@ final class session extends \sabretooth\singleton
     // query for phone calls which do not have a end time
     $modifier = new db\modifier();
     $modifier->where( 'end_datetime', '=', NULL );
+    $modifier->order_desc( 'start_datetime' );
     $phone_call_list = $db_assignment->get_phone_call_list( $modifier );
 
     // only one phone call should ever be open at a time, warn if this isn't the case
@@ -352,7 +380,7 @@ final class session extends \sabretooth\singleton
                  $this->get_user()->id,
                  $this->get_user()->name ) );
 
-    return 1 == count( $phone_call_list ) ? current( $phone_call_list ) : NULL;
+    return 1 <= count( $phone_call_list ) ? current( $phone_call_list ) : NULL;
   }
 
   /**

@@ -9,10 +9,14 @@
     <a style="color:{{ FOREGROUND_COLOR }}; text-transform: uppercase"
        class="tree"><ins class="no_icon"></ins><ins><span
        class="ui-icon ui-icon-script" /></ins> </a>
-    <span class="title">Q{{ node.rank }}: {{ node.title }} ({{ node.count }})</span>
+    <span class="title">Q{{ node.rank }}: {{ node.title }}
+      <span id="{{ widget.full }}_nodespot__{{ node.id }}">{{ node.count }}</span>
+    </span>
   {% else %}
     <a style="color:{{ FOREGROUND_COLOR }}; font-weight: normal" class="tree"> </a>
-    <span>{{ node.title }} ({{ node.count }})</span>
+    <span>{{ node.title }}
+      <span id="{{ widget.full }}_nodespot__{{ node.id }}">{{ node.count }}</span>
+    </span>
   {% endif %}
   {% if node.children|count %}
     <ul>

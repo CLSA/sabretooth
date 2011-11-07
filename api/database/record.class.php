@@ -942,8 +942,16 @@ abstract class record extends \sabretooth\base_object
   {
     $record = NULL;
     
-    $columns = !is_array( $column ) ? array( $column ) : sort( $column );
-    $values = !is_array( $value ) ? array( $value ) : sort( $value );
+    // create an associative array from the column/value arguments and sort
+    if( is_array( $column ) && is_array( $value ) )
+    {
+      foreach( $column as $index => $col ) $columns[$col] = $value[$index];
+    }
+    else
+    {
+      $columns[$column] = $value;
+    }
+    ksort( $columns );
 
     // make sure the column(s) complete a unique key
     $found = false;
@@ -951,10 +959,12 @@ abstract class record extends \sabretooth\base_object
     {
       if( count( $columns ) == count( $unique_key ) )
       {
-        foreach( $columns as $index => $col )
+        reset( $unique_key );
+        foreach( $columns as $col => $val )
         {
-          $found = $col == $unique_key[$index];
+          $found = $col == current( $unique_key );
           if( !$found ) break;
+          next( $unique_key );
         }
       }
 
@@ -964,14 +974,13 @@ abstract class record extends \sabretooth\base_object
     // make sure the column is unique
     if( !$found )
     {
-      log::err( 'Tried to get unique record from table "'.
+      log::err( 'Trying to get unique record from table "'.
                 static::get_table_name().'" using invalid columns.' );
     }
     else
     {
       $modifier = new modifier();
-      foreach( $columns as $index => $col )
-        $modifier->where( $columns[$index], '=', $values[$index] );
+      foreach( $columns as $col => $val ) $modifier->where( $col, '=', $val );
 
       // this returns null if no records are found
       $id = static::db()->get_one(
@@ -985,7 +994,6 @@ abstract class record extends \sabretooth\base_object
 
     return $record;
   }
-
 
   /**
    * Returns the name of the table associated with this record.

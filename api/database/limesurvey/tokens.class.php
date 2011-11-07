@@ -38,6 +38,7 @@ class tokens extends sid_record
     $token_part = substr( static::determine_token_string( $db_interview ), 0, -1 );
     
     // try getting the attributes from mastodon or sabretooth
+    $participant_info = new \stdClass();
     if( $mastodon_manager->is_enabled() )
     {
       $participant_info = $mastodon_manager->pull(
@@ -74,7 +75,7 @@ class tokens extends sid_record
         if( !is_null( $db_address->address2 ) )
           $participant_info->data->street .= ' '.$db_address->address2;
         $participant_info->data->city = $db_address->city;
-        $participant_info->data->region = $db_address->get_region()->get_name();
+        $participant_info->data->region = $db_address->get_region()->name;
         $participant_info->data->postcode = $db_address->postcode;
       }
 

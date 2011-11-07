@@ -65,7 +65,7 @@ class self_set_password extends \sabretooth\ui\push
     $ldap_manager->set_user_password( $db_user->name, $new );
 
     // now flush the voip account
-    bus\voip_manager::self()->sip_prune( $db_user->name );
+    bus\voip_manager::self()->sip_prune( $db_user );
   }
   
   /**

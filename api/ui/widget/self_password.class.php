@@ -31,6 +31,7 @@ class self_password extends \sabretooth\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'self', 'password', $args );
+    $this->show_heading( false );
   }
 
   /**

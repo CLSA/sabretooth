@@ -37,9 +37,8 @@ class participant_status_report extends base_report
   public function finish()
   {
     // get the report arguments
-    $db_qnaire = new db\qnaire( $this->get_argument( 'qnaire_id' ) );
+    $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
 
-    $this->add_title( 'Participant Status Report' );
     $this->add_title( 
       sprintf( 'Listing of categorical totals pertaining to '.
                'the %s interview', $db_qnaire->name ) ) ;
@@ -53,12 +52,13 @@ class participant_status_report extends base_report
       'Hard refusal' => 0,
       'Soft refusal' => 0,
       'Appointment' => 0,
+      'Appointment (missed)' => 0,
       '10+ Unproductive Call Attempts' => 0 );
       
-    // add call results (not including "contacted")
+    // add call results
     $phone_call_status_start_index = count( $region_totals ) - 1; // includes 10+ above
     foreach( db\phone_call::get_enum_values( 'status' ) as $status )
-      if( 'contacted' != $status ) $region_totals[ ucfirst( $status ) ] = 0;
+      $region_totals[ ucfirst( $status ) ] = 0;
     $phone_call_status_count = count( $region_totals ) - $phone_call_status_start_index;
 
     $region_totals = array_merge( $region_totals, array(
@@ -68,22 +68,27 @@ class participant_status_report extends base_report
       'Grand Total Attempted' => 0,
       'Total completed interviews' => 0,
       'Response rate (incl. soft refusals)' => 0,
-      'Response rate (excl. soft refusals)' => 0 ) );
+      'Response rate (excl. soft refusals)' => 0,
+      ' ' => '',
+      'Total number of calls' => 0,
+      'Completed interviews / total number of calls' => 0 ) );
 
     $region_mod = new db\modifier();
     $region_mod->order( 'abbreviation' );
     $region_mod->where( 'country', '=', 'Canada' );
     $grand_totals = array();
     foreach( db\region::select($region_mod) as $db_region )
-    {
       $grand_totals[ $db_region->abbreviation ] = $region_totals; 
-    }
+
     // the last column of the report sums totals row-wise
     $grand_totals[ 'Grand Total' ] = $region_totals;
     
     foreach( db\participant::select() as $db_participant )
     {
       $province = $db_participant->get_primary_address()->get_region()->abbreviation;
+      
+      $grand_totals[ $province ][ 'Total number of calls' ] +=
+        db\phone_call::count_for_participant( $db_participant );
 
       if( 'deceased' == $db_participant->status )
       {
@@ -102,7 +107,13 @@ class participant_status_report extends base_report
         $has_appointment = false;
         foreach( $db_participant->get_appointment_list( $appointment_mod ) as $db_appointment )
         {
-          if( 'upcoming' == $db_appointment->get_state() )
+          if( 'missed' == $db_appointment->get_state() )
+          {
+            $grand_totals[ $province ][ 'Appointment (missed)' ]++;
+            $has_appointment = true;
+            break;
+          }
+          else
           {
             $grand_totals[ $province ][ 'Appointment' ]++;
             $has_appointment = true;
@@ -172,7 +183,7 @@ class participant_status_report extends base_report
               $phone_call_mod->where( 'end_datetime', '!=', NULL );
               $phone_call_mod->limit( 1 );
               $db_phone_call = current( $db_assignment->get_phone_call_list( $phone_call_mod ) );
-              if( false != $db_phone_call && 'contacted' != $db_phone_call->status )
+              if( false != $db_phone_call )
               {
                 $failed_calls++;
                 // since the calls are sorted most recent to first, this captures the most
@@ -224,9 +235,11 @@ class participant_status_report extends base_report
           $denom ? $tci / $denom : 'NA';
 
         foreach( $region_keys as $column )
-        {
           $grand_totals[ 'Grand Total' ][ $column ] += $grand_totals[ $prov ][ $column ];
-        }
+        
+        $tc = $grand_totals[ $prov ][ 'Total number of calls' ];
+        $grand_totals[ $prov ][ 'Completed interviews / total number of calls' ] =
+          0 < $tc ? sprintf( '%0.2f', $tci / $tc ) : 'NA';
       }
     }
 
@@ -238,7 +251,7 @@ class participant_status_report extends base_report
           $grand_totals[ 'Grand Total' ][ 'Soft refusal' ];
 
     $grand_totals[ 'Grand Total' ][ 'Response rate (incl. soft refusals)' ] = 
-      $denom ? $gtci / $denom : 'NA';
+      $denom ? sprintf( '%0.2f', $gtci / $denom ) : 'NA';
 
     $denom = 
           $gtci + 
@@ -246,8 +259,12 @@ class participant_status_report extends base_report
           $grand_totals[ 'Grand Total' ][ '10+ Unproductive Call Attempts' ];
 
     $grand_totals[ 'Grand Total' ][ 'Response rate (excl. soft refusals)' ] = 
-      $denom ? $gtci / $denom : 'NA';
+      $denom ? sprintf( '%0.2f', $gtci / $denom ) : 'NA';
     
+    $gtc = $grand_totals[ 'Grand Total' ][ 'Total number of calls' ];
+    $grand_totals[ 'Grand Total' ][ 'Completed interviews / total number of calls' ] =
+      0 < $gtc ? sprintf( '%0.2f', $gtci / $gtc ) : 'NA';
+
     // build the final 2D content array
     $temp_content = array( $region_keys );
     foreach( $grand_totals as $key => $column )

@@ -106,14 +106,14 @@ class participant_view extends base_view
 
     try
     {
-      // create the assignment sub-list widget
-      $this->assignment_list = new assignment_list( $args );
-      $this->assignment_list->set_parent( $this );
-      $this->assignment_list->set_heading( 'Assignment history' );
+      // create the interview sub-list widget
+      $this->interview_list = new interview_list( $args );
+      $this->interview_list->set_parent( $this );
+      $this->interview_list->set_heading( 'Interview history' );
     }
     catch( exc\permission $e )
     {
-      $this->assignment_list = NULL;
+      $this->interview_list = NULL;
     }
   }
 
@@ -196,41 +196,41 @@ class participant_view extends base_view
       $this->set_variable( 'consent_list', $this->consent_list->get_variables() );
     }
 
-    if( !is_null( $this->assignment_list ) )
+    if( !is_null( $this->interview_list ) )
     {
-      $this->assignment_list->finish();
-      $this->set_variable( 'assignment_list', $this->assignment_list->get_variables() );
+      $this->interview_list->finish();
+      $this->set_variable( 'interview_list', $this->interview_list->get_variables() );
     }
   }
   
   /**
-   * Overrides the assignment list widget's method.
+   * Overrides the interview list widget's method.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
    * @return int
-   * @assignment protected
+   * @interview protected
    */
-  public function determine_assignment_count( $modifier = NULL )
+  public function determine_interview_count( $modifier = NULL )
   {
     if( NULL == $modifier ) $modifier = new db\modifier();
-    $modifier->where( 'interview.participant_id', '=', $this->get_record()->id );
-    return db\assignment::count( $modifier );
+    $modifier->where( 'participant_id', '=', $this->get_record()->id );
+    return db\interview::count( $modifier );
   }
 
   /**
-   * Overrides the assignment list widget's method.
+   * Overrides the interview list widget's method.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
    * @return array( record )
-   * @assignment protected
+   * @interview protected
    */
-  public function determine_assignment_list( $modifier = NULL )
+  public function determine_interview_list( $modifier = NULL )
   {
     if( NULL == $modifier ) $modifier = new db\modifier();
-    $modifier->where( 'interview.participant_id', '=', $this->get_record()->id );
-    return db\assignment::select( $modifier );
+    $modifier->where( 'participant_id', '=', $this->get_record()->id );
+    return db\interview::select( $modifier );
   }
 
   /**
@@ -270,9 +270,9 @@ class participant_view extends base_view
   
   /**
    * The participant list widget.
-   * @var assignment_list
+   * @var interview_list
    * @access protected
    */
-  protected $assignment_list = NULL;
+  protected $interview_list = NULL;
 }
 ?>

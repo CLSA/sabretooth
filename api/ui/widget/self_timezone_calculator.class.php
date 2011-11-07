@@ -31,6 +31,7 @@ class self_timezone_calculator extends \sabretooth\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'self', 'timezone_calculator', $args );
+    $this->show_heading( false );
   }
 
   /**
@@ -50,7 +51,7 @@ class self_timezone_calculator extends \sabretooth\ui\widget
     foreach( db\site::get_enum_values( 'timezone' ) as $timezone )
     {
       $timezone_obj = new \DateTimeZone( $timezone );
-      $timezone_list[ util::get_timezone_abbreviation( $timezone ) ] = array(
+      $timezone_list[ preg_replace( '/\W/', '_', $timezone ) ] = array(
         'name' => $timezone,
         'offset' => $timezone_obj->getOffset( $datetime_obj ),
         'current' => $timezone == $current_timezone );

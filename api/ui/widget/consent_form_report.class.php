@@ -32,12 +32,12 @@ class consent_form_report extends base_report
   {
     parent::__construct( 'consent_form', $args );
 
+    $this->add_restriction( 'qnaire' );
+
     $this->set_variable( 'description',
       'This report lists all participants who require a new consent form to be mailed to '.
       'them.  The report generates the participant\'s name, address, phone number and last '.
       'time they were successfully contacted.' );
-
-    $this->add_parameter( 'qnaire_id' , 'enum', 'Questionnaire' );
   }
 
   /**
@@ -47,10 +47,6 @@ class consent_form_report extends base_report
   public function finish()
   {
     parent::finish();
-
-    $qnaires = array();
-    foreach( db\qnaire::select() as $db_qnaire ) $qnaires[$db_qnaire->id] = $db_qnaire->name;
-    $this->set_parameter( 'qnaire_id', current( $qnaires ), true, $qnaires );
 
     $this->finish_setting_parameters();
   }

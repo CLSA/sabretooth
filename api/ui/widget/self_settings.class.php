@@ -29,6 +29,7 @@ class self_settings extends \sabretooth\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'self', 'settings', $args );
+    $this->show_heading( false );
   }
 
   /**
