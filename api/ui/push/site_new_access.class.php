@@ -42,7 +42,7 @@ class site_new_access extends base_new_record
     $args = $this->arguments;
 
     // replace the site id with a unique key
-    $db_site = new db\site( $this->get_argument('id') );
+    $db_site = $this->get_record();
     unset( $args['id'] );
     $args['noid']['site.name'] = $db_site->name;
     $args['noid']['site.cohort'] = 'tracking';
