@@ -40,7 +40,7 @@ class user_reset_password extends base_record
    */
   public function finish()
   {
-    $db_user = new db\user( $this->get_argument( 'id' ) );
+    $db_user = $this->get_record();
     $ldap_manager = bus\ldap_manager::self();
     $ldap_manager->set_user_password( $db_user->name, 'password' );
   }

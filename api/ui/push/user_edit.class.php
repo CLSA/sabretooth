@@ -43,7 +43,7 @@ class user_edit extends base_edit
     $args = $this->arguments;
 
     // replace the user id with a unique key
-    $db_user = new db\user( $this->get_argument('id') );
+    $db_user = $this->get_record();
     unset( $args['id'] );
     $args['noid']['user.name'] = $db_user->name;
 

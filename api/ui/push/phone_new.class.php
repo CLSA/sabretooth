@@ -50,8 +50,28 @@ class phone_new extends base_new
       throw new exc\notice(
         'Phone numbers must have exactly 10 digits.', __METHOD__ );
 
+    $args = $this->arguments;
+    unset( $args['columns']['participant_id'] );
+    unset( $args['columns']['address_id'] );
+
+    // replace the participant id with a unique key
+    $db_participant = new db\participant( $columns['participant_id'] );
+    $args['noid']['participant.uid'] = $db_participant->uid;
+
+    // replace the address id (if it is not null) a unique key
+    if( $columns['address_id'] )
+    {
+      $db_address = new db\address( $columns['address_id'] );
+      // this is only actually half of the key, the other half is provided by the participant above
+      $args['noid']['address.rank'] = $db_address->rank;
+    }
+
     // no errors, go ahead and make the change
     parent::finish();
+
+    // now send the same request to mastodon
+    $mastodon_manager = bus\mastodon_manager::self();
+    $mastodon_manager->push( 'phone', 'new', $args );
   }
 }
 ?>

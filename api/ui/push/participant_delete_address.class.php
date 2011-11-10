@@ -42,7 +42,7 @@ class participant_delete_address extends base_delete_record
     $args = $this->arguments;
 
     // replace the participant id with a unique key
-    $db_participant = new db\participant( $this->get_argument( 'id' ) );
+    $db_participant = $this->get_record();
     unset( $args['id'] );
     $args['noid']['participant.uid'] = $db_participant->uid;
 
