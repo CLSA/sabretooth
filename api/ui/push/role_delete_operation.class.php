@@ -30,5 +30,15 @@ class role_delete_operation extends base_delete_record
   {
     parent::__construct( 'role', 'operation', $args );
   }
+
+  /**
+   * Overrides the parent method since no operation_delete method exists.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function finish()
+  {
+    $this->get_record()->remove_operation( $this->get_argument( 'remove_id' ) );
+  }
 }
 ?>

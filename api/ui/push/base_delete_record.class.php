@@ -41,22 +41,9 @@ abstract class base_delete_record extends base_record
    */
   public function finish()
   {
-    try
-    {
-      $method_name = 'remove_'.$this->child_subject;
-      $this->get_record()->$method_name( $this->get_argument( 'remove_id' ) );
-    }
-    catch( exc\database $e )
-    { // help describe exceptions to the user
-      if( $e->is_constrained() )
-      {
-        throw new exc\notice(
-          'Unable to delete the '.$this->child_subject.
-          ' because it is being referenced by the database.', __METHOD__, $e );
-      }
-
-      throw $e;
-    }
+    $class_name = sprintf( '\\sabretooth\\ui\\push\\%s_delete', $this->child_subject );
+    $operation = new $class_name( array( 'id' => $this->get_argument( 'remove_id' ) ) );
+    $operation->finish();
   }
 
   /**
