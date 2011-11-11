@@ -190,8 +190,19 @@ class operator_assignment extends \sabretooth\ui\widget
           $this->set_variable( 'appointment',
             util::get_formatted_time( $db_appointment->datetime, false ) );
         }
-        $this->set_variable( 'phone_id',
-          is_null( $db_appointment->phone_id ) ? false : $db_appointment->phone_id );
+
+        if( !is_null( $db_appointment->phone_id ) )
+        {
+          $db_phone = new db\phone( $db_appointment->phone_id );
+          $this->set_variable( 'phone_id', $db_appointment->phone_id );
+          $this->set_variable( 'phone_at',
+            sprintf( '%d. %s (%s)', $db_phone->rank, $db_phone->type, $db_phone->number ) );
+        }
+        else
+        {
+          $this->set_variable( 'phone_id', false );
+          $this->set_variable( 'phone_at', false );
+        }
       }
       else
       {
