@@ -405,9 +405,8 @@
         {% for column_id, column in columns %}
           {% if column.sortable|default(false) %}
             <th id="{{ column_id }}" style="vertical-align:top;">
-              <button class="
-                {% if column.sortable %}{{ widget.full }}_sortable{% endif %}
-                {% if column.restrictable %}
+              <button class="{{ widget.full }}_sortable
+                {% if column.restrictable|default(false) %}
                   {{ widget.full }}_restrictable
                 {% else %}
                   {{ widget.full }}_unrestrictable
