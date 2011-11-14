@@ -34,12 +34,12 @@ class assignment_list extends site_restricted_list
     
     $this->add_column( 'user.name', 'string', 'Operator', true );
     $this->add_column( 'site.name', 'string', 'Site', true );
-    $this->add_column( 'participant', 'string', 'Participant', false );
-    $this->add_column( 'calls', 'number', 'Calls', false );
+    $this->add_column( 'participant', 'string', 'Participant' );
+    $this->add_column( 'calls', 'number', 'Calls' );
     $this->add_column( 'start_datetime', 'date', 'Date', true );
-    $this->add_column( 'start_time', 'time', 'Start Time', false );
-    $this->add_column( 'end_time', 'time', 'End Time', false );
-    $this->add_column( 'status', 'string', 'Status', false );
+    $this->add_column( 'start_time', 'time', 'Start Time' );
+    $this->add_column( 'end_time', 'time', 'End Time' );
+    $this->add_column( 'status', 'string', 'Status' );
   }
   
   /**

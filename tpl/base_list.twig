@@ -233,9 +233,12 @@
           slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}", args );
         {% endif %}
       } );
+
+      $header_buttons_restrictable = $( "button.{{ widget.full }}_restrictable" );
+      $header_buttons_restrictable.noContext();
     
-      // right-clicking a header button adds a new restriction
-      $header_buttons.rightClick( function( event ) {
+      // right-clicking a restrictable header button adds a new restriction
+      $header_buttons_restrictable.rightClick( function( event ) {
         var column = $(this).parent( "th" ).attr( "id" );
         var column_name = $(this).button().text();
         $( "#{{ widget.compound }}__restrict_dialog_label" ).html( column_name );
@@ -248,6 +251,16 @@
             return false;
           }
         } );
+      } );
+
+      $header_buttons_unrestrictable = $( "button.{{ widget.full }}_unrestrictable" );
+      $header_buttons_unrestrictable.noContext();
+
+      $header_buttons_unrestrictable.rightClick( function( event ) {
+        error_dialog(
+          "Error",
+          "<p>This column cannot be restricted.</p>"
+        );
       } );
       
       // left-clicking a restriction button removes it
@@ -392,7 +405,13 @@
         {% for column_id, column in columns %}
           {% if column.sortable|default(false) %}
             <th id="{{ column_id }}" style="vertical-align:top;">
-              <button class="{{ widget.full }}_sortable
+              <button class="
+                {% if column.sortable %}{{ widget.full }}_sortable{% endif %}
+                {% if column.restrictable %}
+                  {{ widget.full }}_restrictable
+                {% else %}
+                  {{ widget.full }}_unrestrictable
+                {% endif %}  
                 {% if column_id == sort_column %}
                   {{ widget.full }}_sorted{{ sort_desc ? '_desc' : '' }}
                 {% else %}
