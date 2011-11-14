@@ -38,7 +38,7 @@ class user_add extends base_view
     $this->add_item( 'last_name', 'string', 'Last name' );
     $this->add_item( 'active', 'boolean', 'Active' );
 
-    $type = 'administrator' == bus\session::self()->get_role()->name
+    $type = 3 == bus\session::self()->get_role()->tier
           ? 'enum'
           : 'hidden';
     $this->add_item( 'site_id', $type, 'Site' );
@@ -56,17 +56,17 @@ class user_add extends base_view
     parent::finish();
     
     $session = bus\session::self();
-    $is_administrator = 'administrator' == $session->get_role()->name;
+    $is_top_tier = 3 == $session->get_role()->tier;
 
     // create enum arrays
     $modifier = new db\modifier();
-    if( !$is_administrator ) $modifier->where( 'name', '!=', 'administrator' );
+    $modifier->where( 'tier', '<=', $session->get_role()->tier );
     $roles = array();
     foreach( db\role::select( $modifier ) as $db_role )
       $roles[$db_role->id] = $db_role->name;
     
     $sites = array();
-    if( $is_administrator )
+    if( $is_top_tier )
     {
       foreach( db\site::select( $modifier ) as $db_site )
         $sites[$db_site->id] = $db_site->name;
@@ -77,8 +77,8 @@ class user_add extends base_view
     $this->set_item( 'first_name', '', true );
     $this->set_item( 'last_name', '', true );
     $this->set_item( 'active', true, true );
-    $value = $is_administrator ? current( $sites ) : $session->get_site()->id;
-    $this->set_item( 'site_id', $value, true, $is_administrator ? $sites : NULL );
+    $value = $is_top_tier ? current( $sites ) : $session->get_site()->id;
+    $this->set_item( 'site_id', $value, true, $is_top_tier ? $sites : NULL );
     $this->set_item( 'role_id', array_search( 'operator', $roles ), true, $roles );
 
     $this->finish_setting_items();

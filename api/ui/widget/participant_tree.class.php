@@ -32,7 +32,7 @@ class participant_tree extends \sabretooth\ui\widget
   {
     parent::__construct( 'participant', 'tree', $args );
     $session = bus\session::self();
-    if( 'supervisor' == $session->get_role()->name )
+    if( 3 > $session->get_role()->tier )
       $this->set_heading( $this->get_heading().' for '.$session->get_site()->name );
   }
 
@@ -47,11 +47,11 @@ class participant_tree extends \sabretooth\ui\widget
     parent::finish();
     
     $session = bus\session::self();
-    $is_administrator = 'administrator' == $session->get_role()->name;
-    $is_supervisor = 'supervisor' == $session->get_role()->name;
+    $is_top_tier = 3 == $session->get_role()->tier;
+    $is_mid_tier = 2 == $session->get_role()->tier;
     
-    // if this is an admin, give them a list of sites to choose from
-    if( $is_administrator )
+    // if this is a top tier role give them a list of sites to choose from
+    if( $is_top_tier )
     {
       $sites = array();
       foreach( db\site::select() as $db_site )
@@ -94,8 +94,8 @@ class participant_tree extends \sabretooth\ui\widget
     $modifier->order( 'parent_queue_id' );
     foreach( db\queue::select( $modifier ) as $db_queue )
     {
-      // restrict to the current site if the current user is a supervisor
-      if( $is_supervisor ) $db_queue->set_site( $session->get_site() );
+      // restrict to the current site if the current user is a mid tier role
+      if( $is_mid_tier ) $db_queue->set_site( $session->get_site() );
       else if( !is_null( $db_restrict_site ) ) $db_queue->set_site( $db_restrict_site );
 
       // handle queues which are not qnaire specific

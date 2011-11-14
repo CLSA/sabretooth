@@ -257,7 +257,7 @@ abstract class base_report extends \sabretooth\ui\widget
     {
       if( static::may_restrict_by_site() )
       {
-        // if this is an admin, give them a list of sites to choose from
+        // if allowed, give them a list of sites to choose from
         $sites = array( 0 => 'All sites' );
         foreach( db\site::select() as $db_site )
           $sites[$db_site->id] = $db_site->name;
@@ -343,9 +343,7 @@ abstract class base_report extends \sabretooth\ui\widget
    */
   public static function may_restrict_by_site()
   {
-    $role_name = bus\session::self()->get_role()->name;
-
-    return 'administrator' == $role_name;
+    return 3 == bus\session::self()->get_role()->tier;
   }
 
   /**

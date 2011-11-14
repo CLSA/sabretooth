@@ -239,7 +239,7 @@ function ajax_complete( request, code ) {
         response.error_type + ' Error',
         '<p>' +
         '  The server was unable to complete your request.<br>' +
-        '  Please notify a supervisor with the error code.' +
+        '  Please notify a superior with the error code.' +
         '</p>' +
         '<p class="error_code">Error code: ' + error_code + '</p>' );
     }
@@ -250,7 +250,7 @@ function ajax_complete( request, code ) {
       'Networking Error',
       '<p>' +
       '  There was an error while trying to communicate with the server.<br>' +
-      '  Please notify a supervisor with the error code.' +
+      '  Please notify a superior with the error code.' +
       '</p>' +
       '<p class="error_code">Error code: ' + code + '.200</p>' );
   }

@@ -87,15 +87,13 @@ class user_view extends base_view
 
     $this->finish_setting_items();
     
-    $role_name = bus\session::self()->get_role()->name;
-
     $is_operator = $this->get_record()->has_access(
                      bus\session::self()->get_site(),
                      db\role::get_unique_record( 'name', 'operator' ) );
 
-    // only show shift calendar if the current user is a supervisor and the viewed user is an
-    // operator at this site
-    $this->set_variable( 'view_shifts', $is_operator && 'supervisor' == $role_name );
+    // only show shift calendar if the current user's role is greater than the base tier and
+    // the viewed user is an operator at this site
+    $this->set_variable( 'view_shifts', $is_operator && 1 < bus\session::self()->get_role()->tier );
     
     // only show reset and/or set password buttons if current user is allowed
     $this->set_variable( 'reset_password',

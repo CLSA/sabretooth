@@ -224,7 +224,7 @@ final class session extends \sabretooth\singleton
     {
       throw new exc\notice(
         'Your account has been deactivated.<br>'.
-        'Please contact a supervisor to regain access to the system.', __METHOD__ );
+        'Please contact a superior to regain access to the system.', __METHOD__ );
     }
     else
     {
@@ -249,7 +249,7 @@ final class session extends \sabretooth\singleton
         if( 0 == count( $site_list ) )
           throw new exc\notice(
             'Your account does not have access to any site.<br>'.
-            'Please contact a supervisor to be granted access to a site.', __METHOD__ );
+            'Please contact a superior to be granted access to a site.', __METHOD__ );
         
         // if the user has logged in before, use whatever site/role they last used
         $activity_mod = new db\modifier();

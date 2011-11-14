@@ -40,7 +40,7 @@ class queue_list extends base_list
     $this->add_column( 'participant_count', 'number', 'Participants', false );
     $this->add_column( 'description', 'text', 'Description', true, true, 'left' );
     $session = bus\session::self();
-    if( 'supervisor' == $session->get_role()->name )
+    if( 3 != $session->get_role()->tier )
       $this->set_heading( $this->get_heading().' for '.$session->get_site()->name );
   }
 
@@ -55,11 +55,11 @@ class queue_list extends base_list
     parent::finish();
     
     $session = bus\session::self();
-    $is_administrator = 'administrator' == $session->get_role()->name;
-    $is_supervisor = 'supervisor' == $session->get_role()->name;
+    $is_top_tier = 3 == $session->get_role()->tier;
+    $is_mid_tier = 2 == $session->get_role()->tier;
     
-    // if this is an admin, give them a list of sites to choose from
-    if( $is_administrator )
+    // if this is a top tier role, give them a list of sites to choose from
+    if( $is_top_tier )
     {
       $sites = array();
       foreach( db\site::select() as $db_site )
@@ -96,8 +96,8 @@ class queue_list extends base_list
     $setting_manager = bus\setting_manager::self();
     foreach( $this->get_record_list() as $record )
     {
-      // restrict to the current site if the current user is a supervisor
-      if( $is_supervisor ) $record->set_site( $session->get_site() );
+      // restrict to the current site if the current user is a mid tier role
+      if( $is_mid_tier ) $record->set_site( $session->get_site() );
       else if( !is_null( $db_restrict_site ) ) $record->set_site( $db_restrict_site );
       
       // restrict to the current qnaire

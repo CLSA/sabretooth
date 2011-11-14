@@ -34,7 +34,7 @@ class user_add_access extends base_add_access
     parent::__construct( 'user', $args );
     
     $session = bus\session::self();
-    if( 'administrator' == $session->get_role()->name )
+    if( 3 == $session->get_role()->tier )
     {
       // This widget is special.  We need a list of sites and roles, not an access list, so we
       // override the construction of the list_widget performed by base_add_list's constructor.
@@ -42,14 +42,14 @@ class user_add_access extends base_add_access
       $this->list_widget->set_parent( $this, 'edit' );
       $this->list_widget->set_heading( 'Choose sites to grant access to the user' );
     }
-    else // not an administrator
+    else // not top tier
     {
       // we need to do a bit of code bending here
-      // supervisors need to be able to add access to their site, but they do not have permission
+      // mid tier roles need to be able to add access to their site, but they do not have permission
       // to view the site list - however, they don't need a site list, any access HAS to be added
       // to their site only - but, the current design of the list ui classes insists on some kind
       // of list.  So, we'll create the user list, catch the permission error, then mark the
-      // template to not display a user list but instead just use the supervisor's current site
+      // template to not display a user list but instead just use the user's current site
       $this->set_variable( 'force_child_id', $session->get_site()->id );
     }
   }

@@ -33,7 +33,7 @@ class queue_view extends base_view
     parent::__construct( 'queue', 'view', $args );
     
     $session = bus\session::self();
-    if( 'supervisor' == $session->get_role()->name )
+    if( 3 != $session->get_role()->tier )
     {
       $this->db_site = $session->get_site();
     }

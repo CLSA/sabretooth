@@ -59,7 +59,7 @@ class access extends record
   }
   
   /**
-   * Override parent save method by making sure that only admins can create admins
+   * Override parent save method by making sure that higher tiers cannot be created
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\permission
@@ -67,9 +67,9 @@ class access extends record
    */
   public function save()
   {
-    if( 'administrator' != bus\session::self()->get_role()->name &&
-        // we can't use $this->get_role() here since the record may not exist yet
-        role::get_unique_record( 'name', 'administrator' )->id == $this->role_id )
+    $db_access_role = new db\role( $this->role_id );
+
+    if( $db_access_role->tier > bus\session::self()->get_role()->tier )
       throw new exc\permission(
         // fake the operation
         operation::get_operation( 'push', 'user', 'new_access' ), __METHOD__ );
@@ -78,7 +78,7 @@ class access extends record
   }
   
   /**
-   * Override parent delete method by making sure that only admins can remove admins
+   * Override parent delete method by making sure that higher tiers cannot be deleted
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\permission
@@ -86,8 +86,7 @@ class access extends record
    */
   public function delete()
   {
-    if( 'administrator' != bus\session::self()->get_role()->name &&
-        'administrator' == $this->get_role()->name )
+    if( $this->get_role()->tier > bus\session::self()->get_role()->tier )
       throw new exc\permission(
         // fake the operation
         operation::get_operation( 'push', 'access', 'delete' ), __METHOD__ );

@@ -46,7 +46,7 @@ class assignment_begin extends \sabretooth\ui\push
     if( !is_null( $session->get_current_assignment() ) )
       throw new exc\notice(
         'Please click the refresh button.  If this message appears more than twice '.
-        'consecutively report this error to a supervisor.', __METHOD__ );
+        'consecutively report this error to a superior.', __METHOD__ );
     
     // we need to use a semaphore to avoid race conditions
     $semaphore = sem_get( getmyinode() );
@@ -95,7 +95,7 @@ class assignment_begin extends \sabretooth\ui\push
     if( 0 == $db_qnaire->get_phase_count() )
       throw new exc\notice(
         'This participant\'s next questionnaire is not yet ready.  '.
-        'Please immediately report this problem to a supervisor.',
+        'Please immediately report this problem to a superior.',
         __METHOD__ );
     
     // get this participant's interview or create a new one if none exists yet
@@ -125,7 +125,7 @@ class assignment_begin extends \sabretooth\ui\push
           throw new exc\notice(
             'The server was too busy to assign a new participant, please wait a few seconds then '.
             'try requesting an assignment again.  If this message appears several times in a row '.
-            'please report the error code to your supervisor.',
+            'please report the error code to your superior.',
             __METHOD__ );
         }
 

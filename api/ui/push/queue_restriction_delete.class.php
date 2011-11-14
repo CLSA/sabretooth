@@ -39,11 +39,10 @@ class queue_restriction_delete extends base_delete
    */
   public function finish()
   {
-    // make sure that only admins can remove queue restrictions not belonging to the current site
+    // make sure that only top tier roles can remove queue restrictions not belonging to the current site
     $session = bus\session::self();
-    $is_administrator = 'administrator' == $session->get_role()->name;
 
-    if( !$is_administrator && $session->get_site()->id != $this->get_record()->site_id )
+    if( 3 != $session->get_role()->tier && $session->get_site()->id != $this->get_record()->site_id )
     {
       throw new exc\notice(
         'You do not have access to remove this queue restriction.', __METHOD__ );

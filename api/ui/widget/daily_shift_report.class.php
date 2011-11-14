@@ -37,7 +37,6 @@ class daily_shift_report extends base_report
       'NCC on a daily basis. The report includes operator activity data with operators '.
       'subclassified by language.  Areas are provided for questions/concerns and additional '.
       'comments.' );
-
   }
 
   /**

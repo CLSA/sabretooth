@@ -48,10 +48,9 @@ class phone_list extends base_list
   {
     parent::finish();
     
-    // only allow admins and supervisors to make direct calls
-    $role_name = bus\session::self()->get_role()->name;
+    // only allow higher than first tier roles to make direct calls
     $this->set_variable( 'allow_connect',
-                         'administrator' == $role_name || 'supervisor' == $role_name );
+                         1 < bus\session::self()->get_role()->tier );
     $this->set_variable( 'sip_enabled',
       bus\voip_manager::self()->get_sip_enabled() );
 

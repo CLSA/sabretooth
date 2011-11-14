@@ -32,13 +32,13 @@ class setting_view extends base_view
   {
     parent::__construct( 'setting', 'view', $args );
     
-    $is_supervisor = 'supervisor' == bus\session::self()->get_role()->name;
+    $is_mid_tier = 2 == bussession::self()->get_role()->tier;
 
     // create an associative array with everything we want to display about the setting
     $this->add_item( 'category', 'constant', 'Category' );
     $this->add_item( 'name', 'constant', 'Name' );
     $this->add_item( 'type', 'constant', 'Type' );
-    if( $is_supervisor )
+    if( $is_mid_tier )
     {
       $this->add_item( 'value', 'constant', 'Default' );
       $this->add_item( 'site_value', 'string', 'Value' );
@@ -61,13 +61,13 @@ class setting_view extends base_view
   {
     parent::finish();
 
-    $is_supervisor = 'supervisor' == bus\session::self()->get_role()->name;
+    $is_mid_tier = 2 == bussession::self()->get_role()->tier;
 
     // set the view's items
     $this->set_item( 'category', $this->get_record()->category, true );
     $this->set_item( 'name', $this->get_record()->name, true );
     $this->set_item( 'type', $this->get_record()->type, true );
-    if( $is_supervisor )
+    if( $is_mid_tier )
     { // include the site's value
       $modifier = new db\modifier();
       $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );

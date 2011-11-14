@@ -8,7 +8,7 @@ DELETE FROM role_has_operation;
 
 -- -----------------------------------------------------
 -- -----------------------------------------------------
-INSERT INTO role( name ) VALUES( "administrator" );
+INSERT INTO role( name, tier ) VALUES( "administrator", 3 );
 
 -- administrator (specific to this role)
 INSERT INTO role_has_operation( role_id, operation_id )
@@ -1041,7 +1041,7 @@ SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
 
 -- -----------------------------------------------------
 -- -----------------------------------------------------
-INSERT INTO role( name ) VALUES( "supervisor" );
+INSERT INTO role( name, tier ) VALUES( "supervisor", 2 );
 
 -- supervisor (specific to this role)
 INSERT INTO role_has_operation( role_id, operation_id )

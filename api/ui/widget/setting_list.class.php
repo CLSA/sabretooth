@@ -32,12 +32,12 @@ class setting_list extends base_list
   {
     parent::__construct( 'setting', $args );
     
-    $is_supervisor = 'supervisor' == bus\session::self()->get_role()->name;
+    $is_mid_tier = 2 == bussession::self()->get_role()->tier;
 
     $this->add_column( 'category', 'string', 'Category', true );
     $this->add_column( 'name', 'string', 'Name', true );
     $this->add_column( 'value', 'string', 'Default', false );
-    if( $is_supervisor ) $this->add_column( 'site_value', 'string', 'Value', false );
+    if( $is_mid_tier ) $this->add_column( 'site_value', 'string', 'Value', false );
     $this->add_column( 'description', 'text', 'Description', true, true, 'left' );
   }
 
@@ -51,12 +51,11 @@ class setting_list extends base_list
   {
     parent::finish();
     
-    $is_supervisor = 'supervisor' == bus\session::self()->get_role()->name;
-
+    $is_mid_tier = 2 == bussession::self()->get_role()->tier;
 
     foreach( $this->get_record_list() as $record )
     {
-      if( $is_supervisor )
+      if( $is_mid_tier )
       { // include the site's value
         $modifier = new db\modifier();
         $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );

@@ -72,9 +72,8 @@ class note_list extends \sabretooth\ui\widget
     $this->set_variable( 'category_id', $category_id );
     $this->set_variable( 'note_list', $note_list );
 
-    // allow supervisers and admins to modify notes
-    $role_name = bus\session::self()->get_role()->name;
-    if( 'administrator' == $role_name || 'supervisor' == $role_name )
+    // allow upper tier roles to modify notes
+    if( 1 < bus\session::self()->get_role()->tier )
     {
       $this->set_variable( 'stickable', true );
       $this->set_variable( 'removable', true );
