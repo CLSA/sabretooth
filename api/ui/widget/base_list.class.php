@@ -357,8 +357,8 @@ abstract class base_list extends \sabretooth\ui\widget
    * @param string $align Which way to align the column (left, right or center)
    * @access public
    */
-  public function add_column( $column_id, $type, $heading, 
-                              $sortable = false, $restrictable = true, $align = '')
+  public function add_column( $column_id, $type, $heading,
+                              $sortable = false, $restrictable = true, $align = '' )
   {
     // if there is no "table." before the column name, add this widget's subject
     if( false === strpos( $column_id, '.' ) ) $column_id = $this->get_subject().'.'.$column_id;
@@ -368,7 +368,7 @@ abstract class base_list extends \sabretooth\ui\widget
     {
       $heading .=
         sprintf( ' (%s)', util::get_datetime_object()->format( 'T' ) );
-      $restrictable = false;  
+      $restrictable = false;
     }
     if( 'date' == $type ) $restrictable = false;
 
@@ -525,8 +525,8 @@ abstract class base_list extends \sabretooth\ui\widget
    *   'heading' => the name to display in in the column header
    * The following are optional:
    *   'sortable' => whether or not the list can be sorted by the column
+   *   'restrictable' => whether or not a sortable list can be restricted to particular values
    *   'align' => Which way to align the column
-   *   'restrictable' => whether a sortable list can be sorted by restriction
    * This member can only be set in the {@link add_column} and {@link remove_column} functions.
    * @var array
    * @access private
