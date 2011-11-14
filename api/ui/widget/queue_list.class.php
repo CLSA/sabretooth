@@ -38,7 +38,7 @@ class queue_list extends base_list
     $this->add_column( 'rank', 'number', 'Rank', true );
     $this->add_column( 'enabled', 'boolean', 'Enabled', false );
     $this->add_column( 'participant_count', 'number', 'Participants', false );
-    $this->add_column( 'description', 'text', 'Description', true, 'left' );
+    $this->add_column( 'description', 'text', 'Description', true, true, 'left' );
     $session = bus\session::self();
     if( 'supervisor' == $session->get_role()->name )
       $this->set_heading( $this->get_heading().' for '.$session->get_site()->name );
