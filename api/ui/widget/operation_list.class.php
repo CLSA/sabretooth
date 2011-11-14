@@ -36,7 +36,7 @@ class operation_list extends base_list
     $this->add_column( 'subject', 'string', 'subject', true );
     $this->add_column( 'name', 'string', 'name', true );
     $this->add_column( 'restricted', 'boolean', 'restricted', false );
-    $this->add_column( 'description', 'text', 'description', false, 'left' );
+    $this->add_column( 'description', 'text', 'description', false, false, 'left' );
   }
 
   /**
