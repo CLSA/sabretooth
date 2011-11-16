@@ -103,7 +103,9 @@ class participant_status_report extends base_report
       }
       else
       {
-        $locale = $db_participant->get_primary_address()->get_region()->abbreviation;
+        $db_address = $db_participant->get_primary_address();
+        if( is_null( $db_address ) ) continue;
+        $locale = $db_address->get_region()->abbreviation;
       }
 
       $grand_totals[ $locale ][ 'Total number of calls' ] +=
