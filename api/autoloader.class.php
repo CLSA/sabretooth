@@ -22,7 +22,7 @@ class autoloader
    * @static
    * @access public
    */
-  static public function register()
+  public static function register()
   {
     ini_set( 'unserialize_callback_func', 'spl_autoload_call' );
     spl_autoload_register( array( new self, 'autoload' ) );
@@ -36,7 +36,7 @@ class autoloader
    * @throws exception\runtime
    * @access public
    */
-  static public function autoload( $class )
+  public static function autoload( $class )
   {
     // only work on classes starting with sabretooth\
     if( 0 !== strpos( $class, 'sabretooth\\' ) ) return;

@@ -300,7 +300,7 @@ final class log extends singleton
    * @static
    * @access private
    */
-  static private function log_level_to_string( $constant )
+  private static function log_level_to_string( $constant )
   {
     $string = '';
 
@@ -323,7 +323,7 @@ final class log extends singleton
    * @throws exception\base_exception
    * @ignore
    */
-  static public function error_handler( $level, $message, $file, $line )
+  public static function error_handler( $level, $message, $file, $line )
   {
     // ignore ldap errors
     if( 0 < preg_match( '/^ldap_[a-z_0-9]()/', $message ) ) return;
@@ -383,7 +383,7 @@ final class log extends singleton
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @ignore
    */
-  static public function fatal_error_handler()
+  public static function fatal_error_handler()
   {
     $error = error_get_last();
 

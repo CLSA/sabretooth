@@ -86,7 +86,7 @@ abstract class has_note extends record
    * @static
    * @access public
    */
-  static public function get_note( $id = NULL )
+  public static function get_note( $id = NULL )
   {
     $note_class_name = '\\sabretooth\\database\\'.static::get_table_name().'_note';
     return new $note_class_name( $id );
