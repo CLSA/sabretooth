@@ -172,11 +172,15 @@ class cenozo_manager extends \sabretooth\factory
     if( 400 == $code )
     { // duplicate cenozo exception
       $body = json_decode( $message->body );
-      throw new exc\cenozo( $body->error_type, $body->error_code, $body->error_message );
+      throw new exc\cenozo_service( $body->error_type, $body->error_code, $body->error_message );
     }
     else if( 200 != $code )
     { // A non-cenozo error has happened
-      throw new exc\runtime( 'Unable to connect to Cenozo (code: '.$code.')', __METHOD__ );
+      log::debug( $request );
+      throw new exc\runtime( sprintf(
+        'Unable to connect to Cenozo service at %s (code: %s)',
+        '',
+        $code ), __METHOD__ );
     }
 
     return $message;

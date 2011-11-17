@@ -1,6 +1,6 @@
 <?php
 /**
- * mastodon.class.php
+ * cenozo_service.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\exception
@@ -12,12 +12,12 @@ use sabretooth\log, sabretooth\util;
 use sabretooth\business as bus;
 
 /**
- * mastodon: mastodon exceptions
+ * cenozo_service: cenozo service exceptions
  * 
- * This is a special exception that is used to duplicate an exception received from mastodon.
+ * This exception is used to duplicate an exception received from another cenozo application.
  * @package sabretooth\exception
  */
-class mastodon extends base_exception
+class cenozo_service extends base_exception
 {
   /**
    * Constructor
@@ -30,12 +30,12 @@ class mastodon extends base_exception
    */
   public function __construct( $type, $code, $message, $previous = NULL )
   {
-    parent::__construct( $message, 0, $previous );
+    parent::__construct( sprintf( '[%s] %s', $code, $message ), 0, $previous );
     $this->code = $code;
   }
 
   /**
-   * Overrides the parent method since we are using mastodon's error codes.
+   * Overrides the parent method since we are using another cenozo application's error codes.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return int
    * @access public
@@ -43,7 +43,7 @@ class mastodon extends base_exception
   public function get_number() { return 0; }
 
   /**
-   * Overrides the parent method since we are using mastodon's error codes.
+   * Overrides the parent method since we are using another cenozo application's error codes.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
