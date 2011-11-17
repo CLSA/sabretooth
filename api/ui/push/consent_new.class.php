@@ -55,7 +55,7 @@ class consent_new extends base_new
     parent::finish();
 
     // now send the same request to mastodon
-    $mastodon_manager = bus\mastodon_manager::self();
+    $mastodon_manager = bus\cenozo_manager::self( MASTODON_URL );
     $mastodon_manager->push( 'consent', 'new', $args );
   }
 }

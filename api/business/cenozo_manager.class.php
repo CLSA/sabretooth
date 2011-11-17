@@ -1,9 +1,9 @@
 <?php
 /**
- * mastodon_manager.class.php
+ * cenozo_manager.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package mastodon\business
+ * @package cenozo\business
  * @filesource
  */
 
@@ -13,11 +13,11 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * Manages communication with the mastodon service.
+ * Manages communication with other cenozo services.
  * 
  * @package sabretooth\business
  */
-class mastodon_manager extends \sabretooth\singleton
+class cenozo_manager extends \sabretooth\factory
 {
   /**
    * Constructor.
@@ -25,14 +25,15 @@ class mastodon_manager extends \sabretooth\singleton
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
-  protected function __construct()
+  protected function __construct( $arguments )
   {
-    // determine whether connecting to mastodon is enabled
-    $this->enabled = !is_null( MASTODON_URL );
+    // determine whether connecting to cenozo service is enabled
+    $url = $arguments[0];
+    $this->enabled = !is_null( $url );
 
     if( $this->enabled )
     {
-      $base_url = MASTODON_URL.'/';
+      $base_url = $url.'/';
       $base_url = preg_replace(
         '#://#', '://'.$_SERVER['PHP_AUTH_USER'].':'.$_SERVER['PHP_AUTH_PW'].'@', $base_url );
       $this->base_url = $base_url;
@@ -40,7 +41,7 @@ class mastodon_manager extends \sabretooth\singleton
   }
   
   /**
-   * Determines if Mastodon is enabled.
+   * Determines if Cenozo is enabled.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
@@ -51,40 +52,56 @@ class mastodon_manager extends \sabretooth\singleton
   }
   
   /**
-   * Logs into Mastodon via HTTP POST
+   * Logs into Cenozo via HTTP POST
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
   protected function login()
   {
     if( !$this->enabled || $this->logged_in ) return;
 
     // log in using the current user/role/site
-    $db_site = session::self()->get_site();
-    $db_role = session::self()->get_role();
-    
+    $this->set_site( session::self()->get_site() );
+    $this->set_role( session::self()->get_role() );
+      
+    $this->logged_in = true;
+  }
+  
+  /**
+   * Set the current user's site at the remote application.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function set_site( $db_site )
+  {
     $request = new \HttpRequest();
     $request->enableCookies();
-
-    // set the site
     $request->setUrl( $this->base_url.'self/set_site' );
     $request->setMethod( \HttpRequest::METH_POST );
     $request->setPostFields(
       array( 'noid' => array( 'site.name' => $db_site->name, 'site.cohort' => 'tracking' ) ) );
     static::send( $request );
 
-    // set the role
+  }
+
+  /**
+   * Set the current user's role at the remote application.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function set_role( $db_role )
+  {
+    $request = new \HttpRequest();
+    $request->enableCookies();
     $request->setUrl( $this->base_url.'self/set_role' );
     $request->setMethod( \HttpRequest::METH_POST );
     $request->setPostFields(
       array( 'noid' => array( 'role.name' => $db_role->name ) ) );
     static::send( $request );
-      
-    $this->logged_in = true;
   }
 
   /**
-   * Pulls information from Mastodon via HTTP GET
+   * Pulls information from Cenozo via HTTP GET
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $subject The pull's subject
    * @param string $name The pull's name
@@ -113,7 +130,7 @@ class mastodon_manager extends \sabretooth\singleton
   }
 
   /**
-   * Pushes information to Mastodon via HTTP POST
+   * Pushes information to Cenozo via HTTP POST
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $subject The push's subject
    * @param string $name The push's name
@@ -140,10 +157,10 @@ class mastodon_manager extends \sabretooth\singleton
   }
 
   /**
-   * Sends an HTTP request to Mastodon.
+   * Sends an HTTP request to Cenozo.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param \HttpRequest $request The request to send
-   * @throws exception\mastodon, exception\runtime
+   * @throws exception\cenozo, exception\runtime
    * @return \HttpMessage
    * @access protected
    */
@@ -153,34 +170,34 @@ class mastodon_manager extends \sabretooth\singleton
     $code = $message->getResponseCode();
 
     if( 400 == $code )
-    { // duplicate mastodon exception
+    { // duplicate cenozo exception
       $body = json_decode( $message->body );
-      throw new exc\mastodon( $body->error_type, $body->error_code, $body->error_message );
+      throw new exc\cenozo( $body->error_type, $body->error_code, $body->error_message );
     }
     else if( 200 != $code )
-    { // A non-mastodon error has happened
-      throw new exc\runtime( 'Unable to connect to Mastodon (code: '.$code.')', __METHOD__ );
+    { // A non-cenozo error has happened
+      throw new exc\runtime( 'Unable to connect to Cenozo (code: '.$code.')', __METHOD__ );
     }
 
     return $message;
   }
 
   /**
-   * Whether or not Mastodon is enabled
+   * Whether or not Cenozo is enabled
    * @var boolean
    * @access protected
    */
   protected $enbled = false;
 
   /**
-   * The base URL to Mastodon
+   * The base URL to Cenozo
    * @var string
    * @access protected
    */
   protected $base_url = NULL;
 
   /**
-   * Whether Mastodon has been logged into or not
+   * Whether Cenozo has been logged into or not
    * @var boolean
    * @access protected
    */

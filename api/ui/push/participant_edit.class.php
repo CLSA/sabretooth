@@ -52,7 +52,7 @@ class participant_edit extends base_edit
     // now send the same request to mastodon (unless we are setting the site)
     if( !array_key_exists( 'site_id', $args['columns'] ) )
     {
-      $mastodon_manager = bus\mastodon_manager::self();
+      $mastodon_manager = bus\cenozo_manager::self( MASTODON_URL );
       $mastodon_manager->push( 'participant', 'edit', $args );
     }
   }

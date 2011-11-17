@@ -69,7 +69,7 @@ class site_new_access extends base_new_record
     $args['noid']['user_name_list'] = $user_name_list;
   
     // now send the same request to mastodon
-    $mastodon_manager = bus\mastodon_manager::self();
+    $mastodon_manager = bus\cenozo_manager::self( MASTODON_URL );
     $mastodon_manager->push( 'site', 'new_access', $args );
   }
 }

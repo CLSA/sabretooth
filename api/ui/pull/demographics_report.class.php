@@ -67,7 +67,7 @@ class demographics_report extends base_report
       
       if( $db_interview && $db_interview->completed )
       {
-        $mastodon_manager = bus\mastodon_manager::self();
+        $mastodon_manager = bus\cenozo_manager::self( MASTODON_URL );
         $participant_obj = $mastodon_manager->pull( 'participant', 'primary', 
           array( 'uid' => $db_participant->uid ) );
        
