@@ -17,7 +17,7 @@ use sabretooth\exception as exc;
  *
  * The session class is used to track all information from the time a user logs into the system
  * until they log out.
- * This class is a singleton, instead of using the new operator call {@singleton() 
+ * This class is a singleton, instead of using the new operator call the self() method.
  * @package sabretooth\business
  */
 final class session extends \sabretooth\singleton
