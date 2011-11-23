@@ -100,7 +100,7 @@ class appointment_add extends base_appointment_view
 
     $this->set_variable( 
       'is_mid_tier', 
-      2 == bussession::self()->get_role()->tier );
+      2 == bus\session::self()->get_role()->tier );
 
     $this->finish_setting_items();
   }

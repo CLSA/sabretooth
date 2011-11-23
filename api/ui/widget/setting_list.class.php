@@ -32,7 +32,7 @@ class setting_list extends base_list
   {
     parent::__construct( 'setting', $args );
     
-    $is_mid_tier = 2 == bussession::self()->get_role()->tier;
+    $is_mid_tier = 2 == bus\session::self()->get_role()->tier;
 
     $this->add_column( 'category', 'string', 'Category', true );
     $this->add_column( 'name', 'string', 'Name', true );
@@ -51,7 +51,7 @@ class setting_list extends base_list
   {
     parent::finish();
     
-    $is_mid_tier = 2 == bussession::self()->get_role()->tier;
+    $is_mid_tier = 2 == bus\session::self()->get_role()->tier;
 
     foreach( $this->get_record_list() as $record )
     {

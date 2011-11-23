@@ -32,7 +32,7 @@ class setting_view extends base_view
   {
     parent::__construct( 'setting', 'view', $args );
     
-    $is_mid_tier = 2 == bussession::self()->get_role()->tier;
+    $is_mid_tier = 2 == bus\session::self()->get_role()->tier;
 
     // create an associative array with everything we want to display about the setting
     $this->add_item( 'category', 'constant', 'Category' );
@@ -61,7 +61,7 @@ class setting_view extends base_view
   {
     parent::finish();
 
-    $is_mid_tier = 2 == bussession::self()->get_role()->tier;
+    $is_mid_tier = 2 == bus\session::self()->get_role()->tier;
 
     // set the view's items
     $this->set_item( 'category', $this->get_record()->category, true );
