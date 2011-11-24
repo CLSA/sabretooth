@@ -44,7 +44,7 @@ abstract class push extends operation
    */
   public function use_transaction()
   {
-    return $this->use_transaction;
+    return $this->transaction;
   }
   
   /**
