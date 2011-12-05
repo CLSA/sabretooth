@@ -30,6 +30,9 @@ class assignment_begin extends \sabretooth\ui\push
   public function __construct( $args )
   {
     parent::__construct( 'assignment', 'begin', $args );
+
+    // we can't use a transaction, otherwise the semaphore in the finish() method won't work right
+    $this->transaction = false;
   }
 
   /**

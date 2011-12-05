@@ -36,8 +36,12 @@ try
   if( !is_subclass_of( $operation, 'sabretooth\\ui\\push' ) )
     throw new exception\runtime(
       'Invoked operation "'.$push_class.'" is invalid.', 'PUSH__SCRIPT' );
-  
+
+  // only use a transaction if the pull requests one
+  if( $operation->use_transaction() )
+    business\session::self()->get_database()->start_transaction();
   $operation->finish();
+
   business\session::self()->log_activity( $operation, $push_args );
 }
 catch( exception\base_exception $e )
