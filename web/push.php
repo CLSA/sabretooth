@@ -30,7 +30,7 @@ try
   $push_name = $push_tokens[0].'_'.$push_tokens[1];
   $push_class = 'sabretooth\\ui\\push\\'.$push_name;
   $push_args = isset( $_POST ) ? $_POST : NULL;
-         
+
   // create the operation using the url and POST variables then execute it
   $operation = new $push_class( $push_args );
   if( !is_subclass_of( $operation, 'sabretooth\\ui\\push' ) )
@@ -72,7 +72,7 @@ if( true == $result_array['success'] )
 else
 {
   // make sure to fail any active transaction
-  if( class_exists( 'business\session' ) &&
+  if( class_exists( 'sabretooth\business\session' ) &&
       business\session::exists() &&
       business\session::self()->is_initialized() )
     business\session::self()->get_database()->fail_transaction();
