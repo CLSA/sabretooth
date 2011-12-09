@@ -359,7 +359,7 @@ class modifier extends \sabretooth\base_object
       $last_open_bracket = '(' == $statement;
     }
 
-    return ( $appending ? '' : 'WHERE ' ).$sql;
+    return ( $appending || 0 == strlen( $sql ) ? '' : 'WHERE ' ).$sql;
   }
   
   /**
