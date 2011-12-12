@@ -353,7 +353,8 @@ class modifier extends \sabretooth\base_object
       }
 
       $logic_type = $where['or'] ? ' OR' : ' AND';
-      if( !$first_item && ')' != $statement && !$last_open_bracket ) $sql .= $logic_type;
+      if( ( !$first_item || $appending ) &&
+          ')' != $statement && !$last_open_bracket ) $sql .= $logic_type;
       $sql .= ' '.$statement;
       $first_item = false;
       $last_open_bracket = '(' == $statement;
