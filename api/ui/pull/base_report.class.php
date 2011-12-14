@@ -261,6 +261,8 @@ abstract class base_report extends \sabretooth\ui\pull
           {
             $this->report->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
             $this->report->set_cell( $col.$row, $content );
+            if( !array_key_exists( $col, $contents_are_numeric ) )
+              $contents_are_numeric[$col] = false;
             $contents_are_numeric[$col] = $contents_are_numeric[$col] || is_numeric( $content );
             $col++;
           }
