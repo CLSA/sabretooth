@@ -69,27 +69,31 @@ class activity extends record
    * particular day.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param access $db_access The access to query.
+   * @param user $db_user The user to query.
+   * @param site $db_site The site to query.
+   * @param role $db_role The role to query.
    * @param string $date A date string in any valid PHP date time format.
+   * @param boolean $remove_away_time Whether to remove away time from the total.
    * @return float
    * @static
    * @access public
    */
-  public static function get_elapsed_time( $db_user, $db_site, $db_role, $date )
+  public static function get_elapsed_time(
+    $db_user, $db_site, $db_role, $date, $remove_away_time = true )
   {
     $time = 0;
     $total_time = 0;
     $start_datetime_obj = NULL;
     $end_datetime_obj = NULL;
 
-    $modifier = new modifier();
-    $modifier->where( 'user_id', '=', $db_user->id );
-    $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'operation.subject', '!=', 'self' );
-    $modifier->where( 'datetime', '>=', $date.' 0:00:00' );
-    $modifier->where( 'datetime', '<=', $date.' 23:59:59' );
+    $activity_mod = new modifier();
+    $activity_mod->where( 'user_id', '=', $db_user->id );
+    $activity_mod->where( 'site_id', '=', $db_site->id );
+    $activity_mod->where( 'operation.subject', '!=', 'self' );
+    $activity_mod->where( 'datetime', '>=', $date.' 0:00:00' );
+    $activity_mod->where( 'datetime', '<=', $date.' 23:59:59' );
 
-    foreach( static::select( $modifier ) as $db_activity )
+    foreach( static::select( $activity_mod ) as $db_activity )
     {
       if( $db_activity->role_id == $db_role->id )
       {
@@ -114,6 +118,27 @@ class activity extends record
     }
 
     $total_time += $time;
+
+    // now substract all away times, if necessary
+    if( $remove_away_time )
+    {
+      $away_time_mod = new modifier();
+      $away_time_mod->where( 'user_id', '=', $db_user->id );
+      $away_time_mod->where( 'start_datetime', '>=', $date.' 0:00:00' );
+      $away_time_mod->where( 'start_datetime', '<=', $date.' 23:59:59' );
+      $away_time_mod->where( 'end_datetime', '>=', $date.' 0:00:00' );
+      $away_time_mod->where( 'end_datetime', '<=', $date.' 23:59:59' );
+      foreach( away_time::select( $away_time_mod ) as $db_away_time )
+      {
+        if( $db_away_time->end_datetime && $db_away_time->start_datetime )
+        {
+          $interval_obj =
+            util::get_interval( $db_away_time->end_datetime, $db_away_time->start_datetime );
+          $time = $interval_obj->h + $interval_obj->i / 60 + $interval_obj->s / 3600;
+          $total_time -= $time;
+        }
+      }
+    }
 
     return $total_time;
   }
