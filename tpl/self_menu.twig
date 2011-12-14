@@ -48,7 +48,7 @@
 {% block widget %}
 
   <div>
-    {% if calendars|count %}
+    {% if calendars|length %}
       <div class="title" style="text-align: center">Calendars</div>
       {% for calendar in calendars %}
         <div style="padding: 2px;">
@@ -59,7 +59,7 @@
       <div class="spacer" />
     {% endif %}
 
-    {% if lists|count %}
+    {% if lists|length %}
       <div class="title" style="text-align: center">Lists</div>
       {% for list in lists %}
         <div style="padding: 2px;">
@@ -70,7 +70,7 @@
       <div class="spacer" />
     {% endif %}
 
-    {% if reports|count %}
+    {% if reports|length %}
       <div class="title" style="text-align: center">Reports</div>
       {% for report in reports %}
         <div style="padding: 2px;">

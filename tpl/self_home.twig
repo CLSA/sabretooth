@@ -28,7 +28,7 @@
 
   <div class="ui-widget-header ui-state-hover app-widget-header">System Messages</div>
   <div class="ui-widget ui-widget-content app-widget-content">
-    {% if message_list|count %}
+    {% if message_list|length %}
       <div class="spacer" />
       {% for message in message_list %}
         <div class="ui-widget ui-widget-header">{{ message.title }}</div>

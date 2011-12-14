@@ -442,7 +442,7 @@
         {% endif %}
       </tr>
     </thead>
-    {% if rows|count %}
+    {% if rows|length %}
       <tbody>
         {% for row in rows %}
           <tr>
@@ -498,9 +498,9 @@
             <span style="margin-left:20px"></span>
           {% endif %}
 
-          {% if rows|count %}
+          {% if rows|length %}
             {% set item_from = ( page - 1 ) * items_per_page + 1 %}
-            {% set item_to = item_from + rows|count - 1 %}
+            {% set item_to = item_from + rows|length - 1 %}
             Viewing: {{ item_from }} to {{ item_to }} of {{ number_of_items }}
           {% else %}
             No {{ widget.subject_names }} found.

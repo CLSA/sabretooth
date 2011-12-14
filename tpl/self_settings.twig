@@ -89,7 +89,7 @@
     <tr>
       <td align="left" width="50%">
         <span class="title" style="width:20%">Site:</span>
-        {% if 1 < sites|count %}
+        {% if 1 < sites|length %}
           <select id="{{ widget.full }}_set_site" style="width: 80%" class="ui-state-default">
             {% for id, site in sites %}
               <option {{ current_site_id == id ? 'selected' : '' }}
@@ -102,7 +102,7 @@
       </td>
       <td align="right" width="50%">
         <span class="title" style="width:20%">Role:</span>
-        {% if 1 < roles|count %}
+        {% if 1 < roles|length %}
           <select id="{{ widget.full }}_set_role" style="width: 80%" class="ui-state-default">
             {% for id, role in roles %}
               <option {{ current_role_id == id ? 'selected' : '' }}

@@ -18,7 +18,7 @@
       <span id="{{ widget.full }}_nodespot__{{ node.id }}">{{ node.count }}</span>
     </span>
   {% endif %}
-  {% if node.children|count %}
+  {% if node.children|length %}
     <ul>
       {% for child in node.children %}
         {% include "tree_widget.twig" with { 'node': child } %}

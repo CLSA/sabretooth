@@ -49,7 +49,7 @@
         {# make null entries an empty string #}
         {% set param_value = param.value is defined ? param.value : "" %}
         
-        {% if 'enum' == param.type and 1 == param.enum|count %}
+        {% if 'enum' == param.type and 1 == param.enum|length %}
   
           {# don't display enums where there is only one possible value #}
           <tr><td style="height:0px">

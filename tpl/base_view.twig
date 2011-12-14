@@ -232,7 +232,7 @@
                       return data[index];
                     }, jeditable_params );
                   
-                  {% elseif 'enum' == entry.type and 1 < entry.enum|count %}
+                  {% elseif 'enum' == entry.type and 1 < entry.enum|length %}
           
                     jeditable_params.type = "select";
                     jeditable_params.data = '{ ' +
@@ -345,7 +345,7 @@
       
               {% elseif 'enum' == entry.type %}
                 
-                {% if 1 == entry.enum|count %}
+                {% if 1 == entry.enum|length %}
                   <div id="{{ widget.full }}__{{ item_id }}"
                        class="padded">{{ enum_display_value }}</div>
                 {% else %}
