@@ -30,6 +30,9 @@ class assignment_begin extends \sabretooth\ui\push
   public function __construct( $args )
   {
     parent::__construct( 'assignment', 'begin', $args );
+
+    // we can't use a transaction, otherwise the semaphore in the finish() method won't work right
+    $this->transaction = false;
   }
 
   /**
@@ -53,8 +56,7 @@ class assignment_begin extends \sabretooth\ui\push
     if( !sem_acquire( $semaphore ) )
     {
       log::err( sprintf(
-        'Unable to aquire semaphore key "%s" for user id %d',
-        $sem_key,
+        'Unable to aquire semaphore for user id %d',
         $session->get_user()->id ) );
       throw new exc\notice(
         'The server is busy, please wait a few seconds then click the refresh button.',
@@ -171,8 +173,7 @@ class assignment_begin extends \sabretooth\ui\push
     if( !sem_release( $semaphore ) )
     {
       log::err( sprintf(
-        'Unable to release semaphore key "%s" for user id %d',
-        $sem_key,
+        'Unable to release semaphore for user id %d',
         $session->get_user()->id ) );
     }
   }

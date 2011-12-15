@@ -11,23 +11,26 @@ namespace sabretooth;
 // the array to return, encoded as JSON if there is an error
 $result_array = array( 'success' => true );
 
-// hack for logging out HTTP authentication
-if( array_key_exists( 'logout', $_COOKIE ) && $_COOKIE['logout'] )
-{
-  setcookie( 'logout', false, time() - 100 * 3600 * 24 );
-
-  // force the user to log out by sending a header with invalid HTTP auth credentials
-  header( sprintf( 'Location: %s://none:none@%s%s',
-                   'http'.( 'on' == $_SERVER['HTTPS'] ? 's' : '' ),
-                   $_SERVER['HTTP_HOST'],
-                   $_SERVER['REQUEST_URI'] ) );
-  exit;
-}
-
 try
 {
   // load web-script common code
   require_once 'sabretooth.inc.php';
+
+  // hack for logging out HTTP authentication
+  if( array_key_exists( 'logout', $_COOKIE ) && $_COOKIE['logout'] )
+  {
+    $_SESSION = array();
+    session_destroy();
+    session_write_close();
+    setcookie( 'logout' );
+
+    // force the user to log out by sending a header with invalid HTTP auth credentials
+    header( sprintf( 'Location: %s://none:none@%s%s',
+                     'http'.( 'on' == $_SERVER['HTTPS'] ? 's' : '' ),
+                     $_SERVER['HTTP_HOST'],
+                     $_SERVER['REQUEST_URI'] ) );
+    exit;
+  }
 
   // setup Twig
   require_once 'Twig/Autoloader.php';
@@ -110,7 +113,7 @@ if( true == $result_array['success'] )
 else
 {
   // make sure to fail any active transaction
-  if( class_exists( 'business\session' ) &&
+  if( class_exists( 'sabretooth\business\session' ) &&
       business\session::exists() &&
       business\session::self()->is_initialized() )
     business\session::self()->get_database()->fail_transaction();

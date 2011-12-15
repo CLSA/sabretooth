@@ -182,6 +182,12 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant", "primary", true, "Retrieves base participant information." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "withdraw", true, "Withdraws the participant (or cancels the withdraw).  This is meant to be used during an interview if the participant suddenly wishes to withdraw." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "sync", true, "A form to synchronise participants between Sabretooth and Mastodon." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "participant", "sync", true, "Returns a summary of changes to be made given a list of UIDs to sync." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "participant", "sync", true, "Updates participants with their information in Mastodon." );
 
 -- phase
 INSERT INTO operation( type, subject, name, restricted, description )

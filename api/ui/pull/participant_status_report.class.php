@@ -91,6 +91,7 @@ class participant_status_report extends base_report
       foreach( db\region::select($region_mod) as $db_region )
         $grand_totals[ $db_region->abbreviation ] = $totals; 
     }  
+    $grand_totals[ 'None' ] = $totals;
 
     // the last column of the report sums totals row-wise
     $grand_totals[ 'Grand Total' ] = $totals;
@@ -99,11 +100,17 @@ class participant_status_report extends base_report
     {
       if( $restrict_by_site )
       {
-        $locale = $db_participant->get_primary_site()->name;
+        $db_site = $db_participant->get_primary_site();
+        $locale = is_null( $db_site )
+                ? 'None'
+                : $locale = $db_participant->get_primary_site()->name;
       }
       else
       {
-        $locale = $db_participant->get_primary_address()->get_region()->abbreviation;
+        $db_address = $db_participant->get_primary_address();
+        $locale = is_null( $db_address )
+                ? 'None'
+                : $db_address->get_region()->abbreviation;
       }
 
       $grand_totals[ $locale ][ 'Total number of calls' ] +=

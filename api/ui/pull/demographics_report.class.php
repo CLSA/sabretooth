@@ -53,9 +53,11 @@ class demographics_report extends base_report
     {
       $db_consent = $db_participant->get_last_consent();
       if( is_null( $db_consent ) && $consent_status != 'Any' ) continue;
-      
-      $region_id = $db_participant->get_primary_address()->get_region()->id;
-      $region_name = $db_participant->get_primary_address()->get_region()->name;
+      $db_address = $db_participant->get_primary_address();
+      if( is_null( $db_address ) ) continue;
+
+      $region_id = $db_address->get_region()->id;
+      $region_name = $db_address->get_region()->name;
 
       if( ( 'deceased' == $db_participant->status ) ||   
           ( $province_id && $province_id != $region_id ) ||
