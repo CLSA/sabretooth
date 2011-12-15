@@ -40,7 +40,12 @@ class voip_dtmf extends \sabretooth\ui\push
    */
   public function finish()
   {
-    bus\voip_manager::self()->get_call()->dtmf( $this->get_argument( 'tone' ) );
+    $voip_call = bus\voip_manager::self()->get_call();
+    if( is_null( $voip_call ) )
+      throw new exc\notice(
+        'Unable to send tone since you are not currently in a call.', __NOTICE__ );
+
+    $voip_call->dtmf( $this->get_argument( 'tone' ) );
   }
 }
 ?>

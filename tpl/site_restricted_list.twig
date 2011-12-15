@@ -29,18 +29,20 @@
 
   {% if sites is defined %}
     <div style="padding-top: 4px; padding-bottom: 4px;">
-      <span class="spacer">
-        {% set restrict_site_id = restrict_site_id|default(0) %}
-        Restrict to site:
-        <select id="{{ widget.full }}__restrict_site" class="ui-state-default">
-          <option {% if 0 == restrict_site_id %}selected{% endif %}
-                  value="0">All Sites</option>
-          {% for id, name in sites %}
-            <option {% if id == restrict_site_id %}selected{% endif %}
-                    value="{{ id }}">{{ name }}</option>
-          {% endfor %}
-        </select>
-      </span>
+      {% block prelist %}
+        <span class="spacer">
+          {% set restrict_site_id = restrict_site_id|default(0) %}
+          Restrict to site:
+          <select id="{{ widget.full }}__restrict_site" class="ui-state-default">
+            <option {% if 0 == restrict_site_id %}selected{% endif %}
+                    value="0">All Sites</option>
+            {% for id, name in sites %}
+              <option {% if id == restrict_site_id %}selected{% endif %}
+                      value="{{ id }}">{{ name }}</option>
+            {% endfor %}
+          </select>
+        </span>
+      {% endblock prelist %}
     </div>
   {% endif %}
 
