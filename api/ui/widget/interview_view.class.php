@@ -50,6 +50,18 @@ class interview_view extends base_view
     {
       $this->assignment_list = NULL;
     }
+
+    try
+    {
+      // create the recording sub-list widget
+      $this->recording_list = new recording_list( $args );
+      $this->recording_list->set_parent( $this );
+      $this->recording_list->set_heading( 'Audio recordings of the interview' );
+    }
+    catch( exc\permission $e )
+    {
+      $this->recording_list = NULL;
+    }
   }
 
   /**
@@ -79,6 +91,13 @@ class interview_view extends base_view
       $this->assignment_list->finish();
       $this->set_variable( 'assignment_list', $this->assignment_list->get_variables() );
     }
+
+    // finish the child widgets
+    if( !is_null( $this->recording_list ) )
+    {
+      $this->recording_list->finish();
+      $this->set_variable( 'recording_list', $this->recording_list->get_variables() );
+    }
   }
   
   /**
@@ -87,5 +106,12 @@ class interview_view extends base_view
    * @access protected
    */
   protected $assignment_list = NULL;
+  
+  /**
+   * The interview list widget.
+   * @var recording_list
+   * @access protected
+   */
+  protected $recording_list = NULL;
 }
 ?>

@@ -32,9 +32,11 @@ class interview_list extends site_restricted_list
   {
     parent::__construct( 'interview', $args );
     
-    $this->add_column( 'user.uid', 'string', 'UID', true );
+    $this->add_column( 'participant.uid', 'string', 'UID', true );
     $this->add_column( 'qnaire.name', 'string', 'Questionnaire', true );
     $this->add_column( 'completed', 'boolean', 'Completed', true );
+    $this->add_column( 'recordings', 'number', 'Recordings', false );
+    $this->add_column( 'unprocessed', 'number', 'Unprocessed', false );
   }
   
   /**
@@ -49,14 +51,51 @@ class interview_list extends site_restricted_list
     
     foreach( $this->get_record_list() as $record )
     {
+      $recordings = $record->get_recording_count();
+      $recording_mod = new db\modifier();
+      $recording_mod->where( 'processed', '=', true );
+      $processed_recordings = $record->get_recording_count( $recording_mod );
+
       // assemble the row for this record
       $this->add_row( $record->id,
-        array( 'user.uid' => $record->get_participant()->uid,
+        array( 'participant.uid' => $record->get_participant()->uid,
                'qnaire.name' => $record->get_qnaire()->name,
-               'completed' => $record->completed ) );
+               'completed' => $record->completed,
+               'recordings' => $recordings,
+               'unprocessed' => $recordings - $processed_recordings ) );
     }
 
     $this->finish_setting_rows();
+  }
+
+  /**
+   * Overrides the parent class method to restrict interview list based on user's role
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return int
+   * @access protected
+   */
+  protected function determine_record_count( $modifier = NULL )
+  {
+    return is_null( $this->db_restrict_site )
+         ? parent::determine_record_count( $modifier )
+         : db\interview::count_for_site( $this->db_restrict_site, $modifier );
+  }
+  
+  /**
+   * Overrides the parent class method to restrict interview list based on user's role
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return array( record )
+   * @access protected
+   */
+  protected function determine_record_list( $modifier = NULL )
+  {
+    return is_null( $this->db_restrict_site )
+         ? parent::determine_record_list( $modifier )
+         : db\interview::select_for_site( $this->db_restrict_site, $modifier );
   }
 }
 ?>
