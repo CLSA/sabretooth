@@ -74,6 +74,21 @@ class modifier extends \sabretooth\base_object
   }
 
   /**
+   * Add a bracket to a where statement
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $open Whether to open or close a bracket
+   * @param boolean $or Whether to logically "or" the contents of the bracket
+   *        (default is false, which means "and").  This is ignored when closing brackets.
+   * @access public
+   */
+  public function where_bracket( $open, $or = false )
+  {
+    $this->where_list[] = array( 'bracket' => $open,
+                                 'or' => $or );
+  }
+
+  /**
    * Add a group by statement to the modifier.
    * 
    * This method appends group by clauses onto the end of already existing group by clauses.
@@ -153,7 +168,9 @@ class modifier extends \sabretooth\base_object
    */
   public function has_where( $column )
   {
-    foreach( $this->where_list as $where ) if( $column == $where['column'] ) return true;
+    foreach( $this->where_list as $where )
+      if( array_key_exists( 'column', $where ) &&
+          $column == $where['column'] ) return true;
     return false;
   }
 
@@ -193,7 +210,8 @@ class modifier extends \sabretooth\base_object
   public function get_where_columns()
   {
     $columns = array();
-    foreach( $this->where_list as $where ) $columns[] = $where['column'];
+    foreach( $this->where_list as $where )
+      if( array_key_exists( 'column', $where ) ) $columns[] = $where['column'];
     return $columns;
   }
 
@@ -254,19 +272,46 @@ class modifier extends \sabretooth\base_object
   {
     $sql = '';
     $first_item = true;
+    $last_open_bracket = false;
     foreach( $this->where_list as $where )
     {
-      $convert_time = database::is_time_column( $where['column'] );
-      $convert_datetime = database::is_datetime_column( $where['column'] );
+      $statement = '';
 
-      if( 'IN' == $where['operator'] || 'NOT IN' == $where['operator'] )
+      // check if this is a bracket
+      if( array_key_exists( 'bracket', $where ) )
       {
-        if( is_array( $where['value'] ) )
+        $statement = $where['bracket'] ? '(' : ')';
+      }
+      else
+      {
+        $convert_time = database::is_time_column( $where['column'] );
+        $convert_datetime = database::is_datetime_column( $where['column'] );
+
+        if( 'IN' == $where['operator'] || 'NOT IN' == $where['operator'] )
         {
-          $first_value = true;
-          $compare = '';
-          foreach( $where['value'] as $value )
+          if( is_array( $where['value'] ) )
           {
+            $first_value = true;
+            foreach( $where['value'] as $value )
+            {
+              if( $where['format'] )
+              {
+                if( $convert_time ) $value = util::to_server_datetime( $value, 'H:i:s' );
+                else if( $convert_datetime ) $value = util::to_server_datetime( $value );
+                $value = database::format_string( $value );
+              }
+
+              $statement .= $first_value
+                        ? sprintf( '%s %s( ', $where['column'], $where['operator'] )
+                        : ', ';
+              $statement .= $value;
+              $first_value = false;
+            }
+            $statement .= ' )';
+          }
+          else
+          {
+            $value = $where['value'];
             if( $where['format'] )
             {
               if( $convert_time ) $value = util::to_server_datetime( $value, 'H:i:s' );
@@ -274,13 +319,11 @@ class modifier extends \sabretooth\base_object
               $value = database::format_string( $value );
             }
 
-            $compare .= $first_value
-                      ? sprintf( '%s %s( ', $where['column'], $where['operator'] )
-                      : ', ';
-            $compare .= $value;
-            $first_value = false;
+            $statement = sprintf( '%s %s( %s )',
+                                $where['column'],
+                                $where['operator'],
+                                $value );
           }
-          $compare .= ' )';
         }
         else
         {
@@ -291,45 +334,33 @@ class modifier extends \sabretooth\base_object
             else if( $convert_datetime ) $value = util::to_server_datetime( $value );
             $value = database::format_string( $value );
           }
+          
+          if( 'NULL' == $value )
+          {
+            if( '=' == $where['operator'] ) $statement = $where['column'].' IS NULL';
+            else if( '!=' == $where['operator'] ) $statement = $where['column'].' IS NOT NULL';
+            else log::err(
+                   'Tried to compare to NULL value with "'.$where['operator'].'" operator.' );
+          }
+          else
+          {
+            $statement = sprintf( '%s %s %s',
+                                $where['column'],
+                                $where['operator'],
+                                $value );
+          }
+        }
+      }
 
-          $compare = sprintf( '%s %s( %s )',
-                              $where['column'],
-                              $where['operator'],
-                              $value );
-        }
-      }
-      else
-      {
-        $value = $where['value'];
-        if( $where['format'] )
-        {
-          if( $convert_time ) $value = util::to_server_datetime( $value, 'H:i:s' );
-          else if( $convert_datetime ) $value = util::to_server_datetime( $value );
-          $value = database::format_string( $value );
-        }
-        
-        if( 'NULL' == $value )
-        {
-          if( '=' == $where['operator'] ) $compare = $where['column'].' IS NULL';
-          else if( '!=' == $where['operator'] ) $compare = $where['column'].' IS NOT NULL';
-          else log::err(
-                 'Tried to compare to NULL value with "'.$where['operator'].'" operator.' );
-        }
-        else
-        {
-          $compare = sprintf( '%s %s %s',
-                              $where['column'],
-                              $where['operator'],
-                              $value );
-        }
-      }
-      
       $logic_type = $where['or'] ? ' OR' : ' AND';
-      $sql .= ( $first_item && !$appending ? 'WHERE' : $logic_type ).' '.$compare;
+      if( ( !$first_item || $appending ) &&
+          ')' != $statement && !$last_open_bracket ) $sql .= $logic_type;
+      $sql .= ' '.$statement;
       $first_item = false;
+      $last_open_bracket = '(' == $statement;
     }
 
-    return $sql;
+    return ( $appending || 0 == strlen( $sql ) ? '' : 'WHERE ' ).$sql;
   }
   
   /**

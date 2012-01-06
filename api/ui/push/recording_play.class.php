@@ -1,6 +1,6 @@
 <?php
 /**
- * voip_dtmf.class.php
+ * recording_play.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -14,13 +14,12 @@ use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * push: voip dtmf
- *
- * Changes the current user's theme.
- * Arguments must include 'theme'.
+ * push: recording play
+ * 
+ * Plays a recording via SIP
  * @package sabretooth\ui
  */
-class voip_dtmf extends \sabretooth\ui\push
+class recording_play extends \sabretooth\ui\push
 {
   /**
    * Constructor.
@@ -30,9 +29,9 @@ class voip_dtmf extends \sabretooth\ui\push
    */
   public function __construct( $args )
   {
-    parent::__construct( 'voip', 'dtmf', $args );
+    parent::__construct( 'recording', 'play', $args );
   }
-  
+
   /**
    * Executes the push.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -40,12 +39,8 @@ class voip_dtmf extends \sabretooth\ui\push
    */
   public function finish()
   {
-    $voip_call = bus\voip_manager::self()->get_call();
-    if( is_null( $voip_call ) )
-      throw new exc\notice(
-        'Unable to send tone since you are not currently in a call.', __NOTICE__ );
-
-    $voip_call->dtmf( $this->get_argument( 'tone' ) );
+    // connect voip to phone
+    //bus\voip_manager::self()->call( $db_phone );
   }
 }
 ?>

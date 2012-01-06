@@ -29,7 +29,7 @@ CREATE  TABLE IF NOT EXISTS `participant` (
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
-  `uid` VARCHAR(45) NULL COMMENT 'External unique ID' ,
+  `uid` VARCHAR(45) NOT NULL COMMENT 'External unique ID' ,
   `first_name` VARCHAR(45) NOT NULL ,
   `last_name` VARCHAR(45) NOT NULL ,
   `status` ENUM('deceased', 'deaf', 'mentally unfit','language barrier','age range','other') NULL DEFAULT NULL ,
@@ -41,6 +41,7 @@ CREATE  TABLE IF NOT EXISTS `participant` (
   INDEX `dk_active` (`active` ASC) ,
   INDEX `dk_status` (`status` ASC) ,
   INDEX `dk_prior_contact_date` (`prior_contact_date` ASC) ,
+  UNIQUE INDEX `uq_uid` (`uid` ASC) ,
   CONSTRAINT `fk_participant_site`
     FOREIGN KEY (`site_id` )
     REFERENCES `site` (`id` )
@@ -833,6 +834,36 @@ CREATE  TABLE IF NOT EXISTS `system_message` (
   `title` VARCHAR(255) NOT NULL ,
   `note` TEXT NOT NULL ,
   PRIMARY KEY (`id`) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `recording`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `recording` ;
+
+CREATE  TABLE IF NOT EXISTS `recording` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `interview_id` INT UNSIGNED NOT NULL ,
+  `assignment_id` INT UNSIGNED NULL DEFAULT NULL ,
+  `rank` INT UNSIGNED NOT NULL ,
+  `processed` TINYINT(1)  NOT NULL DEFAULT false ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_interview_id` (`interview_id` ASC) ,
+  UNIQUE INDEX `uq_interview_rank` (`interview_id` ASC, `rank` ASC) ,
+  INDEX `fk_assignment_id1` (`assignment_id` ASC) ,
+  CONSTRAINT `fk_recording_interview`
+    FOREIGN KEY (`interview_id` )
+    REFERENCES `interview` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_assignment_id1`
+    FOREIGN KEY (`assignment_id` )
+    REFERENCES `assignment` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 

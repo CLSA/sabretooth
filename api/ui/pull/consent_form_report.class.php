@@ -86,6 +86,7 @@ class consent_form_report extends base_report
               if( $db_survey && 'Y' == $db_survey->get_response( $question_code ) )
               {
                 $db_address = $db_participant->get_first_address();
+                if( is_null( $db_address ) ) continue;
                 $db_region = $db_address->get_region();
                 $db_last_phone_call = $db_participant->get_last_contacted_phone_call();
 

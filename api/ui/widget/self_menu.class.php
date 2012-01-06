@@ -74,11 +74,11 @@ class self_menu extends \sabretooth\ui\widget
       'appointment',
       'availability',
       'consent',
-      'interview',
       'operation',
       'phase',
       'phone',
-      'phone_call' );
+      'phone_call',
+      'recording' );
 
     foreach( $widgets as $db_widget )
     {

@@ -34,5 +34,24 @@ abstract class push extends operation
   {
     parent::__construct( 'push', $subject, $name, $args );
   }
+  
+  /**
+   * Returns whether to use a transaction when calling the finish method
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function use_transaction()
+  {
+    return $this->transaction;
+  }
+  
+  /**
+   * Whether to use a transaction.
+   * @var boolean
+   * @access protected
+   */
+  protected $transaction = true;
 }
 ?>

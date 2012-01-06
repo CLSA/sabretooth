@@ -53,10 +53,6 @@ class database extends \sabretooth\base_object
     
     $this->connect();
 
-    // only start a transaction for the main database (this is an ADOdb limitation)
-    if( bus\setting_manager::self()->get_setting( 'db', 'database' ) == $database )
-      $this->connection->StartTrans();
-
     $column_mod = new modifier();
     $column_mod->where( 'TABLE_SCHEMA', '=', $this->name );
     $column_mod->order( 'TABLE_NAME' );
@@ -138,7 +134,22 @@ class database extends \sabretooth\base_object
         bus\setting_manager::self()->get_setting( 'db', 'database' ) == $this->name )
       $this->connection->CompleteTrans();
   }
-  
+
+  /**
+   * Start a database transaction.
+   * Transactions are automatically completed in the destructor.  To force-fail (rollback)
+   * a transaction call fail_transaction()
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function start_transaction()
+  {
+    // only start a transaction for the main database (this is an ADOdb limitation)
+    if( bus\setting_manager::self()->get_setting( 'db', 'database' ) == $this->name )
+      $this->connection->StartTrans();
+  }
+
   /**
    * Fail the current transaction
    * 
