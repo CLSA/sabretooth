@@ -119,6 +119,8 @@ class activity extends record
 
     $total_time += $time;
 
+   //TODO: check about the diff with cenozo
+
     // now substract all away times, if necessary
     if( $remove_away_time )
     {
