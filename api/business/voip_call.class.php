@@ -8,9 +8,7 @@
  */
 
 namespace sabretooth\business;
-use sabretooth\log, sabretooth\util;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 require_once SHIFT8_PATH.'/library/Shift8.php';
 
@@ -182,7 +180,7 @@ class voip_call extends \sabretooth\base_object
     if( !voip_manager::self()->get_enabled() ) return;
 
     $monitor_path = WEB_PATH.'/'.setting_manager::self()->get_setting( 'voip', 'monitor' );
-    $filename = sprintf( '%s/%s', $monitor_path, $file );
+    $filename = sprintf( '%s/%s', VOIP_MONITOR_PATH, $file );
 
     // make sure to not overwrite any existing recordings
     if( file_exists( $filename.'-in.wav' ) )

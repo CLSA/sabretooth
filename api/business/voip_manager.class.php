@@ -8,9 +8,7 @@
  */
 
 namespace sabretooth\business;
-use sabretooth\log, sabretooth\util;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 require_once SHIFT8_PATH.'/library/Shift8.php';
 
