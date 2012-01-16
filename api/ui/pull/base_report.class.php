@@ -56,13 +56,14 @@ abstract class base_report extends \sabretooth\ui\pull
   }
 
   protected function add_table(
-    $title = NULL, $header = array(), $contents = array(), $footer = array() )
+    $title = NULL, $header = array(), $contents = array(), $footer = array(), $blanks = array() )
   {
     array_push( $this->report_tables,
       array( 'title' => $title,
              'header' => $header,
              'contents' => $contents,
-             'footer' => $footer ) );
+             'footer' => $footer,
+             'blanks' => $blanks ) );
   }
 
   /**
@@ -117,7 +118,7 @@ abstract class base_report extends \sabretooth\ui\pull
 
     $now_datetime_obj = util::get_datetime_object();
     $time_title = 'Generated on '.$now_datetime_obj->format( 'Y-m-d' ).
-                   ' at '.$now_datetime_obj->format( 'H:i' );
+                   ' at '.$now_datetime_obj->format( 'H:i T' );
     $this->report->set_size( 14 );
     $this->report->set_bold( false );
     if( $max_col ) $this->report->merge_cells( 'A'.$row.':'.$max_col.$row );
@@ -250,6 +251,8 @@ abstract class base_report extends \sabretooth\ui\pull
       unset( $contents_are_numeric );
       if( count( $table['contents'] ) )
       {
+        $content_row = 0;
+        $insert_row = count( $table['blanks'] ) > 0 ? true : false;
         foreach( $table['contents'] as $contents )
         {
           $col = 'A';
@@ -258,9 +261,15 @@ abstract class base_report extends \sabretooth\ui\pull
           {
             $this->report->set_horizontal_alignment( 'A' == $col ? 'left' : 'center' );
             $this->report->set_cell( $col.$row, $content );
+            if( !array_key_exists( $col, $contents_are_numeric ) )
+              $contents_are_numeric[$col] = false;
             $contents_are_numeric[$col] = $contents_are_numeric[$col] || is_numeric( $content );
             $col++;
           }
+          
+          if( $insert_row && in_array( $content_row, $table['blanks'] ) ) $row++;    
+                    
+          $content_row++;
           $row++;
         }
       }

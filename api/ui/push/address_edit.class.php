@@ -52,7 +52,29 @@ class address_edit extends base_edit
           'Postal codes must be in "A1A 1A1" format, zip codes in "01234" format.', __METHOD__ );
     }
 
+    // we'll need the arguments to send to mastodon
+    $args = $this->arguments;
+
+    // replace the address id with a unique key
+    $db_address = $this->get_record();
+    unset( $args['id'] );
+    $args['noid']['participant.uid'] = $db_address->get_participant()->uid;
+    $args['noid']['address.rank'] = $db_address->rank;
+    
+    // if set, replace the region id with a unique key
+    if( array_key_exists( 'region_id', $columns ) && $columns['region_id'] )
+    {
+      $db_region = new db\region( $columns['region_id'] );
+      unset( $args['region_id'] );
+      // we only include half of the unique key since the other half is added above
+      $args['noid']['region.abbreviation'] = $db_region->abbreviation;
+    }
+
     parent::finish();
+
+    // now send the same request to mastodon
+    $mastodon_manager = bus\mastodon_manager::self();
+    $mastodon_manager->push( 'address', 'edit', $args );
   }
 }
 ?>

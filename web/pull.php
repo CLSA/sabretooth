@@ -74,7 +74,10 @@ if( true == $result_array['success'] )
   if( 'json' == $data_type )
   {
     $result_array['data'] = $data;
-    print json_encode( $result_array );
+    $output = json_encode( $result_array );
+    header( 'Content-Type: application/json' );
+    header( 'Content-Length: '.strlen( $output ) );
+    print $output;
   }
   else
   {
@@ -94,7 +97,7 @@ if( true == $result_array['success'] )
 else
 {
   // make sure to fail any active transaction
-  if( class_exists( 'business\session' ) &&
+  if( class_exists( 'sabretooth\business\session' ) &&
       business\session::exists() &&
       business\session::self()->is_initialized() )
     business\session::self()->get_database()->fail_transaction();

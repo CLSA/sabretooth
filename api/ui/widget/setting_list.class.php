@@ -18,7 +18,7 @@ use sabretooth\exception as exc;
  * 
  * @package sabretooth\ui
  */
-class setting_list extends base_list_widget
+class setting_list extends base_list
 {
   /**
    * Constructor
@@ -38,7 +38,7 @@ class setting_list extends base_list_widget
     $this->add_column( 'name', 'string', 'Name', true );
     $this->add_column( 'value', 'string', 'Default', false );
     if( $is_supervisor ) $this->add_column( 'site_value', 'string', 'Value', false );
-    $this->add_column( 'description', 'text', 'Description', true, 'left' );
+    $this->add_column( 'description', 'text', 'Description', true, true, 'left' );
   }
 
   /**

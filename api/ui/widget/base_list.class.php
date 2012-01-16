@@ -1,6 +1,6 @@
 <?php
 /**
- * base_list_widget.class.php
+ * base_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -24,7 +24,7 @@ use sabretooth\exception as exc;
  * @abstract
  * @package sabretooth\ui
  */
-abstract class base_list_widget extends \sabretooth\ui\widget
+abstract class base_list extends \sabretooth\ui\widget
 {
   /**
    * Constructor
@@ -291,7 +291,7 @@ abstract class base_list_widget extends \sabretooth\ui\widget
   }
 
   /**
-   * Set whether itmes in the list can be checked/selected.
+   * Set whether items in the list can be checked/selected.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $enable
    * @access public
@@ -302,7 +302,7 @@ abstract class base_list_widget extends \sabretooth\ui\widget
   }
 
   /**
-   * Set whether itmes in the list can be viewed.
+   * Set whether items in the list can be viewed.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $enable
    * @access public
@@ -313,7 +313,7 @@ abstract class base_list_widget extends \sabretooth\ui\widget
   }
 
   /**
-   * Set whether itmes in the list can be added.
+   * Set whether items in the list can be added.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $enable
    * @access public
@@ -324,7 +324,7 @@ abstract class base_list_widget extends \sabretooth\ui\widget
   }
 
   /**
-   * Set whether itmes in the list can be removed.
+   * Set whether items in the list can be removed.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $enable
    * @access public
@@ -353,21 +353,29 @@ abstract class base_list_widget extends \sabretooth\ui\widget
    *               or 'fuzzy'
    * @param string $heading The column's heading as it will appear in the list
    * @param boolean $sortable Whether or not the column is sortable.
+   * @param boolean $restrictable Whether or not the column is restrictable.
    * @param string $align Which way to align the column (left, right or center)
    * @access public
    */
-  public function add_column( $column_id, $type, $heading, $sortable = false, $align = '' )
+  public function add_column( $column_id, $type, $heading, 
+                              $sortable = false, $restrictable = true, $align = '')
   {
     // if there is no "table." before the column name, add this widget's subject
     if( false === strpos( $column_id, '.' ) ) $column_id = $this->get_subject().'.'.$column_id;
     
     // specify column timezone for datetime columns
-    if( 'datetime' == $type ) $heading .=
-      sprintf( ' (%s)', util::get_datetime_object()->format( 'T' ) );
+    if( 'datetime' == $type )
+    {
+      $heading .=
+        sprintf( ' (%s)', util::get_datetime_object()->format( 'T' ) );
+      $restrictable = false;  
+    }
+    if( 'date' == $type ) $restrictable = false;
 
     $column = array( 'id' => $column_id, 'type' => $type, 'heading' => $heading );
     if( $sortable ) $column['sortable'] = $sortable;
     if( $align ) $column['align'] = $align;
+    if( $sortable && $restrictable ) $column['restrictable'] = $restrictable;
     
     $this->columns[$column_id] = $column;
   }
@@ -518,6 +526,7 @@ abstract class base_list_widget extends \sabretooth\ui\widget
    * The following are optional:
    *   'sortable' => whether or not the list can be sorted by the column
    *   'align' => Which way to align the column
+   *   'restrictable' => whether a sortable list can be sorted by restriction
    * This member can only be set in the {@link add_column} and {@link remove_column} functions.
    * @var array
    * @access private

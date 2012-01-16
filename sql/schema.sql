@@ -29,7 +29,7 @@ CREATE  TABLE IF NOT EXISTS `participant` (
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
-  `uid` VARCHAR(45) NULL COMMENT 'External unique ID' ,
+  `uid` VARCHAR(45) NOT NULL COMMENT 'External unique ID' ,
   `first_name` VARCHAR(45) NOT NULL ,
   `last_name` VARCHAR(45) NOT NULL ,
   `status` ENUM('deceased', 'deaf', 'mentally unfit','language barrier','age range','other') NULL DEFAULT NULL ,
@@ -41,6 +41,7 @@ CREATE  TABLE IF NOT EXISTS `participant` (
   INDEX `dk_active` (`active` ASC) ,
   INDEX `dk_status` (`status` ASC) ,
   INDEX `dk_prior_contact_date` (`prior_contact_date` ASC) ,
+  UNIQUE INDEX `uq_uid` (`uid` ASC) ,
   CONSTRAINT `fk_participant_site`
     FOREIGN KEY (`site_id` )
     REFERENCES `site` (`id` )

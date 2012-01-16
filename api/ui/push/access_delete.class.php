@@ -42,7 +42,7 @@ class access_delete extends base_delete
     $args = $this->arguments;
 
     // replace the access id with a unique key
-    $db_access = new db\access( $this->get_argument('id') );
+    $db_access = $this->get_record();
     unset( $args['id'] );
     $args['noid']['user.name'] = $db_access->get_user()->name;
     $args['noid']['role.name'] = $db_access->get_role()->name;

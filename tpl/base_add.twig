@@ -8,6 +8,7 @@
 
 {% block javascript %}
 
+  {{ parent() }}
   <script type="text/javascript">
     $( function () {
       // add button
@@ -47,7 +48,7 @@
         {# make null entries an empty string #}
         {% set entry_value = entry.value is defined ? entry.value : "" %}
         
-        {% if 'enum' == entry.type and 1 == entry.enum|count %}
+        {% if 'enum' == entry.type and 1 == entry.enum|count and not entry.force %}
   
           {# don't display enums where there is only one possible value #}
           <tr><td style="height:0px">

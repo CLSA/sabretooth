@@ -19,7 +19,7 @@ use sabretooth\exception as exc;
  * Edit a participant.
  * @package sabretooth\ui
  */
-class participant_withdraw extends base_record_push
+class participant_withdraw extends base_record
 {
   /**
    * Constructor.
@@ -45,19 +45,27 @@ class participant_withdraw extends base_record_push
       $consent_mod->order_desc( 'date' );
       $consent_mod->limit( 1 );
       $db_consent = current( $this->get_record()->get_consent_list( $consent_mod ) );
-      if( $db_consent && 'withdraw' == $db_consent->event ) $db_consent->delete();
+      if( $db_consent && 'withdraw' == $db_consent->event )
+      {
+        // apply the change using an operation (so that Mastodon is also updated)
+        $operation = new consent_delete( array( 'id' => $db_consent->id ) );
+        $operation->finish();
+      }
       else throw new exc\runtime(
         sprintf( 'Trying to cancel withdraw for participant id %d but most recent consent is not '.
                  'a withdraw.', $this->get_record()->id ), __METHOD__ );
     }
     else
     { // add a new withdraw consent to the participant
-      $db_consent = new db\consent();
-      $db_consent->participant_id = $this->get_record()->id;
-      $db_consent->event = 'withdraw';
-      $db_consent->date = util::get_datetime_object()->format( 'Y-m-d' );
-      $db_consent->note = 'Automatically added by the "withdraw" button.';
-      $db_consent->save();
+      // apply the change using an operation (so that Mastodon is also updated)
+      $args = array(
+        'columns' => array(
+          'participant_id' => $this->get_record()->id,
+          'event' => 'withdraw',
+          'date' => util::get_datetime_object()->format( 'Y-m-d' ),
+          'note' => 'Automatically added by the "withdraw" button.' ) );
+      $operation = new consent_new( $args );
+      $operation->finish();
     }
   }
 }

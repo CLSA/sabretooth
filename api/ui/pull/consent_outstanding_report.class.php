@@ -64,6 +64,7 @@ class consent_outstanding_report extends base_report
         if( $db_interview && $db_interview->completed )
         {
           $db_address = $db_participant->get_primary_address();
+          if( is_null( $db_address ) ) continue;
           $db_region = $db_address->get_region();
           $db_last_phone_call = $db_participant->get_last_contacted_phone_call();
         

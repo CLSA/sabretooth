@@ -1,48 +1,47 @@
 <?php
 /**
- * user_reset_password.class.php
+ * participant_sync.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
  * @filesource
  */
 
-namespace sabretooth\ui\push;
+namespace sabretooth\ui\widget;
 use sabretooth\log, sabretooth\util;
 use sabretooth\business as bus;
 use sabretooth\database as db;
 use sabretooth\exception as exc;
 
 /**
- * Resets a user's password.
+ * widget participant sync
  * 
  * @package sabretooth\ui
  */
-class user_reset_password extends base_record
+class participant_sync extends \sabretooth\ui\widget
 {
   /**
-   * Constructor.
+   * Constructor
+   * 
+   * Defines all variables which need to be set for the associated template.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $subject The widget's subject.
-   * @param array $args Push arguments
-   * @throws exception\argument
+   * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'user', 'reset_password', $args );
+    parent::__construct( 'participant', 'sync', $args );
   }
-  
+
   /**
-   * Executes the push.
+   * Finish setting the variables in a widget.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function finish()
   {
-    $db_user = $this->get_record();
-    $ldap_manager = bus\ldap_manager::self();
-    $ldap_manager->set_user_password( $db_user->name, 'password' );
+    parent::finish();
   }
 }
 ?>

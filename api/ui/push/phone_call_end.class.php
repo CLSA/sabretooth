@@ -73,11 +73,18 @@ class phone_call_end extends \sabretooth\ui\push
                              $session->get_user()->id,
                              $session->get_user()->name,
                              $db_phone_call->status );
-            $db_phone->active = false;
-            $db_phone->note = is_null( $db_phone->note )
-                              ? $note
-                              : $db_phone->note."\n\n".$note;
-            $db_phone->save();
+
+            // keep the old note if there is one
+            $note = is_null( $db_phone->note ) ? $note : $db_phone->note."\n\n".$note;
+
+            // apply the change using an operation (so that Mastodon is also updated)
+            $args = array(
+              'id' => $db_phone->id,
+              'columns' => array(
+                'active' => false,
+                'note' => $note ) );
+            $operation = new phone_edit( $args );
+            $operation->finish();
           }
         }
       }

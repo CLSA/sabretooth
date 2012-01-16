@@ -182,6 +182,12 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant", "primary", true, "Retrieves base participant information." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "withdraw", true, "Withdraws the participant (or cancels the withdraw).  This is meant to be used during an interview if the participant suddenly wishes to withdraw." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "sync", true, "A form to synchronise participants between Sabretooth and Mastodon." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "participant", "sync", true, "Returns a summary of changes to be made given a list of UIDs to sync." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "participant", "sync", true, "Updates participants with their information in Mastodon." );
 
 -- phase
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -475,7 +481,11 @@ VALUES( "push", "user", "delete_access", true, "Removes this user's access to a 
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "user", "reset_password", true, "Resets a user's password." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "user", "set_password", true, "Sets a user's password." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "user", "primary", true, "Retrieves base user information." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "user", "list", true, "Retrieves information on lists of users." );
 
 -- voip
 INSERT INTO operation( type, subject, name, restricted, description )

@@ -30,5 +30,27 @@ class address_delete extends base_delete
   {
     parent::__construct( 'address', $args );
   }
+  
+  /**
+   * Executes the push.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function finish()
+  {
+    // we'll need the arguments to send to mastodon
+    $args = $this->arguments;
+
+    // replace the address id with a unique key
+    unset( $args['id'] );
+    $args['noid']['participant.uid'] = $this->get_record()->get_participant()->uid;
+    $args['noid']['address.rank'] = $this->get_record()->rank;
+    
+    parent::finish();
+
+    // now send the same request to mastodon
+    $mastodon_manager = bus\mastodon_manager::self();
+    $mastodon_manager->push( 'address', 'delete', $args );
+  }
 }
 ?>

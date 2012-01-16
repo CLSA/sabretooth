@@ -34,7 +34,7 @@ class queue_restriction_list extends site_restricted_list
     
     $this->add_column( 'site.name', 'string', 'Site', true );
     $this->add_column( 'city', 'string', 'City', true );
-    $this->add_column( 'region.name', 'string', 'Region', true );
+    $this->add_column( 'region.name', 'string', 'Region', false );
     $this->add_column( 'postcode', 'string', 'Postcode', true );
   }
   
@@ -77,13 +77,15 @@ class queue_restriction_list extends site_restricted_list
     if( !is_null( $this->db_restrict_site ) )
     {
       if( NULL == $modifier ) $modifier = new db\modifier();
-      $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
-      $modifier->or_where( 'site_id', '=', NULL );
+      $modifier->where_bracket( true );
+      $modifier->where( 'queue_restriction.site_id', '=', $this->db_restrict_site->id );
+      $modifier->or_where( 'queue_restriction.site_id', '=', NULL );
+      $modifier->where_bracket( false );
     }
     
     // skip the parent method
     // php doesn't allow parent::parent::method() so we have to do the less safe code below
-    return base_list_widget::determine_record_count( $modifier );
+    return base_list::determine_record_count( $modifier );
   }
 
   /**
@@ -99,13 +101,15 @@ class queue_restriction_list extends site_restricted_list
     if( !is_null( $this->db_restrict_site ) )
     {
       if( NULL == $modifier ) $modifier = new db\modifier();
-      $modifier->where( 'site_id', '=', $this->db_restrict_site->id );
-      $modifier->or_where( 'site_id', '=', NULL );
+      $modifier->where_bracket( true );
+      $modifier->where( 'queue_restriction.site_id', '=', $this->db_restrict_site->id );
+      $modifier->or_where( 'queue_restriction.site_id', '=', NULL );
+      $modifier->where_bracket( false );
     }
     
     // skip the parent method
     // php doesn't allow parent::parent::method() so we have to do the less safe code below
-    return base_list_widget::determine_record_list( $modifier );
+    return base_list::determine_record_list( $modifier );
   }
 }
 ?>

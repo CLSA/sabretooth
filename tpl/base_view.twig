@@ -10,74 +10,80 @@
 
   {{ parent() }}
   <script type="text/javascript">
-    // make mutable elements
-    $( function () {
-      // identify a mutable element by changing classes on mouse over/out
-      $( "div.mutable" ).mouseover( function() {
-        $(this).removeClass( "padded" );
-        $(this).addClass( "ui-widget-content" );
-      } )
-      $( "div.mutable" ).mouseout( function() {
-        $(this).removeClass( "ui-widget-content" );
-        $(this).addClass( "padded" );
-      } )
-    } );
-    
-    /**
-     * Processes jeditable value changes.
-     * @author Patrick Emond <emondpd@mcmaster.ca>
-     * @param string new_value The elements new value.
-     * @param string type The type of element being edited.
-     */
-    function process_change( element, new_value, type ) {
-      // don't do anything if there hasn't been any change to the value
-      var old_value = $( "#old_" + element.attr( 'id' ) ).val();
-      if( new_value == old_value ) return old_value;
-    
-      // build the args object
-      var id_string = element.attr( 'id' );
-      var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
-      var args = new Object();
-      args.id = {{ id|default(0) }};
-      var columns = new Object();
+    {# Only add the following javascript once #}
+    {% if 1 >= base_view_count %}
+      // make mutable elements
+      $( function () {
+        // identify a mutable element by changing classes on mouse over/out
+        $( "div.mutable" ).mouseover( function() {
+          $(this).removeClass( "padded" );
+          $(this).addClass( "ui-widget-content" );
+        } )
+        $( "div.mutable" ).mouseout( function() {
+          $(this).removeClass( "ui-widget-content" );
+          $(this).addClass( "padded" );
+        } )
+      } );
       
-      // when changing start_time, also adjust end_time
-      if( 'time' == type && 'start_time' == column_name ) {
-        // determine the time difference between the old and new time
-        end_time_obj = new Date( "Jan 2, 2000 " + $( "#old_{{ widget.full }}__end_time" ).val() );
-        old_time_obj = new Date( "Jan 2, 2000 " + old_value );
-        new_time_obj = new Date( "Jan 2, 2000 " + new_value );
-        end_time_obj.setTime(
-          end_time_obj.getTime() + ( new_time_obj.getTime() - old_time_obj.getTime() ) );
-        var hours = ( end_time_obj.getHours() < 10 ? '0' : '' ) + end_time_obj.getHours();
-        var minutes = ( end_time_obj.getMinutes() < 10 ? '0' : '' ) + end_time_obj.getMinutes();
-        columns.end_time = hours + ":" + minutes;
-      }
-    
-      // make sure to change empty strings for boolean and enum values to NULL
-      if( 'boolean' == type || 'enum' == type )
-        columns[column_name] = 'NULL' == new_value ? '' : new_value;
-      else columns[column_name] = new_value;
-      args.columns = columns;
-    
-      // push the changed data, updating the hidden "old" input upon success
-      if( ajax_push( "{{ widget.subject }}", "edit", args ) ) {
-        // if we are setting start_time, then update end_time
+      /**
+       * Processes jeditable value changes.
+       * @author Patrick Emond <emondpd@mcmaster.ca>
+       * @param string new_value The elements new value.
+       * @param string type The type of element being edited.
+       */
+      function process_change( widget_subject, widget_name, element, new_value, type ) {
+        // don't do anything if there hasn't been any change to the value
+        var old_value = $( "#old_" + element.attr( 'id' ) ).val();
+        if( new_value == old_value ) return old_value;
+        
+        var widget_full = widget_subject + "_" + widget_name;
+
+        // build the args object
+        var id_string = element.attr( 'id' );
+        var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
+        var args = new Object();
+        args.id = {{ id|default(0) }};
+        var columns = new Object();
+        
+        // when changing start_time, also adjust end_time
         if( 'time' == type && 'start_time' == column_name ) {
-          $( "#old_{{ widget.full }}__end_time" ).val( columns.end_time );
-          $( "#{{ widget.full }}__end_time" ).val( columns.end_time );
+          // determine the time difference between the old and new time
+          end_time_obj =
+            new Date( "Jan 2, 2000 " + $( "#old_" + widget_full + "__end_time" ).val() );
+          old_time_obj = new Date( "Jan 2, 2000 " + old_value );
+          new_time_obj = new Date( "Jan 2, 2000 " + new_value );
+          end_time_obj.setTime(
+            end_time_obj.getTime() + ( new_time_obj.getTime() - old_time_obj.getTime() ) );
+          var hours = ( end_time_obj.getHours() < 10 ? '0' : '' ) + end_time_obj.getHours();
+          var minutes = ( end_time_obj.getMinutes() < 10 ? '0' : '' ) + end_time_obj.getMinutes();
+          columns.end_time = hours + ":" + minutes;
         }
-    
-        if( 'boolean' != type && 'enum' != type )
-          $( "#old_" + element.attr( 'id' ) ).val( new_value );
-        return new_value;
-      } else {
-        // put the old value back
-        element.val( old_value );
+      
+        // make sure to change empty strings for boolean and enum values to NULL
+        if( 'boolean' == type || 'enum' == type )
+          columns[column_name] = 'NULL' == new_value ? '' : new_value;
+        else columns[column_name] = new_value;
+        args.columns = columns;
+      
+        // push the changed data, updating the hidden "old" input upon success
+        if( ajax_push( widget_subject, "edit", args ) ) {
+          // if we are setting start_time, then update end_time
+          if( 'time' == type && 'start_time' == column_name ) {
+            $( "#old_" + widget_full + "__end_time" ).val( columns.end_time );
+            $( "#" + widget_full + "__end_time" ).val( columns.end_time );
+          }
+      
+          if( 'boolean' != type && 'enum' != type )
+            $( "#old_" + element.attr( 'id' ) ).val( new_value );
+          return new_value;
+        } else {
+          // put the old value back
+          element.val( old_value );
+        }
+      
+        return old_value;
       }
-    
-      return old_value;
-    }
+    {% endif %}
     
     {% if removable %}
       // delete button
@@ -199,7 +205,12 @@
                     {% if 'number' == entry.type %}jeditable_params.placeholder = "0";{% endif %}
                     jeditable_params.type = "text";
                     $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
-                      return process_change( $(this), value, "{{ entry.type }}" );
+                      return process_change(
+                        "{{ widget.subject }}",
+                        "{{ widget.name }}",
+                        $(this),
+                        value,
+                        "{{ entry.type }}" );
                     }, jeditable_params );
                   
                   {% elseif 'boolean' == entry.type %}
@@ -211,7 +222,12 @@
                                             {% endif %}
                                             '"1":"Yes", "0":"No", "selected":"Yes" }';
                     $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
-                      var index = process_change( $(this), value, "{{ entry.type }}" );
+                      var index = process_change(
+                        "{{ widget.subject }}",
+                        "{{ widget.name }}",
+                        $(this),
+                        value,
+                        "{{ entry.type }}" );
                       var data = jQuery.parseJSON( jeditable_params.data );
                       return data[index];
                     }, jeditable_params );
@@ -225,7 +241,12 @@
                                             {% endfor %}
                                             '"selected":"{{ entry_value }}" }';
                     $( "div.jeditable_{{ item_id }}" ).editable( function( value, settings ) {
-                      var index = process_change( $(this), value, "{{ entry.type }}" );
+                      var index = process_change(
+                        "{{ widget.subject }}",
+                        "{{ widget.name }}",
+                        $(this),
+                        value,
+                        "{{ entry.type }}" );
                       var data = jQuery.parseJSON( jeditable_params.data );
                       return data[index];
                     }, jeditable_params );
@@ -240,7 +261,12 @@
                       stepMinute: 5,
                       showAnim: 'slideDown',
                       onClose: function( dateText, inst ) {
-                        return process_change( $input_{{ item_id }}, dateText, "{{ entry.type }}" );
+                        return process_change(
+                          "{{ widget.subject }}",
+                          "{{ widget.name }}",
+                          $input_{{ item_id }},
+                          dateText,
+                          "{{ entry.type }}" );
                       }
                     } );
           
@@ -251,7 +277,12 @@
                       dateFormat: 'yy-mm-dd',
                       showAnim: 'slideDown',
                       onClose: function( dateText, inst ) {
-                        return process_change( $input_{{ item_id }}, dateText, "{{ entry.type }}" );
+                        return process_change(
+                          "{{ widget.subject }}",
+                          "{{ widget.name }}",
+                          $input_{{ item_id }},
+                          dateText,
+                          "{{ entry.type }}" );
                       }
                     } );
                   
@@ -264,7 +295,12 @@
                       ampm: false,
                       stepMinute: 5,
                       onClose: function( timeText, date_inst, time_inst ) {
-                        return process_change( $input_{{ item_id }}, timeText, "{{ entry.type }}" );
+                        return process_change(
+                          "{{ widget.subject }}",
+                          "{{ widget.name }}",
+                          $input_{{ item_id }},
+                          timeText,
+                          "{{ entry.type }}" );
                       }
                     } );
           
