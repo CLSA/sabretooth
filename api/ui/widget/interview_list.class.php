@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget interview list
  * 
  * @package sabretooth\ui
  */
-class interview_list extends site_restricted_list
+class interview_list extends \cenozo\ui\widget\site_restricted_list
 {
   /**
    * Constructor
@@ -52,7 +49,7 @@ class interview_list extends site_restricted_list
     foreach( $this->get_record_list() as $record )
     {
       $recordings = $record->get_recording_count();
-      $recording_mod = new db\modifier();
+      $recording_mod = lib::create( 'database\modifier' );
       $recording_mod->where( 'processed', '=', true );
       $processed_recordings = $record->get_recording_count( $recording_mod );
 
@@ -78,9 +75,10 @@ class interview_list extends site_restricted_list
    */
   protected function determine_record_count( $modifier = NULL )
   {
+    $class_name = lib::get_class_name( 'database\interview' );
     return is_null( $this->db_restrict_site )
          ? parent::determine_record_count( $modifier )
-         : db\interview::count_for_site( $this->db_restrict_site, $modifier );
+         : $class_name::count_for_site( $this->db_restrict_site, $modifier );
   }
   
   /**
@@ -93,9 +91,10 @@ class interview_list extends site_restricted_list
    */
   protected function determine_record_list( $modifier = NULL )
   {
+    $class_name = lib::get_class_name( 'database\interview' );
     return is_null( $this->db_restrict_site )
          ? parent::determine_record_list( $modifier )
-         : db\interview::select_for_site( $this->db_restrict_site, $modifier );
+         : $class_name::select_for_site( $this->db_restrict_site, $modifier );
   }
 }
 ?>

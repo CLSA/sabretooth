@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget consent outstanding report
@@ -48,7 +45,6 @@ class consent_outstanding_report extends base_report
   public function finish()
   {
     parent::finish();
-
     $this->finish_setting_parameters();
   }
 }

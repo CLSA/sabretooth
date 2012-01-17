@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: operator end_break
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Start the current user on a break (away_time)
  * @package sabretooth\ui
  */
-class operator_end_break extends \sabretooth\ui\push
+class operator_end_break extends \cenozo\ui\push
 {
   /**
    * Constructor.
@@ -39,10 +36,10 @@ class operator_end_break extends \sabretooth\ui\push
    */
   public function finish()
   {
-    $db_user = bus\session::self()->get_user();
+    $db_user = lib::create( 'business\session' )->get_user();
 
     // find this user's open break and record the end time
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'end_datetime', '=', NULL );
     $away_time_list = $db_user->get_away_time_list( $modifier );
     

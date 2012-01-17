@@ -8,16 +8,14 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * phone_call: record
  *
  * @package sabretooth\database
  */
-class phone_call extends has_note
+class phone_call extends \cenozo\database\has_note
 {
   /**
    * Identical to the parent's select method but restrict to a particular participant.
@@ -36,7 +34,7 @@ class phone_call extends has_note
     if( is_null( $db_participant ) ) return parent::select( $modifier, $count );
 
     // join to the assignment and interview tables
-    if( is_null( $modifier ) ) $modifier = new modifier();
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'phone_call.assignment_id', '=', 'assignment.id', false );
     $modifier->where( 'assignment.interview_id', '=', 'interview.id', false );
     $modifier->where( 'interview.participant_id', '=', $db_participant->id );

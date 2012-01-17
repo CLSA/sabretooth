@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\pull;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Consent form report data.
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * @abstract
  * @package sabretooth\ui
  */
-class call_history_report extends base_report
+class call_history_report extends \cenozo\ui\pull\base_report
 {
   /**
    * Constructor
@@ -63,7 +60,7 @@ class call_history_report extends base_report
       $end_datetime_obj = clone $temp_datetime_obj;
     }
 
-    $assignment_mod = new db\modifier();
+    $assignment_mod = lib::create( 'database\modifier' );
     if( $restrict_site_id ) $assignment_mod->where( 'site_id', '=', $restrict_site_id );
     $assignment_mod->order( 'start_datetime' );
     if( $restrict_start_date && $restrict_end_date )
@@ -85,11 +82,12 @@ class call_history_report extends base_report
     }
     
     $contents = array();
-    foreach( db\assignment::select( $assignment_mod ) as $db_assignment )
+    $class_name = lib::get_class_name( 'database\assignment' );
+    foreach( $class_name::select( $assignment_mod ) as $db_assignment )
     {
       $db_user = $db_assignment->get_user();
       
-      $phone_call_mod = new db\modifier();
+      $phone_call_mod = lib::create( 'database\modifier' );
       $phone_call_mod->order( 'start_datetime' );
       foreach( $db_assignment->get_phone_call_list( $phone_call_mod ) as $db_phone_call )
       {

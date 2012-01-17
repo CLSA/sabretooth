@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: qnaire delete_phase
  * 
  * @package sabretooth\ui
  */
-class qnaire_delete_phase extends base_delete_record
+class qnaire_delete_phase extends \cenozo\ui\push\base_delete_record
 {
   /**
    * Constructor.

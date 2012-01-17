@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget address view
  * 
  * @package sabretooth\ui
  */
-class address_view extends base_view
+class address_view extends \cenozo\ui\widget\base_view
 {
   /**
    * Constructor
@@ -73,7 +70,8 @@ class address_view extends base_view
     for( $rank = 1; $rank <= $num_addresss; $rank++ ) $ranks[] = $rank;
     $ranks = array_combine( $ranks, $ranks );
     $regions = array();
-    foreach( db\region::select() as $db_region )
+    $class_name = lib::get_class_name( 'database\region' );
+    foreach( $class_name::select() as $db_region )
       $regions[$db_region->id] = $db_region->name.', '.$db_region->country;
 
     // set the view's items

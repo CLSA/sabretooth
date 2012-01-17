@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\pull;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Participant status report data.
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * @abstract
  * @package sabretooth\ui
  */
-class demographics_report extends base_report
+class demographics_report extends \cenozo\ui\pull\base_report
 {
   /**
    * Constructor
@@ -37,22 +34,24 @@ class demographics_report extends base_report
   public function finish()
   {
     // get the report arguments
-    $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
+    $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
     $consent_status = $this->get_argument( 'restrict_consent_id' );
     $province_id = $this->get_argument( 'restrict_province_id' );
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-    $participant_list = db\participant::select();
+    $class_name = lib::get_class_name( 'database\participant' );
     if( $restrict_site_id )
     {
-      $db_site = new db\site( $restrict_site_id );
-      $participant_list = db\participant::select_for_site( $db_site );
+      $db_site = lib::create( 'database\site', $restrict_site_id );
+      $participant_list = $class_name::select_for_site( $db_site );
     }
+    else $participant_list = $class_name::select();
 
     $contents = array();
     foreach( $participant_list as $db_participant )
     {
       $db_consent = $db_participant->get_last_consent();
       if( is_null( $db_consent ) && $consent_status != 'Any' ) continue;
+
       $db_address = $db_participant->get_primary_address();
       if( is_null( $db_address ) ) continue;
 
@@ -63,13 +62,13 @@ class demographics_report extends base_report
           ( $province_id && $province_id != $region_id ) ||
           ( $consent_status != 'Any' && $consent_status != $db_consent->event ) ) continue;
 
-      $interview_mod = new db\modifier();
+      $interview_mod = lib::create( 'database\modifier' );
       $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id ); 
       $db_interview = current( $db_participant->get_interview_list( $interview_mod ) );
       
       if( $db_interview && $db_interview->completed )
       {
-        $mastodon_manager = bus\cenozo_manager::self( MASTODON_URL );
+        $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
         $participant_obj = $mastodon_manager->pull( 'participant', 'primary', 
           array( 'uid' => $db_participant->uid ) );
        

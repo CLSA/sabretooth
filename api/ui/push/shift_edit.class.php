@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: shift edit
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Edit a shift.
  * @package sabretooth\ui
  */
-class shift_edit extends base_edit
+class shift_edit extends \cenozo\ui\push\base_edit
 {
   /**
    * Constructor.
@@ -57,7 +54,7 @@ class shift_edit extends base_edit
 
       if( strtotime( $start_time ) >= strtotime( $end_time ) )
       {
-        throw new exc\notice(
+        throw lib::create( 'exception\notice',
           sprintf( 'Start and end times (%s to %s) are not valid.',
                    $start_time,
                    $end_time ),
@@ -65,7 +62,7 @@ class shift_edit extends base_edit
       }
       
       $this->get_record()->start_datetime = $date.' '.$start_time;
-      $this->get_record()->end_datetime = $date.' '.$end_time;
+      $this->get_record()->end_datetime   = $date.' '.$end_time;
       
       foreach( $columns as $column => $value )
       {
@@ -74,10 +71,10 @@ class shift_edit extends base_edit
       }
       $this->get_record()->save();
     }
-    catch( exc\runtime $e )
+    catch( \cenozo\exception\runtime $e )
     { // the shift class throws a runtime exception when time conflicts occur
       throw RUNTIME_SHIFT__SAVE_ERROR_NUMBER == $e->get_number() ?
-        new exc\notice( $e, __METHOD__, $e ) : $e;
+        lib::create( 'exception\notice', $e, __METHOD__, $e ) : $e;
     }
   }
 }

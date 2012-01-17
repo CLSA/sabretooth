@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget phone list
  * 
  * @package sabretooth\ui
  */
-class phone_list extends base_list
+class phone_list extends \cenozo\ui\widget\base_list
 {
   /**
    * Constructor
@@ -50,9 +47,9 @@ class phone_list extends base_list
     
     // only allow higher than first tier roles to make direct calls
     $this->set_variable( 'allow_connect',
-                         1 < bus\session::self()->get_role()->tier );
+                         1 < lib::create( 'business\session' )->get_role()->tier );
     $this->set_variable( 'sip_enabled',
-      bus\voip_manager::self()->get_sip_enabled() );
+      lib::create( 'business\voip_manager' )->get_sip_enabled() );
 
     foreach( $this->get_record_list() as $record )
     {

@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget appointment list
  * 
  * @package sabretooth\ui
  */
-class appointment_list extends site_restricted_list
+class appointment_list extends \cenozo\ui\widget\site_restricted_list
 {
   /**
    * Constructor
@@ -50,7 +47,7 @@ class appointment_list extends site_restricted_list
     if( is_null( $this->parent ) ) $this->addable = false;
     else // don't add appointments if the parent already has an unassigned appointment
     {
-      $modifier = new db\modifier();
+      $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'participant_id', '=', $this->parent->get_record()->id );
       $modifier->where( 'assignment_id', '=', NULL );
       $this->addable = 0 == db\appointment::count( $modifier );
@@ -88,9 +85,10 @@ class appointment_list extends site_restricted_list
    */
   protected function determine_record_count( $modifier = NULL )
   {
+    $class_name = lib::get_class_name( 'database\appointment' );
     return is_null( $this->db_restrict_site )
          ? parent::determine_record_count( $modifier )
-         : db\appointment::count_for_site( $this->db_restrict_site, $modifier );
+         : $class_name::count_for_site( $this->db_restrict_site, $modifier );
   }
   
   /**
@@ -103,9 +101,10 @@ class appointment_list extends site_restricted_list
    */
   protected function determine_record_list( $modifier = NULL )
   {
+    $class_name = lib::get_class_name( 'database\appointment' );
     return is_null( $this->db_restrict_site )
          ? parent::determine_record_list( $modifier )
-         : db\appointment::select_for_site( $this->db_restrict_site, $modifier );
+         : $class_name::select_for_site( $this->db_restrict_site, $modifier );
   }
 }
 ?>

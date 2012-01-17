@@ -1,6 +1,6 @@
 <?php
 /**
- * limesurvey.class.php
+ * record.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\database
@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\database\limesurvey;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 
 /**
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * 
  * @package sabretooth\database
  */
-abstract class record extends db\record
+abstract class record extends \cenozo\database\record
 {
   /**
    * Constructor
@@ -45,7 +42,7 @@ abstract class record extends db\record
    */
   public function __call( $name, $args )
   {
-    throw new exc\runtime(
+    throw lib::create( 'exception\runtime',
       sprintf( 'Call to undefined function: %s::%s().',
                get_called_class(),
                $name ), __METHOD__ );
@@ -91,7 +88,7 @@ abstract class record extends db\record
    */
   public static function db()
   {
-    return bus\session::self()->get_survey_database();
+    return lib::create( 'business\session' )->get_survey_database();
   }
 }
 ?>

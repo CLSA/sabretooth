@@ -8,16 +8,14 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * phone: record
  *
  * @package sabretooth\database
  */
-class phone extends has_rank
+class phone extends \cenozo\database\has_rank
 {
   /**
    * The type of record which the record has a rank for.

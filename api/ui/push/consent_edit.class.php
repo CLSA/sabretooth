@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: consent edit
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Edit a consent.
  * @package sabretooth\ui
  */
-class consent_edit extends base_edit
+class consent_edit extends \cenozo\ui\push\base_edit
 {
   /**
    * Constructor.
@@ -53,7 +50,7 @@ class consent_edit extends base_edit
     parent::finish();
 
     // now send the same request to mastodon
-    $mastodon_manager = bus\cenozo_manager::self( MASTODON_URL );
+    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
     $mastodon_manager->push( 'consent', 'edit', $args );
   }
 }

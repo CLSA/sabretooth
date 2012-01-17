@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget participant add
  * 
  * @package sabretooth\ui
  */
-class participant_add extends base_view
+class participant_add extends \cenozo\ui\widget\base_view
 {
   /**
    * Constructor
@@ -54,12 +51,14 @@ class participant_add extends base_view
     parent::finish();
     
     // create enum arrays
-    $languages = db\participant::get_enum_values( 'language' );
+    $participant_class_name = lib::get_class_name( 'database\participant' );
+    $languages = $participant_class_name::get_enum_values( 'language' );
     $languages = array_combine( $languages, $languages );
     $statuses = db\participant::get_enum_values( 'status' );
     $statuses = array_combine( $statuses, $statuses );
     $sites = array();
-    foreach( db\site::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
+    $site_class_name = lib::get_class_name( 'database\site' );
+    foreach( $site_class_name::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
 
     // set the view's items
     $this->set_item( 'active', true, true );

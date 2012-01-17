@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget site calendar
  * 
  * @package sabretooth\ui
  */
-class site_calendar extends base_calendar
+class site_calendar extends \cenozo\ui\widget\base_calendar
 {
   /**
    * Constructor
@@ -31,7 +28,8 @@ class site_calendar extends base_calendar
   public function __construct( $args )
   {
     parent::__construct( 'site', $args );
-    $this->set_heading( 'Open appointment slots for '.bus\session::self()->get_site()->name );
+    $this->set_heading(
+      'Open appointment slots for '.lib::create( 'business\session' )->get_site()->name );
   }
   
   /**
