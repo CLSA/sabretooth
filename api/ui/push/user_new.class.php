@@ -30,6 +30,7 @@ class user_new extends \cenozo\ui\push\user_new
 
     // need this for mastodon, below
     $args = $this->arguments;
+    $args['ignore_existing'] = true;
 
     if( !is_null( $this->site_id ) && !is_null( $this->role_id ) )
     { // add the initial role to the new user
