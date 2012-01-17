@@ -17,7 +17,7 @@ use cenozo\lib;
  * @package sabretooth
  */
 class util extends \cenozo\util
-{:
+{
   /**
    * Returns whether the system is in development mode.
    * 
