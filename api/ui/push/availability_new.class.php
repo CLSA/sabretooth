@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: availability new
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Create a new availability.
  * @package sabretooth\ui
  */
-class availability_new extends base_new
+class availability_new extends \cenozo\ui\push\base_new
 {
   /**
    * Constructor.

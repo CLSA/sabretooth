@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\pull;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * pull: phase primary
  * 
  * @package sabretooth\ui
  */
-class phase_primary extends base_primary
+class phase_primary extends \cenozo\ui\pull\base_primary
 {
   /**
    * Constructor

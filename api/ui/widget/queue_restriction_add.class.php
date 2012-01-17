@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget queue_restriction add
  * 
  * @package sabretooth\ui
  */
-class queue_restriction_add extends base_view
+class queue_restriction_add extends \cenozo\ui\widget\base_view
 {
   /**
    * Constructor
@@ -34,7 +31,7 @@ class queue_restriction_add extends base_view
     
     // define all columns defining this record
 
-    $type = 3 == bus\session::self()->get_role()->tier ? 'enum' : 'hidden';
+    $type = 3 == lib::create( 'business\session' )->get_role()->tier ? 'enum' : 'hidden';
     $this->add_item( 'site_id', $type, 'Site' );
     $this->add_item( 'city', 'string', 'City' );
     $this->add_item( 'region_id', 'enum', 'Region' );
@@ -50,17 +47,19 @@ class queue_restriction_add extends base_view
   public function finish()
   {
     parent::finish();
-    $session = bus\session::self();
+    $session = lib::create( 'business\session' );
     $is_top_tier = 3 == $session->get_role()->tier;
     
     // create enum arrays
     if( $is_top_tier )
     {
       $sites = array();
-      foreach( db\site::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
+      $site_class_name = lib::get_class_name( 'database\site' );
+      foreach( $site_class_name::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
     }
     $regions = array();
-    foreach( db\region::select() as $db_region ) $regions[$db_region->id] = $db_region->name;
+    $region_class_name = lib::get_class_name( 'database\region' );
+    foreach( $region_class_name::select() as $db_region ) $regions[$db_region->id] = $db_region->name;
 
     // set the view's items
     $this->set_item(

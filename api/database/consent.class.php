@@ -8,14 +8,12 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * consent: record
  *
  * @package sabretooth\database
  */
-class consent extends record {}
+class consent extends \cenozo\database\record {}
 ?>

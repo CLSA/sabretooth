@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget self menu
  * 
  * @package sabretooth\ui
  */
-class self_menu extends \sabretooth\ui\widget
+class self_menu extends \cenozo\ui\widget
 {
   /**
    * Constructor
@@ -44,12 +41,12 @@ class self_menu extends \sabretooth\ui\widget
   {
     parent::finish();
 
-    $db_role = bus\session::self()->get_role();
+    $db_role = lib::create( 'business\session' )->get_role();
 
     // get all calendar widgets that the user has access to
     $calendars = array();
 
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'operation.type', '=', 'widget' );
     $modifier->where( 'operation.name', '=', 'calendar' );
     $widgets = $db_role->get_operation_list( $modifier );
@@ -64,7 +61,7 @@ class self_menu extends \sabretooth\ui\widget
     // get all list widgets that the user has access to
     $lists = array();
 
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'operation.type', '=', 'widget' );
     $modifier->where( 'operation.name', '=', 'list' );
     $widgets = $db_role->get_operation_list( $modifier );
@@ -98,7 +95,7 @@ class self_menu extends \sabretooth\ui\widget
     // get all report widgets that the user has access to
     $reports = array();
 
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'operation.type', '=', 'widget' );
     $modifier->where( 'operation.name', '=', 'report' );
     $widgets = $db_role->get_operation_list( $modifier );

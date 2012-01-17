@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget consent add
  * 
  * @package sabretooth\ui
  */
-class consent_add extends base_view
+class consent_add extends \cenozo\ui\widget\base_view
 {
   /**
    * Constructor
@@ -51,11 +48,12 @@ class consent_add extends base_view
     
     // this widget must have a parent, and it's subject must be a participant
     if( is_null( $this->parent ) || 'participant' != $this->parent->get_subject() )
-      throw new exc\runtime(
+      throw lib::create( 'exception\runtime',
         'Consent widget must have a parent with participant as the subject.', __METHOD__ );
     
     // create enum arrays
-    $events = db\consent::get_enum_values( 'event' );
+    $class_name = lib::get_class_name( 'database\consent' );
+    $events = $class_name::get_enum_values( 'event' );
     $events = array_combine( $events, $events );
 
     // set the view's items

@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\pull;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Consent outstanding report data.
  * 
  * @package sabretooth\ui
  */
-class consent_outstanding_report extends base_report
+class consent_outstanding_report extends \cenozo\ui\pull\base_report
 {
   /**
    * Constructor
@@ -36,15 +33,16 @@ class consent_outstanding_report extends base_report
   {
     // get report args
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-    if( $restrict_site_id ) $db_site = new db\site( $restrict_site_id );
+    if( $restrict_site_id ) $db_site = lib::create( 'database\site', $restrict_site_id );
 
-    $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
+    $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
     $this->add_title( sprintf( 'Participants who have not remitted written consent for the '.
                                '%s interview', $db_qnaire->name ) ) ;
 
+    $class_name = lib::get_class_name( 'database\participant' );
     $participant_list = $restrict_site_id
-                      ? db\participant::select_for_site( $db_site )
-                      : db\participant::select();
+                      ? $class_name::select_for_site( $db_site )
+                      : $class_name::select();
 
     $contents = array();
     // loop through participants searching for those who have completed their most recent interview
@@ -53,11 +51,12 @@ class consent_outstanding_report extends base_report
       // dont bother with deceased or otherwise impaired
       if( !is_null( $db_participant->status ) ) continue;
 
-      $consent_mod = new db\modifier();
+      // TODO: can mod creation be moved outside of loop?
+      $consent_mod = lib::create( 'database\modifier' );
       $consent_mod->where( 'event', '=', 'verbal accept' );
       if( count( $db_participant->get_consent_list( $consent_mod ) ) )
       {
-        $interview_mod = new db\modifier();
+        $interview_mod = lib::create( 'database\modifier' );
         $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
         $db_participant->get_interview_list( $interview_mod );
         $db_interview = current( $db_participant->get_interview_list( $interview_mod ) );

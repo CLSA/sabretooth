@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: voip dtmf
@@ -20,7 +17,7 @@ use sabretooth\exception as exc;
  * Arguments must include 'theme'.
  * @package sabretooth\ui
  */
-class voip_dtmf extends \sabretooth\ui\push
+class voip_dtmf extends \cenozo\ui\push
 {
   /**
    * Constructor.
@@ -40,9 +37,9 @@ class voip_dtmf extends \sabretooth\ui\push
    */
   public function finish()
   {
-    $voip_call = bus\voip_manager::self()->get_call();
+    $voip_call = lib::create( 'business\voip_manager' )->get_call();
     if( is_null( $voip_call ) )
-      throw new exc\notice(
+      throw lib::create( 'exception\notice',
         'Unable to send tone since you are not currently in a call.', __NOTICE__ );
 
     $voip_call->dtmf( $this->get_argument( 'tone' ) );

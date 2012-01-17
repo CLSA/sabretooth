@@ -8,43 +8,15 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget user add
  * 
  * @package sabretooth\ui
  */
-class user_add extends base_view
+class user_add extends \cenozo\ui\widget\user_add
 {
-  /**
-   * Constructor
-   * 
-   * Defines all variables which need to be set for the associated template.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param array $args An associative array of arguments to be processed by the widget
-   * @access public
-   */
-  public function __construct( $args )
-  {
-    parent::__construct( 'user', 'add', $args );
-    
-    // define all columns defining this record
-    $this->add_item( 'name', 'string', 'Username' );
-    $this->add_item( 'first_name', 'string', 'First name' );
-    $this->add_item( 'last_name', 'string', 'Last name' );
-    $this->add_item( 'active', 'boolean', 'Active' );
-
-    $type = 3 == bus\session::self()->get_role()->tier
-          ? 'enum'
-          : 'hidden';
-    $this->add_item( 'site_id', $type, 'Site' );
-    $this->add_item( 'role_id', 'enum', 'Role' );
-  }
-
   /**
    * Finish setting the variables in a widget.
    * 
@@ -55,20 +27,22 @@ class user_add extends base_view
   {
     parent::finish();
     
-    $session = bus\session::self();
+    $session = lib::create( 'business\session' );
     $is_top_tier = 3 == $session->get_role()->tier;
 
     // create enum arrays
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'tier', '<=', $session->get_role()->tier );
     $roles = array();
-    foreach( db\role::select( $modifier ) as $db_role )
+    $role_class_name = lib::get_class_name( 'database\role' );
+    foreach( $role_class_name::select( $modifier ) as $db_role )
       $roles[$db_role->id] = $db_role->name;
     
     $sites = array();
     if( $is_top_tier )
     {
-      foreach( db\site::select( $modifier ) as $db_site )
+      $site_class_name = lib::get_class_name( 'database\site' );
+      foreach( $site_class_name::select( $modifier ) as $db_site )
         $sites[$db_site->id] = $db_site->name;
     }
 

@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\pull;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Daily shift report data.
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * @abstract
  * @package sabretooth\ui
  */
-class daily_shift_report extends base_report
+class daily_shift_report extends \cenozo\ui\pull\base_report
 {
   /**
    * Constructor
@@ -38,7 +35,8 @@ class daily_shift_report extends base_report
   {
     // get the current user's role, if it isnt a supervisor then bailout 
 
-    $db_role = bus\session::self()->get_role();
+    $session = lib::create( 'business\session' );
+    $db_role = $session->get_role();
 
     if( 'supervisor' != $db_role->name )
     {
@@ -46,8 +44,8 @@ class daily_shift_report extends base_report
     //  $this->add_title('for supervisors only you are a'.$db_role->name );
     }
 
-    $db_current_user = bus\session::self()->get_user();
-    $db_current_site = bus\session::self()->get_site();
+    $db_current_user = $session->get_user();
+    $db_current_site = $session->get_site();
     
     // set the title and sub title(s)
     $title = 'Daily Shift Report';
@@ -97,9 +95,12 @@ class daily_shift_report extends base_report
     $total_shift_hours_fr = 0;
     $total_completes = 0; 
     
-    $user_mod = new db\modifier();
+    $user_mod = lib::create( 'database\modifier' );
     $user_mod->where( 'site_id', '=', $db_current_site->id );
-    foreach( db\user::select( $user_mod ) as $db_user )
+    $user_class_name     = lib::get_class_name( 'database\user' );
+    $activity_class_name = lib::get_class_name( 'database\activity');
+
+    foreach( $user_class_name::select( $user_mod ) as $db_user )
     {
       // is the user an operator?
       $is_operator = false;
@@ -114,7 +115,7 @@ class daily_shift_report extends base_report
       if( !$is_operator ) continue;
 
       // make sure the operator has min/max time for this date range
-      $activity_mod = new db\modifier();
+      $activity_mod = lib::create( 'database\modifier' );
       $activity_mod->where( 'user_id', '=', $db_user->id );
       $activity_mod->where( 'site_id', '=', $db_current_site->id );
 
@@ -124,13 +125,13 @@ class daily_shift_report extends base_report
       $activity_mod->where( 'datetime', '<=',
         $datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
 
-      $start_datetime_obj = db\activity::get_min_datetime( $activity_mod );
-      $end_datetime_obj = db\activity::get_max_datetime( $activity_mod );
+      $start_datetime_obj = $activity_class_name::get_min_datetime( $activity_mod );
+      $end_datetime_obj   = $activity_class_name::get_max_datetime( $activity_mod );
           
       // if there is activity
       if( is_null( $start_datetime_obj ) || is_null( $end_datetime_obj ) ) continue;
       
-      $assignment_mod = new db\modifier();
+      $assignment_mod = lib::create( 'database\modifier' );
       $assignment_mod->where( 'start_datetime', '>=',
         $datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
       $assignment_mod->where( 'start_datetime', '<=',
@@ -145,7 +146,6 @@ class daily_shift_report extends base_report
       
       //TODO ask if user completes should be a column in the operators table
       $total_completes += $num_user_completes;
-
     }
 
     $contents_shift['Completes'] = $total_completes;

@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\pull;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Base class for all list pull operations.
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * @abstract
  * @package sabretooth\ui
  */
-class participant_sync extends \sabretooth\ui\pull
+class participant_sync extends \cenozo\ui\pull
 {
   /**
    * Constructor
@@ -48,7 +45,8 @@ class participant_sync extends \sabretooth\ui\pull
     $consent_count = 0;
     $missing_count = 0;
     
-    $mastodon_manager = bus\mastodon_manager::self();
+    $participant_class_name = lib::get_class_name( 'database\participant' );
+    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
     $uid_list_string = preg_replace( '/[\'",]/', '', $this->get_argument( 'uid_list' ) );
     $uid_list_string = trim( $uid_list_string );
     $uid_list = array_unique( preg_split( '/\s+/', $uid_list_string ) );
@@ -63,10 +61,10 @@ class participant_sync extends \sabretooth\ui\pull
         $phone_count += count( $response->data->phone_list );
         $consent_count += count( $response->data->consent_list );
 
-        if( !is_null( db\participant::get_unique_record( 'uid', $uid ) ) ) $existing_count++;
+        if( !is_null( $participant_class_name::get_unique_record( 'uid', $uid ) ) ) $existing_count++;
         else $new_count++;
       }
-      catch( exc\mastodon $e )
+      catch( \cenozo\exception\cenozo_service $e )
       {
         $missing_count++;
       }

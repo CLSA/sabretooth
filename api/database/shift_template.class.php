@@ -8,16 +8,14 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * shift_template: record
  *
  * @package sabretooth\database
  */
-class shift_template extends record
+class shift_template extends \cenozo\database\record
 {
   /**
    * Determines if the shift template lands on a particular date.

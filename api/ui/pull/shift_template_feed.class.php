@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\pull;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * pull: shift template feed
  * 
  * @package sabretooth\ui
  */
-class shift_template_feed extends base_feed
+class shift_template_feed extends \cenozo\ui\pull\base_feed
 {
   /**
    * Constructor
@@ -43,15 +40,16 @@ class shift_template_feed extends base_feed
   public function finish()
   {
     $event_list = array();
-    $db_site = bus\session::self()->get_site();
+    $db_site = lib::create( 'business\session' )->get_site();
 
     $calendar_start_datetime_obj = util::get_datetime_object( $this->start_datetime );
-    $calendar_end_datetime_obj = util::get_datetime_object( $this->end_datetime );
+    $calendar_end_datetime_obj   = util::get_datetime_object( $this->end_datetime );
 
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', $db_site->id );
     $modifier->where( 'start_date', '<', $this->end_datetime );
-    foreach( db\shift_template::select( $modifier ) as $db_shift_template )
+    $class_name = lib::get_class_name( 'database\shift_template' );
+    foreach( $class_name::select( $modifier ) as $db_shift_template )
     {
       for( $datetime_obj = clone $calendar_start_datetime_obj;
            $datetime_obj <= $calendar_end_datetime_obj;
@@ -59,7 +57,7 @@ class shift_template_feed extends base_feed
       {
         $add_event = false;
         $start_datetime_obj = util::get_datetime_object( $db_shift_template->start_date );
-        $end_datetime_obj = util::get_datetime_object( $db_shift_template->end_date );
+        $end_datetime_obj   = util::get_datetime_object( $db_shift_template->end_date );
   
         // make sure this date is between the template's start and end date
         if( $start_datetime_obj <= $datetime_obj &&

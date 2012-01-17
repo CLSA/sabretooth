@@ -8,14 +8,12 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * away_time: record
  *
  * @package sabretooth\database
  */
-class away_time extends record {}
+class away_time extends \cenozo\database\record {}
 ?>

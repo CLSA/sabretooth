@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: assignment end
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Assigns a participant to an assignment.
  * @package sabretooth\ui
  */
-class assignment_end extends \sabretooth\ui\push
+class assignment_end extends \cenozo\ui\push
 {
   /**
    * Constructor.
@@ -39,13 +36,13 @@ class assignment_end extends \sabretooth\ui\push
    */
   public function finish()
   {
-    $session = bus\session::self();
+    $session = lib::create( 'business\session' );
     $db_assignment = $session->get_current_assignment();
     if( !is_null( $db_assignment ) )
     {
       // make sure the operator isn't on call
       if( !is_null( $session->get_current_phone_call() ) )
-        throw new exc\notice(
+        throw lib::create( 'exception\notice',
           'An assignment cannot be ended while in a call.', __METHOD__ );
       
       // if there is an appointment associated with this assignment, set the status
@@ -61,7 +58,7 @@ class assignment_end extends \sabretooth\ui\push
         $db_appointment = current( $appointment_list );
 
         // set the appointment status based on whether any calls reached the participant
-        $modifier = new db\modifier();
+        $modifier = lib::create( 'database\modifier' );
         $modifier->where( 'status', '=', 'contacted' );
         $db_appointment->reached = 0 < $db_assignment->get_phone_call_count( $modifier );
         $db_appointment->save();

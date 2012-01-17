@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: appointment new
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Create a new appointment.
  * @package sabretooth\ui
  */
-class appointment_new extends base_new
+class appointment_new extends \cenozo\ui\push\base_new
 {
   /**
    * Constructor.
@@ -44,7 +41,7 @@ class appointment_new extends base_new
     // make sure the datetime column isn't blank
     $columns = $this->get_argument( 'columns' );
     if( !array_key_exists( 'datetime', $columns ) || 0 == strlen( $columns['datetime'] ) )
-      throw new exc\notice( 'The date/time cannot be left blank.', __METHOD__ );
+      throw lib::create( 'exception\notice', 'The date/time cannot be left blank.', __METHOD__ );
     
     // make sure there is a slot available for the appointment
     $columns = $this->get_argument( 'columns', array() );
@@ -54,7 +51,8 @@ class appointment_new extends base_new
     $force = $this->get_argument( 'force', false );
     
     if( !$force && !$this->get_record()->validate_date() )
-      throw new exc\notice( 'There are no operators available during that time.', __METHOD__ );
+      throw lib::create( 'exception\notice',
+        'There are no operators available during that time.', __METHOD__ );
     
     // no errors, go ahead and make the change
     parent::finish();

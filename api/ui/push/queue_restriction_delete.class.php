@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: queue_restriction delete
  * 
  * @package sabretooth\ui
  */
-class queue_restriction_delete extends base_delete
+class queue_restriction_delete extends \cenozo\ui\push\base_delete
 {
   /**
    * Constructor.
@@ -39,12 +36,14 @@ class queue_restriction_delete extends base_delete
    */
   public function finish()
   {
-    // make sure that only top tier roles can remove queue restrictions not belonging to the current site
-    $session = bus\session::self();
+    // make sure that only top tier roles can remove queue restrictions not belonging
+    // to the current site
+    $session = lib::create( 'business\session' );
 
-    if( 3 != $session->get_role()->tier && $session->get_site()->id != $this->get_record()->site_id )
+    if( 3 != $session->get_role()->tier &&
+        $session->get_site()->id != $this->get_record()->site_id )
     {
-      throw new exc\notice(
+      throw lib::create( 'exception\notice',
         'You do not have access to remove this queue restriction.', __METHOD__ );
     }
 

@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: shift new
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Create a new shift.
  * @package sabretooth\ui
  */
-class shift_new extends base_new
+class shift_new extends \cenozo\ui\push\base_new
 {
   /**
    * Constructor.
@@ -42,7 +39,7 @@ class shift_new extends base_new
     // make sure the date column isn't blank
     $columns = $this->get_argument( 'columns' );
     if( !array_key_exists( 'date', $columns ) || 0 == strlen( $columns['date'] ) )
-      throw new exc\notice( 'The date cannot be left blank.', __METHOD__ );
+      throw lib::create( 'exception\notice', 'The date cannot be left blank.', __METHOD__ );
     
     $exceptions = array();
 
@@ -58,7 +55,7 @@ class shift_new extends base_new
         
         if( strtotime( $columns['start_time'] ) >= strtotime( $columns['end_time'] ) )
         {
-          throw new exc\notice(
+          throw lib::create( 'exception\notice',
             sprintf( 'Start and end times (%s to %s) are not valid.',
                      $columns['start_time'],
                      $columns['end_time'] ),
@@ -75,13 +72,13 @@ class shift_new extends base_new
         }
         $this->get_record()->save();
       }
-      catch( exc\base_exception $e )
+      catch( \cenozo\exception\base_exception $e )
       {
         $exceptions[] = $e;
       }
 
       // create a new shift record for the next iteration
-      $this->set_record( new db\shift() );
+      $this->set_record( lib::create( 'database\shift' ) );
     }
 
     // throw an exception if any were caught
@@ -90,7 +87,7 @@ class shift_new extends base_new
       // test the exception type to decide what type of exception to throw
       $e = current( $exceptions );
       throw RUNTIME_SHIFT__SAVE_ERROR_NUMBER == $e->get_number() ?
-        new exc\notice( $e, __METHOD__, $e ) : $e;
+        lib::create( 'exception\notice', $e, __METHOD__, $e ) : $e;
     }
     else if( 1 < count( $exceptions ) )
     {
@@ -101,7 +98,7 @@ class shift_new extends base_new
         if( RUNTIME_SHIFT__SAVE_ERROR_NUMBER != $e->get_number() ) throw $e;
         $message .= $e->get_raw_message()."<br>\n";
       }
-      throw new exc\notice( $message, __METHOD__ );
+      throw lib::create( 'exception\notice', $message, __METHOD__ );
     }
   }
 }
