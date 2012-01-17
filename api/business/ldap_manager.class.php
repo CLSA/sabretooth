@@ -78,7 +78,8 @@ class ldap_manager extends \cenozo\business\ldap_manager
     
     $dn = sprintf( 'uid=%s,ou=Users,%s', $username, $this->base );
     if( !( @ldap_add( $this->resource, $dn, $data ) ) )
-      throw new exc\ldap( ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      throw lib::create( 'exception\ldap',
+        ldap_error( $this->resource ), ldap_errno( $this->resource ) );
   }
 
   /**
@@ -96,15 +97,17 @@ class ldap_manager extends \cenozo\business\ldap_manager
 
     $search = @ldap_search( $this->resource, $this->base, sprintf( '(&(uid=%s))', $username ) );
     if( !$search )
-      throw new exc\ldap( ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      throw lib::create( 'exception\ldap',
+        ldap_error( $this->resource ), ldap_errno( $this->resource ) );
     
     $entries = @ldap_get_entries( $this->resource, $search );
     ldap_free_result( $search );
     if( !$entries )
-      throw new exc\ldap( ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      throw lib::create( 'exception\ldap',
+        ldap_error( $this->resource ), ldap_errno( $this->resource ) );
     
     if( 0 == $entries['count'] )
-      throw new exc\runtime( 'LDAP user '.$username.' not found.', __METHOD__ );
+      throw lib::create( 'exception\runtime', 'LDAP user '.$username.' not found.', __METHOD__ );
     
     $data = array(
       'userpassword' => util::sha1_hash( $password ),
@@ -117,7 +120,8 @@ class ldap_manager extends \cenozo\business\ldap_manager
   
     $dn = $entries[0]['dn'];
     if( !( @ldap_mod_replace( $this->resource, $dn, $data ) ) )
-      throw new exc\ldap( ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      throw lib::create( 'exception\ldap',
+        ldap_error( $this->resource ), ldap_errno( $this->resource ) );
   }
 
   /**
@@ -134,12 +138,14 @@ class ldap_manager extends \cenozo\business\ldap_manager
     
     $search = @ldap_search( $this->resource, $this->base, '(&(uid=*))' );
     if( !$search )
-      throw new exc\ldap( ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      throw lib::create( 'exception\ldap',
+        ldap_error( $this->resource ), ldap_errno( $this->resource ) );
     
     $entries = @ldap_get_entries( $this->resource, $search );
     ldap_free_result( $search );
     if( !$entries )
-      throw new exc\ldap( ldap_error( $this->resource ), ldap_errno( $this->resource ) );
+      throw lib::create( 'exception\ldap',
+        ldap_error( $this->resource ), ldap_errno( $this->resource ) );
     
     $max_id = 999;
     foreach( $entries as $index => $entry )

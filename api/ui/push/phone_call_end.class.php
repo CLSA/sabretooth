@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: phone_call end
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Assigns a participant to an phone_call.
  * @package sabretooth\ui
  */
-class phone_call_end extends \sabretooth\ui\push
+class phone_call_end extends \cenozo\ui\push
 {
   /**
    * Constructor.
@@ -39,11 +36,11 @@ class phone_call_end extends \sabretooth\ui\push
    */
   public function finish()
   {
-    $session = bus\session::self();
+    $session = lib::create( 'business\session' );
     $is_operator = 'operator' == $session->get_role()->name;
 
     // disconnect voip
-    $voip_call = bus\voip_manager::self()->get_call();
+    $voip_call = lib::create( 'business\voip_manager' )->get_call();
     if( !is_null( $voip_call ) ) $voip_call->hang_up();
 
     if( $is_operator )
@@ -61,7 +58,7 @@ class phone_call_end extends \sabretooth\ui\push
         if( 'disconnected' == $db_phone_call->status ||
             'wrong number' == $db_phone_call->status )
         {
-          $db_phone = new db\phone( $db_phone_call->phone_id );
+          $db_phone = lib::create( 'database\phone', $db_phone_call->phone_id );
           if( !is_null( $db_phone ) )
           {
             $note = sprintf( 'This phone number has been disabled because a call was made to it '.
@@ -83,7 +80,7 @@ class phone_call_end extends \sabretooth\ui\push
               'columns' => array(
                 'active' => false,
                 'note' => $note ) );
-            $operation = new phone_edit( $args );
+            $operation = lib::create( 'ui\push\phone_edit', $args );
             $operation->finish();
           }
         }

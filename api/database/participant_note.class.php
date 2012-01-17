@@ -8,14 +8,12 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * participant_note: record
  *
  * @package sabretooth\database
  */
-class participant_note extends record {}
+class participant_note extends \cenozo\database\record {}
 ?>

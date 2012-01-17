@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget participant add_address
  * 
  * @package sabretooth\ui
  */
-class participant_add_address extends base_add_record
+class participant_add_address extends \cenozo\ui\widget\base_add_record
 {
   /**
    * Constructor

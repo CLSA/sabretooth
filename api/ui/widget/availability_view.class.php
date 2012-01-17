@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget availability view
  * 
  * @package sabretooth\ui
  */
-class availability_view extends base_view
+class availability_view extends \cenozo\ui\widget\base_view
 {
   /**
    * Constructor

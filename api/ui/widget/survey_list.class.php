@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget survey list
  * 
  * @package sabretooth\ui
  */
-class survey_list extends base_list
+class survey_list extends \cenozo\ui\widget\base_list
 {
   /**
    * Constructor
@@ -70,9 +67,10 @@ class survey_list extends base_list
    */
   protected function determine_record_count( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = new db\modifier();
+    if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'active', '=', 'Y' );
-    return db\limesurvey\surveys::count( $modifier );
+    $class_name = lib::get_class_name( 'database\limesurvey\surveys' );
+    return $class_name::count( $modifier );
   }
 
   /**
@@ -84,9 +82,10 @@ class survey_list extends base_list
    */
   protected function determine_record_list( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = new db\modifier();
+    if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'active', '=', 'Y' );
-    return db\limesurvey\surveys::select( $modifier );
+    $class_name = lib::get_class_name( 'database\limesurvey\surveys' );
+    return $class_name::select( $modifier );
   }
 }
 ?>

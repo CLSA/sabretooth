@@ -35,9 +35,8 @@ class session extends \cenozo\business\session
     lib::create( 'business\voip_manager' )->initialize();
  
     $setting_manager = lib::create( 'business\setting_manager' );
-
     // create the databases
-    $this->survey_database = new db\database(
+    $this->survey_database = lib::create( 'database\database',
       $setting_manager->get_setting( 'survey_db', 'driver' ),
       $setting_manager->get_setting( 'survey_db', 'server' ),
       $setting_manager->get_setting( 'survey_db', 'username' ),
@@ -48,7 +47,7 @@ class session extends \cenozo\business\session
     {
       // If not set then the audit database settings use the same as limesurvey,
       // with the exception of the prefix
-      $this->audit_database = new db\database(
+      $this->audit_database = lib::create( 'database\database',
         $setting_manager->get_setting( 'audit_db', 'driver' ),
         $setting_manager->get_setting( 'audit_db', 'server' ),
         $setting_manager->get_setting( 'audit_db', 'username' ),
@@ -95,10 +94,11 @@ class session extends \cenozo\business\session
   {
     // make sure the user is an operator
     if( 'operator' != $this->get_role()->name )
-      throw new exc\runtime( 'Tried to get assignment for non-operator.', __METHOD__ );
+      throw lib::create( 'exception\runtime',
+        'Tried to get assignment for non-operator.', __METHOD__ );
     
     // query for assignments which do not have a end time
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'end_datetime', '=', NULL );
     $modifier->order_desc( 'start_datetime' );
     $assignment_list = $this->get_user()->get_assignment_list( $modifier );
@@ -126,14 +126,15 @@ class session extends \cenozo\business\session
   {
     // make sure the user is an operator
     if( 'operator' != $this->get_role()->name )
-      throw new exc\runtime( 'Tried to get phone call for non-operator.', __METHOD__ );
+      throw lib::create( 'exception\runtime',
+        'Tried to get phone call for non-operator.', __METHOD__ );
     
     // without an assignment there can be no current call
     $db_assignment = $this->get_current_assignment();
     if( is_null( $db_assignment) ) return NULL;
 
     // query for phone calls which do not have a end time
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'end_datetime', '=', NULL );
     $modifier->order_desc( 'start_datetime' );
     $phone_call_list = $db_assignment->get_phone_call_list( $modifier );
@@ -158,17 +159,19 @@ class session extends \cenozo\business\session
   public function get_allow_call()
   {
     $allow = false;
-    if( !setting_manager::self()->get_setting( 'voip', 'enabled' ) )
+    $setting_manager = lib::create( 'business\setting_manager' );
+    $voip_manager = lib::create( 'business\voip_manager' );
+    if( !$setting_manager->get_setting( 'voip', 'enabled' ) )
     { // if voip is not enabled then allow calls
       $allow = true;
     }
-    else if( voip_manager::self()->get_sip_enabled() )
+    else if( $voip_manager->get_sip_enabled() )
     { // voip is enabled, so make sure sip is also enabled
       $allow = true;
     }
     else
     { // check to see if we can call without a SIP connection
-      $allow = setting_manager::self()->get_setting( 'voip', 'survey without sip' );
+      $allow = $setting_manager->get_setting( 'voip', 'survey without sip' );
     }
 
     return $allow;
@@ -185,7 +188,7 @@ class session extends \cenozo\business\session
   public function log_activity( $operation, $args )
   {
     // add the operation as activity
-    $activity = new db\activity();
+    $activity = lib::create( 'database\activity' );
     $activity->user_id = $this->user->id;
     $activity->site_id = $this->site->id;
     $activity->role_id = $this->role->id;
@@ -204,6 +207,9 @@ class session extends \cenozo\business\session
    * @return string The name of the widget or NULL if the stack is empty.
    * @access public
    */
+
+   // TODO check why beartooth seems to have a slot_current that does what slot_reset does
+   // in cenozo and sabretooth
   public function slot_reset( $slot )
   {
     if( 'main' == $slot )
@@ -221,6 +227,7 @@ class session extends \cenozo\business\session
           array( array( 'name' => 'self_home', 'args' => NULL ) );
       }
     }
+    // TODO is it possible to replace remaining code with else parent::slot_reset( $slot );
     else if( 'settings' == $slot )
     {
       $_SESSION['slot'][$slot]['stack']['index'] = 0;
@@ -269,7 +276,7 @@ class session extends \cenozo\business\session
     if( is_null( $db_assignment ) ) return false;
     
     // the assignment must have an open call
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'end_datetime', '=', NULL );
     $call_list = $db_assignment->get_phone_call_list( $modifier );
     if( 0 == count( $call_list ) ) return false;

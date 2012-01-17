@@ -8,14 +8,12 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * region: record
  *
  * @package sabretooth\database
  */
-class region extends record {}
+class region extends \cenozo\database\record {}
 ?>

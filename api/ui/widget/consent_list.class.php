@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget consent list
  * 
  * @package sabretooth\ui
  */
-class consent_list extends base_list
+class consent_list extends \cenozo\ui\widget\base_list
 {
   /**
    * Constructor

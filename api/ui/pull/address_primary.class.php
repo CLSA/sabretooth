@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\pull;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * pull: address primary
  * 
  * @package sabretooth\ui
  */
-class address_primary extends base_primary
+class address_primary extends \cenozo\ui\pull\base_primary
 {
   /**
    * Constructor

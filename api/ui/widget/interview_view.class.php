@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget interview view
  * 
  * @package sabretooth\ui
  */
-class interview_view extends base_view
+class interview_view extends \cenozo\ui\widget\base_view
 {
   /**
    * Constructor
@@ -41,12 +38,12 @@ class interview_view extends base_view
 
     try
     {
-      // create the assignment sub-list widget
-      $this->assignment_list = new assignment_list( $args );
+      // create the assignment sub-list widget      
+      $this->assignment_list = lib::create( 'ui\widget\assignment_list', $args );
       $this->assignment_list->set_parent( $this );
       $this->assignment_list->set_heading( 'Assignments associated with this interview' );
     }
-    catch( exc\permission $e )
+    catch( \cenozo\exception\permission $e )
     {
       $this->assignment_list = NULL;
     }
@@ -54,11 +51,11 @@ class interview_view extends base_view
     try
     {
       // create the recording sub-list widget
-      $this->recording_list = new recording_list( $args );
+      $this->recording_list = lib::create( 'ui\widget\recording_list', $args );
       $this->recording_list->set_parent( $this );
       $this->recording_list->set_heading( 'Audio recordings of the interview' );
     }
-    catch( exc\permission $e )
+    catch( \cenozo\exception\permission $e )
     {
       $this->recording_list = NULL;
     }

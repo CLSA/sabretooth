@@ -8,16 +8,14 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * assignment: record
  *
  * @package sabretooth\database
  */
-class assignment extends has_note
+class assignment extends \cenozo\database\has_note
 {
   /**
    * This method returns the current SID, or false if all surveys are complete.
@@ -62,6 +60,8 @@ class assignment extends has_note
       log::warning( 'Tried to determine current phase for assignment with no id.' );
       return false;
     }
+
+    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     
     $this->current_sid = false;
     $this->current_token = false;
@@ -76,16 +76,16 @@ class assignment extends has_note
       $db_qnaire = $db_interview->get_qnaire();
       
       // let the tokens record class know which SID we are dealing with
-      limesurvey\tokens::set_sid( $db_qnaire->withdraw_sid );
+      $tokens_class_name::set_sid( $db_qnaire->withdraw_sid );
 
-      $token = limesurvey\tokens::determine_token_string( $db_interview );
-      $tokens_mod = new modifier();
+      $token = $tokens_class_name::determine_token_string( $db_interview );
+      $tokens_mod = lib::create( 'database\modifier' );
       $tokens_mod->where( 'token', '=', $token );
-      $db_tokens = current( limesurvey\tokens::select( $tokens_mod ) );
+      $db_tokens = current( $tokens_class_name::select( $tokens_mod ) );
 
       if( false === $db_tokens )
       { // token not found, create it
-        $db_tokens = new limesurvey\tokens();
+        $db_tokens = lib::create( 'database\limesurvey\tokens' );
         $db_tokens->token = $token;
         $db_tokens->firstname = $db_participant->first_name;
         $db_tokens->lastname = $db_participant->last_name;
@@ -103,7 +103,7 @@ class assignment extends has_note
     }
     else
     { // the participant has not withdrawn, check each phase of the interview
-      $phase_mod = new modifier();
+      $phase_mod = lib::create( 'database\modifier' );
       $phase_mod->order( 'rank' );
       
       $phase_list = $db_interview->get_qnaire()->get_phase_list( $phase_mod );
@@ -116,18 +116,18 @@ class assignment extends has_note
         foreach( $phase_list as $db_phase )
         {
           // let the tokens record class know which SID we are dealing with
-          limesurvey\tokens::set_sid( $db_phase->sid );
+          $tokens_class_name::set_sid( $db_phase->sid );
   
-          $token = limesurvey\tokens::determine_token_string(
+          $token = $tokens_class_name::determine_token_string(
                      $db_interview,
                      $db_phase->repeated ? $this : NULL );
           $tokens_mod = new modifier();
           $tokens_mod->where( 'token', '=', $token );
-          $db_tokens = current( limesurvey\tokens::select( $tokens_mod ) );
+          $db_tokens = current( $tokens_class_name::select( $tokens_mod ) );
   
           if( false === $db_tokens )
           { // token not found, create it
-            $db_tokens = new limesurvey\tokens();
+            $db_tokens = lib::create( 'database\limesurvey\tokens' );
             $db_tokens->token = $token;
             $db_tokens->firstname = $db_participant->first_name;
             $db_tokens->lastname = $db_participant->last_name;

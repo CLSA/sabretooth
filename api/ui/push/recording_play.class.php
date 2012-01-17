@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: recording play
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Plays a recording via SIP
  * @package sabretooth\ui
  */
-class recording_play extends \sabretooth\ui\push
+class recording_play extends \cenozo\ui\push
 {
   /**
    * Constructor.
@@ -37,6 +34,8 @@ class recording_play extends \sabretooth\ui\push
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
+  // TODO: confirm that this finish needs to be here and if it
+  // does, why isnt the parent::finish from cenozo\operation class called?
   public function finish()
   {
     // connect voip to phone

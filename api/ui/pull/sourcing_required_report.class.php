@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\pull;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Sourcing required report data.
  * 
  * @package sabretooth\ui
  */
-class sourcing_required_report extends base_report
+class sourcing_required_report extends \cenozo\ui\pull\base_report
 {
   /**
    * Constructor
@@ -36,14 +33,15 @@ class sourcing_required_report extends base_report
   {
     // get the report args
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-    $participant_list = db\participant::select();
+    $class_name = lib::get_class_name( 'database\participant' );
     if( $restrict_site_id )
     {
-      $db_site = new db\site( $restrict_site_id );
-      $participant_list = db\participant::select_for_site( $db_site );                      
+      $db_site = lib::create( 'database\site', $restrict_site_id );
+      $participant_list = $class_name::select_for_site( $db_site );                      
     }
+    else $participant_list = $class_name::select();
 
-    $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
+    $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
     $this->add_title( sprintf( 'Participants requiring sourcing for the '.
                                '%s interview', $db_qnaire->name ) ) ;
 
@@ -54,19 +52,21 @@ class sourcing_required_report extends base_report
       // dont bother with deceased or otherwise impaired
       if( !is_null( $db_participant->status ) ) continue;
 
-      $interview_mod = new db\modifier();
+      $interview_mod = lib::create( 'database\modifier' );
       $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
       $db_interview = current( $db_participant->get_interview_list( $interview_mod ) );
       if( $db_interview && !$db_interview->completed )
       {
-        $assignment_mod = new db\modifier();
+        // TODO: can mod create be done outside loop?
+        $assignment_mod = lib::create( 'database\modifier' );
         $assignment_mod->order_desc( 'start_datetime' );
         $failed_calls = 0;
         $db_recent_failed_call = NULL;
         foreach( $db_interview->get_assignment_list( $assignment_mod ) as $db_assignment )
         {
           // find the most recently completed phone call
-          $phone_call_mod = new db\modifier();
+          // TODO: can mod create be moved outside loop?
+          $phone_call_mod = lib::create( 'database\modifier' );
           $phone_call_mod->order_desc( 'start_datetime' );
           $phone_call_mod->where( 'end_datetime', '!=', NULL );
           $phone_call_mod->limit( 1 );

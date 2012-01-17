@@ -8,16 +8,14 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * shift: record
  *
  * @package sabretooth\database
  */
-class shift extends record
+class shift extends \cenozo\database\record
 {
   /**
    * Overrides the parent class to prevent doubling shift times.
@@ -37,19 +35,20 @@ class shift extends record
 
     $db_user = new user( $this->user_id );
     $db_site = new site( $this->site_id );
-    $db_role = role::get_unique_record( 'name', 'operator' );
+    $class_name = lib::get_class_name( 'database\role' );
+    $db_role = $class_name::get_unique_record( 'name', 'operator' );
     
     // Make sure the user has the operator role at the site
     if( !$db_user->has_access( $db_site, $db_role ) )
     {
-      throw new exc\runtime(
+      throw lib::create( 'exception\runtime',
         sprintf( 'Cannot assign shift to "%s", user does not have operator access to %s',
                  $db_user->name,
                  $db_site->name ), __METHOD__ );
     }
 
     // See if the user already has a shift at this time
-    $modifier = new modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'id', '!=', $this->id );
     $modifier->where( 'user_id', '=', $this->user_id );
     
@@ -73,7 +72,7 @@ class shift extends record
     {
       $overlap_id = current( $overlap_ids );
       $db_overlap = new static( $overlap_id );
-      throw new exc\runtime(
+      throw lib::create( 'exception\runtime',
         sprintf( 'Shift date/times (%s to %s) for user "%s" overlaps '.
                  'with another shift on the same day (%s to %s).',
                  $this->start_datetime,

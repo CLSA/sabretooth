@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget recording list
  * 
  * @package sabretooth\ui
  */
-class recording_list extends base_list
+class recording_list extends \cenozo\ui\widget\base_list
 {
   /**
    * Constructor
@@ -47,7 +44,7 @@ class recording_list extends base_list
   {
     parent::finish();
 
-    $this->set_variable( 'sip_enabled', bus\voip_manager::self()->get_sip_enabled() );
+    $this->set_variable( 'sip_enabled', lib::create( 'business\voip_manager' )->get_sip_enabled() );
 
     foreach( $this->get_record_list() as $record )
     {

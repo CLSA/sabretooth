@@ -8,15 +8,16 @@
  */
 
 namespace sabretooth;
+use cenozo\lib;
 
 /**
  * util: utility class of static methods
  *
-* Extends cenozo's util class with additional functionality.
+ * Extends cenozo's util class with additional functionality.
  * @package sabretooth
  */
 class util extends \cenozo\util
-{
+{:
   /**
    * Returns whether the system is in development mode.
    * 
@@ -27,7 +28,8 @@ class util extends \cenozo\util
    */
   public static function in_devel_mode()
   {
-    return true == business\setting_manager::self()->get_setting( 'general', 'development_mode' );
+    $setting_manager = lib::create( 'business\setting_manager' );
+    return true == $setting_manager->get_setting( 'general', 'development_mode' );
   }
 
   /**
@@ -41,8 +43,11 @@ class util extends \cenozo\util
   public static function in_pull_mode()
   {
     if( is_null( self::$pull_mode ) )
+    {
+      $setting_manager = lib::create( 'business\setting_manager' );
       self::$pull_mode =
-        'pull' == business\setting_manager::self()->get_setting( 'general', 'operation_type' );
+        'pull' == $setting_manager->get_setting( 'general', 'operation_type' );
+    }    
     
     return self::$pull_mode;
   }
@@ -58,8 +63,11 @@ class util extends \cenozo\util
   public static function in_push_mode()
   {
     if( is_null( self::$push_mode ) )
+    {
+      $setting_manager = lib::create( 'business\setting_manager' );
       self::$push_mode =
-        'push' == business\setting_manager::self()->get_setting( 'general', 'operation_type' );
+        'push' == $setting_manager->get_setting( 'general', 'operation_type' );
+    }    
     
     return self::$push_mode;
   }
