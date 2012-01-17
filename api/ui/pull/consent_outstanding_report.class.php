@@ -44,6 +44,10 @@ class consent_outstanding_report extends \cenozo\ui\pull\base_report
                       ? $class_name::select_for_site( $db_site )
                       : $class_name::select();
 
+    // modifiers common to each iteration of the following loops
+    $consent_mod = lib::create( 'database\modifier' );
+    $consent_mod->where( 'event', '=', 'verbal accept' );
+
     $contents = array();
     // loop through participants searching for those who have completed their most recent interview
     foreach( $participant_list as $db_participant )
@@ -51,9 +55,6 @@ class consent_outstanding_report extends \cenozo\ui\pull\base_report
       // dont bother with deceased or otherwise impaired
       if( !is_null( $db_participant->status ) ) continue;
 
-      // TODO: can mod creation be moved outside of loop?
-      $consent_mod = lib::create( 'database\modifier' );
-      $consent_mod->where( 'event', '=', 'verbal accept' );
       if( count( $db_participant->get_consent_list( $consent_mod ) ) )
       {
         $interview_mod = lib::create( 'database\modifier' );

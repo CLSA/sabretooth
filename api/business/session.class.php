@@ -207,9 +207,6 @@ class session extends \cenozo\business\session
    * @return string The name of the widget or NULL if the stack is empty.
    * @access public
    */
-
-   // TODO check why beartooth seems to have a slot_current that does what slot_reset does
-   // in cenozo and sabretooth
   public function slot_reset( $slot )
   {
     if( 'main' == $slot )
@@ -226,37 +223,12 @@ class session extends \cenozo\business\session
         $_SESSION['slot'][$slot]['stack']['widgets'] =
           array( array( 'name' => 'self_home', 'args' => NULL ) );
       }
+
+      // mangle $slot so that the parent method doesn't change what we've done above
+      $slot = 'main has already been processed';
     }
-    // TODO is it possible to replace remaining code with else parent::slot_reset( $slot );
-    else if( 'settings' == $slot )
-    {
-      $_SESSION['slot'][$slot]['stack']['index'] = 0;
-      $_SESSION['slot'][$slot]['stack']['widgets'] =
-        array( array( 'name' => 'self_settings', 'args' => NULL ) );
-    }
-    else if( 'menu' == $slot )
-    {
-      $_SESSION['slot'][$slot]['stack']['index'] = 0;
-      $_SESSION['slot'][$slot]['stack']['widgets'] =
-        array( array( 'name' => 'self_menu', 'args' => NULL ) );
-    }
-    else if( 'status' == $slot )
-    {
-      $_SESSION['slot'][$slot]['stack']['index'] = 0;
-      $_SESSION['slot'][$slot]['stack']['widgets'] =
-        array( array( 'name' => 'self_status', 'args' => NULL ) );
-    }
-    else if( 'shortcuts' == $slot )
-    {
-      $_SESSION['slot'][$slot]['stack']['index'] = 0;
-      $_SESSION['slot'][$slot]['stack']['widgets'] =
-        array( array( 'name' => 'self_shortcuts', 'args' => NULL ) );
-    }
-    else
-    {
-      $_SESSION['slot'][$slot]['stack']['index'] = -1;
-      $_SESSION['slot'][$slot]['stack']['widgets'] = array();
-    }
+
+    parent::slot_reset( $slot );
   }
   
   /**

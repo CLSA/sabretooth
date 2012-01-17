@@ -62,6 +62,11 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
       sprintf( 'Listing of those who requested a new information package during '.
                'the %s interview', $db_qnaire->name ) ) ;
     
+    // modifiers common to each iteration of the following loops
+    $consent_mod = lib::create( 'database\modifier' );
+    $consent_mod->where( 'event', '=', 'verbal accept' );
+    $consent_mod->or_where( 'event', '=', 'written accept' );
+
     $contents = array();
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
@@ -71,10 +76,6 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
 
       if( !is_null( $db_participant->status ) ) continue;      
 
-      // TODO: can mod create be moved outside loop?      
-      $consent_mod = lib::create( 'database\modifier' );
-      $consent_mod->where( 'event', '=', 'verbal accept' );
-      $consent_mod->or_where( 'event', '=', 'written accept' );
       if( count( $db_participant->get_consent_list( $consent_mod ) ) )
       {
         $interview_mod = lib::create( 'database\modifier' );

@@ -31,14 +31,10 @@ class activity extends \cenozo\database\activity
    * @static
    * @access public
    */
-
-  //TODO check why the cenozo activity class does not have remove away time
   public static function get_elapsed_time(
     $db_user, $db_site, $db_role, $date, $remove_away_time = true )
   {
     $total_time = parent::get_elapsed_time( $db_user, $db_site, $db_role, $date );
-
-    //TODO: check about the diff with cenozo
 
     // now substract all away times, if necessary
     if( $remove_away_time )
@@ -50,8 +46,6 @@ class activity extends \cenozo\database\activity
       $away_time_mod->where( 'end_datetime', '>=', $date.' 0:00:00' );
       $away_time_mod->where( 'end_datetime', '<=', $date.' 23:59:59' );
 
-      // TODO since away_time.class.php is only in sabretooth and not in cenozo
-      // do we need to get the class name for this static select method usage?
       $class_name = lib::get_class_name( 'database\away_time' );
       foreach( $class_name::select( $away_time_mod ) as $db_away_time )
       {

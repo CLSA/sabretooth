@@ -219,13 +219,11 @@ class interview extends \cenozo\database\has_note
   public function get_recording_list( $modifier = NULL, $count = false )
   {
     // make sure that all recordings on disk have a corresponding database record
-    // TODO fix monitor path
-    $monitor_path = WEB_PATH.'/'.bus\setting_manager::self()->get_setting( 'voip', 'monitor' );
-    if( is_dir( $monitor_path ) )
+    if( is_dir( VOIP_MONITOR_PATH ) )
     {
       $values = '';
       $first = true;
-      foreach( glob( sprintf( '%s/%d_*-out.wav', $monitor_path, $this->id ) ) as $filename )
+      foreach( glob( sprintf( '%s/%d_*-out.wav', VOIP_MONITOR_PATH, $this->id ) ) as $filename )
       {
         $parts = preg_split( '/[-_]/', $filename );
         if( 3 <= count( $parts ) )
