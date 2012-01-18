@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget assignment list
  * 
  * @package sabretooth\ui
  */
-class assignment_list extends site_restricted_list
+class assignment_list extends \cenozo\ui\widget\site_restricted_list
 {
   /**
    * Constructor
@@ -58,7 +55,7 @@ class assignment_list extends site_restricted_list
       $participant = sprintf( '%s, %s', $db_participant->last_name, $db_participant->first_name );
       
       // get the status of the last phone call for this assignment
-      $modifier = new db\modifier();
+      $modifier = lib::create( 'database\modifier' );
       $modifier->order_desc( 'end_datetime' );
       $modifier->limit( 1 );
       $phone_call_list = $record->get_phone_call_list( $modifier );
@@ -92,10 +89,10 @@ class assignment_list extends site_restricted_list
    */
   protected function determine_record_count( $modifier = NULL )
   {
-    $session = bus\session::self();
+    $session = lib::create( 'business\session' );
     if( 'operator' == $session->get_role()->name )
     {
-      if( is_null( $modifier ) ) $modifier = new db\modifier();
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
       $db_assignment = $session->get_current_assignment();
       $participant_id = is_null( $db_assignment )
                       ? 0
@@ -117,10 +114,10 @@ class assignment_list extends site_restricted_list
    */
   protected function determine_record_list( $modifier = NULL )
   {
-    $session = bus\session::self();
+    $session = lib::create( 'business\session' );
     if( 'operator' == $session->get_role()->name )
     {
-      if( is_null( $modifier ) ) $modifier = new db\modifier();
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
       $db_assignment = $session->get_current_assignment();
       $participant_id = is_null( $db_assignment )
                       ? 0

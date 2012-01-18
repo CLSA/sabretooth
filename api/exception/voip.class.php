@@ -8,8 +8,7 @@
  */
 
 namespace sabretooth\exception;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * voip: voip exceptions
@@ -17,7 +16,7 @@ use sabretooth\business as bus;
  * All exceptions caused because of the voip connection.
  * @package sabretooth\exception
  */
-class voip extends runtime
+class voip extends \cenozo\exception\runtime
 {
   /**
    * Constructor

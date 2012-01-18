@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget shift template calendar
  * 
  * @package sabretooth\ui
  */
-class shift_template_calendar extends base_calendar
+class shift_template_calendar extends \cenozo\ui\widget\base_calendar
 {
   /**
    * Constructor
@@ -31,7 +28,7 @@ class shift_template_calendar extends base_calendar
   public function __construct( $args )
   {
     parent::__construct( 'shift_template', $args );
-    $this->set_heading( 'Shift template for '.bus\session::self()->get_site()->name );
+    $this->set_heading( 'Shift template for '.lib::create( 'business\session' )->get_site()->name );
   }
   
   /**

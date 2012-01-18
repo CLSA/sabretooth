@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: phone delete
  * 
  * @package sabretooth\ui
  */
-class phone_delete extends base_delete
+class phone_delete extends \cenozo\ui\push\base_delete
 {
   /**
    * Constructor.
@@ -49,7 +46,7 @@ class phone_delete extends base_delete
     parent::finish();
 
     // now send the same request to mastodon
-    $mastodon_manager = bus\mastodon_manager::self();
+    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
     $mastodon_manager->push( 'phone', 'delete', $args );
   }
 }

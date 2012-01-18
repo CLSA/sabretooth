@@ -8,16 +8,14 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * queue: record
  *
  * @package sabretooth\database
  */
-class queue extends record
+class queue extends \cenozo\database\record
 {
   /**
    * Constructor
@@ -57,7 +55,8 @@ class queue extends record
       'sourcing required' );
 
     // add the participant final status types
-    $queue_list = array_merge( $queue_list, participant::get_enum_values( 'status' ) );
+    $class_name = lib::get_class_name( 'database\participant' );
+    $queue_list = array_merge( $queue_list, $class_name::get_enum_values( 'status' ) );
     
     // finish the queue list
     $queue_list = array_merge( $queue_list, array(
@@ -107,7 +106,8 @@ class queue extends record
     }
     
     // now add the sql for each call back status
-    foreach( phone_call::get_enum_values( 'status' ) as $phone_call_status )
+    $class_name = lib::get_class_name( 'database\phone_call' ); 
+    foreach( $class_name::get_enum_values( 'status' ) as $phone_call_status )
     {
       // ignore statuses which result in deactivating phone numbers
       if( 'disconnected' != $phone_call_status && 'wrong number' != $phone_call_status )
@@ -162,7 +162,7 @@ class queue extends record
    */
   public function get_participant_count( $modifier = NULL )
   {
-    if( is_null( $modifier ) ) $modifier = new modifier();
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
 
     // restrict to the site
     if( !is_null( $this->db_site ) ) $modifier->where( 'base_site_id', '=', $this->db_site->id );
@@ -183,7 +183,7 @@ class queue extends record
    */
   public function get_participant_list( $modifier = NULL )
   {
-    if( is_null( $modifier ) ) $modifier = new modifier();
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
 
     // restrict to the site
     if( !is_null( $this->db_site ) ) $modifier->where( 'base_site_id', '=', $this->db_site->id );
@@ -194,7 +194,7 @@ class queue extends record
                $modifier->get_sql( true ) ) );
 
     $participants = array();
-    foreach( $participant_ids as $id ) $participants[] = new participant( $id );
+    foreach( $participant_ids as $id ) $participants[] = lib::create( 'database\participant', $id );
     return $participants;
   }
 
@@ -257,7 +257,8 @@ class queue extends record
       $check_time = false;
     }
 
-    $participant_status_list = participant::get_enum_values( 'status' );
+    $class_name = lib::get_class_name( 'database\participant' );
+    $participant_status_list = $class_name::get_enum_values( 'status' );
 
     // first a list of commonly used elements
     $status_where_list = array(
@@ -650,7 +651,8 @@ class queue extends record
     {
       // make sure a phone call status has been included (all remaining queues require it)
       if( is_null( $phone_call_status ) )
-        throw new exc\argument( 'phone_call_status', $phone_call_status, __METHOD__ );
+        throw lib::create( 'exception\argument',
+          'phone_call_status', $phone_call_status, __METHOD__ );
 
       if( 'phone call status' == $queue )
       {
@@ -749,7 +751,7 @@ class queue extends record
       }
       else // invalid queue name
       {
-        throw new exc\argument( 'queue', $queue, __METHOD__ );
+        throw lib::create( 'exception\argument', 'queue', $queue, __METHOD__ );
       }
     }
   }
@@ -774,7 +776,7 @@ class queue extends record
     $sql = str_replace( '<QNAIRE_TEST>', $qnaire_test_sql, $sql );
 
     // fill in the settings
-    $setting_manager = bus\setting_manager::self();
+    $setting_manager = lib::create( 'business\setting_manager' );
     $setting = $setting_manager->get_setting( 'appointment', 'call pre-window' );
     $sql = str_replace( '<APPOINTMENT_PRE_WINDOW>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'appointment', 'call post-window' );
@@ -785,9 +787,10 @@ class queue extends record
     $sql = str_replace( '<CALLING_END_TIME>', $setting, $sql );
 
     // fill in all callback timing settings
-    $setting_mod = new modifier();
+    $setting_mod = lib::create( 'database\modifier' ); 
     $setting_mod->where( 'category', '=', 'callback timing' );
-    foreach( setting::select( $setting_mod ) as $db_setting )
+    $class_name = lib::get_class_name( 'database\setting' );
+    foreach( $class_name::select( $setting_mod ) as $db_setting )
     {
       $setting = $setting_manager->get_setting( 'callback timing', $db_setting->name );
       $template = sprintf( '<CALLBACK_%s>',

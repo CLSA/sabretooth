@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\database\limesurvey;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Access to limesurvey's *_SID tables.
@@ -39,7 +36,7 @@ abstract class sid_record extends record
   {
     if( is_null( static::$table_sid ) )
     {
-      throw new exc\runtime(
+      throw lib::create( 'exception\runtime',
         'The survey id (table_sid) must be set before using this class.', __METHOD__ );
     }
 

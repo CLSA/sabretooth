@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: participant edit
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Edit a participant.
  * @package sabretooth\ui
  */
-class participant_edit extends base_edit
+class participant_edit extends \cenozo\ui\push\base_edit
 {
   /**
    * Constructor.
@@ -52,7 +49,7 @@ class participant_edit extends base_edit
     // now send the same request to mastodon (unless we are setting the site)
     if( !array_key_exists( 'site_id', $args['columns'] ) )
     {
-      $mastodon_manager = bus\mastodon_manager::self();
+      $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
       $mastodon_manager->push( 'participant', 'edit', $args );
     }
   }

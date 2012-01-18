@@ -1,0 +1,61 @@
+<?php
+/**
+ * settings.local.ini.php
+ * 
+ * Defines local initialization settings for sabretooth, overriding default settings found in
+ * settings.ini.php
+ */
+
+global $SETTINGS;
+
+// Whether or not to run the application in development mode
+$SETTINGS['general']['development_mode'] = true;
+
+// The web url of the Cenozo framework
+$SETTINGS['url']['CENOZO'] = sprintf( 'http%s://%s/web/path/to/cenozo',
+                                      'on' == $_SERVER["HTTPS"] ? 's' : '',
+                                      $_SERVER["HTTP_HOST"] );
+
+// The file path to the framework and application
+$SETTINGS['path']['CENOZO'] = '/path/to/cenozo';
+$SETTINGS['path']['APPLICATION'] = '/path/to/sabretooth';
+
+// The path to the log file
+$SETTINGS['path']['LOG_FILE'] = $SETTINGS['path']['APPLICATION'].'/log';
+
+// The url of Mastodon (cannot be relative).  Comment out to disable mastodon support.
+//$SETTINGS['url']['MASTODON'] = 'https://url/to/mastodon';
+
+// The path and url of Limesurvey
+$SETTINGS['path']['LIMESURVEY'] = '/path/to/limesurvey';
+$SETTINGS['url']['LIMESURVEY'] = 'http://path/to/limesurvey';
+
+// The database name, username and password
+$SETTINGS['db']['database'] = 'put your database name here';
+$SETTINGS['db']['username'] = 'put your database username here';
+$SETTINGS['db']['password'] = 'put your database password here';
+
+// audit database settings (null values use the limesurvey database settings)
+// NOTE: either the prefix or the database must not different from limesurvey's prefix
+// and server, otherwise auditing will not work.
+$SETTINGS['audit_db']['enabled'] = false;
+$SETTINGS['audit_db']['prefix'] = 'audit_';
+
+// The LDAP base dn, username, password and whether LDAP is in active directory mode
+$SETTINGS['ldap']['base'] = 'put your ldap base here';
+$SETTINGS['ldap']['username'] = 'put your ldap username here';
+$SETTINGS['ldap']['password'] = 'put your ldap password here';
+$SETTINGS['ldap']['active_directory'] = true;
+
+// The Asterisk AJAM url, username and password
+$SETTINGS['voip']['enabled'] = false;
+$SETTINGS['voip']['url'] = 'http://localhost:8088/mxml';
+$SETTINGS['voip']['username'] = 'put your asterisk username here';
+$SETTINGS['voip']['password'] = 'put your asterisk password here';
+$SETTINGS['voip']['prefix'] = '00';
+$SETTINGS['voip']['xor_key'] = 'put your webphone xor key here';
+
+// the directory to write monitored calls
+// (must be an absolute path that the asterisk server's user has access to)
+$SETTINGS['path']['VOIP_MONITOR'] = $SETTINGS['path']['APPLICATION'].'/web/monitor';
+?>

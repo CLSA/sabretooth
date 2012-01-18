@@ -149,7 +149,7 @@
         <tr>
           <td class="heading">Previous Assignment:</td>
           <td class="content">
-            {% if 0 == previous_call_list|count %}
+            {% if 0 == previous_call_list|length %}
               new participant (never assigned)
             {% else %}
               Last assigned on {{ previous_assignment_date }} at {{ previous_assignment_time }}
@@ -234,7 +234,7 @@
   {% if not participant_id|default(false) %}
     <div class="ui-widget-header ui-state-hover app-widget-header">System Messages</div>
     <div class="ui-widget ui-widget-content app-widget-content">
-      {% if message_list|count %}
+      {% if message_list|length %}
         <div class="spacer" />
         {% for message in message_list %}
           <div class="ui-widget ui-widget-header">{{ message.title }}</div>

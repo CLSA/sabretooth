@@ -8,9 +8,7 @@
  */
 
 namespace sabretooth\business;
-use sabretooth\log, sabretooth\util;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 require_once SHIFT8_PATH.'/library/Shift8.php';
 
@@ -19,7 +17,7 @@ require_once SHIFT8_PATH.'/library/Shift8.php';
  * 
  * @package sabretooth\business
  */
-class voip_call extends \sabretooth\base_object
+class voip_call extends \cenozo\base_object
 {
   /**
    * Constructor.
@@ -34,7 +32,7 @@ class voip_call extends \sabretooth\base_object
     if( is_null( $s8_event ) ||
         !is_object( $s8_event ) ||
         'Shift8_Event' != get_class( $s8_event ) )
-      throw new exc\argument( 's8_event', $s8_event, __METHOD__ );
+      throw lib::create( 'exception\argument', 's8_event', $s8_event, __METHOD__ );
     
     $this->manager = $manager;
     $this->channel = $s8_event->get( 'channel' );
@@ -45,7 +43,7 @@ class voip_call extends \sabretooth\base_object
     // get the dialed number by striping the dialing prefix from the extension
     if( !is_null( $s8_event->get( 'extension' ) ) )
     {
-      $prefix = voip_manager::self()->get_prefix();
+      $prefix = lib::create( 'business\voip_manager' )->get_prefix();
       $this->number = preg_replace( "/^$prefix/", '', $s8_event->get( 'extension' ) );
     }
 
@@ -68,7 +66,7 @@ class voip_call extends \sabretooth\base_object
    */
   public function dtmf( $tone )
   {
-    if( !voip_manager::self()->get_enabled() ) return;
+    if( !lib::create( 'business\voip_manager' )->get_enabled() ) return;
     
     // make sure the tone is valid
     if( !preg_match( '/^[0-9a-dgs]$/', $tone ) )
@@ -86,7 +84,7 @@ class voip_call extends \sabretooth\base_object
 
     // now send the DTMF tone itself (which is not heard locally)
     if( !$this->manager->playDTMF( $tone, $this->get_bridge() ) )
-      throw new exc\voip( $this->manager->getLastError(), __METHOD__ );
+      throw lib::create( 'exception\voip', $this->manager->getLastError(), __METHOD__ );
   }
   
   /**
@@ -97,11 +95,12 @@ class voip_call extends \sabretooth\base_object
    */
   public function hang_up()
   {
-    if( !voip_manager::self()->get_enabled() ) return;
+    $voip_manager = lib::create( 'business\voip_manager' );
+    if( !$voip_manager->get_enabled() ) return;
     
     // hang up the call, if successful then rebuild the call list
     if( $this->manager->hangup( $this->get_channel() ) )
-      voip_manager::self()->rebuild_call_list();
+      $voip_manager->rebuild_call_list();
   }
   
   /**
@@ -119,7 +118,7 @@ class voip_call extends \sabretooth\base_object
    */
   public function play_sound( $sound, $volume = 0, $bridge = true )
   {
-    if( !voip_manager::self()->get_enabled() ) return;
+    if( !lib::create( 'business\voip_manager' )->get_enabled() ) return;
     
     // constrain the volume to be between -4 and 4
     $volume = intval( $volume );
@@ -141,7 +140,7 @@ class voip_call extends \sabretooth\base_object
       'Volume='.$volume.','.
       'ToChannel='.$this->get_channel() ) )
     {
-      throw new exc\voip( $this->manager->getLastError(), __METHOD__ );
+      throw lib::create( 'exception\voip', $this->manager->getLastError(), __METHOD__ );
     }
     
     if( $bridge )
@@ -165,7 +164,7 @@ class voip_call extends \sabretooth\base_object
         'Volume='.$volume.','.
         'ToChannel='.$this->get_bridge() ) )
       {
-        throw new exc\voip( $this->manager->getLastError(), __METHOD__ );
+        throw lib::create( 'exception\voip', $this->manager->getLastError(), __METHOD__ );
       }
     }
   }
@@ -179,10 +178,9 @@ class voip_call extends \sabretooth\base_object
    */
   public function start_monitoring( $file )
   {
-    if( !voip_manager::self()->get_enabled() ) return;
-
-    $monitor_path = WEB_PATH.'/'.setting_manager::self()->get_setting( 'voip', 'monitor' );
-    $filename = sprintf( '%s/%s', $monitor_path, $file );
+    if( !lib::create( 'business\voip_manager' )->get_enabled() ) return;
+ 
+    $filename = sprintf( '%s/%s', VOIP_MONITOR_PATH, $file );
 
     // make sure to not overwrite any existing recordings
     if( file_exists( $filename.'-in.wav' ) )
@@ -193,7 +191,7 @@ class voip_call extends \sabretooth\base_object
     }
 
     if( false == $this->manager->monitor( $this->get_channel(), $filename, 'wav' ) )
-      throw new exc\voip( $this->manager->getLastError(), __METHOD__ );
+      throw lib::create( 'exception\voip', $this->manager->getLastError(), __METHOD__ );
   }
   
   /**
@@ -204,10 +202,10 @@ class voip_call extends \sabretooth\base_object
    */
   public function stop_monitoring()
   {
-    if( !voip_manager::self()->get_enabled() ) return;
+    if( !lib::create( 'business\voip_manager' )->get_enabled() ) return;
 
     if( false == $this->manager->stopMonitor( $this->get_channel() ) )
-      throw new exc\voip( $this->manager->getLastError(), __METHOD__ );
+      throw lib::create( 'exception\voip', $this->manager->getLastError(), __METHOD__ );
   }
   
   /**

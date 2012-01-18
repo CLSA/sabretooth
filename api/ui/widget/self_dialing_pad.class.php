@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget self dialing_pad
  * 
  * @package sabretooth\ui
  */
-class self_dialing_pad extends \sabretooth\ui\widget
+class self_dialing_pad extends \cenozo\ui\widget
 {
   /**
    * Constructor
@@ -44,7 +41,7 @@ class self_dialing_pad extends \sabretooth\ui\widget
   {
     parent::finish();
     
-    $role_name = bus\session::self()->get_role()->name;
+    $role_name = lib::create( 'business\session' )->get_role()->name;
     $this->set_variable( 'allow_hangup', 'operator' != $role_name );
   }
 }

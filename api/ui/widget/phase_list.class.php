@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget phase list
  * 
  * @package sabretooth\ui
  */
-class phase_list extends base_list
+class phase_list extends \cenozo\ui\widget\base_list
 {
   /**
    * Constructor
@@ -50,10 +47,10 @@ class phase_list extends base_list
     foreach( $this->get_record_list() as $record )
     {
       // get the survey
-      $db_survey = new db\limesurvey\surveys( $record->sid );
+      $db_surveys = lib::create( 'database\limesurvey\surveys', $record->sid );
 
       $this->add_row( $record->id,
-        array( 'survey' => $db_survey->get_title(),
+        array( 'survey' => $db_surveys->get_title(),
                'rank' => $record->rank,
                'repeated' => $record->repeated ) );
     }

@@ -8,16 +8,14 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * address: record
  *
  * @package sabretooth\database
  */
-class address extends has_rank
+class address extends \cenozo\database\has_rank
 {
   /**
    * Determines the difference in hours between the user's timezone and the address's timezone

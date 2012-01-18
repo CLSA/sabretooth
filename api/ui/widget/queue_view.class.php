@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget queue view
  * 
  * @package sabretooth\ui
  */
-class queue_view extends base_view
+class queue_view extends \cenozo\ui\widget\base_view
 {
   /**
    * Constructor
@@ -32,19 +29,19 @@ class queue_view extends base_view
   {
     parent::__construct( 'queue', 'view', $args );
     
-    $session = bus\session::self();
-    if( 'supervisor' == $session->get_role()->name )
+    $session = lib::create( 'business\session' );
+    if( 3 != $session->get_role()->tier )
     {
       $this->db_site = $session->get_site();
     }
     else
     {
       $site_id = $this->get_argument( 'site_id' );
-      if( $site_id ) $this->db_site = new db\site( $site_id );
+      if( $site_id ) $this->db_site = lib::create( 'database\site', $site_id );
     }
 
     $qnaire_id = $this->get_argument( 'qnaire_id' );
-    if( $qnaire_id ) $this->db_qnaire = new db\qnaire( $qnaire_id );
+    if( $qnaire_id ) $this->db_qnaire = lib::create( 'database\qnaire', $qnaire_id );
 
     $current_date = util::get_datetime_object()->format( 'Y-m-d' );
     $viewing_date = $this->get_argument( 'viewing_date', 'current' );
@@ -61,11 +58,11 @@ class queue_view extends base_view
     try
     {
       // create the participant sub-list widget
-      $this->participant_list = new participant_list( $args );
+      $this->participant_list = lib::create( 'ui\widget\participant_list', $args );
       $this->participant_list->set_parent( $this );
       $this->participant_list->set_heading( 'Queue participant list' );
     }
-    catch( exc\permission $e )
+    catch( \cenozo\exception\permission $e )
     {
       $this->participant_list = NULL;
     }
@@ -139,14 +136,14 @@ class queue_view extends base_view
 
   /**
    * The site to restrict the queue to (may be NULL)
-   * @var db\site
+   * @var database\site
    * @access protected
    */
   protected $db_site = NULL;
 
   /**
    * The qnaire to restrict the queue to (may be NULL)
-   * @var db\qnaire
+   * @var database\qnaire
    * @access protected
    */
   protected $db_qnaire = NULL;

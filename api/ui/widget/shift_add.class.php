@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget shift add
  * 
  * @package sabretooth\ui
  */
-class shift_add extends base_view
+class shift_add extends \cenozo\ui\widget\base_view
 {
   /**
    * Constructor
@@ -47,11 +44,11 @@ class shift_add extends base_view
     try
     {
       // and a list of users
-      $this->user_list = new user_list( $args );
+      $this->user_list = lib::create( 'ui\widget\user_list', $args );
       $this->user_list->set_parent( $this, 'edit' );
       $this->user_list->set_heading( 'Choose users to add to this shift' );
     }
-    catch( exc\permission $e )
+    catch( \cenozo\exception\permission $e )
     {
       $this->user_list = NULL;
     }
@@ -78,7 +75,7 @@ class shift_add extends base_view
     }
 
     // set the view's items
-    $this->set_item( 'site_id', bus\session::self()->get_site()->id, true );
+    $this->set_item( 'site_id', lib::create( 'business\session' )->get_site()->id, true );
     $this->set_item( 'date', $this->date, true );
     $this->set_item( 'start_time', $this->start_time, true );
     $this->set_item( 'end_time', $this->end_time, true );
@@ -96,12 +93,14 @@ class shift_add extends base_view
    */
   public function determine_user_count( $modifier = NULL )
   {
-    $db_role = db\role::get_unique_record( 'name', 'operator' );
-    if( is_null( $modifier ) ) $modifier = new db\modifier();
+    $role_class_name = lib::get_class_name( 'database\role' );
+    $db_role = $role_class_name::get_unique_record( 'name', 'operator' );
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'role_id', '=', $db_role->id );
-    $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );
+    $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
 
-    return db\user::count( $modifier );
+    $user_class_name = lib::get_class_name( 'database\user' );
+    return $user_class_name::count( $modifier );
   }
 
   /**
@@ -114,12 +113,14 @@ class shift_add extends base_view
    */
   public function determine_user_list( $modifier = NULL )
   {
-    $db_role = db\role::get_unique_record( 'name', 'operator' );
-    if( is_null( $modifier ) ) $modifier = new db\modifier();
+    $role_class_name = lib::get_class_name( 'database\role' );
+    $db_role = $role_class_name::get_unique_record( 'name', 'operator' );
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'role_id', '=', $db_role->id );
-    $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );
+    $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
 
-    return db\user::select( $modifier );
+    $user_class_name = lib::get_class_name( 'database\user' );
+    return $user_class_name::select( $modifier );
   }
 
   /**

@@ -8,16 +8,14 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * recording: record
  *
  * @package sabretooth\database
  */
-class recording extends record
+class recording extends \cenozo\database\record
 {
   /**
    * Gets the file associated with this recording

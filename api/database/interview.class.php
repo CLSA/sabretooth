@@ -8,16 +8,14 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * interview: record
  *
  * @package sabretooth\database
  */
-class interview extends has_note
+class interview extends \cenozo\database\has_note
 {
   /**
    * Identical to the parent's select method but restrict to a particular site.
@@ -36,7 +34,7 @@ class interview extends has_note
     if( is_null( $db_site ) ) return parent::select( $modifier, $count );
 
     // left join the participant, participant_primary_address and address tables
-    if( is_null( $modifier ) ) $modifier = new modifier();
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     $sql = sprintf( ( $count ? 'SELECT COUNT( %s.%s ) ' : 'SELECT %s.%s ' ).
                     'FROM %s '.
                     'LEFT JOIN participant '.
@@ -88,8 +86,8 @@ class interview extends has_note
   /**
    * Returns the time in seconds that it took to complete a particular phase of this interview
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param db\phase $db_phase Which phase of the interview to get the time of.
-   * @param db\assignment $db_assignment Repeated phases have their times measured for each
+   * @param phase $db_phase Which phase of the interview to get the time of.
+   * @param assignment $db_assignment Repeated phases have their times measured for each
    *                      iteration of the phase.  For repeated phases this determines which
    *                      assignment's time to return.  It is ignored for phases which are not
    *                      repeated.
@@ -116,13 +114,15 @@ class interview extends has_note
         'Tried to determine interview time for repeating phase without an assignment.' );
       return 0.0;
     }
-    
-    limesurvey\survey::set_sid( $db_phase->sid );
-    $survey_mod = new modifier();
+   
+    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+    $tokens_class_name::set_sid( $db_phase->sid );
+    $survey_mod = lib::create( 'database\modifier' );
     $survey_mod->where( 'token', '=',
-      limesurvey\tokens::determine_token_string( $this, $db_assignment ) );
-    $survey_list = limesurvey\survey::select( $survey_mod );
+      $tokens_class_name::determine_token_string( $this, $db_assignment ) );
 
+    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+    $survey_list = $survey_class_name::select( $survey_mod );
     if( 0 == count( $survey_list ) ) return 0.0;
 
     if( 1 < count( $survey_list ) ) log::alert( sprintf(
@@ -133,10 +133,11 @@ class interview extends has_note
 
     $db_survey = current( $survey_list );
 
-    limesurvey\survey_timings::set_sid( $db_phase->sid );
-    $timing_mod = new modifier();
+    $timings_class_name = lib::get_class_name( 'database\limesurvey\survey_timings' );
+    $timings_class_name::set_sid( $db_phase->sid );
+    $timing_mod = lib::create( 'database\modifier' );
     $timing_mod->where( 'id', '=', $db_survey->id );
-    $db_timings = current( limesurvey\survey_timings::select( $timing_mod ) );
+    $db_timings = current( $timings_class_name::select( $timing_mod ) );
     return $db_timings ? (float) $db_timings->interviewtime : 0.0;
   }
 
@@ -161,17 +162,19 @@ class interview extends has_note
     
     // update all uncomplete tokens and surveys associated with this interview which are
     // associated with phases which are not repeated (tokens should not include assignments)
-    $phase_mod = new modifier();
+    $phase_mod = lib::create( 'database\modifier' );
     $phase_mod->where( 'repeated', '!=', true );
+    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
     foreach( $this->get_qnaire()->get_phase_list( $phase_mod ) as $db_phase )
     {
       // update tokens
-      limesurvey\tokens::set_sid( $db_phase->sid );
-      $tokens_mod = new modifier();
+      $tokens_class_name::set_sid( $db_phase->sid );
+      $tokens_mod = lib::create( 'database\modifier' );
       $tokens_mod->where( 'token', '=',
-        limesurvey\tokens::determine_token_string( $this ) );
+        $tokens_class_name::determine_token_string( $this ) );
       $tokens_mod->where( 'completed', '=', 'N' );
-      foreach( limesurvey\tokens::select( $tokens_mod ) as $db_tokens )
+      foreach( $tokens_class_name::select( $tokens_mod ) as $db_tokens )
       {
         $db_tokens->completed = util::get_datetime_object()->format( 'Y-m-d H:i' );
         $db_tokens->usesleft = 0;
@@ -179,18 +182,18 @@ class interview extends has_note
       }
 
       // update surveys
-      limesurvey\survey::set_sid( $db_phase->sid );
-      $survey_mod = new modifier();
+      $survey_class_name::set_sid( $db_phase->sid );
+      $survey_mod = lib::create( 'database\modifier' );
       $survey_mod->where( 'token', '=',
-        limesurvey\tokens::determine_token_string( $this ) );
+        $tokens_class_name::determine_token_string( $this ) );
       $survey_mod->where( 'submitdate', '=', NULL );
 
       // get the last page for this survey
-      $lastpage = limesurvey\survey::db()->get_one( sprintf(
+      $lastpage = $survey_class_name::db()->get_one( sprintf(
         'SELECT MAX( lastpage ) FROM %s',
-        limesurvey\survey::get_table_name() ) );
+        $survey_class_name::get_table_name() ) );
 
-      foreach( limesurvey\survey::select( $survey_mod ) as $db_survey )
+      foreach( $survey_class_name::select( $survey_mod ) as $db_survey )
       {
         $db_survey->submitdate = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
         if( $lastpage ) $db_survey->lastpage = $lastpage;
@@ -216,12 +219,11 @@ class interview extends has_note
   public function get_recording_list( $modifier = NULL, $count = false )
   {
     // make sure that all recordings on disk have a corresponding database record
-    $monitor_path = WEB_PATH.'/'.bus\setting_manager::self()->get_setting( 'voip', 'monitor' );
-    if( is_dir( $monitor_path ) )
+    if( is_dir( VOIP_MONITOR_PATH ) )
     {
       $values = '';
       $first = true;
-      foreach( glob( sprintf( '%s/%d_*-out.wav', $monitor_path, $this->id ) ) as $filename )
+      foreach( glob( sprintf( '%s/%d_*-out.wav', VOIP_MONITOR_PATH, $this->id ) ) as $filename )
       {
         $parts = preg_split( '/[-_]/', $filename );
         if( 3 <= count( $parts ) )

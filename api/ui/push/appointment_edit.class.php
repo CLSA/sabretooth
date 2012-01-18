@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: appointment edit
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Edit a appointment.
  * @package sabretooth\ui
  */
-class appointment_edit extends base_edit
+class appointment_edit extends \cenozo\ui\push\base_edit
 {
   /**
    * Constructor.
@@ -47,7 +44,8 @@ class appointment_edit extends base_edit
     {
       $this->get_record()->datetime = $columns['datetime'];
       if( !$this->get_record()->validate_date() )
-        throw new exc\notice( 'There are no operators available during that time.', __METHOD__ );
+        throw lib::create( 'exception\notice',
+          'There are no operators available during that time.', __METHOD__ );
     }
     
     // no errors, go ahead and make the change

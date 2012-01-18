@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget shift_template add
  * 
  * @package sabretooth\ui
  */
-class shift_template_add extends base_view
+class shift_template_add extends \cenozo\ui\widget\base_view
 {
   /**
    * Constructor
@@ -61,7 +58,7 @@ class shift_template_add extends base_view
     $this->set_variable( 'start_date', $this->date );
 
     // set the view's items
-    $this->set_item( 'site_id', bus\session::self()->get_site()->id, true );
+    $this->set_item( 'site_id', lib::create( 'business\session' )->get_site()->id, true );
     $this->set_item( 'start_time', $this->start_time, true );
     $this->set_item( 'end_time', $this->end_time, true );
     $this->set_item( 'operators', 1, true );

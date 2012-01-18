@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget operator assignment
  * 
  * @package sabretooth\ui
  */
-class operator_assignment extends \sabretooth\ui\widget
+class operator_assignment extends \cenozo\ui\widget
 {
   /**
    * Constructor
@@ -44,7 +41,7 @@ class operator_assignment extends \sabretooth\ui\widget
   {
     parent::finish();
     
-    $session = bus\session::self();
+    $session = lib::create( 'business\session' );
     $db_role = $session->get_role();
     $db_site = $session->get_site();
 
@@ -52,40 +49,41 @@ class operator_assignment extends \sabretooth\ui\widget
     $message_list = array();
 
     // global messages go first
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', NULL );
     $modifier->where( 'role_id', '=', NULL );
-    foreach( db\system_message::select( $modifier ) as $db_system_message )
+    $sys_message_class_name = lib::get_class_name( 'database\system_message' );
+    foreach( $sys_message_class_name::select( $modifier ) as $db_system_message )
     {
       $message_list[] = array( 'title' => $db_system_message->title,
                                'note' => $db_system_message->note );
     }
     
     // then all-site messages
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', NULL );
     $modifier->where( 'role_id', '=', $db_role->id );
-    foreach( db\system_message::select( $modifier ) as $db_system_message )
+    foreach( $sys_message_class_name::select( $modifier ) as $db_system_message )
     {
       $message_list[] = array( 'title' => $db_system_message->title,
                                'note' => $db_system_message->note );
     }
 
     // then all-role site-specific messages
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', $db_site->id );
     $modifier->where( 'role_id', '=', NULL );
-    foreach( db\system_message::select( $modifier ) as $db_system_message )
+    foreach( $sys_message_class_name::select( $modifier ) as $db_system_message )
     {
       $message_list[] = array( 'title' => $db_system_message->title,
                                'note' => $db_system_message->note );
     }
 
     // then role-specific site-specific messages
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', $db_site->id );
     $modifier->where( 'role_id', '=', $db_role->id );
-    foreach( db\system_message::select( $modifier ) as $db_system_message )
+    foreach( $sys_message_class_name::select( $modifier ) as $db_system_message )
     {
       $message_list[] = array( 'title' => $db_system_message->title,
                                'note' => $db_system_message->note );
@@ -124,12 +122,12 @@ class operator_assignment extends \sabretooth\ui\widget
         }
       }
 
-      $modifier = new db\modifier();
+      $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'active', '=', true );
       $modifier->order( 'rank' );
       $db_phone_list = $db_participant->get_phone_list( $modifier );
       
-      $modifier = new db\modifier();
+      $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'end_datetime', '!=', NULL );
       $current_calls = $db_assignment->get_phone_call_count( $modifier );
       $on_call = !is_null( $session->get_current_phone_call() );
@@ -147,7 +145,8 @@ class operator_assignment extends \sabretooth\ui\widget
           $phone_list[$db_phone->id] =
             sprintf( '%d. %s (%s)', $db_phone->rank, $db_phone->type, $db_phone->number );
         $this->set_variable( 'phone_list', $phone_list );
-        $this->set_variable( 'status_list', db\phone_call::get_enum_values( 'status' ) );
+        $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
+        $this->set_variable( 'status_list', $phone_call_class_name::get_enum_values( 'status' ) );
       }
 
       if( 0 == $current_calls && !$on_call && $db_interview->completed )
@@ -168,9 +167,10 @@ class operator_assignment extends \sabretooth\ui\widget
         'allow_withdraw', !is_null( $db_interview->get_qnaire()->withdraw_sid ) );
       
       // set the appointment variable
-      $modifier = new db\modifier();
+      $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'assignment_id', '=', $db_assignment->id );
-      $appointment_list = db\appointment::select( $modifier );
+      $appointment_class_name - lib::get_class_name( 'database\appointment' );
+      $appointment_list = $appointment_class_name::select( $modifier );
       $db_appointment = 0 == count( $appointment_list ) ? NULL : $appointment_list[0];
       if( !is_null( $db_appointment ) )
       {
@@ -193,7 +193,7 @@ class operator_assignment extends \sabretooth\ui\widget
 
         if( !is_null( $db_appointment->phone_id ) )
         {
-          $db_phone = new db\phone( $db_appointment->phone_id );
+          $db_phone = lib::create( 'database\phone', $db_appointment->phone_id );
           $this->set_variable( 'phone_id', $db_appointment->phone_id );
           $this->set_variable( 'phone_at',
             sprintf( '%d. %s (%s)', $db_phone->rank, $db_phone->type, $db_phone->number ) );
