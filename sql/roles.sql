@@ -310,6 +310,14 @@ SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "qnaire" AND name = "add_source_withdraw" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "push" AND subject = "qnaire" AND name = "delete_source_withdraw" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
       type = "widget" AND subject = "survey" AND name = "list" );
 
 -- queue
@@ -383,6 +391,34 @@ INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "pull" AND subject = "source_survey" AND name = "primary" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "push" AND subject = "source_withdraw" AND name = "delete" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "push" AND subject = "source_withdraw" AND name = "edit" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "push" AND subject = "source_withdraw" AND name = "new" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "source_withdraw" AND name = "add" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "source_withdraw" AND name = "view" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "source_withdraw" AND name = "list" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "pull" AND subject = "source_withdraw" AND name = "primary" );
 
 -- ALL reports
 INSERT INTO role_has_operation( role_id, operation_id )
@@ -653,6 +689,14 @@ SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "qnaire" AND name = "add_source_withdraw" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "push" AND subject = "qnaire" AND name = "delete_source_withdraw" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
+    operation_id = ( SELECT id FROM operation WHERE
       type = "widget" AND subject = "survey" AND name = "list" );
 
 -- queue
@@ -690,6 +734,34 @@ INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "pull" AND subject = "source_survey" AND name = "primary" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "push" AND subject = "source_withdraw" AND name = "delete" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "push" AND subject = "source_withdraw" AND name = "edit" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "push" AND subject = "source_withdraw" AND name = "new" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "source_withdraw" AND name = "add" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "source_withdraw" AND name = "view" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "source_withdraw" AND name = "list" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "clerk" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "pull" AND subject = "source_withdraw" AND name = "primary" );
 
 
 -- -----------------------------------------------------

@@ -51,6 +51,18 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     {
       $this->phase_list = NULL;
     }
+
+    try
+    {
+      // create the source_withdraw sub-list widget
+      $this->source_withdraw_list = lib::create( 'ui\widget\source_withdraw_list', $args );
+      $this->source_withdraw_list->set_parent( $this );
+      $this->source_withdraw_list->set_heading( 'Source-specific Withdraw Scripts' );
+    }
+    catch( \cenozo\exception\permission $e )
+    {
+      $this->source_withdraw_list = NULL;
+    }
   }
 
   /**
@@ -100,6 +112,13 @@ class qnaire_view extends \cenozo\ui\widget\base_view
       $this->phase_list->finish();
       $this->set_variable( 'phase_list', $this->phase_list->get_variables() );
     }
+    
+    // finish the child widgets
+    if( !is_null( $this->source_withdraw_list ) )
+    {
+      $this->source_withdraw_list->finish();
+      $this->set_variable( 'source_withdraw_list', $this->source_withdraw_list->get_variables() );
+    }
   }
   
   /**
@@ -108,5 +127,12 @@ class qnaire_view extends \cenozo\ui\widget\base_view
    * @access protected
    */
   protected $phase_list = NULL;
+  
+  /**
+   * The qnaire list widget.
+   * @var source_withdraw_list
+   * @access protected
+   */
+  protected $source_withdraw_list = NULL;
 }
 ?>

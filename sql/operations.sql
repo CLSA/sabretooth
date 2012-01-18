@@ -223,7 +223,11 @@ VALUES( "widget", "qnaire", "add_phase", true, "View surveys to add as a new pha
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "qnaire", "delete_phase", true, "Remove phases from a questionnaire." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "qnaire", "primary", true, "Retrieves base qnaire information." );
+VALUES( "widget", "qnaire", "add_source_withdraw", true, "A form to add a new source-specific withdraw survey to the questionnaire." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "qnaire", "delete_source_withdraw", true, "Remove a questionnaire's source-specific withdraw survey." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "qnaire", "primary", true, "Retrieves base questionnaire information." );
 
 -- queue
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -352,6 +356,22 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "source_survey", "list", true, "Lists a phase's source-specific survey entries." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "source_survey", "primary", true, "Retrieves base source-specific survey information." );
+
+-- source_withdraw
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "source_withdraw", "delete", true, "Removes a questionnaire's source-specific withdraw survey from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "source_withdraw", "edit", true, "Edits the details of a questionnaire's source-specific withdraw survey." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "source_withdraw", "new", true, "Creates a new source-specific withdraw survey for a questionnaire." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "source_withdraw", "add", true, "View a form for creating new source-specific withdraw survey for a questionnaire." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "source_withdraw", "view", true, "View the details of a questionnaire's particular source-specific withdraw survey." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "source_withdraw", "list", true, "Lists a questionnaire's source-specific withdraw survey entries." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "source_withdraw", "primary", true, "Retrieves base source-specific withdraw survey information." );
 
 -- survey
 INSERT INTO operation( type, subject, name, restricted, description )

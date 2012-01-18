@@ -4,6 +4,7 @@
 
 SOURCE source.sql
 SOURCE source_survey.sql
+SOURCE source_withdraw.sql
 SOURCE participant.sql
 SOURCE activity.sql
 SOURCE role.sql
