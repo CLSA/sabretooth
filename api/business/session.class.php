@@ -227,8 +227,37 @@ class session extends \cenozo\business\session
       // mangle $slot so that the parent method doesn't change what we've done above
       $slot = 'main has already been processed';
     }
+    else if( 'settings' == $slot )
+    {
+      $_SESSION['slot'][$slot]['stack']['index'] = 0;
+      $_SESSION['slot'][$slot]['stack']['widgets'] =
+        array( array( 'name' => 'self_settings', 'args' => NULL ) );
+    }
+    else if( 'menu' == $slot )
+    {
+      $_SESSION['slot'][$slot]['stack']['index'] = 0;
+      $_SESSION['slot'][$slot]['stack']['widgets'] =
+        array( array( 'name' => 'self_menu', 'args' => NULL ) );
+    }
+    else if( 'status' == $slot )
+    {
+      $_SESSION['slot'][$slot]['stack']['index'] = 0;
+      $_SESSION['slot'][$slot]['stack']['widgets'] =
+        array( array( 'name' => 'self_status', 'args' => NULL ) );
+    }
+    else if( 'shortcuts' == $slot )
+    {
+      $_SESSION['slot'][$slot]['stack']['index'] = 0;
+      $_SESSION['slot'][$slot]['stack']['widgets'] =
+        array( array( 'name' => 'self_shortcuts', 'args' => NULL ) );
+    }
+    else
+    {
+      $_SESSION['slot'][$slot]['stack']['index'] = -1;
+      $_SESSION['slot'][$slot]['stack']['widgets'] = array();
+    }
 
-    parent::slot_reset( $slot );
+    $this->update_slot_cookies();
   }
   
   /**
