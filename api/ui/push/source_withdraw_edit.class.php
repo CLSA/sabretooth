@@ -1,6 +1,6 @@
 <?php
 /**
- * source_survey_edit.class.php
+ * source_withdraw_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -11,12 +11,12 @@ namespace sabretooth\ui\push;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
- * push: source_survey edit
+ * push: source_withdraw edit
  *
- * Edit a source_survey.
+ * Edit a source_withdraw.
  * @package sabretooth\ui
  */
-class source_survey_edit extends \cenozo\ui\push\base_edit
+class source_withdraw_edit extends \cenozo\ui\push\base_edit
 {
   /**
    * Constructor.
@@ -26,7 +26,7 @@ class source_survey_edit extends \cenozo\ui\push\base_edit
    */
   public function __construct( $args )
   {
-    parent::__construct( 'source_survey', $args );
+    parent::__construct( 'source_withdraw', $args );
   }
 }
 ?>

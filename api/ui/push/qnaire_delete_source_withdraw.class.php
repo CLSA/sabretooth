@@ -1,6 +1,6 @@
 <?php
 /**
- * qnaire_delete_source_survey.class.php
+ * qnaire_delete_source_withdraw.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -11,11 +11,11 @@ namespace sabretooth\ui\push;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
- * push: qnaire delete_source_survey
+ * push: qnaire delete_source_withdraw
  * 
  * @package sabretooth\ui
  */
-class qnaire_delete_source_survey extends \cenozo\ui\push\base_delete_record
+class qnaire_delete_source_withdraw extends \cenozo\ui\push\base_delete_record
 {
   /**
    * Constructor.
@@ -25,7 +25,7 @@ class qnaire_delete_source_survey extends \cenozo\ui\push\base_delete_record
    */
   public function __construct( $args )
   {
-    parent::__construct( 'qnaire', 'source_survey', $args );
+    parent::__construct( 'qnaire', 'source_withdraw', $args );
   }
 }
 ?>
