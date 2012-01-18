@@ -50,7 +50,8 @@ class appointment_list extends \cenozo\ui\widget\site_restricted_list
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'participant_id', '=', $this->parent->get_record()->id );
       $modifier->where( 'assignment_id', '=', NULL );
-      $this->addable = 0 == db\appointment::count( $modifier );
+      $class_name = lib::get_class_name( 'database\appointment' );
+      $this->addable = 0 == $class_name::count( $modifier );
     }
 
     parent::finish();

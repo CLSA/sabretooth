@@ -54,7 +54,7 @@ class participant_add extends \cenozo\ui\widget\base_view
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $languages = $participant_class_name::get_enum_values( 'language' );
     $languages = array_combine( $languages, $languages );
-    $statuses = db\participant::get_enum_values( 'status' );
+    $statuses = $participant_class_name::get_enum_values( 'status' );
     $statuses = array_combine( $statuses, $statuses );
     $sites = array();
     $site_class_name = lib::get_class_name( 'database\site' );

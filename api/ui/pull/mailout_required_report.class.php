@@ -33,10 +33,10 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
   public function finish()
   {
     // get the report arguments
+    $participant_class_name = lib::get_class_name( 'database\participant' );
     $mailout_type = $this->get_argument( 'restrict_mailout_id' );
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-    $participant_list = db\participant::select();
-    $participant_class_name = lib::get_class_name( 'database\participant' );
+    $participant_list = $participant_class_name::select();
     if( $restrict_site_id ) 
     {
       $db_site = lib::create( 'database\site', $restrict_site_id );

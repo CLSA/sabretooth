@@ -86,8 +86,8 @@ class interview extends \cenozo\database\has_note
   /**
    * Returns the time in seconds that it took to complete a particular phase of this interview
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param db\phase $db_phase Which phase of the interview to get the time of.
-   * @param db\assignment $db_assignment Repeated phases have their times measured for each
+   * @param phase $db_phase Which phase of the interview to get the time of.
+   * @param assignment $db_assignment Repeated phases have their times measured for each
    *                      iteration of the phase.  For repeated phases this determines which
    *                      assignment's time to return.  It is ignored for phases which are not
    *                      repeated.
