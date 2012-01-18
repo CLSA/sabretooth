@@ -36,6 +36,8 @@ class participant_edit extends \cenozo\ui\push\base_edit
    */
   public function finish()
   {
+    $columns = $this->get_argument( 'columns' );
+
     // we'll need the arguments to send to mastodon
     $args = $this->arguments;
 
@@ -43,6 +45,15 @@ class participant_edit extends \cenozo\ui\push\base_edit
     $db_participant = $this->get_record();
     unset( $args['id'] );
     $args['noid']['participant.uid'] = $db_participant->uid;
+
+    // if set, replace the source id with a unique key
+    if( array_key_exists( 'source_id', $columns ) && $columns['source_id'] )
+    {
+      $db_source = lib::create( 'database\source', $columns['source_id'] );
+      unset( $args['source_id'] );
+      // we only include half of the unique key since the other half is added above
+      $args['noid']['source.name'] = $db_source->name;
+    }
 
     parent::finish();
 

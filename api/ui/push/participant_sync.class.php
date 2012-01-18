@@ -40,6 +40,7 @@ class participant_sync extends \cenozo\ui\push
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $region_class_name = lib::get_class_name( 'database\region' );
     $address_class_name = lib::get_class_name( 'database\address' );
+    $source_class_name = lib::get_class_name( 'database\source' );
 
     $db_site = $site_class_name::get_unique_record( 'name', 'Sherbrooke' );
     $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
@@ -62,6 +63,12 @@ class participant_sync extends \cenozo\ui\push
         foreach( $db_participant->get_column_names() as $column )
           if( 'id' != $column && 'site_id' != $column )
             $db_participant->$column = $response->data->$column;
+
+        // set the source
+        $db_source = is_null( $response->data->source_name )
+                   ? NULL
+                   : $source_class_name::get_unique_record( 'name', $response->data->source_name );
+        $db_participant->source_id = is_null( $db_source ) ? NULL : $db_source->id;
 
         // make sure that all participant's whose prefered languge is french gets Sherbrooke's site
         // TODO: this custom code needs to be made more generic

@@ -4,6 +4,21 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='';
 
 
 -- -----------------------------------------------------
+-- Table `source`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `source` ;
+
+CREATE  TABLE IF NOT EXISTS `source` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `name` VARCHAR(45) NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  UNIQUE INDEX `uq_name` (`name` ASC) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `participant`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `participant` ;
@@ -14,6 +29,7 @@ CREATE  TABLE IF NOT EXISTS `participant` (
   `create_timestamp` TIMESTAMP NOT NULL ,
   `active` TINYINT(1)  NOT NULL DEFAULT true ,
   `uid` VARCHAR(45) NOT NULL COMMENT 'External unique ID' ,
+  `source_id` INT UNSIGNED NULL DEFAULT NULL ,
   `first_name` VARCHAR(45) NOT NULL ,
   `last_name` VARCHAR(45) NOT NULL ,
   `status` ENUM('deceased', 'deaf', 'mentally unfit','language barrier','age range','other') NULL DEFAULT NULL ,
@@ -26,9 +42,15 @@ CREATE  TABLE IF NOT EXISTS `participant` (
   INDEX `dk_prior_contact_date` (`prior_contact_date` ASC) ,
   UNIQUE INDEX `uq_uid` (`uid` ASC) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
+  INDEX `fk_source_id` (`source_id` ASC) ,
   CONSTRAINT `fk_participant_site_id`
     FOREIGN KEY (`site_id` )
     REFERENCES `site` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_participant_source_id`
+    FOREIGN KEY (`source_id` )
+    REFERENCES `source` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -71,13 +93,13 @@ CREATE  TABLE IF NOT EXISTS `phase` (
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
   `qnaire_id` INT UNSIGNED NOT NULL ,
-  `sid` INT NOT NULL COMMENT 'limesurvey surveys.sid' ,
+  `sid` INT NOT NULL COMMENT 'The default survey ID to use for this phase.' ,
   `rank` SMALLINT UNSIGNED NOT NULL ,
   `repeated` TINYINT(1)  NOT NULL DEFAULT false ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
   UNIQUE INDEX `uq_qnaire_id_rank` (`qnaire_id` ASC, `rank` ASC) ,
-  CONSTRAINT `fk_phase_qnaire`
+  CONSTRAINT `fk_phase_qnaire_id`
     FOREIGN KEY (`qnaire_id` )
     REFERENCES `qnaire` (`id` )
     ON DELETE NO ACTION
@@ -627,6 +649,34 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `source_survey`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `source_survey` ;
+
+CREATE  TABLE IF NOT EXISTS `source_survey` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `phase_id` INT UNSIGNED NOT NULL ,
+  `source_id` INT UNSIGNED NOT NULL ,
+  `sid` INT NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_phase_id` (`phase_id` ASC) ,
+  INDEX `fk_source_id` (`source_id` ASC) ,
+  CONSTRAINT `fk_source_survey_phase_id`
+    FOREIGN KEY (`phase_id` )
+    REFERENCES `phase` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_source_survey_source_id`
+    FOREIGN KEY (`source_id` )
+    REFERENCES `source` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Placeholder table for view `participant_first_address`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `participant_first_address` (`participant_id` INT, `address_id` INT);
@@ -639,7 +689,7 @@ CREATE TABLE IF NOT EXISTS `participant_last_assignment` (`participant_id` INT, 
 -- -----------------------------------------------------
 -- Placeholder table for view `participant_for_queue`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `update_timestamp` INT, `create_timestamp` INT, `active` INT, `uid` INT, `first_name` INT, `last_name` INT, `status` INT, `language` INT, `site_id` INT, `prior_contact_date` INT, `city` INT, `region_id` INT, `postcode` INT, `phone_number_count` INT, `last_consent` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT, `current_qnaire_id` INT, `start_qnaire_date` INT);
+CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `update_timestamp` INT, `create_timestamp` INT, `active` INT, `uid` INT, `source_id` INT, `first_name` INT, `last_name` INT, `status` INT, `language` INT, `site_id` INT, `prior_contact_date` INT, `city` INT, `region_id` INT, `postcode` INT, `phone_number_count` INT, `last_consent` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT, `current_qnaire_id` INT, `start_qnaire_date` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `assignment_last_phone_call`

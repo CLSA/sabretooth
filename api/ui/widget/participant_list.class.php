@@ -30,6 +30,7 @@ class participant_list extends \cenozo\ui\widget\site_restricted_list
     parent::__construct( 'participant', $args );
 
     $this->add_column( 'uid', 'string', 'Unique ID', true );
+    $this->add_column( 'source.name', 'string', 'Source', true );
     $this->add_column( 'first_name', 'string', 'First Name', true );
     $this->add_column( 'last_name', 'string', 'Last Name', true );
     $this->add_column( 'status', 'string', 'Condition', true );
@@ -47,8 +48,11 @@ class participant_list extends \cenozo\ui\widget\site_restricted_list
 
     foreach( $this->get_record_list() as $record )
     {
+      $db_source = $record->get_source();
+      $source_name = is_null( $db_source ) ? '(none)' : $db_source->name;
       $this->add_row( $record->id,
         array( 'uid' => $record->uid ? $record->uid : '(none)',
+               'source.name' => $source_name,
                'first_name' => $record->first_name,
                'last_name' => $record->last_name,
                'status' => $record->status ? $record->status : '(none)',

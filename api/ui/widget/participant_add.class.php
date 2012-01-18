@@ -32,6 +32,7 @@ class participant_add extends \cenozo\ui\widget\base_view
     // define all columns defining this record
     $this->add_item( 'active', 'boolean', 'Active' );
     $this->add_item( 'uid', 'string', 'Unique ID' );
+    $this->add_item( 'source_id', 'enum', 'Source' );
     $this->add_item( 'first_name', 'string', 'First Name' );
     $this->add_item( 'last_name', 'string', 'Last Name' );
     $this->add_item( 'language', 'enum', 'Preferred Language' );
@@ -52,6 +53,10 @@ class participant_add extends \cenozo\ui\widget\base_view
     
     // create enum arrays
     $participant_class_name = lib::get_class_name( 'database\participant' );
+    $sources = array();
+    $source_class_name = lib::get_class_name( 'database\source' );
+    foreach( $source_class_name::select() as $db_source )
+      $sources[$db_source->id] = $db_source->name;
     $languages = $participant_class_name::get_enum_values( 'language' );
     $languages = array_combine( $languages, $languages );
     $statuses = $participant_class_name::get_enum_values( 'status' );
@@ -63,6 +68,7 @@ class participant_add extends \cenozo\ui\widget\base_view
     // set the view's items
     $this->set_item( 'active', true, true );
     $this->set_item( 'uid', '', false );
+    $this->set_item( 'source_id', key( $sources ), false, $sources );
     $this->set_item( 'first_name', '', true );
     $this->set_item( 'last_name', '', true );
     $this->set_item( 'language', key( $languages ), false, $languages );
