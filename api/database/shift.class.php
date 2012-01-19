@@ -33,8 +33,8 @@ class shift extends \cenozo\database\record
       return;
     }
 
-    $db_user = new user( $this->user_id );
-    $db_site = new site( $this->site_id );
+    $db_user = lib::create( 'database\user', $this->user_id );
+    $db_site = lib::create( 'database\site', $this->site_id );
     $class_name = lib::get_class_name( 'database\role' );
     $db_role = $class_name::get_unique_record( 'name', 'operator' );
     
@@ -57,16 +57,17 @@ class shift extends \cenozo\database\record
     $end_datetime = util::to_server_datetime( $this->end_datetime );
 
     // (need to use custom SQL)
+    $class_name = lib::get_class_name( 'database\database' );
     $overlap_ids = static::db()->get_col( 
       sprintf( 'SELECT id FROM %s %s '.
                'AND NOT ( ( start_datetime <= %s AND end_datetime <= %s ) OR '.
                          '( start_datetime >= %s AND end_datetime >= %s ) )',
                static::get_table_name(),
                $modifier->get_where(),
-               database::format_string( $start_datetime ),
-               database::format_string( $start_datetime ),
-               database::format_string( $end_datetime ),
-               database::format_string( $end_datetime ) ) );
+               $class_name::format_string( $start_datetime ),
+               $class_name::format_string( $start_datetime ),
+               $class_name::format_string( $end_datetime ),
+               $class_name::format_string( $end_datetime ) ) );
     
     if( 0 < count( $overlap_ids ) )
     {
