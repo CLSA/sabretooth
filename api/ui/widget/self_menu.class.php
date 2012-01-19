@@ -39,7 +39,8 @@ class self_menu extends \cenozo\ui\widget\self_menu
       'phone',
       'phone_call',
       'recording',
-      'source_survey' );
+      'source_survey',
+      'source_withdraw' );
     $this->exclude_widget_list = array_merge( $this->exclude_widget_list, $exclude );
   }
 
