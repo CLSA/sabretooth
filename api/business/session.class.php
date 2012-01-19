@@ -189,9 +189,9 @@ class session extends \cenozo\business\session
   {
     // add the operation as activity
     $activity = lib::create( 'database\activity' );
-    $activity->user_id = $this->user->id;
-    $activity->site_id = $this->site->id;
-    $activity->role_id = $this->role->id;
+    $activity->user_id = $this->get_user()->id;
+    $activity->site_id = $this->get_site()->id;
+    $activity->role_id = $this->get_role()->id;
     $activity->operation_id = $operation->get_id();
     $activity->query = serialize( $args );
     $activity->elapsed = util::get_elapsed_time();
@@ -270,7 +270,7 @@ class session extends \cenozo\business\session
   public function get_survey_url()
   {
     // only operators can fill out surveys
-    if( 'operator' != $this->role->name ) return false;
+    if( 'operator' != $this->get_role()->name ) return false;
     
     // must have an assignment
     $db_assignment = $this->get_current_assignment();

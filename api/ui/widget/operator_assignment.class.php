@@ -169,7 +169,7 @@ class operator_assignment extends \cenozo\ui\widget
       // set the appointment variable
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'assignment_id', '=', $db_assignment->id );
-      $appointment_class_name - lib::get_class_name( 'database\appointment' );
+      $appointment_class_name = lib::get_class_name( 'database\appointment' );
       $appointment_list = $appointment_class_name::select( $modifier );
       $db_appointment = 0 == count( $appointment_list ) ? NULL : $appointment_list[0];
       if( !is_null( $db_appointment ) )

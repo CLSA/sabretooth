@@ -44,7 +44,7 @@ class appointment extends \cenozo\database\record
       $modifier->where( 'participant_id', '=', $this->participant_id );
       $modifier->where( 'assignment_id', '=', NULL );
       if( !is_null( $this->id ) ) $modifier->where( 'id', '!=', $this->id );
-      if( 0 < count( $modifier ) )
+      if( 0 < static::count( $modifier ) )
         throw lib::create( 'exception\runtime',
           'Cannot have more than one unassigned appointment per participant.', __METHOD__ );
     }
@@ -72,6 +72,9 @@ class appointment extends \cenozo\database\record
       throw lib::create( 'exception\runtime',
         'Cannot validate an appointment date, participant has no primary address.', __METHOD__ );
     
+    $shift_template_class_name = lib::get_class_name( 'database\shift_template' );
+    $shift_class_name = lib::get_class_name( 'database\shift' );
+
     // determine the appointment interval
     $interval = sprintf( 'PT%dM',
                           lib::create( 'business\setting_manager' )->get_setting(
@@ -91,13 +94,12 @@ class appointment extends \cenozo\database\record
 
     $diffs = array();
 
-    if( 0 == shift::count( $modifier ) )
+    if( 0 == $shift_class_name::count( $modifier ) )
     { // determine slots using shift template
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'site_id', '=', $db_site->id );
       $modifier->where( 'start_date', '<=', $start_datetime_obj->format( 'Y-m-d' ) );
-      $class_name = lib::get_class_name( 'database\shift_template' );
-      foreach( $class_name::select( $modifier ) as $db_shift_template )
+      foreach( $shift_template_class_name::select( $modifier ) as $db_shift_template )
       {
         if( $db_shift_template->match_date( $start_datetime_obj->format( 'Y-m-d' ) ) )
         {
@@ -121,8 +123,7 @@ class appointment extends \cenozo\database\record
       $modifier->where( 'site_id', '=', $db_site->id );
       $modifier->where( 'start_datetime', '<', $end_datetime_obj->format( 'Y-m-d H:i:s' ) );
       $modifier->where( 'end_datetime', '>', $start_datetime_obj->format( 'Y-m-d H:i:s' ) );
-      $class_name = lib::get_class_name( 'database\shift' );
-      foreach( $class_name::select( $modifier ) as $db_shift )
+      foreach( $shift_class_name::select( $modifier ) as $db_shift )
       {
         $start_time_as_int =
           intval( preg_replace( '/[^0-9]/', '',
