@@ -84,7 +84,8 @@ class util extends \cenozo\util
   {
     if( is_null( self::$widget_mode ) )
       self::$widget_mode =
-        'widget' == business\setting_manager::self()->get_setting( 'general', 'operation_type' );
+        'widget' == lib::create(' business\setting_manager' )->get_setting(
+          'general', 'operation_type' );
     
     return self::$widget_mode;
   }
