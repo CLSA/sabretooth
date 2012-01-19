@@ -1,0 +1,172 @@
+{##
+ # main.twig
+ # 
+ # Base main file.
+ # TODO: have this extend cenozo's main.twig file instead of replacing it
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @param string jquery-ui_css_path The relative path of a jquery theme css file.
+ # @param boolean survey_url The URL of the survey interface.
+ #}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html lang='en' xml:lang='en' xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+  <title>{{ constant('APPNAME')|ucwords }}</title>
+  <link rel="shortcut icon" href="favicon.ico" />
+  <script type="text/javascript"></script>
+  <link href="{{ constant('JQUERY_UI_URL') }}/css{{ jquery_ui_css_path }}" rel="stylesheet" />
+  <link href="{{ constant('JQUERY_FULLCALENDAR_CSS_URL') }}" rel="stylesheet" />
+  <link href="{{ constant('CSS_URL') }}/main.css" rel="stylesheet" />
+  
+  {# need to dynamically specify left flap colors #}
+  <style media="screen" type="text/css">
+    .extruder.left .flap {
+      color: {{ FOREGROUND_COLOR }};
+      background: {{ BACKGROUND_COLOR }};
+    }
+    #tooltip {
+      color: {{ BACKGROUND_COLOR }};
+      background: {{ FOREGROUND_COLOR }};
+    }
+    #main_slot {
+      margin-left: {{ show_menu ? 35 : 10 }}px;
+      margin-top: {{ show_status or show_shortcuts or show_settings ? 0 : 10 }}px;
+    }
+    #status_slot {
+      margin-left: {{ show_menu ? 35 : 10 }}px;
+    }
+  </style>
+
+  {# include all jquery libraries #}
+  {% for library in jquery_libraries %}
+    <script type="text/javascript" src="{{ library }}"></script>
+  {% endfor %}
+  <script type="text/javascript" src="{{ constant('JS_URL') }}/main.js"></script>
+
+  <script type="text/javascript">
+    // define where the loading icon is
+    window.loading_icon_url = "{{ constant('CENOZO_URL') }}/img/loading.gif";
+
+    $( function() {
+      
+      {% if reset_password %}
+
+        // open the change-password dialog
+        $( "#password_slot" ).dialog( {
+          title: "Change password",
+          modal: true,
+          width: 400,
+          height: 220,
+          autoOpen: true,
+          closeOnEscape: false,
+          open: function( event, ui ) { $( ".ui-dialog-titlebar-close", $(this).parent() ).hide(); }
+        } );
+        slot_load( "password", "self", "password" );
+
+      {% endif %}
+
+      {% if show_settings %}
+        // setup the top extruder
+        $( "#top_extruder" ).buildMbExtruder( {
+          position: "top",
+          positionFixed: true,
+          width: 500,
+          sensibility: 500,
+          extruderOpacity: 1,
+          autoCloseTime: 0,
+          hidePanelsOnClose: true,
+          onExtOpen: function() {},
+          onExtContentLoad: function() {},
+          onExtClose: function() {}
+        } );
+      {% endif %}
+    
+      {% if show_menu %}
+        // setup the left extruder
+        $( "#left_extruder" ).buildMbExtruder( {
+          position: "left",
+          positionFixed: true,
+          width: 240,
+          sensibility: 500,
+          extruderOpacity: 1,
+          autoCloseTime: 0,
+          hidePanelsOnClose: true,
+          onExtOpen: function() {},
+          onExtContentLoad: function() {},
+          onExtClose: function() {}
+        } );
+      {% endif %}
+  
+      // refresh all slots
+      {% if show_status %}slot_refresh( "status" );{% endif %}
+      {% if show_shortcuts %}slot_refresh( "shortcuts" );{% endif %}
+      {% if show_settings %}slot_refresh( "settings" );{% endif %}
+      {% if show_menu %}slot_refresh( "menu" );{% endif %}
+      slot_refresh( "main" );
+
+      // apply jquery-ui theme to the extruders
+      $( "div.content" ).addClass( "ui-widget-content" );
+      $( ".flap" ).addClass( "ui-widget-header" );
+      $( ".tooltop" ).addClass( "ui-widget ui-widget-content ui-state-default ui-corner-all" );
+  
+      {% if survey_url %}
+        // Defines the layout when showing the survey pane.
+        // Should only be visible when there is an active survey.
+
+        // ui-layout-south
+        var layout = $( "body" ).layout( {
+          south__maskIframesOnResize: ".ui-layout-south",
+          applyDefaultStyles: true,
+          spacing_open: 8,
+          spacing_closed: 16,
+          slidable: true,
+          size: 500,
+          initClosed: false
+        } );
+      {% endif %}
+    } );
+  </script>
+</head>
+
+<body>
+  {% if survey_url %}<div class="ui-layout-center">{% endif %}
+  <div id="error_slot"></div>
+  <div id="confirm_slot"></div>
+  <div id="note_slot"></div>
+  <div id="dialing_pad_slot"></div>
+  <div id="calculator_slot"></div>
+  <div id="timezone_calculator_slot"></div>
+  <div id="password_slot"></div>
+  {% if show_settings %}
+    <div id="top_extruder" class="{title:'settings'}">
+      <div id="settings_slot"></div>
+    </div>
+  {% endif %}
+  {% if show_menu %}
+    <div id="left_extruder" class="{title:'menu'}">
+      <div id="menu_slot"></div>
+    </div>
+  {% endif %}
+  <div class="ui-widget-content" id="app_ui">
+    <table>
+      <tr>
+        <td>{% if show_status %}<div id="status_slot"></div>{% endif %}</td>
+        <td>{% if show_shortcuts %}<div id="shortcuts_slot"></div>{% endif %}</td>
+      </tr>
+    </table>
+    <div id="main_slot"></div>
+  </div>
+  {% if survey_url %}
+    </div>
+    <div class="ui-layout-south" id="survey_ui">
+      <object style="width:100%; height: 100%; position: absolute;"
+              data="{% autoescape false %}{{ survey_url }}{% endautoescape %}"
+              id="survey_object">
+        <p>Your browser is not supported, try with Firefox 3.6+</p>
+      </object>
+    </div>
+  {% endif %}
+</body>
+
+</html>
