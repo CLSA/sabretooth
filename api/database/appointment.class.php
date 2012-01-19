@@ -144,7 +144,8 @@ class appointment extends \cenozo\database\record
     $modifier->where( 'datetime', '>=', $start_datetime_obj->format( 'Y-m-d' ) );
     $modifier->where( 'datetime', '<', $next_day_datetime_obj->format( 'Y-m-d' ) );
     if( !is_null( $this->id ) ) $modifier->where( 'appointment.id', '!=', $this->id );
-    foreach( appointment::select_for_site( $db_site, $modifier ) as $db_appointment )
+    $appointment_class_name = lib::get_class_name( 'database\appointment' );
+    foreach( $appointment_class_name::select_for_site( $db_site, $modifier ) as $db_appointment )
     {
       $state = $db_appointment->get_state();
       if( 'reached' != $state && 'not reached' != $state )
