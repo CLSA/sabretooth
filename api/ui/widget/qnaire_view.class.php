@@ -57,7 +57,7 @@ class qnaire_view extends \cenozo\ui\widget\base_view
       // create the source_withdraw sub-list widget
       $this->source_withdraw_list = lib::create( 'ui\widget\source_withdraw_list', $args );
       $this->source_withdraw_list->set_parent( $this );
-      $this->source_withdraw_list->set_heading( 'Source-specific Withdraw Scripts' );
+      $this->source_withdraw_list->set_heading( 'Source-specific Withdraw Surveys' );
     }
     catch( \cenozo\exception\permission $e )
     {

@@ -8,6 +8,7 @@ CREATE  TABLE IF NOT EXISTS source_withdraw (
   PRIMARY KEY (id) ,
   INDEX fk_source_withdraw_qnaire_id (qnaire_id ASC) ,
   INDEX fk_source_withdraw_source_id (source_id ASC) ,
+  UNIQUE INDEX uq_qnaire_id_source_id (qnaire_id ASC, source_id ASC) ,
   CONSTRAINT fk_source_withdraw_qnaire_id
     FOREIGN KEY (qnaire_id )
     REFERENCES qnaire (id )
