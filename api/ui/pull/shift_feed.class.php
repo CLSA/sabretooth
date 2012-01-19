@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\pull;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * pull: shift feed
  * 
  * @package sabretooth\ui
  */
-class shift_feed extends base_feed
+class shift_feed extends \cenozo\ui\pull\base_feed
 {
   /**
    * Constructor
@@ -32,7 +29,7 @@ class shift_feed extends base_feed
   {
     parent::__construct( 'shift', $args );
     
-    $session = bus\session::self();
+    $session = lib::create( 'business\session' );
 
     // determine the user id
     $this->user_id = $this->get_argument( 'user_id', NULL );
@@ -54,19 +51,20 @@ class shift_feed extends base_feed
     $showing_month = 10 < ( ( $end - $start ) / 3600 / 24 );
 
     // create a list of shifts between the feed's start and end time
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'end_datetime', '>', $this->start_datetime );
     $modifier->where( 'start_datetime', '<', $this->end_datetime );
     if( is_null( $this->user_id ) )
-      $modifier->where( 'site_id', '=', bus\session::self()->get_site()->id );
+      $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
     else
       $modifier->where( 'user_id', '=', $this->user_id );
     
     $event_list = array();
-    foreach( db\shift::select( $modifier ) as $db_shift )
+    $class_name = lib::get_class_name( 'database\shift' );
+    foreach( $class_name::select( $modifier ) as $db_shift )
     {
       $start_datetime_obj = util::get_datetime_object( $db_shift->start_datetime );
-      $end_datetime_obj = util::get_datetime_object( $db_shift->end_datetime );
+      $end_datetime_obj   = util::get_datetime_object( $db_shift->end_datetime );
 
       $end_time = '00' == $end_datetime_obj->format( 'i' )
                 ? $end_datetime_obj->format( 'ga' )

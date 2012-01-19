@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget participant list
  * 
  * @package sabretooth\ui
  */
-class participant_list extends site_restricted_list
+class participant_list extends \cenozo\ui\widget\site_restricted_list
 {
   /**
    * Constructor
@@ -31,8 +28,9 @@ class participant_list extends site_restricted_list
   public function __construct( $args )
   {
     parent::__construct( 'participant', $args );
-    
+
     $this->add_column( 'uid', 'string', 'Unique ID', true );
+    $this->add_column( 'source.name', 'string', 'Source', true );
     $this->add_column( 'first_name', 'string', 'First Name', true );
     $this->add_column( 'last_name', 'string', 'Last Name', true );
     $this->add_column( 'status', 'string', 'Condition', true );
@@ -47,11 +45,14 @@ class participant_list extends site_restricted_list
   public function finish()
   {
     parent::finish();
-    
+
     foreach( $this->get_record_list() as $record )
     {
+      $db_source = $record->get_source();
+      $source_name = is_null( $db_source ) ? '(none)' : $db_source->name;
       $this->add_row( $record->id,
         array( 'uid' => $record->uid ? $record->uid : '(none)',
+               'source.name' => $source_name,
                'first_name' => $record->first_name,
                'last_name' => $record->last_name,
                'status' => $record->status ? $record->status : '(none)',
@@ -72,9 +73,10 @@ class participant_list extends site_restricted_list
    */
   protected function determine_record_count( $modifier = NULL )
   {
+    $class_name = lib::get_class_name( 'database\participant' );
     return is_null( $this->db_restrict_site )
          ? parent::determine_record_count( $modifier )
-         : db\participant::count_for_site( $this->db_restrict_site, $modifier );
+         : $class_name::count_for_site( $this->db_restrict_site, $modifier );
   }
   
   /**
@@ -87,9 +89,10 @@ class participant_list extends site_restricted_list
    */
   protected function determine_record_list( $modifier = NULL )
   {
+    $class_name = lib::get_class_name( 'database\participant' );
     return is_null( $this->db_restrict_site )
          ? parent::determine_record_list( $modifier )
-         : db\participant::select_for_site( $this->db_restrict_site, $modifier );
+         : $class_name::select_for_site( $this->db_restrict_site, $modifier );
   }
 }
 ?>

@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget daily shift report
@@ -37,7 +34,6 @@ class daily_shift_report extends base_report
       'NCC on a daily basis. The report includes operator activity data with operators '.
       'subclassified by language.  Areas are provided for questions/concerns and additional '.
       'comments.' );
-
   }
 
   /**

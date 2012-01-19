@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget qnaire view
  * 
  * @package sabretooth\ui
  */
-class qnaire_view extends base_view
+class qnaire_view extends \cenozo\ui\widget\base_view
 {
   /**
    * Constructor
@@ -46,13 +43,25 @@ class qnaire_view extends base_view
     try
     {
       // create the phase sub-list widget
-      $this->phase_list = new phase_list( $args );
+      $this->phase_list = lib::create( 'ui\widget\phase_list', $args );
       $this->phase_list->set_parent( $this );
       $this->phase_list->set_heading( 'Questionnaire phases' );
     }
-    catch( exc\permission $e )
+    catch( \cenozo\exception\permission $e )
     {
       $this->phase_list = NULL;
+    }
+
+    try
+    {
+      // create the source_withdraw sub-list widget
+      $this->source_withdraw_list = lib::create( 'ui\widget\source_withdraw_list', $args );
+      $this->source_withdraw_list->set_parent( $this );
+      $this->source_withdraw_list->set_heading( 'Source-specific Withdraw Surveys' );
+    }
+    catch( \cenozo\exception\permission $e )
+    {
+      $this->source_withdraw_list = NULL;
     }
   }
 
@@ -68,19 +77,22 @@ class qnaire_view extends base_view
 
     // create enum arrays
     $qnaires = array();
-    foreach( db\qnaire::select() as $db_qnaire )
+    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
+    foreach( $qnaire_class_name::select() as $db_qnaire )
       if( $db_qnaire->id != $this->get_record()->id )
         $qnaires[$db_qnaire->id] = $db_qnaire->name;
-    $num_ranks = db\qnaire::count();
+    $num_ranks = $qnaire_class_name::count();
     $ranks = array();
     for( $rank = 1; $rank <= ( $num_ranks + 1 ); $rank++ ) $ranks[] = $rank;
     $ranks = array_combine( $ranks, $ranks );
+
     $surveys = array();
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'active', '=', 'Y' );
     $modifier->where( 'anonymized', '=', 'N' );
     $modifier->where( 'tokenanswerspersistence', '=', 'Y' );
-    foreach( db\limesurvey\surveys::select( $modifier ) as $db_survey )
+    $surveys_class_name = lib::get_class_name( 'database\limesurvey\surveys' );
+    foreach( $surveys_class_name::select( $modifier ) as $db_survey )
       $surveys[$db_survey->sid] = $db_survey->get_title();
 
     // set the view's items
@@ -100,6 +112,13 @@ class qnaire_view extends base_view
       $this->phase_list->finish();
       $this->set_variable( 'phase_list', $this->phase_list->get_variables() );
     }
+    
+    // finish the child widgets
+    if( !is_null( $this->source_withdraw_list ) )
+    {
+      $this->source_withdraw_list->finish();
+      $this->set_variable( 'source_withdraw_list', $this->source_withdraw_list->get_variables() );
+    }
   }
   
   /**
@@ -108,5 +127,12 @@ class qnaire_view extends base_view
    * @access protected
    */
   protected $phase_list = NULL;
+  
+  /**
+   * The qnaire list widget.
+   * @var source_withdraw_list
+   * @access protected
+   */
+  protected $source_withdraw_list = NULL;
 }
 ?>

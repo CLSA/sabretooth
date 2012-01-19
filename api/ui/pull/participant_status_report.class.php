@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\pull;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Participant status report data.
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * @abstract
  * @package sabretooth\ui
  */
-class participant_status_report extends base_report
+class participant_status_report extends \cenozo\ui\pull\base_report
 {
   /**
    * Constructor
@@ -37,7 +34,7 @@ class participant_status_report extends base_report
   public function finish()
   {
     // get the report arguments
-    $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
+    $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
     $restrict_by_site = 
       $this->get_argument( 'restrict_site_or_province_id' ) == 'Site' ? true : false;
     $this->add_title( 
@@ -58,7 +55,8 @@ class participant_status_report extends base_report
       
     // add call results
     $phone_call_status_start_index = count( $totals ) - 1; // includes 10+ above
-    foreach( db\phone_call::get_enum_values( 'status' ) as $status )
+    $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
+    foreach( $phone_call_class_name::get_enum_values( 'status' ) as $status )
       $totals[ ucfirst( $status ) ] = 0;
     $phone_call_status_count = count( $totals ) - $phone_call_status_start_index;
 
@@ -80,23 +78,25 @@ class participant_status_report extends base_report
     $grand_totals = array();
     if( $restrict_by_site )
     {
-      foreach( db\site::select() as $db_site )
+      $site_class_name = lib::get_class_name( 'database\site' );
+      foreach( $site_class_name::select() as $db_site )
         $grand_totals[ $db_site->name ] = $totals; 
     }
     else
     {
-      $region_mod = new db\modifier();
+      $region_mod = lib::create( 'database\modifier' );
       $region_mod->order( 'abbreviation' );
       $region_mod->where( 'country', '=', 'Canada' );
-      foreach( db\region::select($region_mod) as $db_region )
+      $region_class_name = lib::get_class_name( 'database\region' );
+      foreach( $region_class_name::select($region_mod) as $db_region )
         $grand_totals[ $db_region->abbreviation ] = $totals; 
     }  
     $grand_totals[ 'None' ] = $totals;
 
     // the last column of the report sums totals row-wise
     $grand_totals[ 'Grand Total' ] = $totals;
-    
-    foreach( db\participant::select() as $db_participant )
+    $participant_class_name = lib::get_class_name( 'database\participant' );    
+    foreach( $participant_class_name::select() as $db_participant )
     {
       if( $restrict_by_site )
       {
@@ -114,7 +114,7 @@ class participant_status_report extends base_report
       }
 
       $grand_totals[ $locale ][ 'Total number of calls' ] +=
-        db\phone_call::count_for_participant( $db_participant );
+        $phone_call_class_name::count_for_participant( $db_participant );
 
       if( 'deceased' == $db_participant->status )
       {
@@ -127,7 +127,7 @@ class participant_status_report extends base_report
       else
       {
         $now_datetime_obj = util::get_datetime_object();
-        $appointment_mod = new db\modifier();
+        $appointment_mod = lib::create( 'database\modifier' );
         $appointment_mod->where( 'assignment_id', '=', NULL );
         $appointment_mod->where( 'datetime', '>', $now_datetime_obj->format( 'Y-m-d H:i:s' ) );
         $has_appointment = false;
@@ -148,7 +148,7 @@ class participant_status_report extends base_report
         }
         if( $has_appointment ) continue;
 
-        $interview_mod = new db\modifier();
+        $interview_mod = lib::create( 'database\modifier' );
         $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id ); 
         $interview_list = $db_participant->get_interview_list( $interview_mod );
 
@@ -194,14 +194,14 @@ class participant_status_report extends base_report
           }
           else 
           {
-            $assignment_mod = new db\modifier();
+            $assignment_mod = lib::create( 'database\modifier' );
             $assignment_mod->order_desc( 'start_datetime' );
             $failed_calls = 0;
             $db_recent_failed_call = NULL;
             foreach( $db_interview->get_assignment_list( $assignment_mod ) as $db_assignment )
             {
               // find the most recently completed phone call
-              $phone_call_mod = new db\modifier();
+              $phone_call_mod = lib::create( 'database\modifier' );
               $phone_call_mod->order_desc( 'start_datetime' );
               $phone_call_mod->where( 'end_datetime', '!=', NULL );
               $phone_call_mod->limit( 1 );

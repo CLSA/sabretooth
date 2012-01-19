@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\pull;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Consent form report data.
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * @abstract
  * @package sabretooth\ui
  */
-class consent_form_report extends base_report
+class consent_form_report extends \cenozo\ui\pull\base_report
 {
   /**
    * Constructor
@@ -37,7 +34,7 @@ class consent_form_report extends base_report
   public function finish()
   {
     // get the report args
-    $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
+    $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
 
     // TODO: Change this to the title/code of the limesurvey question to check
     // (this should be the consent form question)
@@ -48,30 +45,35 @@ class consent_form_report extends base_report
                'during the %s interview', $db_qnaire->name ) );
     
     $contents = array();
+    $database_class_name = lib::get_class_name( 'database\participant' );
+    $tokens_class_name   = lib::get_class_name( 'database\limesurvey\tokens' );
+    $survey_class_name   = lib::get_class_name( 'database\limesurvey\survey' );
+
+    // modifiers common to each iteration of the following loops
+    $consent_mod = lib::create( 'database\modifier' );
+    $consent_mod->where( 'event', '=', 'written accept' );
+    $consent_mod->or_where( 'event', '=', 'written deny' );
+    $consent_mod->or_where( 'event', '=', 'retract' );
+    $consent_mod->or_where( 'event', '=', 'withdraw' );
+
     // loop through every participant searching for those who have no written consent
-    foreach( db\participant::select() as $db_participant )
+    foreach( $database_class_name::select() as $db_participant )
     {
       $done = false;
-
-      $consent_mod = new db\modifier();
-      $consent_mod->where( 'event', '=', 'written accept' );
-      $consent_mod->or_where( 'event', '=', 'written deny' );
-      $consent_mod->or_where( 'event', '=', 'retract' );
-      $consent_mod->or_where( 'event', '=', 'withdraw' );
       if( 0 == count( $db_participant->get_consent_list( $consent_mod ) ) )
       {
         // now go through their interviews until the consent question code is found
-        $interview_mod = new db\modifier();
+        $interview_mod = lib::create( 'database\modifier' );
         $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
         foreach( $db_participant->get_interview_list( $interview_mod ) as $db_interview )
         {
           foreach( $db_interview->get_qnaire()->get_phase_list() as $db_phase )
           {
             // figure out the token
-            $token = db\limesurvey\tokens::determine_token_string( $db_interview );
+            $token = $tokens_class_name::determine_token_string( $db_interview );
 
             // determine if the participant answered yes to the consent question
-            $survey_mod = new db\modifier();
+            $survey_mod = lib::create( 'database\modifier' );
             if( $db_phase->repeated )
             {
               // replace the token's 0 with a database % wildcard
@@ -80,8 +82,8 @@ class consent_form_report extends base_report
             }
             else $survey_mod->where( 'token', '=', $token );
 
-            db\limesurvey\survey::set_sid( $db_phase->sid );
-            foreach( db\limesurvey\survey::select( $survey_mod ) as $db_survey )
+            $survey_class_name::set_sid( $db_phase->sid );
+            foreach( $survey_class_name::select( $survey_mod ) as $db_survey )
             {
               if( $db_survey && 'Y' == $db_survey->get_response( $question_code ) )
               {

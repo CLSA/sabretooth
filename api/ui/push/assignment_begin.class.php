@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: assignment begin
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Assigns a participant to an assignment.
  * @package sabretooth\ui
  */
-class assignment_begin extends \sabretooth\ui\push
+class assignment_begin extends \cenozo\ui\push
 {
   /**
    * Constructor.
@@ -43,13 +40,13 @@ class assignment_begin extends \sabretooth\ui\push
    */
   public function finish()
   {
-    $session = bus\session::self();
-    $setting_manager = bus\setting_manager::self();
+    $session = lib::create( 'business\session' );
+    $setting_manager = lib::create( 'business\setting_manager' );
 
     if( !is_null( $session->get_current_assignment() ) )
-      throw new exc\notice(
+      throw lib::create( 'exception\notice',
         'Please click the refresh button.  If this message appears more than twice '.
-        'consecutively report this error to a supervisor.', __METHOD__ );
+        'consecutively report this error to a superior.', __METHOD__ );
     
     // we need to use a semaphore to avoid race conditions
     $semaphore = sem_get( getmyinode() );
@@ -58,23 +55,24 @@ class assignment_begin extends \sabretooth\ui\push
       log::err( sprintf(
         'Unable to aquire semaphore for user id %d',
         $session->get_user()->id ) );
-      throw new exc\notice(
+      throw lib::create( 'exception\notice',
         'The server is busy, please wait a few seconds then click the refresh button.',
         __METHOD__ );
     }
 
     // search through every queue for a new assignment until one is found
-    $queue_mod = new db\modifier();
+    $queue_mod = lib::create( 'database\modifier' );
     $queue_mod->where( 'rank', '!=', NULL );
     $queue_mod->order( 'rank' );
     $db_origin_queue = NULL;
     $db_participant = NULL;
     $db_appointment_id = NULL;
-    foreach( db\queue::select( $queue_mod ) as $db_queue )
+    $queue_class_name = lib::get_class_name( 'database\queue' );
+    foreach( $queue_class_name::select( $queue_mod ) as $db_queue )
     {
       if( $setting_manager->get_setting( 'queue state', $db_queue->name ) )
       {
-        $participant_mod = new db\modifier();
+        $participant_mod = lib::create( 'database\modifier' );
         $participant_mod->limit( 1 );
         $db_queue->set_site( $session->get_site() );
         $participant_list = $db_queue->get_participant_list( $participant_mod );
@@ -89,27 +87,28 @@ class assignment_begin extends \sabretooth\ui\push
     }
 
     if( is_null( $db_participant ) )
-      throw new exc\notice(
+      throw lib::create( 'exception\notice',
         'There are no participants currently available.', __METHOD__ );
     
     // make sure the qnaire has phases
-    $db_qnaire = new db\qnaire( $db_participant->current_qnaire_id );
+    $db_qnaire = lib::create( 'database\qnaire', $db_participant->current_qnaire_id );
     if( 0 == $db_qnaire->get_phase_count() )
-      throw new exc\notice(
+      throw lib::create( 'exception\notice',
         'This participant\'s next questionnaire is not yet ready.  '.
-        'Please immediately report this problem to a supervisor.',
+        'Please immediately report this problem to a superior.',
         __METHOD__ );
     
     // get this participant's interview or create a new one if none exists yet
-    $interview_mod = new db\modifier();
+    $interview_mod = lib::create( 'database\modifier' );
     $interview_mod->where( 'participant_id', '=', $db_participant->id );
     $interview_mod->where( 'qnaire_id', '=', $db_participant->current_qnaire_id );
 
-    $db_interview_list = db\interview::select( $interview_mod );
+    $interview_class_name = lib::get_class_name( 'database\interview' );
+    $db_interview_list = $interview_class_name::select( $interview_mod );
     
     if( 0 == count( $db_interview_list ) )
     {
-      $db_interview = new db\interview();
+      $db_interview = lib::create( 'database\interview' );
       $db_interview->participant_id = $db_participant->id;
       $db_interview->qnaire_id = $db_participant->current_qnaire_id;
 
@@ -120,14 +119,14 @@ class assignment_begin extends \sabretooth\ui\push
       {
         $db_interview->save();
       }
-      catch( exc\database $e )
+      catch( \cenozo\exception\database $e )
       {
         if( $e->is_duplicate_entry() )
         {
-          throw new exc\notice(
+          throw lib::create( 'exception\notice',
             'The server was too busy to assign a new participant, please wait a few seconds then '.
             'try requesting an assignment again.  If this message appears several times in a row '.
-            'please report the error code to your supervisor.',
+            'please report the error code to your superior.',
             __METHOD__ );
         }
 
@@ -140,7 +139,7 @@ class assignment_begin extends \sabretooth\ui\push
     }
 
     // create an assignment for this user
-    $db_assignment = new db\assignment();
+    $db_assignment = lib::create( 'database\assignment' );
     $db_assignment->user_id = $session->get_user()->id;
     $db_assignment->site_id = $session->get_site()->id;
     $db_assignment->interview_id = $db_interview->id;
@@ -150,7 +149,7 @@ class assignment_begin extends \sabretooth\ui\push
     if( $db_origin_queue->from_appointment() )
     { // if this is an appointment queue, mark the appointment now associated with the appointment
       // this should always be the appointment with the earliest date
-      $appointment_mod = new db\modifier();
+      $appointment_mod = lib::create( 'database\modifier' );
       $appointment_mod->where( 'assignment_id', '=', NULL );
       $appointment_mod->order( 'datetime' );
       $appointment_mod->limit( 1 );

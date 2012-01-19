@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\database\limesurvey;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * surveys: record
@@ -27,7 +24,7 @@ class surveys extends record
    */
   public function get_title()
   {
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'sid', '=', $this->sid );
     $modifier->where( 'sid', '=', 'surveyls_survey_id', false );
     $modifier->where( 'language', '=', 'surveyls_language', false );

@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget appointment view
@@ -57,7 +54,7 @@ class appointment_view extends base_appointment_view
 
     parent::finish();
 
-    $db_participant = new db\participant( $this->get_record()->participant_id );
+    $db_participant = lib::create( 'database\participant', $this->get_record()->participant_id );
   
     // determine the time difference
     $db_phone = $this->get_record()->get_phone();
@@ -69,7 +66,7 @@ class appointment_view extends base_appointment_view
     $time_diff = is_null( $db_address ) ? NULL : $db_address->get_time_diff();
 
     // need to add the participant's timezone information as information to the date item
-    $site_name = bus\session::self()->get_site()->name;
+    $site_name = lib::create( 'business\session' )->get_site()->name;
     if( is_null( $time_diff ) )
       $note = 'The participant\'s time zone is not known.';
     else if( 0 == $time_diff )
@@ -87,7 +84,7 @@ class appointment_view extends base_appointment_view
     $this->add_item( 'datetime', 'datetime', 'Date', $note );
     
     // create enum arrays
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'active', '=', true );
     $modifier->order( 'rank' );
     $phones = array();

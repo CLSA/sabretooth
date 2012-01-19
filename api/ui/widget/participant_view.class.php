@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget participant view
  * 
  * @package sabretooth\ui
  */
-class participant_view extends base_view
+class participant_view extends \cenozo\ui\widget\base_view
 {
   /**
    * Constructor
@@ -35,6 +32,7 @@ class participant_view extends base_view
     // create an associative array with everything we want to display about the participant
     $this->add_item( 'active', 'boolean', 'Active' );
     $this->add_item( 'uid', 'constant', 'Unique ID' );
+    $this->add_item( 'source_id', 'enum', 'Source' );
     $this->add_item( 'first_name', 'string', 'First Name' );
     $this->add_item( 'last_name', 'string', 'Last Name' );
     $this->add_item( 'language', 'enum', 'Preferred Language' );
@@ -47,11 +45,11 @@ class participant_view extends base_view
     try
     {
       // create the address sub-list widget
-      $this->address_list = new address_list( $args );
+      $this->address_list = lib::create( 'ui\widget\address_list', $args );
       $this->address_list->set_parent( $this );
       $this->address_list->set_heading( 'Addresses' );
     }
-    catch( exc\permission $e )
+    catch( \cenozo\exception\permission $e )
     {
       $this->address_list = NULL;
     }
@@ -59,11 +57,11 @@ class participant_view extends base_view
     try
     {
       // create the phone sub-list widget
-      $this->phone_list = new phone_list( $args );
+      $this->phone_list = lib::create( 'ui\widget\phone_list', $args );
       $this->phone_list->set_parent( $this );
       $this->phone_list->set_heading( 'Phone numbers' );
     }
-    catch( exc\permission $e )
+    catch( \cenozo\exception\permission $e )
     {
       $this->phone_list = NULL;
     }
@@ -71,11 +69,11 @@ class participant_view extends base_view
     try
     {
       // create the appointment sub-list widget
-      $this->appointment_list = new appointment_list( $args );
+      $this->appointment_list = lib::create( 'ui\widget\appointment_list', $args );
       $this->appointment_list->set_parent( $this );
       $this->appointment_list->set_heading( 'Appointments' );
     }
-    catch( exc\permission $e )
+    catch( \cenozo\exception\permission $e )
     {
       $this->appointment_list = NULL;
     }
@@ -83,11 +81,11 @@ class participant_view extends base_view
     try
     {
       // create the availability sub-list widget
-      $this->availability_list = new availability_list( $args );
+      $this->availability_list = lib::create( 'ui\widget\availability_list', $args );
       $this->availability_list->set_parent( $this );
       $this->availability_list->set_heading( 'Availability' );
     }
-    catch( exc\permission $e )
+    catch( \cenozo\exception\permission $e )
     {
       $this->availability_list = NULL;
     }
@@ -95,11 +93,11 @@ class participant_view extends base_view
     try
     {
       // create the consent sub-list widget
-      $this->consent_list = new consent_list( $args );
+      $this->consent_list = lib::create( 'ui\widget\consent_list', $args );
       $this->consent_list->set_parent( $this );
       $this->consent_list->set_heading( 'Consent information' );
     }
-    catch( exc\permission $e )
+    catch( \cenozo\exception\permission $e )
     {
       $this->consent_list = NULL;
     }
@@ -107,11 +105,11 @@ class participant_view extends base_view
     try
     {
       // create the interview sub-list widget
-      $this->interview_list = new interview_list( $args );
+      $this->interview_list = lib::create( 'ui\widget\interview_list', $args );
       $this->interview_list->set_parent( $this );
       $this->interview_list->set_heading( 'Interview history' );
     }
-    catch( exc\permission $e )
+    catch( \cenozo\exception\permission $e )
     {
       $this->interview_list = NULL;
     }
@@ -128,12 +126,19 @@ class participant_view extends base_view
     parent::finish();
 
     // create enum arrays
-    $languages = db\participant::get_enum_values( 'language' );
+    $participant_class_name = lib::get_class_name( 'database\participant' );
+    $source_class_name = lib::get_class_name( 'database\source' );
+
+    $sources = array();
+    foreach( $source_class_name::select() as $db_source )
+      $sources[$db_source->id] = $db_source->name;
+    $languages = $participant_class_name::get_enum_values( 'language' );
     $languages = array_combine( $languages, $languages );
-    $statuses = db\participant::get_enum_values( 'status' );
+    $statuses = $participant_class_name::get_enum_values( 'status' );
     $statuses = array_combine( $statuses, $statuses );
     $sites = array();
-    foreach( db\site::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
+    $site_class_name = lib::get_class_name( 'database\site' );
+    foreach( $site_class_name::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
     $db_site = $this->get_record()->get_site();
     $site_id = is_null( $db_site ) ? '' : $db_site->id;
     
@@ -141,20 +146,19 @@ class participant_view extends base_view
     if( is_null( $this->get_record()->current_qnaire_id ) )
     {
       $current_qnaire_name = '(none)';
-
       $start_qnaire_date = '(not applicable)';
     }
     else
     {
-      $db_current_qnaire = new db\qnaire( $this->get_record()->current_qnaire_id );
+      $db_current_qnaire = lib::create( 'database\qnaire', $this->get_record()->current_qnaire_id );
       $current_qnaire_name = $db_current_qnaire->name;
       $start_qnaire_date = util::get_formatted_date( $start_qnaire_date, 'immediately' );
     }
-
     
     // set the view's items
     $this->set_item( 'active', $this->get_record()->active, true );
     $this->set_item( 'uid', $this->get_record()->uid );
+    $this->set_item( 'source_id', $this->get_record()->source_id, false, $sources );
     $this->set_item( 'first_name', $this->get_record()->first_name );
     $this->set_item( 'last_name', $this->get_record()->last_name );
     $this->set_item( 'language', $this->get_record()->language, false, $languages );
@@ -213,9 +217,10 @@ class participant_view extends base_view
    */
   public function determine_interview_count( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = new db\modifier();
+    if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'participant_id', '=', $this->get_record()->id );
-    return db\interview::count( $modifier );
+    $class_name = lib::get_class_name( 'database\interview' );
+    return $class_name::count( $modifier );
   }
 
   /**
@@ -228,9 +233,10 @@ class participant_view extends base_view
    */
   public function determine_interview_list( $modifier = NULL )
   {
-    if( NULL == $modifier ) $modifier = new db\modifier();
+    if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'participant_id', '=', $this->get_record()->id );
-    return db\interview::select( $modifier );
+    $class_name = lib::get_class_name( 'database\interview' );
+    return $class_name::select( $modifier );
   }
 
   /**

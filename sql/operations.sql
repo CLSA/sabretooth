@@ -3,22 +3,6 @@
 -- -----------------------------------------------------
 SET AUTOCOMMIT=0;
 
-DELETE FROM operation;
-
--- access
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "access", "delete", true, "Removes access from the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "access", "list", true, "List system access entries." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "access", "primary", true, "Retrieves base access information." );
-
--- activity
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "activity", "list", true, "List system activity." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "activity", "primary", true, "Retrieves base activity information." );
-
 -- address
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "address", "delete", true, "Removes a participant's address entry from the system." );
@@ -121,20 +105,6 @@ VALUES( "widget", "interview", "list", true, "Lists interviews." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "interview", "edit", true, "Edits the details of an interview." );
 
--- notes
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "note", "delete", true, "Removes a note from the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "note", "edit", true, "Edits the details of a note." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "note", "new", false, "Creates a new note." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "note", "list", false, "Lists a participant's note entries." );
-
--- operation
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "operation", "list", true, "List operations in the system." );
-
 -- operator
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "operator", "assignment", true, "Displays the operator's assignment manager." );
@@ -203,6 +173,10 @@ VALUES( "widget", "phase", "view", true, "View the details of a questionnaire's 
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "phase", "list", true, "Lists a questionnaire's phases." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "phase", "add_source_survey", true, "A form to add a new source-specific survey to the phase." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "phase", "delete_source_survey", true, "Remove a phase's source-specific survey." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "phase", "primary", true, "Retrieves base phase information." );
 
 -- phone
@@ -249,7 +223,11 @@ VALUES( "widget", "qnaire", "add_phase", true, "View surveys to add as a new pha
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "qnaire", "delete_phase", true, "Remove phases from a questionnaire." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "qnaire", "primary", true, "Retrieves base qnaire information." );
+VALUES( "widget", "qnaire", "add_source_withdraw", true, "A form to add a new source-specific withdraw survey to the questionnaire." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "qnaire", "delete_source_withdraw", true, "Remove a questionnaire's source-specific withdraw survey." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "qnaire", "primary", true, "Retrieves base questionnaire information." );
 
 -- queue
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -276,10 +254,6 @@ VALUES( "pull", "queue_restriction", "primary", true, "Retrieves base queue rest
 -- recording
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "recording", "list", true, "Lists recordings." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "recording", "play", true, "Plays a recording." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "recording", "pause", true, "Pauses a recording." );
 
 -- reports
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -327,67 +301,11 @@ VALUES( "pull", "participant_tree", "report", true, "Download a participant tree
 -- INSERT INTO operation( type, subject, name, restricted, description )
 -- VALUES( "pull", "daily_shift", "report", true, "Download a new daily shift report." );
 
--- role
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "role", "delete", true, "Removes a role from the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "role", "edit", true, "Edits a role's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "role", "new", true, "Add a new role to the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "role", "add", true, "View a form for creating a new role." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "role", "view", true, "View a role's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "role", "list", true, "List roles in the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "role", "add_operation", true, "View operations to add to a role." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "role", "new_operation", true, "Adds new operations to a role." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "role", "delete_operation", true, "Remove operations from a role." );
-
 -- self
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "self", "home", false, "The current user's home screen." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "self", "menu", false, "The current user's main menu." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "self", "settings", false, "The current user's settings manager." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "self", "shortcuts", false, "The current user's shortcut icon set." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "self", "status", false, "The current user's status." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "self", "password", false, "Dialog for changing the user's password." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "self", "set_password", false, "Changes the user's password." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "timer", false, "A timer widget used to count time and play sounds." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "dialing_pad", false, "A telephone dialing pad widget." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "self", "calculator", false, "A calculator widget." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "self", "timezone_calculator", false, "A timezone calculator widget." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "self", "set_site", false, "Change the current user's active site." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "self", "set_role", false, "Change the current user's active role." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "self", "set_theme", false, "Change the current user's web interface theme." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "self", "primary", false, "Retrieves the current user's information." );
-
--- setting
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "setting", "edit", true, "Edits a setting's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "setting", "view", true, "View a setting's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "setting", "list", true, "List settings in the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "setting", "primary", true, "Retrieves base setting information." );
 
 -- shift
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -419,27 +337,41 @@ VALUES( "pull", "shift_template", "primary", true, "Retrieves base shift templat
 
 -- site
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "site", "edit", true, "Edits a site's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "site", "new", true, "Add a new site to the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "site", "add", true, "View a form for creating a new site." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "site", "view", true, "View a site's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "site", "list", true, "List sites in the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "site", "add_shift", true, "View users to add shifts to." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "site", "delete_shift", true, "Remove shifts from a site." );
+
+-- source_survey
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "site", "add_access", true, "View users to grant access to the site." );
+VALUES( "push", "source_survey", "delete", true, "Removes a phase's source-specific survey from the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "site", "new_access", true, "Grant access to a site." );
+VALUES( "push", "source_survey", "edit", true, "Edits the details of a phase's source-specific survey." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "site", "delete_access", true, "Remove accesss from a site." );
+VALUES( "push", "source_survey", "new", true, "Creates a new source-specific survey for a phase." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "site", "primary", true, "Retrieves base site information." );
+VALUES( "widget", "source_survey", "add", true, "View a form for creating new source-specific survey for a phase." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "source_survey", "view", true, "View the details of a phase's particular source-specific survey." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "source_survey", "list", true, "Lists a phase's source-specific survey entries." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "source_survey", "primary", true, "Retrieves base source-specific survey information." );
+
+-- source_withdraw
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "source_withdraw", "delete", true, "Removes a questionnaire's source-specific withdraw survey from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "source_withdraw", "edit", true, "Edits the details of a questionnaire's source-specific withdraw survey." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "source_withdraw", "new", true, "Creates a new source-specific withdraw survey for a questionnaire." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "source_withdraw", "add", true, "View a form for creating new source-specific withdraw survey for a questionnaire." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "source_withdraw", "view", true, "View the details of a questionnaire's particular source-specific withdraw survey." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "source_withdraw", "list", true, "Lists a questionnaire's source-specific withdraw survey entries." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "source_withdraw", "primary", true, "Retrieves base source-specific withdraw survey information." );
 
 -- survey
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -447,53 +379,11 @@ VALUES( "widget", "survey", "list", true, "List surveys in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "survey", "primary", true, "Retrieves base survey information." );
 
--- system message
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "system_message", "delete", true, "Removes a system message from the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "system_message", "edit", true, "Edits a system message's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "system_message", "new", true, "Add a new system message to the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "system_message", "add", true, "View a form for creating a new system message." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "system_message", "view", true, "View a system message's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "system_message", "list", true, "List system messages in the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "system_message", "primary", true, "Retrieves base system message information." );
-
 -- user
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "user", "delete", true, "Removes a user from the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "user", "edit", true, "Edits a user's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "user", "new", true, "Add a new user to the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "user", "add", true, "View a form for creating a new user." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "user", "view", true, "View a user's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "user", "list", true, "List users in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "user", "add_shift", true, "View shift form for adding the user to a new shift." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "user", "delete_shift", true, "Remove shifts from a user." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "user", "add_access", true, "View sites to grant the user access to." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "user", "new_access", true, "Grant this user access to sites." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "user", "delete_access", true, "Removes this user's access to a site." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "user", "reset_password", true, "Resets a user's password." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "user", "set_password", true, "Sets a user's password." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "user", "primary", true, "Retrieves base user information." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "user", "list", true, "Retrieves information on lists of users." );
 
 -- voip
 INSERT INTO operation( type, subject, name, restricted, description )

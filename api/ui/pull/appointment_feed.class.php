@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\pull;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * pull: appointment feed
  * 
  * @package sabretooth\ui
  */
-class appointment_feed extends base_feed
+class appointment_feed extends \cenozo\ui\pull\base_feed
 {
   /**
    * Constructor
@@ -43,19 +40,21 @@ class appointment_feed extends base_feed
   public function finish()
   {
     // create a list of appointments between the feed's start and end time
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'datetime', '>=', $this->start_datetime );
     $modifier->where( 'datetime', '<', $this->end_datetime );
 
     $event_list = array();
-    $db_site = bus\session::self()->get_site();
-    foreach( db\appointment::select_for_site( $db_site, $modifier ) as $db_appointment )
+    $db_site = lib::create( 'business\session' )->get_site();
+    $appointment_class_name = lib::get_class_name( 'database\appointment' );
+    $setting_manager = lib::create( 'business\setting_manager');
+    foreach( $appointment_class_name::select_for_site( $db_site, $modifier ) as $db_appointment )
     {
       $start_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
       $end_datetime_obj = clone $start_datetime_obj;
       $end_datetime_obj->modify(
         sprintf( '+%d minute',
-        bus\setting_manager::self()->get_setting( 'appointment', 'duration' ) ) );
+        $setting_manager->get_setting( 'appointment', 'duration' ) ) );
 
       $db_participant = $db_appointment->get_participant();
       $event_list[] = array(

@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: participant new
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Create a new participant.
  * @package sabretooth\ui
  */
-class participant_new extends base_new
+class participant_new extends \cenozo\ui\push\base_new
 {
   /**
    * Constructor.
@@ -42,9 +39,11 @@ class participant_new extends base_new
     // make sure the name column isn't blank
     $columns = $this->get_argument( 'columns' );
     if( !array_key_exists( 'first_name', $columns ) || 0 == strlen( $columns['first_name'] ) )
-      throw new exc\notice( 'The participant\'s first name cannot be left blank.', __METHOD__ );
+      throw lib::create( 'exception\notice',
+        'The participant\'s first name cannot be left blank.', __METHOD__ );
     if( !array_key_exists( 'last_name', $columns ) || 0 == strlen( $columns['last_name'] ) )
-      throw new exc\notice( 'The participant\'s last name cannot be left blank.', __METHOD__ );
+      throw lib::create( 'exception\notice',
+        'The participant\'s last name cannot be left blank.', __METHOD__ );
 
     parent::finish();
   }

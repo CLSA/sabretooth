@@ -8,16 +8,14 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * assignment: record
  *
  * @package sabretooth\database
  */
-class assignment extends has_note
+class assignment extends \cenozo\database\has_note
 {
   /**
    * This method returns the current SID, or false if all surveys are complete.
@@ -62,6 +60,10 @@ class assignment extends has_note
       log::warning( 'Tried to determine current phase for assignment with no id.' );
       return false;
     }
+
+    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+    $source_withdraw_class_name = lib::get_class_name( 'database\source_withdraw' );
+    $source_survey_class_name = lib::get_class_name( 'database\source_survey' );
     
     $this->current_sid = false;
     $this->current_token = false;
@@ -70,40 +72,47 @@ class assignment extends has_note
     $db_interview = $this->get_interview();
     $db_participant = $db_interview->get_participant();
     $db_consent = $db_participant->get_last_consent();
-    
     if( $db_consent && 'withdraw' == $db_consent->event )
     { // the participant has withdrawn, check to see if the withdraw script is complete
       $db_qnaire = $db_interview->get_qnaire();
       
-      // let the tokens record class know which SID we are dealing with
-      limesurvey\tokens::set_sid( $db_qnaire->withdraw_sid );
+      // let the tokens record class know which SID we are dealing with by checking if
+      // there is a source-specific survey for this participant, and if not falling back
+      // on the default withdraw survey
+      $db_source_withdraw = $source_withdraw_class_name::get_unique_record(
+        array( 'qnaire_id', 'source_id' ),
+        array( $db_qnaire->id, $db_participant->source_id ) );
+      $sid = is_null( $db_source_withdraw ) ? $db_qnaire->withdraw_sid : $db_source_withdraw->sid;
 
-      $token = limesurvey\tokens::determine_token_string( $db_interview );
-      $tokens_mod = new modifier();
+      $tokens_class_name::set_sid( $sid );
+
+      $token = $tokens_class_name::determine_token_string( $db_interview );
+      $tokens_mod = lib::create( 'database\modifier' );
       $tokens_mod->where( 'token', '=', $token );
-      $db_tokens = current( limesurvey\tokens::select( $tokens_mod ) );
+      $db_tokens = current( $tokens_class_name::select( $tokens_mod ) );
 
       if( false === $db_tokens )
       { // token not found, create it
-        $db_tokens = new limesurvey\tokens();
+        $db_tokens = lib::create( 'database\limesurvey\tokens' );
         $db_tokens->token = $token;
         $db_tokens->firstname = $db_participant->first_name;
         $db_tokens->lastname = $db_participant->last_name;
         $db_tokens->update_attributes( $db_participant );
         $db_tokens->save();
 
-        $this->current_sid = $db_qnaire->withdraw_sid;
+        $this->current_sid = $sid;
         $this->current_token = $token;
       }
       else if( 'N' == $db_tokens->completed )
       {
-        $this->current_sid = $db_qnaire->withdraw_sid;
+        $this->current_sid = $sid;
         $this->current_token = $token;
       }
+      // else do not set the current_sid or current_token members!
     }
     else
     { // the participant has not withdrawn, check each phase of the interview
-      $phase_mod = new modifier();
+      $phase_mod = lib::create( 'database\modifier' );
       $phase_mod->order( 'rank' );
       
       $phase_list = $db_interview->get_qnaire()->get_phase_list( $phase_mod );
@@ -115,35 +124,43 @@ class assignment extends has_note
       {
         foreach( $phase_list as $db_phase )
         {
-          // let the tokens record class know which SID we are dealing with
-          limesurvey\tokens::set_sid( $db_phase->sid );
+          // let the tokens record class know which SID we are dealing with by checking if
+          // there is a source-specific survey for this participant, and if not falling back
+          // on the default survey
+          $db_source_survey = $source_survey_class_name::get_unique_record(
+            array( 'phase_id', 'source_id' ),
+            array( $db_phase->id, $db_participant->source_id ) );
+          $sid = is_null( $db_source_survey ) ? $db_phase->sid : $db_source_survey->sid;
+
+          $tokens_class_name::set_sid( $sid );
   
-          $token = limesurvey\tokens::determine_token_string(
+          $token = $tokens_class_name::determine_token_string(
                      $db_interview,
                      $db_phase->repeated ? $this : NULL );
-          $tokens_mod = new modifier();
+          $tokens_mod = lib::create( 'database\modifier' );
           $tokens_mod->where( 'token', '=', $token );
-          $db_tokens = current( limesurvey\tokens::select( $tokens_mod ) );
+          $db_tokens = current( $tokens_class_name::select( $tokens_mod ) );
   
           if( false === $db_tokens )
           { // token not found, create it
-            $db_tokens = new limesurvey\tokens();
+            $db_tokens = lib::create( 'database\limesurvey\tokens' );
             $db_tokens->token = $token;
             $db_tokens->firstname = $db_participant->first_name;
             $db_tokens->lastname = $db_participant->last_name;
             $db_tokens->update_attributes( $db_participant );
             $db_tokens->save();
   
-            $this->current_sid = $db_phase->sid;
+            $this->current_sid = $sid;
             $this->current_token = $token;
             break;
           }
           else if( 'N' == $db_tokens->completed )
           { // we have found the current phase
-            $this->current_sid = $db_phase->sid;
+            $this->current_sid = $sid;
             $this->current_token = $token;
             break;
           }
+          // else do not set the current_sid or current_token members!
         }
       }
 

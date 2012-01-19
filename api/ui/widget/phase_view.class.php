@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget phase view
  * 
  * @package sabretooth\ui
  */
-class phase_view extends base_view
+class phase_view extends \cenozo\ui\widget\base_view
 {
   /**
    * Constructor
@@ -33,9 +30,21 @@ class phase_view extends base_view
     parent::__construct( 'phase', 'view', $args );
     
     // add items to the view
-    $this->add_item( 'sid', 'enum', 'Survey' );
+    $this->add_item( 'sid', 'enum', 'Default Survey' );
     $this->add_item( 'rank', 'enum', 'Stage' );
     $this->add_item( 'repeated', 'boolean', 'Repeated' );
+
+    try
+    {
+      // create the source_survey sub-list widget
+      $this->source_survey_list = lib::create( 'ui\widget\source_survey_list', $args );
+      $this->source_survey_list->set_parent( $this );
+      $this->source_survey_list->set_heading( 'Source-specific Surveys' );
+    }
+    catch( \cenozo\exception\permission $e )
+    {
+      $this->source_survey_list = NULL;
+    }
   }
 
   /**
@@ -50,11 +59,12 @@ class phase_view extends base_view
 
     // create enum arrays
     $surveys = array();
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'active', '=', 'Y' );
     $modifier->where( 'anonymized', '=', 'N' );
     $modifier->where( 'tokenanswerspersistence', '=', 'Y' );
-    foreach( db\limesurvey\surveys::select( $modifier ) as $db_survey )
+    $class_name = lib::get_class_name( 'database\limesurvey\surveys' );
+    foreach( $class_name::select( $modifier ) as $db_survey )
       $surveys[$db_survey->sid] = $db_survey->get_title();
     $num_phases = $this->get_record()->get_qnaire()->get_phase_count();
     $ranks = array();
@@ -67,6 +77,19 @@ class phase_view extends base_view
     $this->set_item( 'repeated', $this->get_record()->repeated, true );
 
     $this->finish_setting_items();
+
+    if( !is_null( $this->source_survey_list ) )
+    {
+      $this->source_survey_list->finish();
+      $this->set_variable( 'source_survey_list', $this->source_survey_list->get_variables() );
+    }
   }
+
+  /**
+   * The participant list widget.
+   * @var source_survey_list
+   * @access protected
+   */
+  protected $source_survey_list = NULL;
 }
 ?>

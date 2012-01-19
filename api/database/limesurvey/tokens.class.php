@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\database\limesurvey;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Access to limesurvey's tokens_SID tables.
@@ -24,17 +21,17 @@ class tokens extends sid_record
    * Updates the token attributes with current values from Mastodon
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param db\participant $db_participant The record of the participant linked to this token.
+   * @param database\participant $db_participant The record of the participant linked to this token.
    * @param boolean $extended Whether or not to included extended parameters.
    * @access public
    */
   public function update_attributes( $db_participant )
   {
-    $mastodon_manager = bus\mastodon_manager::self();
-    $db_user = bus\session::self()->get_user();
+    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
+    $db_user = lib::create( 'business\session' )->get_user();
 
     // determine the first part of the token
-    $db_interview = bus\session::self()->get_current_assignment()->get_interview();
+    $db_interview = lib::create( 'business\session')->get_current_assignment()->get_interview();
     $token_part = substr( static::determine_token_string( $db_interview ), 0, -1 );
     
     // try getting the attributes from mastodon or sabretooth
@@ -80,7 +77,7 @@ class tokens extends sid_record
       }
 
       // written consent received
-      $consent_mod = new db\modifier();
+      $consent_mod = lib::create( 'database\modifier' );
       $consent_mod->where( 'event', 'like', 'written %' );
       $written_consent = 0 < $db_participant->get_consent_count( $consent_mod );
 
@@ -93,7 +90,7 @@ class tokens extends sid_record
     }
     
     // determine the attributes from the survey with the same ID
-    $db_surveys = new surveys( static::$table_sid );
+    $db_surveys = lib::create( 'database\limesurvey\surveys', static::$table_sid );
 
     foreach( explode( "\n", $db_surveys->attributedescriptions ) as $attribute )
     {
@@ -164,7 +161,7 @@ class tokens extends sid_record
         else if( 'previously completed' == $value )
         {
           // no need to set the token sid since it should already be set before calling this method
-          $tokens_mod = new db\modifier();
+          $tokens_mod = lib::create( 'database\modifier' );
           $tokens_mod->where( 'token', 'like', $token_part.'%' );
           $tokens_mod->where( 'completed', '!=', 'N' );
           $this->$key = static::count( $tokens_mod );

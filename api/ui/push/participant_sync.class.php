@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: participant sync
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Syncs participant information between Sabretooth and Mastodon
  * @package sabretooth\ui
  */
-class participant_sync extends \sabretooth\ui\push
+class participant_sync extends \cenozo\ui\push
 {
   /**
    * Constructor.
@@ -39,8 +36,14 @@ class participant_sync extends \sabretooth\ui\push
    */
   public function finish()
   {
-    $db_site = db\site::get_unique_record( 'name', 'Sherbrooke' );
-    $mastodon_manager = bus\mastodon_manager::self();
+    $site_class_name = lib::get_class_name( 'database\site' );
+    $participant_class_name = lib::get_class_name( 'database\participant' );
+    $region_class_name = lib::get_class_name( 'database\region' );
+    $address_class_name = lib::get_class_name( 'database\address' );
+    $source_class_name = lib::get_class_name( 'database\source' );
+
+    $db_site = $site_class_name::get_unique_record( 'name', 'Sherbrooke' );
+    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
     $uid_list_string = preg_replace( '/[\'"]/', '', $this->get_argument( 'uid_list' ) );
     $uid_list = array_unique( preg_split( '/[\s,]+/', $uid_list_string ) );
     foreach( $uid_list as $uid )
@@ -52,14 +55,20 @@ class participant_sync extends \sabretooth\ui\push
         
         // if the participant already exists then skip
         // TODO: upgrade so that this code includes existing participants as well
-        $db_participant = db\participant::get_unique_record( 'uid', $uid );
+        $db_participant = $participant_class_name::get_unique_record( 'uid', $uid );
         if( !is_null( $db_participant ) ) continue;
         
-        $db_participant = new db\participant();
+        $db_participant = lib::create( 'database\participant' );
 
         foreach( $db_participant->get_column_names() as $column )
           if( 'id' != $column && 'site_id' != $column )
             $db_participant->$column = $response->data->$column;
+
+        // set the source
+        $db_source = is_null( $response->data->source_name )
+                   ? NULL
+                   : $source_class_name::get_unique_record( 'name', $response->data->source_name );
+        $db_participant->source_id = is_null( $db_source ) ? NULL : $db_source->id;
 
         // make sure that all participant's whose prefered languge is french gets Sherbrooke's site
         // TODO: this custom code needs to be made more generic
@@ -70,14 +79,14 @@ class participant_sync extends \sabretooth\ui\push
         // update addresses
         foreach( $response->data->address_list as $address_info )
         {
-          $db_address = new db\address();
+          $db_address = lib::create( 'database\address' );
           $db_address->participant_id = $db_participant->id;
 
           foreach( $db_address->get_column_names() as $column )
             if( 'id' != $column && 'participant_id' != $column && 'region_id' != $column )
               $db_address->$column = $address_info->$column;
 
-          $db_region = db\region::get_unique_record(
+          $db_region = $region_class_name::get_unique_record(
             'abbreviation', $address_info->region_abbreviation );
           if( !is_null( $db_region ) )
             $db_address->region_id = $db_region->id;
@@ -88,7 +97,7 @@ class participant_sync extends \sabretooth\ui\push
         // update phones
         foreach( $response->data->phone_list as $phone_info )
         {
-          $db_phone = new db\phone();
+          $db_phone = lib::create( 'database\phone' );
           $db_phone->participant_id = $db_participant->id;
 
           foreach( $db_phone->get_column_names() as $column )
@@ -97,7 +106,7 @@ class participant_sync extends \sabretooth\ui\push
 
           if( property_exists( $phone_info, 'address_rank' ) )
           {
-            $db_address = db\address::get_unique_record(
+            $db_address = $address_class_name::get_unique_record(
               array( 'participant_id', 'rank' ),
               array( $db_participant->id, $phone_info->address_rank ) );
             if( !is_null( $db_address ) )
@@ -110,7 +119,7 @@ class participant_sync extends \sabretooth\ui\push
         // update consent
         foreach( $response->data->consent_list as $consent_info )
         {
-          $db_consent = new db\consent();
+          $db_consent = lib::create( 'database\consent' );
           $db_consent->participant_id = $db_participant->id;
 
           foreach( $db_consent->get_column_names() as $column )
@@ -120,7 +129,8 @@ class participant_sync extends \sabretooth\ui\push
           $db_consent->save();
         }
       }
-      catch( exc\mastodon $e ) {}
+      // ignore all errors
+      catch( \cenozo\exception\cenozo_service $e ) {}
     }
   }
 }

@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * base class for appointment view/add classes
  * 
  * @package sabretooth\ui
  */
-abstract class base_appointment_view extends base_view
+abstract class base_appointment_view extends \cenozo\ui\widget\base_view
 {
   /**
    * Constructor
@@ -36,10 +33,10 @@ abstract class base_appointment_view extends base_view
     try
     {
       // create the site calendar widget
-      $this->site_calendar = new site_calendar( $args );
+      $this->site_calendar = lib::create( 'ui\widget\site_calendar', $args );
       $this->site_calendar->set_parent( $this );
     }
-    catch( exc\permission $e )
+    catch( \cenozo\exception\permission $e )
     {
       $this->site_calendar = NULL;
     }

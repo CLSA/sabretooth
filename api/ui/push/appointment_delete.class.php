@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: appointment delete
  * 
  * @package sabretooth\ui
  */
-class appointment_delete extends base_delete
+class appointment_delete extends \cenozo\ui\push\base_delete
 {
   /**
    * Constructor.
