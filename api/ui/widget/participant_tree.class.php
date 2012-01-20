@@ -51,17 +51,14 @@ class participant_tree extends \cenozo\ui\widget
     if( $is_top_tier )
     {
       $sites = array();
-      $site_class_name = lib::get_class_name( 'database\site' );
-      foreach( $site_class_name::select() as $db_site )
-        $sites[$db_site->id] = $db_site->name;
+      $class_name = lib::get_class_name( 'database\site' );
+      foreach( $class_name::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
       $this->set_variable( 'sites', $sites );
     }
 
-    $restrict_site_id = $this->get_argument( "restrict_site_id", 0 );
-    $this->set_variable( 'restrict_site_id', $restrict_site_id );
-    $db_restrict_site = $restrict_site_id
-                      ? lib::create( 'database\site', $restrict_site_id )
-                      : NULL;
+    $site_id = $this->get_argument( "site_id", 0 );
+    $this->set_variable( 'site_id', $site_id );
+    $db_site = $site_id ? lib::create( 'database\site', $site_id ) : NULL;
     
     $current_date = util::get_datetime_object()->format( 'Y-m-d' );
     $this->set_variable( 'current_date', $current_date );
@@ -70,13 +67,13 @@ class participant_tree extends \cenozo\ui\widget
     $this->set_variable( 'viewing_date', $viewing_date );
 
     // set the viewing date if it is not "current"
-    $queue_class_name = lib::get_class_name( 'database\queue' );
-    if( 'current' != $viewing_date ) $queue_class_name::set_viewing_date( $viewing_date );
+    $class_name = lib::get_class_name( 'database\queue' );
+    if( 'current' != $viewing_date ) $class_name::set_viewing_date( $viewing_date );
 
     $show_queue_index = $this->get_argument( 'show_queue_index', NULL );
     if( is_null( $show_queue_index ) )
     {
-      $db_show_queue = $queue_class_name::get_unique_record( 'name', 'qnaire' );
+      $db_show_queue = $class_name::get_unique_record( 'name', 'qnaire' );
       $show_qnaire_id = 0;
     }
     else
@@ -85,19 +82,22 @@ class participant_tree extends \cenozo\ui\widget
       $show_qnaire_id = $parts[0];
       $db_show_queue = lib::create( 'database\queue', $parts[1] );
     }
-    
+
     // build the tree from the root
     $nodes = array();
     $tree = array(); // NOTE: holds references to the nodes array
     $modifier = lib::create( 'database\modifier' );
     $modifier->order( 'parent_queue_id' );
-    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
-    foreach( $queue_class_name::select( $modifier ) as $db_queue )
+    foreach( $class_name::select( $modifier ) as $db_queue )
     {
-      // restrict to the current site if the current user is a mid tier role
-      if( $is_mid_tier ) $db_queue->set_site( $session->get_site() );
-      else if( !is_null( $db_restrict_site ) ) $db_queue->set_site( $db_restrict_site );
-
+      // restrict queue based on user's role
+      if( $is_top_tier )
+      {
+        if( !is_null( $db_site ) ) $db_queue->set_site( $db_site );
+      }
+      else if( $is_mid_tier ) $db_queue->set_site( $session->get_site() );
+      else $db_queue->set_access( $session->get_access() );
+      
       // handle queues which are not qnaire specific
       if( !$db_queue->qnaire_specific )
       {
@@ -105,7 +105,6 @@ class participant_tree extends \cenozo\ui\widget
         $nodes[$index] = array( 'id' => $index,
                                 'title' => $db_queue->title,
                                 'open' => 1 == $db_queue->id,
-                                'count' => $db_queue->get_participant_count(),
                                 'children' => array() );
         if( is_null( $db_queue->parent_queue_id ) )
         { // insert as a root node (careful, nodes are being passed by reference!)
@@ -121,8 +120,8 @@ class participant_tree extends \cenozo\ui\widget
       {
         $modifier = lib::create( 'database\modifier' );
         $modifier->order( 'rank' );
-
-        foreach( $qnaire_class_name::select( $modifier ) as $db_qnaire )
+        $class_name = lib::get_class_name( 'database\qnaire' );
+        foreach( $class_name::select( $modifier ) as $db_qnaire )
         {
           $db_queue->set_qnaire( $db_qnaire );
           
@@ -132,30 +131,10 @@ class participant_tree extends \cenozo\ui\widget
                  : $db_queue->title;
           $open = $db_show_queue->id == $db_queue->id && $show_qnaire_id == $db_qnaire->id;
 
-          /* TODO: the following is disabled for now, need to improve queue querying
-          // don't count the participants in hidden branches
-          $count = -1;
-          if( // always show all qnaire queues or...
-              'qnaire' == $db_queue->name || (
-                // if in the selected qnaire tree and...
-                $show_qnaire_id == $db_qnaire->id && (
-                  // this is the selected node or...
-                  $db_show_queue->id >= $db_queue->id ||
-                  // the parent queue is the selected node or...
-                  $db_show_queue->id == $db_queue->parent_queue_id ||
-                  // a sibling node is the selected node
-                  $db_show_queue->parent_queue_id == $db_queue->parent_queue_id ) ) )
-          {
-            $count = $db_queue->get_participant_count();
-          }
-          */
-          $count = $db_queue->get_participant_count();
-
           $nodes[$index] = array( 'id' => $index,
                                   'title' => $title,
                                   'open' => $open,
                                   'rank' => $db_queue->rank,
-                                  'count' => $count,
                                   'children' => array() );
 
           // add as a branch to parent node

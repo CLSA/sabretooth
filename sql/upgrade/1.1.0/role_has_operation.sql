@@ -8,6 +8,22 @@ SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "widget" AND subject = "recording" AND name = "list" );
 
+-- remove permission to the participant tree from the clerk role
+DELETE FROM role_has_operation
+WHERE role_id = ( SELECT id FROM role WHERE name = "clerk" )
+AND operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "participant" AND name = "tree" );
+
+-- add the new tree functionality
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "pull" AND subject = "participant" AND name = "tree" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "pull" AND subject = "participant" AND name = "tree" );
+
 -- add the new source operations to admins and clerks
 INSERT IGNORE INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),

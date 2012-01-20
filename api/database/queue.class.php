@@ -157,20 +157,49 @@ class queue extends \cenozo\database\record
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param modifier $modifier Modifications to the queue.
+   * @param boolean $use_cache Whether to use the cached value (if one exists)
    * @return int
    * @access public
    */
-  public function get_participant_count( $modifier = NULL )
+  public function get_participant_count( $modifier = NULL, $use_cache = true )
   {
+    if( $use_cache && array_key_exists( $this->name, self::$participant_count_cache ) )
+      return self::$participant_count_cache[$this->name];
+
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
 
     // restrict to the site
     if( !is_null( $this->db_site ) ) $modifier->where( 'base_site_id', '=', $this->db_site->id );
     
-    return static::db()->get_one(
+    self::$participant_count_cache[$this->name] = (integer) static::db()->get_one(
       sprintf( '%s %s',
                $this->get_sql( 'COUNT( DISTINCT participant.id )' ),
                $modifier->get_sql( true ) ) );
+
+    // if the value is 0 then update all child counts with 0 to save processing time
+    if( 0 == self::$participant_count_cache[$this->name] )
+      static::set_child_count_cache_to_zero( $this );
+
+    return self::$participant_count_cache[$this->name];
+  }
+
+  /**
+   * A recursive method to set the count cache for all child queues to 0.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\queue $db_queue
+   * @static
+   * @access private
+   */
+  private static function set_child_count_cache_to_zero( $db_queue )
+  {
+    $queue_mod = lib::create( 'database\modifier' );
+    $queue_mod->where( 'parent_queue_id', '=', $db_queue->id );
+    foreach( static::select( $queue_mod ) as $db_child_queue )
+    {
+      self::$participant_count_cache[$db_child_queue->name] = 0;
+      self::set_child_count_cache_to_zero( $db_child_queue );
+    }
   }
 
   /**
@@ -874,9 +903,17 @@ class queue extends \cenozo\database\record
   /**
    * The queries for each queue
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @var associative array
+   * @var associative array of strings
    * @static
    */
   protected static $query_list = array();
+
+  /**
+   * A cache of participant counts for each queue
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @var associative array of integers
+   * @static
+   */
+  protected static $participant_count_cache = array();
 }
 ?>

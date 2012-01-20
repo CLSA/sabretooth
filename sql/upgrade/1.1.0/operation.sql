@@ -2,6 +2,10 @@
 INSERT IGNORE INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "recording", "list", true, "Lists recordings." );
 
+-- Adding the new tree functionality
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "participant", "tree", true, "Returns the number of participants for every node of the participant tree." );
+
 -- Adding the source survey functionality
 INSERT IGNORE INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "source_survey", "delete", true, "Removes a phase's source-specific survey from the system." );
