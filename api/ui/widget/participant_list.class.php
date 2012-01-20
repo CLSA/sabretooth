@@ -30,7 +30,9 @@ class participant_list extends \cenozo\ui\widget\site_restricted_list
     parent::__construct( 'participant', $args );
 
     $this->add_column( 'uid', 'string', 'Unique ID', true );
-    $this->add_column( 'source.name', 'string', 'Source', true );
+    // sorting by source name will require more work if needed because
+    // participant::select_for_site() doesn't join the source table
+    $this->add_column( 'source.name', 'string', 'Source', false );
     $this->add_column( 'first_name', 'string', 'First Name', true );
     $this->add_column( 'last_name', 'string', 'Last Name', true );
     $this->add_column( 'status', 'string', 'Condition', true );
