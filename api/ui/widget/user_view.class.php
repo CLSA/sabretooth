@@ -15,7 +15,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * 
  * @package sabretooth\ui
  */
-class user_view extends \cenozo\ui\widget\base_view
+class user_view extends \cenozo\ui\widget\user_view
 {
   /**
    * Finish setting the variables in a widget.
@@ -27,15 +27,16 @@ class user_view extends \cenozo\ui\widget\base_view
   {
     parent::finish();
     
+    $session = lib::create( 'business\session' );
     $role_class_name = lib::get_class_name( 'database\role' );
     $is_operator = $this->get_record()->has_access(
-                     lib::create( 'business\session' )->get_site(),
+                     $session->get_site(),
                      $role_class_name::get_unique_record( 'name', 'operator' ) );
 
     // only show shift calendar if the current user's role is greater than the base tier and
     // the viewed user is an operator at this site
     $this->set_variable( 'view_shifts',
-      $is_operator && 1 < lib::create( 'business\session' )->get_role()->tier );
+      $is_operator && 1 < $session->get_role()->tier );
   }
 }
 ?>
