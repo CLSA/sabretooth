@@ -1,3 +1,8 @@
+-- Adding the recording functionality
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "recording", "list", true, "Lists recordings." );
+
+-- Adding the source survey functionality
 INSERT IGNORE INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "source_survey", "delete", true, "Removes a phase's source-specific survey from the system." );
 INSERT IGNORE INTO operation( type, subject, name, restricted, description )
@@ -17,6 +22,7 @@ VALUES( "widget", "phase", "add_source_survey", true, "A form to add a new sourc
 INSERT IGNORE INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "phase", "delete_source_survey", true, "Remove a phase's source-specific survey." );
 
+-- Adding the source withdraw functionality
 INSERT IGNORE INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "source_withdraw", "delete", true, "Removes a questionnaire's source-specific withdraw survey from the system." );
 INSERT IGNORE INTO operation( type, subject, name, restricted, description )

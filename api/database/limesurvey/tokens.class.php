@@ -86,8 +86,13 @@ class tokens extends sid_record
       $participant_info->data->email = "";
       $participant_info->data->hin_access = "";
       $participant_info->data->prior_contact_date = "";
+      $participant_info->data->email = "";
       $alternate_info->data = array();
     }
+
+    // fill in the email and source
+    $this->email = $participant_info->data->email;
+    $this->participant_source = $db_participant->get_source()->name;
     
     // determine the attributes from the survey with the same ID
     $db_surveys = lib::create( 'database\limesurvey\surveys', static::$table_sid );
