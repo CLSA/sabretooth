@@ -146,7 +146,8 @@ class tokens extends sid_record
         }
         else if( 'participant_source' == $value )
         {
-          $this->$key = $db_participant->get_source()->name;
+          $db_source = $db_participant->get_source();
+          $this->$key = is_null( $db_source ) ? '(none)' : $db_source->name;
         }
         else if( 'previous CCHS contact date' == $value )
         {
