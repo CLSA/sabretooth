@@ -11,3 +11,4 @@ SOURCE role.sql
 SOURCE phase.sql
 SOURCE operation.sql
 SOURCE role_has_operation.sql
+SOURCE recording.sql
