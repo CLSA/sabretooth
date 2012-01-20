@@ -92,7 +92,6 @@ class tokens extends sid_record
 
     // fill in the email and source
     $this->email = $participant_info->data->email;
-    $this->participant_source = $db_participant->get_source()->name;
     
     // determine the attributes from the survey with the same ID
     $db_surveys = lib::create( 'database\limesurvey\surveys', static::$table_sid );
@@ -144,6 +143,10 @@ class tokens extends sid_record
         else if( 'operator last_name' == $value )
         {
           $this->$key = $db_user->last_name;
+        }
+        else if( 'participant_source' == $value )
+        {
+          $this->$key = $db_participant->get_source()->name;
         }
         else if( 'previous CCHS contact date' == $value )
         {
