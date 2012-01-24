@@ -33,28 +33,6 @@ class session extends \cenozo\business\session
 
     // initialize the voip manager
     lib::create( 'business\voip_manager' )->initialize();
- 
-    $setting_manager = lib::create( 'business\setting_manager' );
-    // create the databases
-    $this->survey_database = lib::create( 'database\database',
-      $setting_manager->get_setting( 'survey_db', 'driver' ),
-      $setting_manager->get_setting( 'survey_db', 'server' ),
-      $setting_manager->get_setting( 'survey_db', 'username' ),
-      $setting_manager->get_setting( 'survey_db', 'password' ),
-      $setting_manager->get_setting( 'survey_db', 'database' ),
-      $setting_manager->get_setting( 'survey_db', 'prefix' ) );
-    if( $setting_manager->get_setting( 'audit_db', 'enabled' ) )
-    {
-      // If not set then the audit database settings use the same as limesurvey,
-      // with the exception of the prefix
-      $this->audit_database = lib::create( 'database\database',
-        $setting_manager->get_setting( 'audit_db', 'driver' ),
-        $setting_manager->get_setting( 'audit_db', 'server' ),
-        $setting_manager->get_setting( 'audit_db', 'username' ),
-        $setting_manager->get_setting( 'audit_db', 'password' ),
-        $setting_manager->get_setting( 'audit_db', 'database' ),
-        $setting_manager->get_setting( 'audit_db', 'prefix' ) );
-    }
   }
 
   /**
@@ -66,6 +44,19 @@ class session extends \cenozo\business\session
    */
   public function get_survey_database()
   {
+    // create the database if it doesn't exist yet
+    if( is_null( $this->survey_database ) )
+    {
+      $setting_manager = lib::create( 'business\setting_manager' );
+      $this->survey_database = lib::create( 'database\database',
+        $setting_manager->get_setting( 'survey_db', 'driver' ),
+        $setting_manager->get_setting( 'survey_db', 'server' ),
+        $setting_manager->get_setting( 'survey_db', 'username' ),
+        $setting_manager->get_setting( 'survey_db', 'password' ),
+        $setting_manager->get_setting( 'survey_db', 'database' ),
+        $setting_manager->get_setting( 'survey_db', 'prefix' ) );
+    }
+
     return $this->survey_database;
   }
 
@@ -78,6 +69,22 @@ class session extends \cenozo\business\session
    */
   public function get_audit_database()
   {
+    // create the database if it doesn't exist yet
+    if( is_null( $this->audit_database ) )
+    {
+      $setting_manager = lib::create( 'business\setting_manager' );
+      if( $setting_manager->get_setting( 'audit_db', 'enabled' ) )
+      {
+        $this->audit_database = lib::create( 'database\database',
+          $setting_manager->get_setting( 'audit_db', 'driver' ),
+          $setting_manager->get_setting( 'audit_db', 'server' ),
+          $setting_manager->get_setting( 'audit_db', 'username' ),
+          $setting_manager->get_setting( 'audit_db', 'password' ),
+          $setting_manager->get_setting( 'audit_db', 'database' ),
+          $setting_manager->get_setting( 'audit_db', 'prefix' ) );
+      }
+    }
+
     return $this->audit_database;
   }
   
