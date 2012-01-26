@@ -31,6 +31,7 @@ abstract class base_report extends \cenozo\ui\widget\base_report
   {
     parent::__construct( $subject, 'report', $args );
   
+    $this->restrictions['source'] = false;
     $this->restrictions['qnaire'] = false;
     $this->restrictions['consent'] = false;
     $this->restrictions['mailout'] = false;
@@ -47,7 +48,12 @@ abstract class base_report extends \cenozo\ui\widget\base_report
   {
     parent::add_restriction( $restriction_type );
 
-    if( 'qnaire' == $restriction_type )
+    if( 'source' == $restriction_type )
+    {
+      $this->restrictions[ 'source' ] = true;
+      $this->add_parameter( 'restrict_source_id', 'enum', 'Source' );
+    }
+    else if( 'qnaire' == $restriction_type )
     {
       $this->restrictions[ 'qnaire' ] = true;
       $this->add_parameter( 'restrict_qnaire_id', 'enum', 'Questionnaire' );
@@ -72,6 +78,17 @@ abstract class base_report extends \cenozo\ui\widget\base_report
    */
   public function finish()
   {
+    if( $this->restrictions[ 'source' ] )
+    {
+      $sources = array();
+      $class_name = lib::get_class_name( 'database\source' );
+      foreach( $class_name::select() as $db_source ) 
+        $sources[ $db_source->id ] = $db_source->name;
+
+      $this->set_parameter(
+        'restrict_source_id', key( $sources ), true, $sources );
+    }
+
     if( $this->restrictions[ 'qnaire' ] )
     {
       $qnaires = array();
@@ -79,7 +96,8 @@ abstract class base_report extends \cenozo\ui\widget\base_report
       foreach( $class_name::select() as $db_qnaire ) 
         $qnaires[ $db_qnaire->id ] = $db_qnaire->name;
 
-      $this->set_parameter( 'restrict_qnaire_id', current( $qnaires ), true, $qnaires );  
+      $this->set_parameter(
+        'restrict_qnaire_id', key( $qnaires ), true, $qnaires );  
     }
 
     if( $this->restrictions[ 'consent' ] )
@@ -90,7 +108,7 @@ abstract class base_report extends \cenozo\ui\widget\base_report
       $consent_types = array_combine( $consent_types, $consent_types );
 
       $this->set_parameter(
-        'restrict_consent', current( $consent_types ), true, $consent_types );
+        'restrict_consent', key( $consent_types ), true, $consent_types );
     }
 
     if( $this->restrictions[ 'mailout' ] )
@@ -100,7 +118,7 @@ abstract class base_report extends \cenozo\ui\widget\base_report
       $mailout_types = array_combine( $mailout_types, $mailout_types );
 
       $this->set_parameter(
-        'restrict_mailout', current( $mailout_types ), true, $mailout_types );
+        'restrict_mailout', key( $mailout_types ), true, $mailout_types );
     }
 
     parent::finish();
