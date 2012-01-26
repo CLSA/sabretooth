@@ -35,8 +35,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
   {
     // get the report arguments
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
-    $restrict_by_site = 
-      $this->get_argument( 'restrict_site_or_province_id' ) == 'Site' ? true : false;
+    $restrict_by_site = $this->get_argument( 'restrict_site_or_province' ) == 'Site' ? true : false;
     $this->add_title( 
       sprintf( 'Listing of categorical totals pertaining to '.
                'the %s interview', $db_qnaire->name ) ) ;

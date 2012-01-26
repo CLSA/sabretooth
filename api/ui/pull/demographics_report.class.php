@@ -35,7 +35,7 @@ class demographics_report extends \cenozo\ui\pull\base_report
   {
     // get the report arguments
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
-    $consent_status = $this->get_argument( 'restrict_consent_id' );
+    $consent_event = $this->get_argument( 'restrict_consent' );
     $province_id = $this->get_argument( 'restrict_province_id' );
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
     $class_name = lib::get_class_name( 'database\participant' );
@@ -50,7 +50,7 @@ class demographics_report extends \cenozo\ui\pull\base_report
     foreach( $participant_list as $db_participant )
     {
       $db_consent = $db_participant->get_last_consent();
-      if( is_null( $db_consent ) && $consent_status != 'Any' ) continue;
+      if( is_null( $db_consent ) && $consent_event != 'Any' ) continue;
 
       $db_address = $db_participant->get_primary_address();
       if( is_null( $db_address ) ) continue;
@@ -60,7 +60,7 @@ class demographics_report extends \cenozo\ui\pull\base_report
 
       if( ( 'deceased' == $db_participant->status ) ||   
           ( $province_id && $province_id != $region_id ) ||
-          ( $consent_status != 'Any' && $consent_status != $db_consent->event ) ) continue;
+          ( $consent_event != 'Any' && $consent_event != $db_consent->event ) ) continue;
 
       $interview_mod = lib::create( 'database\modifier' );
       $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id ); 

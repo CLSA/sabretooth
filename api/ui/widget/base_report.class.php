@@ -50,20 +50,17 @@ abstract class base_report extends \cenozo\ui\widget\base_report
     if( 'qnaire' == $restriction_type )
     {
       $this->restrictions[ 'qnaire' ] = true;
-
       $this->add_parameter( 'restrict_qnaire_id', 'enum', 'Questionnaire' );
     }
     else if( 'consent' == $restriction_type )
     {
       $this->restrictions[ 'consent' ] = true;
-
-      $this->add_parameter( 'restrict_consent_id', 'enum', 'Consent Status');
+      $this->add_parameter( 'restrict_consent', 'enum', 'Consent Status');
     }
     else if( 'mailout' == $restriction_type )
     {
       $this->restrictions[ 'mailout' ] = true;
-
-      $this->add_parameter( 'restrict_mailout_id', 'enum', 'Mailout' );
+      $this->add_parameter( 'restrict_mailout', 'enum', 'Mailout' );
     }
   }
 
@@ -93,7 +90,7 @@ abstract class base_report extends \cenozo\ui\widget\base_report
       $consent_types = array_combine( $consent_types, $consent_types );
 
       $this->set_parameter(
-        'restrict_consent_id', current( $consent_types ), true, $consent_types );
+        'restrict_consent', current( $consent_types ), true, $consent_types );
     }
 
     if( $this->restrictions[ 'mailout' ] )
@@ -103,7 +100,7 @@ abstract class base_report extends \cenozo\ui\widget\base_report
       $mailout_types = array_combine( $mailout_types, $mailout_types );
 
       $this->set_parameter(
-        'restrict_mailout_id', current( $mailout_types ), true, $mailout_types );
+        'restrict_mailout', current( $mailout_types ), true, $mailout_types );
     }
 
     parent::finish();
