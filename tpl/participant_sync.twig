@@ -32,7 +32,7 @@
                     '</td></tr>';
           }
           html += '</table>' +
-                  '<div style="text-align: right">' +
+                  '<div class="spacer" style="text-align: right">' +
                   '<button id="{{ widget.full }}__proceed" style="width:120px">Proceed</button>' +
                   '</div>';
           $( "#{{ widget.full }}__results" ).html( html );
@@ -52,6 +52,7 @@
 {% endblock javascript %}
 
 {% block widget %}
+  <div class="ui-widget ui-widget-content app-widget-content">
   <div class="spacer">
     Provide a list of participant UIDs which you wish to sync with Mastodon.
     UIDs must be separated by a comma or space and may be qualified by single
@@ -69,8 +70,9 @@
       </td>
     </tr>
   </table>
-  <div style="text-align: right">
+  <div class="spacer" style="text-align: right">
     <button id="{{ widget.full }}__update" style="width:120px">Update</button>
   </div>
   <div id="{{ widget.full }}__results"></div>
+  </div>
 {% endblock widget %}
