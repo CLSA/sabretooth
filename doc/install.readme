@@ -25,13 +25,22 @@ recommended for development.
 
 B) SETUP DATABASE
 =================
-To create your Sabretooth database run the schema, initial_data and sample_data sql scripts found
-in the web/ directory:
+To create your Sabretooth database, first run the schema and initial_data scripts found
+in Cenozo's sql/ directory:
+
+cat schema.sql initial_data.sql | mysql -u <username> -p <database>
+(where <username> is your username and <database> is your database name)
+
+Next, run the schema, initial_data and sample_data sql scripts found in
+Sabretooth's sql/ directory:
 
 cat schema.sql initial_data.sql sample_data.sql | mysql -u <username> -p <database>
 (where <username> is your username and <database> is your database name)
 
 You should edit sample_data.sql so that it has at least one user with the administrator role.
+
+Patches to the database may be performed from within a Sabretooth sql/updgrade sub-directory:
+mysql -u <username> -p <database> < patch_database.sql
 
 
 C) SETUP INI FILE
