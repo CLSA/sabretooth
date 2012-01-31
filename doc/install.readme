@@ -39,6 +39,9 @@ cat schema.sql initial_data.sql sample_data.sql | mysql -u <username> -p <databa
 
 You should edit sample_data.sql so that it has at least one user with the administrator role.
 
+Patches to the database may be performed from within a Sabretooth sql/updgrade sub-directory:
+mysql -u <username> -p <database> < patch_database.sql
+
 
 C) SETUP INI FILE
 =================
