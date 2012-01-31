@@ -134,7 +134,51 @@ class tokens extends sid_record
         }
         else if( 'consented to provide HIN' == $value )
         {
-          $this->$key = true == $participant_info->data->hin_access ? "1" : "0";
+          // TODO: return -1 if there is no info
+          $this->$key = $participant_info->data->hin_access;
+        }
+        else if( 'HIN recorded' == $value )
+        {
+          $this->$key = $participant_info->data->hin_missing ? 0 : 1;
+        }
+        // TODO: add token "INT_13a" (should be YES or NO)
+        else if( 'INT_13a' == $value )
+        {
+          // TODO: This is a custom token attribute which refers to a specific question in the
+          // introduction survey.  This code is not generic and needs to eventually be made
+          // generic.
+          $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+          $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+          $source_survey_class_name = lib::get_class_name( 'database\source_survey' );
+          
+          $phase_mod = lib::create( 'database\modifier' );
+          $phase_mod->where( 'rank', '=', 1 );
+          $phase_list = $db_interview->get_qnaire()->get_phase_list( $phase_mod );
+          if( 1 == $phase_list )
+          {
+            $db_phase = current( $phase_list );
+            
+            // determine the SID of the first phase of the questionnaire (where INT_13a is asked)
+            $db_source_survey = $source_survey_class_name::get_unique_record(
+              array( 'phase_id', 'source_id' ),
+              array( $db_phase->id, $db_participant->source_id ) );
+            $survey_class_name::set_sid(
+              is_null( $db_source_survey ) ? $db_phase->sid : $db_source_survey->sid );
+
+            // determine the survey using the token
+            $token = $tokens_class_name::determine_token_string( $db_interview );
+
+            $survey_mod = lib::create( 'database\modifier' );
+            $survey_mod->where( 'token', 'LIKE', $token_part.'%' );
+            $survey_mod->order_desc( 'datestamp' );
+            $survey_list = $survey_class_name::select( $survey_mod );
+            if( count( $survey_list ) )
+            {
+              // finally, set the survey question response
+              $db_survey = current( $survey_list );
+              $this->$key = $db_survey->get_response( 'INT_13a' );
+            }
+          }
         }
         else if( 'operator first_name' == $value )
         {
