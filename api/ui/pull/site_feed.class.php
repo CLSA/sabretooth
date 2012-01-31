@@ -175,7 +175,7 @@ class site_feed extends \cenozo\ui\pull\base_feed
         }
       }
 
-      // unset times since it is a referece
+      // unset times since it is a reference
       unset( $times );
     }
 
