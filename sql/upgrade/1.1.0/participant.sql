@@ -12,19 +12,19 @@ CREATE PROCEDURE patch_participant()
       WHERE TABLE_SCHEMA = ( SELECT DATABASE() )
       AND TABLE_NAME = "participant"
       AND COLUMN_NAME = "source_id" );
-     IF @test = 0 THEN
-       ALTER TABLE participant
-       ADD COLUMN source_id INT UNSIGNED NULL DEFAULT NULL
-       AFTER uid;
-       ALTER TABLE participant
-       ADD INDEX fk_source_id (source_id ASC);
-       ALTER TABLE participant
-       ADD CONSTRAINT fk_participant_source_id
-       FOREIGN KEY (source_id)
-       REFERENCES source (id)
-       ON DELETE NO ACTION
-       ON UPDATE NO ACTION;
-     END IF;
+    IF @test = 0 THEN
+      ALTER TABLE participant
+      ADD COLUMN source_id INT UNSIGNED NULL DEFAULT NULL
+      AFTER uid;
+      ALTER TABLE participant
+      ADD INDEX fk_source_id (source_id ASC);
+      ALTER TABLE participant
+      ADD CONSTRAINT fk_participant_source_id
+      FOREIGN KEY (source_id)
+      REFERENCES source (id)
+      ON DELETE NO ACTION
+      ON UPDATE NO ACTION;
+    END IF;
   END //
 DELIMITER ;
 
