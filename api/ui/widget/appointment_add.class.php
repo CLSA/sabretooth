@@ -35,6 +35,7 @@ class appointment_add extends base_appointment_view
       'Select a specific phone number to call for the appointment, or leave this field blank if '.
       'any of the participant\'s phone numbers can be called.' );
     $this->add_item( 'datetime', 'datetime', 'Date' );
+    $this->add_item( 'type', 'enum', 'Type' );
   }
 
   /**
@@ -85,6 +86,10 @@ class appointment_add extends base_appointment_view
     foreach( $db_participant->get_phone_list( $modifier ) as $db_phone )
       $phones[$db_phone->id] = $db_phone->rank.". ".$db_phone->number;
     
+    $appointment_class_name = lib::get_class_name( 'database\appointment' );
+    $types = $appointment_class_name::get_enum_values( 'type' );
+    $types = array_combine( $types, $types );
+    
     // create the min datetime array
     $start_qnaire_date = $this->parent->get_record()->start_qnaire_date;
     $datetime_limits = !is_null( $start_qnaire_date )
@@ -95,6 +100,7 @@ class appointment_add extends base_appointment_view
     $this->set_item( 'participant_id', $this->parent->get_record()->id );
     $this->set_item( 'phone_id', '', false, $phones );
     $this->set_item( 'datetime', '', true, $datetime_limits );
+    $this->set_item( 'type', key( $types ), true, $types );
 
     $this->set_variable( 'is_mid_tier', 2 == $session->get_role()->tier );
 

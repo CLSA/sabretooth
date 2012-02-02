@@ -509,6 +509,7 @@ CREATE  TABLE IF NOT EXISTS `appointment` (
   `phone_id` INT UNSIGNED NULL DEFAULT NULL ,
   `assignment_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'This appointment\'s assignment.' ,
   `datetime` DATETIME NOT NULL ,
+  `type` ENUM('full','half') NOT NULL DEFAULT 'full' ,
   `reached` TINYINT(1)  NULL DEFAULT NULL COMMENT 'If the appointment was met, whether the participant was reached.' ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
