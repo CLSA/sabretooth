@@ -3,3 +3,4 @@
 --
 
 SOURCE appointment.sql
+SOURCE setting.sql
