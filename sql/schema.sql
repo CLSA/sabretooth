@@ -122,6 +122,7 @@ CREATE  TABLE IF NOT EXISTS `interview` (
   `participant_id` INT UNSIGNED NOT NULL ,
   `require_supervisor` TINYINT(1)  NOT NULL DEFAULT false ,
   `completed` TINYINT(1)  NOT NULL DEFAULT false ,
+  `rescored` TINYINT(1)  NULL DEFAULT false ,
   `duplicate_qnaire_id` INT UNSIGNED NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
@@ -129,6 +130,7 @@ CREATE  TABLE IF NOT EXISTS `interview` (
   INDEX `fk_duplicate_qnaire_id` (`qnaire_id` ASC) ,
   INDEX `dk_completed` (`completed` ASC) ,
   UNIQUE INDEX `uq_participant_id_qnaire_id` (`participant_id` ASC, `qnaire_id` ASC) ,
+  INDEX `dk_rescored` (`rescored` ASC) ,
   CONSTRAINT `fk_interview_participant`
     FOREIGN KEY (`participant_id` )
     REFERENCES `participant` (`id` )
@@ -652,7 +654,6 @@ CREATE  TABLE IF NOT EXISTS `recording` (
   `interview_id` INT UNSIGNED NOT NULL ,
   `assignment_id` INT UNSIGNED NULL DEFAULT NULL ,
   `rank` INT UNSIGNED NOT NULL ,
-  `processed` TINYINT(1)  NOT NULL DEFAULT false ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_interview_id` (`interview_id` ASC) ,
   UNIQUE INDEX `uq_interview_rank` (`interview_id` ASC, `rank` ASC) ,

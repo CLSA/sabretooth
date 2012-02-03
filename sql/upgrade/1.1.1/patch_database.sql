@@ -3,3 +3,5 @@
 --
 
 SOURCE qnaire.sql
+SOURCE interview.sql
+SOURCE recording.sql
