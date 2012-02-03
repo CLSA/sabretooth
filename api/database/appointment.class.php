@@ -76,9 +76,11 @@ class appointment extends \cenozo\database\record
     $shift_class_name = lib::get_class_name( 'database\shift' );
 
     // determine the appointment interval
-    $interval = sprintf( 'PT%dM',
-                          lib::create( 'business\setting_manager' )->get_setting(
-                            'appointment', 'duration' ) );
+    $setting_manager = lib::create( 'business\setting_manager' );
+    $duration = ( $this->type == 'full' ) ?
+                  $setting_manager->get_setting( 'appointment', 'duration' ) : 
+                  $setting_manager->get_setting( 'appointment', 'half appointment duration' ); 
+    $interval = sprintf( 'PT%dM', $duration );
 
     $start_datetime_obj = util::get_datetime_object( $this->datetime );
     $next_day_datetime_obj = clone $start_datetime_obj;
