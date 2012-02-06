@@ -5,3 +5,5 @@
 SOURCE qnaire.sql
 SOURCE interview.sql
 SOURCE recording.sql
+SOURCE operation.sql
+SOURCE role_has_operation.sql

@@ -28,8 +28,9 @@ class main extends \cenozo\ui\main
     $session = lib::create( 'business\session' );
     $variables = parent::get_variables();
     $variables['survey_url'] = $session->get_survey_url();
-    $variables['show_menu'] = 'interviewer' != $session->get_role()->name ||
-                              is_null( $session->get_current_assignment() );
+    $variables['show_menu'] = !is_null( $session->get_rescoring_interview() ) &&
+                              ( 'operator' != $session->get_role()->name ||
+                                is_null( $session->get_current_assignment() ) );
     return $variables;
   }
 }

@@ -47,18 +47,6 @@ class interview_view extends \cenozo\ui\widget\base_view
     {
       $this->assignment_list = NULL;
     }
-
-    try
-    {
-      // create the recording sub-list widget
-      $this->recording_list = lib::create( 'ui\widget\recording_list', $args );
-      $this->recording_list->set_parent( $this );
-      $this->recording_list->set_heading( 'Audio recordings of the interview' );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->recording_list = NULL;
-    }
   }
 
   /**
@@ -82,18 +70,20 @@ class interview_view extends \cenozo\ui\widget\base_view
 
     $this->finish_setting_items();
 
+    // only allow rescoring if the interview's qnaire has a rescore ID and the user has access
+    // to the rescoring operation
+    $operation_class_name = lib::get_class_name( 'database\operation' );
+    $db_operation = $operation_class_name::get_operation( 'widget', 'interview', 'rescore' );
+    $allowed = lib::create( 'business\session' )->is_allowed( $db_operation );
+    $has_rescore_sid = !is_null( $this->get_record()->get_qnaire()->rescore_sid );
+    $this->set_variable(
+      'allow_rescore', $this->get_record()->completed && $allowed && $has_rescore_sid );
+
     // finish the child widgets
     if( !is_null( $this->assignment_list ) )
     {
       $this->assignment_list->finish();
       $this->set_variable( 'assignment_list', $this->assignment_list->get_variables() );
-    }
-
-    // finish the child widgets
-    if( !is_null( $this->recording_list ) )
-    {
-      $this->recording_list->finish();
-      $this->set_variable( 'recording_list', $this->recording_list->get_variables() );
     }
   }
   
@@ -103,12 +93,5 @@ class interview_view extends \cenozo\ui\widget\base_view
    * @access protected
    */
   protected $assignment_list = NULL;
-  
-  /**
-   * The interview list widget.
-   * @var recording_list
-   * @access protected
-   */
-  protected $recording_list = NULL;
 }
 ?>
