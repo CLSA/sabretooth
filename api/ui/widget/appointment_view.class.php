@@ -38,6 +38,8 @@ class appointment_view extends base_appointment_view
     $this->add_item( 'state', 'constant', 'State',
       '(One of reached, not reached, upcoming, assignable, missed, incomplete, assigned '.
       'or in progress)' );
+    $this->add_item( 'type', 'enum', 'Type',
+      '(Appointment is either a full or half duration in length)' );      
   }
 
   /**
@@ -108,10 +110,15 @@ class appointment_view extends base_appointment_view
       $this->set_item( 'assignment.user', 'unassigned', false );
     }
 
+    $appointment_class_name = lib::get_class_name( 'database\appointment' );
+    $types = $appointment_class_name::get_enum_values( 'type' );
+    $types = array_combine( $types, $types );
+
     // set the view's items
     $this->set_item( 'phone_id', $this->get_record()->phone_id, false, $phones );
     $this->set_item( 'datetime', $this->get_record()->datetime, true );
     $this->set_item( 'state', $this->get_record()->get_state(), false );
+    $this->set_item( 'type', $this->get_record()->type, false, $types );
 
     $this->finish_setting_items();
 
