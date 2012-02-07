@@ -293,51 +293,6 @@ class session extends \cenozo\business\session
   }
   
   /**
-   * Gets the current survey state.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return boolean
-   * @access public
-   */
-  public function get_survey_url()
-  {
-    // only operators can fill out surveys
-    if( 'operator' == $this->get_role()->name )
-    {
-      // must have an assignment
-      $db_assignment = $this->get_current_assignment();
-      if( is_null( $db_assignment ) ) return false;
-      
-      // the assignment must have an open call
-      $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'end_datetime', '=', NULL );
-      $call_list = $db_assignment->get_phone_call_list( $modifier );
-      if( 0 == count( $call_list ) ) return false;
-
-      // determine the current sid and token
-      $sid = $db_assignment->get_current_sid();
-      $token = $db_assignment->get_current_token();
-      if( false === $sid || false == $token ) return false;
-      
-      // determine which language to use
-      $lang = $db_assignment->get_interview()->get_participant()->language;
-      if( !$lang ) $lang = 'en';
-
-      return LIMESURVEY_URL.sprintf( '/index.php?sid=%s&lang=%s&token=%s', $sid, $lang, $token );
-    }
-    else if( !is_null( $this->get_rescoring_interview() ) )
-    {
-      // get the interview to be rescored and return it's limesurvey URL
-      $db_interview = lib::create( 'database\interview', $this->get_rescoring_interview() );
-      $sid = $db_interview->get_qnaire()->rescore_sid;
-      $token = $db_interview->id.'_0';
-      return LIMESURVEY_URL.sprintf( '/index.php?sid=%s&token=%s', $sid, $token );
-    }
-    
-    return false;
-  }
-
-  /**
    * The survey database object.
    * @var database
    * @access private

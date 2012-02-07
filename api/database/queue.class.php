@@ -163,24 +163,30 @@ class queue extends \cenozo\database\record
    */
   public function get_participant_count( $modifier = NULL, $use_cache = true )
   {
-    if( $use_cache && array_key_exists( $this->name, self::$participant_count_cache ) )
-      return self::$participant_count_cache[$this->name];
+    $qnaire_id = !$this->qnaire_specific || is_null( $this->db_qnaire )
+               ? 0 : $this->db_qnaire->id;
+    if( $use_cache &&
+        array_key_exists( $this->name, self::$participant_count_cache ) &&
+        array_key_exists( $qnaire_id, self::$participant_count_cache[$this->name] ) )
+      return self::$participant_count_cache[$this->name][$qnaire_id];
 
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
 
     // restrict to the site
     if( !is_null( $this->db_site ) ) $modifier->where( 'base_site_id', '=', $this->db_site->id );
     
-    self::$participant_count_cache[$this->name] = (integer) static::db()->get_one(
+    if( !array_key_exists( $this->name, self::$participant_count_cache ) )
+      self::$participant_count_cache[$this->name] = array();
+    self::$participant_count_cache[$this->name][$qnaire_id] = (integer) static::db()->get_one(
       sprintf( '%s %s',
                $this->get_sql( 'COUNT( DISTINCT participant.id )' ),
                $modifier->get_sql( true ) ) );
 
     // if the value is 0 then update all child counts with 0 to save processing time
-    if( 0 == self::$participant_count_cache[$this->name] )
+    if( 0 == self::$participant_count_cache[$this->name][$qnaire_id] )
       static::set_child_count_cache_to_zero( $this );
 
-    return self::$participant_count_cache[$this->name];
+    return self::$participant_count_cache[$this->name][$qnaire_id];
   }
 
   /**
@@ -193,11 +199,15 @@ class queue extends \cenozo\database\record
    */
   private static function set_child_count_cache_to_zero( $db_queue )
   {
+    $qnaire_id = !$db_queue->qnaire_specific || is_null( $db_queue->db_qnaire )
+               ? 0 : $db_queue->db_qnaire->id;
     $queue_mod = lib::create( 'database\modifier' );
     $queue_mod->where( 'parent_queue_id', '=', $db_queue->id );
     foreach( static::select( $queue_mod ) as $db_child_queue )
     {
-      self::$participant_count_cache[$db_child_queue->name] = 0;
+      if( !array_key_exists( $db_child_queue->name, self::$participant_count_cache ) )
+        self::$participant_count_cache[$db_child_queue->name] = array();
+      self::$participant_count_cache[$db_child_queue->name][$qnaire_id] = 0;
       self::set_child_count_cache_to_zero( $db_child_queue );
     }
   }
@@ -909,7 +919,7 @@ class queue extends \cenozo\database\record
   protected static $query_list = array();
 
   /**
-   * A cache of participant counts for each queue
+   * A cache of participant counts for each queue and each qnaire
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @var associative array of integers
    * @static
