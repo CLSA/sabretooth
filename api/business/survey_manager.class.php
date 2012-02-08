@@ -126,7 +126,8 @@ class survey_manager extends \cenozo\singleton
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $session = lib::create( 'business\session' );
 
-    if( $_COOKIE['rescoring_interview'] )
+    if( array_key_exists( 'rescoring_interview', $_COOKIE ) &&
+        'operator' != $session->get_role()->name )
     {
       // get the interview being rescored
       $db_interview = lib::create( 'database\interview', $_COOKIE['rescoring_interview'] );
