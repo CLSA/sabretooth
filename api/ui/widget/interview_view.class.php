@@ -35,6 +35,7 @@ class interview_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'qnaire', 'constant', 'Questionnaire' );
     $this->add_item( 'completed', 'boolean', 'Completed',
       'Warning: force-completing an interview cannot be undone!' );
+    $this->add_item( 'rescored', 'constant', 'Rescored' );
 
     try
     {
@@ -67,6 +68,7 @@ class interview_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'participant', $participant );
     $this->set_item( 'qnaire', $this->get_record()->get_qnaire()->name );
     $this->set_item( 'completed', $this->get_record()->completed, true );
+    $this->set_item( 'rescored', $this->get_record()->rescored );
 
     $this->finish_setting_items();
 

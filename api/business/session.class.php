@@ -185,31 +185,6 @@ class session extends \cenozo\business\session
   }
   
   /**
-   * Gets whether the the user is currently processing recordings.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return boolean
-   * @access public
-   */
-  public function get_rescoring_interview()
-  {
-    return array_key_exists( 'rescoring_interview', $_COOKIE )
-         ? $_COOKIE['rescoring_interview'] : NULL;
-  }
-
-  /**
-   * Sets whether the the user is currently processing recordings.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param boolean $status
-   * @access public
-   */
-  public function set_rescoring_interview( $status )
-  {
-    setcookie( 'rescoring_interview', $status, 0, COOKIE_PATH );
-  }
-
-  /**
    * Add an operation to this user's activity log.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
