@@ -99,7 +99,7 @@ class tokens extends sid_record
     $this->email = $participant_info->data->email;
     
     // determine the attributes from the survey with the same ID
-    $db_surveys = lib::create( 'database\limesurvey\surveys', static::$table_sid );
+    $db_surveys = lib::create( 'database\limesurvey\surveys', static::get_sid() );
 
     foreach( explode( "\n", $db_surveys->attributedescriptions ) as $attribute )
     {
@@ -159,11 +159,11 @@ class tokens extends sid_record
           $phase_mod = lib::create( 'database\modifier' );
           $phase_mod->where( 'rank', '=', 1 );
           $phase_list = $db_interview->get_qnaire()->get_phase_list( $phase_mod );
-          if( 1 == $phase_list )
+
+          // determine the SID of the first phase of the questionnaire (where INT_13a is asked)
+          if( 1 == count( $phase_list ) )
           {
             $db_phase = current( $phase_list );
-            
-            // determine the SID of the first phase of the questionnaire (where INT_13a is asked)
             $db_source_survey = $source_survey_class_name::get_unique_record(
               array( 'phase_id', 'source_id' ),
               array( $db_phase->id, $db_participant->source_id ) );
@@ -178,7 +178,14 @@ class tokens extends sid_record
             {
               // finally, set the survey question response
               $db_survey = current( $survey_list );
-              $this->$key = $db_survey->get_response( 'INT_13a' );
+              try
+              {
+                $this->$key = $db_survey->get_response( 'INT_13a' );
+              }
+              catch( \cenozo\exception\runtime $e )
+              {
+                // ignore the error and continue without setting the attribute
+              }
             }
           }
         }

@@ -43,7 +43,7 @@
           $( "#{{ widget.full }}__withdraw" ).click( function() {
             if( ajax_push( "participant", "withdraw",
                            { "id": {{ participant_id }},
-                             "cancel": {{ "withdraw" == participant_consent ? "1" : "0" }} } ) )
+                             "cancel": {{ withdrawing ? "1" : "0" }} } ) )
               window.location.reload();
           } );
         {% endif %}
@@ -211,8 +211,7 @@
             {% if allow_withdraw %}
               <button id="{{ widget.full }}__withdraw"
                       {{ on_call ? "" : "disabled" }}
-                      style="width: 180px;"
-                      >{{ "withdraw" == participant_consent ? "Cancel " : "" }}Withdraw</button>
+                      style="width: 180px;">{{ withdrawing ? "Cancel " : "" }}Withdraw</button>
             {% endif %}
           </td>
         </tr>
