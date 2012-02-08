@@ -230,7 +230,7 @@ class interview extends \cenozo\database\has_note
         {
           $assignment_id = 0 < $parts[1] ? $parts[1] : 'NULL';
           $rank = 4 <= count( $parts ) ? $parts[2] + 1 : 1;
-          $values .= sprintf( '%s( %d, %s, %d, false )',
+          $values .= sprintf( '%s( %d, %s, %d )',
                               $first ? '' : ', ',
                               $this->id,
                               $assignment_id,
@@ -242,7 +242,7 @@ class interview extends \cenozo\database\has_note
       if( !$first )
       {
         static::db()->execute( sprintf(
-          'INSERT IGNORE INTO recording ( interview_id, assignment_id, rank, processed ) '.
+          'INSERT IGNORE INTO recording ( interview_id, assignment_id, rank ) '.
           'VALUES %s', $values ) );
       }
     }

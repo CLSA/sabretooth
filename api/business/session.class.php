@@ -183,7 +183,7 @@ class session extends \cenozo\business\session
 
     return $allow;
   }
-
+  
   /**
    * Add an operation to this user's activity log.
    * 
