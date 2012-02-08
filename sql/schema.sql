@@ -13,6 +13,7 @@ CREATE  TABLE IF NOT EXISTS `source` (
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
+  `withdraw_type` ENUM('verbal accept','verbal deny','written accept','written deny','retract','withdraw') NOT NULL DEFAULT "withdraw" ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) )
 ENGINE = InnoDB;
