@@ -21,7 +21,7 @@ class survey extends sid_record
   {
     // the questions table has more than one column in its primary key so custom sql is needed
     $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'sid', '=', static::$table_sid );
+    $modifier->where( 'sid', '=', static::get_sid() );
     $modifier->where( 'title', '=', $question_code );
     $modifier->group( 'sid' );
     $modifier->group( 'gid' );
@@ -31,7 +31,10 @@ class survey extends sid_record
                     $modifier->get_sql() );
     
     $row = static::db()->get_row( $sql );
-    $column_name = sprintf( '%sX%sX%s', static::$table_sid, $row['gid'], $row['qid'] );
+    if( 0 == count( $row ) )
+      throw lib::create( 'exception\runtime', 'Question code not found in survey.', __METHOD__ );
+
+    $column_name = sprintf( '%sX%sX%s', static::get_sid(), $row['gid'], $row['qid'] );
     return $this->$column_name;
   }
 
