@@ -11,11 +11,11 @@ CREATE PROCEDURE patch_role()
       WHERE TABLE_SCHEMA = ( SELECT DATABASE() )
       AND TABLE_NAME = "role"
       AND COLUMN_NAME = "tier" );
-     IF @test = 0 THEN
-       ALTER TABLE role
-       ADD COLUMN tier INT UNSIGNED NOT NULL DEFAULT 1
-       COMMENT '1 = normal, 2 = site admin, 3 = global admin';
-     END IF;
+    IF @test = 0 THEN
+      ALTER TABLE role
+      ADD COLUMN tier INT UNSIGNED NOT NULL DEFAULT 1
+      COMMENT '1 = normal, 2 = site admin, 3 = global admin';
+    END IF;
   END //
 DELIMITER ;
 

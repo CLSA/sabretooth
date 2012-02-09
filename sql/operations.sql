@@ -104,6 +104,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "interview", "list", true, "Lists interviews." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "interview", "edit", true, "Edits the details of an interview." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "interview", "rescore", true, "Provides an interface to rescore interview based on recordings." );
 
 -- operator
 INSERT INTO operation( type, subject, name, restricted, description )

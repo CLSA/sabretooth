@@ -7,18 +7,48 @@
  #}
 {% extends "base_view.twig" %}
 
+{% block javascript %}
+  {{ parent() }}
+  <script type="text/javascript">
+    $( function() {
+      // rescore button
+      $( "#{{ widget.full }}__rescore" ).click( function() {
+        $.cookie( "rescoring_interview", "{{ id }}" );
+        window.location.reload();
+        slot_load( {{ slot }}, 'interview', 'rescore', { id: {{ id }} } );
+      } );
+    } );
+  </script>
+{% endblock javascript %}
+
 {% from 'macros.twig' import include_list, confirm_buttons %}
 {% block record %}
 
   {{ parent() }}
   {{ include_list( 'assignment', assignment_list|default(false), true ) }}
-  {{ include_list( 'recording', recording_list|default(false), true ) }}
 
 {% endblock record %}
+
+{% block record_items %}
+  
+  {{ parent() }}
+  {% if allow_rescore %}
+    <hr class="ui-widget ui-widget-content">
+    <table>
+      <tr>
+        <td class="heading">Actions:</td>
+        <td class="content">
+          <button id="{{ widget.full }}__rescore">Rescore</button>
+        </td>
+      </tr>
+    </table>
+  {% endif %}
+
+{% endblock record_items %}
 
 {% block post_record %}
 
   {{ parent() }}
-  {{ confirm_buttons( slot, widget.full, '', 'Back', 'right', true ) }}
+  {{ confirm_buttons( slot, widget.full, false, 'Back', 'right', true ) }}
 
 {% endblock post_record %}

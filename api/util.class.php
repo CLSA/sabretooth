@@ -105,6 +105,7 @@ class util extends \cenozo\util
     // special cases
     if( 'qnaire' == $word ) return 'questionnaires';
     if( 'survey' == $word ) return 'surveys';
+    if( 'source survey' == $word ) return 'source surveys';
     return parent::pluralize( $word );
   }
 

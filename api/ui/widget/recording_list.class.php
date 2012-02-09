@@ -27,11 +27,14 @@ class recording_list extends \cenozo\ui\widget\base_list
    */
   public function __construct( $args )
   {
+    // by default sort the rank column
+    $this->sort_column = 'recording.rank';
+    $this->sort_desc = false;
+
     parent::__construct( 'recording', $args );
     
     $this->add_column( 'interview.qnaire_name', 'string', 'Interview', false );
     $this->add_column( 'rank', 'number', 'Number', true );
-    $this->add_column( 'processed', 'boolean', 'Processed', true );
   }
   
   /**
@@ -51,7 +54,6 @@ class recording_list extends \cenozo\ui\widget\base_list
       $this->add_row( $record->id,
         array( 'interview' => $record->get_interview()->get_qnaire()->name,
                'rank' => $record->rank,
-               'processed' => $record->processed,
                'file' => $record->get_file() ) );
     }
 
