@@ -242,10 +242,10 @@ class daily_shift_report extends \cenozo\ui\pull\base_report
      array( 'Downtime Hours is automatically populated; do not overwrite' ),
      array( 'Training Hours is automatically populated; do not overwrite' ),
      array( 'Shift CPH is automatically populated; do not overwrite' ),
-     array( 'Interviewer = record the names of the interviewers that were assigned the shift. '.
+     array( 'Operator = record the names of the operators that were assigned the shift. '.
      'Also include the supervisor if s/he made any calls' ),
-     array( 'Start Time = the time the interviewer actually started his/her shift' ),
-     array( 'End Time = the time the interviewer actually ended his/her shift' ),
+     array( 'Start Time = the time the operator actually started his/her shift' ),
+     array( 'End Time = the time the operator actually ended his/her shift' ),
      array( 'Calling Hours = the total shift time less any training and/or downtime hours '.
      '(breaks included)' ),
      array( 'Training Hours = any time spent NOT on the phones or lost to downtime (incl. '.
@@ -254,7 +254,7 @@ class daily_shift_report extends \cenozo\ui\pull\base_report
      'internal (at your site) or external (McMaster)' ),
      array( 'Total Shift Hours =  the total shift time (e.g. 3pm to 8pm = 5 hours). This is '.
      'based on actual time worked, not scheduled' ),
-     array( 'Comments = anything specific to an interviewer, such as the number of interviews '.
+     array( 'Comments = anything specific to an operator, such as the number of interviews '.
      'they completed, downtime, etc.' ) );
 
     $this->add_table( NULL, 

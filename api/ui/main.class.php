@@ -29,7 +29,7 @@ class main extends \cenozo\ui\main
     $survey_manager = lib::create( 'business\survey_manager' );
     $variables = parent::get_variables();
     $variables['survey_url'] = $survey_manager->get_survey_url();
-    $variables['show_menu'] = 'interviewer' != $session->get_role()->name ||
+    $variables['show_menu'] = 'operator' != $session->get_role()->name ||
                               is_null( $session->get_current_assignment() );
     return $variables;
   }
