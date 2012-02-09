@@ -75,18 +75,17 @@ class appointment extends \cenozo\database\record
     $shift_template_class_name = lib::get_class_name( 'database\shift_template' );
     $shift_class_name = lib::get_class_name( 'database\shift' );
 
-    // determine the appointment interval
+    // determine the full and half appointment intervals
     $setting_manager = lib::create( 'business\setting_manager' );
-    $duration = ( $this->type == 'full' ) ?
-                  $setting_manager->get_setting( 'appointment', 'duration' ) : 
-                  $setting_manager->get_setting( 'appointment', 'half appointment duration' ); 
-    $interval = sprintf( 'PT%dM', $duration );
+    $half_duration = $setting_manager->get_setting( 'appointment', 'half duration' );
+    $full_duration = $setting_manager->get_setting( 'appointment', 'full duration' );
 
     $start_datetime_obj = util::get_datetime_object( $this->datetime );
     $next_day_datetime_obj = clone $start_datetime_obj;
     $next_day_datetime_obj->add( new\DateInterval( 'P1D' ) );
     $end_datetime_obj = clone $start_datetime_obj;
-    $end_datetime_obj->add( new \DateInterval( $interval ) );
+    $duration = 'full' == $this->type ? $full_duration : $half_duration;
+    $end_datetime_obj->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
 
     // determine whether to test for shifts or shift templates on the appointment day
     $modifier = lib::create( 'database\modifier' );
@@ -155,7 +154,9 @@ class appointment extends \cenozo\database\record
         $appointment_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
   
         $start_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
-        $appointment_datetime_obj->add( new \DateInterval( $interval ) );
+        
+        $duration = 'full' == $db_appointment->type ? $full_duration : $half_duration;
+        $appointment_datetime_obj->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
         $end_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
   
         if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;

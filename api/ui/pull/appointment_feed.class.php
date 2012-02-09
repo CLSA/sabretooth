@@ -52,9 +52,9 @@ class appointment_feed extends \cenozo\ui\pull\base_feed
     {
       $start_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
       $end_datetime_obj = clone $start_datetime_obj;
-      $duration = ( $db_appointment->type == 'full' ) ? 
-                    $setting_manager->get_setting( 'appointment', 'duration' ) : 
-                    $setting_manager->get_setting( 'appointment', 'half appointment duration' );
+      $duration = $db_appointment->type == 'full' ? 
+                  $setting_manager->get_setting( 'appointment', 'full duration' ) : 
+                  $setting_manager->get_setting( 'appointment', 'half duration' );
       $end_datetime_obj->modify(  sprintf( '+%d minute', $duration ) );
 
       $db_participant = $db_appointment->get_participant();

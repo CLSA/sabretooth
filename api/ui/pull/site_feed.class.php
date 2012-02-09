@@ -43,9 +43,9 @@ class site_feed extends \cenozo\ui\pull\base_feed
 
     // determine the appointment interval
     $setting_manager = lib::create( 'business\setting_manager' );
-    $duration = ( $this->type == 'full' ) ?
-                  $setting_manager->get_setting( 'appointment', 'duration' ) :
-                  $setting_manager->get_setting( 'appointment', 'half appointment duration' );
+    $duration = $this->type == 'full' ?
+                $setting_manager->get_setting( 'appointment', 'full duration' ) :
+                $setting_manager->get_setting( 'appointment', 'half duration' );
     $interval = sprintf( 'PT%dM', $duration );
 
     // start by creating an array with one element per day in the time span

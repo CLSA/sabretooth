@@ -38,8 +38,7 @@ class appointment_view extends base_appointment_view
     $this->add_item( 'state', 'constant', 'State',
       '(One of reached, not reached, upcoming, assignable, missed, incomplete, assigned '.
       'or in progress)' );
-    $this->add_item( 'type', 'enum', 'Type',
-      '(Appointment is either a full or half duration in length)' );      
+    $this->add_item( 'type', 'enum', 'Type' );
   }
 
   /**
