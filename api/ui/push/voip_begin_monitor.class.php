@@ -38,7 +38,7 @@ class voip_begin_monitor extends \cenozo\ui\push
   public function finish()
   {
     lib::create( 'business\voip_manager' )->get_call()->start_monitoring(
-      lib::create( 'business\session' )->get_current_assignment()->get_current_token() );
+      lib::create( 'business\survey_manager' )->get_current_token() );
   }
 }
 ?>
