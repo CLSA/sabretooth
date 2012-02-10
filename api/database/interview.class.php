@@ -122,6 +122,7 @@ class interview extends \cenozo\database\has_note
       $tokens_class_name::determine_token_string( $this, $db_assignment ) );
 
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+    $survey_class_name::set_sid( $db_phase->sid );
     $survey_list = $survey_class_name::select( $survey_mod );
     if( 0 == count( $survey_list ) ) return 0.0;
 
