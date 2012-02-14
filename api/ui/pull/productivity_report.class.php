@@ -113,9 +113,9 @@ class productivity_report extends \cenozo\ui\pull\base_report
         
         if( $restrict_start_date && $restrict_end_date )
         {
-          $activity_mod->where( 'start_datetime', '>=',
+          $activity_mod->where( 'datetime', '>=',
             $start_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
-          $activity_mod->where( 'end_datetime', '<=',
+          $activity_mod->where( 'datetime', '<=',
             $end_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
           $phone_call_mod->where( 'assignment.start_datetime', '>=',
             $start_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
@@ -128,7 +128,7 @@ class productivity_report extends \cenozo\ui\pull\base_report
         }
         else if( $restrict_start_date && !$restrict_end_date ) 
         {
-          $activity_mod->where( 'start_datetime', '>=',
+          $activity_mod->where( 'datetime', '>=',
             $start_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
           $phone_call_mod->where( 'assignment.start_datetime', '>=',
             $start_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
@@ -137,7 +137,7 @@ class productivity_report extends \cenozo\ui\pull\base_report
         }
         else if( !$restrict_start_date && $restrict_end_date )
         {
-          $activity_mod->where( 'start_datetime', '<=',
+          $activity_mod->where( 'datetime', '<=',
             $end_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
           $phone_call_mod->where( 'assignment.start_datetime', '<=',
             $end_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
@@ -158,6 +158,9 @@ class productivity_report extends \cenozo\ui\pull\base_report
         // Determine the total time spent as an operator over the desired period
         $total_time = $user_time_class_name::get_sum(
           $db_user, $db_site, $db_role, $start_datetime_obj, $end_datetime_obj, $round_times );
+
+        // if there was no time spent then ignore this user
+        if( 0 == $total_time ) continue;
 
         // Now we can use all the information gathered above to fill in the contents of the table.
         ///////////////////////////////////////////////////////////////////////////////////////////
