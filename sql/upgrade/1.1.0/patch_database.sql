@@ -24,3 +24,4 @@ SOURCE operation.sql
 SOURCE role_has_operation.sql
 SOURCE recording.sql
 SOURCE user.sql
+SOURCE user_time.sql
