@@ -134,14 +134,12 @@ class tokens extends sid_record
         }
         else if( 'consented to provide HIN' == $value )
         {
-          // TODO: return -1 if there is no info
           $this->$key = $participant_info->data->hin_access;
         }
         else if( 'HIN recorded' == $value )
         {
           $this->$key = $participant_info->data->hin_missing ? 0 : 1;
         }
-        // TODO: add token "INT_13a" (should be YES or NO)
         else if( 'INT_13a' == $value )
         {
           // TODO: This is a custom token attribute which refers to a specific question in the
