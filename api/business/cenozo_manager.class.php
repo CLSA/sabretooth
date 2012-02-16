@@ -18,19 +18,15 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class cenozo_manager extends \cenozo\business\cenozo_manager
 {
   /**
-   * Identical to the parent method but adds additional noid information to identify the site
+   * Override the parent method to specify tracking as the cohort.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param array& $arguments
    * @access protected
    */
-  protected function set_site( $db_site )
+  protected function set_site_and_role( &$arguments )
   {
-    $request = new \HttpRequest();
-    $request->enableCookies();
-    $request->setUrl( $this->base_url.'self/set_site' );
-    $request->setMethod( \HttpRequest::METH_POST );
-    $request->setPostFields(
-      array( 'noid' => array( 'site.name' => $db_site->name, 'site.cohort' => 'tracking' ) ) );
-    static::send( $request );
-
+    $session = lib::create( 'business\session' );
+    $arguments['request_site.name'] = 'tracking////'.$session->get_site()->name;
+    $arguments['request_site.role'] = $session->get_role()->name;
   }
 }

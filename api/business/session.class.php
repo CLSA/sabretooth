@@ -22,14 +22,22 @@ class session extends \cenozo\business\session
    * 
    * This method should be called immediately after initial construct of the session.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $site_name The name of a site to act under.  If null then a session
+   *                variable will be used to determine the current site, or if not such session
+   *               variable exists then a site which the user has access to will be selected
+   *               automatically.
+   * @param string $role_name The name of a role to act under.  If null then a session
+   *               variable will be used to determine the current role, or if not such session
+   *               variable exists then a role which the user has access to will be selected
+   *               automatically.
    * @access public
    */
-  public function initialize()
+  public function initialize( $site_name = NULL, $role_name = NULL )
   {
     // don't initialize more than once
     if( $this->is_initialized() ) return;
 
-    parent::initialize();
+    parent::initialize( $site_name, $role_name );
 
     // initialize the voip manager
     lib::create( 'business\voip_manager' )->initialize();
