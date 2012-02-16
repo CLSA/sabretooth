@@ -556,7 +556,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `away_time` ;
 
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`away_time` (
+CREATE  TABLE IF NOT EXISTS `away_time` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
@@ -573,17 +573,17 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`away_time` (
   INDEX `fk_role_id` (`role_id` ASC) ,
   CONSTRAINT `fk_away_time_user_id`
     FOREIGN KEY (`user_id` )
-    REFERENCES `cenozo`.`user` (`id` )
+    REFERENCES `user` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_away_time_site_id`
     FOREIGN KEY (`site_id` )
-    REFERENCES `cenozo`.`site` (`id` )
+    REFERENCES `site` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_away_time_role_id`
     FOREIGN KEY (`role_id` )
-    REFERENCES `cenozo`.`role` (`id` )
+    REFERENCES `role` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
