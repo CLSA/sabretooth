@@ -40,7 +40,7 @@ class productivity_report extends \cenozo\ui\pull\base_report
     $site_class_name = lib::get_class_name( 'database\site' );
     $user_class_name = lib::get_class_name( 'database\user' );
     $activity_class_name = lib::get_class_name( 'database\activity' );
-    $assignment_class_name = lib::get_class_name( 'database\assignment' );
+    $user_time_class_name = lib::get_class_name( 'database\user_time' );
 
     $db_role = $role_class_name::get_unique_record( 'name', 'operator' );
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
@@ -79,7 +79,6 @@ class productivity_report extends \cenozo\ui\pull\base_report
                      $start_datetime_obj == $end_datetime_obj ) || 
                    ( !is_null( $start_datetime_obj ) &&
                      $start_datetime_obj == $now_datetime_obj );
-    if( $single_date ) $single_datetime_obj = clone $start_datetime_obj;
 
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
     
@@ -102,102 +101,66 @@ class productivity_report extends \cenozo\ui\pull\base_report
       $grand_total_calls = 0;
       foreach( $user_class_name::select() as $db_user )
       {
-        // make sure the operator has min/max time for this date range
+        // create modifiers for the activity, phone_call, interview and user_time queries
         $activity_mod = lib::create( 'database\modifier' );
         $activity_mod->where( 'user_id', '=', $db_user->id );
         $activity_mod->where( 'site_id', '=', $db_site->id );
         $activity_mod->where( 'role_id', '=', $db_role->id );
         $activity_mod->where( 'operation.subject', '!=', 'self' );
-
-        $assignment_mod = lib::create( 'database\modifier' );
+        $phone_call_mod = lib::create( 'database\modifier' );
+        $interview_mod = lib::create( 'database\modifier' );
+        $interview_mod->where( 'completed', '=', true );
+        
         if( $restrict_start_date && $restrict_end_date )
         {
           $activity_mod->where( 'datetime', '>=',
             $start_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
           $activity_mod->where( 'datetime', '<=',
             $end_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
-          $assignment_mod->where( 'start_datetime', '>=',
+          $phone_call_mod->where( 'assignment.start_datetime', '>=',
             $start_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
-          $assignment_mod->where( 'end_datetime', '<=',
+          $phone_call_mod->where( 'assignment.end_datetime', '<=',
+            $end_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
+          $interview_mod->where( 'assignment.start_datetime', '>=',
+            $start_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
+          $interview_mod->where( 'assignment.end_datetime', '<=',
             $end_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
         }
         else if( $restrict_start_date && !$restrict_end_date ) 
         {
           $activity_mod->where( 'datetime', '>=',
             $start_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
-          $assignment_mod->where( 'start_datetime', '>=',
+          $phone_call_mod->where( 'assignment.start_datetime', '>=',
+            $start_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
+          $interview_mod->where( 'assignment.start_datetime', '>=',
             $start_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
         }
         else if( !$restrict_start_date && $restrict_end_date )
         {
           $activity_mod->where( 'datetime', '<=',
             $end_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
-          $assignment_mod->where( 'start_datetime', '<=',
+          $phone_call_mod->where( 'assignment.start_datetime', '<=',
+            $end_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
+          $interview_mod->where( 'assignment.start_datetime', '<=',
             $end_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
         }
 
-        $min_activity_datetime_obj = $activity_class_name::get_min_datetime( $activity_mod );
-        $max_activity_datetime_obj = $activity_class_name::get_max_datetime( $activity_mod );
-        
         // if there is no activity then skip this user
-        if( is_null( $min_activity_datetime_obj ) || 
-            is_null( $max_activity_datetime_obj ) ) continue;
-        
-        // Determine the number of completed interviews and their average length.
-        // This is done by looping through all of this user's assignments.  Any assignment
-        // with an interview that is completed is tested to see if that interview's last 
-        // assignment is the originating assignment.
-        ///////////////////////////////////////////////////////////////////////////////////////////
-        
-        $completes = 0;
-        $interview_time = 0;
-        $calls = 0;
-        foreach( $db_user->get_assignment_list( $assignment_mod ) as $db_assignment )
-        {
-          $db_interview = $db_assignment->get_interview();
-          $calls += $db_assignment->get_phone_call_count();
-          if( $db_interview->completed )
-          {
-            $last_assignment_mod = lib::create( 'database\modifier' );
-            $last_assignment_mod->where( 'interview_id', '=', $db_interview->id );
-            $last_assignment_mod->order_desc( 'start_datetime' );
-            $last_assignment_mod->limit( 1 );
-            $db_last_assignment = current( $assignment_class_name::select( $last_assignment_mod ) );
-            if( $db_assignment->id == $db_last_assignment->id )
-            {
-              $completes++;
+        if( is_null( $activity_class_name::get_min_datetime( $activity_mod ) ) ||
+            is_null( $activity_class_name::get_max_datetime( $activity_mod ) ) ) continue;
 
-              foreach( $db_interview->get_qnaire()->get_phase_list() as $db_phase )
-              {
-                // only count the time in non-repeating phases
-                if( !$db_phase->repeated )
-                  $interview_time += $db_interview->get_interview_time( $db_phase );
-              }
-            }
-          }
-        } // end loop on assignments
+        // Determine the number of phone calls, completed interviews and interview times
+        $calls = $db_user->get_phone_call_count( $db_qnaire, $phone_call_mod );
+        $interview_details = $db_user->get_interview_count_and_time( $db_qnaire, $interview_mod );
+        $completes = $interview_details['count'];
+        $interview_time = $interview_details['time'];
 
-        // Determine the total working time.
-        // This is done by finding the minimum and maximum activity time for every day included in
-        // the report and calculating the difference between the two times.
-        ///////////////////////////////////////////////////////////////////////////////////////////
-        $time = 0;
-        $total_time = 0;
-        $min_activity_datetime_obj->setTime( 0, 0 );
-        $max_activity_datetime_obj->setTime( 0, 0 );
-        $interval = new \DateInterval( 'P1D' );
-        for( $datetime_obj = clone $min_activity_datetime_obj;
-             $datetime_obj <= $max_activity_datetime_obj;
-             $datetime_obj->add( $interval ) )
-        {
-          // if reporting a single date restrict the count to that day only
-          if( $single_date && $single_datetime_obj != $datetime_obj ) continue;
+        // Determine the total time spent as an operator over the desired period
+        $total_time = $user_time_class_name::get_sum(
+          $db_user, $db_site, $db_role, $start_datetime_obj, $end_datetime_obj, $round_times );
 
-          // get the elapsed time and round to 15 minute increments (if necessary)
-          $time += $activity_class_name::get_elapsed_time(
-            $db_user, $db_site, $db_role, $datetime_obj->format( 'Y-m-d' ) );
-          $total_time = $round_times ? floor( 4 * $time ) / 4 : $time;
-        }
+        // if there was no time spent then ignore this user
+        if( 0 == $total_time ) continue;
 
         // Now we can use all the information gathered above to fill in the contents of the table.
         ///////////////////////////////////////////////////////////////////////////////////////////
@@ -209,9 +172,9 @@ class productivity_report extends \cenozo\ui\pull\base_report
           $day_activity_mod->where( 'role_id', '=', $db_role->id );
           $day_activity_mod->where( 'operation.subject', '!=', 'self' );
           $day_activity_mod->where( 'datetime', '>=',
-            $min_activity_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
+            $start_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
           $day_activity_mod->where( 'datetime', '<=',
-            $min_activity_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
+            $start_datetime_obj->format( 'Y-m-d' ).' 23:59:59' );
           
           $min_datetime_obj = $activity_class_name::get_min_datetime( $day_activity_mod );
           $max_datetime_obj = $activity_class_name::get_max_datetime( $day_activity_mod );

@@ -33,6 +33,7 @@ $SETTINGS['url']['LIMESURVEY'] = '../limesurvey';
 $SETTINGS['url']['JQUERY'] = '/jquery';
 $SETTINGS['url']['JQUERY_PLUGINS'] = $SETTINGS['url']['JQUERY'].'/plugins';
 $SETTINGS['url']['JQUERY_JSTREE_JS'] = $SETTINGS['url']['JQUERY_PLUGINS'].'/jsTree.js';
+$SETTINGS['url']['JQUERY_TIMERS_JS'] = $SETTINGS['url']['JQUERY_PLUGINS'].'/timers.js';
 
 // database settings
 $SETTINGS['db']['driver'] = 'mysql';

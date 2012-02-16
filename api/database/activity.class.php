@@ -41,6 +41,8 @@ class activity extends \cenozo\database\activity
     {
       $away_time_mod = lib::create( 'database\modifier' );
       $away_time_mod->where( 'user_id', '=', $db_user->id );
+      $away_time_mod->where( 'site_id', '=', $db_site->id );
+      $away_time_mod->where( 'role_id', '=', $db_role->id );
       $away_time_mod->where( 'start_datetime', '>=', $date.' 0:00:00' );
       $away_time_mod->where( 'start_datetime', '<=', $date.' 23:59:59' );
       $away_time_mod->where( 'end_datetime', '>=', $date.' 0:00:00' );

@@ -39,6 +39,8 @@ class operator_begin_break extends \cenozo\ui\push
     $session = lib::create( 'business\session' );
     $db_away_time = lib::create( 'database\away_time' );
     $db_away_time->user_id = $session->get_user()->id;
+    $db_away_time->site_id = $session->get_site()->id;
+    $db_away_time->role_id = $session->get_role()->id;
     $db_away_time->save();
   }
 }

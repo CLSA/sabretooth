@@ -29,7 +29,7 @@ class assignment_begin extends \cenozo\ui\push
     parent::__construct( 'assignment', 'begin', $args );
 
     // we can't use a transaction, otherwise the semaphore in the finish() method won't work right
-    $this->transaction = false;
+    lib::create( 'business\session' )->set_use_transaction( false );
   }
 
   /**

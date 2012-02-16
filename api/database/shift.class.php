@@ -73,14 +73,11 @@ class shift extends \cenozo\database\record
     {
       $overlap_id = current( $overlap_ids );
       $db_overlap = new static( $overlap_id );
-      throw lib::create( 'exception\runtime',
-        sprintf( 'Shift date/times (%s to %s) for user "%s" overlaps '.
-                 'with another shift on the same day (%s to %s).',
-                 $this->start_datetime,
-                 $this->end_datetime,
-                 $db_user->name,
+      throw lib::create( 'exception\notice',
+        sprintf( 'There is already a shift which exists for this operator during the requested '.
+                 'time (%s to %s).  Please adjust the shift times so that there is no overlap.',
                  substr( $db_overlap->start_datetime, 0, -3 ),
-                 substr( $db_overlap->end_datetime, 0, -3 ) ),
+                 substr( $db_overlap->end_datetime, 11, -3 ) ),
         __METHOD__ );
     }
     

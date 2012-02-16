@@ -36,10 +36,15 @@ class operator_end_break extends \cenozo\ui\push
    */
   public function finish()
   {
-    $db_user = lib::create( 'business\session' )->get_user();
+    $session = lib::create( 'business\session' );
+    $db_user = $session->get_user();
+    $db_site = $session->get_site();
+    $db_role = $session->get_role();
 
     // find this user's open break and record the end time
     $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'site_id', '=', $db_site->id );
+    $modifier->where( 'role_id', '=', $db_role->id );
     $modifier->where( 'end_datetime', '=', NULL );
     $away_time_list = $db_user->get_away_time_list( $modifier );
     
