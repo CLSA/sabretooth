@@ -7,7 +7,7 @@ CREATE  TABLE IF NOT EXISTS `user_time` (
   `site_id` INT UNSIGNED NOT NULL ,
   `role_id` INT UNSIGNED NOT NULL ,
   `date` DATE NOT NULL ,
-  `time` FLOAT NOT NULL ,
+  `total` FLOAT NOT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_user_id` (`user_id` ASC) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
