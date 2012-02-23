@@ -31,11 +31,23 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     parent::__construct( 'participant_status', $args );
   }
 
+  /**
+   * Finished the report
+   * 
+   * @author Dean Inglis <inglisd@mcmaster.ca>
+   * @access public
+   */
   public function finish()
   {
+    $participant_class_name = lib::get_class_name( 'database\participant' );
+    $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
+    $region_class_name = lib::get_class_name( 'database\region' );
+    $site_class_name = lib::get_class_name( 'database\site' );
+
     // get the report arguments
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
     $restrict_by_site = $this->get_argument( 'restrict_site_or_province' ) == 'Site' ? true : false;
+    $restrict_source_id = $this->get_argument( 'restrict_source_id' );
     $this->add_title( 
       sprintf( 'Listing of categorical totals pertaining to '.
                'the %s interview', $db_qnaire->name ) ) ;
@@ -54,7 +66,6 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       
     // add call results
     $phone_call_status_start_index = count( $totals ) - 1; // includes 10+ above
-    $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
     foreach( $phone_call_class_name::get_enum_values( 'status' ) as $status )
       $totals[ ucfirst( $status ) ] = 0;
     $phone_call_status_count = count( $totals ) - $phone_call_status_start_index;
@@ -77,7 +88,6 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $grand_totals = array();
     if( $restrict_by_site )
     {
-      $site_class_name = lib::get_class_name( 'database\site' );
       foreach( $site_class_name::select() as $db_site )
         $grand_totals[ $db_site->name ] = $totals; 
     }
@@ -86,7 +96,6 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       $region_mod = lib::create( 'database\modifier' );
       $region_mod->order( 'abbreviation' );
       $region_mod->where( 'country', '=', 'Canada' );
-      $region_class_name = lib::get_class_name( 'database\region' );
       foreach( $region_class_name::select($region_mod) as $db_region )
         $grand_totals[ $db_region->abbreviation ] = $totals; 
     }  
@@ -94,8 +103,10 @@ class participant_status_report extends \cenozo\ui\pull\base_report
 
     // the last column of the report sums totals row-wise
     $grand_totals[ 'Grand Total' ] = $totals;
-    $participant_class_name = lib::get_class_name( 'database\participant' );    
-    foreach( $participant_class_name::select() as $db_participant )
+
+    $participant_mod = lib::create( 'database\modifier' );
+    if( 0 < $restrict_source_id ) $participant_mod->where( 'source_id', '=', $restrict_source_id );
+    foreach( $participant_class_name::select( $participant_mod ) as $db_participant )
     {
       if( $restrict_by_site )
       {
@@ -314,6 +325,6 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $this->add_table( NULL, $header, $content, NULL, $blank );
 
     return parent::finish();
-  }// end constructor
-}// end class def
+  }// end finish() method
+}
 ?>
