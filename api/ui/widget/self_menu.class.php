@@ -61,6 +61,7 @@ class self_menu extends \cenozo\ui\widget\self_menu
     $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'tree' );
     if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
       $utilities[] = array( 'heading' => 'Participant Tree',
+                            'type' => 'widget',
                             'subject' => 'participant',
                             'name' => 'tree' );
 

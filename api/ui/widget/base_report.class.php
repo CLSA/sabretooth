@@ -80,7 +80,7 @@ abstract class base_report extends \cenozo\ui\widget\base_report
   {
     if( $this->restrictions[ 'source' ] )
     {
-      $sources = array();
+      $sources = array( 0 => 'All sources' );
       $class_name = lib::get_class_name( 'database\source' );
       foreach( $class_name::select() as $db_source ) 
         $sources[ $db_source->id ] = $db_source->name;
