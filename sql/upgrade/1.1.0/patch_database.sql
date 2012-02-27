@@ -17,6 +17,7 @@ SOURCE source.sql
 SOURCE source_survey.sql
 SOURCE source_withdraw.sql
 SOURCE participant.sql
+SOURCE participant_for_queue.sql
 SOURCE activity.sql
 SOURCE role.sql
 SOURCE phase.sql
