@@ -30,6 +30,7 @@ class call_history_report extends base_report
     parent::__construct( 'call_history', $args );
 
     $this->add_restriction( 'site' );
+    $this->add_restriction( 'source' );
     $this->add_restriction( 'dates' );
 
     $this->set_variable( 'description',
