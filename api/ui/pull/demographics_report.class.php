@@ -35,16 +35,21 @@ class demographics_report extends \cenozo\ui\pull\base_report
   {
     // get the report arguments
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
+    $restrict_source_id = $this->get_argument( 'restrict_source_id' );
     $consent_event = $this->get_argument( 'restrict_consent' );
     $province_id = $this->get_argument( 'restrict_province_id' );
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-    $class_name = lib::get_class_name( 'database\participant' );
+    $participant_class_name = lib::get_class_name( 'database\participant' );
+
+    $participant_mod = lib::create( 'database\modifier' );
+    if( 0 < $restrict_source_id ) $participant_mod->where( 'source_id', '=', $restrict_source_id );
+
     if( $restrict_site_id )
     {
       $db_site = lib::create( 'database\site', $restrict_site_id );
-      $participant_list = $class_name::select_for_site( $db_site );
+      $participant_list = $participant_class_name::select_for_site( $db_site, $participant_mod );
     }
-    else $participant_list = $class_name::select();
+    else $participant_list = $participant_class_name::select( $participant_mod );
 
     $contents = array();
     foreach( $participant_list as $db_participant )

@@ -31,6 +31,7 @@ class demographics_report extends base_report
 
     $this->add_restriction( 'site' );
     $this->add_restriction( 'qnaire' );
+    $this->add_restriction( 'source' );
     $this->add_restriction( 'consent' );
     $this->add_restriction( 'province' );
     

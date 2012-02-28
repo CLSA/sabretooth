@@ -36,17 +36,21 @@ class call_attempts_report extends \cenozo\ui\pull\base_report
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
     if( $restrict_site_id ) $db_site = lib::create( 'database\site', $restrict_site_id );
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
+    $restrict_source_id = $this->get_argument( 'restrict_source_id' );
    
     $this->add_title(
       sprintf( 'Participant\'s who have started but not finished the "%s" interview',
                $db_qnaire->name ) );
 
+    $participant_mod = lib::create( 'database\modifier' );
+    if( 0 < $restrict_source_id ) $participant_mod->where( 'source_id', '=', $restrict_source_id );
+
     // loop through every participant searching for those who have started an interview
     // which is not yet complete (restricting by site if necessary)
-    $class_name = lib::get_class_name( 'database\participant' );
+    $participant_class_name = lib::get_class_name( 'database\participant' );
     $participant_list = $restrict_site_id
-                      ? $class_name::select_for_site( $db_site )
-                      : $class_name::select();
+                      ? $participant_class_name::select_for_site( $db_site, $participant_mod )
+                      : $participant_class_name::select( $participant_mod );
 
     $contents = array();
     foreach( $participant_list as $db_participant )
