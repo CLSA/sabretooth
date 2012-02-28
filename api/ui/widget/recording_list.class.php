@@ -47,8 +47,6 @@ class recording_list extends \cenozo\ui\widget\base_list
   {
     parent::finish();
 
-    $this->set_variable( 'sip_enabled', lib::create( 'business\voip_manager' )->get_sip_enabled() );
-
     foreach( $this->get_record_list() as $record )
     {
       $this->add_row( $record->id,

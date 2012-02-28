@@ -226,17 +226,23 @@ class interview extends \cenozo\database\has_note
       $first = true;
       foreach( glob( sprintf( '%s/%d_*-out.wav', VOIP_MONITOR_PATH, $this->id ) ) as $filename )
       {
-        $parts = preg_split( '/[-_]/', $filename );
-        if( 3 <= count( $parts ) )
+        // remove the path from the filename
+        $parts = preg_split( '#/#', $filename );
+        if( 2 <= count( $parts ) )
         {
-          $assignment_id = 0 < $parts[1] ? $parts[1] : 'NULL';
-          $rank = 4 <= count( $parts ) ? $parts[2] + 1 : 1;
-          $values .= sprintf( '%s( %d, %s, %d )',
-                              $first ? '' : ', ',
-                              $this->id,
-                              $assignment_id,
-                              $rank );
-          $first = false;
+          // get the interview and assignment id from the filename
+          $parts = preg_split( '/[-_]/', end( $parts ) );
+          if( 3 <= count( $parts ) )
+          {
+            $assignment_id = 0 < $parts[1] ? $parts[1] : 'NULL';
+            $rank = 4 <= count( $parts ) ? $parts[2] + 1 : 1;
+            $values .= sprintf( '%s( %d, %s, %d )',
+                                $first ? '' : ', ',
+                                $this->id,
+                                $assignment_id,
+                                $rank );
+            $first = false;
+          }
         }
       }
 
