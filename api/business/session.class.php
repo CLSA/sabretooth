@@ -272,6 +272,9 @@ class session extends \cenozo\business\session
       $_SESSION['slot'][$slot]['stack']['widgets'] = array();
     }
 
+    // kill the rescore cookie in case it exists
+    setcookie( 'rescoring_interview', NULL, time() - 3600, COOKIE_PATH );
+
     $this->update_slot_cookies();
   }
   
