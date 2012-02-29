@@ -15,14 +15,16 @@
     <script type="text/javascript">
       // Defines the layout when showing the survey pane.
       // Should only be visible when there is an active survey.
-      var layout = $( "body" ).layout( {
-        south__maskIframesOnResize: ".ui-layout-south",
-        applyDefaultStyles: true,
-        spacing_open: 8,
-        spacing_closed: 16,
-        slidable: true,
-        size: 500,
-        initClosed: false
+      $( function() {
+        var layout = $( "body" ).layout( {
+          south__maskIframesOnResize: ".ui-layout-south",
+          applyDefaultStyles: true,
+          spacing_open: 8,
+          spacing_closed: 16,
+          slidable: true,
+          size: 500,
+          initClosed: false
+        } );
       } );
     </script>
   {% endif %}
@@ -38,6 +40,7 @@
   {% if survey_url %}<div class="ui-layout-center">{% endif %}
   {{ parent() }}
   {% if survey_url %}
+    </div>
     <div class="ui-layout-south" id="survey_ui">
       <object style="width:100%; height: 100%; position: absolute;"
               data="{% autoescape false %}{{ survey_url }}{% endautoescape %}"
