@@ -3,9 +3,6 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='';
 
 
-
-
-
 -- -----------------------------------------------------
 -- Table `source`
 -- -----------------------------------------------------
@@ -36,7 +33,7 @@ CREATE  TABLE IF NOT EXISTS `participant` (
   `source_id` INT UNSIGNED NULL DEFAULT NULL ,
   `first_name` VARCHAR(45) NOT NULL ,
   `last_name` VARCHAR(45) NOT NULL ,
-  `status` ENUM('deceased', 'deaf', 'mentally unfit','language barrier','age range','other') NULL DEFAULT NULL ,
+  `status` ENUM('deceased', 'deaf', 'mentally unfit','language barrier','age range','not canadian','federal reserve','armed forces','institutionalized','other') NULL DEFAULT NULL ,
   `language` ENUM('en','fr') NULL DEFAULT NULL ,
   `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'If not null then force all calls to this participant to the site.' ,
   `prior_contact_date` DATE NULL DEFAULT NULL ,
@@ -826,7 +823,6 @@ CREATE TABLE IF NOT EXISTS `participant_last_contacted_phone_call` (`participant
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `participant_first_address` ;
 DROP TABLE IF EXISTS `participant_first_address`;
-
 CREATE  OR REPLACE VIEW `participant_first_address` AS
 SELECT participant_id, id AS address_id
 FROM address AS t1
@@ -856,7 +852,6 @@ WHERE t1.rank = (
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `participant_last_assignment` ;
 DROP TABLE IF EXISTS `participant_last_assignment`;
-
 CREATE  OR REPLACE VIEW `participant_last_assignment` AS
 SELECT interview_1.participant_id, assignment_1.id as assignment_id
 FROM assignment AS assignment_1, interview AS interview_1
@@ -873,7 +868,6 @@ AND assignment_1.start_datetime = (
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `participant_for_queue` ;
 DROP TABLE IF EXISTS `participant_for_queue`;
-
 CREATE  OR REPLACE VIEW `participant_for_queue` AS
 SELECT participant.*,
        first_address.city,
@@ -965,7 +959,6 @@ GROUP BY participant.id;
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `assignment_last_phone_call` ;
 DROP TABLE IF EXISTS `assignment_last_phone_call`;
-
 CREATE  OR REPLACE VIEW `assignment_last_phone_call` AS
 SELECT assignment_1.id as assignment_id, phone_call_1.id as phone_call_id
 FROM phone_call AS phone_call_1, assignment AS assignment_1
@@ -983,7 +976,6 @@ AND phone_call_1.start_datetime = (
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `participant_last_consent` ;
 DROP TABLE IF EXISTS `participant_last_consent`;
-
 CREATE  OR REPLACE VIEW `participant_last_consent` AS
 SELECT participant_id, id AS consent_id
 FROM consent AS t1
@@ -998,7 +990,6 @@ WHERE t1.date = (
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `participant_primary_address` ;
 DROP TABLE IF EXISTS `participant_primary_address`;
-
 CREATE  OR REPLACE VIEW `participant_primary_address` AS
 SELECT participant_id, id AS address_id
 FROM address AS t1
@@ -1016,7 +1007,6 @@ WHERE t1.rank = (
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `participant_last_contacted_phone_call` ;
 DROP TABLE IF EXISTS `participant_last_contacted_phone_call`;
-
 CREATE  OR REPLACE VIEW `participant_last_contacted_phone_call` AS
 SELECT interview_1.participant_id, phone_call_1.id as phone_call_id
 FROM phone_call AS phone_call_1, assignment AS assignment_1, interview AS interview_1

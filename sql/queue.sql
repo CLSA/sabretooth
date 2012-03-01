@@ -143,6 +143,58 @@ description = "Participants who are not eligible for answering questionnaires be
 not within the valid range.";
 
 INSERT INTO queue SET
+name = "not canadian",
+title = "Participants who are not Canadian",
+rank = NULL,
+qnaire_specific = false,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "ineligible" ) AS tmp ),
+description = "Participants who are not eligible for answering questionnaires because they are not
+a Canadian citizen.";
+
+INSERT INTO queue SET
+name = "federal reserve",
+title = "Participants who live on a federal reserve",
+rank = NULL,
+qnaire_specific = false,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "ineligible" ) AS tmp ),
+description = "Participants who are not eligible for answering questionnaires because they reside
+on a federal reserve.";
+
+INSERT INTO queue SET
+name = "armed forces",
+title = "Participants who are in the armed forces",
+rank = NULL,
+qnaire_specific = false,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "ineligible" ) AS tmp ),
+description = "Participants who are not eligible for answering questionnaires because they are full
+time members of the armed forces.";
+
+INSERT INTO queue SET
+name = "institutionalized",
+title = "Participants who are intitutionalized",
+rank = NULL,
+qnaire_specific = false,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "ineligible" ) AS tmp ),
+description = "Participants who are not eligible for answering questionnaires because they are
+institutionalized.";
+
+INSERT INTO queue SET
 name = "other",
 title = "Participants with an undefined condition",
 rank = NULL,
