@@ -36,6 +36,7 @@ class interview_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'completed', 'boolean', 'Completed',
       'Warning: force-completing an interview cannot be undone!' );
     $this->add_item( 'rescored', 'constant', 'Rescored' );
+    $this->add_item( 'recordings', 'constant', 'Recordings' );
 
     try
     {
@@ -69,17 +70,21 @@ class interview_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'qnaire', $this->get_record()->get_qnaire()->name );
     $this->set_item( 'completed', $this->get_record()->completed, true );
     $this->set_item( 'rescored', $this->get_record()->rescored );
+    $this->set_item( 'recordings', $this->get_record()->get_recording_count() );
 
     $this->finish_setting_items();
 
-    // only allow rescoring if the interview's qnaire has a rescore ID and the user has access
-    // to the rescoring operation
+    // only allow rescoring if the interview's qnaire has a rescore ID, the user has access
+    // to the rescoring operation, the interview is complete and there are recordings available
     $operation_class_name = lib::get_class_name( 'database\operation' );
     $db_operation = $operation_class_name::get_operation( 'widget', 'interview', 'rescore' );
     $allowed = lib::create( 'business\session' )->is_allowed( $db_operation );
     $has_rescore_sid = !is_null( $this->get_record()->get_qnaire()->rescore_sid );
-    $this->set_variable(
-      'allow_rescore', $this->get_record()->completed && $allowed && $has_rescore_sid );
+    $this->set_variable( 'allow_rescore',
+      $this->get_record()->completed &&
+      $allowed &&
+      $has_rescore_sid &&
+      0 < $this->get_record()->get_recording_count() );
 
     // finish the child widgets
     if( !is_null( $this->assignment_list ) )

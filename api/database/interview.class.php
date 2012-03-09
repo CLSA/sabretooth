@@ -217,7 +217,35 @@ class interview extends \cenozo\database\has_note
    * @return array( record ) | int
    * @access public
    */
-  public function get_recording_list( $modifier = NULL, $count = false )
+  public function get_recording_list( $modifier = NULL )
+  {
+    $this->update_recording_list();
+    return parent::get_recording_list( $modifier );
+  }
+
+  /**
+   * Overrides the parent method in order to synchronize the recordings on file with those in
+   * the database.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the selection.
+   * @param boolean $count If true the total number of records instead of a list
+   * @return array( record ) | int
+   * @access public
+   */
+  public function get_recording_count( $modifier = NULL )
+  {
+    $this->update_recording_list();
+    return parent::get_recording_count( $modifier );
+  }
+
+  /**
+   * Builds the recording list based on recording files found in the monitor path (if set)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function update_recording_list()
   {
     // make sure that all recordings on disk have a corresponding database record
     if( is_dir( VOIP_MONITOR_PATH ) )
@@ -253,8 +281,6 @@ class interview extends \cenozo\database\has_note
           'VALUES %s', $values ) );
       }
     }
-
-    return parent::get_recording_list( $modifier, $count );
   }
 }
 ?>
