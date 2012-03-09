@@ -28,6 +28,7 @@ class self_shortcuts extends \cenozo\ui\widget\self_shortcuts
     parent::finish();
     
     $setting_manager = lib::create( 'business\setting_manager' );
+    $survey_manager = lib::create( 'business\survey_manager' );
     $voip_manager = lib::create( 'business\voip_manager' );
     $session = lib::create( 'business\session' );
 
@@ -53,8 +54,11 @@ class self_shortcuts extends \cenozo\ui\widget\self_shortcuts
     $this->set_variable( 'webphone',
       $voip_enabled && !$voip_manager->get_sip_enabled() );
     $this->set_variable( 'dialpad', !is_null( $voip_manager->get_call() ) );
-    $this->set_variable( 'timer',
-      $is_operator && !is_null( $session->get_current_phone_call() ) );
+    if( $is_operator )
+      $this->set_variable( 'timer', !is_null( $session->get_current_phone_call() ) );
+    else
+      $this->set_variable( 'timer', $survey_manager->get_survey_url() );
+      
     $this->set_variable( 'calculator', true );
     $this->set_variable( 'timezone_calculator', true );
     $this->set_variable( 'navigation', !$is_operator );
