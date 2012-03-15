@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: interview edit
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Edit a interview.
  * @package sabretooth\ui
  */
-class interview_edit extends base_edit
+class interview_edit extends \cenozo\ui\push\base_edit
 {
   /**
    * Constructor.
@@ -50,9 +47,10 @@ class interview_edit extends base_edit
       {
         $this->get_record()->force_complete();
       }
-      else throw new exc\notice( 'Interviews cannot be un-completed.', __METHOD__ );
+      else throw lib::create( 'exception\notice',
+        'Interviews cannot be un-completed.', __METHOD__ );
     }
-    else throw new exc\notice(
+    else throw lib::create( 'exception\notice',
       'Only the "completed" state of an interview may be edited.', __METHOD__ );
   }
 }

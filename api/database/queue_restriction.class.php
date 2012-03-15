@@ -8,14 +8,12 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * queue_restriction: record
  *
  * @package sabretooth\database
  */
-class queue_restriction extends record {}
+class queue_restriction extends \cenozo\database\record {}
 ?>

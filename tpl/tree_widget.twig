@@ -6,19 +6,13 @@
  #}
 <li id="{{ widget.full }}__{{ node.id }}" {{ node.open ? 'class="jstree-open"' : '' }}>
   {% if node.rank is defined %}
-    <a style="color:{{ FOREGROUND_COLOR }}; text-transform: uppercase"
-       class="tree"><ins class="no_icon"></ins><ins><span
-       class="ui-icon ui-icon-script" /></ins> </a>
     <span class="title">Q{{ node.rank }}: {{ node.title }}
-      <span id="{{ widget.full }}_nodespot__{{ node.id }}">{{ node.count }}</span>
-    </span>
   {% else %}
-    <a style="color:{{ FOREGROUND_COLOR }}; font-weight: normal" class="tree"> </a>
     <span>{{ node.title }}
-      <span id="{{ widget.full }}_nodespot__{{ node.id }}">{{ node.count }}</span>
-    </span>
   {% endif %}
-  {% if node.children|count %}
+    <span id="{{ widget.full }}_nodespot__{{ node.id }}">&nbsp;</span>
+  </span>
+  {% if node.children|length %}
     <ul>
       {% for child in node.children %}
         {% include "tree_widget.twig" with { 'node': child } %}

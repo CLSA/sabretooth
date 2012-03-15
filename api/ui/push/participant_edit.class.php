@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: participant edit
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Edit a participant.
  * @package sabretooth\ui
  */
-class participant_edit extends base_edit
+class participant_edit extends \cenozo\ui\push\base_edit
 {
   /**
    * Constructor.
@@ -39,6 +36,8 @@ class participant_edit extends base_edit
    */
   public function finish()
   {
+    $columns = $this->get_argument( 'columns' );
+
     // we'll need the arguments to send to mastodon
     $args = $this->arguments;
 
@@ -47,12 +46,21 @@ class participant_edit extends base_edit
     unset( $args['id'] );
     $args['noid']['participant.uid'] = $db_participant->uid;
 
+    // if set, replace the source id with a unique key
+    if( array_key_exists( 'source_id', $columns ) && $columns['source_id'] )
+    {
+      $db_source = lib::create( 'database\source', $columns['source_id'] );
+      unset( $args['source_id'] );
+      // we only include half of the unique key since the other half is added above
+      $args['noid']['source.name'] = $db_source->name;
+    }
+
     parent::finish();
 
     // now send the same request to mastodon (unless we are setting the site)
     if( !array_key_exists( 'site_id', $args['columns'] ) )
     {
-      $mastodon_manager = bus\mastodon_manager::self();
+      $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
       $mastodon_manager->push( 'participant', 'edit', $args );
     }
   }

@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget self status
@@ -34,11 +31,11 @@ class participant_status_report extends base_report
 
     $this->add_restriction( 'qnaire' );
     $this->add_restriction( 'site_or_province' );
+    $this->add_restriction( 'source' );
 
     $this->set_variable( 'description',
-      'This report provides totals of various status types.  In future, reports for a single '.
-      'day or date range may be generated.  Populations are broken down by province or by site '.
-      'and various call, participant and consent statuses.' );
+      'This report provides totals of various status types.  Populations are broken down '.
+      'by province or by site and various call, participant and consent statuses.' );
   }
 
   /**
@@ -48,7 +45,6 @@ class participant_status_report extends base_report
   public function finish()
   {
     parent::finish();
-    
     $this->finish_setting_parameters();
   }
 }

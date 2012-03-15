@@ -12,6 +12,7 @@
 
   {{ parent() }}
   {{ include_list( 'assignment', assignment_list|default(false), true ) }}
+  {{ include_list( 'recording', recording_list|default(false), true ) }}
 
 {% endblock record %}
 

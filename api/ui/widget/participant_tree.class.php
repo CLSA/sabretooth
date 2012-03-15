@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget participant tree
  * 
  * @package sabretooth\ui
  */
-class participant_tree extends \sabretooth\ui\widget
+class participant_tree extends \cenozo\ui\widget
 {
   /**
    * Constructor
@@ -31,8 +28,8 @@ class participant_tree extends \sabretooth\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'participant', 'tree', $args );
-    $session = bus\session::self();
-    if( 'supervisor' == $session->get_role()->name )
+    $session = lib::create( 'business\session' );
+    if( 3 > $session->get_role()->tier )
       $this->set_heading( $this->get_heading().' for '.$session->get_site()->name );
   }
 
@@ -46,24 +43,21 @@ class participant_tree extends \sabretooth\ui\widget
   {
     parent::finish();
     
-    $session = bus\session::self();
-    $is_administrator = 'administrator' == $session->get_role()->name;
-    $is_supervisor = 'supervisor' == $session->get_role()->name;
+    $session = lib::create( 'business\session' );
+    $is_top_tier = 3 == $session->get_role()->tier;
     
-    // if this is an admin, give them a list of sites to choose from
-    if( $is_administrator )
+    // if this is a top tier role give them a list of sites to choose from
+    if( $is_top_tier )
     {
       $sites = array();
-      foreach( db\site::select() as $db_site )
-        $sites[$db_site->id] = $db_site->name;
+      $class_name = lib::get_class_name( 'database\site' );
+      foreach( $class_name::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
       $this->set_variable( 'sites', $sites );
     }
 
-    $restrict_site_id = $this->get_argument( "restrict_site_id", 0 );
-    $this->set_variable( 'restrict_site_id', $restrict_site_id );
-    $db_restrict_site = $restrict_site_id
-                      ? new db\site( $restrict_site_id )
-                      : NULL;
+    $site_id = $this->get_argument( "site_id", 0 );
+    $this->set_variable( 'site_id', $site_id );
+    $db_site = $site_id ? lib::create( 'database\site', $site_id ) : NULL;
     
     $current_date = util::get_datetime_object()->format( 'Y-m-d' );
     $this->set_variable( 'current_date', $current_date );
@@ -72,32 +66,33 @@ class participant_tree extends \sabretooth\ui\widget
     $this->set_variable( 'viewing_date', $viewing_date );
 
     // set the viewing date if it is not "current"
-    if( 'current' != $viewing_date ) db\queue::set_viewing_date( $viewing_date );
+    $class_name = lib::get_class_name( 'database\queue' );
+    if( 'current' != $viewing_date ) $class_name::set_viewing_date( $viewing_date );
 
     $show_queue_index = $this->get_argument( 'show_queue_index', NULL );
     if( is_null( $show_queue_index ) )
     {
-      $db_show_queue = db\queue::get_unique_record( 'name', 'qnaire' );
+      $db_show_queue = $class_name::get_unique_record( 'name', 'qnaire' );
       $show_qnaire_id = 0;
     }
     else
     {
       $parts = explode( '_', $show_queue_index );
       $show_qnaire_id = $parts[0];
-      $db_show_queue = new db\queue( $parts[1] );
+      $db_show_queue = lib::create( 'database\queue', $parts[1] );
     }
 
     // build the tree from the root
     $nodes = array();
     $tree = array(); // NOTE: holds references to the nodes array
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->order( 'parent_queue_id' );
-    foreach( db\queue::select( $modifier ) as $db_queue )
+    foreach( $class_name::select( $modifier ) as $db_queue )
     {
-      // restrict to the current site if the current user is a supervisor
-      if( $is_supervisor ) $db_queue->set_site( $session->get_site() );
-      else if( !is_null( $db_restrict_site ) ) $db_queue->set_site( $db_restrict_site );
-
+      // restrict queue based on user's role
+      if( !$is_top_tier ) $db_queue->set_site( $session->get_site() );
+      else if( !is_null( $db_site ) ) $db_queue->set_site( $db_site );
+      
       // handle queues which are not qnaire specific
       if( !$db_queue->qnaire_specific )
       {
@@ -105,7 +100,6 @@ class participant_tree extends \sabretooth\ui\widget
         $nodes[$index] = array( 'id' => $index,
                                 'title' => $db_queue->title,
                                 'open' => 1 == $db_queue->id,
-                                'count' => $db_queue->get_participant_count(),
                                 'children' => array() );
         if( is_null( $db_queue->parent_queue_id ) )
         { // insert as a root node (careful, nodes are being passed by reference!)
@@ -119,9 +113,10 @@ class participant_tree extends \sabretooth\ui\widget
       }
       else // handle queues which are qnaire specific
       {
-        $modifier = new db\modifier();
+        $modifier = lib::create( 'database\modifier' );
         $modifier->order( 'rank' );
-        foreach( db\qnaire::select( $modifier ) as $db_qnaire )
+        $class_name = lib::get_class_name( 'database\qnaire' );
+        foreach( $class_name::select( $modifier ) as $db_qnaire )
         {
           $db_queue->set_qnaire( $db_qnaire );
           
@@ -131,34 +126,14 @@ class participant_tree extends \sabretooth\ui\widget
                  : $db_queue->title;
           $open = $db_show_queue->id == $db_queue->id && $show_qnaire_id == $db_qnaire->id;
 
-          /* TODO: the following is disabled for now, need to improve queue querying
-          // don't count the participants in hidden branches
-          $count = -1;
-          if( // always show all qnaire queues or...
-              'qnaire' == $db_queue->name || (
-                // if in the selected qnaire tree and...
-                $show_qnaire_id == $db_qnaire->id && (
-                  // this is the selected node or...
-                  $db_show_queue->id >= $db_queue->id ||
-                  // the parent queue is the selected node or...
-                  $db_show_queue->id == $db_queue->parent_queue_id ||
-                  // a sibling node is the selected node
-                  $db_show_queue->parent_queue_id == $db_queue->parent_queue_id ) ) )
-          {
-            $count = $db_queue->get_participant_count();
-          }
-          */
-          $count = $db_queue->get_participant_count();
-
           $nodes[$index] = array( 'id' => $index,
                                   'title' => $title,
                                   'open' => $open,
                                   'rank' => $db_queue->rank,
-                                  'count' => $count,
                                   'children' => array() );
 
           // add as a branch to parent node
-          $db_parent_queue = new db\queue( $db_queue->parent_queue_id );
+          $db_parent_queue = lib::create( 'database\queue', $db_queue->parent_queue_id );
           $parent_index = sprintf( '%d_%d',
             $db_parent_queue->qnaire_specific ? $db_qnaire->id : 0,
             $db_queue->parent_queue_id );
@@ -168,7 +143,7 @@ class participant_tree extends \sabretooth\ui\widget
     }
 
     // make sure that all ancestor's of the show queue are open
-    $db_queue = new db\queue( $db_show_queue->parent_queue_id );
+    $db_queue = lib::create( 'database\queue', $db_show_queue->parent_queue_id );
     
     do
     {
@@ -176,7 +151,7 @@ class participant_tree extends \sabretooth\ui\widget
         $db_queue->qnaire_specific ? $show_qnaire_id : 0,
         $db_queue->id );
       $nodes[$index]['open'] = true;
-      $db_queue = new db\queue( $db_queue->parent_queue_id );
+      $db_queue = lib::create( 'database\queue', $db_queue->parent_queue_id );
     } while( !is_null( $db_queue->parent_queue_id ) );
     
     $this->set_variable( 'tree', $tree );

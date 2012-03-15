@@ -8,14 +8,14 @@
  */
 
 namespace sabretooth\ui\pull;
-use sabretooth\log, sabretooth\util;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * pull: shift_template primary
  * 
  * @package sabretooth\ui
  */
-class shift_template_primary extends base_primary
+class shift_template_primary extends \cenozo\ui\pull\base_primary
 {
   /**
    * Constructor

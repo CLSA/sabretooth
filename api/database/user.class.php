@@ -8,90 +8,108 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * user: record
  *
  * @package sabretooth\database
  */
-class user extends base_access
+class user extends \cenozo\database\user
 {
-   /**
-   * Returns whether the user has the role for the given site.
+  /**
+   * Returns the total number of phone calls made by the user.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param site $db_site
-   * @param role $db_role
-   * @return bool
+   * @param database\modifier $modifier
+   * @return int
    * @access public
    */
-  public function has_access( $db_site, $db_role )
+  public function get_phone_call_count( $db_qnaire, $modifier = NULL )
   {
+    // check the primary key value
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to determine access for user with no id.' );
+      log::warning( 'Tried to query user with no id.' );
       return 0;
-    } 
-    
-    return access::exists( $this, $db_site, $db_role );
-  } 
- 
-  /**
-   * Adds a list of sites to the user with the given role.
-   * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param int $site_id_list The sites to add.
-   * @param int $role_id The role to add them under.
-   * @throws exeception\argument
-   * @access public
-   */
-  public function add_access( $site_id_list, $role_id )
-  {
-    // make sure the site id list argument is a non-empty array of ids
-    if( !is_array( $site_id_list ) || 0 == count( $site_id_list ) )
-      throw new exc\argument( 'site_id_list', $site_id_list, __METHOD__ );
-
-    // make sure the role id argument is valid
-    if( 0 >= $role_id )
-      throw new exc\argument( 'role_id', $role_id, __METHOD__ );
-
-    $values = '';
-    $first = true;
-    foreach( $site_id_list as $id )
-    {
-      if( !$first ) $values .= ', ';
-      $values .= sprintf( '(NULL, %s, %s, %s)',
-                       database::format_string( $id ),
-                       database::format_string( $role_id ),
-                       database::format_string( $this->id ) );
-      $first = false;
     }
 
-    static::db()->execute(
-      sprintf( 'INSERT IGNORE INTO access (create_timestamp, site_id, role_id, user_id) VALUES %s',
-               $values ) );
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'phone_call.assignment_id', '=', 'assignment.id', false );
+    $modifier->where( 'assignment.interview_id', '=', 'interview.id', false );
+    $modifier->where( 'interview.qnaire_id', '=', $db_qnaire->id );
+    $modifier->where( 'assignment.user_id', '=', $this->id );
+
+    // custom SQL is required for this method
+    return static::db()->get_one( sprintf(
+      'SELECT COUNT(*) FROM phone_call, assignment, interview %s',
+      $modifier->get_sql() ) );
   }
 
   /**
-   * Removes a list of sites to the user who have the given role.
+   * Returns the total number of interviews who's last assignment belong to this user, as well
+   * as the sum of all time spent on those interviews, in seconds.
    * 
-   * @author Patrick Emond <emondpd@mcamster.ca>
-   * @param int $access_id The access record to remove.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier
+   * @return array( int, float )
    * @access public
    */
-  public function remove_access( $access_id )
+  public function get_interview_count_and_time( $db_qnaire, $modifier = NULL )
   {
+    // check the primary key value
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to remove access from user with no id.' );
-      return;
+      log::warning( 'Tried to query user with no id.' );
+      return 0;
     }
 
-    $db_access = new access( $access_id );
-    $db_access->delete();
+    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'interview.id', '=', 'assignment.interview_id', false );
+    $sub_select_sql =
+      '( SELECT MAX( start_datetime ) FROM assignment WHERE interview_id = interview.id )';
+    $modifier->where( 'assignment.start_datetime', '=', $sub_select_sql, false );
+    $modifier->where( 'assignment.user_id', '=', $this->id );
+    $modifier->where( 'interview.qnaire_id', '=', $db_qnaire->id );
+
+    // get the list of all interviews related to this user
+    $interview_id_list = static::db()->get_col(
+      sprintf( 'SELECT interview.id FROM assignment, interview %s', $modifier->get_sql() ) );
+
+    // determine the time for all interviews in the list
+    $time = 0;
+    if( 0 < count( $interview_id_list ) )
+    {
+      // Build a token list from the interview id list
+      // (we're only looking for non-repeating phases, so all tokens have 0 for the assignment id)
+      $token_list = array();
+      foreach( $interview_id_list as $interview_id ) $token_list[] = $interview_id.'_0';
+
+      // get the times for all interviews
+      $phase_mod = lib::create( 'database\modifier' );
+      $phase_mod->where( 'repeated', '=', false );
+      foreach( $db_qnaire->get_phase_list( $phase_mod ) as $db_phase )
+      {
+        // first try the phase's default sid
+        $survey_mod = lib::create( 'database\modifier' );
+        $survey_mod->where( 'token', 'IN', $token_list );
+        $survey_class_name::set_sid( $db_phase->sid );
+        $time += $survey_class_name::get_total_time( $survey_mod );
+
+        // then go through each source-specifc sid
+        foreach( $db_phase->get_source_survey_list() as $db_source_survey )
+        {
+          $survey_mod = lib::create( 'database\modifier' );
+          $survey_mod->where( 'token', 'IN', $token_list );
+          $survey_class_name::set_sid( $db_source_survey->sid );
+          $time += $survey_class_name::get_total_time( $survey_mod );
+        }
+      }
+    }
+
+    return array( 'count' => count( $interview_id_list ), 'time' => $time );
   }
 }
 ?>

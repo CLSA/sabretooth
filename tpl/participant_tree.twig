@@ -14,26 +14,16 @@
       {% if sites is defined %}
         // reload page if site selector is changed
         $( "#{{ widget.full }}__restrict_site" ).change( function() {
-          var site_id = $( "#{{ widget.full }}__restrict_site option:selected" ).val();
-          slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}",
-                     { "restrict_site_id": site_id } );
+          $( "#{{ widget.full }}__update" ).click();
         } );
       {% endif %}
-
+      
       // create the datepicker UI for the viewing date
       $( "#{{ widget.full }}__viewing_date" ).datepicker( {
         dateFormat: 'yy-mm-dd',
         showAnim: 'slideDown',
         defaultDate: 'current',
-        onClose: function( dateText, inst ) {
-          var viewing_date = $( "#{{ widget.full }}__viewing_date" ).val();
-          
-          // if today's date is selected change it to "current"
-          if( "{{ current_date }}" == viewing_date ) viewing_date = "current";
-
-          slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}",
-                     { "viewing_date": viewing_date } );
-        }
+        onClose: function( dateText, inst ) { $( "#{{ widget.full }}__update" ).click(); }
       } );
       
       // make the queue participant counts buttons which pop up the queue view widget
@@ -79,19 +69,31 @@
           item_icon: "ui-icon-radio-on"
         }
       } );
-      
-      /* TODO: the following is disabled for now, need to improve queue querying
-      // opening a node
-      $( "#{{ widget.full }}_tree" ).bind( "open_node.jstree", function( event, data ) {
-        var id_string = data.args[0][0].id;
-        var index = id_string.substring( id_string.lastIndexOf("__") + 2 );
-        if( 0 != index.substring( 0, 1 ) )
-          slot_load( {{ slot }}, "{{ widget.subject }}", "{{ widget.name }}",
-                     { show_queue_index: index } );
-        //var node_id = $(this).parent().attr( "id" );
-        //$( "#{{ widget.full }}_tree" ).jstree( "toggle_node", "#" + node_id );
+
+      // update button
+      $( "#{{ widget.full }}__update" ).button().click( function() {
+        $( this ).find( "span" ).html( 'Update in progress...' );
+
+        var args = new Object();
+
+        // get the viewing date
+        var viewing_date = $( "#{{ widget.full }}__viewing_date" ).val();
+        if( "{{ current_date }}" == viewing_date ) viewing_date = "current";
+        args.viewing_date = viewing_date;
+
+        // get the site
+        {% if sites is defined %}
+          args.site_id = $( "#{{ widget.full }}__restrict_site option:selected" ).val();
+        {% else %}
+          args.site_id = 0;
+        {% endif %}
+
+        var data = ajax_pull( "participant", "tree", args );
+        for( var index in data )
+          $( "#{{ widget.full }}_nodespot__" + index + " span" ).html( data[index] );
+        $( this ).find( "span" ).html( 'Update Tree Population' );
       } );
-      */
+      
     } );
   </script>
 
@@ -100,9 +102,10 @@
 {% block widget %}
   
   <div id="{{ widget.full }}_slot" />
-
-  <div style="padding-top: 4px; padding-bottom: 4px;">
-   {% if sites is defined %}
+  
+  <div style="padding-top: 8px; padding-bottom: 8px;">
+    <button id="{{ widget.full }}__update" style="float:right">Update Tree Population</button>
+    {% if sites is defined %}
       {% set restrict_site_id = restrict_site_id|default(0) %}
       Restrict to site:
       <select id="{{ widget.full }}__restrict_site" class="ui-state-default">
@@ -114,7 +117,7 @@
         {% endfor %}
       </select>
     {% endif %}
-  
+
     {% set viewing_date = viewing_date|default('current') %}
     <span>
       Viewing date:
@@ -122,7 +125,7 @@
              value="{{ viewing_date }}" style="width: 7em;" readonly />
     </span>
   </div>
-  
+
   <div id="{{ widget.full }}_tree">
     <ul>
       {% for node in tree %}

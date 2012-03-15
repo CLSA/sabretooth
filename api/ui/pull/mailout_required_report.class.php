@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\pull;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Mailout required report data.
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * @abstract
  * @package sabretooth\ui
  */
-class mailout_required_report extends base_report
+class mailout_required_report extends \cenozo\ui\pull\base_report
 {
   /**
    * Constructor
@@ -36,15 +33,14 @@ class mailout_required_report extends base_report
   public function finish()
   {
     // get the report arguments
-    $mailout_type = $this->get_argument( 'restrict_mailout_id' );
+    $participant_class_name = lib::get_class_name( 'database\participant' );
+    $mailout_type = $this->get_argument( 'restrict_mailout' );
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-    $participant_list = db\participant::select();
-    if( $restrict_site_id ) 
-    {
-      $db_site = new db\site( $restrict_site_id );
-      $participant_list = db\participant::select_for_site( $db_site );
-    }
-    $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
+    $db_site = lib::create( 'database\site', $restrict_site_id );
+    $participant_list = $restrict_site_id
+                      ? $participant_class_name::select_for_site( $db_site )
+                      : $participant_class_name::select();
+    $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
 
     // TODO: Change this to the title/code of the limesurvey question to check
     // (this should be the new information package required question)
@@ -64,19 +60,23 @@ class mailout_required_report extends base_report
       sprintf( 'Listing of those who requested a new information package during '.
                'the %s interview', $db_qnaire->name ) ) ;
     
+    // modifiers common to each iteration of the following loops
+    $consent_mod = lib::create( 'database\modifier' );
+    $consent_mod->where( 'event', '=', 'verbal accept' );
+    $consent_mod->or_where( 'event', '=', 'written accept' );
+
     $contents = array();
+    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
     foreach( $participant_list as $db_participant )
     {
       $done = false;
 
       if( !is_null( $db_participant->status ) ) continue;      
 
-      $consent_mod = new db\modifier();
-      $consent_mod->where( 'event', '=', 'verbal accept' );
-      $consent_mod->or_where( 'event', '=', 'written accept' );
       if( count( $db_participant->get_consent_list( $consent_mod ) ) )
       {
-        $interview_mod = new db\modifier();
+        $interview_mod = lib::create( 'database\modifier' );
         $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
         $db_participant->get_interview_list( $interview_mod );
         $db_interview = current( $db_participant->get_interview_list( $interview_mod ) );
@@ -85,10 +85,10 @@ class mailout_required_report extends base_report
           foreach( $db_interview->get_qnaire()->get_phase_list() as $db_phase )
           {
             // figure out the token
-            $token = db\limesurvey\tokens::determine_token_string( $db_interview );
+            $token = $tokens_class_name::determine_token_string( $db_interview );
 
             // determine if the participant answered yes to the consent question
-            $survey_mod = new db\modifier();
+            $survey_mod = lib::create( 'database\modifier' );
             if( $db_phase->repeated )
             {
               // replace the token's 0 with a database % wildcard
@@ -97,8 +97,8 @@ class mailout_required_report extends base_report
             }
             else $survey_mod->where( 'token', '=', $token );
 
-            db\limesurvey\survey::set_sid( $db_phase->sid );
-            foreach( db\limesurvey\survey::select( $survey_mod ) as $db_survey )
+            $survey_class_name::set_sid( $db_phase->sid );
+            foreach( $survey_class_name::select( $survey_mod ) as $db_survey )
             {
               if( $db_survey && 'Y' == $db_survey->get_response( $question_code ) )
               {

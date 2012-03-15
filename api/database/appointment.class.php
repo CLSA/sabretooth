@@ -8,16 +8,14 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * appointment: record
  *
  * @package sabretooth\database
  */
-class appointment extends record
+class appointment extends \cenozo\database\record
 {
   /**
    * Overrides the parent load method.
@@ -42,12 +40,12 @@ class appointment extends record
     // make sure there is a maximum of 1 unassigned appointment
     if( is_null( $this->assignment_id ) )
     {
-      $modifier = new modifier();
+      $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'participant_id', '=', $this->participant_id );
       $modifier->where( 'assignment_id', '=', NULL );
       if( !is_null( $this->id ) ) $modifier->where( 'id', '!=', $this->id );
       if( 0 < static::count( $modifier ) )
-        throw new exc\runtime(
+        throw lib::create( 'exception\runtime',
           'Cannot have more than one unassigned appointment per participant.', __METHOD__ );
     }
 
@@ -65,18 +63,22 @@ class appointment extends record
   public function validate_date()
   {
     if( is_null( $this->participant_id ) )
-      throw new exc\runtime(
+      throw lib::create( 'exception\runtime',
         'Cannot validate appointment date, participant id is not set.', __METHOD__ );
 
-    $db_participant = new participant( $this->participant_id );
+    $db_participant = lib::create( 'database\participant', $this->participant_id );
     $db_site = $db_participant->get_primary_site();
     if( is_null( $db_site ) )
-      throw new exc\runtime(
+      throw lib::create( 'exception\runtime',
         'Cannot validate an appointment date, participant has no primary address.', __METHOD__ );
     
+    $shift_template_class_name = lib::get_class_name( 'database\shift_template' );
+    $shift_class_name = lib::get_class_name( 'database\shift' );
+
     // determine the appointment interval
     $interval = sprintf( 'PT%dM',
-                         bus\setting_manager::self()->get_setting( 'appointment', 'duration' ) );
+                          lib::create( 'business\setting_manager' )->get_setting(
+                            'appointment', 'duration' ) );
 
     $start_datetime_obj = util::get_datetime_object( $this->datetime );
     $next_day_datetime_obj = clone $start_datetime_obj;
@@ -85,20 +87,19 @@ class appointment extends record
     $end_datetime_obj->add( new \DateInterval( $interval ) );
 
     // determine whether to test for shifts or shift templates on the appointment day
-    $modifier = new modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', $db_site->id );
     $modifier->where( 'start_datetime', '>=', $start_datetime_obj->format( 'Y-m-d' ) );
     $modifier->where( 'start_datetime', '<', $next_day_datetime_obj->format( 'Y-m-d' ) );
 
     $diffs = array();
 
-    if( 0 == shift::count( $modifier ) )
+    if( 0 == $shift_class_name::count( $modifier ) )
     { // determine slots using shift template
-      $modifier = new $modifier();
+      $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'site_id', '=', $db_site->id );
       $modifier->where( 'start_date', '<=', $start_datetime_obj->format( 'Y-m-d' ) );
-      
-      foreach( shift_template::select( $modifier ) as $db_shift_template )
+      foreach( $shift_template_class_name::select( $modifier ) as $db_shift_template )
       {
         if( $db_shift_template->match_date( $start_datetime_obj->format( 'Y-m-d' ) ) )
         {
@@ -118,12 +119,11 @@ class appointment extends record
     }
     else // determine slots using shifts
     {
-      $modifier = new $modifier();
+      $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'site_id', '=', $db_site->id );
       $modifier->where( 'start_datetime', '<', $end_datetime_obj->format( 'Y-m-d H:i:s' ) );
       $modifier->where( 'end_datetime', '>', $start_datetime_obj->format( 'Y-m-d H:i:s' ) );
-
-      foreach( shift::select( $modifier ) as $db_shift )
+      foreach( $shift_class_name::select( $modifier ) as $db_shift )
       {
         $start_time_as_int =
           intval( preg_replace( '/[^0-9]/', '',
@@ -140,11 +140,12 @@ class appointment extends record
     }
     
     // and how many appointments are during this time?
-    $modifier = new modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'datetime', '>=', $start_datetime_obj->format( 'Y-m-d' ) );
     $modifier->where( 'datetime', '<', $next_day_datetime_obj->format( 'Y-m-d' ) );
     if( !is_null( $this->id ) ) $modifier->where( 'appointment.id', '!=', $this->id );
-    foreach( appointment::select_for_site( $db_site, $modifier ) as $db_appointment )
+    $appointment_class_name = lib::get_class_name( 'database\appointment' );
+    foreach( $appointment_class_name::select_for_site( $db_site, $modifier ) as $db_appointment )
     {
       $state = $db_appointment->get_state();
       if( 'reached' != $state && 'not reached' != $state )
@@ -224,7 +225,7 @@ class appointment extends record
     $select_tables = 'appointment, participant_primary_address, participant, address';
     
     // straight join the tables
-    if( is_null( $modifier ) ) $modifier = new modifier();
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     $modifier->where(
       'appointment.participant_id', '=', 'participant_primary_address.participant_id', false );
     $modifier->where( 'participant_primary_address.address_id', '=', 'address.id', false );
@@ -300,10 +301,11 @@ class appointment extends record
     $status = 'unknown';
     
     // settings are in minutes, time() is in seconds, so multiply by 60
-    $pre_window_time = 60 * bus\setting_manager::self()->get_setting(
+    $setting_manager = lib::create( 'business\setting_manager' );
+    $pre_window_time  = 60 * $setting_manager->get_setting(
                               'appointment', 'call pre-window' );
-    $post_window_time = 60 * bus\setting_manager::self()->get_setting(
-                               'appointment', 'call post-window' );
+    $post_window_time = 60 * $setting_manager->get_setting(
+                              'appointment', 'call post-window' );
     $now = util::get_datetime_object()->getTimestamp();
     $appointment = util::get_datetime_object( $this->datetime )->getTimestamp();
 
@@ -320,7 +322,7 @@ class appointment extends record
       }
       else // assignment active
       {
-        $modifier = new modifier();
+        $modifier = lib::create( 'database\modifier' ); 
         $modifier->where( 'end_datetime', '=', NULL );
         $open_phone_calls = $db_assignment->get_phone_call_count( $modifier );
         if( 0 < $open_phone_calls )

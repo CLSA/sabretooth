@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget self timer
  * 
  * @package sabretooth\ui
  */
-class self_timer extends \sabretooth\ui\widget
+class self_timer extends \cenozo\ui\widget
 {
   /**
    * Constructor
@@ -44,7 +41,8 @@ class self_timer extends \sabretooth\ui\widget
   {
     parent::finish();
 
-    $this->set_variable( 'on_call', !is_null( bus\voip_manager::self()->get_call() ) );
+    $this->set_variable( 'on_call',
+      !is_null( lib::create( 'business\voip_manager' )->get_call() ) );
   }
 }
 ?>

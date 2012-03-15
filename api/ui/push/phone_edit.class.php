@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: phone edit
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Edit a phone.
  * @package sabretooth\ui
  */
-class phone_edit extends base_edit
+class phone_edit extends \cenozo\ui\push\base_edit
 {
   /**
    * Constructor.
@@ -45,7 +42,7 @@ class phone_edit extends base_edit
     if( array_key_exists( 'number', $columns ) )
     {
       if( 10 != strlen( preg_replace( '/[^0-9]/', '', $columns['number'] ) ) )
-        throw new exc\notice(
+        throw lib::create( 'exception\notice',
           'Phone numbers must have exactly 10 digits.', __METHOD__ );
     }
 
@@ -61,7 +58,7 @@ class phone_edit extends base_edit
     // if set, replace the address id with a unique key
     if( array_key_exists( 'address_id', $columns ) && $columns['address_id'] )
     {
-      $db_address = new db\address( $columns['address_id'] );
+      $db_address = lib::create( 'database\address', $columns['address_id'] );
       unset( $args['address_id'] );
       // we only include half of the unique key since the other half is added above
       $args['noid']['address.rank'] = $db_address->rank;
@@ -70,7 +67,7 @@ class phone_edit extends base_edit
     parent::finish();
 
     // now send the same request to mastodon
-    $mastodon_manager = bus\mastodon_manager::self();
+    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
     $mastodon_manager->push( 'phone', 'edit', $args );
   }
 }

@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: operator begin_break
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Start the current user on a break (away_time)
  * @package sabretooth\ui
  */
-class operator_begin_break extends \sabretooth\ui\push
+class operator_begin_break extends \cenozo\ui\push
 {
   /**
    * Constructor.
@@ -39,9 +36,11 @@ class operator_begin_break extends \sabretooth\ui\push
    */
   public function finish()
   {
-    $session = bus\session::self();
-    $db_away_time = new db\away_time();
+    $session = lib::create( 'business\session' );
+    $db_away_time = lib::create( 'database\away_time' );
     $db_away_time->user_id = $session->get_user()->id;
+    $db_away_time->site_id = $session->get_site()->id;
+    $db_away_time->role_id = $session->get_role()->id;
     $db_away_time->save();
   }
 }

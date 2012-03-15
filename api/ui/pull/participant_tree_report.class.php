@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\pull;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Consent form report data.
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * @abstract
  * @package sabretooth\ui
  */
-class participant_tree_report extends base_report
+class participant_tree_report extends \cenozo\ui\pull\base_report
 {
   /**
    * Constructor
@@ -37,33 +34,49 @@ class participant_tree_report extends base_report
   public function finish()
   {
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-    $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
+    $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
     
-    $site_mod = new db\modifier();
+    $site_mod = lib::create( 'database\modifier' );
     if( $restrict_site_id ) $site_mod->where( 'id', '=', $restrict_site_id );
+    
     $this->add_title( 'Generated for the '.$db_qnaire->name.' questionnaire' );
 
     $contents = array();
 
+    $restrict_source_id = $this->get_argument( 'restrict_source_id', 0 );
+
     // The following code is very similar to the participant_tree widget
     // We loop through every queue to get the number of participants waiting in it
-    foreach( db\queue::select() as $db_queue )
+    $queue_class_name = lib::get_class_name( 'database\queue' );
+    $site_class_name  = lib::get_class_name( 'database\site' );
+    foreach( $queue_class_name::select() as $db_queue )
     {
       $row = array( $db_queue->title );
 
-      foreach( db\site::select( $site_mod ) as $db_site )
+      foreach( $site_class_name::select( $site_mod ) as $db_site )
       {
-        // restrict by site, if necessary
+        // restrict by site and source, if necessary
+        // Note that queue modifiers have to be created for each iteration of the loop since
+        // they are modified in the process of getting the participant count
+        $queue_mod = lib::create( 'database\modifier' );
+        if( 0 < $restrict_source_id )
+          $queue_mod->where( 'participant.source_id', '=', $restrict_source_id );
         $db_queue->set_site( $db_site );
         $db_queue->set_qnaire( $db_qnaire );
-        $row[] = $db_queue->get_participant_count();
+        $row[] = $db_queue->get_participant_count( $queue_mod );
       }
 
       // add the grand total if we are not restricting by site
       if( !$restrict_site_id )
       {
+        // restrict by source, if necessary
+        // Note that queue modifiers have to be created for each iteration of the loop since
+        // they are modified in the process of getting the participant count
+        $queue_mod = lib::create( 'database\modifier' );
+        if( 0 < $restrict_source_id )
+          $queue_mod->where( 'participant.source_id', '=', $restrict_source_id );
         $db_queue->set_site( NULL );
-        $row[] = $db_queue->get_participant_count();
+        $row[] = $db_queue->get_participant_count( $queue_mod );
       }
 
       $contents[] = $row;
@@ -76,7 +89,7 @@ class participant_tree_report extends base_report
     else
     {
       $header = array( 'Queue' );
-      foreach( db\site::select( $site_mod ) as $db_site ) $header[] = $db_site->name;
+      foreach( $site_class_name::select( $site_mod ) as $db_site ) $header[] = $db_site->name;
       $header[] = 'Total';
     }
 

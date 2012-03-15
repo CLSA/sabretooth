@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget call attempts report
@@ -33,6 +30,7 @@ class call_attempts_report extends base_report
     parent::__construct( 'call_attempts', $args );
     $this->add_restriction( 'site' );
     $this->add_restriction( 'qnaire' );
+    $this->add_restriction( 'source' );
 
     $this->set_variable( 'description',
       'This report lists all participants who have been assigned at least once and have not '.

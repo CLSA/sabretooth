@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget phase add
  * 
  * @package sabretooth\ui
  */
-class phase_add extends base_view
+class phase_add extends \cenozo\ui\widget\base_view
 {
   /**
    * Constructor
@@ -34,7 +31,7 @@ class phase_add extends base_view
     
     // add items to the view
     $this->add_item( 'qnaire_id', 'hidden' );
-    $this->add_item( 'sid', 'enum', 'Survey' );
+    $this->add_item( 'sid', 'enum', 'Default Survey' );
     $this->add_item( 'rank', 'enum', 'Stage' );
     $this->add_item( 'repeated', 'boolean', 'Repeated' );
   }
@@ -51,16 +48,17 @@ class phase_add extends base_view
     
     // this widget must have a parent, and it's subject must be a qnaire
     if( is_null( $this->parent ) || 'qnaire' != $this->parent->get_subject() )
-      throw new exc\runtime(
+      throw lib::create( 'exception\runtime',
         'Phase widget must have a parent with qnaire as the subject.', __METHOD__ );
     
     // create enum arrays
     $surveys = array();
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'active', '=', 'Y' );
     $modifier->where( 'anonymized', '=', 'N' );
     $modifier->where( 'tokenanswerspersistence', '=', 'Y' );
-    foreach( db\limesurvey\surveys::select( $modifier ) as $db_survey )
+    $class_name = lib::get_class_name( 'database\limesurvey\surveys' );
+    foreach( $class_name::select( $modifier ) as $db_survey )
       $surveys[$db_survey->sid] = $db_survey->get_title();
     $num_phases = $this->parent->get_record()->get_phase_count();
     $ranks = array();

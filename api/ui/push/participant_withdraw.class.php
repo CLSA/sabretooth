@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: participant withdraw
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * Edit a participant.
  * @package sabretooth\ui
  */
-class participant_withdraw extends base_record
+class participant_withdraw extends \cenozo\ui\push\base_record
 {
   /**
    * Constructor.
@@ -39,32 +36,38 @@ class participant_withdraw extends base_record
    */
   public function finish()
   {
+    // get the consent type based on participant source
+    $event = $this->get_record()->get_source()->withdraw_type;
+
     if( $this->get_argument( 'cancel', false ) )
-    { // if the most recent consent is a withdraw, remove it
-      $consent_mod = new db\modifier();
+    { // if the most recent consent is the event, remove it
+      $consent_mod = lib::create( 'database\modifier' );
       $consent_mod->order_desc( 'date' );
       $consent_mod->limit( 1 );
       $db_consent = current( $this->get_record()->get_consent_list( $consent_mod ) );
-      if( $db_consent && 'withdraw' == $db_consent->event )
+      if( $db_consent && $event == $db_consent->event )
       {
         // apply the change using an operation (so that Mastodon is also updated)
-        $operation = new consent_delete( array( 'id' => $db_consent->id ) );
+        $operation = lib::create( 'ui\push\consent_delete', array( 'id' => $db_consent->id ) );
         $operation->finish();
       }
-      else throw new exc\runtime(
-        sprintf( 'Trying to cancel withdraw for participant id %d but most recent consent is not '.
-                 'a withdraw.', $this->get_record()->id ), __METHOD__ );
+      else throw lib::create( 'exception\runtime',
+        sprintf( 'Trying to cancel %s for participant id %d but '.
+                 'most recent consent is not a %s.',
+                 $event,
+                 $this->get_record()->id,
+                 $event ), __METHOD__ );
     }
     else
-    { // add a new withdraw consent to the participant
+    { // add a new consent to the participant
       // apply the change using an operation (so that Mastodon is also updated)
       $args = array(
         'columns' => array(
           'participant_id' => $this->get_record()->id,
-          'event' => 'withdraw',
+          'event' => $event,
           'date' => util::get_datetime_object()->format( 'Y-m-d' ),
           'note' => 'Automatically added by the "withdraw" button.' ) );
-      $operation = new consent_new( $args );
+      $operation = lib::create( 'ui\push\consent_new', $args );
       $operation->finish();
     }
   }

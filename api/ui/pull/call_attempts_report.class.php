@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\pull;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Consent form report data.
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * @abstract
  * @package sabretooth\ui
  */
-class call_attempts_report extends base_report
+class call_attempts_report extends \cenozo\ui\pull\base_report
 {
   /**
    * Constructor
@@ -37,23 +34,28 @@ class call_attempts_report extends base_report
   public function finish()
   {
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-    if( $restrict_site_id ) $db_site = new db\site( $restrict_site_id );
-    $db_qnaire = new db\qnaire( $this->get_argument( 'restrict_qnaire_id' ) );
+    if( $restrict_site_id ) $db_site = lib::create( 'database\site', $restrict_site_id );
+    $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
+    $restrict_source_id = $this->get_argument( 'restrict_source_id' );
    
     $this->add_title(
       sprintf( 'Participant\'s who have started but not finished the "%s" interview',
                $db_qnaire->name ) );
 
+    $participant_mod = lib::create( 'database\modifier' );
+    if( 0 < $restrict_source_id ) $participant_mod->where( 'source_id', '=', $restrict_source_id );
+
     // loop through every participant searching for those who have started an interview
     // which is not yet complete (restricting by site if necessary)
+    $participant_class_name = lib::get_class_name( 'database\participant' );
     $participant_list = $restrict_site_id
-                      ? db\participant::select_for_site( $db_site )
-                      : db\participant::select();
+                      ? $participant_class_name::select_for_site( $db_site, $participant_mod )
+                      : $participant_class_name::select( $participant_mod );
 
     $contents = array();
     foreach( $participant_list as $db_participant )
     {
-      $interview_mod = new db\modifier();
+      $interview_mod = lib::create( 'database\modifier' );
       $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
       $interview_mod->where( 'completed', '=', false );
       $db_interview = current( $db_participant->get_interview_list( $interview_mod ) );
@@ -61,7 +63,7 @@ class call_attempts_report extends base_report
       {
         $total_calls = 0;
 
-        $assignment_mod = new db\modifier();
+        $assignment_mod = lib::create( 'database\modifier' );
         $assignment_mod->where( 'end_datetime', '!=', NULL );
         $assignment_mod->order( 'start_datetime' );
         $db_last_assignment = NULL;
@@ -74,7 +76,7 @@ class call_attempts_report extends base_report
         if( is_null( $db_last_assignment ) ) continue;
 
         // get the status of the last call from the last assignment
-        $phone_call_mod = new db\modifier();
+        $phone_call_mod = lib::create( 'database\modifier' );
         $phone_call_mod->order_desc( 'start_datetime' );
         $phone_call_mod->limit( 1 );
         $db_phone_call = current( $db_last_assignment->get_phone_call_list( $phone_call_mod ) );

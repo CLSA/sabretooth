@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget shift calendar
  * 
  * @package sabretooth\ui
  */
-class shift_calendar extends base_calendar
+class shift_calendar extends \cenozo\ui\widget\base_calendar
 {
   /**
    * Constructor
@@ -32,7 +29,7 @@ class shift_calendar extends base_calendar
   {
     parent::__construct( 'shift', $args );
     
-    $session = bus\session::self();
+    $session = lib::create( 'business\session' );
 
     // determine the user id
     $this->user_id = $this->get_argument( 'user_id', NULL );
@@ -44,7 +41,7 @@ class shift_calendar extends base_calendar
     }
     else
     {
-      $db_user = new db\user( $this->user_id );
+      $db_user = lib::create( 'database\user', $this->user_id );
       $this->set_heading( 'Shifts for '.$db_user->name );
     }
 
@@ -61,7 +58,7 @@ class shift_calendar extends base_calendar
     parent::finish();
     
     $this->set_variable( 'allow_all_day', false );
-    $this->set_variable( 'editable', 'operator' != bus\session::self()->get_role()->name );
+    $this->set_variable( 'editable', 'operator' != lib::create( 'business\session' )->get_role()->name );
     $this->set_variable( 'user_id', $this->user_id );
   }
 

@@ -32,7 +32,7 @@
                     '</td></tr>';
           }
           html += '</table>' +
-                  '<div style="text-align: right">' +
+                  '<div class="spacer" style="text-align: right">' +
                   '<button id="{{ widget.full }}__proceed" style="width:120px">Proceed</button>' +
                   '</div>';
           $( "#{{ widget.full }}__results" ).html( html );
@@ -52,25 +52,27 @@
 {% endblock javascript %}
 
 {% block widget %}
-  <div class="spacer">
-    Provide a list of participant UIDs which you wish to sync with Mastodon.
-    UIDs must be separated by a comma or space and may be qualified by single
-    or double quotes (ie: A123456 B123456 C123456).  Clicking the "update"
-    button will display a summary of changes to be performed which should be
-    carefully reviewed before proceeding with the sync.
+  <div class="ui-widget ui-widget-content app-widget-content">
+    <div class="spacer">
+      Provide a list of participant UIDs which you wish to sync with Mastodon.
+      UIDs must be separated by a comma or space and may be qualified by single
+      or double quotes (ie: A123456 B123456 C123456).  Clicking the "update"
+      button will display a summary of changes to be performed which should be
+      carefully reviewed before proceeding with the sync.
+    </div>
+    <table>
+      <tr>
+        <td class="heading">
+          <span class="title">UID list:</span>
+        </td>
+        <td class="content">
+          <textarea id="{{ widget.full }}__uid_list" style="height: 16em;"></textarea>
+        </td>
+      </tr>
+    </table>
+    <div class="spacer" style="text-align: right">
+      <button id="{{ widget.full }}__update" style="width:120px">Update</button>
+    </div>
+    <div id="{{ widget.full }}__results"></div>
   </div>
-  <table>
-    <tr>
-      <td class="heading">
-        <span class="title">UID list:</span>
-      </td>
-      <td class="content">
-        <textarea id="{{ widget.full }}__uid_list" style="height: 16em;"></textarea>
-      </td>
-    </tr>
-  </table>
-  <div style="text-align: right">
-    <button id="{{ widget.full }}__update" style="width:120px">Update</button>
-  </div>
-  <div id="{{ widget.full }}__results"></div>
 {% endblock widget %}

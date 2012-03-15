@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget appointment add
@@ -52,17 +49,18 @@ class appointment_add extends base_appointment_view
     
     // this widget must have a parent, and it's subject must be a participant
     if( is_null( $this->parent ) || 'participant' != $this->parent->get_subject() )
-      throw new exc\runtime(
+      throw lib::create( 'exception\runtime',
         'Appointment widget must have a parent with participant as the subject.', __METHOD__ );
 
-    $db_participant = new db\participant( $this->parent->get_record()->id );
+    $db_participant = lib::create( 'database\participant', $this->parent->get_record()->id );
     
     // determine the time difference
     $db_address = $db_participant->get_first_address();
     $time_diff = is_null( $db_address ) ? NULL : $db_address->get_time_diff();
 
     // need to add the participant's timezone information as information to the date item
-    $site_name = bus\session::self()->get_site()->name;
+    $session = lib::create( 'business\session' );
+    $site_name = $session->get_site()->name;
     if( is_null( $time_diff ) )
       $note = 'The participant\'s time zone is not known.';
     else if( 0 == $time_diff )
@@ -80,7 +78,7 @@ class appointment_add extends base_appointment_view
     $this->add_item( 'datetime', 'datetime', 'Date', $note );
 
     // create enum arrays
-    $modifier = new db\modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'active', '=', true );
     $modifier->order( 'rank' );
     $phones = array();
@@ -98,9 +96,7 @@ class appointment_add extends base_appointment_view
     $this->set_item( 'phone_id', '', false, $phones );
     $this->set_item( 'datetime', '', true, $datetime_limits );
 
-    $this->set_variable( 
-      'is_supervisor', 
-      'supervisor' == bus\session::self()->get_role()->name );
+    $this->set_variable( 'is_mid_tier', 2 == $session->get_role()->tier );
 
     $this->finish_setting_items();
   }

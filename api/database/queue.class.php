@@ -8,16 +8,14 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * queue: record
  *
  * @package sabretooth\database
  */
-class queue extends record
+class queue extends \cenozo\database\record
 {
   /**
    * Constructor
@@ -57,7 +55,8 @@ class queue extends record
       'sourcing required' );
 
     // add the participant final status types
-    $queue_list = array_merge( $queue_list, participant::get_enum_values( 'status' ) );
+    $class_name = lib::get_class_name( 'database\participant' );
+    $queue_list = array_merge( $queue_list, $class_name::get_enum_values( 'status' ) );
     
     // finish the queue list
     $queue_list = array_merge( $queue_list, array(
@@ -107,7 +106,8 @@ class queue extends record
     }
     
     // now add the sql for each call back status
-    foreach( phone_call::get_enum_values( 'status' ) as $phone_call_status )
+    $class_name = lib::get_class_name( 'database\phone_call' ); 
+    foreach( $class_name::get_enum_values( 'status' ) as $phone_call_status )
     {
       // ignore statuses which result in deactivating phone numbers
       if( 'disconnected' != $phone_call_status && 'wrong number' != $phone_call_status )
@@ -157,20 +157,65 @@ class queue extends record
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param modifier $modifier Modifications to the queue.
+   * @param boolean $use_cache Whether to use the cached value (if one exists)
    * @return int
    * @access public
    */
-  public function get_participant_count( $modifier = NULL )
+  public function get_participant_count( $modifier = NULL, $use_cache = true )
   {
-    if( is_null( $modifier ) ) $modifier = new modifier();
+    $site_id = is_null( $this->db_site ) ? 0 : $this->db_site->id;
+    $qnaire_id = !$this->qnaire_specific || is_null( $this->db_qnaire )
+               ? 0 : $this->db_qnaire->id;
+    if( $use_cache &&
+        array_key_exists( $this->name, self::$participant_count_cache ) &&
+        array_key_exists( $qnaire_id, self::$participant_count_cache[$this->name] ) &&
+        array_key_exists( $site_id, self::$participant_count_cache[$this->name][$qnaire_id] ) )
+      return self::$participant_count_cache[$this->name][$qnaire_id][$site_id];
+
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
 
     // restrict to the site
     if( !is_null( $this->db_site ) ) $modifier->where( 'base_site_id', '=', $this->db_site->id );
     
-    return static::db()->get_one(
-      sprintf( '%s %s',
-               $this->get_sql( 'COUNT( DISTINCT participant.id )' ),
-               $modifier->get_sql( true ) ) );
+    if( !array_key_exists( $this->name, self::$participant_count_cache ) )
+      self::$participant_count_cache[$this->name] = array();
+    if( !array_key_exists( $qnaire_id, self::$participant_count_cache[$this->name] ) )
+      self::$participant_count_cache[$this->name][$qnaire_id] = array();
+    self::$participant_count_cache[$this->name][$qnaire_id][$site_id] =
+      (integer) static::db()->get_one( sprintf( '%s %s',
+        $this->get_sql( 'COUNT( DISTINCT participant.id )' ),
+        $modifier->get_sql( true ) ) );
+
+    // if the value is 0 then update all child counts with 0 to save processing time
+    if( 0 == self::$participant_count_cache[$this->name][$qnaire_id][$site_id] )
+      static::set_child_count_cache_to_zero( $this, $qnaire_id, $site_id );
+
+    return self::$participant_count_cache[$this->name][$qnaire_id][$site_id];
+  }
+
+  /**
+   * A recursive method to set the count cache for all child queues to 0.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\queue $db_queue
+   * @param int $qnaire_id The qnaire id being processed.
+   * @param int $site_id The site id being processed.
+   * @static
+   * @access private
+   */
+  private static function set_child_count_cache_to_zero( $db_queue, $qnaire_id, $site_id )
+  {
+    $queue_mod = lib::create( 'database\modifier' );
+    $queue_mod->where( 'parent_queue_id', '=', $db_queue->id );
+    foreach( static::select( $queue_mod ) as $db_child_queue )
+    {
+      if( !array_key_exists( $db_child_queue->name, self::$participant_count_cache ) )
+        self::$participant_count_cache[$db_child_queue->name] = array();
+      if( !array_key_exists( $qnaire_id, self::$participant_count_cache[$db_child_queue->name] ) )
+        self::$participant_count_cache[$db_child_queue->name][$qnaire_id] = array();
+      self::$participant_count_cache[$db_child_queue->name][$qnaire_id][$site_id] = 0;
+      self::set_child_count_cache_to_zero( $db_child_queue, $qnaire_id, $site_id );
+    }
   }
 
   /**
@@ -183,7 +228,7 @@ class queue extends record
    */
   public function get_participant_list( $modifier = NULL )
   {
-    if( is_null( $modifier ) ) $modifier = new modifier();
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
 
     // restrict to the site
     if( !is_null( $this->db_site ) ) $modifier->where( 'base_site_id', '=', $this->db_site->id );
@@ -194,7 +239,7 @@ class queue extends record
                $modifier->get_sql( true ) ) );
 
     $participants = array();
-    foreach( $participant_ids as $id ) $participants[] = new participant( $id );
+    foreach( $participant_ids as $id ) $participants[] = lib::create( 'database\participant', $id );
     return $participants;
   }
 
@@ -257,7 +302,8 @@ class queue extends record
       $check_time = false;
     }
 
-    $participant_status_list = participant::get_enum_values( 'status' );
+    $class_name = lib::get_class_name( 'database\participant' );
+    $participant_status_list = $class_name::get_enum_values( 'status' );
 
     // first a list of commonly used elements
     $status_where_list = array(
@@ -650,7 +696,8 @@ class queue extends record
     {
       // make sure a phone call status has been included (all remaining queues require it)
       if( is_null( $phone_call_status ) )
-        throw new exc\argument( 'phone_call_status', $phone_call_status, __METHOD__ );
+        throw lib::create( 'exception\argument',
+          'phone_call_status', $phone_call_status, __METHOD__ );
 
       if( 'phone call status' == $queue )
       {
@@ -749,7 +796,7 @@ class queue extends record
       }
       else // invalid queue name
       {
-        throw new exc\argument( 'queue', $queue, __METHOD__ );
+        throw lib::create( 'exception\argument', 'queue', $queue, __METHOD__ );
       }
     }
   }
@@ -774,7 +821,7 @@ class queue extends record
     $sql = str_replace( '<QNAIRE_TEST>', $qnaire_test_sql, $sql );
 
     // fill in the settings
-    $setting_manager = bus\setting_manager::self();
+    $setting_manager = lib::create( 'business\setting_manager' );
     $setting = $setting_manager->get_setting( 'appointment', 'call pre-window' );
     $sql = str_replace( '<APPOINTMENT_PRE_WINDOW>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'appointment', 'call post-window' );
@@ -785,9 +832,10 @@ class queue extends record
     $sql = str_replace( '<CALLING_END_TIME>', $setting, $sql );
 
     // fill in all callback timing settings
-    $setting_mod = new modifier();
+    $setting_mod = lib::create( 'database\modifier' ); 
     $setting_mod->where( 'category', '=', 'callback timing' );
-    foreach( setting::select( $setting_mod ) as $db_setting )
+    $class_name = lib::get_class_name( 'database\setting' );
+    foreach( $class_name::select( $setting_mod ) as $db_setting )
     {
       $setting = $setting_manager->get_setting( 'callback timing', $db_setting->name );
       $template = sprintf( '<CALLBACK_%s>',
@@ -871,9 +919,17 @@ class queue extends record
   /**
    * The queries for each queue
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @var associative array
+   * @var associative array of strings
    * @static
    */
   protected static $query_list = array();
+
+  /**
+   * A cache of participant counts for each queue and each qnaire
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @var associative array of integers
+   * @static
+   */
+  protected static $participant_count_cache = array();
 }
 ?>

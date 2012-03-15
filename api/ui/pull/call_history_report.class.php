@@ -8,10 +8,7 @@
  */
 
 namespace sabretooth\ui\pull;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Consent form report data.
@@ -19,7 +16,7 @@ use sabretooth\exception as exc;
  * @abstract
  * @package sabretooth\ui
  */
-class call_history_report extends base_report
+class call_history_report extends \cenozo\ui\pull\base_report
 {
   /**
    * Constructor
@@ -37,6 +34,7 @@ class call_history_report extends base_report
   public function finish()
   {
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
+    $restrict_source_id = $this->get_argument( 'restrict_source_id' );
       
     $restrict_start_date = $this->get_argument( 'restrict_start_date' );
     $restrict_end_date = $this->get_argument( 'restrict_end_date' );
@@ -63,7 +61,7 @@ class call_history_report extends base_report
       $end_datetime_obj = clone $temp_datetime_obj;
     }
 
-    $assignment_mod = new db\modifier();
+    $assignment_mod = lib::create( 'database\modifier' );
     if( $restrict_site_id ) $assignment_mod->where( 'site_id', '=', $restrict_site_id );
     $assignment_mod->order( 'start_datetime' );
     if( $restrict_start_date && $restrict_end_date )
@@ -85,27 +83,32 @@ class call_history_report extends base_report
     }
     
     $contents = array();
-    foreach( db\assignment::select( $assignment_mod ) as $db_assignment )
+    $assignment_class_name = lib::get_class_name( 'database\assignment' );
+    foreach( $assignment_class_name::select( $assignment_mod ) as $db_assignment )
     {
-      $db_user = $db_assignment->get_user();
-      
-      $phone_call_mod = new db\modifier();
-      $phone_call_mod->order( 'start_datetime' );
-      foreach( $db_assignment->get_phone_call_list( $phone_call_mod ) as $db_phone_call )
+      $db_participant = $db_assignment->get_interview()->get_participant();
+      if( 0 == $restrict_source_id || $restrict_source_id == $db_participant->get_source()->id )
       {
-        $contents[] = array(
-          $db_assignment->get_site()->name,
-          $db_assignment->get_interview()->get_participant()->uid,
-          $db_user->first_name.' '.$db_user->last_name,
-          $db_assignment->id,
-          substr( $db_assignment->start_datetime,
-                  0,
-                  strpos( $db_assignment->start_datetime, ' ' ) ),
-          substr( $db_phone_call->start_datetime,
-                  strpos( $db_phone_call->start_datetime, ' ' ) + 1 ),
-          substr( $db_phone_call->end_datetime,
-                  strpos( $db_phone_call->end_datetime, ' ' ) + 1 ),
-          $db_phone_call->status );
+        $db_user = $db_assignment->get_user();
+        
+        $phone_call_mod = lib::create( 'database\modifier' );
+        $phone_call_mod->order( 'start_datetime' );
+        foreach( $db_assignment->get_phone_call_list( $phone_call_mod ) as $db_phone_call )
+        {
+          $contents[] = array(
+            $db_assignment->get_site()->name,
+            $db_participant->uid,
+            $db_user->first_name.' '.$db_user->last_name,
+            $db_assignment->id,
+            substr( $db_assignment->start_datetime,
+                    0,
+                    strpos( $db_assignment->start_datetime, ' ' ) ),
+            substr( $db_phone_call->start_datetime,
+                    strpos( $db_phone_call->start_datetime, ' ' ) + 1 ),
+            substr( $db_phone_call->end_datetime,
+                    strpos( $db_phone_call->end_datetime, ' ' ) + 1 ),
+            $db_phone_call->status );
+        }
       }
     }
     

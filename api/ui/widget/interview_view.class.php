@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget interview view
  * 
  * @package sabretooth\ui
  */
-class interview_view extends base_view
+class interview_view extends \cenozo\ui\widget\base_view
 {
   /**
    * Constructor
@@ -41,14 +38,26 @@ class interview_view extends base_view
 
     try
     {
-      // create the assignment sub-list widget
-      $this->assignment_list = new assignment_list( $args );
+      // create the assignment sub-list widget      
+      $this->assignment_list = lib::create( 'ui\widget\assignment_list', $args );
       $this->assignment_list->set_parent( $this );
       $this->assignment_list->set_heading( 'Assignments associated with this interview' );
     }
-    catch( exc\permission $e )
+    catch( \cenozo\exception\permission $e )
     {
       $this->assignment_list = NULL;
+    }
+
+    try
+    {
+      // create the recording sub-list widget
+      $this->recording_list = lib::create( 'ui\widget\recording_list', $args );
+      $this->recording_list->set_parent( $this );
+      $this->recording_list->set_heading( 'Audio recordings of the interview' );
+    }
+    catch( \cenozo\exception\permission $e )
+    {
+      $this->recording_list = NULL;
     }
   }
 
@@ -79,6 +88,13 @@ class interview_view extends base_view
       $this->assignment_list->finish();
       $this->set_variable( 'assignment_list', $this->assignment_list->get_variables() );
     }
+
+    // finish the child widgets
+    if( !is_null( $this->recording_list ) )
+    {
+      $this->recording_list->finish();
+      $this->set_variable( 'recording_list', $this->recording_list->get_variables() );
+    }
   }
   
   /**
@@ -87,5 +103,12 @@ class interview_view extends base_view
    * @access protected
    */
   protected $assignment_list = NULL;
+  
+  /**
+   * The interview list widget.
+   * @var recording_list
+   * @access protected
+   */
+  protected $recording_list = NULL;
 }
 ?>

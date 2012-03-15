@@ -8,16 +8,14 @@
  */
 
 namespace sabretooth\database;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * shift: record
  *
  * @package sabretooth\database
  */
-class shift extends record
+class shift extends \cenozo\database\record
 {
   /**
    * Overrides the parent class to prevent doubling shift times.
@@ -35,21 +33,22 @@ class shift extends record
       return;
     }
 
-    $db_user = new user( $this->user_id );
-    $db_site = new site( $this->site_id );
-    $db_role = role::get_unique_record( 'name', 'operator' );
+    $db_user = lib::create( 'database\user', $this->user_id );
+    $db_site = lib::create( 'database\site', $this->site_id );
+    $class_name = lib::get_class_name( 'database\role' );
+    $db_role = $class_name::get_unique_record( 'name', 'operator' );
     
     // Make sure the user has the operator role at the site
     if( !$db_user->has_access( $db_site, $db_role ) )
     {
-      throw new exc\runtime(
+      throw lib::create( 'exception\runtime',
         sprintf( 'Cannot assign shift to "%s", user does not have operator access to %s',
                  $db_user->name,
                  $db_site->name ), __METHOD__ );
     }
 
     // See if the user already has a shift at this time
-    $modifier = new modifier();
+    $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'id', '!=', $this->id );
     $modifier->where( 'user_id', '=', $this->user_id );
     
@@ -58,29 +57,27 @@ class shift extends record
     $end_datetime = util::to_server_datetime( $this->end_datetime );
 
     // (need to use custom SQL)
+    $class_name = lib::get_class_name( 'database\database' );
     $overlap_ids = static::db()->get_col( 
       sprintf( 'SELECT id FROM %s %s '.
                'AND NOT ( ( start_datetime <= %s AND end_datetime <= %s ) OR '.
                          '( start_datetime >= %s AND end_datetime >= %s ) )',
                static::get_table_name(),
                $modifier->get_where(),
-               database::format_string( $start_datetime ),
-               database::format_string( $start_datetime ),
-               database::format_string( $end_datetime ),
-               database::format_string( $end_datetime ) ) );
+               $class_name::format_string( $start_datetime ),
+               $class_name::format_string( $start_datetime ),
+               $class_name::format_string( $end_datetime ),
+               $class_name::format_string( $end_datetime ) ) );
     
     if( 0 < count( $overlap_ids ) )
     {
       $overlap_id = current( $overlap_ids );
       $db_overlap = new static( $overlap_id );
-      throw new exc\runtime(
-        sprintf( 'Shift date/times (%s to %s) for user "%s" overlaps '.
-                 'with another shift on the same day (%s to %s).',
-                 $this->start_datetime,
-                 $this->end_datetime,
-                 $db_user->name,
+      throw lib::create( 'exception\notice',
+        sprintf( 'There is already a shift which exists for this operator during the requested '.
+                 'time (%s to %s).  Please adjust the shift times so that there is no overlap.',
                  substr( $db_overlap->start_datetime, 0, -3 ),
-                 substr( $db_overlap->end_datetime, 0, -3 ) ),
+                 substr( $db_overlap->end_datetime, 11, -3 ) ),
         __METHOD__ );
     }
     

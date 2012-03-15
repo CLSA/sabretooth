@@ -8,17 +8,14 @@
  */
 
 namespace sabretooth\ui\widget;
-use sabretooth\log, sabretooth\util;
-use sabretooth\business as bus;
-use sabretooth\database as db;
-use sabretooth\exception as exc;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget qnaire list
  * 
  * @package sabretooth\ui
  */
-class qnaire_list extends base_list
+class qnaire_list extends \cenozo\ui\widget\base_list
 {
   /**
    * Constructor
@@ -54,7 +51,7 @@ class qnaire_list extends base_list
       $prev_qnaire = 'none';
       if( !is_null( $record->prev_qnaire_id ) )
       {
-        $db_prev_qnaire = new db\qnaire( $record->prev_qnaire_id );
+        $db_prev_qnaire = lib::create( 'database\qnaire', $record->prev_qnaire_id );
         $prev_qnaire = $db_prev_qnaire->name;
       }
 
