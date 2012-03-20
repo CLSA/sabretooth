@@ -14,12 +14,6 @@
     $( function () {
       // update button
       $( "#{{ widget.compound }}__update" ).click( function () {
-        $( "#{{ widget.full }}__results" ).loading( true, {
-          mask: true,
-          text: 'Updating...',
-          align: "center"
-        } );
-
         var args = new Object();
         args.uid_list = $( "#{{ widget.full }}__uid_list" ).val();
         var data = ajax_pull( "participant", "sync", args );
@@ -39,7 +33,6 @@
           $( "#{{ widget.full }}__proceed" ).button();
         }
 
-        $( "#{{ widget.full }}__results" ).loading( false );
         $( "#{{ widget.full }}__proceed" ).click( function () {
           var args = new Object();
           args.uid_list = $( "#{{ widget.full }}__uid_list" ).val();
