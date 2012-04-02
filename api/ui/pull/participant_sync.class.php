@@ -47,10 +47,9 @@ class participant_sync extends \cenozo\ui\pull
     
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
-    $uid_list_string = preg_replace( '/[\'",]/', '', $this->get_argument( 'uid_list' ) );
+    $uid_list_string = preg_replace( '/[^a-zA-Z0-9]/', ' ', $this->get_argument( 'uid_list' ) );
     $uid_list_string = trim( $uid_list_string );
     $uid_list = array_unique( preg_split( '/\s+/', $uid_list_string ) );
-
     foreach( $uid_list as $uid )
     {
       $args = array( 'uid' => $uid, 'full' => true );

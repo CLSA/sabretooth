@@ -1,5 +1,6 @@
 -- Patch to upgrade database to version 1.1.1
 
+SOURCE participant.sql
 SOURCE appointment.sql
 SOURCE setting.sql
 SOURCE qnaire.sql
