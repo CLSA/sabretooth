@@ -63,10 +63,14 @@ class participant_sync extends \cenozo\ui\pull
         if( !is_null( $participant_class_name::get_unique_record( 'uid', $uid ) ) ) $existing_count++;
         else $new_count++;
       }
-      catch( \cenozo\exception\cenozo_service $e )
+      // a runtime error is thrown when the participant is from the wrong cohort
+      catch( \cenozo\exception\runtime $e )
       {
-        $missing_count++;
+        throw lib::create( 'exception\notice',
+          sprintf( 'Participant %s is from the wrong cohort.', $uid ), __METHOD__, $e );
       }
+      // consider errors to be missing participants (may be missing or the wrong cohort)
+      catch( \cenozo\exception\cenozo_service $e ) { $missing_count++; }
     }
 
     return array(
