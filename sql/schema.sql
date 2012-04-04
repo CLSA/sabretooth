@@ -798,7 +798,7 @@ CREATE TABLE IF NOT EXISTS `participant_last_assignment` (`participant_id` INT, 
 -- -----------------------------------------------------
 -- Placeholder table for view `participant_for_queue`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `update_timestamp` INT, `create_timestamp` INT, `active` INT, `uid` INT, `source_id` INT, `first_name` INT, `last_name` INT, `status` INT, `language` INT, `site_id` INT, `prior_contact_date` INT, `city` INT, `region_id` INT, `postcode` INT, `phone_number_count` INT, `last_consent` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT, `current_qnaire_id` INT, `start_qnaire_date` INT);
+CREATE TABLE IF NOT EXISTS `participant_for_queue` (`id` INT, `update_timestamp` INT, `create_timestamp` INT, `active` INT, `uid` INT, `source_id` INT, `first_name` INT, `last_name` INT, `status` INT, `language` INT, `site_id` INT, `prior_contact_date` INT, `city` INT, `region_id` INT, `postcode` INT, `timezone_offset` INT, `daylight_savings` INT, `phone_number_count` INT, `last_consent` INT, `last_assignment_id` INT, `base_site_id` INT, `assigned` INT, `current_qnaire_id` INT, `start_qnaire_date` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `assignment_last_phone_call`
@@ -875,6 +875,8 @@ SELECT participant.*,
        first_address.city,
        first_address.region_id,
        first_address.postcode,
+       first_address.timezone_offset,
+       first_address.daylight_savings,
        COUNT( DISTINCT phone.id ) as phone_number_count,
        consent.event AS last_consent,
        assignment.id AS last_assignment_id,
