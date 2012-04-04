@@ -47,6 +47,10 @@ class address_edit extends \cenozo\ui\push\base_edit
           !preg_match( '/^[0-9]{5}$/', $postcode ) )  // zip code
         throw lib::create( 'exception\notice',
           'Postal codes must be in "A1A 1A1" format, zip codes in "01234" format.', __METHOD__ );
+
+      // determine the region, timezone and daylight savings from the postcode
+      $this->get_record()->postcode = $postcode;
+      $this->get_record()->source_postcode();
     }
 
     // we'll need the arguments to send to mastodon

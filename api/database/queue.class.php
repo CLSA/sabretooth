@@ -404,12 +404,8 @@ class queue extends \cenozo\database\record
               : 'timezone_offset';
       $calling_time_sql = sprintf(
         '('.
-        '  timezone_offset IS NULL OR'.
-        '  daylight_savings IS NULL OR'.
-        '  ('.
-        '    TIME( %s + INTERVAL %s HOUR ) >= "<CALLING_START_TIME>" AND'.
-        '    TIME( %s + INTERVAL %s HOUR ) < "<CALLING_END_TIME>"'.
-        '  )'.
+        '  TIME( %s + INTERVAL %s HOUR ) >= "<CALLING_START_TIME>" AND'.
+        '  TIME( %s + INTERVAL %s HOUR ) < "<CALLING_END_TIME>"'.
         ')',
         $viewing_date,
         $offset,
@@ -620,41 +616,17 @@ class queue extends \cenozo\database\record
     else if( 'new participant outside calling time' == $queue )
     {
       $parts = self::get_query_parts( 'new participant' );
-
-      if( self::use_calling_times() && $check_time )
-      {
-        // Need to join to the address_info database in order to determine the
-        // participant's local time
-        $parts['join'][] =
-          'LEFT JOIN address_info.postcode '.
-          'ON postcode.postcode = participant.postcode';
-        $parts['where'][] = 'NOT '.$calling_time_sql;
-      }
-      else
-      {
-        $parts['where'][] = 'NOT true'; // purposefully a negative tautology
-      }
-        
+      $parts['where'][] = $check_time
+                        ? 'NOT '.$calling_time_sql
+                        : 'NOT true'; // purposefully a negative tautology
       return $parts;
     }
     else if( 'new participant within calling time' == $queue )
     {
       $parts = self::get_query_parts( 'new participant' );
-
-      if( self::use_calling_times() && $check_time )
-      {
-        // Need to join to the address_info database in order to determine the
-        // participant's local time
-        $parts['join'][] =
-          'LEFT JOIN address_info.postcode '.
-          'ON postcode.postcode = participant.postcode';
-        $parts['where'][] = $calling_time_sql;
-      }
-      else
-      {
-        $parts['where'][] = 'true'; // purposefully a negative tautology
-      }
-        
+      $parts['where'][] = $check_time
+                        ? $calling_time_sql
+                        : 'true'; // purposefully a tautology
       return $parts;
     }
     else if( 'new participant always available' == $queue )
@@ -733,41 +705,17 @@ class queue extends \cenozo\database\record
       else if( 'phone call status outside calling time' == $queue )
       {
         $parts = self::get_query_parts( 'phone call status ready', $phone_call_status );
-
-        if( self::use_calling_times() && $check_time )
-        {
-          // Need to join to the address_info database in order to determine the
-          // participant's local time
-          $parts['join'][] =
-            'LEFT JOIN address_info.postcode '.
-            'ON postcode.postcode = participant.postcode';
-          $parts['where'][] = 'NOT '.$calling_time_sql;
-        }
-        else
-        {
-          $parts['where'][] = 'NOT true'; // purposefully a negative tautology
-        }
-          
+        $parts['where'][] = $check_time
+                          ? 'NOT '.$calling_time_sql
+                          : 'NOT true'; // purposefully a negative tautology
         return $parts;
       }
       else if( 'phone call status within calling time' == $queue )
       {
         $parts = self::get_query_parts( 'phone call status ready', $phone_call_status );
-
-        if( self::use_calling_times() && $check_time )
-        {
-          // Need to join to the address_info database in order to determine the
-          // participant's local time
-          $parts['join'][] =
-            'LEFT JOIN address_info.postcode '.
-            'ON postcode.postcode = participant.postcode';
-          $parts['where'][] = $calling_time_sql;
-        }
-        else
-        {
-          $parts['where'][] = 'true'; // purposefully a tautology
-        }
-          
+        $parts['where'][] = $check_time
+                          ? $calling_time_sql
+                          : 'true'; // purposefully a tautology
         return $parts;
       }
       else if( 'phone call status always available' == $queue )
@@ -862,30 +810,6 @@ class queue extends \cenozo\database\record
     self::$viewing_date = $datetime_obj->format( 'Y-m-d' );
   }
   
-  /**
-   * Determines whether calling times are enabled.
-   * 
-   * In order to restrict calling times based on participant's local time zones an
-   * address_info database which lists timezones for postal and zip codes is needed.
-   * This method reports calling times as enabled if that database is found.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return boolean
-   * @access protected
-   * @static
-   */
-  protected static function use_calling_times()
-  {
-    if( is_null( self::$calling_times_enabled ) )
-    {
-      self::$calling_times_enabled = 0 < static::db()->get_one(
-        'SELECT COUNT(*) '.
-        'FROM information_schema.schemata '.
-        'WHERE schema_name = "address_info"' );
-    }
-
-    return self::$calling_times_enabled;
-  }
-
   /**
    * The qnaire to restrict the queue to.
    * @author Patrick Emond <emondpd@mcmaster.ca>

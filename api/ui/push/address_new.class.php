@@ -62,6 +62,8 @@ class address_new extends \cenozo\ui\push\base_new
     }
 
     // no errors, go ahead and make the change
+    $this->get_record()->postcode = $postcode;
+    $this->get_record()->source_postcode();
     parent::finish();
 
     // now send the same request to mastodon

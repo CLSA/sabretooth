@@ -30,6 +30,11 @@
 
 {% endblock javascript %}
 
+{% block post_edit %}
+  // reload page after editing the postcode to update the timezone, daylight savings and region
+  if( "postcode" == column_name ) slot_refresh( {{ slot }} );
+{% endblock post_edit %} 
+
 {% block record_items %}
   
   {{ parent() }}

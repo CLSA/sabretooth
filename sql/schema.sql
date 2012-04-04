@@ -265,6 +265,8 @@ CREATE  TABLE IF NOT EXISTS `address` (
   `city` VARCHAR(100) NOT NULL ,
   `region_id` INT UNSIGNED NOT NULL ,
   `postcode` VARCHAR(10) NOT NULL ,
+  `timezone_offset` FLOAT NOT NULL ,
+  `daylight_savings` TINYINT(1)  NOT NULL ,
   `january` TINYINT(1)  NOT NULL DEFAULT true ,
   `february` TINYINT(1)  NOT NULL DEFAULT true ,
   `march` TINYINT(1)  NOT NULL DEFAULT true ,
