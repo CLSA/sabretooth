@@ -9,6 +9,17 @@
 
 {% block javascript %}
   <script type="text/javascript">
+    function break_dialog() {
+      confirm_dialog(
+        "On a break",
+        "<p>Close this window when you wish to end your break.</p>",
+        function() {
+          ajax_push( "operator", "end_break" );
+        },
+        false
+      );
+    }
+
     $( function() {
       {% if participant_id|default(false) %}
         // view participant button
@@ -87,16 +98,11 @@
 
         // go on break button
         $( "#{{ widget.full }}__break" ).click( function() {
-          if( ajax_push( "operator", "begin_break" ) )
-            confirm_dialog(
-              "On a break",
-              "<p>Close this window when you wish to end your break.</p>",
-              function() {
-                ajax_push( "operator", "end_break" );
-              },
-              false
-            );
+          if( ajax_push( "operator", "begin_break" ) ) break_dialog();
         } );
+
+        {# show the break dialog if the operator is on break #}
+        {% if on_break %}break_dialog();{% endif %}
     
       {% endif %}
     } );

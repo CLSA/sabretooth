@@ -42,6 +42,7 @@ class operator_assignment extends \cenozo\ui\widget
     parent::finish();
     
     $session = lib::create( 'business\session' );
+    $db_user = $session->get_user();
     $db_role = $session->get_role();
     $db_site = $session->get_site();
 
@@ -93,7 +94,14 @@ class operator_assignment extends \cenozo\ui\widget
 
     // see if this user has an open assignment
     $db_assignment = $session->get_current_assignment();
-    if( !is_null( $db_assignment ) )
+    if( is_null( $db_assignment ) )
+    {
+      // determine whether the operator is on a break
+      $away_time_mod = lib::create( 'database\modifier' );
+      $away_time_mod->where( 'end_datetime', '=', NULL );
+      $this->set_variable( 'on_break', 0 < $db_user->get_away_time_count( $away_time_mod ) );
+    }
+    else
     { // fill out the participant's details
       $db_interview = $db_assignment->get_interview();
       $db_participant = $db_interview->get_participant();
