@@ -9,24 +9,6 @@
 
 {% from 'macros.twig' import note_widget %}
 
-{% block javascript %}
-  {{ parent() }}
-  <script type="text/javascript">
-    $( function() {
-      $( "#{{ widget.full }}_sync" ).click( function() {
-        slot_load( {{ slot }}, "participant", "sync" );
-      } );
-    } );
-  </script>
-{% endblock javascript %}
-
-{% block prelist %}
-  {{ parent() }}
-  <span class="spacer">
-    <button id="{{ widget.full }}_sync">Sync Participants</button>
-  </span>
-{% endblock prelist %}
-
 {% block header_button_columns %}
   <th width="1%"></th>
 {% endblock header_button_columns %}
