@@ -32,20 +32,17 @@
 
 {% endblock javascript %}
 
-{% block record_items %}
-  {{ parent() }}
+{% block record_extra_post_items %}
   {% if is_mid_tier %}
-    <hr class="ui-widget ui-widget-content">
-    <table>
-      <tr id="{{widget.full }}__force_row">
-        <td class="heading">Force appointment:</td>
-        <td class="content">
-          <input id="{{ widget.full }}__force" type="checkbox" />
-        </td>  
-      </tr>
-    </table>
+    <tr><td></td><td><hr class="ui-widget ui-widget-content" /></td></tr>
+    <tr id="{{widget.full }}__force_row">
+      <td class="heading">Force appointment:</td>
+      <td class="content">
+        <input id="{{ widget.full }}__force" type="checkbox" />
+      </td>  
+    </tr>
   {% endif %}  
-{% endblock record_items %}
+{% endblock record_extra_post_items %}
 
 {% block record %}
   

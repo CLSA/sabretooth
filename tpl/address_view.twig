@@ -35,48 +35,44 @@
   if( "postcode" == column_name ) slot_refresh( {{ slot }} );
 {% endblock post_edit %} 
 
-{% block record_items %}
+{% block record_extra_post_items %}
   
-  {{ parent() }}
-  <hr class="ui-widget ui-widget-content">
-  <table>
-    <tr>
-      <td class="heading">Active months:</td>
-      <td class="content">
-        J<input id="{{ widget.full }}__january" type="checkbox"
-                name="january" {{ january ? "checked" : "" }} />
-        F<input id="{{ widget.full }}__february" type="checkbox"
-                name="february" {{ february ? "checked" : "" }} />
-        M<input id="{{ widget.full }}__march" type="checkbox"
-                name="march" {{ march ? "checked" : "" }} />
-        A<input id="{{ widget.full }}__april" type="checkbox"
-                name="april" {{ april ? "checked" : "" }} />
-        M<input id="{{ widget.full }}__may" type="checkbox"
-                name="may" {{ may ? "checked" : "" }} />
-        J<input id="{{ widget.full }}__june" type="checkbox"
-                name="june" {{ june ? "checked" : "" }} />
-      </td>
-    </tr>
-    <tr>
-      <td class="heading"></td>
-      <td class="content">
-        J<input id="{{ widget.full }}__july" type="checkbox"
-                name="july" {{ july ? "checked" : "" }} />
-        A<input id="{{ widget.full }}__august" type="checkbox"
-                name="august" {{ august ? "checked" : "" }} />
-        S<input id="{{ widget.full }}__september" type="checkbox"
-                name="september" {{ september ? "checked" : "" }} />
-        O<input id="{{ widget.full }}__october" type="checkbox"
-                name="october" {{ october ? "checked" : "" }} />
-        N<input id="{{ widget.full }}__november" type="checkbox"
-                name="november" {{ november ? "checked" : "" }} />
-        D<input id="{{ widget.full }}__december" type="checkbox"
-                name="december" {{ december ? "checked" : "" }} />
-      </td>
-    </tr>
-  </table>
+  <tr>
+    <td class="heading">Active months:</td>
+    <td class="content">
+      J<input id="{{ widget.full }}__january" type="checkbox"
+              name="january" {{ january ? "checked" : "" }} />
+      F<input id="{{ widget.full }}__february" type="checkbox"
+              name="february" {{ february ? "checked" : "" }} />
+      M<input id="{{ widget.full }}__march" type="checkbox"
+              name="march" {{ march ? "checked" : "" }} />
+      A<input id="{{ widget.full }}__april" type="checkbox"
+              name="april" {{ april ? "checked" : "" }} />
+      M<input id="{{ widget.full }}__may" type="checkbox"
+              name="may" {{ may ? "checked" : "" }} />
+      J<input id="{{ widget.full }}__june" type="checkbox"
+              name="june" {{ june ? "checked" : "" }} />
+    </td>
+  </tr>
+  <tr>
+    <td class="heading"></td>
+    <td class="content">
+      J<input id="{{ widget.full }}__july" type="checkbox"
+              name="july" {{ july ? "checked" : "" }} />
+      A<input id="{{ widget.full }}__august" type="checkbox"
+              name="august" {{ august ? "checked" : "" }} />
+      S<input id="{{ widget.full }}__september" type="checkbox"
+              name="september" {{ september ? "checked" : "" }} />
+      O<input id="{{ widget.full }}__october" type="checkbox"
+              name="october" {{ october ? "checked" : "" }} />
+      N<input id="{{ widget.full }}__november" type="checkbox"
+              name="november" {{ november ? "checked" : "" }} />
+      D<input id="{{ widget.full }}__december" type="checkbox"
+              name="december" {{ december ? "checked" : "" }} />
+    </td>
+  </tr>
 
-{% endblock record_items %}
+{% endblock record_extra_post_items %}
 
 {% block post_record %}
 

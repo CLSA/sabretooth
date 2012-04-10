@@ -30,13 +30,18 @@ class user_view extends \cenozo\ui\widget\user_view
     $session = lib::create( 'business\session' );
     $role_class_name = lib::get_class_name( 'database\role' );
     $is_operator = $this->get_record()->has_access(
-                     $session->get_site(),
-                     $role_class_name::get_unique_record( 'name', 'operator' ) );
+                   $session->get_site(),
+                   $role_class_name::get_unique_record( 'name', 'operator' ) );
 
     // only show shift calendar if the current user's role is greater than the base tier and
     // the viewed user is an operator at this site
-    $this->set_variable( 'view_shifts',
-      $is_operator && 1 < $session->get_role()->tier );
+    $view_shifts = $is_operator && 1 < $session->get_role()->tier;
+    $this->set_variable( 'view_shifts', $view_shifts );
+    if( $view_shifts )
+      $this->add_action( 'calendar', 'Shift Calendar', NULL,
+        'View the operator\'s shift calendar.' );
+
+    $this->finish_setting_items();
   }
 }
 ?>

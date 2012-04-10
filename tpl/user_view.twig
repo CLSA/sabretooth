@@ -10,39 +10,23 @@
 {% block javascript %}
   
   {{ parent() }}
-  {% if view_shifts or reset_password or reset_password %}
+  {% if view_shifts %}
     <script type="text/javascript">
       $( function() {
-        {% if reset_password %}
-          $( "#{{ widget.full }}__reset_password" ).click( function() {
-            confirm_dialog(
-              "Reset Password",
-              "Are you sure you wish to reset this user's password?",
-              function() { ajax_push( 'user', 'reset_password', { "id": {{ id }} } ); }
-            );
-          } );
-        {% endif %}
+        // shift calendar button
+        $( "#{{ widget.full }}__calendar" ).click( function() {
+          slot_load( "{{ widget.full }}", "shift", "calendar", { user_id: {{ id }} } );
+          $( "#{{ widget.full }}_slot" ).dialog( "open" );
+        } );
         
-        {% if set_password %}
-          // TODO: implement set-password
-        {% endif %}
-
-        {% if view_shifts %}
-          // shift calendar button
-          $( "#{{ widget.full }}__calendar" ).click( function() {
-            slot_load( "{{ widget.full }}", "shift", "calendar", { user_id: {{ id }} } );
-            $( "#{{ widget.full }}_slot" ).dialog( "open" );
-          } );
-          
-          // shift calendar dialog
-          $( "#{{ widget.full }}_slot" ).dialog( { 
-            autoOpen: false,
-            title: "Shift calendar",
-            modal: false,
-            width: 800,
-            height: 600
-          } );
-        {% endif %}
+        // shift calendar dialog
+        $( "#{{ widget.full }}_slot" ).dialog( { 
+          autoOpen: false,
+          title: "Shift calendar",
+          modal: false,
+          width: 800,
+          height: 600
+        } );
       } );
     </script>
   {% endif %}
@@ -54,18 +38,7 @@
 
   {{ parent() }}
   {% from 'macros.twig' import include_list %}
-  {% if view_shifts or reset_password %}
-    <div class="spacer">
-      {% if view_shifts %}
-        <button id="{{ widget.full }}__calendar">Shift Calendar</button>
-      {% endif %}
-      {% if reset_password %}
-        <button id="{{ widget.full }}__reset_password">Reset Password</button>
-      {% endif %}
-      {% if reset_password %}
-        <button id="{{ widget.full }}__set_password">Set Password</button>
-      {% endif %}
-    </div>
+  {% if view_shifts %}
     <div id="{{ widget.full }}_slot" />
   {% endif %}
   {{ include_list( 'access', access_list|default(false), true ) }}
