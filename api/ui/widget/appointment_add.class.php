@@ -54,6 +54,7 @@ class appointment_add extends base_appointment_view
         'Appointment widget must have a parent with participant as the subject.', __METHOD__ );
 
     $db_participant = lib::create( 'database\participant', $this->parent->get_record()->id );
+    $this->set_variable( 'site_id', $db_participant->site_id );
     
     // determine the time difference
     $db_address = $db_participant->get_first_address();

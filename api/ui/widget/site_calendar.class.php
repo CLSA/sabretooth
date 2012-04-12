@@ -41,6 +41,14 @@ class site_calendar extends \cenozo\ui\widget\base_calendar
   public function finish()
   {
     parent::finish();
+
+    // get the referred participant's site and make id a variable
+    if( !is_null( $this->parent ) &&
+        'appointment_add' == $this->parent->get_class_name() &&
+        !is_null( $this->parent->parent ) &&
+        'participant_add_appointment' == $this->parent->parent->get_class_name() )
+      $this->set_variable( 'site_id', $this->parent->parent->get_record()->get_primary_site()->id );
+
     $this->set_variable( 'allow_all_day', false );
     $this->set_variable( 'editable', false );
   }

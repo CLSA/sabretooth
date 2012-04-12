@@ -29,7 +29,11 @@ class self_menu extends \cenozo\ui\widget\self_menu
   {
     parent::__construct( $args );
     
-    $exclude = array(
+    // remove the site calendar from the admin and clerk roles
+    $role = lib::create( 'business\session' )->get_role()->name;
+    if( 'administrator' == $role || 'clerk' == $role ) $this->exclude_calendar( 'site' );
+
+    $this->exclude_list( array(
       'address',
       'appointment',
       'availability',
@@ -40,8 +44,7 @@ class self_menu extends \cenozo\ui\widget\self_menu
       'phone_call',
       'recording',
       'source_survey',
-      'source_withdraw' );
-    $this->exclude_widget_list = array_merge( $this->exclude_widget_list, $exclude );
+      'source_withdraw' ) );
   }
 
   /**

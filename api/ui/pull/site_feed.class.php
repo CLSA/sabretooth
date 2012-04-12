@@ -39,7 +39,10 @@ class site_feed extends \cenozo\ui\pull\base_feed
    */
   public function finish()
   {
-    $db_site = lib::create( 'business\session' )->get_site();
+    $site_id = $this->get_argument( 'site_id', false );
+    $db_site = $site_id
+             ? lib::create( 'database\site', $site_id )
+             : lib::create( 'business\session' )->get_site();
 
     $setting_manager = lib::create( 'business\setting_manager' );
     $full_duration = $setting_manager->get_setting( 'appointment', 'full duration' );
