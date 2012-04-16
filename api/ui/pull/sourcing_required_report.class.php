@@ -31,15 +31,10 @@ class sourcing_required_report extends \cenozo\ui\pull\base_report
 
   public function finish()
   {
+    $participant_class_name = lib::get_class_name( 'database\participant' );
+
     // get the report args
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-    $class_name = lib::get_class_name( 'database\participant' );
-    if( $restrict_site_id )
-    {
-      $db_site = lib::create( 'database\site', $restrict_site_id );
-      $participant_list = $class_name::select_for_site( $db_site );                      
-    }
-    else $participant_list = $class_name::select();
 
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
     $this->add_title( sprintf( 'Participants requiring sourcing for the '.
@@ -54,8 +49,12 @@ class sourcing_required_report extends \cenozo\ui\pull\base_report
     $phone_call_mod->limit( 1 );
         
     $contents = array();
+
     // loop through participants searching for those who have completed their most recent interview
-    foreach( $participant_list as $db_participant )
+    $participant_mod = lib::create( 'database\modifier' );
+    if( $restrict_site_id )
+      $participant_mod->where( 'participant_site.site_id', '=', $restrict_site_id );
+    foreach( $participant_class_name::select( $participant_mod ) as $db_participant )
     {
       // dont bother with deceased or otherwise impaired
       if( !is_null( $db_participant->status ) ) continue;

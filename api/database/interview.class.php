@@ -18,69 +18,22 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class interview extends \cenozo\database\has_note
 {
   /**
-   * Identical to the parent's select method but restrict to a particular site.
-   * 
+   * Extend the select() method by adding a custom join to the participant_site table.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param site $db_site The site to restrict the selection to.
-   * @param modifier $modifier Modifications to the selection.
+   * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
    * @return array( record ) | int
    * @static
    * @access public
    */
-  public static function select_for_site( $db_site, $modifier = NULL, $count = false )
+  public static function select( $modifier = NULL, $count = false )
   {
-    // if there is no site restriction then just use the parent method
-    if( is_null( $db_site ) ) return parent::select( $modifier, $count );
+    $participant_site_mod = lib::create( 'database\modifier' );
+    $participant_site_mod->where(
+      'interview.participant_id', '=', 'participant_site.participant_id', false );
+    static::customize_join( 'participant_site', $participant_site_mod );
 
-    // left join the participant, participant_primary_address and address tables
-    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $sql = sprintf( ( $count ? 'SELECT COUNT( %s.%s ) ' : 'SELECT %s.%s ' ).
-                    'FROM %s '.
-                    'LEFT JOIN participant '.
-                    'ON %s.participant_id = participant.id '.
-                    'LEFT JOIN participant_primary_address '.
-                    'ON participant.id = participant_primary_address.participant_id '.
-                    'LEFT JOIN address '.
-                    'ON participant_primary_address.address_id = address.id '.
-                    'WHERE ( participant.site_id = %d '.
-                    '  OR ( participant.site_id IS NULL '.
-                    '    AND address.region_id IN ( '.
-                    '      SELECT id FROM region WHERE site_id = %d ) ) ) %s',
-                    static::get_table_name(),
-                    static::get_primary_key_name(),
-                    static::get_table_name(),
-                    static::get_table_name(),
-                    $db_site->id,
-                    $db_site->id,
-                    $modifier->get_sql( true ) );
-
-    if( $count )
-    {
-      return intval( static::db()->get_one( $sql ) );
-    }
-    else
-    {
-      $id_list = static::db()->get_col( $sql );
-      $records = array();
-      foreach( $id_list as $id ) $records[] = new static( $id );
-      return $records;
-    }
-  }
-
-  /**
-   * Identical to the parent's count method but restrict to a particular site.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param site $db_site The site to restrict the count to.
-   * @param modifier $modifier Modifications to the count.
-   * @return int
-   * @static
-   * @access public
-   */
-  public static function count_for_site( $db_site, $modifier = NULL )
-  {
-    return static::select_for_site( $db_site, $modifier, true );
+    return parent::select( $modifier, $count );
   }
   
   /**

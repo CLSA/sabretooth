@@ -131,11 +131,12 @@ class site_feed extends \cenozo\ui\pull\base_feed
 
     // fill in the appointments which have not been completed
     $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'participant_site.site_id', '=', $db_site->id );
     $modifier->where( 'datetime', '>=', $this->start_datetime );
     $modifier->where( 'datetime', '<', $this->end_datetime );
     $modifier->order( 'datetime' );
     $appointment_class_name = lib::get_class_name( 'database\appointment' );
-    foreach( $appointment_class_name::select_for_site( $db_site, $modifier ) as $db_appointment )
+    foreach( $appointment_class_name::select( $modifier ) as $db_appointment )
     {
       // determine the appointment interval
       $interval = sprintf(

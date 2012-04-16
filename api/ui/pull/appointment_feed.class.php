@@ -41,14 +41,15 @@ class appointment_feed extends \cenozo\ui\pull\base_feed
   {
     // create a list of appointments between the feed's start and end time
     $modifier = lib::create( 'database\modifier' );
+    $modifier->where(
+      'participant_site.site_id', '=', lib::create( 'business\session' )->get_site()->id );
     $modifier->where( 'datetime', '>=', $this->start_datetime );
     $modifier->where( 'datetime', '<', $this->end_datetime );
 
     $event_list = array();
-    $db_site = lib::create( 'business\session' )->get_site();
     $appointment_class_name = lib::get_class_name( 'database\appointment' );
     $setting_manager = lib::create( 'business\setting_manager');
-    foreach( $appointment_class_name::select_for_site( $db_site, $modifier ) as $db_appointment )
+    foreach( $appointment_class_name::select( $modifier ) as $db_appointment )
     {
       $start_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
       $end_datetime_obj = clone $start_datetime_obj;

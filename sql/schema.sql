@@ -816,6 +816,11 @@ CREATE TABLE IF NOT EXISTS `participant_primary_address` (`participant_id` INT, 
 CREATE TABLE IF NOT EXISTS `participant_last_contacted_phone_call` (`participant_id` INT, `phone_call_id` INT);
 
 -- -----------------------------------------------------
+-- Placeholder table for view `participant_site`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `participant_site` (`participant_id` INT, `site_id` INT);
+
+-- -----------------------------------------------------
 -- View `participant_first_address`
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `participant_first_address` ;
@@ -926,6 +931,21 @@ AND phone_call_1.start_datetime = (
   AND assignment_2.interview_id = interview_2.id
   AND interview_1.participant_id = interview_2.participant_id
   GROUP BY interview_2.participant_id );
+
+-- -----------------------------------------------------
+-- View `participant_site`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `participant_site` ;
+DROP TABLE IF EXISTS `participant_site`;
+CREATE  OR REPLACE VIEW `participant_site` AS
+SELECT participant.id AS participant_id, IF( ISNULL( participant.site_id ), region.site_id, participant.site_id ) AS site_id
+FROM participant
+LEFT JOIN participant_primary_address
+ON participant.id = participant_primary_address.participant_id
+LEFT JOIN address
+ON participant_primary_address.address_id = address.id
+LEFT JOIN region
+ON address.region_id = region.id;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

@@ -15,7 +15,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * 
  * @package sabretooth\ui
  */
-class participant_list extends \cenozo\ui\widget\site_restricted_list
+class participant_list extends site_restricted_list
 {
   /**
    * Constructor
@@ -30,12 +30,12 @@ class participant_list extends \cenozo\ui\widget\site_restricted_list
     parent::__construct( 'participant', $args );
 
     $this->add_column( 'uid', 'string', 'Unique ID', true );
-    // sorting by source name will require more work if needed because
-    // participant::select_for_site() doesn't join the source table
-    $this->add_column( 'source.name', 'string', 'Source', false );
+    $this->add_column( 'source.name', 'string', 'Source', true );
     $this->add_column( 'first_name', 'string', 'First Name', true );
     $this->add_column( 'last_name', 'string', 'Last Name', true );
     $this->add_column( 'status', 'string', 'Condition', true );
+
+    $this->participant_site_based = true;
   }
   
   /**
@@ -69,38 +69,6 @@ class participant_list extends \cenozo\ui\widget\site_restricted_list
         'Synchronize participants with Mastodon' );
 
     $this->finish_setting_rows();
-  }
-
-  /**
-   * Overrides the parent class method to restrict participant list based on user's role
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the list.
-   * @return int
-   * @access protected
-   */
-  protected function determine_record_count( $modifier = NULL )
-  {
-    $class_name = lib::get_class_name( 'database\participant' );
-    return is_null( $this->db_restrict_site )
-         ? parent::determine_record_count( $modifier )
-         : $class_name::count_for_site( $this->db_restrict_site, $modifier );
-  }
-  
-  /**
-   * Overrides the parent class method to restrict participant list based on user's role
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the list.
-   * @return array( record )
-   * @access protected
-   */
-  protected function determine_record_list( $modifier = NULL )
-  {
-    $class_name = lib::get_class_name( 'database\participant' );
-    return is_null( $this->db_restrict_site )
-         ? parent::determine_record_list( $modifier )
-         : $class_name::select_for_site( $this->db_restrict_site, $modifier );
   }
 }
 ?>
