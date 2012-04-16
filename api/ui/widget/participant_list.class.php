@@ -64,8 +64,9 @@ class participant_list extends \cenozo\ui\widget\site_restricted_list
 
     $operation_class_name = lib::get_class_name( 'database\operation' );
     $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'sync' );
-    $this->add_action( 'sync', 'Participant Sync', $db_operation,
-      'Synchronize participants with Mastodon' );
+    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+      $this->add_action( 'sync', 'Participant Sync', $db_operation,
+        'Synchronize participants with Mastodon' );
 
     $this->finish_setting_rows();
   }
