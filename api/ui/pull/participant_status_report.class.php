@@ -123,8 +123,10 @@ class participant_status_report extends \cenozo\ui\pull\base_report
                 : $db_address->get_region()->abbreviation;
       }
 
+      $phone_call_mod = lib::create( 'database\modifier' );
+      $phone_call_mod->where( 'participant.id', '=', $db_participant->id );
       $grand_totals[ $locale ][ 'Total number of calls' ] +=
-        $phone_call_class_name::count_for_participant( $db_participant );
+        $phone_call_class_name::count( $phone_call_mod );
 
       if( 'deceased' == $db_participant->status )
       {
