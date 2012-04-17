@@ -161,7 +161,7 @@ class appointment extends \cenozo\database\record
     
     // and how many appointments are during this time?
     $modifier = lib::create( 'database\modifier' );
-    $modifier->Where( 'participant_site.site_id', '=', $db_site->id );
+    $modifier->where( 'participant_site.site_id', '=', $db_site->id );
     $modifier->where( 'datetime', '>=', $start_datetime_obj->format( 'Y-m-d' ) );
     $modifier->where( 'datetime', '<', $next_day_datetime_obj->format( 'Y-m-d' ) );
     if( !is_null( $this->id ) ) $modifier->where( 'appointment.id', '!=', $this->id );
