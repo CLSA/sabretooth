@@ -55,11 +55,15 @@ class queue_restriction_view extends \cenozo\ui\widget\base_view
     {
       $sites = array();
       $site_class_name = lib::get_class_name( 'database\site' );
-      foreach( $site_class_name::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
+      $site_mod = lib::create( 'database\modifier' );
+      $site_mod->order( 'name' );
+      foreach( $site_class_name::select( $site_mod ) as $db_site )
+        $sites[$db_site->id] = $db_site->name;
     }
     $regions = array();
     $region_class_name = lib::get_class_name( 'database\region' );
-    foreach( $region_class_name::select() as $db_region ) $regions[$db_region->id] = $db_region->name;
+    foreach( $region_class_name::select() as $db_region )
+      $regions[$db_region->id] = $db_region->name;
 
     // set the view's items
     $this->set_item(

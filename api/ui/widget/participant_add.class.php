@@ -63,7 +63,10 @@ class participant_add extends \cenozo\ui\widget\base_view
     $statuses = array_combine( $statuses, $statuses );
     $sites = array();
     $site_class_name = lib::get_class_name( 'database\site' );
-    foreach( $site_class_name::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
+    $site_mod = lib::create( 'database\modifier' );
+    $site_mod->order( 'name' );
+    foreach( $site_class_name::select( $site_mod ) as $db_site )
+      $sites[$db_site->id] = $db_site->name;
 
     // set the view's items
     $this->set_item( 'active', true, true );

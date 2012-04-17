@@ -42,7 +42,9 @@ class user_add extends \cenozo\ui\widget\user_add
     if( $is_top_tier )
     {
       $site_class_name = lib::get_class_name( 'database\site' );
-      foreach( $site_class_name::select() as $db_site )
+      $site_mod = lib::create( 'database\modifier' );
+      $site_mod->order( 'name' );
+      foreach( $site_class_name::select( $site_mod ) as $db_site )
         $sites[$db_site->id] = $db_site->name;
     }
 
