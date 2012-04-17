@@ -29,8 +29,8 @@ abstract class site_restricted_list extends \cenozo\ui\widget\site_restricted_li
   {
     if( !is_null( $this->db_restrict_site ) )
     {
-      if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-      $site_column = ( $this->participant_site_based ? 'participant_site.' : '' ).'site_id';
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+      $site_column = ( $this->extended_site_selection ? 'participant_site.' : '' ).'site_id';
       $modifier->where( $site_column, '=', $this->db_restrict_site->id );
     }
 
@@ -52,8 +52,8 @@ abstract class site_restricted_list extends \cenozo\ui\widget\site_restricted_li
   {
     if( !is_null( $this->db_restrict_site ) )
     {
-      if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
-      $site_column = ( $this->participant_site_based ? 'participant_site.' : '' ).'site_id';
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+      $site_column = ( $this->extended_site_selection ? 'participant_site.' : '' ).'site_id';
       $modifier->where( $site_column, '=', $this->db_restrict_site->id );
     }
 
@@ -68,6 +68,6 @@ abstract class site_restricted_list extends \cenozo\ui\widget\site_restricted_li
    * @var boolean
    * @access protected
    */
-  protected $participant_site_based = false;
+  protected $extended_site_selection = false;
 }
 ?>

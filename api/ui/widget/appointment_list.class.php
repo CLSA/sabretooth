@@ -34,7 +34,7 @@ class appointment_list extends \cenozo\ui\widget\site_restricted_list
     $this->add_column( 'datetime', 'datetime', 'Date', true );
     $this->add_column( 'state', 'string', 'State', false );
 
-    $this->participant_site_based = true;
+    $this->extended_site_selection = true;
   }
   
   /**

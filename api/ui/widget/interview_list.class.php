@@ -34,7 +34,7 @@ class interview_list extends site_restricted_list
     $this->add_column( 'completed', 'boolean', 'Completed', true );
     $this->add_column( 'rescored', 'enum', 'Rescored', true );
 
-    $this->participant_site_based = true;
+    $this->extended_site_selection = true;
   }
   
   /**
