@@ -473,10 +473,6 @@ class queue extends \cenozo\database\record
       $parts = array(
         'from' => array( 'participant' ),
         'join' => array(
-          'LEFT JOIN phone '.
-          'ON phone.participant_id = participant.id '.
-          'AND phone.active '.
-          'AND phone.number IS NOT NULL',
           'LEFT JOIN participant_primary_address '.
           'ON participant.id = participant_primary_address.participant_id',
           'LEFT JOIN address AS primary_address '.
