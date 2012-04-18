@@ -144,6 +144,20 @@ class participant extends \cenozo\database\has_note
   }
 
   /**
+   * Get the default site that the participant belongs to.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return site
+   * @access public
+   */
+  public function get_default_site()
+  {
+    $db_site = NULL;
+    $db_address = $this->get_primary_address();
+    if( !is_null( $db_address ) ) $db_site = $db_address->get_region()->get_site();
+    return $db_site;
+  }
+
+  /**
    * Get the site that the participant belongs to.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return site
@@ -151,29 +165,7 @@ class participant extends \cenozo\database\has_note
    */
   public function get_primary_site()
   {
-    // check the primary key value
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to query participant with no id.' );
-      return NULL;
-    }
-    
-    $db_site = NULL;
-
-    if( !is_null( $this->site_id ) )
-    { // site is specifically defined
-      $db_site = $this->get_site();
-    }
-    else
-    {
-      $db_address = $this->get_primary_address();
-      if( !is_null( $db_address ) )
-      { // there is a primary address
-        $db_site = $db_address->get_region()->get_site();
-      }
-    }
-
-    return $db_site;
+    return is_null( $this->site_id ) ? $this->get_default_site() : $this->get_site();
   }
   
   /**
