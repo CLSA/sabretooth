@@ -66,7 +66,7 @@ class address_edit extends \cenozo\ui\push\base_edit
     if( array_key_exists( 'region_id', $columns ) && $columns['region_id'] )
     {
       $db_region = lib::create( 'database\region', $columns['region_id'] );
-      unset( $args['region_id'] );
+      unset( $args['columns']['region_id'] );
       // we only include half of the unique key since the other half is added above
       $args['noid']['region.abbreviation'] = $db_region->abbreviation;
     }

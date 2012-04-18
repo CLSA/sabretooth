@@ -59,7 +59,7 @@ class phone_edit extends \cenozo\ui\push\base_edit
     if( array_key_exists( 'address_id', $columns ) && $columns['address_id'] )
     {
       $db_address = lib::create( 'database\address', $columns['address_id'] );
-      unset( $args['address_id'] );
+      unset( $args['columns']['address_id'] );
       // we only include half of the unique key since the other half is added above
       $args['noid']['address.rank'] = $db_address->rank;
     }

@@ -126,10 +126,11 @@ class participant_view extends \cenozo\ui\widget\base_view
   {
     parent::finish();
 
-    // create enum arrays
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $source_class_name = lib::get_class_name( 'database\source' );
+    $site_class_name = lib::get_class_name( 'database\site' );
 
+    // create enum arrays
     $sources = array();
     foreach( $source_class_name::select() as $db_source )
       $sources[$db_source->id] = $db_source->name;
@@ -138,7 +139,6 @@ class participant_view extends \cenozo\ui\widget\base_view
     $statuses = $participant_class_name::get_enum_values( 'status' );
     $statuses = array_combine( $statuses, $statuses );
     $sites = array();
-    $site_class_name = lib::get_class_name( 'database\site' );
     $site_mod = lib::create( 'database\modifier' );
     $site_mod->order( 'name' );
     foreach( $site_class_name::select( $site_mod ) as $db_site )
