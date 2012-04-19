@@ -47,11 +47,17 @@
 {% block widget %}
   <div class="ui-widget ui-widget-content app-widget-content">
     <div class="spacer">
-      Provide a list of participant UIDs which you wish to sync with Mastodon.
-      UIDs must be separated by a comma or space and may be qualified by single
-      or double quotes (ie: A123456 B123456 C123456).  Clicking the "update"
-      button will display a summary of changes to be performed which should be
-      carefully reviewed before proceeding with the sync.
+      <p>
+        Provide a list of participant UIDs which you wish to sync with Mastodon.
+        UIDs must be separated by a comma or space and may be qualified by single
+        or double quotes (ie: A123456 B123456 C123456).  Clicking the "update"
+        button will display a summary of changes to be performed which should be
+        carefully reviewed before proceeding with the sync.
+      </p>
+      <p>
+        If you wish to sync all participants type the word "all" instead of a UID
+        list.
+      </p>
     </div>
     <table>
       <tr>
