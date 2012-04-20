@@ -96,8 +96,8 @@ class appointment extends \cenozo\database\record
 
     // determine the full and half appointment intervals
     $setting_manager = lib::create( 'business\setting_manager' );
-    $half_duration = $setting_manager->get_setting( 'appointment', 'half duration' );
-    $full_duration = $setting_manager->get_setting( 'appointment', 'full duration' );
+    $half_duration = $setting_manager->get_setting( 'appointment', 'half duration', $db_site );
+    $full_duration = $setting_manager->get_setting( 'appointment', 'full duration', $db_site );
 
     $start_datetime_obj = util::get_datetime_object( $this->datetime );
     $next_day_datetime_obj = clone $start_datetime_obj;
@@ -254,14 +254,17 @@ class appointment extends \cenozo\database\record
     // if the appointment's reached column is set, nothing else matters
     if( !is_null( $this->reached ) ) return $this->reached ? 'reached' : 'not reached';
 
+    $db_participant = lib::create( 'database\participant', $this->participant_id );
+    $db_site = $db_participant->get_primary_site();
+
     $status = 'unknown';
     
     // settings are in minutes, time() is in seconds, so multiply by 60
     $setting_manager = lib::create( 'business\setting_manager' );
     $pre_window_time  = 60 * $setting_manager->get_setting(
-                              'appointment', 'call pre-window' );
+                              'appointment', 'call pre-window', $db_site );
     $post_window_time = 60 * $setting_manager->get_setting(
-                              'appointment', 'call post-window' );
+                              'appointment', 'call post-window', $db_site );
     $now = util::get_datetime_object()->getTimestamp();
     $appointment = util::get_datetime_object( $this->datetime )->getTimestamp();
 

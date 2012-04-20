@@ -32,8 +32,11 @@ class queue_list extends \cenozo\ui\widget\base_list
     // make sure to display all queues on the same page
     $this->set_items_per_page( 1000 );
     
+    $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
+
     $this->add_column( 'rank', 'number', 'Rank', true );
-    $this->add_column( 'enabled', 'boolean', 'Enabled', false );
+    if( $restrict_site_id )
+      $this->add_column( 'enabled', 'boolean', 'Enabled', false );
     $this->add_column( 'participant_count', 'number', 'Participants', false );
     $this->add_column( 'description', 'text', 'Description', true, true, 'left' );
     $session = lib::create( 'business\session' );
@@ -107,7 +110,8 @@ class queue_list extends \cenozo\ui\widget\base_list
 
       $this->add_row( $record->id,
         array( 'rank' => $record->rank,
-               'enabled' => $setting_manager->get_setting( 'queue state', $record->name ),
+               'enabled' => $setting_manager->get_setting(
+                 'queue state', $record->name, $db_restrict_site ),
                'participant_count' => $record->get_participant_count(),
                // I hate to put html here, but the alternative is to implement code in the
                // parent class for this ONLY instance of where we need this functionality.

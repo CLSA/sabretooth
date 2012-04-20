@@ -48,7 +48,6 @@
   
   {{ parent() }}
   {% from 'macros.twig' import include_calendar %}
-  {{ site_calendar }}
   {{ include_calendar( 'site', site_calendar|default(false), true ) }}
 
 {% endblock record %}

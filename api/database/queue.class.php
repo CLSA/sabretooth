@@ -878,13 +878,13 @@ class queue extends \cenozo\database\record
 
     // fill in the settings
     $setting_manager = lib::create( 'business\setting_manager' );
-    $setting = $setting_manager->get_setting( 'appointment', 'call pre-window' );
+    $setting = $setting_manager->get_setting( 'appointment', 'call pre-window', $this->db_site );
     $sql = str_replace( '<APPOINTMENT_PRE_WINDOW>', $setting, $sql );
-    $setting = $setting_manager->get_setting( 'appointment', 'call post-window' );
+    $setting = $setting_manager->get_setting( 'appointment', 'call post-window', $this->db_site );
     $sql = str_replace( '<APPOINTMENT_POST_WINDOW>', $setting, $sql );
-    $setting = $setting_manager->get_setting( 'calling', 'start time' );
+    $setting = $setting_manager->get_setting( 'calling', 'start time', $this->db_site );
     $sql = str_replace( '<CALLING_START_TIME>', $setting, $sql );
-    $setting = $setting_manager->get_setting( 'calling', 'end time' );
+    $setting = $setting_manager->get_setting( 'calling', 'end time', $this->db_site );
     $sql = str_replace( '<CALLING_END_TIME>', $setting, $sql );
 
     // fill in all callback timing settings
@@ -893,7 +893,8 @@ class queue extends \cenozo\database\record
     $class_name = lib::get_class_name( 'database\setting' );
     foreach( $class_name::select( $setting_mod ) as $db_setting )
     {
-      $setting = $setting_manager->get_setting( 'callback timing', $db_setting->name );
+      $setting = $setting_manager->get_setting(
+        'callback timing', $db_setting->name, $this->db_site );
       $template = sprintf( '<CALLBACK_%s>',
                            str_replace( ' ', '_', strtoupper( $db_setting->name ) ) );
       $sql = str_replace( $template, $setting, $sql );

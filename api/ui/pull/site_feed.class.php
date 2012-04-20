@@ -45,8 +45,8 @@ class site_feed extends \cenozo\ui\pull\base_feed
              : lib::create( 'business\session' )->get_site();
 
     $setting_manager = lib::create( 'business\setting_manager' );
-    $full_duration = $setting_manager->get_setting( 'appointment', 'full duration' );
-    $half_duration = $setting_manager->get_setting( 'appointment', 'half duration' );
+    $full_duration = $setting_manager->get_setting( 'appointment', 'full duration', $db_site );
+    $half_duration = $setting_manager->get_setting( 'appointment', 'half duration', $db_site );
 
     // start by creating an array with one element per day in the time span
     $start_datetime_obj = util::get_datetime_object( $this->start_datetime );
