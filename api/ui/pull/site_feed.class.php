@@ -52,6 +52,10 @@ class site_feed extends \cenozo\ui\pull\base_feed
     $start_datetime_obj = util::get_datetime_object( $this->start_datetime );
     $end_datetime_obj   = util::get_datetime_object( $this->end_datetime );
     
+    // since db_site may not be the same site as the session, convert to the correct timzeone
+    $start_datetime_obj->setTimezone( util::get_timezone_object( false, $db_site ) );
+    $end_datetime_obj->setTimezone( util::get_timezone_object( false, $db_site ) );
+
     $days = array();
     $current_datetime_obj = clone $start_datetime_obj;
     while( $current_datetime_obj->diff( $end_datetime_obj )->days )
@@ -107,6 +111,11 @@ class site_feed extends \cenozo\ui\pull\base_feed
     {
       $start_datetime_obj = util::get_datetime_object( $db_shift->start_datetime );
       $end_datetime_obj   = util::get_datetime_object( $db_shift->end_datetime );
+
+      // since db_site may not be the same site as the session, convert to the correct timzeone
+      $start_datetime_obj->setTimezone( util::get_timezone_object( false, $db_site ) );
+      $end_datetime_obj->setTimezone( util::get_timezone_object( false, $db_site ) );
+
       $date = $start_datetime_obj->format( 'Y-m-d' );
       
       if( $days[$date]['template'] )
@@ -146,6 +155,10 @@ class site_feed extends \cenozo\ui\pull\base_feed
       if( 'reached' != $state && 'not reached' != $state )
       { // incomplete appointments only
         $appointment_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
+
+        // since db_site may not be the same site as the session, convert to the correct timzeone
+        $appointment_datetime_obj->setTimezone( util::get_timezone_object( false, $db_site ) );
+
         $diffs = &$days[ $appointment_datetime_obj->format( 'Y-m-d' ) ]['diffs'];
   
         $start_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
