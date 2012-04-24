@@ -179,7 +179,8 @@ class tokens extends sid_record
               try
               {
                 $this->$key = $db_survey->get_response( $value );
-                $found = true;
+                // INT_13a matches any survey response, others match any NON NULL response
+                if( 'INT_13a' == $value || !is_null( $this->$key ) ) $found = true;
               }
               catch( \cenozo\exception\runtime $e )
               {
