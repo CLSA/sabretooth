@@ -27,12 +27,17 @@ class tokens extends sid_record
    */
   public function update_attributes( $db_participant )
   {
+    if( NULL == $this->token )
+    {
+      log::warning( 'Tried to update attributes of token without token string.' );
+      return;
+    }
+
     $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
     $db_user = lib::create( 'business\session' )->get_user();
 
     // determine the first part of the token
-    $db_interview = lib::create( 'business\session')->get_current_assignment()->get_interview();
-    $token_part = substr( static::determine_token_string( $db_interview ), 0, -1 );
+    $token_part = substr( $this->token, 0, -1 );
     
     // try getting the attributes from mastodon or sabretooth
     $participant_info = new \stdClass();
@@ -140,20 +145,20 @@ class tokens extends sid_record
         {
           $this->$key = $participant_info->data->hin_missing ? 0 : 1;
         }
-        else if( 'INT_13a' == $value )
+        else if( 'INT_13a' == $value || 'INCL_2f' == $value )
         {
           // TODO: This is a custom token attribute which refers to a specific question in the
           // introduction survey.  This code is not generic and needs to eventually be made
           // generic.
-          $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
           $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
           $source_survey_class_name = lib::get_class_name( 'database\source_survey' );
           
+          $db_interview = lib::create( 'business\session')->get_current_assignment()->get_interview();
           $phase_mod = lib::create( 'database\modifier' );
           $phase_mod->where( 'rank', '=', 1 );
           $phase_list = $db_interview->get_qnaire()->get_phase_list( $phase_mod );
 
-          // determine the SID of the first phase of the questionnaire (where INT_13a is asked)
+          // determine the SID of the first phase of the questionnaire (where the question is asked)
           if( 1 == count( $phase_list ) )
           {
             $db_phase = current( $phase_list );
@@ -163,25 +168,25 @@ class tokens extends sid_record
             $survey_class_name::set_sid(
               is_null( $db_source_survey ) ? $db_phase->sid : $db_source_survey->sid );
 
-            // determine the survey using the token
-            $token = $tokens_class_name::determine_token_string( $db_interview );
-
             $survey_mod = lib::create( 'database\modifier' );
             $survey_mod->where( 'token', 'LIKE', $token_part.'%' );
             $survey_mod->order_desc( 'datestamp' );
             $survey_list = $survey_class_name::select( $survey_mod );
-            if( count( $survey_list ) )
-            {
-              // finally, set the survey question response
-              $db_survey = current( $survey_list );
+
+            $found = false;
+            foreach( $survey_list as $db_survey )
+            { // loop through all surveys until an answer is found
               try
               {
-                $this->$key = $db_survey->get_response( 'INT_13a' );
+                $this->$key = $db_survey->get_response( $value );
+                $found = true;
               }
               catch( \cenozo\exception\runtime $e )
               {
                 // ignore the error and continue without setting the attribute
               }
+              
+              if( $found ) break;
             }
           }
         }

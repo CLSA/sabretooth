@@ -32,8 +32,7 @@ class interview_list extends \cenozo\ui\widget\site_restricted_list
     $this->add_column( 'participant.uid', 'string', 'UID', true );
     $this->add_column( 'qnaire.name', 'string', 'Questionnaire', true );
     $this->add_column( 'completed', 'boolean', 'Completed', true );
-    $this->add_column( 'recordings', 'number', 'Recordings', false );
-    $this->add_column( 'unprocessed', 'number', 'Unprocessed', false );
+    $this->add_column( 'rescored', 'enum', 'Rescored', true );
   }
   
   /**
@@ -48,18 +47,12 @@ class interview_list extends \cenozo\ui\widget\site_restricted_list
     
     foreach( $this->get_record_list() as $record )
     {
-      $recordings = $record->get_recording_count();
-      $recording_mod = lib::create( 'database\modifier' );
-      $recording_mod->where( 'processed', '=', true );
-      $processed_recordings = $record->get_recording_count( $recording_mod );
-
       // assemble the row for this record
       $this->add_row( $record->id,
         array( 'participant.uid' => $record->get_participant()->uid,
                'qnaire.name' => $record->get_qnaire()->name,
                'completed' => $record->completed,
-               'recordings' => $recordings,
-               'unprocessed' => $recordings - $processed_recordings ) );
+               'rescored' => $record->rescored ) );
     }
 
     $this->finish_setting_rows();

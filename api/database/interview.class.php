@@ -217,7 +217,35 @@ class interview extends \cenozo\database\has_note
    * @return array( record ) | int
    * @access public
    */
-  public function get_recording_list( $modifier = NULL, $count = false )
+  public function get_recording_list( $modifier = NULL )
+  {
+    $this->update_recording_list();
+    return parent::get_recording_list( $modifier );
+  }
+
+  /**
+   * Overrides the parent method in order to synchronize the recordings on file with those in
+   * the database.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the selection.
+   * @param boolean $count If true the total number of records instead of a list
+   * @return array( record ) | int
+   * @access public
+   */
+  public function get_recording_count( $modifier = NULL )
+  {
+    $this->update_recording_list();
+    return parent::get_recording_count( $modifier );
+  }
+
+  /**
+   * Builds the recording list based on recording files found in the monitor path (if set)
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function update_recording_list()
   {
     // make sure that all recordings on disk have a corresponding database record
     if( is_dir( VOIP_MONITOR_PATH ) )
@@ -226,29 +254,33 @@ class interview extends \cenozo\database\has_note
       $first = true;
       foreach( glob( sprintf( '%s/%d_*-out.wav', VOIP_MONITOR_PATH, $this->id ) ) as $filename )
       {
-        $parts = preg_split( '/[-_]/', $filename );
-        if( 3 <= count( $parts ) )
+        // remove the path from the filename
+        $parts = preg_split( '#/#', $filename );
+        if( 2 <= count( $parts ) )
         {
-          $assignment_id = 0 < $parts[1] ? $parts[1] : 'NULL';
-          $rank = 4 <= count( $parts ) ? $parts[2] + 1 : 1;
-          $values .= sprintf( '%s( %d, %s, %d, false )',
-                              $first ? '' : ', ',
-                              $this->id,
-                              $assignment_id,
-                              $rank );
-          $first = false;
+          // get the interview and assignment id from the filename
+          $parts = preg_split( '/[-_]/', end( $parts ) );
+          if( 3 <= count( $parts ) )
+          {
+            $assignment_id = 0 < $parts[1] ? $parts[1] : 'NULL';
+            $rank = 4 <= count( $parts ) ? $parts[2] + 1 : 1;
+            $values .= sprintf( '%s( %d, %s, %d )',
+                                $first ? '' : ', ',
+                                $this->id,
+                                $assignment_id,
+                                $rank );
+            $first = false;
+          }
         }
       }
 
       if( !$first )
       {
         static::db()->execute( sprintf(
-          'INSERT IGNORE INTO recording ( interview_id, assignment_id, rank, processed ) '.
+          'INSERT IGNORE INTO recording ( interview_id, assignment_id, rank ) '.
           'VALUES %s', $values ) );
       }
     }
-
-    return parent::get_recording_list( $modifier, $count );
   }
 }
 ?>

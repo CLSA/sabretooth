@@ -41,10 +41,9 @@ class site_feed extends \cenozo\ui\pull\base_feed
   {
     $db_site = lib::create( 'business\session' )->get_site();
 
-    // determine the appointment interval
-    $interval = sprintf( 'PT%dM',
-                         lib::create( 'business\setting_manager' )->get_setting( 
-                         'appointment', 'duration' ) );
+    $setting_manager = lib::create( 'business\setting_manager' );
+    $full_duration = $setting_manager->get_setting( 'appointment', 'full duration' );
+    $half_duration = $setting_manager->get_setting( 'appointment', 'half duration' );
 
     // start by creating an array with one element per day in the time span
     $start_datetime_obj = util::get_datetime_object( $this->start_datetime );
@@ -135,6 +134,10 @@ class site_feed extends \cenozo\ui\pull\base_feed
     $appointment_class_name = lib::get_class_name( 'database\appointment' );
     foreach( $appointment_class_name::select_for_site( $db_site, $modifier ) as $db_appointment )
     {
+      // determine the appointment interval
+      $interval = sprintf(
+        'PT%dM', $db_appointment->type == 'full' ? $full_duration : $half_duration );
+
       $state = $db_appointment->get_state();
       if( 'reached' != $state && 'not reached' != $state )
       { // incomplete appointments only

@@ -191,7 +191,7 @@ class session extends \cenozo\business\session
 
     return $allow;
   }
-
+  
   /**
    * Add an operation to this user's activity log.
    * 
@@ -271,6 +271,9 @@ class session extends \cenozo\business\session
       $_SESSION['slot'][$slot]['stack']['index'] = -1;
       $_SESSION['slot'][$slot]['stack']['widgets'] = array();
     }
+
+    // kill the rescore cookie in case it exists
+    setcookie( 'rescoring_interview', NULL, time() - 3600, COOKIE_PATH );
 
     $this->update_slot_cookies();
   }

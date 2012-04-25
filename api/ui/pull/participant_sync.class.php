@@ -47,10 +47,9 @@ class participant_sync extends \cenozo\ui\pull
     
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
-    $uid_list_string = preg_replace( '/[\'",]/', '', $this->get_argument( 'uid_list' ) );
+    $uid_list_string = preg_replace( '/[^a-zA-Z0-9]/', ' ', $this->get_argument( 'uid_list' ) );
     $uid_list_string = trim( $uid_list_string );
     $uid_list = array_unique( preg_split( '/\s+/', $uid_list_string ) );
-
     foreach( $uid_list as $uid )
     {
       $args = array( 'uid' => $uid, 'full' => true );
@@ -64,10 +63,14 @@ class participant_sync extends \cenozo\ui\pull
         if( !is_null( $participant_class_name::get_unique_record( 'uid', $uid ) ) ) $existing_count++;
         else $new_count++;
       }
-      catch( \cenozo\exception\cenozo_service $e )
+      // a runtime error is thrown when the participant is from the wrong cohort
+      catch( \cenozo\exception\runtime $e )
       {
-        $missing_count++;
+        throw lib::create( 'exception\notice',
+          sprintf( 'Participant %s is from the wrong cohort.', $uid ), __METHOD__, $e );
       }
+      // consider errors to be missing participants (may be missing or the wrong cohort)
+      catch( \cenozo\exception\cenozo_service $e ) { $missing_count++; }
     }
 
     return array(

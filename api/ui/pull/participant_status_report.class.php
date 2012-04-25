@@ -44,6 +44,9 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $region_class_name = lib::get_class_name( 'database\region' );
     $site_class_name = lib::get_class_name( 'database\site' );
 
+    $session = lib::create( 'business\session' );
+    $is_supervisor = 'supervisor' == $session->get_role()->name;
+
     // get the report arguments
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
     $restrict_by_site = $this->get_argument( 'restrict_site_or_province' ) == 'Site' ? true : false;
@@ -52,7 +55,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       sprintf( 'Listing of categorical totals pertaining to '.
                'the %s interview', $db_qnaire->name ) ) ;
 
-    $totals = array(
+    $locale_totals = array(
       'Completed interview - Consent not received' => 0,
       'Completed interview - Consent received' => 0,
       'Completed interview - No consent information' => 0,
@@ -65,12 +68,12 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       '10+ Unproductive Call Attempts' => 0 );
       
     // add call results
-    $phone_call_status_start_index = count( $totals ) - 1; // includes 10+ above
+    $phone_call_status_start_index = count( $locale_totals ) - 1; // includes 10+ above
     foreach( $phone_call_class_name::get_enum_values( 'status' ) as $status )
-      $totals[ ucfirst( $status ) ] = 0;
-    $phone_call_status_count = count( $totals ) - $phone_call_status_start_index;
+      $locale_totals[ ucfirst( $status ) ] = 0;
+    $phone_call_status_count = count( $locale_totals ) - $phone_call_status_start_index;
 
-    $totals = array_merge( $totals, array(
+    $locale_totals = array_merge( $locale_totals, array(
       'Not yet called' => 0,
       'Deceased' => 0,
       'Permanent condition (excl. deceased)' => 0,
@@ -83,37 +86,45 @@ class participant_status_report extends \cenozo\ui\pull\base_report
 
     // insert a blank line before Total number of calls
     $blank = array();
-    $blank[] = count( $totals) - 3;
+    $blank[] = count( $locale_totals ) - 3;
 
-    $grand_totals = array();
+    $locale_totals_list = array();
     if( $restrict_by_site )
     {
-      foreach( $site_class_name::select() as $db_site )
-        $grand_totals[ $db_site->name ] = $totals; 
+      $site_mod = lib::create( 'database\modifier' );
+      if( $is_supervisor )
+        $site_mod->where( 'id', '=', $session->get_site()->id );
+      foreach( $site_class_name::select( $site_mod ) as $db_site )
+        $locale_totals_list[ $db_site->name ] = $locale_totals; 
     }
     else
     {
       $region_mod = lib::create( 'database\modifier' );
       $region_mod->order( 'abbreviation' );
       $region_mod->where( 'country', '=', 'Canada' );
+      if( $is_supervisor )
+        $region_mod->where( 'site_id', '=', $session->get_site()->id );
       foreach( $region_class_name::select($region_mod) as $db_region )
-        $grand_totals[ $db_region->abbreviation ] = $totals; 
-    }  
-    $grand_totals[ 'None' ] = $totals;
+        $locale_totals_list[ $db_region->abbreviation ] = $locale_totals; 
+    }
 
-    // the last column of the report sums totals row-wise
-    $grand_totals[ 'Grand Total' ] = $totals;
+    // only include the "None" column if user isn't a supervisor
+    if( !$is_supervisor ) $locale_totals_list[ 'None' ] = $locale_totals;
 
     $participant_mod = lib::create( 'database\modifier' );
     if( 0 < $restrict_source_id ) $participant_mod->where( 'source_id', '=', $restrict_source_id );
-    foreach( $participant_class_name::select( $participant_mod ) as $db_participant )
+    $participant_list = $is_supervisor
+                      ? $participant_class_name::select_for_site(
+                          $session->get_site(), $participant_mod )
+                      : $participant_class_name::select( $participant_mod );
+    foreach( $participant_list as $db_participant )
     {
       if( $restrict_by_site )
       {
         $db_site = $db_participant->get_primary_site();
         $locale = is_null( $db_site )
                 ? 'None'
-                : $locale = $db_participant->get_primary_site()->name;
+                : $db_participant->get_primary_site()->name;
       }
       else
       {
@@ -123,16 +134,19 @@ class participant_status_report extends \cenozo\ui\pull\base_report
                 : $db_address->get_region()->abbreviation;
       }
 
-      $grand_totals[ $locale ][ 'Total number of calls' ] +=
+      // don't include the "None" column if a supervisor is running the report
+      if( $is_supervisor && 'None' == $locale ) continue;
+
+      $locale_totals_list[ $locale ][ 'Total number of calls' ] +=
         $phone_call_class_name::count_for_participant( $db_participant );
 
       if( 'deceased' == $db_participant->status )
       {
-        $grand_totals[ $locale ][ 'Deceased' ]++;
+        $locale_totals_list[ $locale ][ 'Deceased' ]++;
       }
       else if( !is_null( $db_participant->status ) )
       {
-        $grand_totals[ $locale ][ 'Permanent condition (excl. deceased)' ]++;    
+        $locale_totals_list[ $locale ][ 'Permanent condition (excl. deceased)' ]++;    
       }
       else
       {
@@ -145,13 +159,13 @@ class participant_status_report extends \cenozo\ui\pull\base_report
         {
           if( 'missed' == $db_appointment->get_state() )
           {
-            $grand_totals[ $locale ][ 'Appointment (missed)' ]++;
+            $locale_totals_list[ $locale ][ 'Appointment (missed)' ]++;
             $has_appointment = true;
             break;
           }
           else
           {
-            $grand_totals[ $locale ][ 'Appointment' ]++;
+            $locale_totals_list[ $locale ][ 'Appointment' ]++;
             $has_appointment = true;
             break;
           }
@@ -166,15 +180,15 @@ class participant_status_report extends \cenozo\ui\pull\base_report
         $db_consent = $db_participant->get_last_consent();
         if( !is_null( $db_consent ) && 'retract' == $db_consent->event )
         {
-          $grand_totals[ $locale ][ 'Retracted from study' ]++;
+          $locale_totals_list[ $locale ][ 'Retracted from study' ]++;
         }
         else if( !is_null( $db_consent ) && 'withdraw' == $db_consent->event )
         {
-          $grand_totals[ $locale ][ 'Withdrawn from study' ]++;
+          $locale_totals_list[ $locale ][ 'Withdrawn from study' ]++;
         }
         else if( 0 == count( $interview_list ) )
         {
-          $grand_totals[ $locale ][ 'Not yet called' ]++;
+          $locale_totals_list[ $locale ][ 'Not yet called' ]++;
         }
         else
         {
@@ -183,24 +197,24 @@ class participant_status_report extends \cenozo\ui\pull\base_report
           {
             if( is_null( $db_consent ) )
             {
-              $grand_totals[ $locale ][ 'Completed interview - No consent information' ]++;
+              $locale_totals_list[ $locale ][ 'Completed interview - No consent information' ]++;
             }
             else if( 'written accept' == $db_consent->event )
             {
-              $grand_totals[ $locale ][ 'Completed interview - Consent received' ]++;
+              $locale_totals_list[ $locale ][ 'Completed interview - Consent received' ]++;
             }
             else if( 'verbal deny'   == $db_consent->event ||
                      'verbal accept' == $db_consent->event ||
                      'written deny'  == $db_consent->event )
             {
-              $grand_totals[ $locale ][ 'Completed interview - Consent not received' ]++;
+              $locale_totals_list[ $locale ][ 'Completed interview - Consent not received' ]++;
             }
           }
           else if( !is_null( $db_consent ) &&
                    ( 'verbal deny'  == $db_consent->event ||
                      'written deny' == $db_consent->event ) )
           {
-            $grand_totals[ $locale ][ 'Hard refusal' ]++;
+            $locale_totals_list[ $locale ][ 'Hard refusal' ]++;
           }
           else 
           {
@@ -230,101 +244,97 @@ class participant_status_report extends \cenozo\ui\pull\base_report
             
             if( 10 <= $failed_calls )
             {
-              $grand_totals[ $locale ][ '10+ Unproductive Call Attempts' ]++;
+              $locale_totals_list[ $locale ][ '10+ Unproductive Call Attempts' ]++;
             }
             else if( !is_null( $db_recent_failed_call ) )
             {              
-              $grand_totals[ $locale ][ ucfirst( $db_recent_failed_call->status ) ]++;
+              $locale_totals_list[ $locale ][ ucfirst( $db_recent_failed_call->status ) ]++;
             }  
           }// end interview not completed
         }// end non empty interview list
       }// end if not deceased or some condition
     }// end participants
     
-    $totals_keys = array_keys( $totals );
     $header = array( 'Current Outcome' );
    
-    foreach( $grand_totals as $locale => $value )
+    //calculate a grand total column if we have more than one totals column
+    if( 1 < count( $locale_totals_list ) )
+      $locale_totals_list[ 'Grand Total' ] = $locale_totals;
+
+    foreach( $locale_totals_list as $locale => $totals )
     {
       $header[] = $locale;
       if( 'Grand Total' != $locale )
       {
-        $grand_totals[ $locale ][ 'Grand Total Attempted' ] = 
+        $locale_totals_list[ $locale ][ 'Grand Total Attempted' ] = 
           array_sum( array_slice(
-            $value, $phone_call_status_start_index, $phone_call_status_count ) );
+            $totals, $phone_call_status_start_index, $phone_call_status_count ) );
 
-        $tci = array_sum( array_slice( $value, 0, 4 ) );
+        $tci = array_sum( array_slice( $totals, 0, 4 ) );
 
-        $grand_totals[ $locale ][ 'Total completed interviews' ] = $tci;
-        $denom = $tci + $value[ 'Hard refusal' ] 
-                      + $value[ 'Soft refusal' ] 
-                      + $value[ 'Withdrawn from study' ];
+        $locale_totals_list[ $locale ][ 'Total completed interviews' ] = $tci;
+        $denom = $tci + $totals[ 'Hard refusal' ] 
+                      + $totals[ 'Soft refusal' ] 
+                      + $totals[ 'Withdrawn from study' ];
 
-        $grand_totals[ $locale ][ 'Response rate (incl. soft refusals)' ] =  
+        $locale_totals_list[ $locale ][ 'Response rate (incl. soft refusals)' ] =  
           $denom ? sprintf( '%0.2f', $tci / $denom ) : 'NA';
                   
-        $denom = $tci + $value[ 'Withdrawn from study' ] 
-                      + $value[ 'Hard refusal' ];
+        $denom = $tci + $totals[ 'Withdrawn from study' ] 
+                      + $totals[ 'Hard refusal' ];
 
-        $grand_totals[ $locale ][ 'Response rate (excl. soft refusals)' ] = 
+        $locale_totals_list[ $locale ][ 'Response rate (excl. soft refusals)' ] = 
           $denom ? sprintf( '%0.2f', $tci / $denom ) : 'NA';
 
-        foreach( $totals_keys as $column )
-          $grand_totals[ 'Grand Total' ][ $column ] += $grand_totals[ $locale ][ $column ];
+        if( array_key_exists( 'Grand Total', $locale_totals_list ) )
+          foreach( array_keys( $totals ) as $column )
+            $locale_totals_list[ 'Grand Total' ][ $column ] +=
+              $locale_totals_list[ $locale ][ $column ];
         
-        $tc = $grand_totals[ $locale ][ 'Total number of calls' ];
-        $grand_totals[ $locale ][ 'Completed interviews / total number of calls' ] =
+        $tc = $locale_totals_list[ $locale ][ 'Total number of calls' ];
+        $locale_totals_list[ $locale ][ 'Completed interviews / total number of calls' ] =
           0 < $tc ? sprintf( '%0.2f', $tci / $tc ) : 'NA';
       }
     }
 
-    $gtci = $grand_totals[ 'Grand Total' ][ 'Total completed interviews' ];
+    if( array_key_exists( 'Grand Total', $locale_totals_list ) )
+    {
+      $gtci = $locale_totals_list[ 'Grand Total' ][ 'Total completed interviews' ];
 
-    $denom =
-          $gtci + 
-          $grand_totals[ 'Grand Total' ][ 'Hard refusal' ] + 
-          $grand_totals[ 'Grand Total' ][ 'Soft refusal' ];
+      $denom =
+            $gtci + 
+            $locale_totals_list[ 'Grand Total' ][ 'Hard refusal' ] + 
+            $locale_totals_list[ 'Grand Total' ][ 'Soft refusal' ];
 
-    $grand_totals[ 'Grand Total' ][ 'Response rate (incl. soft refusals)' ] = 
-      $denom ? sprintf( '%0.2f', $gtci / $denom ) : 'NA';
+      $locale_totals_list[ 'Grand Total' ][ 'Response rate (incl. soft refusals)' ] = 
+        $denom ? sprintf( '%0.2f', $gtci / $denom ) : 'NA';
 
-    $denom = 
-          $gtci + 
-          $grand_totals[ 'Grand Total' ][ 'Withdrawn from study' ] + 
-          $grand_totals[ 'Grand Total' ][ 'Hard refusal' ];
+      $denom = 
+            $gtci + 
+            $locale_totals_list[ 'Grand Total' ][ 'Withdrawn from study' ] + 
+            $locale_totals_list[ 'Grand Total' ][ 'Hard refusal' ];
 
-    $grand_totals[ 'Grand Total' ][ 'Response rate (excl. soft refusals)' ] = 
-      $denom ? sprintf( '%0.2f', $gtci / $denom ) : 'NA';
-    
-    $gtc = $grand_totals[ 'Grand Total' ][ 'Total number of calls' ];
-    $grand_totals[ 'Grand Total' ][ 'Completed interviews / total number of calls' ] =
-      0 < $gtc ? sprintf( '%0.2f', $gtci / $gtc ) : 'NA';
+      $locale_totals_list[ 'Grand Total' ][ 'Response rate (excl. soft refusals)' ] = 
+        $denom ? sprintf( '%0.2f', $gtci / $denom ) : 'NA';
+      
+      $gtc = $locale_totals_list[ 'Grand Total' ][ 'Total number of calls' ];
+      $locale_totals_list[ 'Grand Total' ][ 'Completed interviews / total number of calls' ] =
+        0 < $gtc ? sprintf( '%0.2f', $gtci / $gtc ) : 'NA';
+    }
 
     // build the final 2D content array
-    $temp_content = array( $totals_keys );
-    foreach( $grand_totals as $key => $column )
-    {
-      $temp_array = array();
-      foreach( $column as $value )
-      {
-        $temp_array[] = $value;
-      }
-      $temp_content[] = $temp_array;
-    }
+    $temp_content = array( array_keys( $locale_totals ) );
+    foreach( $locale_totals_list as $totals ) $temp_content[] = array_values( $totals );
 
     // transpose from column-wise to row-wise
     $content = array();
     foreach( $temp_content as $key => $subarr )
-    {
       foreach( $subarr as $subkey => $subvalue )
-      {
         $content[ $subkey ][ $key ] = $subvalue;
-      }
-    }
    
     $this->add_table( NULL, $header, $content, NULL, $blank );
 
     return parent::finish();
-  }// end finish() method
+  }
 }
 ?>

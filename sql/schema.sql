@@ -13,7 +13,7 @@ CREATE  TABLE IF NOT EXISTS `source` (
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
   `name` VARCHAR(45) NOT NULL ,
-  `withdraw_type` ENUM('verbal accept','verbal deny','written accept','written deny','retract','withdraw') NOT NULL DEFAULT "withdraw" ,
+  `withdraw_type` ENUM('verbal accept','verbal deny','written accept','written deny','retract','withdraw') NOT NULL DEFAULT 'withdraw' ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) )
 ENGINE = InnoDB;
@@ -33,7 +33,7 @@ CREATE  TABLE IF NOT EXISTS `participant` (
   `source_id` INT UNSIGNED NULL DEFAULT NULL ,
   `first_name` VARCHAR(45) NOT NULL ,
   `last_name` VARCHAR(45) NOT NULL ,
-  `status` ENUM('deceased', 'deaf', 'mentally unfit','language barrier','age range','other') NULL DEFAULT NULL ,
+  `status` ENUM('deceased', 'deaf', 'mentally unfit','language barrier','age range','not canadian','federal reserve','armed forces','institutionalized','other') NULL DEFAULT NULL ,
   `language` ENUM('en','fr') NULL DEFAULT NULL ,
   `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'If not null then force all calls to this participant to the site.' ,
   `prior_contact_date` DATE NULL DEFAULT NULL ,
@@ -71,6 +71,7 @@ CREATE  TABLE IF NOT EXISTS `qnaire` (
   `prev_qnaire_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The qnaire which must be completed before this one begins.' ,
   `delay` INT NOT NULL DEFAULT 0 COMMENT 'How many weeks after then end of the previous qnaire before starting.' ,
   `withdraw_sid` INT NULL DEFAULT NULL ,
+  `rescore_sid` INT NULL DEFAULT NULL ,
   `description` TEXT NULL ,
   PRIMARY KEY (`id`) ,
   UNIQUE INDEX `uq_name` (`name` ASC) ,
@@ -122,6 +123,7 @@ CREATE  TABLE IF NOT EXISTS `interview` (
   `participant_id` INT UNSIGNED NOT NULL ,
   `require_supervisor` TINYINT(1)  NOT NULL DEFAULT false ,
   `completed` TINYINT(1)  NOT NULL DEFAULT false ,
+  `rescored` ENUM('Yes','No','N/A') NOT NULL DEFAULT 'N/A' ,
   `duplicate_qnaire_id` INT UNSIGNED NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
@@ -129,6 +131,7 @@ CREATE  TABLE IF NOT EXISTS `interview` (
   INDEX `fk_duplicate_qnaire_id` (`qnaire_id` ASC) ,
   INDEX `dk_completed` (`completed` ASC) ,
   UNIQUE INDEX `uq_participant_id_qnaire_id` (`participant_id` ASC, `qnaire_id` ASC) ,
+  INDEX `dk_rescored` (`rescored` ASC) ,
   CONSTRAINT `fk_interview_participant`
     FOREIGN KEY (`participant_id` )
     REFERENCES `participant` (`id` )
@@ -522,6 +525,7 @@ CREATE  TABLE IF NOT EXISTS `appointment` (
   `phone_id` INT UNSIGNED NULL DEFAULT NULL ,
   `assignment_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'This appointment\'s assignment.' ,
   `datetime` DATETIME NOT NULL ,
+  `type` ENUM('full','half') NOT NULL DEFAULT 'full' ,
   `reached` TINYINT(1)  NULL DEFAULT NULL COMMENT 'If the appointment was met, whether the participant was reached.' ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
@@ -666,7 +670,6 @@ CREATE  TABLE IF NOT EXISTS `recording` (
   `interview_id` INT UNSIGNED NOT NULL ,
   `assignment_id` INT UNSIGNED NULL DEFAULT NULL ,
   `rank` INT UNSIGNED NOT NULL ,
-  `processed` TINYINT(1)  NOT NULL DEFAULT false ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_interview_id` (`interview_id` ASC) ,
   UNIQUE INDEX `uq_interview_rank` (`interview_id` ASC, `rank` ASC) ,
@@ -748,7 +751,7 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `user_time` ;
 
 CREATE  TABLE IF NOT EXISTS `user_time` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
