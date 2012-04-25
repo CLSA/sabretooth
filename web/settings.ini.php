@@ -11,7 +11,7 @@ global $SETTINGS;
 
 // tagged version
 $SETTINGS['general']['application_name'] = 'sabretooth';
-$SETTINGS['general']['version'] = '1.1.2';
+$SETTINGS['general']['version'] = '1.1.3';
 
 // always leave as false when running as production server
 $SETTINGS['general']['development_mode'] = false;
