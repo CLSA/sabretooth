@@ -16,7 +16,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * Edit a address.
  * @package sabretooth\ui
  */
-class address_edit extends \cenozo\ui\push\base_edit
+class address_edit extends base_edit
 {
   /**
    * Constructor.
@@ -27,6 +27,7 @@ class address_edit extends \cenozo\ui\push\base_edit
   public function __construct( $args )
   {
     parent::__construct( 'address', $args );
+    $this->set_machine_request_enabled( true );
   }
 
   /**
@@ -53,29 +54,7 @@ class address_edit extends \cenozo\ui\push\base_edit
       $this->get_record()->source_postcode();
     }
 
-    // we'll need the arguments to send to mastodon
-    $args = $this->arguments;
-
-    // replace the address id with a unique key
-    $db_address = $this->get_record();
-    unset( $args['id'] );
-    $args['noid']['participant.uid'] = $db_address->get_participant()->uid;
-    $args['noid']['address.rank'] = $db_address->rank;
-    
-    // if set, replace the region id with a unique key
-    if( array_key_exists( 'region_id', $columns ) && $columns['region_id'] )
-    {
-      $db_region = lib::create( 'database\region', $columns['region_id'] );
-      unset( $args['columns']['region_id'] );
-      // we only include half of the unique key since the other half is added above
-      $args['noid']['region.abbreviation'] = $db_region->abbreviation;
-    }
-
     parent::finish();
-
-    // now send the same request to mastodon
-    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
-    $mastodon_manager->push( 'address', 'edit', $args );
   }
 }
 ?>
