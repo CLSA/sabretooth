@@ -26,6 +26,8 @@ class participant_delete_address extends \cenozo\ui\push\base_delete_record
   public function __construct( $args )
   {
     parent::__construct( 'participant', 'address', $args );
+    $this->set_machine_request_enabled( true );
+    $this->set_machine_request_url( MASTODON_URL );
   }
 }
 ?>

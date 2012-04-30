@@ -28,6 +28,7 @@ class participant_edit extends base_edit
   {
     parent::__construct( 'participant', $args );
     $this->set_machine_request_enabled( true );
+    $this->set_machine_request_url( MASTODON_URL );
   }
 }
 ?>
