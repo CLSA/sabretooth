@@ -112,11 +112,9 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     if( !$is_supervisor ) $locale_totals_list[ 'None' ] = $locale_totals;
 
     $participant_mod = lib::create( 'database\modifier' );
+    if( $is_supervisor ) $participant_mod->where( 'site_id', '=', $session->get_site()->id );
     if( 0 < $restrict_source_id ) $participant_mod->where( 'source_id', '=', $restrict_source_id );
-    $participant_list = $is_supervisor
-                      ? $participant_class_name::select_for_site(
-                          $session->get_site(), $participant_mod )
-                      : $participant_class_name::select( $participant_mod );
+    $participant_list = $participant_class_name::select( $participant_mod );
     foreach( $participant_list as $db_participant )
     {
       if( $restrict_by_site )
