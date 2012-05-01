@@ -172,9 +172,9 @@ class participant_sync extends \cenozo\ui\push
 
     // let Mastodon know that the sync is done
     $datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
-    $arguments = array(
-      'noid' => array( 'participant.uid' => $db_participant->uid ),
-      'columns' => array( 'sync_datetime' => $datetime ) );
+    $arguments = array();
+    $arguments['noid']['participant']['uid'] = $db_participant->uid;
+    $arguments['columns']['sync_datetime'] = $datetime;
     $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
     $mastodon_manager->push( 'participant', 'edit', $arguments );
   }

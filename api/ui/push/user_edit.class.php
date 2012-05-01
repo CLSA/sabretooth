@@ -19,25 +19,16 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class user_edit extends \cenozo\ui\push\user_edit
 {
   /**
-   * Extends the base action by sending the same request to Mastodon
+   * Constructor.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param array $args Push arguments
    * @access public
    */
-  public function finish()
+  public function __construct( $args )
   {
-    // we'll need the arguments to send to mastodon
-    $args = $this->arguments;
-
-    // replace the user id with a unique key
-    $db_user = $this->get_record();
-    unset( $args['id'] );
-    $args['noid']['user.name'] = $db_user->name;
-
-    parent::finish();
-
-    // now send the same request to mastodon
-    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
-    $mastodon_manager->push( 'user', 'edit', $args );
+    parent::__construct( 'user', $args );
+    $this->set_machine_request_enabled( true );
+    $this->set_machine_request_url( MASTODON_URL );
   }
 }
 ?>

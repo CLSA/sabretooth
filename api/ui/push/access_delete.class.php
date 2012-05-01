@@ -18,28 +18,16 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class access_delete extends \cenozo\ui\push\access_delete
 {
   /**
-   * Executes the push.
+   * Constructor.
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param array $args Push arguments
    * @access public
    */
-  public function finish()
+  public function __construct( $args )
   {
-    // we'll need the arguments to send to mastodon
-    $args = $this->arguments;
-
-    // replace the access id with a unique key
-    $db_access = $this->get_record();
-    unset( $args['id'] );
-    $args['noid']['user.name'] = $db_access->get_user()->name;
-    $args['noid']['role.name'] = $db_access->get_role()->name;
-    $args['noid']['site.name'] = $db_access->get_site()->name;
-    $args['noid']['site.cohort'] = 'tracking';
-
-    parent::finish();
-
-    // now send the same request to mastodon
-    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
-    $mastodon_manager->push( 'access', 'delete', $args );
+    parent::__construct( 'access', $args );
+    $this->set_machine_request_enabled( true );
+    $this->set_machine_request_url( MASTODON_URL );
   }
 }
 ?>
