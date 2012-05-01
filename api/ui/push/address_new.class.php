@@ -16,7 +16,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * Create a new address.
  * @package sabretooth\ui
  */
-class address_new extends \cenozo\ui\push\base_new
+class address_new extends base_new
 {
   /**
    * Constructor.
@@ -27,6 +27,8 @@ class address_new extends \cenozo\ui\push\base_new
   public function __construct( $args )
   {
     parent::__construct( 'address', $args );
+    $this->set_machine_request_enabled( true );
+    $this->set_machine_request_url( MASTODON_URL );
   }
 
   /**
@@ -46,29 +48,10 @@ class address_new extends \cenozo\ui\push\base_new
       throw lib::create( 'exception\notice',
         'Postal codes must be in "A1A 1A1" format, zip codes in "01234" format.', __METHOD__ );
 
-    $args = $this->arguments;
-    unset( $args['columns']['participant_id'] );
-
-    // replace the participant id with a unique key
-    $db_participant = lib::create( 'database\participant', $columns['participant_id'] );
-    $args['noid']['participant.uid'] = $db_participant->uid;
-
-    // replace the region id (if it is not null) a unique key
-    if( $columns['region_id'] )
-    {
-      $db_region = lib::create( 'database\region', $columns['region_id'] );
-      // this is only actually half of the key, the other half is provided by the participant above
-      $args['noid']['region.abbreviation'] = $db_region->abbreviation;
-    }
-
     // no errors, go ahead and make the change
     $this->get_record()->postcode = $postcode;
     $this->get_record()->source_postcode();
     parent::finish();
-
-    // now send the same request to mastodon
-    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
-    $mastodon_manager->push( 'address', 'new', $args );
   }
 }
 ?>
