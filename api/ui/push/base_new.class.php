@@ -17,8 +17,13 @@ use cenozo\lib, cenozo\log, cenozo\util;
  */
 abstract class base_new extends \cenozo\ui\push\base_new
 {
-  // TODO: document
-  // add the cohort to the site column, if it exists
+  /**
+   * Override the parent method to add the cohort to the site key.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param array $args An argument list, usually those passed to the push operation.
+   * @return array
+   * @access protected
+   */
   protected function convert_to_noid( $args )
   {
     $args = parent::convert_to_noid( $args );
