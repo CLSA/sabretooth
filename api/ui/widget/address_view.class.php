@@ -88,7 +88,7 @@ class address_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'city', $record->city );
     $this->set_item( 'region_id', $record->region_id, false, $regions );
     $this->set_item( 'postcode', $record->postcode, true );
-    $this->set_item( 'timezone_offset', $this->get_record->timezone_offset, true );
+    $this->set_item( 'timezone_offset', $record->timezone_offset, true );
     $this->set_item( 'daylight_savings', $record->daylight_savings, true );
     $this->set_item( 'note', $record->note );
 
