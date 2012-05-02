@@ -8,7 +8,7 @@
  */
 
 namespace sabretooth\ui\push;
-use cenozo\lib, cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Extends the parent class to send machine requests.
