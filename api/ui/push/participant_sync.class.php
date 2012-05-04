@@ -170,6 +170,19 @@ class participant_sync extends \cenozo\ui\push
       $db_consent->save();
     }
 
+    // update availability
+    foreach( $data->availability_list as $availability_info )
+    {
+      $db_availability = lib::create( 'database\availability' );
+      $db_availability->participant_id = $db_participant->id;
+
+      foreach( $db_availability->get_column_names() as $column )
+        if( 'id' != $column && 'participant_id' != $column )
+          $db_availability->$column = $availability_info->$column;
+
+      $db_availability->save();
+    }
+
     // let Mastodon know that the sync is done
     $datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
     $arguments = array(
