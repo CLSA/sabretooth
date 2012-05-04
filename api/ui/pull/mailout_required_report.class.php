@@ -30,12 +30,19 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
     parent::__construct( 'mailout_required', $args );
   }
 
+  /**
+   * Builds the report based on the tables built by child classes.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return associative array
+   * @access public
+   */
   public function finish()
   {
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
     // get the report arguments
-    $mailout_type = $this->get_argument( 'restrict_mailout' );
+    $mailout_type = $this->get_argument( 'restrict_mailout_type' );
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
 

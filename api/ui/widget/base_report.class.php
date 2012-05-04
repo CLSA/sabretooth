@@ -30,7 +30,7 @@ abstract class base_report extends \cenozo\ui\widget\base_report
   public function __construct( $subject, $args )
   {
     parent::__construct( $subject, 'report', $args );
-  
+
     $this->restrictions['source'] = false;
     $this->restrictions['qnaire'] = false;
     $this->restrictions['consent'] = false;
@@ -61,18 +61,17 @@ abstract class base_report extends \cenozo\ui\widget\base_report
     else if( 'consent' == $restriction_type )
     {
       $this->restrictions[ 'consent' ] = true;
-      $this->add_parameter( 'restrict_consent', 'enum', 'Consent Status');
+      $this->add_parameter( 'restrict_consent_type', 'enum', 'Consent Status');
     }
     else if( 'mailout' == $restriction_type )
     {
       $this->restrictions[ 'mailout' ] = true;
-      $this->add_parameter( 'restrict_mailout', 'enum', 'Mailout' );
+      $this->add_parameter( 'restrict_mailout_type', 'enum', 'Mailout' );
     }
   }
 
   /**
-   * Child classes should implement and call parent's finish and then call 
-   * finish_setting_parameters
+   * Extending the parent finish class with extra restrictions.
    * @author Dean Inglis <inglisd@mcmaster.ca>
    * @access public
    */
@@ -80,45 +79,45 @@ abstract class base_report extends \cenozo\ui\widget\base_report
   {
     if( $this->restrictions[ 'source' ] )
     {
-      $sources = array( 0 => 'All sources' );
+      $source_list = array( 'Any' );
       $class_name = lib::get_class_name( 'database\source' );
-      foreach( $class_name::select() as $db_source ) 
-        $sources[ $db_source->id ] = $db_source->name;
+      foreach( $class_name::select() as $db_source )
+        $source_list[ $db_source->id ] = $db_source->name;
 
       $this->set_parameter(
-        'restrict_source_id', key( $sources ), true, $sources );
+        'restrict_source_id', key( $source_list ), true, $source_list );
     }
 
     if( $this->restrictions[ 'qnaire' ] )
     {
-      $qnaires = array();
+      $qnaire_list = array();
       $class_name = lib::get_class_name( 'database\qnaire' );
-      foreach( $class_name::select() as $db_qnaire ) 
-        $qnaires[ $db_qnaire->id ] = $db_qnaire->name;
+      foreach( $class_name::select() as $db_qnaire )
+        $qnaire_list[ $db_qnaire->id ] = $db_qnaire->name;
 
       $this->set_parameter(
-        'restrict_qnaire_id', key( $qnaires ), true, $qnaires );  
+        'restrict_qnaire_id', key( $qnaire_list ), true, $qnaire_list );
     }
 
     if( $this->restrictions[ 'consent' ] )
     {
+      $consent_list = array( 'Any' );
       $class_name = lib::get_class_name( 'database\consent' );
-      $consent_types = $class_name::get_enum_values( 'event' );
-      array_unshift( $consent_types, 'Any' );
-      $consent_types = array_combine( $consent_types, $consent_types );
+      $consent_list = array_merge( $consent_list, $class_name::get_enum_values( 'event' ) );
+      $consent_list = array_combine( $consent_list, $consent_list );
 
       $this->set_parameter(
-        'restrict_consent', key( $consent_types ), true, $consent_types );
+        'restrict_consent_type', key( $consent_list ), true, $consent_list );
     }
 
     if( $this->restrictions[ 'mailout' ] )
     {
-      $mailout_types = array( 'Participant information package',
+      $mailout_list = array( 'Participant information package',
                               'Proxy information package' );
-      $mailout_types = array_combine( $mailout_types, $mailout_types );
+      $mailout_list = array_combine( $mailout_list, $mailout_list );
 
       $this->set_parameter(
-        'restrict_mailout', key( $mailout_types ), true, $mailout_types );
+        'restrict_mailout_type', key( $mailout_list ), true, $mailout_list );
     }
 
     parent::finish();
