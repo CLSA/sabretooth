@@ -346,7 +346,7 @@ class participant extends \cenozo\database\has_note
 
     if( count( $consent_info ) != $this->get_consent_list( NULL, false ) )
     {
-      foreach( $consent_info->data as $consent )
+      if( is_array( $consent_info->data ) ) foreach( $consent_info->data as $consent )
       {
         // insert the consent data if it doesn't exist
         $modifier = lib::create( 'database\modifier' );

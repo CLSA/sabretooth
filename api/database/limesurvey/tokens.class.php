@@ -52,7 +52,7 @@ class tokens extends sid_record
       
       // written consent received
       $written_consent = false;
-      foreach( $consent_info->data as $consent )
+      if( is_array( $consent_info->data ) ) foreach( $consent_info->data as $consent )
       {
         if( 'written' == substr( $consent->event, 0, 7 ) )
         {
