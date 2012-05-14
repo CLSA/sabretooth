@@ -269,9 +269,7 @@ class survey_manager extends \cenozo\singleton
               // TODO: this is temporary code to fix the TOKEN != "NO" problem in limesurvey
               //       for survey 72154
               if( 72154 == $sid && is_null( $db_tokens->attribute_10 ) )
-              {
                 $db_tokens->attribute_10 = "UNKNOWN";
-              }
 
               $db_tokens->save();
     

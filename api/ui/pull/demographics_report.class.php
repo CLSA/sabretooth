@@ -31,6 +31,13 @@ class demographics_report extends \cenozo\ui\pull\base_report
     parent::__construct( 'demographics', $args );
   }
 
+  /**
+   * Builds the report based on the tables built by child classes.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return associative array
+   * @access public
+   */
   public function finish()
   {
     $participant_class_name = lib::get_class_name( 'database\participant' );
@@ -38,7 +45,7 @@ class demographics_report extends \cenozo\ui\pull\base_report
     // get the report arguments
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
     $restrict_source_id = $this->get_argument( 'restrict_source_id' );
-    $consent_event = $this->get_argument( 'restrict_consent' );
+    $consent_event = $this->get_argument( 'restrict_consent_type' );
     $province_id = $this->get_argument( 'restrict_province_id' );
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
 
