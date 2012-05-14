@@ -1,6 +1,6 @@
 <?php
 /**
- * access_delete.class.php
+ * site_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -11,13 +11,14 @@ namespace sabretooth\ui\push;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
- * push: access delete
- * 
+ * push: site edit
+ *
+ * Edit a site.
  * @package sabretooth\ui
  */
-class access_delete extends \cenozo\ui\push\access_delete
+class site_edit extends \cenozo\ui\push\site_edit
 {
-  /**
+  /** 
    * Constructor.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args Push arguments
@@ -31,7 +32,8 @@ class access_delete extends \cenozo\ui\push\access_delete
   }
 
   /**
-   * Override the parent method to add the cohort to the site key.
+   * Converts primary keys to unique keys in operation arguments.
+   * All converted arguments will appear in the array under a 'noid' key.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An argument list, usually those passed to the push operation.
    * @return array
@@ -40,7 +42,10 @@ class access_delete extends \cenozo\ui\push\access_delete
   protected function convert_to_noid( $args )
   {
     $args = parent::convert_to_noid( $args );
-    $args['noid']['access']['site_id']['cohort'] = 'tracking';
+
+    // add in the site's cohort
+    $args['noid']['site']['cohort'] = 'tracking';
+
     return $args;
   }
 }

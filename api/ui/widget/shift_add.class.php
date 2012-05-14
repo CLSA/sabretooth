@@ -70,7 +70,7 @@ class shift_add extends \cenozo\ui\widget\base_view
     }
     else if( !is_null( $this->user_list ) )
     {
-      $this->user_list->finish();
+      $this->user_list->process();
       $this->set_variable( 'user_list', $this->user_list->get_variables() );
     }
 

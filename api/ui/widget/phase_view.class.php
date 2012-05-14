@@ -80,7 +80,7 @@ class phase_view extends \cenozo\ui\widget\base_view
 
     if( !is_null( $this->source_survey_list ) )
     {
-      $this->source_survey_list->finish();
+      $this->source_survey_list->process();
       $this->set_variable( 'source_survey_list', $this->source_survey_list->get_variables() );
     }
   }

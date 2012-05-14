@@ -22,7 +22,7 @@ $SETTINGS['path']['APPLICATION'] = '/usr/local/lib/sabretooth';
 // the location of the Shift8 Asterisk library
 $SETTINGS['path']['SHIFT8'] = '/usr/local/lib/shift8';
 
-// the url of mastodon (set to NULL to disable mastodon support)
+// the url to Mastodon (set to NULL to disable Mastodon support)
 $SETTINGS['url']['MASTODON'] = NULL;
 
 // the url of limesurvey

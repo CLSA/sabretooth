@@ -81,7 +81,7 @@ class assignment_view extends \cenozo\ui\widget\base_view
     // finish the child widgets
     if( !is_null( $this->phone_call_list ) )
     {
-      $this->phone_call_list->finish();
+      $this->phone_call_list->process();
       $this->set_variable( 'phone_call_list', $this->phone_call_list->get_variables() );
     }
   }

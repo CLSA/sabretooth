@@ -90,7 +90,7 @@ class queue_view extends \cenozo\ui\widget\base_view
     // finish the child widgets
     if( !is_null( $this->participant_list ) )
     {
-      $this->participant_list->finish();
+      $this->participant_list->process();
       $this->set_variable( 'participant_list', $this->participant_list->get_variables() );
     }
   }

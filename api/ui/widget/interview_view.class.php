@@ -95,7 +95,7 @@ class interview_view extends \cenozo\ui\widget\base_view
     // finish the child widgets
     if( !is_null( $this->assignment_list ) )
     {
-      $this->assignment_list->finish();
+      $this->assignment_list->process();
       $this->set_variable( 'assignment_list', $this->assignment_list->get_variables() );
     }
   }

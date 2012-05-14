@@ -1,6 +1,6 @@
 <?php
 /**
- * access_delete.class.php
+ * user_new_access.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -11,11 +11,11 @@ namespace sabretooth\ui\push;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
- * push: access delete
+ * push: user new_access
  * 
  * @package sabretooth\ui
  */
-class access_delete extends \cenozo\ui\push\access_delete
+class user_new_access extends \cenozo\ui\push\user_new_access
 {
   /**
    * Constructor.
@@ -40,7 +40,8 @@ class access_delete extends \cenozo\ui\push\access_delete
   protected function convert_to_noid( $args )
   {
     $args = parent::convert_to_noid( $args );
-    $args['noid']['access']['site_id']['cohort'] = 'tracking';
+    foreach( $args['noid']['site_list'] as $key => $value )
+      $args['noid']['site_list'][$key]['cohort'] = 'tracking';
     return $args;
   }
 }

@@ -29,9 +29,9 @@ class self_menu extends \cenozo\ui\widget\self_menu
   {
     parent::__construct( $args );
     
-    // remove the site calendar from the admin and clerk roles
+    // remove the site calendar from the admin role
     $role = lib::create( 'business\session' )->get_role()->name;
-    if( 'administrator' == $role || 'clerk' == $role ) $this->exclude_calendar( 'site' );
+    if( 'administrator' == $role ) $this->exclude_calendar( 'site' );
 
     $this->exclude_list( array(
       'address',
