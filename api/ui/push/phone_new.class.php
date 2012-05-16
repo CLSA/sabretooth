@@ -31,14 +31,11 @@ class phone_new extends base_new
     $this->set_machine_request_url( MASTODON_URL );
   }
 
-  /**
-   * Overrides the parent method to make sure the number isn't blank and is a valid number.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\notice
-   * @access public
-   */
-  public function finish()
+  // TODO: document
+  public function validate()
   {
+    parent::validate();
+
     $columns = $this->get_argument( 'columns' );
 
     // make sure the number column isn't blank
@@ -46,12 +43,20 @@ class phone_new extends base_new
       throw lib::create( 'exception\notice', 'The number cannot be left blank.', __METHOD__ );
 
     // validate the phone number
-    if( 10 != strlen( preg_replace( '/[^0-9]/', '', $columns['number'] ) ) )
+    $number_only = preg_replace( '/[^0-9]/', '', $columns['number'] );
+    if( 10 != strlen( $number_only ) )
       throw lib::create( 'exception\notice',
         'Phone numbers must have exactly 10 digits.', __METHOD__ );
 
-    // no errors, go ahead and make the change
-    parent::finish();
+    $formatted_number = sprintf( '%s-%s-%s',
+                                 substr( $number_only, 0, 3 ),
+                                 substr( $number_only, 3, 3 ),
+                                 substr( $number_only, 6 ) );
+    if( !util::validate_phone_number( $formatted_number ) )
+      throw lib::create( 'exception\notice',
+        sprintf( 'The provided number "%s" is not a valid North American phone number.',
+                 $formatted_number ),
+        __METHOD__ );
   }
 }
 ?>

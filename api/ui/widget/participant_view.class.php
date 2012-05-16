@@ -158,7 +158,10 @@ class participant_view extends \cenozo\ui\widget\base_view
       $current_qnaire_name = $db_current_qnaire->name;
       $start_qnaire_date = util::get_formatted_date( $start_qnaire_date, 'immediately' );
     }
-    
+
+    $db_default_site = $this->get_record()->get_default_site();
+    $default_site = is_null( $db_default_site ) ? 'None' : $db_default_site->name;
+
     // set the view's items
     $this->set_item( 'active', $this->get_record()->active, true );
     $this->set_item( 'uid', $this->get_record()->uid );
@@ -167,7 +170,7 @@ class participant_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'last_name', $this->get_record()->last_name );
     $this->set_item( 'language', $this->get_record()->language, false, $languages );
     $this->set_item( 'status', $this->get_record()->status, false, $statuses );
-    $this->set_item( 'default_site', $this->get_record()->get_default_site()->name );
+    $this->set_item( 'default_site', $default_site );
     $this->set_item( 'site_id', $site_id, false, $sites );
     $this->set_item( 'prior_contact_date', $this->get_record()->prior_contact_date );
     $this->set_item( 'current_qnaire_name', $current_qnaire_name );
