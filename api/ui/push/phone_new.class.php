@@ -27,6 +27,13 @@ class phone_new extends base_new
   public function __construct( $args )
   {
     parent::__construct( 'phone', $args );
+  }
+
+  // TODO: document
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->set_machine_request_enabled( true );
     $this->set_machine_request_url( MASTODON_URL );
   }
