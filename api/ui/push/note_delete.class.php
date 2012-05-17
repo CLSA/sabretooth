@@ -17,14 +17,15 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class note_delete extends \cenozo\ui\push\note_delete
 {
   /**
-   * Constructor.
+   * Processes arguments, preparing them for the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param array $args Push arguments
-   * @access public
+   * @throws exception\notice
+   * @access protected
    */
-  public function __construct( $args )
+  protected function prepare()
   {
-    parent::__construct( $args );
+    parent::prepare();
 
     // only send machine requests for participant notes
     if( 'participant' == $this->get_argument( 'category' ) )
