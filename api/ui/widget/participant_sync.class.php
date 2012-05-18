@@ -29,16 +29,5 @@ class participant_sync extends \cenozo\ui\widget
   {
     parent::__construct( 'participant', 'sync', $args );
   }
-
-  /**
-   * Finish setting the variables in a widget.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function finish()
-  {
-    parent::finish();
-  }
 }
 ?>
