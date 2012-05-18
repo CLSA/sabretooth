@@ -28,6 +28,18 @@ class consent_outstanding_report extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'consent_outstanding', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     $this->add_restriction( 'site' );
     $this->add_restriction( 'qnaire' );
@@ -36,16 +48,6 @@ class consent_outstanding_report extends base_report
       'This report lists all participants who have yet to mail in their written consent.  '.
       'The report generates the participant\'s id, name, address, and last '.
       'date they were successfully contacted.' );
-  }
-
-  /**
-   * @author Dean Inglis <inglisd@mcmaster.ca>
-   * @access public
-   */
-  public function finish()
-  {
-    parent::finish();
-    $this->finish_setting_parameters();
   }
 }
 ?>

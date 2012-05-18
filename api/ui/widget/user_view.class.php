@@ -21,11 +21,11 @@ class user_view extends \cenozo\ui\widget\user_view
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     $session = lib::create( 'business\session' );
     $role_class_name = lib::get_class_name( 'database\role' );
@@ -40,8 +40,6 @@ class user_view extends \cenozo\ui\widget\user_view
     if( $view_shifts )
       $this->add_action( 'calendar', 'Shift Calendar', NULL,
         'View the operator\'s shift calendar.' );
-
-    $this->finish_setting_items();
   }
 }
 ?>

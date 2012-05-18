@@ -28,6 +28,18 @@ class assignment_view extends \cenozo\ui\widget\base_view
   public function __construct( $args )
   {
     parent::__construct( 'assignment', 'view', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     // create an associative array with everything we want to display about the assignment
     $this->add_item( 'user', 'constant', 'User' );
@@ -41,7 +53,7 @@ class assignment_view extends \cenozo\ui\widget\base_view
     try
     {
       // create the phone_call sub-list widget
-      $this->phone_call_list = lib::create( 'ui\widget\phone_call_list', $args );
+      $this->phone_call_list = lib::create( 'ui\widget\phone_call_list', $this->arguments );
       $this->phone_call_list->set_parent( $this );
       $this->phone_call_list->set_heading( 'Phone calls made during this assignment' );
     }
@@ -55,11 +67,11 @@ class assignment_view extends \cenozo\ui\widget\base_view
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
        
     $db_participant = $this->get_record()->get_interview()->get_participant();
     $participant = sprintf( '%s, %s', $db_participant->last_name, $db_participant->first_name );
@@ -76,9 +88,7 @@ class assignment_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'end_time_only',
       util::get_formatted_time( $this->get_record()->end_datetime, false, 'none' ) );
 
-    $this->finish_setting_items();
-
-    // finish the child widgets
+    // process the child widgets
     if( !is_null( $this->phone_call_list ) )
     {
       $this->phone_call_list->process();

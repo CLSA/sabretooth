@@ -28,6 +28,18 @@ class phase_view extends \cenozo\ui\widget\base_view
   public function __construct( $args )
   {
     parent::__construct( 'phase', 'view', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     // add items to the view
     $this->add_item( 'sid', 'enum', 'Default Survey' );
@@ -37,7 +49,7 @@ class phase_view extends \cenozo\ui\widget\base_view
     try
     {
       // create the source_survey sub-list widget
-      $this->source_survey_list = lib::create( 'ui\widget\source_survey_list', $args );
+      $this->source_survey_list = lib::create( 'ui\widget\source_survey_list', $this->arguments );
       $this->source_survey_list->set_parent( $this );
       $this->source_survey_list->set_heading( 'Source-specific Surveys' );
     }
@@ -51,11 +63,11 @@ class phase_view extends \cenozo\ui\widget\base_view
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     // create enum arrays
     $surveys = array();
@@ -75,8 +87,6 @@ class phase_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'sid', $this->get_record()->sid, true, $surveys );
     $this->set_item( 'rank', $this->get_record()->rank, true, $ranks );
     $this->set_item( 'repeated', $this->get_record()->repeated, true );
-
-    $this->finish_setting_items();
 
     if( !is_null( $this->source_survey_list ) )
     {

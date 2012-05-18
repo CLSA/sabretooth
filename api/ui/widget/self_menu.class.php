@@ -18,16 +18,15 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class self_menu extends \cenozo\ui\widget\self_menu
 {
   /**
-   * Constructor
+   * Processes arguments, preparing them for the operation.
    * 
-   * Defines all variables which need to be set for the associated template.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param array $args An associative array of arguments to be processed by the widget
-   * @access public
+   * @throws exception\notice
+   * @access protected
    */
-  public function __construct( $args )
+  protected function prepare()
   {
-    parent::__construct( $args );
+    parent::prepare();
     
     // remove the site calendar from the admin role
     $role = lib::create( 'business\session' )->get_role()->name;
@@ -51,11 +50,11 @@ class self_menu extends \cenozo\ui\widget\self_menu
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     $operation_class_name = lib::get_class_name( 'database\operation' );
     $utilities = $this->get_variable( 'utilities' );

@@ -28,6 +28,18 @@ class productivity_report extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'productivity', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     $this->add_restriction( 'site' );
     $this->add_restriction( 'qnaire' );
@@ -42,14 +54,15 @@ class productivity_report extends base_report
   }
 
   /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
+
     $this->set_parameter( 'round_times', true, true );
-    $this->finish_setting_parameters();
   }
 }
 ?>

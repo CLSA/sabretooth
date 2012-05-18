@@ -22,11 +22,12 @@ class self_settings extends \cenozo\ui\widget\self_settings
    * 
    * Defines all variables which need to be set for the associated template.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
+
     $this->set_variable( 'logo', 'img/logo_small.png' );
   }
 }

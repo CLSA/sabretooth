@@ -28,6 +28,18 @@ class survey_list extends \cenozo\ui\widget\base_list
   public function __construct( $args )
   {
     parent::__construct( 'survey', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     $this->add_column( 'sid', 'number', 'Limesurvey ID', false );
     $this->add_column( 'title', 'string', 'Title', false );
@@ -39,11 +51,11 @@ class survey_list extends \cenozo\ui\widget\base_list
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     // get all surveys
     foreach( $this->get_record_list() as $record )
@@ -54,8 +66,6 @@ class survey_list extends \cenozo\ui\widget\base_list
                'language' => $record->language,
                'additional_languages' => $record->additional_languages ) );
     }
-
-    $this->finish_setting_rows();
   }
 
   /**

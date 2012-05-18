@@ -28,6 +28,18 @@ class queue_list extends \cenozo\ui\widget\base_list
   public function __construct( $args )
   {
     parent::__construct( 'queue', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     // make sure to display all queues on the same page
     $this->set_items_per_page( 1000 );
@@ -48,11 +60,11 @@ class queue_list extends \cenozo\ui\widget\base_list
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     $session = lib::create( 'business\session' );
     $is_top_tier = 3 == $session->get_role()->tier;
@@ -118,8 +130,6 @@ class queue_list extends \cenozo\ui\widget\base_list
                'description' => '<div class="title">'.$record->title.'</div>'.
                                 '<div>'.$record->description.'</div>' ) );
     }
-
-    $this->finish_setting_rows();
   }
   
   /**

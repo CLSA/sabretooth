@@ -28,6 +28,18 @@ class sourcing_required_report extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'sourcing_required', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     $this->add_restriction( 'site' );
     $this->add_restriction( 'qnaire' );
@@ -37,17 +49,6 @@ class sourcing_required_report extends base_report
       'The report generates the participant\'s id, name, address, the last '.
       'date they were successfully contacted, and the contact information '.
       'for two alternates.' );
-  }
-
-  /**
-   * @author Dean Inglis <inglisd@mcmaster.ca>
-   * @access public
-   */
-  public function finish()
-  {
-    parent::finish();
-    
-    $this->finish_setting_parameters();
   }
 }
 ?>

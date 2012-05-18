@@ -28,6 +28,19 @@ class operator_assignment extends \cenozo\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'operator', 'assignment', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->set_heading( 'Current Assignment' );
   }
 
@@ -35,11 +48,11 @@ class operator_assignment extends \cenozo\ui\widget
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     $session = lib::create( 'business\session' );
     $db_user = $session->get_user();

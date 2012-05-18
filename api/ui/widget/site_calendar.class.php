@@ -28,6 +28,19 @@ class site_calendar extends \cenozo\ui\widget\base_calendar
   public function __construct( $args )
   {
     parent::__construct( 'site', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->set_heading(
       'Open appointment slots for '.lib::create( 'business\session' )->get_site()->name );
   }
@@ -36,11 +49,11 @@ class site_calendar extends \cenozo\ui\widget\base_calendar
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     // get the referred participant's site and make id a variable
     if( !is_null( $this->parent ) &&
@@ -52,10 +65,6 @@ class site_calendar extends \cenozo\ui\widget\base_calendar
         $this->parent->parent->get_record()->get_primary_site()->id );
       $this->set_variable( 'site_id', $db_site->id );
       $this->set_heading( 'Open appointment slots for '.$db_site->name );
-
-      // need to manually set the heading variable since it is done in the above parent::finish()
-      // method, but we can't know what the site is until after that method is called
-      $this->set_variable( 'widget_heading', $this->get_heading() );
     }
     else $this->set_variable( 'site_id', lib::create( 'business\session' )->get_site()->id );
 

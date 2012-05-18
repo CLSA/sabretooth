@@ -28,6 +28,19 @@ class self_timer extends \cenozo\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'self', 'timer', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->show_heading( false );
   }
 
@@ -35,11 +48,11 @@ class self_timer extends \cenozo\ui\widget
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     $this->set_variable( 'on_call',
       !is_null( lib::create( 'business\voip_manager' )->get_call() ) );
