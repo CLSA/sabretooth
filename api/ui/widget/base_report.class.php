@@ -50,45 +50,14 @@ abstract class base_report extends \cenozo\ui\widget\base_report
   }
 
   /**
-   * Adds more restrictions to reports.
-   * @author Dean Inglis <inglisd@mcmaster.ca>
-   * @param string $restriction_type The type of restriction requested.
-   * @throws exception\argument
-   * @access protected
-   */
-  protected function add_restriction( $restriction_type )
-  {
-    parent::add_restriction( $restriction_type );
-
-    if( 'source' == $restriction_type )
-    {
-      $this->restrictions[ 'source' ] = true;
-      $this->add_parameter( 'restrict_source_id', 'enum', 'Source' );
-    }
-    else if( 'qnaire' == $restriction_type )
-    {
-      $this->restrictions[ 'qnaire' ] = true;
-      $this->add_parameter( 'restrict_qnaire_id', 'enum', 'Questionnaire' );
-    }
-    else if( 'consent' == $restriction_type )
-    {
-      $this->restrictions[ 'consent' ] = true;
-      $this->add_parameter( 'restrict_consent_type', 'enum', 'Consent Status');
-    }
-    else if( 'mailout' == $restriction_type )
-    {
-      $this->restrictions[ 'mailout' ] = true;
-      $this->add_parameter( 'restrict_mailout_type', 'enum', 'Mailout' );
-    }
-  }
-
-  /**
-   * Extending the parent setup class with extra restrictions.
+   * Extending the parent setup method with extra restrictions.
    * @author Dean Inglis <inglisd@mcmaster.ca>
    * @access protected
    */
   protected function setup()
   {
+    parent::setup();
+
     if( $this->restrictions[ 'source' ] )
     {
       $source_list = array( 'Any' );
@@ -131,8 +100,39 @@ abstract class base_report extends \cenozo\ui\widget\base_report
       $this->set_parameter(
         'restrict_mailout_type', key( $mailout_list ), true, $mailout_list );
     }
+  }
 
-    parent::setup();
+  /**
+   * Adds more restrictions to reports.
+   * @author Dean Inglis <inglisd@mcmaster.ca>
+   * @param string $restriction_type The type of restriction requested.
+   * @throws exception\argument
+   * @access protected
+   */
+  protected function add_restriction( $restriction_type )
+  {
+    parent::add_restriction( $restriction_type );
+
+    if( 'source' == $restriction_type )
+    {
+      $this->restrictions[ 'source' ] = true;
+      $this->add_parameter( 'restrict_source_id', 'enum', 'Source' );
+    }
+    else if( 'qnaire' == $restriction_type )
+    {
+      $this->restrictions[ 'qnaire' ] = true;
+      $this->add_parameter( 'restrict_qnaire_id', 'enum', 'Questionnaire' );
+    }
+    else if( 'consent' == $restriction_type )
+    {
+      $this->restrictions[ 'consent' ] = true;
+      $this->add_parameter( 'restrict_consent_type', 'enum', 'Consent Status');
+    }
+    else if( 'mailout' == $restriction_type )
+    {
+      $this->restrictions[ 'mailout' ] = true;
+      $this->add_parameter( 'restrict_mailout_type', 'enum', 'Mailout' );
+    }
   }
 }
 ?>

@@ -65,7 +65,7 @@ abstract class base_appointment_view extends \cenozo\ui\widget\base_view
     parent::setup();
     
     // set up the site calendar if editing is enabled
-    if( $this->editable || 'add' == $this->get_name() )
+    if( $this->get_editable() || 'add' == $this->get_name() )
     {
       if( !is_null( $this->site_calendar ) )
       {

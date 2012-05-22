@@ -58,14 +58,14 @@ class appointment_list extends \cenozo\ui\widget\site_restricted_list
   protected function setup()
   {
     // don't add appointments if this list isn't parented
-    if( is_null( $this->parent ) ) $this->addable = false;
+    if( is_null( $this->parent ) ) $this->set_addable( false );
     else // don't add appointments if the parent already has an unassigned appointment
     {
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'participant_id', '=', $this->parent->get_record()->id );
       $modifier->where( 'assignment_id', '=', NULL );
       $class_name = lib::get_class_name( 'database\appointment' );
-      $this->addable = 0 == $class_name::count( $modifier );
+      $this->set_addable( 0 == $class_name::count( $modifier ) );
     }
 
     parent::setup();

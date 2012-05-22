@@ -57,7 +57,8 @@ class shift_add extends \cenozo\ui\widget\base_view
     {
       // and a list of users
       $this->user_list = lib::create( 'ui\widget\user_list', $this->arguments );
-      $this->user_list->set_parent( $this, 'edit' );
+      $this->user_list->set_parent( $this );
+      $this->user_list->set_checkable( true );
       $this->user_list->set_heading( 'Choose users to add to this shift' );
     }
     catch( \cenozo\exception\permission $e )

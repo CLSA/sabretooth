@@ -64,7 +64,7 @@ class appointment_view extends base_appointment_view
     $db_assignment = $this->get_record()->get_assignment();
 
     // don't allow editing if the appointment has been assigned
-    if( true == $this->editable ) $this->editable = is_null( $db_assignment );
+    if( true == $this->get_editable() ) $this->set_editable( is_null( $db_assignment ) );
 
     parent::setup();
 

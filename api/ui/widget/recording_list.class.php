@@ -39,10 +39,6 @@ class recording_list extends \cenozo\ui\widget\base_list
    */
   protected function prepare()
   {
-    // by default sort the rank column
-    $this->sort_column = 'recording.rank';
-    $this->sort_desc = false;
-
     parent::prepare();
     
     $this->add_column( 'interview.qnaire_name', 'string', 'Interview', false );
