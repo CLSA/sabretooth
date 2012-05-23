@@ -31,9 +31,9 @@ class participant_sync extends \cenozo\ui\pull
   }
 
   /**
-   * Returns a summary of the participant sync request as an associative array.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return array
+   * This method executes the operation's purpose.
+   * 
+   * @author Dean Inglis <inglisd@mcmaster.ca>
    * @access protected
    */
   protected function execute()

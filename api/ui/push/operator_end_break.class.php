@@ -30,12 +30,15 @@ class operator_end_break extends \cenozo\ui\push
   }
   
   /**
-   * Executes the push.
+   * This method executes the operation's purpose.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
+    parent::execute();
+
     $session = lib::create( 'business\session' );
     $db_user = $session->get_user();
     $db_site = $session->get_site();

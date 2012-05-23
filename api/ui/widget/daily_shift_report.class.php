@@ -33,7 +33,7 @@ class daily_shift_report extends base_report
   /**
    * Processes arguments, preparing them for the operation.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @author Dean Inglis <inglisd@mcmaster.ca>
    * @throws exception\notice
    * @access protected
    */

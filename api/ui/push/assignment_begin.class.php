@@ -28,26 +28,44 @@ class assignment_begin extends \cenozo\ui\push
   {
     parent::__construct( 'assignment', 'begin', $args );
 
-    // we can't use a transaction, otherwise the semaphore in the finish() method won't work right
+    // we can't use a transaction, otherwise the semaphore in the execute() method won't work
     lib::create( 'business\session' )->set_use_transaction( false );
   }
 
   /**
-   * Executes the push.
+   * Validate the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\runtime exception\notice
-   * @access public
+   * @throws exception\notice
+   * @access protected
    */
-  public function finish()
+  protected function validate()
   {
-    $session = lib::create( 'business\session' );
-    $setting_manager = lib::create( 'business\setting_manager' );
+    parent::validate();
 
     if( !is_null( $session->get_current_assignment() ) )
       throw lib::create( 'exception\notice',
         'Please click the refresh button.  If this message appears more than twice '.
         'consecutively report this error to a superior.', __METHOD__ );
+  }
+
+  /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
     
+    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
+    $queue_class_name = lib::get_class_name( 'database\queue' );
+    $interview_class_name = lib::get_class_name( 'database\interview' );
+
+    $session = lib::create( 'business\session' );
+    $setting_manager = lib::create( 'business\setting_manager' );
+
     // we need to use a semaphore to avoid race conditions
     $semaphore = sem_get( getmyinode() );
     if( !sem_acquire( $semaphore ) )
@@ -60,41 +78,54 @@ class assignment_begin extends \cenozo\ui\push
         __METHOD__ );
     }
 
-    // search through every queue for a new assignment until one is found
+    // Search through every queue for a new assignment until one is found.
+    // This search has to be done one qnaire at a time
+    $db_origin_queue = NULL;
+    $db_participant = NULL;
+
+    $qnaire_mod = lib::create( 'database\modifier' );
+    $qnaire_mod->order( 'rank' );
+
     $queue_mod = lib::create( 'database\modifier' );
     $queue_mod->where( 'rank', '!=', NULL );
     $queue_mod->order( 'rank' );
-    $db_origin_queue = NULL;
-    $db_participant = NULL;
-    $db_appointment_id = NULL;
-    $queue_class_name = lib::get_class_name( 'database\queue' );
-    foreach( $queue_class_name::select( $queue_mod ) as $db_queue )
+    
+    foreach( $qnaire_class_name::select( $qnaire_mod ) as $db_qnaire )
     {
-      if( $setting_manager->get_setting( 'queue state', $db_queue->name ) )
+      foreach( $queue_class_name::select( $queue_mod ) as $db_queue )
       {
-        $participant_mod = lib::create( 'database\modifier' );
-        $participant_mod->limit( 1 );
-        $db_queue->set_site( $session->get_site() );
-        $participant_list = $db_queue->get_participant_list( $participant_mod );
-        if( 1 == count( $participant_list ) )
+        if( $setting_manager->get_setting( 'queue state', $db_queue->name ) )
         {
-          $db_origin_queue = $db_queue;
-          $db_participant = current( $participant_list );
-
-          break;
+          $participant_mod = lib::create( 'database\modifier' );
+          $participant_mod->limit( 1 );
+          $db_queue->set_site( $session->get_site() );
+          $db_queue->set_qnaire( $db_qnaire );
+          $participant_list = $db_queue->get_participant_list( $participant_mod );
+          if( 1 == count( $participant_list ) )
+          {
+            $db_origin_qnaire = $db_qnaire;
+            $db_origin_queue = $db_queue;
+            $db_participant = current( $participant_list );
+          }
         }
+
+        // stop looping queues if we found a participant
+        if( !is_null( $db_participant ) ) break;
       }
+
+      // stop looping qnaires if we found a participant
+      if( !is_null( $db_participant ) ) break;
     }
 
+    // if we didn't find a participant then let the user know none are available
     if( is_null( $db_participant ) )
       throw lib::create( 'exception\notice',
         'There are no participants currently available.', __METHOD__ );
     
     // make sure the qnaire has phases
-    $db_qnaire = lib::create( 'database\qnaire', $db_participant->current_qnaire_id );
-    if( 0 == $db_qnaire->get_phase_count() )
+    if( 0 == $db_origin_qnaire->get_phase_count() )
       throw lib::create( 'exception\notice',
-        'This participant\'s next questionnaire is not yet ready.  '.
+        'This participant\'s next questionnaire is not yet ready. '.
         'Please immediately report this problem to a superior.',
         __METHOD__ );
     
@@ -103,7 +134,6 @@ class assignment_begin extends \cenozo\ui\push
     $interview_mod->where( 'participant_id', '=', $db_participant->id );
     $interview_mod->where( 'qnaire_id', '=', $db_participant->current_qnaire_id );
 
-    $interview_class_name = lib::get_class_name( 'database\interview' );
     $db_interview_list = $interview_class_name::select( $interview_mod );
     
     if( 0 == count( $db_interview_list ) )

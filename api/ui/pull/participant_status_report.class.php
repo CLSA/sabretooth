@@ -32,13 +32,15 @@ class participant_status_report extends \cenozo\ui\pull\base_report
   }
 
   /**
-   * Finished the report
+   * Sets up the operation with any pre-execution instructions that may be necessary.
    * 
-   * @author Dean Inglis <inglisd@mcmaster.ca>
-   * @access public
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
+    parent::setup();
+
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
     $region_class_name = lib::get_class_name( 'database\region' );
@@ -333,8 +335,6 @@ class participant_status_report extends \cenozo\ui\pull\base_report
         $content[ $subkey ][ $key ] = $subvalue;
    
     $this->add_table( NULL, $header, $content, NULL, $blank );
-
-    return parent::finish();
   }
 }
 ?>

@@ -31,12 +31,15 @@ class voip_end_monitor extends \cenozo\ui\push
   }
   
   /**
-   * Executes the push.
+   * This method executes the operation's purpose.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
+    parent::execute();
+
     lib::create( 'business\voip_manager' )->get_call()->stop_monitoring();
   }
 }

@@ -31,8 +31,16 @@ class daily_shift_report extends \cenozo\ui\pull\base_report
     parent::__construct( 'daily_shift', $args );
   }
 
-  public function finish()
+  /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
+   * @author Dean Inglis <inglisd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
   {
+    parent::setup();
+
     // get the current user's role, if it isnt a supervisor then bailout 
 
     $session = lib::create( 'business\session' );
@@ -260,8 +268,6 @@ class daily_shift_report extends \cenozo\ui\pull\base_report
     $this->add_table( NULL, 
       array_merge( array( 'Legend' ), array_fill( 0, sizeof( $header ) -1, ' ' ) ),
       $legend, NULL );
-
-    return parent::finish();
   }
 }
 ?>

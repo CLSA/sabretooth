@@ -31,8 +31,16 @@ class call_attempts_report extends \cenozo\ui\pull\base_report
     parent::__construct( 'call_attempts', $args );
   }
 
-  public function finish()
+  /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
   {
+    parent::setup();
+
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
     $restrict_source_id = $this->get_argument( 'restrict_source_id' );
@@ -107,8 +115,6 @@ class call_attempts_report extends \cenozo\ui\pull\base_report
     }
 
     $this->add_table( NULL, $header, $contents, NULL );
-
-    return parent::finish();
   }
 }
 ?>

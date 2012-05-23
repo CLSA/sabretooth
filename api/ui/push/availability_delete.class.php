@@ -28,7 +28,12 @@ class availability_delete extends \cenozo\ui\push\base_delete
     parent::__construct( 'availability', $args );
   }
 
-  // TODO: document
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
   protected function prepare()
   {
     parent::prepare();

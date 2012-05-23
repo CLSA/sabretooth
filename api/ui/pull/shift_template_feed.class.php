@@ -31,15 +31,16 @@ class shift_template_feed extends \cenozo\ui\pull\base_feed
   }
   
   /**
-   * Returns the data provided by this feed.
+   * This method executes the operation's purpose.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return array
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
-    $event_list = array();
+    parent::execute();
+
+    $this->data = array();
     $db_site = lib::create( 'business\session' )->get_site();
 
     $calendar_start_datetime_obj = util::get_datetime_object( $this->start_datetime );
@@ -119,7 +120,7 @@ class shift_template_feed extends \cenozo\ui\pull\base_feed
                     ? $event_end_datetime_obj->format( 'ga' )
                     : $event_end_datetime_obj->format( 'g:ia' );
 
-          $event_list[] = array(
+          $this->data[] = array(
             'id' => $db_shift_template->id,
             'title' => sprintf( ' to %s: %d operators',
               $end_time,
@@ -130,8 +131,6 @@ class shift_template_feed extends \cenozo\ui\pull\base_feed
         }
       }
     }
-
-    return $event_list;
   }
 }
 ?>

@@ -30,52 +30,59 @@ class shift_new extends \cenozo\ui\push\base_new
   }
 
   /**
-   * Executes the push.
+   * Processes arguments, preparing them for the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function prepare()
   {
-    // make sure the date column isn't blank
+    parent::prepare();
+
     $columns = $this->get_argument( 'columns' );
+
+    // make sure the date column isn't blank
     if( !array_key_exists( 'date', $columns ) || 0 == strlen( $columns['date'] ) )
       throw lib::create( 'exception\notice', 'The date cannot be left blank.', __METHOD__ );
-    
+  }
+
+  /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
+  {
+    parent::setup();
+
+    $columns = $this->get_argument( 'columns', array() );
+
+    // the UI provides date, start time and end time, need to convert to start_datetime
+    // and end_datetime
+    $this->arguments['columns']['start_datetime'] = $columns['date'].' '.$columns['start_time'];
+    $this->arguments['columns']['end_datetime'] = $columns['date'].' '.$columns['end_time'];
+    unset( $this->arguments['columns']['date'] );
+    unset( $this->arguments['columns']['start_time'] );
+    unset( $this->arguments['columns']['end_time'] );
+  }
+
+  /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
     $exceptions = array();
 
     // execute for every selected user
     foreach( $this->get_argument( 'user_id_list' ) as $user_id )
     {
       $this->get_record()->user_id = $user_id;
-      try
-      {
-        // the UI provides date, start time and end time, need to convert to start_datetime
-        // and end_datetime
-        $columns = $this->get_argument( 'columns', array() );
-        
-        if( strtotime( $columns['start_time'] ) >= strtotime( $columns['end_time'] ) )
-        {
-          throw lib::create( 'exception\notice',
-            sprintf( 'Start and end times (%s to %s) are not valid.',
-                     $columns['start_time'],
-                     $columns['end_time'] ),
-            __METHOD__ );
-        }
-        
-        $this->get_record()->start_datetime = $columns['date'].' '.$columns['start_time'];
-        $this->get_record()->end_datetime = $columns['date'].' '.$columns['end_time'];
-        
-        foreach( $columns as $column => $value )
-        {
-          if( 'date' != $column && 'start_time' != $column && 'end_time' != $column )
-            $this->get_record()->$column = $value;
-        }
-        $this->get_record()->save();
-      }
-      catch( \cenozo\exception\base_exception $e )
-      {
-        $exceptions[] = $e;
-      }
+      try { parent::execute(); }
+      catch( \cenozo\exception\base_exception $e ) { $exceptions[] = $e; }
 
       // create a new shift record for the next iteration
       $this->set_record( lib::create( 'database\shift' ) );

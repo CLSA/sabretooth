@@ -29,7 +29,12 @@ class phone_edit extends base_edit
     parent::__construct( 'phone', $args );
   }
 
-  // TODO: document
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
   protected function prepare()
   {
     parent::prepare();
@@ -38,6 +43,13 @@ class phone_edit extends base_edit
     $this->set_machine_request_url( MASTODON_URL );
   }
 
+  /**
+   * Validate the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
   protected function validate()
   {
     parent::validate();

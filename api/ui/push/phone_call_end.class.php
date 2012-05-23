@@ -30,12 +30,15 @@ class phone_call_end extends \cenozo\ui\push
   }
 
   /**
-   * Executes the push.
+   * This method executes the operation's purpose.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
+    parent::execute();
+
     $session = lib::create( 'business\session' );
     $is_operator = 'operator' == $session->get_role()->name;
 
@@ -81,7 +84,7 @@ class phone_call_end extends \cenozo\ui\push
                 'active' => false,
                 'note' => $note ) );
             $operation = lib::create( 'ui\push\phone_edit', $args );
-            $operation->finish();
+            $operation->process();
           }
         }
       }

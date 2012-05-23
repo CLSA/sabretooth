@@ -22,8 +22,6 @@ class user_edit extends \cenozo\ui\push\user_edit
    * Processes arguments, preparing them for the operation.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\notice
-   * @abstract
    * @access protected
    */
   protected function prepare()

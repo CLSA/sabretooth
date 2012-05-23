@@ -30,19 +30,21 @@ class qnaire_new extends \cenozo\ui\push\base_new
   }
 
   /**
-   * Executes the push.
+   * Validate the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @throws exception\notice
+   * @access protected
    */
-  public function finish()
+  protected function validate()
   {
+    parent::validate();
+
     // make sure the name column isn't blank
     $columns = $this->get_argument( 'columns' );
     if( !array_key_exists( 'name', $columns ) || 0 == strlen( $columns['name'] ) )
       throw lib::create( 'exception\notice',
         'The questionnaire\'s name cannot be left blank.', __METHOD__ );
-    
-    parent::finish();
   }
 }
 ?>

@@ -30,7 +30,7 @@ class participant_sync extends \cenozo\ui\push
   }
 
   /**
-   * This method executes the operation's purpose.  All operations must implement this method.
+   * This method executes the operation's purpose.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected

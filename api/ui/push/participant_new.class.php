@@ -29,7 +29,12 @@ class participant_new extends base_new
     parent::__construct( 'participant', $args );
   }
 
-  // TODO: document
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
   protected function prepare()
   {
     parent::prepare();
@@ -38,8 +43,14 @@ class participant_new extends base_new
     $this->set_machine_request_url( MASTODON_URL );
   }
 
-  // TODO: document
-  public function validate()
+  /**
+   * Validate the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function validate()
   {
     parent::validate();
 

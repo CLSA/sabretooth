@@ -21,8 +21,6 @@ class access_delete extends \cenozo\ui\push\access_delete
    * Processes arguments, preparing them for the operation.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\notice
-   * @abstract
    * @access protected
    */
   protected function prepare()
