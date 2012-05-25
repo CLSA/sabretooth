@@ -30,12 +30,20 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
     parent::__construct( 'mailout_required', $args );
   }
 
-  public function finish()
+  /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
+   * @author Dean Inglis <inglisd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
   {
+    parent::setup();
+
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
     // get the report arguments
-    $mailout_type = $this->get_argument( 'restrict_mailout' );
+    $mailout_type = $this->get_argument( 'restrict_mailout_type' );
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
 
@@ -149,8 +157,6 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
       "Date Completed" );
     
     $this->add_table( NULL, $header, $contents, NULL );
-
-    return parent::finish();
   }
 }
 ?>

@@ -28,6 +28,18 @@ class availability_list extends \cenozo\ui\widget\base_list
   public function __construct( $args )
   {
     parent::__construct( 'availability', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     $this->add_column( 'monday', 'boolean', 'M', true );
     $this->add_column( 'tuesday', 'boolean', 'T', true );
@@ -44,11 +56,11 @@ class availability_list extends \cenozo\ui\widget\base_list
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     foreach( $this->get_record_list() as $record )
     {
@@ -63,8 +75,6 @@ class availability_list extends \cenozo\ui\widget\base_list
                'start_time' => $record->start_time,
                'end_time' => $record->end_time ) );
     }
-
-    $this->finish_setting_rows();
   }
 }
 ?>

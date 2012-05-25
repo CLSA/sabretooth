@@ -30,13 +30,15 @@ class participant_tree extends \cenozo\ui\pull
   }
 
   /**
-   * Returns the data provided by this class.
+   * This method executes the operation's purpose.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
+    parent::execute();
+
     $session = lib::create( 'business\session' );
     $is_top_tier = 3 == $session->get_role()->tier;
     
@@ -56,7 +58,7 @@ class participant_tree extends \cenozo\ui\pull
     if( 'current' != $viewing_date ) $queue_class_name::set_viewing_date( $viewing_date );
 
     // get the participant count for every node in the tree
-    $data = array();
+    $this->data = array();
     foreach( $queue_class_name::select() as $db_queue )
     {
       // restrict queue based on user's role
@@ -67,7 +69,7 @@ class participant_tree extends \cenozo\ui\pull
       if( !$db_queue->qnaire_specific )
       {
         $index = sprintf( '%d_%d', 0, $db_queue->id );
-        $data[$index] = $db_queue->get_participant_count();
+        $this->data[$index] = $db_queue->get_participant_count();
       }
       else // handle queues which are qnaire specific
       {
@@ -75,12 +77,10 @@ class participant_tree extends \cenozo\ui\pull
         {
           $db_queue->set_qnaire( $db_qnaire );
           $index = sprintf( '%d_%d', $db_qnaire->id, $db_queue->id );
-          $data[$index] = $db_queue->get_participant_count();
+          $this->data[$index] = $db_queue->get_participant_count();
         }
       }
     }
-
-    return $data;
   }
 
   /**

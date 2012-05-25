@@ -28,6 +28,18 @@ class consent_view extends \cenozo\ui\widget\base_view
   public function __construct( $args )
   {
     parent::__construct( 'consent', 'view', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     // add items to the view
     $this->add_item( 'event', 'enum', 'Event' );
@@ -39,11 +51,11 @@ class consent_view extends \cenozo\ui\widget\base_view
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     // create enum arrays
     $class_name = lib::get_class_name( 'database\consent' );
@@ -54,8 +66,6 @@ class consent_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'event', $this->get_record()->event, true, $events );
     $this->set_item( 'date', $this->get_record()->date, true );
     $this->set_item( 'note', $this->get_record()->note );
-
-    $this->finish_setting_items();
   }
 }
 ?>

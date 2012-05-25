@@ -29,8 +29,16 @@ class consent_outstanding_report extends \cenozo\ui\pull\base_report
     parent::__construct( 'consent_outstanding', $args );
   }
 
-  public function finish()
+  /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
+   * @author Dean Inglis <inglisd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
   {
+    parent::setup();
+
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
     // get report args
@@ -103,8 +111,6 @@ class consent_outstanding_report extends \cenozo\ui\pull\base_report
       "Date Completed" );
   
     $this->add_table( NULL, $header, $contents, NULL );
-
-    return parent::finish();
   }
 }
 ?>

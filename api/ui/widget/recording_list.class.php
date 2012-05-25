@@ -27,11 +27,19 @@ class recording_list extends \cenozo\ui\widget\base_list
    */
   public function __construct( $args )
   {
-    // by default sort the rank column
-    $this->sort_column = 'recording.rank';
-    $this->sort_desc = false;
-
     parent::__construct( 'recording', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     $this->add_column( 'interview.qnaire_name', 'string', 'Interview', false );
     $this->add_column( 'rank', 'number', 'Number', true );
@@ -41,11 +49,11 @@ class recording_list extends \cenozo\ui\widget\base_list
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     foreach( $this->get_record_list() as $record )
     {
@@ -54,8 +62,6 @@ class recording_list extends \cenozo\ui\widget\base_list
                'rank' => $record->rank,
                'file' => $record->get_file() ) );
     }
-
-    $this->finish_setting_rows();
   }
 }
 ?>

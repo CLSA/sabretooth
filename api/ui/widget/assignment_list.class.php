@@ -28,6 +28,18 @@ class assignment_list extends \cenozo\ui\widget\site_restricted_list
   public function __construct( $args )
   {
     parent::__construct( 'assignment', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     $this->add_column( 'user.name', 'string', 'Operator', true );
     $this->add_column( 'site.name', 'string', 'Site', true );
@@ -43,11 +55,11 @@ class assignment_list extends \cenozo\ui\widget\site_restricted_list
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     foreach( $this->get_record_list() as $record )
     {
@@ -75,8 +87,6 @@ class assignment_list extends \cenozo\ui\widget\site_restricted_list
                // note_count isn't a column, it's used for the note button
                'note_count' => $record->get_note_count() ) );
     }
-
-    $this->finish_setting_rows();
   }
 
   /**

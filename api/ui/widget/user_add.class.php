@@ -21,11 +21,11 @@ class user_add extends \cenozo\ui\widget\user_add
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     $session = lib::create( 'business\session' );
     $is_top_tier = 3 == $session->get_role()->tier;
@@ -56,8 +56,6 @@ class user_add extends \cenozo\ui\widget\user_add
     $value = $is_top_tier ? current( $sites ) : $session->get_site()->id;
     $this->set_item( 'site_id', $value, true, $is_top_tier ? $sites : NULL );
     $this->set_item( 'role_id', array_search( 'operator', $roles ), true, $roles );
-
-    $this->finish_setting_items();
   }
 }
 ?>

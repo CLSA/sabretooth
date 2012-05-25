@@ -31,16 +31,31 @@ class voip_dtmf extends \cenozo\ui\push
   }
   
   /**
-   * Executes the push.
+   * Validate the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @throws exception\notice
+   * @access protected
    */
-  public function finish()
+  protected function validate()
   {
+    parent::validate();
+
     $voip_call = lib::create( 'business\voip_manager' )->get_call();
     if( is_null( $voip_call ) )
       throw lib::create( 'exception\notice',
         'Unable to send tone since you are not currently in a call.', __NOTICE__ );
+  }
+
+  /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
 
     $voip_call->dtmf( $this->get_argument( 'tone' ) );
   }

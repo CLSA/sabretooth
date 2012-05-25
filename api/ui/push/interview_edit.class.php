@@ -30,14 +30,17 @@ class interview_edit extends \cenozo\ui\push\base_edit
   }
   
   /**
-   * Interviews cannot be edited directly, instead, this method allows interviews to
-   * be force-completed.
+   * This method executes the operation's purpose.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\permission
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
+    // skip the parent's execute() method
+    $base_record_class_name = lib::get_class_name( 'ui\push\base_record' );
+    $base_record_class_name::execute();
+
     $columns = $this->get_argument( 'columns', array() );
 
     if( array_key_exists( 'completed', $columns ) )

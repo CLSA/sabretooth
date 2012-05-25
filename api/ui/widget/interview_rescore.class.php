@@ -28,12 +28,25 @@ class interview_rescore extends \cenozo\ui\widget\base_record
   public function __construct( $args )
   {
     parent::__construct( 'interview', 'rescore', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->set_heading( 'Rescore Interview for '.$this->get_record()->get_participant()->uid );
 
     try
     {
       // create the recording sub-list widget      
-      $this->recording_list = lib::create( 'ui\widget\recording_list', $args );
+      $this->recording_list = lib::create( 'ui\widget\recording_list', $this->arguments );
       $this->recording_list->set_parent( $this );
     }
     catch( \cenozo\exception\permission $e )
@@ -46,18 +59,18 @@ class interview_rescore extends \cenozo\ui\widget\base_record
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     $session = lib::create( 'business\session' );
     
-    // finish the child widgets
+    // process the child widgets
     if( !is_null( $this->recording_list ) )
     {
-      $this->recording_list->finish();
+      $this->recording_list->process();
       $this->set_variable( 'recording_list', $this->recording_list->get_variables() );
     }
   }

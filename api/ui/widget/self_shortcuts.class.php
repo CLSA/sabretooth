@@ -21,11 +21,11 @@ class self_shortcuts extends \cenozo\ui\widget\self_shortcuts
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     $setting_manager = lib::create( 'business\setting_manager' );
     $survey_manager = lib::create( 'business\survey_manager' );

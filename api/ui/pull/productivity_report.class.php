@@ -31,8 +31,16 @@ class productivity_report extends \cenozo\ui\pull\base_report
     parent::__construct( 'productivity', $args );
   }
 
-  public function finish()
+  /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
   {
+    parent::setup();
+
     // determine whether or not to round time to 15 minute increments
     $round_times = $this->get_argument( 'round_times', true );
 
@@ -254,8 +262,6 @@ class productivity_report extends \cenozo\ui\pull\base_report
       $title = 0 == $restrict_site_id ? $db_site->name : NULL;
       $this->add_table( $title, $header, $contents, $footer );
     }
-
-    return parent::finish();
   }
 }
 ?>

@@ -18,28 +18,31 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class access_delete extends \cenozo\ui\push\access_delete
 {
   /**
-   * Executes the push.
+   * Processes arguments, preparing them for the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function prepare()
   {
-    // we'll need the arguments to send to mastodon
-    $args = $this->arguments;
+    parent::prepare();
 
-    // replace the access id with a unique key
-    $db_access = $this->get_record();
-    unset( $args['id'] );
-    $args['noid']['user.name'] = $db_access->get_user()->name;
-    $args['noid']['role.name'] = $db_access->get_role()->name;
-    $args['noid']['site.name'] = $db_access->get_site()->name;
-    $args['noid']['site.cohort'] = 'tracking';
+    $this->set_machine_request_enabled( true );
+    $this->set_machine_request_url( MASTODON_URL );
+  }
 
-    parent::finish();
-
-    // now send the same request to mastodon
-    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
-    $mastodon_manager->push( 'access', 'delete', $args );
+  /**
+   * Override the parent method to add the cohort to the site key.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param array $args An argument list, usually those passed to the push operation.
+   * @return array
+   * @access protected
+   */
+  protected function convert_to_noid( $args )
+  {
+    $args = parent::convert_to_noid( $args );
+    $args['noid']['access']['site_id']['cohort'] = 'tracking';
+    return $args;
   }
 }
 ?>

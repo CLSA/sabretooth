@@ -28,6 +28,18 @@ class participant_list extends site_restricted_list
   public function __construct( $args )
   {
     parent::__construct( 'participant', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     $this->add_column( 'uid', 'string', 'Unique ID', true );
     $this->add_column( 'source.name', 'string', 'Source', true );
@@ -42,11 +54,11 @@ class participant_list extends site_restricted_list
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     foreach( $this->get_record_list() as $record )
     {
@@ -67,8 +79,6 @@ class participant_list extends site_restricted_list
     if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
       $this->add_action( 'sync', 'Participant Sync', $db_operation,
         'Synchronize participants with Mastodon' );
-
-    $this->finish_setting_rows();
   }
 }
 ?>

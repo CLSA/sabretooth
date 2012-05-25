@@ -16,7 +16,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * Edit a address.
  * @package sabretooth\ui
  */
-class address_edit extends \cenozo\ui\push\base_edit
+class address_edit extends base_edit
 {
   /**
    * Constructor.
@@ -30,52 +30,66 @@ class address_edit extends \cenozo\ui\push\base_edit
   }
 
   /**
-   * Overrides the parent method to make sure the postcode is valid.
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
+    $this->set_machine_request_enabled( true );
+    $this->set_machine_request_url( MASTODON_URL );
+  }
+
+  /**
+   * Validate the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\notice
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function validate()
   {
+    parent::validate();
+
     $columns = $this->get_argument( 'columns' );
 
     // validate the postcode
     if( array_key_exists( 'postcode', $columns ) )
     {
-      $postcode = $columns['postcode'];
-      if( !preg_match( '/^[A-Z][0-9][A-Z] [0-9][A-Z][0-9]$/', $postcode ) && // postal code
-          !preg_match( '/^[0-9]{5}$/', $postcode ) )  // zip code
+      if( !preg_match( '/^[A-Z][0-9][A-Z] [0-9][A-Z][0-9]$/', $columns['postcode'] ) &&
+          !preg_match( '/^[0-9]{5}$/', $columns['postcode'] ) )
         throw lib::create( 'exception\notice',
           'Postal codes must be in "A1A 1A1" format, zip codes in "01234" format.', __METHOD__ );
 
-      // determine the region, timezone and daylight savings from the postcode
-      $this->get_record()->postcode = $postcode;
-      $this->get_record()->source_postcode();
+      $postcode_class_name = lib::get_class_name( 'database\postcode' );
+      $db_postcode = $postcode_class_name::get_match( $columns['postcode'] );
+      if( is_null( $db_postcode ) )
+        throw lib::create( 'exception\notice',
+          'The postcode is invalid and cannot be used.', __METHOD__ );
     }
+  }
 
-    // we'll need the arguments to send to mastodon
-    $args = $this->arguments;
+  /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
 
-    // replace the address id with a unique key
-    $db_address = $this->get_record();
-    unset( $args['id'] );
-    $args['noid']['participant.uid'] = $db_address->get_participant()->uid;
-    $args['noid']['address.rank'] = $db_address->rank;
-    
-    // if set, replace the region id with a unique key
-    if( array_key_exists( 'region_id', $columns ) && $columns['region_id'] )
+    $columns = $this->get_argument( 'columns' );
+
+    // source the postcode if it has changed
+    if( array_key_exists( 'postcode', $columns ) )
     {
-      $db_region = lib::create( 'database\region', $columns['region_id'] );
-      unset( $args['columns']['region_id'] );
-      // we only include half of the unique key since the other half is added above
-      $args['noid']['region.abbreviation'] = $db_region->abbreviation;
+      $this->get_record()->source_postcode();
+      $this->get_record()->save();
     }
-
-    parent::finish();
-
-    // now send the same request to mastodon
-    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
-    $mastodon_manager->push( 'address', 'edit', $args );
   }
 }
 ?>

@@ -27,27 +27,19 @@ class phone_delete extends \cenozo\ui\push\base_delete
   {
     parent::__construct( 'phone', $args );
   }
-  
+
   /**
-   * Executes the push.
+   * Processes arguments, preparing them for the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function prepare()
   {
-    // we'll need the arguments to send to mastodon
-    $args = $this->arguments;
+    parent::prepare();
 
-    // replace the phone id with a unique key
-    unset( $args['id'] );
-    $args['noid']['participant.uid'] = $this->get_record()->get_participant()->uid;
-    $args['noid']['phone.rank'] = $this->get_record()->rank;
-    
-    parent::finish();
-
-    // now send the same request to mastodon
-    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
-    $mastodon_manager->push( 'phone', 'delete', $args );
+    $this->set_machine_request_enabled( true );
+    $this->set_machine_request_url( MASTODON_URL );
   }
 }
 ?>

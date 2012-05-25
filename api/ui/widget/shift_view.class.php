@@ -28,6 +28,18 @@ class shift_view extends \cenozo\ui\widget\base_view
   public function __construct( $args )
   {
     parent::__construct( 'shift', 'view', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     // create an associative array with everything we want to display about the shift
     $this->add_item( 'user', 'constant', 'User' );
@@ -40,19 +52,17 @@ class shift_view extends \cenozo\ui\widget\base_view
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     // set the view's items
     $this->set_item( 'user', $this->get_record()->get_user()->name );
     $this->set_item( 'date', $this->get_record()->start_datetime, true );
     $this->set_item( 'start_time', $this->get_record()->start_datetime, true );
     $this->set_item( 'end_time', $this->get_record()->end_datetime, true );
-
-    $this->finish_setting_items();
   }
 }
 ?>

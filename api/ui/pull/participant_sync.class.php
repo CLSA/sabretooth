@@ -31,13 +31,15 @@ class participant_sync extends \cenozo\ui\pull
   }
 
   /**
-   * Returns a summary of the participant sync request as an associative array.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return array
-   * @access public
+   * This method executes the operation's purpose.
+   * 
+   * @author Dean Inglis <inglisd@mcmaster.ca>
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
+    parent::execute();
+
     // Mastodon will only return ~400 records back at a time, so break up the list into chunks
     $limit = 250;
 
@@ -46,6 +48,8 @@ class participant_sync extends \cenozo\ui\pull
     $address_count = 0;
     $phone_count = 0;
     $consent_count = 0;
+    $availability_count = 0;
+    $note_count = 0;
     $missing_count = 0;
     
     $participant_class_name = lib::get_class_name( 'database\participant' );
@@ -74,6 +78,8 @@ class participant_sync extends \cenozo\ui\pull
           $address_count += count( $data->address_list );
           $phone_count += count( $data->phone_list );
           $consent_count += count( $data->consent_list );
+          $availability_count += count( $data->availability_list );
+          $note_count += count( $data->note_list );
 
           if( !is_null( $participant_class_name::get_unique_record( 'uid', $data->uid ) ) )
             $existing_count++;
@@ -102,6 +108,8 @@ class participant_sync extends \cenozo\ui\pull
           $address_count += count( $data->address_list );
           $phone_count += count( $data->phone_list );
           $consent_count += count( $data->consent_list );
+          $availability_count += count( $data->availability_list );
+          $note_count += count( $data->note_list );
 
           if( !is_null( $participant_class_name::get_unique_record( 'uid', $data->uid ) ) )
             $existing_count++;
@@ -112,14 +120,16 @@ class participant_sync extends \cenozo\ui\pull
       }
     }
 
-    return array(
+    $this->data = array(
       'Valid participants in request' => $valid_count,
       'Participants missing from Mastodon' => $missing_count,
       'New participants' => $new_count,
       'Existing participants (ignored)' => $existing_count,
       'Addresses' => $address_count,
       'Phone numbers' => $phone_count,
-      'Consent entries' => $consent_count );
+      'Consent entries' => $consent_count,
+      'Availability entries' => $availability_count,
+      'Note entries' => $note_count );
   }
   
   /**

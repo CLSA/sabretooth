@@ -19,33 +19,33 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class user_new extends \cenozo\ui\push\user_new
 {
   /**
-   * Executes the push.
+   * Processes arguments, preparing them for the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   * @throws exception\notice
+   * @access protected
    */
-  public function finish()
+  protected function prepare()
   {
-    parent::finish();
+    parent::prepare();
 
-    // need this for mastodon, below
-    $args = $this->arguments;
-    $args['ignore_existing'] = true;
+    $this->set_machine_request_enabled( true );
+    $this->set_machine_request_url( MASTODON_URL );
+  }
 
-    if( !is_null( $this->site_id ) && !is_null( $this->role_id ) )
-    { // add the initial role to the new user
-      $db_site = lib::create( 'database\site', $this->site_id );
-      $db_role = lib::create( 'database\role', $this->role_id );
-
-      // add the site, cohort and role to the arguments for mastodon
-      $args['noid']['site.name'] = $db_site->name;
-      $args['noid']['site.cohort'] = 'tracking';
-      $args['noid']['role.name'] = $db_role->name;
-    }
-
-    // now send the same request to mastodon
-    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
-    $mastodon_manager->push( 'user', 'new', $args );
+  /**
+   * Override the parent method to add the cohort to the site key.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param array $args An argument list, usually those passed to the push operation.
+   * @return array
+   * @access protected
+   */
+  protected function convert_to_noid( $args )
+  {
+    $args = parent::convert_to_noid( $args );
+    if( array_key_exists( 'columns', $args['noid'] ) &&
+        array_key_exists( 'site', $args['noid']['columns'] ) )
+      $args['noid']['columns']['site']['cohort'] = 'tracking';
+    return $args;
   }
 }
 ?>

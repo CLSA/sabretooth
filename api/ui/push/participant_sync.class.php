@@ -30,12 +30,15 @@ class participant_sync extends \cenozo\ui\push
   }
 
   /**
-   * Executes the push.
+   * This method executes the operation's purpose.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
+    parent::execute();
+
     // Mastodon will only return ~400 records back at a time, so break up the list into chunks
     $limit = 250;
 
@@ -103,80 +106,59 @@ class participant_sync extends \cenozo\ui\push
       if( 'id' != $column && 'site_id' != $column )
         $db_participant->$column = $data->$column;
 
-    // set the source
-    $db_source = is_null( $data->source_name )
-               ? NULL
-               : $source_class_name::get_unique_record( 'name', $data->source_name );
-    $db_participant->source_id = is_null( $db_source ) ? NULL : $db_source->id;
-
-    // set the site
-    $db_site = is_null( $data->site_name )
-               ? NULL
-               : $site_class_name::get_unique_record( 'name', $data->site_name );
-    $db_participant->site_id = is_null( $db_site ) ? NULL : $db_site->id;
+    // set the source and site from unique keys
+    $db_participant->source_id =
+      $source_class_name::get_primary_from_unique_key( $data->source_id );
+    $db_participant->site_id =
+      $site_class_name::get_primary_from_unique_key( $data->site_id );
 
     $db_participant->save();
 
-    // update addresses
-    foreach( $data->address_list as $address_info )
-    {
-      $db_address = lib::create( 'database\address' );
-      $db_address->participant_id = $db_participant->id;
-
-      foreach( $db_address->get_column_names() as $column )
-        if( 'id' != $column && 'participant_id' != $column && 'region_id' != $column )
-          $db_address->$column = $address_info->$column;
-
-      $db_region = $region_class_name::get_unique_record(
-        'abbreviation', $address_info->region_abbreviation );
-      if( !is_null( $db_region ) )
-        $db_address->region_id = $db_region->id;
-      
-      $db_address->save();
-    }
-
-    // update phones
-    foreach( $data->phone_list as $phone_info )
-    {
-      $db_phone = lib::create( 'database\phone' );
-      $db_phone->participant_id = $db_participant->id;
-
-      foreach( $db_phone->get_column_names() as $column )
-        if( 'id' != $column && 'participant_id' != $column && 'address_id' != $column )
-          $db_phone->$column = $phone_info->$column;
-
-      if( property_exists( $phone_info, 'address_rank' ) )
-      {
-        $db_address = $address_class_name::get_unique_record(
-          array( 'participant_id', 'rank' ),
-          array( $db_participant->id, $phone_info->address_rank ) );
-        if( !is_null( $db_address ) )
-          $db_phone->address_id = $db_address->id;
-      }
-
-      $db_phone->save();
-    }
-
-    // update consent
-    foreach( $data->consent_list as $consent_info )
-    {
-      $db_consent = lib::create( 'database\consent' );
-      $db_consent->participant_id = $db_participant->id;
-
-      foreach( $db_consent->get_column_names() as $column )
-        if( 'id' != $column && 'participant_id' != $column )
-          $db_consent->$column = $consent_info->$column;
-
-      $db_consent->save();
-    }
+    // update sub-lists
+    $this->sync_list( $db_participant, 'address', $data->address_list );
+    $this->sync_list( $db_participant, 'phone', $data->phone_list );
+    $this->sync_list( $db_participant, 'consent', $data->consent_list );
+    $this->sync_list( $db_participant, 'availability', $data->availability_list );
+    $this->sync_list( $db_participant, 'participant_note', $data->note_list );
 
     // let Mastodon know that the sync is done
     $datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
-    $arguments = array(
-      'noid' => array( 'participant.uid' => $db_participant->uid ),
-      'columns' => array( 'sync_datetime' => $datetime ) );
+    $arguments = array();
+    $arguments['noid']['participant']['uid'] = $db_participant->uid;
+    $arguments['columns']['sync_datetime'] = $datetime;
     $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
     $mastodon_manager->push( 'participant', 'edit', $arguments );
+  }
+
+  /**
+   * Creates database records based on a list provided by Mastodon
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\participant $db_participant The participant to add the list to.
+   * @param string $subject The subject of the list.
+   * @param array $list
+   * @access protected
+   */
+  protected function sync_list( $db_participant, $subject, $list )
+  {
+    foreach( $list as $data )
+    {
+      $record = lib::create( 'database\\'.$subject );
+      $record->participant_id = $db_participant->id;
+
+      foreach( $data as $column_name => $value )
+      {
+        if( '_id' == substr( $column_name, -3 ) )
+        {
+          $column_subject = substr( $column_name, 0, -3 );
+          $class_name = lib::get_class_name( 'database\\'.$column_subject );
+          $record->$column_name = $class_name::get_primary_from_unique_key( $value );
+        }
+        else $record->$column_name = $value;
+      }
+      
+      $record->save();
+    }
   }
 }
 ?>

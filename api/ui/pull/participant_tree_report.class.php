@@ -31,8 +31,16 @@ class participant_tree_report extends \cenozo\ui\pull\base_report
     parent::__construct( 'participant_tree', $args );
   }
 
-  public function finish()
+  /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
   {
+    parent::setup();
+
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
     $restrict_source_id = $this->get_argument( 'restrict_source_id', 0 );
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
@@ -93,8 +101,6 @@ class participant_tree_report extends \cenozo\ui\pull\base_report
     }
 
     $this->add_table( NULL, $header, $contents, NULL );
-
-    return parent::finish();
   }
 }
 ?>

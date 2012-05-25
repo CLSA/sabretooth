@@ -30,13 +30,16 @@ class appointment_edit extends \cenozo\ui\push\base_edit
   }
   
   /**
-   * Overrides the parent method to check for appointment slot availability.
+   * Validate the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\notice
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function validate()
   {
+    parent::validate();
+
     // make sure there is a slot available for the appointment
     $columns = $this->get_argument( 'columns', array() );
 
@@ -47,9 +50,6 @@ class appointment_edit extends \cenozo\ui\push\base_edit
         throw lib::create( 'exception\notice',
           'There are no operators available during that time.', __METHOD__ );
     }
-    
-    // no errors, go ahead and make the change
-    parent::finish();
   }
 }
 ?>

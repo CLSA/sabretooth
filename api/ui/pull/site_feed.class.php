@@ -31,14 +31,15 @@ class site_feed extends \cenozo\ui\pull\base_feed
   }
   
   /**
-   * Returns the data provided by this feed.
+   * This method executes the operation's purpose.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return array
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
+    parent::execute();
+
     $site_id = $this->get_argument( 'site_id', false );
     $db_site = $site_id
              ? lib::create( 'database\site', $site_id )
@@ -202,7 +203,7 @@ class site_feed extends \cenozo\ui\pull\base_feed
     // finally, construct the event list using the 'times' array
     $start_time = false;
     $available = 0;
-    $event_list = array();
+    $this->data = array();
     foreach( $days as $date => $day )
     {
       foreach( $day['times'] as $time => $number )
@@ -223,7 +224,7 @@ class site_feed extends \cenozo\ui\pull\base_feed
                        $hours > 12 ? $hours - 12 : $hours,
                        $minutes ? ':'.sprintf( '%02d', $minutes ) : '',
                        $hours > 12 ? 'p' : 'a' );
-            $event_list[] = array(
+            $this->data[] = array(
               'title' => sprintf( ' to %s: %d slots', $end_time_for_title, $available ),
               'allDay' => false,
               'start' => $date.' '.$start_time,
@@ -236,8 +237,6 @@ class site_feed extends \cenozo\ui\pull\base_feed
         $available = $number;
       }
     }
-
-    return $event_list;
   }
 }
 ?>

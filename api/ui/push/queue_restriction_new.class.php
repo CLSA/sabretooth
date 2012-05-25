@@ -30,13 +30,16 @@ class queue_restriction_new extends \cenozo\ui\push\base_new
   }
 
   /**
-   * Executes the push.
+   * Validate the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\notice
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function validate()
   {
+    parent::validate();
+
     // make that at least one of columns is not null
     $columns = $this->get_argument( 'columns' );
     if( !$columns['site_id'] &&
@@ -55,8 +58,6 @@ class queue_restriction_new extends \cenozo\ui\push\base_new
         throw lib::create( 'exception\notice',
           'Postal codes must be in "A1A 1A1" format, zip codes in "01234" format.', __METHOD__ );
     }
-
-    parent::finish();
   }
 }
 ?>

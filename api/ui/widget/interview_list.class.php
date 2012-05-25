@@ -28,6 +28,18 @@ class interview_list extends site_restricted_list
   public function __construct( $args )
   {
     parent::__construct( 'interview', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     $this->add_column( 'participant.uid', 'string', 'UID', true );
     $this->add_column( 'qnaire.name', 'string', 'Questionnaire', true );
@@ -41,11 +53,11 @@ class interview_list extends site_restricted_list
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     foreach( $this->get_record_list() as $record )
     {
@@ -56,8 +68,6 @@ class interview_list extends site_restricted_list
                'completed' => $record->completed,
                'rescored' => $record->rescored ) );
     }
-
-    $this->finish_setting_rows();
   }
 }
 ?>

@@ -31,14 +31,15 @@ class appointment_feed extends \cenozo\ui\pull\base_feed
   }
   
   /**
-   * Returns the data provided by this feed.
+   * This method executes the operation's purpose.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return array
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
+    parent::execute();
+
     // create a list of appointments between the feed's start and end time
     $modifier = lib::create( 'database\modifier' );
     $modifier->where(
@@ -46,7 +47,7 @@ class appointment_feed extends \cenozo\ui\pull\base_feed
     $modifier->where( 'datetime', '>=', $this->start_datetime );
     $modifier->where( 'datetime', '<', $this->end_datetime );
 
-    $event_list = array();
+    $this->data = array();
     $appointment_class_name = lib::get_class_name( 'database\appointment' );
     $setting_manager = lib::create( 'business\setting_manager');
     foreach( $appointment_class_name::select( $modifier ) as $db_appointment )
@@ -59,7 +60,7 @@ class appointment_feed extends \cenozo\ui\pull\base_feed
       $end_datetime_obj->modify(  sprintf( '+%d minute', $duration ) );
 
       $db_participant = $db_appointment->get_participant();
-      $event_list[] = array(
+      $this->data[] = array(
         'id' => $db_appointment->id,
         'title' => is_null( $db_participant->uid ) || 0 == strlen( $db_participant->uid ) ?
           $db_participant->first_name.' '.$db_participant->last_name :
@@ -68,8 +69,6 @@ class appointment_feed extends \cenozo\ui\pull\base_feed
         'start' => $start_datetime_obj->format( \DateTime::ISO8601 ),
         'end' => $end_datetime_obj->format( \DateTime::ISO8601 ) );
     }
-
-    return $event_list;
   }
 }
 ?>

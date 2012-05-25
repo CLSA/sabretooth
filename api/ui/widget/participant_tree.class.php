@@ -28,6 +28,19 @@ class participant_tree extends \cenozo\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'participant', 'tree', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $session = lib::create( 'business\session' );
     if( 3 > $session->get_role()->tier )
       $this->set_heading( $this->get_heading().' for '.$session->get_site()->name );
@@ -37,11 +50,11 @@ class participant_tree extends \cenozo\ui\widget
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     $session = lib::create( 'business\session' );
     $is_top_tier = 3 == $session->get_role()->tier;

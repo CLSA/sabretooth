@@ -28,6 +28,18 @@ class participant_tree_report extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'participant_tree', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     $this->add_restriction( 'site' );
     $this->add_restriction( 'qnaire' );
@@ -36,16 +48,6 @@ class participant_tree_report extends base_report
     $this->set_variable( 'description',
       'This report lists the participant tree: where in the calling queue all participants '.
       'currently belong.' );
-  }
-
-  /**
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function finish()
-  {
-    parent::finish();
-    $this->finish_setting_parameters();
   }
 }
 ?>

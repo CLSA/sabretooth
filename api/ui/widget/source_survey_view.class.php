@@ -28,6 +28,18 @@ class source_survey_view extends \cenozo\ui\widget\base_view
   public function __construct( $args )
   {
     parent::__construct( 'source_survey', 'view', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     // add items to the view
     $this->add_item( 'source_id', 'enum', 'Source' );
@@ -38,11 +50,11 @@ class source_survey_view extends \cenozo\ui\widget\base_view
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     // create enum arrays
     $sources = array();
@@ -62,8 +74,6 @@ class source_survey_view extends \cenozo\ui\widget\base_view
     // set the view's items
     $this->set_item( 'source_id', $this->get_record()->source_id, true, $sources );
     $this->set_item( 'sid', $this->get_record()->sid, true, $surveys );
-
-    $this->finish_setting_items();
   }
 }
 ?>

@@ -295,79 +295,6 @@ class participant extends \cenozo\database\has_note
   }
 
   /**
-   * Overrides the parent method to sync the consent list with Mastodon.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier
-   * @param boolean $sync Whether to sync before reading the list
-   * @access public
-   */
-  public function get_consent_list( $modifier = NULL, $sync = true )
-  {
-    if( $sync ) $this->sync_consent_list();
-    return parent::get_consent_list( $modifier );
-  }
-
-  /**
-   * Overrides the parent method to sync the consent list with Mastodon.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier
-   * @param boolean $sync Whether to sync before reading the list
-   * @access public
-   */
-  public function get_consent_count( $modifier = NULL, $sync = true )
-  {
-    if( $sync ) $this->sync_consent_list();
-    return parent::get_consent_count( $modifier );
-  }
-
-  /**
-   * Syncs this participant's consent list with Mastodon's list.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
-   */
-  protected function sync_consent_list()
-  {
-    // don't bother doing this if mastodon is not enabled
-    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
-    if( !$mastodon_manager->is_enabled() ) return;
-
-    // check the primary key value
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to query participant with no id.' );
-      return;
-    }
-
-    // only need to do this once
-    if( $this->sync_consent_list_completed ) return;
-
-    $consent_info = $mastodon_manager->pull(
-      'participant', 'list_consent', array( 'uid' => $this->uid ) );
-
-    if( count( $consent_info ) != $this->get_consent_list( NULL, false ) )
-    {
-      foreach( $consent_info->data as $consent )
-      {
-        // insert the consent data if it doesn't exist
-        $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'event', '=', $consent->event );
-        $modifier->where( 'date', '=', $consent->date );
-        if( 0 == $this->get_consent_count( $modifier, false ) )
-        {
-          $db_consent = lib::create( 'database\consent' );
-          $db_consent->participant_id = $this->id;
-          $db_consent->event = $consent->event;
-          $db_consent->date = $consent->date;
-          $db_consent->note = $consent->note;
-          $db_consent->save();
-        }
-      }
-    }
-
-    $this->sync_consent_list_completed = true;
-  }
-
-  /**
    * The participant's current questionnaire id (from a custom query)
    * @var int
    * @access private
@@ -380,12 +307,5 @@ class participant extends \cenozo\database\has_note
    * @access private
    */
   private $start_qnaire_date = NULL;
-
-  /**
-   * Whether or not the consent list has already been synched.
-   * @var boolean
-   * @access private
-   */
-  private $sync_consent_list_completed = false;
 }
 ?>

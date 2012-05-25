@@ -30,21 +30,35 @@ class assignment_end extends \cenozo\ui\push
   }
 
   /**
-   * Executes the push.
+   * Validate the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @throws exception\notice
+   * @access protected
    */
-  public function finish()
+  protected function validate()
   {
-    $session = lib::create( 'business\session' );
-    $db_assignment = $session->get_current_assignment();
-    if( !is_null( $db_assignment ) )
+    parent::validate();
+
+    // make sure the operator isn't on call
+    if( !is_null( lib::create( 'business\session' )->get_current_phone_call() ) )
+      throw lib::create( 'exception\notice',
+        'An assignment cannot be ended while in a call.', __METHOD__ );
+  }
+
+  /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
+
+    $db_assignment = lib::create( 'business\session' )->get_current_assignment();
+    if( is_null( $db_assignment ) )
     {
-      // make sure the operator isn't on call
-      if( !is_null( $session->get_current_phone_call() ) )
-        throw lib::create( 'exception\notice',
-          'An assignment cannot be ended while in a call.', __METHOD__ );
-      
       // if there is an appointment associated with this assignment, set the status
       $appointment_list = $db_assignment->get_appointment_list();
       if( 0 < count( $appointment_list ) )

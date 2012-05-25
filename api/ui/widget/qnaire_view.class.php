@@ -28,6 +28,18 @@ class qnaire_view extends \cenozo\ui\widget\base_view
   public function __construct( $args )
   {
     parent::__construct( 'qnaire', 'view', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     // create an associative array with everything we want to display about the qnaire
     $this->add_item( 'name', 'string', 'Name' );
@@ -44,7 +56,7 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     try
     {
       // create the phase sub-list widget
-      $this->phase_list = lib::create( 'ui\widget\phase_list', $args );
+      $this->phase_list = lib::create( 'ui\widget\phase_list', $this->arguments );
       $this->phase_list->set_parent( $this );
       $this->phase_list->set_heading( 'Questionnaire phases' );
     }
@@ -56,7 +68,7 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     try
     {
       // create the source_withdraw sub-list widget
-      $this->source_withdraw_list = lib::create( 'ui\widget\source_withdraw_list', $args );
+      $this->source_withdraw_list = lib::create( 'ui\widget\source_withdraw_list', $this->arguments );
       $this->source_withdraw_list->set_parent( $this );
       $this->source_withdraw_list->set_heading( 'Source-specific Withdraw Surveys' );
     }
@@ -70,11 +82,11 @@ class qnaire_view extends \cenozo\ui\widget\base_view
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     // create enum arrays
     $qnaires = array();
@@ -105,26 +117,22 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'rescore_sid', $this->get_record()->rescore_sid, false, $surveys );
     $this->set_item( 'phases', $this->get_record()->get_phase_count() );
     $this->set_item( 'description', $this->get_record()->description );
-
-    $this->finish_setting_items();
     
-    // finish the child widgets
+    // process the child widgets
     $this->set_item( 'phases', $this->get_record()->get_phase_count() );
     $this->set_item( 'description', $this->get_record()->description );
-
-    $this->finish_setting_items();
     
-    // finish the child widgets
+    // process the child widgets
     if( !is_null( $this->phase_list ) )
     {
-      $this->phase_list->finish();
+      $this->phase_list->process();
       $this->set_variable( 'phase_list', $this->phase_list->get_variables() );
     }
     
-    // finish the child widgets
+    // process the child widgets
     if( !is_null( $this->source_withdraw_list ) )
     {
-      $this->source_withdraw_list->finish();
+      $this->source_withdraw_list->process();
       $this->set_variable( 'source_withdraw_list', $this->source_withdraw_list->get_variables() );
     }
   }

@@ -30,12 +30,15 @@ class operator_begin_break extends \cenozo\ui\push
   }
   
   /**
-   * Executes the push.
+   * This method executes the operation's purpose.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
+    parent::execute();
+
     $session = lib::create( 'business\session' );
     $db_away_time = lib::create( 'database\away_time' );
     $db_away_time->user_id = $session->get_user()->id;

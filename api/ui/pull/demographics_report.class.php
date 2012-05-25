@@ -31,14 +31,22 @@ class demographics_report extends \cenozo\ui\pull\base_report
     parent::__construct( 'demographics', $args );
   }
 
-  public function finish()
+  /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
+   * @author Dean Inglis <inglisd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
   {
+    parent::setup();
+
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
     // get the report arguments
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
     $restrict_source_id = $this->get_argument( 'restrict_source_id' );
-    $consent_event = $this->get_argument( 'restrict_consent' );
+    $consent_event = $this->get_argument( 'restrict_consent_type' );
     $province_id = $this->get_argument( 'restrict_province_id' );
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
 
@@ -109,7 +117,6 @@ class demographics_report extends \cenozo\ui\pull\base_report
           $gender,
           $age,
           $proxy );
-
       }
     }
     
@@ -121,8 +128,6 @@ class demographics_report extends \cenozo\ui\pull\base_report
       "Proxy" );
 
     $this->add_table( NULL, $header, $contents, NULL );
-
-    return parent::finish();
-  }// end finish
-}// end class def
+  }
+}
 ?>

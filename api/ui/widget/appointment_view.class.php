@@ -28,6 +28,18 @@ class appointment_view extends base_appointment_view
   public function __construct( $args )
   {
     parent::__construct( 'view', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     // add items to the view
     $this->add_item( 'phone_id', 'enum', 'Phone Number',
@@ -45,16 +57,16 @@ class appointment_view extends base_appointment_view
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
     $db_assignment = $this->get_record()->get_assignment();
 
     // don't allow editing if the appointment has been assigned
-    if( true == $this->editable ) $this->editable = is_null( $db_assignment );
+    if( true == $this->get_editable() ) $this->set_editable( is_null( $db_assignment ) );
 
-    parent::finish();
+    parent::setup();
 
     $db_participant = lib::create( 'database\participant', $this->get_record()->participant_id );
   
@@ -119,8 +131,6 @@ class appointment_view extends base_appointment_view
     $this->set_item( 'datetime', $this->get_record()->datetime, true );
     $this->set_item( 'state', $this->get_record()->get_state(), false );
     $this->set_item( 'type', $this->get_record()->type, false, $types );
-
-    $this->finish_setting_items();
 
     // hide the calendar if requested to
     $this->set_variable( 'hide_calendar', $this->get_argument( 'hide_calendar', false ) );

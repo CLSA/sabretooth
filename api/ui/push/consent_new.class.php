@@ -16,7 +16,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * Create a new consent.
  * @package sabretooth\ui
  */
-class consent_new extends \cenozo\ui\push\base_new
+class consent_new extends base_new
 {
   /**
    * Constructor.
@@ -30,30 +30,17 @@ class consent_new extends \cenozo\ui\push\base_new
   }
 
   /**
-   * Executes the push.
+   * Processes arguments, preparing them for the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function prepare()
   {
-    // make sure the date column isn't blank
-    $columns = $this->get_argument( 'columns' );
-    if( !array_key_exists( 'date', $columns ) || 0 == strlen( $columns['date'] ) )
-      throw lib::create( 'exception\notice', 'The date cannot be left blank.', __METHOD__ );
+    parent::prepare();
 
-    $args = $this->arguments;
-    unset( $args['columns']['participant_id'] );
-
-    // replace the participant id with a unique key
-    $db_participant = lib::create( 'database\participant', $columns['participant_id'] );
-    $args['noid']['participant.uid'] = $db_participant->uid;
-
-    // no errors, go ahead and make the change
-    parent::finish();
-
-    // now send the same request to mastodon
-    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
-    $mastodon_manager->push( 'consent', 'new', $args );
+    $this->set_machine_request_enabled( true );
+    $this->set_machine_request_url( MASTODON_URL );
   }
 }
 ?>

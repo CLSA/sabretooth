@@ -21,11 +21,23 @@ class self_status extends \cenozo\ui\widget\self_status
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     $voip_manager = lib::create( 'business\voip_manager' );
     $this->set_variable( 'sip_enabled', $voip_manager->get_sip_enabled() );

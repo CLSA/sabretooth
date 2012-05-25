@@ -20,14 +20,14 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class self_set_password extends \cenozo\ui\push\self_set_password
 {
   /**
-   * Executes the push.
+   * This method executes the operation's purpose.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\runtime
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
-    parent::finish();
+    parent::execute();
 
     // flush the voip account
     lib::create( 'business\voip_manager' )->sip_prune(
