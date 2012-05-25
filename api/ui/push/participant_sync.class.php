@@ -95,7 +95,7 @@ class participant_sync extends \cenozo\ui\push
 
     // if the participant already exists then skip
     $db_participant = $participant_class_name::get_unique_record( 'uid', $data->uid );
-    if( !is_null( $db_participant ) ) continue;
+    if( !is_null( $db_participant ) ) return;
 
     $db_participant = lib::create( 'database\participant' );
 
