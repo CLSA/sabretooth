@@ -50,17 +50,10 @@ class assignment_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'start_time_only', 'constant', 'Start Time' );
     $this->add_item( 'end_time_only', 'constant', 'End Time' );
 
-    try
-    {
-      // create the phone_call sub-list widget
-      $this->phone_call_list = lib::create( 'ui\widget\phone_call_list', $this->arguments );
-      $this->phone_call_list->set_parent( $this );
-      $this->phone_call_list->set_heading( 'Phone calls made during this assignment' );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->phone_call_list = NULL;
-    }
+    // create the phone_call sub-list widget
+    $this->phone_call_list = lib::create( 'ui\widget\phone_call_list', $this->arguments );
+    $this->phone_call_list->set_parent( $this );
+    $this->phone_call_list->set_heading( 'Phone calls made during this assignment' );
   }
 
   /**
@@ -89,11 +82,12 @@ class assignment_view extends \cenozo\ui\widget\base_view
       util::get_formatted_time( $this->get_record()->end_datetime, false, 'none' ) );
 
     // process the child widgets
-    if( !is_null( $this->phone_call_list ) )
+    try
     {
       $this->phone_call_list->process();
       $this->set_variable( 'phone_call_list', $this->phone_call_list->get_variables() );
     }
+    catch( \cenozo\exception\permission $e ) {}
   }
   
   /**

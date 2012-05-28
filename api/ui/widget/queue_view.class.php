@@ -67,17 +67,10 @@ class queue_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'qnaire', 'constant', 'Questionnaire' );
     $this->add_item( 'viewing_date', 'constant', 'Viewing date' );
 
-    try
-    {
-      // create the participant sub-list widget
-      $this->participant_list = lib::create( 'ui\widget\participant_list', $this->arguments );
-      $this->participant_list->set_parent( $this );
-      $this->participant_list->set_heading( 'Queue participant list' );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->participant_list = NULL;
-    }
+    // create the participant sub-list widget
+    $this->participant_list = lib::create( 'ui\widget\participant_list', $this->arguments );
+    $this->participant_list->set_parent( $this );
+    $this->participant_list->set_heading( 'Queue participant list' );
   }
 
   /**
@@ -98,11 +91,12 @@ class queue_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'viewing_date', $this->viewing_date );
 
     // process the child widgets
-    if( !is_null( $this->participant_list ) )
+    try
     {
       $this->participant_list->process();
       $this->set_variable( 'participant_list', $this->participant_list->get_variables() );
     }
+    catch( \cenozo\exception\permission $e ) {}
   }
 
   /**

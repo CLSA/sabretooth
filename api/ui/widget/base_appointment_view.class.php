@@ -42,16 +42,9 @@ abstract class base_appointment_view extends \cenozo\ui\widget\base_view
   {
     parent::prepare();
     
-    try
-    {
-      // create the site calendar widget
-      $this->site_calendar = lib::create( 'ui\widget\site_calendar', $this->arguments );
-      $this->site_calendar->set_parent( $this );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->site_calendar = NULL;
-    }
+    // create the site calendar widget
+    $this->site_calendar = lib::create( 'ui\widget\site_calendar', $this->arguments );
+    $this->site_calendar->set_parent( $this );
   }
 
   /**
@@ -67,11 +60,12 @@ abstract class base_appointment_view extends \cenozo\ui\widget\base_view
     // set up the site calendar if editing is enabled
     if( $this->get_editable() || 'add' == $this->get_name() )
     {
-      if( !is_null( $this->site_calendar ) )
+      try
       {
         $this->site_calendar->process();
         $this->set_variable( 'site_calendar', $this->site_calendar->get_variables() );
       }
+      catch( \cenozo\exception\permission $e ) {}
     }
   }
 
