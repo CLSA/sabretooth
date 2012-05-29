@@ -43,7 +43,7 @@ class assignment_begin extends \cenozo\ui\push
   {
     parent::validate();
 
-    if( !is_null( $session->get_current_assignment() ) )
+    if( !is_null( lib::create( 'business\session' )->get_current_assignment() ) )
       throw lib::create( 'exception\notice',
         'Please click the refresh button.  If this message appears more than twice '.
         'consecutively report this error to a superior.', __METHOD__ );
