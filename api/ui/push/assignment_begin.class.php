@@ -65,14 +65,13 @@ class assignment_begin extends \cenozo\ui\push
 
     $session = lib::create( 'business\session' );
     $setting_manager = lib::create( 'business\setting_manager' );
+    $db_user = $session->get_user();
 
     // we need to use a semaphore to avoid race conditions
     $semaphore = sem_get( getmyinode() );
     if( !sem_acquire( $semaphore ) )
     {
-      log::err( sprintf(
-        'Unable to aquire semaphore for user id %d',
-        $session->get_user()->id ) );
+      log::err( sprintf( 'Unable to aquire semaphore for user "%s"', $db_user()->name ) );
       throw lib::create( 'exception\notice',
         'The server is busy, please wait a few seconds then click the refresh button.',
         __METHOD__ );
@@ -200,11 +199,7 @@ class assignment_begin extends \cenozo\ui\push
 
     // release the semaphore
     if( !sem_release( $semaphore ) )
-    {
-      log::err( sprintf(
-        'Unable to release semaphore for user id %d',
-        $session->get_user()->id ) );
-    }
+      log::err( sprintf( 'Unable to release semaphore for user %s', $db_user->name ) );
   }
 }
 ?>
