@@ -43,7 +43,7 @@ class assignment_list extends site_restricted_list
     
     $this->add_column( 'user.name', 'string', 'Operator', true );
     $this->add_column( 'site.name', 'string', 'Site', true );
-    $this->add_column( 'participant', 'string', 'Participant' );
+    $this->add_column( 'uid', 'string', 'UID' );
     $this->add_column( 'calls', 'number', 'Calls' );
     $this->add_column( 'start_datetime', 'date', 'Date', true );
     $this->add_column( 'start_time', 'time', 'Start Time' );
@@ -63,9 +63,6 @@ class assignment_list extends site_restricted_list
     
     foreach( $this->get_record_list() as $record )
     {
-      $db_participant = $record->get_interview()->get_participant();
-      $participant = sprintf( '%s, %s', $db_participant->last_name, $db_participant->first_name );
-      
       // get the status of the last phone call for this assignment
       $modifier = lib::create( 'database\modifier' );
       $modifier->order_desc( 'end_datetime' );
@@ -78,7 +75,7 @@ class assignment_list extends site_restricted_list
       $this->add_row( $record->id,
         array( 'user.name' => $record->get_user()->name,
                'site.name' => $record->get_site()->name,
-               'participant' => $participant,
+               'uid' => $record->get_interview()->get_participant()->uid,
                'calls' => $record->get_phone_call_count(),
                'start_datetime' => $record->start_datetime,
                'start_time' => $record->start_datetime,
