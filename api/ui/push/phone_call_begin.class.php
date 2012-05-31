@@ -39,8 +39,9 @@ class phone_call_begin extends \cenozo\ui\push
   protected function validate()
   {
     parent::validate();
+    $session = lib::create( 'business\session' );
 
-    if( 'operator' == lib::create( 'business\session' )->get_role()->name )
+    if( 'operator' == $session->get_role()->name )
     {
       // make sure that operators are calling their current assignment only
       $db_phone = lib::create( 'database\phone', $this->get_argument( 'phone_id' ) );
