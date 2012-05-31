@@ -40,8 +40,7 @@ class appointment_list extends site_restricted_list
   protected function prepare()
   {
     parent::prepare();
-    $this->add_column( 'participant.first_name', 'string', 'First name', true );
-    $this->add_column( 'participant.last_name', 'string', 'Last name', true );
+    $this->add_column( 'participant.uid', 'string', 'UID', true );
     $this->add_column( 'phone', 'string', 'Phone number', false );
     $this->add_column( 'datetime', 'datetime', 'Date', true );
     $this->add_column( 'state', 'string', 'State', false );
