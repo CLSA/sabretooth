@@ -16,6 +16,9 @@ $SETTINGS['general']['version'] = '1.1.3';
 // always leave as false when running as production server
 $SETTINGS['general']['development_mode'] = false;
 
+// the name of the cohort associated with this application
+$SETTINGS['general']['cohort'] = 'default';
+
 // the location of sabretooth internal path
 $SETTINGS['path']['APPLICATION'] = '/usr/local/lib/sabretooth';
 

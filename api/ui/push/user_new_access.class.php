@@ -42,7 +42,8 @@ class user_new_access extends \cenozo\ui\push\user_new_access
   {
     $args = parent::convert_to_noid( $args );
     foreach( $args['noid']['site_list'] as $key => $value )
-      $args['noid']['site_list'][$key]['cohort'] = 'tracking';
+      $args['noid']['site_list'][$key]['cohort'] =
+        lib::create( 'business\setting_manager' )->get_setting( 'general', 'cohort' );
     return $args;
   }
 }

@@ -45,7 +45,8 @@ class site_new extends \cenozo\ui\push\site_new
     $args = parent::convert_to_noid( $args );
 
     // add in the site's cohort
-    $args['columns']['cohort'] = 'tracking';
+    $args['columns']['cohort'] =
+      lib::create( 'business\setting_manager' )->get_setting( 'general', 'cohort' );
 
     return $args;
   }

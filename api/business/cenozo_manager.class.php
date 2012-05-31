@@ -18,15 +18,16 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class cenozo_manager extends \cenozo\business\cenozo_manager
 {
   /**
-   * Override the parent method to specify tracking as the cohort.
+   * Override the parent method to specify the cohort.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array& $arguments
    * @access protected
    */
   protected function set_site_and_role( &$arguments )
-  {
+  { 
+    $cohort = lib::create( 'business\setting_manager' )->get_setting( 'general', 'cohort' );
     $session = lib::create( 'business\session' );
-    $arguments['request_site_name'] = 'tracking////'.$session->get_site()->name;
+    $arguments['request_site_name'] = $cohort.'////'.$session->get_site()->name;
     $arguments['request_role_name'] = $session->get_role()->name;
   }
 }
