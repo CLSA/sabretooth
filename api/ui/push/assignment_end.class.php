@@ -57,7 +57,7 @@ class assignment_end extends \cenozo\ui\push
     parent::execute();
 
     $db_assignment = lib::create( 'business\session' )->get_current_assignment();
-    if( is_null( $db_assignment ) )
+    if( !is_null( $db_assignment ) )
     {
       // if there is an appointment associated with this assignment, set the status
       $appointment_list = $db_assignment->get_appointment_list();
