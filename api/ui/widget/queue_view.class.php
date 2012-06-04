@@ -94,6 +94,9 @@ class queue_view extends \cenozo\ui\widget\base_view
     try
     {
       $this->participant_list->process();
+      // can't sort by the source
+      $this->participant_list->add_column( 'source.name', 'string', 'Source', false );
+      $this->participant_list->execute();
       $this->set_variable( 'participant_list', $this->participant_list->get_variables() );
     }
     catch( \cenozo\exception\permission $e ) {}
