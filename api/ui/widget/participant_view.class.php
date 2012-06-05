@@ -204,6 +204,7 @@ class participant_view extends \cenozo\ui\widget\base_view
     catch( \cenozo\exception\permission $e ) {}
 
     // add an action for alternate contact if this participant has too many call attempts
+    $allow_alternate = false;
     $interview_mod = lib::create( 'database\modifier' );
     $interview_mod->where( 'completed', '=', false );
     $interview_list = $this->get_record()->get_interview_list( $interview_mod );
@@ -221,10 +222,10 @@ class participant_view extends \cenozo\ui\widget\base_view
         $this->add_action( 'alternate', 'Alternate Contacts', NULL,
           'A list of alternate contacts which can be called to update a '.
           'participant\'s contact information' );
-        $this->set_variable( 'allow_alternate', true );
+        $allow_alternate = true;
       }
-      else $this->set_variable( 'allow_alternate', false );
     }
+    $this->set_variable( 'allow_alternate', false );
   }
   
   /**
