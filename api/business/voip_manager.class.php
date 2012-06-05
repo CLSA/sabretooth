@@ -128,23 +128,30 @@ class voip_manager extends \cenozo\singleton
    * Attempts to connect to a phone.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\phone $db_phone
+   * @param mixed $phone May be a database phone record or an explicit number
    * @return voip_call
    * @access public
    * @throws exception\argument, exception\runtime, exception\notice, exception\voip
    */
-  public function call( $db_phone )
+  public function call( $phone )
   {
     if( !$this->enabled ) return NULL;
 
-    // check that the phone is valid
-    if( is_null( $db_phone ) ||
-        !is_object( $db_phone ) ||
-        'sabretooth\\database\\phone' != get_class( $db_phone ) )
-      throw lib::create( 'exception\argument', 'db_phone', $db_phone, __METHOD__ );
+    // validate the input
+    if( !is_object( $phone ) )
+    {
+      $number = $phone;
+    }
+    else
+    {
+      if( 'sabretooth\\database\\phone' != get_class( $db_phone ) )
+        throw lib::create( 'exception\argument', 'db_phone', $db_phone, __METHOD__ );
+
+      $number = $phone->number;
+    }
 
     // check that the phone number has exactly 10 digits
-    $digits = preg_replace( '/[^0-9]/', '', $db_phone->number );
+    $digits = preg_replace( '/[^0-9]/', '', $number );
     if( 10 != strlen( $digits ) )
       throw lib::create( 'exception\runtime',
         'Tried to connect to phone number which does not have exactly 10 digits.', __METHOD__ );

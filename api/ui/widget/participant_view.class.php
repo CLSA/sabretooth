@@ -113,6 +113,7 @@ class participant_view extends \cenozo\ui\widget\base_view
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $source_class_name = lib::get_class_name( 'database\source' );
     $site_class_name = lib::get_class_name( 'database\site' );
+    $operation_class_name = lib::get_class_name( 'database\operation' );
 
     // create enum arrays
     $sources = array();
@@ -201,6 +202,29 @@ class participant_view extends \cenozo\ui\widget\base_view
       $this->set_variable( 'interview_list', $this->interview_list->get_variables() );
     }
     catch( \cenozo\exception\permission $e ) {}
+
+    // add an action for alternate contact if this participant has too many call attempts
+    $interview_mod = lib::create( 'database\modifier' );
+    $interview_mod->where( 'completed', '=', false );
+    $interview_list = $this->get_record()->get_interview_list( $interview_mod );
+    if( 0 < count( $interview_list ) )
+    {
+      $max_failed_calls = lib::create( 'business\setting_manager' )->get_setting(
+        'calling', 'max failed calls', $this->get_record()->get_primary_site() );
+
+      // should only be one incomplete interview
+      $db_interview = current( $interview_list );
+      if( $max_failed_calls <= $db_interview->get_failed_call_count() )
+      {
+        $db_operation =
+          $operation_class_name::get_operation( 'widget', 'participant', 'list_alternate' );
+        $this->add_action( 'alternate', 'Alternate Contacts', NULL,
+          'A list of alternate contacts which can be called to update a '.
+          'participant\'s contact information' );
+        $this->set_variable( 'allow_alternate', true );
+      }
+      else $this->set_variable( 'allow_alternate', false );
+    }
   }
   
   /**

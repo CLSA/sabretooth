@@ -19,6 +19,10 @@ VALUES( "widget", "address", "list", true, "Lists a participant's address entrie
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "address", "primary", true, "Retrieves base address information." );
 
+-- alternate
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "list_alternate", true, "Lists a participant's alternate for sourcing purposes." );
+
 -- appointment
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "appointment", "delete", true, "Removes a participant's appointment from the system." );

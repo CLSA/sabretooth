@@ -216,6 +216,27 @@ class interview extends \cenozo\database\has_note
       }
     }
   }
+
+  // TODO: document
+  public function get_failed_call_count()
+  {
+    $assignment_mod = lib::create( 'database\modifier' );
+    $assignment_mod->order_desc( 'start_datetime' );
+    $assignment_mod->where( 'end_datetime', '!=', NULL );
+    $failed_calls = 0;
+    foreach( $this->get_assignment_list( $assignment_mod ) as $db_assignment )
+    {
+      // find the most recently completed phone call
+      $phone_call_mod = lib::create( 'database\modifier' );
+      $phone_call_mod->order_desc( 'start_datetime' );
+      $phone_call_mod->where( 'status', '=', 'contacted' );
+      $phone_call_mod->where( 'end_datetime', '!=', NULL );
+      if( 0 < $db_assignment->get_phone_call_count( $phone_call_mod ) ) break;
+      $failed_calls++;
+    }
+
+    return $failed_calls;
+  }
 }
 
 // define the join to the participant_site table
