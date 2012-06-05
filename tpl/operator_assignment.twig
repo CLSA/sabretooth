@@ -35,7 +35,8 @@
       
         // view call history button
         $( "#{{ widget.full }}__view_history" ).click( function() {
-          slot_load( "{{ widget.full }}", "assignment", "list", { id: {{ participant_id }} } );
+          slot_load( "{{ widget.full }}", "assignment", "list",
+                    { interview_id: {{ interview_id }} } );
           $( "#{{ widget.full }}_slot" ).dialog( {
             title: "Viewing call history for {{ participant_name }}",
             modal: false,

@@ -41,9 +41,12 @@ class assignment_list extends site_restricted_list
   {
     parent::prepare();
     
+    $interview_id = $this->get_argument( 'interview_id', NULL );
+
     $this->add_column( 'user.name', 'string', 'Operator', true );
     $this->add_column( 'site.name', 'string', 'Site', true );
-    $this->add_column( 'uid', 'string', 'UID' );
+    // only add the participant column if we are not restricting by interview
+    if( is_null( $interview_id ) ) $this->add_column( 'uid', 'string', 'UID' );
     $this->add_column( 'calls', 'number', 'Calls' );
     $this->add_column( 'start_datetime', 'date', 'Date', true );
     $this->add_column( 'start_time', 'time', 'Start Time' );
@@ -96,18 +99,31 @@ class assignment_list extends site_restricted_list
    */
   protected function determine_record_count( $modifier = NULL )
   {
-    $session = lib::create( 'business\session' );
-    if( 'operator' == $session->get_role()->name )
+    if( !is_null( $this->parent ) )
     {
-      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $db_assignment = $session->get_current_assignment();
-      $participant_id = is_null( $db_assignment )
-                      ? 0
-                      : $db_assignment->get_interview()->participant_id;
-      $modifier->where( 'interview.participant_id', '=', $participant_id );
-      $modifier->where( 'end_datetime', '!=', NULL );
+      if( 'interview_view' == $this->parent->get_class_name() )
+      {
+        // restrict the list to the interview's participant
+        if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+        $modifier->where(
+          'assignment.interview_id', '=', $this->parent->get_record()->id );
+      }
+      else
+      { // if this widget gets parented we need to address that parent here
+        throw lib::create( 'exception\runtime',
+                           'Invalid parent type '.$this->parent->get_class_name(),
+                           __METHOD__ );
+      }
     }
 
+    // we may be restricting by interview
+    $interview_id = $this->get_argument( 'interview_id', NULL );
+    if( !is_null( $interview_id ) )
+    {
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'assignment.interview_id', '=', $interview_id );
+    }
+        
     return parent::determine_record_count( $modifier );
   }
 
@@ -121,18 +137,31 @@ class assignment_list extends site_restricted_list
    */
   protected function determine_record_list( $modifier = NULL )
   {
-    $session = lib::create( 'business\session' );
-    if( 'operator' == $session->get_role()->name )
+    if( !is_null( $this->parent ) )
     {
-      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $db_assignment = $session->get_current_assignment();
-      $participant_id = is_null( $db_assignment )
-                      ? 0
-                      : $db_assignment->get_interview()->participant_id;
-      $modifier->where( 'interview.participant_id', '=', $participant_id );
-      $modifier->where( 'end_datetime', '!=', NULL );
+      if( 'interview_view' == $this->parent->get_class_name() )
+      {
+        // restrict the list to the interview's participant
+        if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+        $modifier->where(
+          'assignment.interview_id', '=', $this->parent->get_record()->id );
+      }
+      else
+      { // if this widget gets parented we need to address that parent here
+        throw lib::create( 'exception\runtime',
+                           'Invalid parent type '.$this->parent->get_class_name(),
+                           __METHOD__ );
+      }
     }
 
+    // we may be restricting by interview
+    $interview_id = $this->get_argument( 'interview_id', NULL );
+    if( !is_null( $interview_id ) )
+    {
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'assignment.interview_id', '=', $interview_id );
+    }
+        
     return parent::determine_record_list( $modifier );
   }
 }

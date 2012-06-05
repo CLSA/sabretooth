@@ -60,7 +60,7 @@ abstract class base_report extends \cenozo\ui\widget\base_report
 
     if( $this->restrictions[ 'source' ] )
     {
-      $source_list = array( 'Any' );
+      $source_list = array( 'any' );
       $class_name = lib::get_class_name( 'database\source' );
       foreach( $class_name::select() as $db_source )
         $source_list[ $db_source->id ] = $db_source->name;
@@ -82,7 +82,7 @@ abstract class base_report extends \cenozo\ui\widget\base_report
 
     if( $this->restrictions[ 'consent' ] )
     {
-      $consent_list = array( 'Any' );
+      $consent_list = array( 'any' );
       $class_name = lib::get_class_name( 'database\consent' );
       $consent_list = array_merge( $consent_list, $class_name::get_enum_values( 'event' ) );
       $consent_list = array_combine( $consent_list, $consent_list );

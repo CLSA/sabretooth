@@ -50,7 +50,11 @@ class queue_list extends \cenozo\ui\widget\base_list
     $this->add_column( 'description', 'text', 'Description', true, true, 'left' );
     $session = lib::create( 'business\session' );
     if( 3 != $session->get_role()->tier )
-      $this->set_heading( $this->get_heading().' for '.$session->get_site()->name );
+      $this->set_heading(
+        sprintf( '%s %s for %s',
+                 $this->get_subject(),
+                 $this->get_name(),
+                 $session->get_site()->name ) );
   }
 
   /**

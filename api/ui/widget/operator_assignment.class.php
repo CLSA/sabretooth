@@ -178,6 +178,7 @@ class operator_assignment extends \cenozo\ui\widget
 
       $this->set_variable( 'assignment_id', $db_assignment->id );
       $this->set_variable( 'participant_id', $db_participant->id );
+      $this->set_variable( 'interview_id', $db_interview->id );
       $this->set_variable( 'participant_note_count', $db_participant->get_note_count() );
       $this->set_variable( 'participant_name',
         sprintf( $db_participant->first_name.' '.$db_participant->last_name ) );
