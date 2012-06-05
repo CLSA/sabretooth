@@ -71,7 +71,11 @@ VALUES( "pull", "availability", "primary", true, "Retrieves base availability in
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "appointment", "calendar", true, "Shows appointments in a calendar format." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "appointment", "feed", true, "Retrieves a list of shifts for a given time-span." );
+VALUES( "pull", "appointment", "feed", true, "Retrieves a list of appointments for a given time-span." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "availability", "calendar", true, "Shows aggregate availabilities in a calendar format." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "availability", "feed", true, "Retrieves a list of aggregate availabilities for a given time-span." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "shift", "calendar", true, "Shows shifts in a calendar format." );
 INSERT INTO operation( type, subject, name, restricted, description )
