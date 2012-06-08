@@ -141,6 +141,7 @@ class site_feed extends \cenozo\ui\pull\base_feed
     // fill in the appointments which have not been completed
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'participant_site.site_id', '=', $db_site->id );
+    $modifier->where( 'reached', '=', NULL );
     $modifier->where( 'datetime', '>=', $this->start_datetime );
     $modifier->where( 'datetime', '<', $this->end_datetime );
     $modifier->order( 'datetime' );
@@ -151,29 +152,25 @@ class site_feed extends \cenozo\ui\pull\base_feed
       $interval = sprintf(
         'PT%dM', $db_appointment->type == 'full' ? $full_duration : $half_duration );
 
-      $state = $db_appointment->get_state();
-      if( 'reached' != $state && 'not reached' != $state )
-      { // incomplete appointments only
-        $appointment_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
+      $appointment_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
 
-        // since db_site may not be the same site as the session, convert to the correct timzeone
-        $appointment_datetime_obj->setTimezone( util::get_timezone_object( false, $db_site ) );
+      // since db_site may not be the same site as the session, convert to the correct timzeone
+      $appointment_datetime_obj->setTimezone( util::get_timezone_object( false, $db_site ) );
 
-        $diffs = &$days[ $appointment_datetime_obj->format( 'Y-m-d' ) ]['diffs'];
-  
-        $start_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
-        // increment slot one hour later
-        $appointment_datetime_obj->add( new \DateInterval( $interval ) );
-        $end_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
-  
-        if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
-        $diffs[ $start_time_as_int ]--;
-        if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[ $end_time_as_int ] = 0;
-        $diffs[ $end_time_as_int ]++;
-  
-        // unset diffs since it is a reference
-        unset( $diffs );
-      }
+      $diffs = &$days[ $appointment_datetime_obj->format( 'Y-m-d' ) ]['diffs'];
+
+      $start_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
+      // increment slot one hour later
+      $appointment_datetime_obj->add( new \DateInterval( $interval ) );
+      $end_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
+
+      if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
+      $diffs[ $start_time_as_int ]--;
+      if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[ $end_time_as_int ] = 0;
+      $diffs[ $end_time_as_int ]++;
+
+      // unset diffs since it is a reference
+      unset( $diffs );
     }
     
     // use the 'diff' arrays to define the 'times' array
