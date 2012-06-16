@@ -144,10 +144,11 @@ class voip_manager extends \cenozo\singleton
     }
     else
     {
+      $db_phone = $phone;
       if( 'sabretooth\\database\\phone' != get_class( $db_phone ) )
         throw lib::create( 'exception\argument', 'db_phone', $db_phone, __METHOD__ );
 
-      $number = $phone->number;
+      $number = $db_phone->number;
     }
 
     // check that the phone number has exactly 10 digits
