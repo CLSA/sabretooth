@@ -2,6 +2,7 @@
 
 SOURCE activity.sql
 SOURCE access.sql
+SOURCE age_group.sql
 SOURCE role_has_operation.sql
 SOURCE role.sql
 SOURCE operation.sql
