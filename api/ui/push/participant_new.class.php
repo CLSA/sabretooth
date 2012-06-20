@@ -27,9 +27,6 @@ class participant_new extends base_new
   public function __construct( $args )
   {
     parent::__construct( 'participant', $args );
-
-    // don't validate access if the request came from mastodon
-    if( 'mastodon' == $this->get_machine_application_name() ) $this->set_validate_access( false );
   }
 
   /**
