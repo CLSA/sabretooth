@@ -72,19 +72,25 @@ class interview_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'rescored', $this->get_record()->rescored );
     $this->set_item( 'recordings', $this->get_record()->get_recording_count() );
 
-    $this->finish_setting_items();
-
     // only allow rescoring if the interview's qnaire has a rescore ID, the user has access
     // to the rescoring operation, the interview is complete and there are recordings available
     $operation_class_name = lib::get_class_name( 'database\operation' );
     $db_operation = $operation_class_name::get_operation( 'widget', 'interview', 'rescore' );
-    $allowed = lib::create( 'business\session' )->is_allowed( $db_operation );
-    $has_rescore_sid = !is_null( $this->get_record()->get_qnaire()->rescore_sid );
-    $this->set_variable( 'allow_rescore',
+    $allow_rescore =
+      // the interview is completed
       $this->get_record()->completed &&
-      $allowed &&
-      $has_rescore_sid &&
-      0 < $this->get_record()->get_recording_count() );
+      // the user is allowed to rescore interviews
+      lib::create( 'business\session' )->is_allowed( $db_operation ) &&
+      // the qnaire has a rescoring survey
+      !is_null( $this->get_record()->get_qnaire()->rescore_sid );
+      // the interview has at least 1 recording
+      //0 < $this->get_record()->get_recording_count();
+    $this->set_variable( 'allow_rescore', $allow_rescore );
+    if( $allow_rescore )
+      $this->add_action( 'rescore', 'Rescore', NULL,
+        'Listen to the recordings made during the interview for rescoring purposes' );
+
+    $this->finish_setting_items();
 
     // finish the child widgets
     if( !is_null( $this->assignment_list ) )

@@ -37,6 +37,7 @@ class participant_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'last_name', 'string', 'Last Name' );
     $this->add_item( 'language', 'enum', 'Preferred Language' );
     $this->add_item( 'status', 'enum', 'Condition' );
+    $this->add_item( 'default_site', 'constant', 'Default Site' );
     $this->add_item( 'site_id', 'enum', 'Prefered Site' );
     $this->add_item( 'prior_contact_date', 'constant', 'Prior Contact Date' );
     $this->add_item( 'current_qnaire_name', 'constant', 'Current Questionnaire' );
@@ -125,10 +126,11 @@ class participant_view extends \cenozo\ui\widget\base_view
   {
     parent::finish();
 
-    // create enum arrays
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $source_class_name = lib::get_class_name( 'database\source' );
+    $site_class_name = lib::get_class_name( 'database\site' );
 
+    // create enum arrays
     $sources = array();
     foreach( $source_class_name::select() as $db_source )
       $sources[$db_source->id] = $db_source->name;
@@ -137,8 +139,10 @@ class participant_view extends \cenozo\ui\widget\base_view
     $statuses = $participant_class_name::get_enum_values( 'status' );
     $statuses = array_combine( $statuses, $statuses );
     $sites = array();
-    $site_class_name = lib::get_class_name( 'database\site' );
-    foreach( $site_class_name::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
+    $site_mod = lib::create( 'database\modifier' );
+    $site_mod->order( 'name' );
+    foreach( $site_class_name::select( $site_mod ) as $db_site )
+      $sites[$db_site->id] = $db_site->name;
     $db_site = $this->get_record()->get_site();
     $site_id = is_null( $db_site ) ? '' : $db_site->id;
     
@@ -163,6 +167,7 @@ class participant_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'last_name', $this->get_record()->last_name );
     $this->set_item( 'language', $this->get_record()->language, false, $languages );
     $this->set_item( 'status', $this->get_record()->status, false, $statuses );
+    $this->set_item( 'default_site', $this->get_record()->get_default_site()->name );
     $this->set_item( 'site_id', $site_id, false, $sites );
     $this->set_item( 'prior_contact_date', $this->get_record()->prior_contact_date );
     $this->set_item( 'current_qnaire_name', $current_qnaire_name );

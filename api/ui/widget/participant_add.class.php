@@ -50,9 +50,11 @@ class participant_add extends \cenozo\ui\widget\base_view
   public function finish()
   {
     parent::finish();
+
+    $participant_class_name = lib::get_class_name( 'database\participant' );
+    $site_class_name = lib::get_class_name( 'database\site' );
     
     // create enum arrays
-    $participant_class_name = lib::get_class_name( 'database\participant' );
     $sources = array();
     $source_class_name = lib::get_class_name( 'database\source' );
     foreach( $source_class_name::select() as $db_source )
@@ -62,8 +64,10 @@ class participant_add extends \cenozo\ui\widget\base_view
     $statuses = $participant_class_name::get_enum_values( 'status' );
     $statuses = array_combine( $statuses, $statuses );
     $sites = array();
-    $site_class_name = lib::get_class_name( 'database\site' );
-    foreach( $site_class_name::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
+    $site_mod = lib::create( 'database\modifier' );
+    $site_mod->order( 'name' );
+    foreach( $site_class_name::select( $site_mod ) as $db_site )
+      $sites[$db_site->id] = $db_site->name;
 
     // set the view's items
     $this->set_item( 'active', true, true );

@@ -36,9 +36,9 @@ class address_add extends \cenozo\ui\widget\base_view
     $this->add_item( 'address1', 'string', 'Address1' );
     $this->add_item( 'address2', 'string', 'Address2' );
     $this->add_item( 'city', 'string', 'City' );
-    $this->add_item( 'region_id', 'enum', 'Region' );
     $this->add_item( 'postcode', 'string', 'Postcode',
-      'Postal codes must be in "A1A 1A1" format, zip codes in "01234" format.' );
+      'Postal codes must be in "A1A 1A1" format, zip codes in "01234" format. '.
+      'NOTE: province, timezone and daylight savings will be determined by the postcode.' );
     $this->add_item( 'note', 'text', 'Note' );
   }
 
@@ -78,11 +78,6 @@ class address_add extends \cenozo\ui\widget\base_view
     end( $ranks );
     $last_rank_key = key( $ranks );
     reset( $ranks );
-    $regions = array();
-    $class_name = lib::get_class_name( 'database\region' );
-    foreach( $class_name::select() as $db_region )
-      $regions[$db_region->id] = $db_region->name.', '.$db_region->country;
-    reset( $regions );
 
     // set the view's items
     $this->set_item( 'participant_id', $this->parent->get_record()->id );
@@ -91,7 +86,6 @@ class address_add extends \cenozo\ui\widget\base_view
     $this->set_item( 'address1', '' );
     $this->set_item( 'address2', '' );
     $this->set_item( 'city', '' );
-    $this->set_item( 'region_id', key( $regions ), true, $regions );
     $this->set_item( 'postcode', '' );
     $this->set_item( 'note', '' );
 

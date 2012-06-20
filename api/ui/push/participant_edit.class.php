@@ -50,19 +50,24 @@ class participant_edit extends \cenozo\ui\push\base_edit
     if( array_key_exists( 'source_id', $columns ) && $columns['source_id'] )
     {
       $db_source = lib::create( 'database\source', $columns['source_id'] );
-      unset( $args['source_id'] );
+      unset( $args['columns']['source_id'] );
       // we only include half of the unique key since the other half is added above
       $args['noid']['source.name'] = $db_source->name;
     }
 
+    // if set, replace the site id with a unique key
+    if( array_key_exists( 'site_id', $columns ) && $columns['site_id'] )
+    {
+      $db_site = lib::create( 'database\site', $columns['site_id'] );
+      unset( $args['columns']['site_id'] );
+      $args['noid']['site.name'] = $db_site->name;
+      $args['noid']['site.cohort'] = 'tracking';
+    }
+
     parent::finish();
 
-    // now send the same request to mastodon (unless we are setting the site)
-    if( !array_key_exists( 'site_id', $args['columns'] ) )
-    {
-      $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
-      $mastodon_manager->push( 'participant', 'edit', $args );
-    }
+    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
+    $mastodon_manager->push( 'participant', 'edit', $args );
   }
 }
 ?>

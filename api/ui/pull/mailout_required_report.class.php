@@ -30,16 +30,20 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
     parent::__construct( 'mailout_required', $args );
   }
 
+  /**
+   * Builds the report based on the tables built by child classes.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return associative array
+   * @access public
+   */
   public function finish()
   {
-    // get the report arguments
     $participant_class_name = lib::get_class_name( 'database\participant' );
-    $mailout_type = $this->get_argument( 'restrict_mailout' );
+
+    // get the report arguments
+    $mailout_type = $this->get_argument( 'restrict_mailout_type' );
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-    $db_site = lib::create( 'database\site', $restrict_site_id );
-    $participant_list = $restrict_site_id
-                      ? $participant_class_name::select_for_site( $db_site )
-                      : $participant_class_name::select();
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
 
     // TODO: Change this to the title/code of the limesurvey question to check
@@ -68,7 +72,12 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
     $contents = array();
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
-    foreach( $participant_list as $db_participant )
+
+    // loop through participants searching for those who have completed their most recent interview
+    $participant_mod = lib::create( 'database\modifier' );
+    if( $restrict_site_id )
+      $participant_mod->where( 'participant_site.site_id', '=', $restrict_site_id );
+    foreach( $participant_class_name::select( $participant_mod ) as $db_participant )
     {
       $done = false;
 

@@ -10,6 +10,7 @@
 
   events: function( start, end, callback ) {
     var args = new Object();
+    args.site_id = {{ site_id }};
     args.start = start.getFullYear() + "-" + ( start.getMonth() + 1 ) + "-" + start.getDate();
     args.end = end.getFullYear() + "-" + ( end.getMonth() + 1 ) + "-" + end.getDate();
 

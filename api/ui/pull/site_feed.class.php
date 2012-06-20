@@ -39,16 +39,23 @@ class site_feed extends \cenozo\ui\pull\base_feed
    */
   public function finish()
   {
-    $db_site = lib::create( 'business\session' )->get_site();
+    $site_id = $this->get_argument( 'site_id', false );
+    $db_site = $site_id
+             ? lib::create( 'database\site', $site_id )
+             : lib::create( 'business\session' )->get_site();
 
     $setting_manager = lib::create( 'business\setting_manager' );
-    $full_duration = $setting_manager->get_setting( 'appointment', 'full duration' );
-    $half_duration = $setting_manager->get_setting( 'appointment', 'half duration' );
+    $full_duration = $setting_manager->get_setting( 'appointment', 'full duration', $db_site );
+    $half_duration = $setting_manager->get_setting( 'appointment', 'half duration', $db_site );
 
     // start by creating an array with one element per day in the time span
     $start_datetime_obj = util::get_datetime_object( $this->start_datetime );
     $end_datetime_obj   = util::get_datetime_object( $this->end_datetime );
     
+    // since db_site may not be the same site as the session, convert to the correct timzeone
+    $start_datetime_obj->setTimezone( util::get_timezone_object( false, $db_site ) );
+    $end_datetime_obj->setTimezone( util::get_timezone_object( false, $db_site ) );
+
     $days = array();
     $current_datetime_obj = clone $start_datetime_obj;
     while( $current_datetime_obj->diff( $end_datetime_obj )->days )
@@ -104,6 +111,11 @@ class site_feed extends \cenozo\ui\pull\base_feed
     {
       $start_datetime_obj = util::get_datetime_object( $db_shift->start_datetime );
       $end_datetime_obj   = util::get_datetime_object( $db_shift->end_datetime );
+
+      // since db_site may not be the same site as the session, convert to the correct timzeone
+      $start_datetime_obj->setTimezone( util::get_timezone_object( false, $db_site ) );
+      $end_datetime_obj->setTimezone( util::get_timezone_object( false, $db_site ) );
+
       $date = $start_datetime_obj->format( 'Y-m-d' );
       
       if( $days[$date]['template'] )
@@ -128,35 +140,37 @@ class site_feed extends \cenozo\ui\pull\base_feed
 
     // fill in the appointments which have not been completed
     $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'participant_site.site_id', '=', $db_site->id );
+    $modifier->where( 'reached', '=', NULL );
     $modifier->where( 'datetime', '>=', $this->start_datetime );
     $modifier->where( 'datetime', '<', $this->end_datetime );
     $modifier->order( 'datetime' );
     $appointment_class_name = lib::get_class_name( 'database\appointment' );
-    foreach( $appointment_class_name::select_for_site( $db_site, $modifier ) as $db_appointment )
+    foreach( $appointment_class_name::select( $modifier ) as $db_appointment )
     {
       // determine the appointment interval
       $interval = sprintf(
         'PT%dM', $db_appointment->type == 'full' ? $full_duration : $half_duration );
 
-      $state = $db_appointment->get_state();
-      if( 'reached' != $state && 'not reached' != $state )
-      { // incomplete appointments only
-        $appointment_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
-        $diffs = &$days[ $appointment_datetime_obj->format( 'Y-m-d' ) ]['diffs'];
-  
-        $start_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
-        // increment slot one hour later
-        $appointment_datetime_obj->add( new \DateInterval( $interval ) );
-        $end_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
-  
-        if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
-        $diffs[ $start_time_as_int ]--;
-        if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[ $end_time_as_int ] = 0;
-        $diffs[ $end_time_as_int ]++;
-  
-        // unset diffs since it is a reference
-        unset( $diffs );
-      }
+      $appointment_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
+
+      // since db_site may not be the same site as the session, convert to the correct timzeone
+      $appointment_datetime_obj->setTimezone( util::get_timezone_object( false, $db_site ) );
+
+      $diffs = &$days[ $appointment_datetime_obj->format( 'Y-m-d' ) ]['diffs'];
+
+      $start_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
+      // increment slot one hour later
+      $appointment_datetime_obj->add( new \DateInterval( $interval ) );
+      $end_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
+
+      if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
+      $diffs[ $start_time_as_int ]--;
+      if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[ $end_time_as_int ] = 0;
+      $diffs[ $end_time_as_int ]++;
+
+      // unset diffs since it is a reference
+      unset( $diffs );
     }
     
     // use the 'diff' arrays to define the 'times' array

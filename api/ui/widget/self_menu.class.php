@@ -29,7 +29,11 @@ class self_menu extends \cenozo\ui\widget\self_menu
   {
     parent::__construct( $args );
     
-    $exclude = array(
+    // remove the site calendar from the admin and clerk roles
+    $role = lib::create( 'business\session' )->get_role()->name;
+    if( 'administrator' == $role || 'clerk' == $role ) $this->exclude_calendar( 'site' );
+
+    $this->exclude_list( array(
       'address',
       'appointment',
       'availability',
@@ -40,8 +44,7 @@ class self_menu extends \cenozo\ui\widget\self_menu
       'phone_call',
       'recording',
       'source_survey',
-      'source_withdraw' );
-    $this->exclude_widget_list = array_merge( $this->exclude_widget_list, $exclude );
+      'source_withdraw' ) );
   }
 
   /**
@@ -54,16 +57,25 @@ class self_menu extends \cenozo\ui\widget\self_menu
   {
     parent::finish();
 
+    $operation_class_name = lib::get_class_name( 'database\operation' );
     $utilities = $this->get_variable( 'utilities' );
+    $session = lib::create( 'business\session' );
 
     // insert the participant tree into the utilities
-    $operation_class_name = lib::get_class_name( 'database\operation' );
     $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'tree' );
-    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+    if( $session->is_allowed( $db_operation ) )
       $utilities[] = array( 'heading' => 'Participant Tree',
                             'type' => 'widget',
                             'subject' => 'participant',
                             'name' => 'tree' );
+
+    // insert the participant sync operation into the utilities
+    $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'sync' );
+    if( $session->is_allowed( $db_operation ) )
+      $utilities[] = array( 'heading' => 'Participant Sync',
+                            'type' => 'widget',
+                            'subject' => 'participant',
+                            'name' => 'sync' );
 
     $this->set_variable( 'utilities', $utilities );
   }

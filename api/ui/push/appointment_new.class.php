@@ -51,8 +51,29 @@ class appointment_new extends \cenozo\ui\push\base_new
     $force = $this->get_argument( 'force', false );
     
     if( !$force && !$this->get_record()->validate_date() )
+    {
+      $db_participant = lib::create( 'database\participant', $this->get_record()->participant_id );
+      $db_site = $db_participant->get_primary_site();
+
+      // determine the full and half appointment intervals
+      $setting_manager = lib::create( 'business\setting_manager' );
+      $half_duration = $setting_manager->get_setting( 'appointment', 'half duration', $db_site );
+      $full_duration = $setting_manager->get_setting( 'appointment', 'full duration', $db_site );
+      $duration = 'full' == $this->get_record()->type ? $full_duration : $half_duration;
+
+      $start_datetime_obj = util::get_datetime_object( $this->get_record()->datetime );
+      $end_datetime_obj = clone $start_datetime_obj;
+      $end_datetime_obj->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
       throw lib::create( 'exception\notice',
-        'There are no operators available during that time.', __METHOD__ );
+        sprintf(
+          'Unable to create a %s appointment (%d minutes) since there is not '.
+          'at least 1 slot available from %s and %s.',
+          $this->get_record()->type,
+          $duration,
+          $start_datetime_obj->format( 'H:i' ),
+          $end_datetime_obj->format( 'H:i' ) ),
+        __METHOD__ );
+    }
     
     // no errors, go ahead and make the change
     parent::finish();

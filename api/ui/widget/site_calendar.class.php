@@ -41,6 +41,24 @@ class site_calendar extends \cenozo\ui\widget\base_calendar
   public function finish()
   {
     parent::finish();
+
+    // get the referred participant's site and make id a variable
+    if( !is_null( $this->parent ) &&
+        'appointment_add' == $this->parent->get_class_name() &&
+        !is_null( $this->parent->parent ) &&
+        'participant_add_appointment' == $this->parent->parent->get_class_name() )
+    {
+      $db_site = lib::create( 'database\site',
+        $this->parent->parent->get_record()->get_primary_site()->id );
+      $this->set_variable( 'site_id', $db_site->id );
+      $this->set_heading( 'Open appointment slots for '.$db_site->name );
+
+      // need to manually set the heading variable since it is done in the above parent::finish()
+      // method, but we can't know what the site is until after that method is called
+      $this->set_variable( 'widget_heading', $this->get_heading() );
+    }
+    else $this->set_variable( 'site_id', lib::create( 'business\session' )->get_site()->id );
+
     $this->set_variable( 'allow_all_day', false );
     $this->set_variable( 'editable', false );
   }

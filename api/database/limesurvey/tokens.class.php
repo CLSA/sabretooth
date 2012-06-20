@@ -52,7 +52,7 @@ class tokens extends sid_record
       
       // written consent received
       $written_consent = false;
-      foreach( $consent_info->data as $consent )
+      if( is_array( $consent_info->data ) ) foreach( $consent_info->data as $consent )
       {
         if( 'written' == substr( $consent->event, 0, 7 ) )
         {
@@ -179,7 +179,8 @@ class tokens extends sid_record
               try
               {
                 $this->$key = $db_survey->get_response( $value );
-                $found = true;
+                // INT_13a matches any survey response, others match any NON NULL response
+                if( 'INT_13a' == $value || !is_null( $this->$key ) ) $found = true;
               }
               catch( \cenozo\exception\runtime $e )
               {

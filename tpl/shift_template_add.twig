@@ -11,20 +11,18 @@
   
   <script type="text/javascript">
     $( function () {
-      // hide the repeat-by row on load
-      $( "#{{ widget.full }}__repeat_by_row" ).hide();
+      // hide the repeat-monthly tr elements on load
+      $( "tr.{{ widget.full }}__repeat_monthly" ).hide();
 
       // "repeats" drop-down
       $( "#{{ widget.full }}__type" ).change( function () {
         if( 'monthly' == $(this).val() ) {
-          $( "#{{ widget.full }}__repeat_every_row" ).hide();
-          $( "#{{ widget.full }}__repeat_on_row" ).hide();
-          $( "#{{ widget.full }}__repeat_by_row" ).show();
+          $( "tr.{{ widget.full }}__repeat_weekly" ).hide();
+          $( "tr.{{ widget.full }}__repeat_monthly" ).show();
         }
         else { // put back the old markup
-          $( "#{{ widget.full }}__repeat_by_row" ).hide();
-          $( "#{{ widget.full }}__repeat_every_row" ).show();
-          $( "#{{ widget.full }}__repeat_on_row" ).show();
+          $( "tr.{{ widget.full }}__repeat_monthly" ).hide();
+          $( "tr.{{ widget.full }}__repeat_weekly" ).show();
         }
       } );
 
@@ -40,31 +38,24 @@
         } );
 
         // set all checkbox values
-        columns["monday"] = $( "#{{ widget.full }}__monday" ).attr( "checked" ) ? 1 : 0;
-        columns["tuesday"] = $( "#{{ widget.full }}__tuesday" ).attr( "checked" ) ? 1 : 0;
-        columns["wednesday"] = $( "#{{ widget.full }}__wednesday" ).attr( "checked" ) ? 1 : 0;
-        columns["thursday"] = $( "#{{ widget.full }}__thursday" ).attr( "checked" ) ? 1 : 0;
-        columns["friday"] = $( "#{{ widget.full }}__friday" ).attr( "checked" ) ? 1 : 0;
-        columns["saturday"] = $( "#{{ widget.full }}__saturday" ).attr( "checked" ) ? 1 : 0;
-        columns["sunday"] = $( "#{{ widget.full }}__sunday" ).attr( "checked" ) ? 1 : 0;
-        
+        $( "input.{{ widget.full }}__repeat_on" ).each( function() {
+          var column_name = $(this).attr( "name" );
+          columns[column_name] = $(this).attr( "checked" ) ? 1 : 0;
+        } );
+
         // define the repeat type
-        if( "weekly" == columns["type"] )
-        {
+        if( "weekly" == columns["type"] ) {
           columns["repeat_type"] = "weekly";
-        }
-        else if( "month" == columns["repeat_by"] )
-        {
+        } else if( "month" == columns["repeat_by"] ) {
           columns["repeat_type"] = "day of month";
-        }
-        else // "week" == columns["repeat_by"]
-        {
+        } else { // "week" == columns["repeat_by"]
           columns["repeat_type"] = "day of week";
         }
 
         // remove unwanted columns
         delete columns["type"];
         delete columns["repeat_by"];
+        delete columns[""];
 
         args.columns = columns;
         if( ajax_push( "{{ widget.subject }}", "new", args ) ) {
@@ -78,51 +69,57 @@
 
 {% endblock javascript %}
 
-{% block record_items %}
+{% block record_extra_post_items %}
 
-  {{ parent() }}
-  <hr class="ui-widget ui-widget-content">
-  <table>
-    <tr>
-      <td class="heading">Repeats:</td>
-      <td class="content">
-        <select id="{{ widget.full }}__type" style="width: 200px" class="ui-state-default">
-          <option selected value="weekly">weekly</option>
-          <option value="monthly">monthly</option>
-        </select>
-      </td>
-    </tr>
-    <tr id="{{ widget.full }}__repeat_every_row">
-      <td class="heading">Repeat every:</td>
-      <td class="content">
-        <select id="{{ widget.full }}__repeat_every" style="width: 200px" class="ui-state-default">
-          {% for i in 1..30 %}
-            <option {{ 1 == i ? "checked" : "" }} value="{{ i }}">{{ i }}</option>
-          {% endfor %}
-        </select> weeks
-      </td>
-    </tr>
-    <tr id="{{ widget.full }}__repeat_on_row">
-      <td class="heading">Repeat on:</td>
-      <td class="content">
-        M<input id="{{ widget.full }}__monday" type="checkbox" name="monday" />
-        T<input id="{{ widget.full }}__tuesday" type="checkbox" name="tuesday" />
-        W<input id="{{ widget.full }}__wednesday" type="checkbox" name="wednesday" />
-        T<input id="{{ widget.full }}__thursday" type="checkbox" name="thursday" />
-        F<input id="{{ widget.full }}__friday" type="checkbox" name="friday" />
-        S<input id="{{ widget.full }}__saturday" type="checkbox" name="saturday" />
-        S<input id="{{ widget.full }}__sunday" type="checkbox" name="sunday" />
-      </td>
-    </tr>
-    <tr id="{{ widget.full }}__repeat_by_row">
-      <td class="heading">Repeat by:</td>
-      <td class="content">
-        <select id="{{ widget.full }}__repeat_by" style="width: 200px" class="ui-state-default">
-          <option selected value="month">day of the month</option>
-          <option value="week">day of the week</option>
-        </select>
-      </td>
-    </tr>
-  </table>
+  <tr><td></td><td><hr class="ui-widget ui-widget-content" /></td></tr>
+  <tr>
+    <td class="heading">Repeats:</td>
+    <td class="content">
+      <select id="{{ widget.full }}__type" style="width: 200px" class="ui-state-default">
+        <option selected value="weekly">weekly</option>
+        <option value="monthly">monthly</option>
+      </select>
+    </td>
+  </tr>
+  <tr class="{{ widget.full }}__repeat_weekly">
+    <td></td><td><hr class="ui-widget ui-widget-content" /></td>
+  </tr>
+  <tr class="{{ widget.full }}__repeat_weekly">
+    <td class="heading">Repeat every:</td>
+    <td class="content">
+      <select id="{{ widget.full }}__repeat_every" style="width: 200px" class="ui-state-default">
+        {% for i in 1..30 %}
+          <option {{ 1 == i ? "checked" : "" }} value="{{ i }}">{{ i }}</option>
+        {% endfor %}
+      </select> weeks
+    </td>
+  </tr>
+  <tr class="{{ widget.full }}__repeat_weekly">
+    <td></td><td><hr class="ui-widget ui-widget-content" /></td>
+  </tr>
+  <tr class="{{ widget.full }}__repeat_weekly">
+    <td class="heading">Repeat on:</td>
+    <td class="content">
+      M<input class="{{ widget.full }}__repeat_on" type="checkbox" name="monday" />
+      T<input class="{{ widget.full }}__repeat_on" type="checkbox" name="tuesday" />
+      W<input class="{{ widget.full }}__repeat_on" type="checkbox" name="wednesday" />
+      T<input class="{{ widget.full }}__repeat_on" type="checkbox" name="thursday" />
+      F<input class="{{ widget.full }}__repeat_on" type="checkbox" name="friday" />
+      S<input class="{{ widget.full }}__repeat_on" type="checkbox" name="saturday" />
+      S<input class="{{ widget.full }}__repeat_on" type="checkbox" name="sunday" />
+    </td>
+  </tr>
+  <tr class="{{ widget.full }}__repeat_monthly">
+    <td></td><td><hr class="ui-widget ui-widget-content" /></td>
+  </tr>
+  <tr class="{{ widget.full }}__repeat_monthly">
+    <td class="heading">Repeat by:</td>
+    <td class="content">
+      <select id="{{ widget.full }}__repeat_by" style="width: 200px" class="ui-state-default">
+        <option selected value="month">day of the month</option>
+        <option value="week">day of the week</option>
+      </select>
+    </td>
+  </tr>
 
-{% endblock record_items %}
+{% endblock record_extra_post_items %}

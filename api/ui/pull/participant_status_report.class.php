@@ -112,11 +112,9 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     if( !$is_supervisor ) $locale_totals_list[ 'None' ] = $locale_totals;
 
     $participant_mod = lib::create( 'database\modifier' );
+    if( $is_supervisor ) $participant_mod->where( 'site_id', '=', $session->get_site()->id );
     if( 0 < $restrict_source_id ) $participant_mod->where( 'source_id', '=', $restrict_source_id );
-    $participant_list = $is_supervisor
-                      ? $participant_class_name::select_for_site(
-                          $session->get_site(), $participant_mod )
-                      : $participant_class_name::select( $participant_mod );
+    $participant_list = $participant_class_name::select( $participant_mod );
     foreach( $participant_list as $db_participant )
     {
       if( $restrict_by_site )
@@ -137,8 +135,10 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       // don't include the "None" column if a supervisor is running the report
       if( $is_supervisor && 'None' == $locale ) continue;
 
+      $phone_call_mod = lib::create( 'database\modifier' );
+      $phone_call_mod->where( 'participant.id', '=', $db_participant->id );
       $locale_totals_list[ $locale ][ 'Total number of calls' ] +=
-        $phone_call_class_name::count_for_participant( $db_participant );
+        $phone_call_class_name::count( $phone_call_mod );
 
       if( 'deceased' == $db_participant->status )
       {

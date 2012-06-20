@@ -38,6 +38,10 @@ class address_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'region_id', 'enum', 'Region' );
     $this->add_item( 'postcode', 'string', 'Postcode',
       'Postal codes must be in "A1A 1A1" format, zip codes in "01234" format.' );
+    $this->add_item( 'timezone_offset', 'number', 'Timezone Offset',
+      'The number of hours difference between the address\' timezone and UTC.' );
+    $this->add_item( 'daylight_savings', 'boolean', 'Daylight Savings',
+      'Whether the address observes daylight savings.' );
     $this->add_item( 'note', 'text', 'Note' );
   }
 
@@ -51,21 +55,23 @@ class address_view extends \cenozo\ui\widget\base_view
   {
     parent::finish();
 
-    $this->set_variable( 'january', $this->get_record()->january );
-    $this->set_variable( 'february', $this->get_record()->february );
-    $this->set_variable( 'march', $this->get_record()->march );
-    $this->set_variable( 'april', $this->get_record()->april );
-    $this->set_variable( 'may', $this->get_record()->may );
-    $this->set_variable( 'june', $this->get_record()->june );
-    $this->set_variable( 'july', $this->get_record()->july );
-    $this->set_variable( 'august', $this->get_record()->august );
-    $this->set_variable( 'september', $this->get_record()->september );
-    $this->set_variable( 'october', $this->get_record()->october );
-    $this->set_variable( 'november', $this->get_record()->november );
-    $this->set_variable( 'december', $this->get_record()->december );
+    $record = $this->get_record();
+
+    $this->set_variable( 'january', $record->january );
+    $this->set_variable( 'february', $record->february );
+    $this->set_variable( 'march', $record->march );
+    $this->set_variable( 'april', $record->april );
+    $this->set_variable( 'may', $record->may );
+    $this->set_variable( 'june', $record->june );
+    $this->set_variable( 'july', $record->july );
+    $this->set_variable( 'august', $record->august );
+    $this->set_variable( 'september', $record->september );
+    $this->set_variable( 'october', $record->october );
+    $this->set_variable( 'november', $record->november );
+    $this->set_variable( 'december', $record->december );
 
     // create enum arrays
-    $num_addresss = $this->get_record()->get_participant()->get_address_count();
+    $num_addresss = $record->get_participant()->get_address_count();
     $ranks = array();
     for( $rank = 1; $rank <= $num_addresss; $rank++ ) $ranks[] = $rank;
     $ranks = array_combine( $ranks, $ranks );
@@ -75,14 +81,16 @@ class address_view extends \cenozo\ui\widget\base_view
       $regions[$db_region->id] = $db_region->name.', '.$db_region->country;
 
     // set the view's items
-    $this->set_item( 'active', $this->get_record()->active, true );
-    $this->set_item( 'rank', $this->get_record()->rank, true, $ranks );
-    $this->set_item( 'address1', $this->get_record()->address1 );
-    $this->set_item( 'address2', $this->get_record()->address2 );
-    $this->set_item( 'city', $this->get_record()->city );
-    $this->set_item( 'region_id', $this->get_record()->region_id, false, $regions );
-    $this->set_item( 'postcode', $this->get_record()->postcode, true );
-    $this->set_item( 'note', $this->get_record()->note );
+    $this->set_item( 'active', $record->active, true );
+    $this->set_item( 'rank', $record->rank, true, $ranks );
+    $this->set_item( 'address1', $record->address1 );
+    $this->set_item( 'address2', $record->address2 );
+    $this->set_item( 'city', $record->city );
+    $this->set_item( 'region_id', $record->region_id, false, $regions );
+    $this->set_item( 'postcode', $record->postcode, true );
+    $this->set_item( 'timezone_offset', $record->timezone_offset, true );
+    $this->set_item( 'daylight_savings', $record->daylight_savings, true );
+    $this->set_item( 'note', $record->note );
 
     $this->finish_setting_items();
   }

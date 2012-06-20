@@ -18,72 +18,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class participant extends \cenozo\database\has_note
 {
   /**
-   * Identical to the parent's select method but restrict to a particular site.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param site $db_site The site to restrict the selection to.
-   * @param modifier $modifier Modifications to the selection.
-   * @param boolean $count If true the total number of records instead of a list
-   * @return array( record ) | int
-   * @static
-   * @access public
-   */
-  public static function select_for_site( $db_site, $modifier = NULL, $count = false )
-  {
-    // if there is no site restriction then just use the parent method
-    if( is_null( $db_site ) ) return parent::select( $modifier, $count );
-
-    // left join the participant_primary_address and address tables
-    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $sql = sprintf( ( $count ? 'SELECT COUNT( %s.%s ) ' : 'SELECT %s.%s ' ).
-                    'FROM %s '.
-                    'LEFT JOIN participant_primary_address '.
-                    'ON %s.id = participant_primary_address.participant_id '.
-                    'LEFT JOIN address '.
-                    'ON participant_primary_address.address_id = address.id '.
-                    'WHERE ( %s.site_id = %d '.
-                    '  OR ( %s.site_id IS NULL '.
-                    '    AND address.region_id IN ( '.
-                    '      SELECT id FROM region WHERE site_id = %d ) ) ) %s',
-                    static::get_table_name(),
-                    static::get_primary_key_name(),
-                    static::get_table_name(),
-                    static::get_table_name(),
-                    static::get_table_name(),
-                    $db_site->id,
-                    static::get_table_name(),
-                    $db_site->id,
-                    $modifier->get_sql( true ) );
-
-    if( $count )
-    {
-      return intval( static::db()->get_one( $sql ) );
-    }
-    else
-    {
-      $id_list = static::db()->get_col( $sql );
-      $records = array();
-      foreach( $id_list as $id ) $records[] = new static( $id );
-      return $records;
-    }
-  }
-
-  /**
-   * Identical to the parent's count method but restrict to a particular site.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param site $db_site The site to restrict the count to.
-   * @param modifier $modifier Modifications to the count.
-   * @return int
-   * @static
-   * @access public
-   */
-  public static function count_for_site( $db_site, $modifier = NULL )
-  {
-    return static::select_for_site( $db_site, $modifier, true );
-  }
-  
-  /**
    * Get the participant's most recent assignment.
    * This will return the participant's current assignment, or the most recently closed assignment
    * if the participant is not currently assigned.
@@ -101,12 +35,12 @@ class participant extends \cenozo\database\has_note
     }
     
     // need custom SQL
-    $class_name = lib::get_class_name( 'database\database' );
+    $database_class_name = lib::get_class_name( 'database\database' );
     $assignment_id = static::db()->get_one(
       sprintf( 'SELECT assignment_id '.
                'FROM participant_last_assignment '.
                'WHERE participant_id = %s',
-               $class_name::format_string( $this->id ) ) );
+               $database_class_name::format_string( $this->id ) ) );
     return $assignment_id ? lib::create( 'database\assignment', $assignment_id ) : NULL;
   }
 
@@ -130,8 +64,8 @@ class participant extends \cenozo\database\has_note
     $modifier->where( 'end_datetime', '!=', NULL );
     $modifier->order_desc( 'start_datetime' );
     $modifier->limit( 1 );
-    $class_name = lib::get_class_name( 'database\assignment' );
-    $assignment_list = $class_name::select( $modifier );
+    $assignment_class_name = lib::get_class_name( 'database\assignment' );
+    $assignment_list = $assignment_class_name::select( $modifier );
 
     return 0 == count( $assignment_list ) ? NULL : current( $assignment_list );
   }
@@ -152,12 +86,12 @@ class participant extends \cenozo\database\has_note
     }
     
     // need custom SQL
-    $class_name = lib::get_class_name( 'database\database' );
+    $database_class_name = lib::get_class_name( 'database\database' );
     $consent_id = static::db()->get_one(
       sprintf( 'SELECT consent_id '.
                'FROM participant_last_consent '.
                'WHERE participant_id = %s',
-               $class_name::format_string( $this->id ) ) );
+               $database_class_name::format_string( $this->id ) ) );
     return $consent_id ? lib::create( 'database\consent', $consent_id ) : NULL;
   }
 
@@ -177,10 +111,10 @@ class participant extends \cenozo\database\has_note
     }
     
     // need custom SQL
-    $class_name = lib::get_class_name( 'database\database' );
+    $database_class_name = lib::get_class_name( 'database\database' );
     $address_id = static::db()->get_one(
       sprintf( 'SELECT address_id FROM participant_primary_address WHERE participant_id = %s',
-               $class_name::format_string( $this->id ) ) );
+               $database_class_name::format_string( $this->id ) ) );
     return $address_id ? lib::create( 'database\address', $address_id ) : NULL;
   }
 
@@ -202,11 +136,25 @@ class participant extends \cenozo\database\has_note
     }
     
     // need custom SQL
-    $class_name = lib::get_class_name( 'database\database' );
+    $database_class_name = lib::get_class_name( 'database\database' );
     $address_id = static::db()->get_one(
       sprintf( 'SELECT address_id FROM participant_first_address WHERE participant_id = %s',
-               $class_name::format_string( $this->id ) ) );
+               $database_class_name::format_string( $this->id ) ) );
     return $address_id ? lib::create( 'database\address', $address_id ) : NULL;
+  }
+
+  /**
+   * Get the default site that the participant belongs to.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return site
+   * @access public
+   */
+  public function get_default_site()
+  {
+    $db_site = NULL;
+    $db_address = $this->get_primary_address();
+    if( !is_null( $db_address ) ) $db_site = $db_address->get_region()->get_site();
+    return $db_site;
   }
 
   /**
@@ -217,29 +165,7 @@ class participant extends \cenozo\database\has_note
    */
   public function get_primary_site()
   {
-    // check the primary key value
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to query participant with no id.' );
-      return NULL;
-    }
-    
-    $db_site = NULL;
-
-    if( !is_null( $this->site_id ) )
-    { // site is specifically defined
-      $db_site = $this->get_site();
-    }
-    else
-    {
-      $db_address = $this->get_primary_address();
-      if( !is_null( $db_address ) )
-      { // there is a primary address
-        $db_site = $db_address->get_region()->get_site();
-      }
-    }
-
-    return $db_site;
+    return is_null( $this->site_id ) ? $this->get_default_site() : $this->get_site();
   }
   
   /**
@@ -258,10 +184,10 @@ class participant extends \cenozo\database\has_note
     }
     
     // need custom SQL
-    $class_name = lib::get_class_name( 'database\database' );
+    $database_class_name = lib::get_class_name( 'database\database' );
     $phone_call_id = static::db()->get_one(
       sprintf( 'SELECT phone_call_id FROM participant_last_contacted_phone_call WHERE participant_id = %s',
-               $class_name::format_string( $this->id ) ) );
+               $database_class_name::format_string( $this->id ) ) );
     return $phone_call_id ? lib::create( 'database\phone_call', $phone_call_id ) : NULL;
   }
 
@@ -299,11 +225,69 @@ class participant extends \cenozo\database\has_note
     
     if( is_null( $this->current_qnaire_id ) && is_null( $this->start_qnaire_date ) )
     {
-      $class_name = lib::get_class_name( 'database\database' );
-      $sql = sprintf( 'SELECT current_qnaire_id, start_qnaire_date '.
-                      'FROM participant_for_queue '.
-                      'WHERE id = %s',
-                      $class_name::format_string( $this->id ) );
+      $database_class_name = lib::get_class_name( 'database\database' );
+      // special sql to get the current qnaire id and start date
+      // NOTE: when updating this query database\queue::get_query_parts()
+      //       should also be updated as it performs a very similar query
+      $sql = sprintf(
+        'SELECT IF( current_interview.id IS NULL, '.
+        '           ( SELECT id FROM qnaire WHERE rank = 1 ), '.
+        '           IF( current_interview.completed, next_qnaire.id, current_qnaire.id ) '.
+        '       ) AS current_qnaire_id, '.
+        '       IF( current_interview.id IS NULL, '.
+        '           IF( participant.prior_contact_date IS NULL, '.
+        '               NULL, '.
+        '               participant.prior_contact_date + INTERVAL( '.
+        '                 SELECT delay FROM qnaire WHERE rank = 1 '.
+        '               ) WEEK ), '.
+        '           IF( current_interview.completed, '.
+        '               IF( next_qnaire.id IS NULL, '.
+        '                   NULL, '.
+        '                   IF( next_prev_assignment.end_datetime IS NULL, '.
+        '                       participant.prior_contact_date, '.
+        '                       next_prev_assignment.end_datetime '.
+        '                   ) + INTERVAL next_qnaire.delay WEEK '.
+        '               ), '.
+        '               NULL '.
+        '           ) '.
+        '       ) AS start_qnaire_date '.
+        'FROM participant '.
+        'LEFT JOIN participant_last_assignment '.
+        'ON participant.id = participant_last_assignment.participant_id '.
+        'LEFT JOIN assignment '.
+        'ON participant_last_assignment.assignment_id = assignment.id '.
+        'LEFT JOIN interview AS current_interview '.
+        'ON current_interview.participant_id = participant.id '.
+        'LEFT JOIN qnaire AS current_qnaire '.
+        'ON current_qnaire.id = current_interview.qnaire_id '.
+        'LEFT JOIN qnaire AS next_qnaire '.
+        'ON next_qnaire.rank = ( current_qnaire.rank + 1 ) '.
+        'LEFT JOIN qnaire AS next_prev_qnaire '.
+        'ON next_prev_qnaire.id = next_qnaire.prev_qnaire_id '.
+        'LEFT JOIN interview AS next_prev_interview '.
+        'ON next_prev_interview.qnaire_id = next_prev_qnaire.id '.
+        'AND next_prev_interview.participant_id = participant.id '.
+        'LEFT JOIN assignment next_prev_assignment '.
+        'ON next_prev_assignment.interview_id = next_prev_interview.id '.
+        'WHERE ( '.
+        '  current_qnaire.rank IS NULL OR '.
+        '  current_qnaire.rank = ( '.
+        '    SELECT MAX( qnaire.rank ) '.
+        '    FROM interview, qnaire '.
+        '    WHERE qnaire.id = interview.qnaire_id '.
+        '    AND current_interview.participant_id = interview.participant_id '.
+        '    GROUP BY current_interview.participant_id ) ) '.
+        'AND ( '.
+        '  next_prev_assignment.end_datetime IS NULL OR '.
+        '  next_prev_assignment.end_datetime = ( '.
+        '    SELECT MAX( assignment.end_datetime ) '.
+        '    FROM interview, assignment '.
+        '    WHERE interview.qnaire_id = next_prev_qnaire.id '.
+        '    AND interview.id = assignment.interview_id '.
+        '    AND next_prev_assignment.id = assignment.id '.
+        '    GROUP BY next_prev_assignment.interview_id ) ) '.
+        'AND participant.id = %s',
+        $database_class_name::format_string( $this->id ) );
       $row = static::db()->get_row( $sql );
       $this->current_qnaire_id = $row['current_qnaire_id'];
       $this->start_qnaire_date = $row['start_qnaire_date'];
@@ -362,7 +346,7 @@ class participant extends \cenozo\database\has_note
 
     if( count( $consent_info ) != $this->get_consent_list( NULL, false ) )
     {
-      foreach( $consent_info->data as $consent )
+      if( is_array( $consent_info->data ) ) foreach( $consent_info->data as $consent )
       {
         // insert the consent data if it doesn't exist
         $modifier = lib::create( 'database\modifier' );
@@ -384,14 +368,14 @@ class participant extends \cenozo\database\has_note
   }
 
   /**
-   * The participant's current questionnaire id (from participant_for_queue)
+   * The participant's current questionnaire id (from a custom query)
    * @var int
    * @access private
    */
   private $current_qnaire_id = NULL;
 
   /**
-   * The date that the current questionnaire is to begin (from participant_for_queue)
+   * The date that the current questionnaire is to begin (from a custom query)
    * @var int
    * @access private
    */

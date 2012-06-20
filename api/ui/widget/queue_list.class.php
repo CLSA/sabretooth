@@ -60,7 +60,9 @@ class queue_list extends \cenozo\ui\widget\base_list
     {
       $sites = array();
       $site_class_name = lib::get_class_name( 'database\site' );
-      foreach( $site_class_name::select() as $db_site )
+      $site_mod = lib::create( 'database\modifier' );
+      $site_mod->order( 'name' );
+      foreach( $site_class_name::select( $site_mod ) as $db_site )
         $sites[$db_site->id] = $db_site->name;
       $this->set_variable( 'sites', $sites );
     }
@@ -105,7 +107,8 @@ class queue_list extends \cenozo\ui\widget\base_list
 
       $this->add_row( $record->id,
         array( 'rank' => $record->rank,
-               'enabled' => $setting_manager->get_setting( 'queue state', $record->name ),
+               'enabled' => $setting_manager->get_setting(
+                 'queue state', $record->name, $db_restrict_site ),
                'participant_count' => $record->get_participant_count(),
                // I hate to put html here, but the alternative is to implement code in the
                // parent class for this ONLY instance of where we need this functionality.
