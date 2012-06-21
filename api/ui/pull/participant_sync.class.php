@@ -66,13 +66,13 @@ class participant_sync extends \cenozo\ui\pull
       $offset = 0;
       do
       {
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'cohort', '=', $cohort );
+        $modifier->where( 'sync_datetime', '=', NULL );
+        $modifier->limit( $limit, $offset );
         $args = array(
           'full' => true,
-          'limit' => $limit,
-          'offset' => $offset,
-          'restrictions' => array(
-            'cohort' => array( 'compare' => 'is', 'value' => $cohort ),
-            'sync_datetime' => array( 'compare' => 'is', 'value' => 'NULL' ) ) );
+          'modifier' => $modifier );
         $response = $mastodon_manager->pull( 'participant', 'list', $args );
         foreach( $response->data as $data )
         {
@@ -98,11 +98,12 @@ class participant_sync extends \cenozo\ui\pull
       for( $offset = 0; $offset < $count; $offset += $limit )
       {
         $uid_sub_list = array_slice( $uid_list, $offset, $limit );
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'cohort', '=', $cohort );
+        $modifier->where( 'uid', 'IN', $uid_sub_list );
         $args = array(
           'full' => true,
-          'restrictions' => array(
-            'cohort' => array( 'compare' => 'is', 'value' => $cohort ),
-            'uid' => array( 'compare' => 'in', 'value' => implode( $uid_sub_list, ',' ) ) ) );
+          'modifier' => $modifier );
         $response = $mastodon_manager->pull( 'participant', 'list', $args );
         foreach( $response->data as $data )
         {

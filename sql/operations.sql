@@ -163,6 +163,8 @@ VALUES( "pull", "participant", "tree", true, "Returns the number of participants
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant", "primary", true, "Retrieves base participant information." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "participant", "list", true, "Retrieves base information for a list of participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "withdraw", true, "Withdraws the participant (or cancels the withdraw).  This is meant to be used during an interview if the participant suddenly wishes to withdraw." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "sync", true, "A form to synchronise participants between Sabretooth and Mastodon." );
