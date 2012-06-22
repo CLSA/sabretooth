@@ -169,29 +169,6 @@ class participant extends \cenozo\database\has_note
   }
   
   /**
-   * Get the last phone call which reached the participant
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return phone_call
-   * @access public
-   */
-  public function get_last_contacted_phone_call()
-  {
-    // check the primary key value
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to query participant with no id.' );
-      return NULL;
-    }
-    
-    // need custom SQL
-    $database_class_name = lib::get_class_name( 'database\database' );
-    $phone_call_id = static::db()->get_one(
-      sprintf( 'SELECT phone_call_id FROM participant_last_contacted_phone_call WHERE participant_id = %s',
-               $database_class_name::format_string( $this->id ) ) );
-    return $phone_call_id ? lib::create( 'database\phone_call', $phone_call_id ) : NULL;
-  }
-
-  /**
    * Override parent's magic get method so that supplementary data can be retrieved
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name The name of the column or table being fetched from the database
@@ -308,4 +285,10 @@ class participant extends \cenozo\database\has_note
    */
   private $start_qnaire_date = NULL;
 }
+
+// define the join to the address table
+$address_mod = lib::create( 'database\modifier' );
+$address_mod->where( 'participant.id', '=', 'participant_primary_address.participant_id', false );
+$address_mod->where( 'participant_primary_address.address_id', '=', 'address.id', false );
+participant::customize_join( 'address', $address_mod );
 ?>

@@ -847,6 +847,16 @@ CREATE TABLE IF NOT EXISTS `participant_last_contacted_phone_call` (`participant
 CREATE TABLE IF NOT EXISTS `participant_site` (`participant_id` INT, `site_id` INT);
 
 -- -----------------------------------------------------
+-- Placeholder table for view `participant_last_written_consent`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `participant_last_written_consent` (`participant_id` INT, `consent_id` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `participant_phone_call_status_count`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `participant_phone_call_status_count` (`participant_id` INT, `status` INT, `total` INT);
+
+-- -----------------------------------------------------
 -- View `participant_first_address`
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `participant_first_address` ;
@@ -972,6 +982,34 @@ LEFT JOIN address
 ON participant_primary_address.address_id = address.id
 LEFT JOIN region
 ON address.region_id = region.id;
+
+-- -----------------------------------------------------
+-- View `participant_last_written_consent`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `participant_last_written_consent` ;
+DROP TABLE IF EXISTS `participant_last_written_consent`;
+CREATE  OR REPLACE VIEW `participant_last_written_consent` AS
+SELECT participant_id, id AS consent_id
+FROM consent AS t1
+WHERE t1.date = (
+  SELECT MAX( t2.date )
+  FROM consent AS t2
+  WHERE t1.participant_id = t2.participant_id
+  AND event LIKE 'written %'
+  GROUP BY t2.participant_id );
+
+-- -----------------------------------------------------
+-- View `participant_phone_call_status_count`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `participant_phone_call_status_count` ;
+DROP TABLE IF EXISTS `participant_phone_call_status_count`;
+CREATE  OR REPLACE VIEW `participant_phone_call_status_count` AS
+SELECT participant.id participant_id, phone_call.status status, COUNT( phone_call.id ) total
+FROM participant
+JOIN interview ON participant.id = interview.participant_id
+JOIN assignment ON interview.id = assignment.interview_id
+JOIN phone_call ON assignment.id = phone_call.assignment_id
+GROUP BY participant.id, phone_call.status;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
