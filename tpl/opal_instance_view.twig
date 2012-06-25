@@ -1,0 +1,17 @@
+{##
+ # opal_instance_view.twig
+ # 
+ # View opal_instance details.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @see base_view.twig for parameters
+ #}
+{% extends "base_view.twig" %}
+
+{% block post_record %}
+
+  {{ parent() }}
+  {% from 'macros.twig' import confirm_buttons, include_list %}
+  {{ include_list( 'activity', activity_list|default(false), true ) }}
+  {{ confirm_buttons( slot, widget.full, '', 'Back', 'right', true ) }}
+
+{% endblock post_record %}

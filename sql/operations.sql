@@ -114,6 +114,24 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "interview", "edit", true, "Edits the details of an interview." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "interview", "rescore", true, "Provides an interface to rescore interview based on recordings." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "interview", "list", true, "Retrieves base information for a list of interviews." );
+
+-- opal_instance
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "opal_instance", "delete", true, "Removes a opal instance from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "opal_instance", "edit", true, "Edits a opal instance's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "opal_instance", "new", true, "Add a new opal instance to the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "opal_instance", "add", true, "View a form for creating a new opal instance." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "opal_instance", "view", true, "View a opal instance's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "opal_instance", "list", true, "List opal instances in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "opal_instance", "primary", true, "Retrieves base opal instance information." );
 
 -- operator
 INSERT INTO operation( type, subject, name, restricted, description )
