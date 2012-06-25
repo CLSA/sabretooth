@@ -42,7 +42,8 @@ class site_new_access extends \cenozo\ui\push\site_new_access
   {
     $args = parent::convert_to_noid( $args );
 
-    $args['noid']['site']['cohort'] = 'tracking';
+    $args['noid']['site']['cohort'] =
+      lib::create( 'business\setting_manager' )->get_setting( 'general', 'cohort' );
 
     return $args;
   }

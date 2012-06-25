@@ -41,7 +41,8 @@ class access_delete extends \cenozo\ui\push\access_delete
   protected function convert_to_noid( $args )
   {
     $args = parent::convert_to_noid( $args );
-    $args['noid']['access']['site_id']['cohort'] = 'tracking';
+    $args['noid']['access']['site_id']['cohort'] =
+      lib::create( 'business\setting_manager' )->get_setting( 'general', 'cohort' );
     return $args;
   }
 }

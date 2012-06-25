@@ -5,3 +5,20 @@
  # @author Dean Inglis <inglisd@mcmaster.ca>
  #}
 {% extends "base_report.twig" %}
+
+{% block javascript %}
+  {{ parent() }}
+  <script type="text/javascript">
+    $( function () {
+      // disable the download button and show message
+      $button = $( "#{{ widget.compound }}_download" );
+      $button.unbind( 'click' );
+      $( "#{{ widget.compound }}_download" ).click( function () {
+        error_dialog( 'Not Available',
+          'The "sourcing required" report has been disabled for design reasons.  Please speak to ' +
+          'the development team if you need it re-activated.' );
+        return;
+      } );
+    } );
+  </script>
+{% endblock javascript %}

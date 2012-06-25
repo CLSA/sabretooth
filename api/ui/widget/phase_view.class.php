@@ -46,17 +46,10 @@ class phase_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'rank', 'enum', 'Stage' );
     $this->add_item( 'repeated', 'boolean', 'Repeated' );
 
-    try
-    {
-      // create the source_survey sub-list widget
-      $this->source_survey_list = lib::create( 'ui\widget\source_survey_list', $this->arguments );
-      $this->source_survey_list->set_parent( $this );
-      $this->source_survey_list->set_heading( 'Source-specific Surveys' );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->source_survey_list = NULL;
-    }
+    // create the source_survey sub-list widget
+    $this->source_survey_list = lib::create( 'ui\widget\source_survey_list', $this->arguments );
+    $this->source_survey_list->set_parent( $this );
+    $this->source_survey_list->set_heading( 'Source-specific Surveys' );
   }
 
   /**
@@ -88,11 +81,12 @@ class phase_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'rank', $this->get_record()->rank, true, $ranks );
     $this->set_item( 'repeated', $this->get_record()->repeated, true );
 
-    if( !is_null( $this->source_survey_list ) )
+    try
     {
       $this->source_survey_list->process();
       $this->set_variable( 'source_survey_list', $this->source_survey_list->get_variables() );
     }
+    catch( \cenozo\exception\permission $e ) {}
   }
 
   /**

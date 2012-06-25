@@ -42,6 +42,7 @@ class participant_sync extends \cenozo\ui\push
     // Mastodon will only return ~400 records back at a time, so break up the list into chunks
     $limit = 250;
 
+    $cohort = lib::create( 'business\setting_manager' )->get_setting( 'general', 'cohort' );
     $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
     $uid_list_string = preg_replace( '/[^a-zA-Z0-9]/', ' ', $this->get_argument( 'uid_list' ) );
     $uid_list_string = trim( $uid_list_string );
@@ -56,7 +57,7 @@ class participant_sync extends \cenozo\ui\push
           'limit' => $limit,
           'offset' => $offset,
           'restrictions' => array(
-            'cohort' => array( 'compare' => 'is', 'value' => 'tracking' ),
+            'cohort' => array( 'compare' => 'is', 'value' => $cohort ),
             'sync_datetime' => array( 'compare' => 'is', 'value' => 'NULL' ) ) );
         $response = $mastodon_manager->pull( 'participant', 'list', $args );
         foreach( $response->data as $data ) $this->sync( $data );
@@ -72,7 +73,7 @@ class participant_sync extends \cenozo\ui\push
         $args = array(
           'full' => true,
           'restrictions' => array(
-            'cohort' => array( 'compare' => 'is', 'value' => 'tracking' ),
+            'cohort' => array( 'compare' => 'is', 'value' => $cohort ),
             'uid' => array( 'compare' => 'in', 'value' => implode( $uid_sub_list, ',' ) ) ) );
         $response = $mastodon_manager->pull( 'participant', 'list', $args );
         foreach( $response->data as $data ) $this->sync( $data );
@@ -98,7 +99,7 @@ class participant_sync extends \cenozo\ui\push
 
     // if the participant already exists then skip
     $db_participant = $participant_class_name::get_unique_record( 'uid', $data->uid );
-    if( !is_null( $db_participant ) ) continue;
+    if( !is_null( $db_participant ) ) return;
 
     $db_participant = lib::create( 'database\participant' );
 

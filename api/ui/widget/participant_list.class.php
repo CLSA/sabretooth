@@ -41,11 +41,11 @@ class participant_list extends site_restricted_list
   {
     parent::prepare();
 
-    $this->add_column( 'uid', 'string', 'Unique ID', true );
+    $this->add_column( 'uid', 'string', 'UID', true );
+    $this->add_column( 'first_name', 'string', 'First', true );
+    $this->add_column( 'last_name', 'string', 'Last', true );
     $this->add_column( 'source.name', 'string', 'Source', true );
-    $this->add_column( 'first_name', 'string', 'First Name', true );
-    $this->add_column( 'last_name', 'string', 'Last Name', true );
-    $this->add_column( 'status', 'string', 'Condition', true );
+    $this->add_column( 'primary_site', 'string', 'Site', false );
 
     $this->extended_site_selection = true;
   }
@@ -66,19 +66,23 @@ class participant_list extends site_restricted_list
       $source_name = is_null( $db_source ) ? '(none)' : $db_source->name;
       $this->add_row( $record->id,
         array( 'uid' => $record->uid ? $record->uid : '(none)',
-               'source.name' => $source_name,
                'first_name' => $record->first_name,
                'last_name' => $record->last_name,
-               'status' => $record->status ? $record->status : '(none)',
+               'source.name' => $source_name,
+               'primary_site' => $record->get_primary_site()->name,
                // note count isn't a column, it's used for the note button
                'note_count' => $record->get_note_count() ) );
     }
 
-    $operation_class_name = lib::get_class_name( 'database\operation' );
-    $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'sync' );
-    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
-      $this->add_action( 'sync', 'Participant Sync', $db_operation,
-        'Synchronize participants with Mastodon' );
+    // include the sync action if the widget isn't parented
+    if( is_null( $this->parent ) )
+    {
+      $operation_class_name = lib::get_class_name( 'database\operation' );
+      $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'sync' );
+      if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+        $this->add_action( 'sync', 'Participant Sync', $db_operation,
+          'Synchronize participants with Mastodon' );
+    }
   }
 }
 ?>

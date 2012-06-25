@@ -31,22 +31,6 @@ class participant_tree extends \cenozo\ui\widget
   }
 
   /**
-   * Processes arguments, preparing them for the operation.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\notice
-   * @access protected
-   */
-  protected function prepare()
-  {
-    parent::prepare();
-
-    $session = lib::create( 'business\session' );
-    if( 3 > $session->get_role()->tier )
-      $this->set_heading( $this->get_heading().' for '.$session->get_site()->name );
-  }
-
-  /**
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -66,6 +50,10 @@ class participant_tree extends \cenozo\ui\widget
       $class_name = lib::get_class_name( 'database\site' );
       foreach( $class_name::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
       $this->set_variable( 'sites', $sites );
+    }
+    else // otherwise show in the header which site the tree is for
+    {
+      $this->set_heading( $this->get_heading().' for '.$session->get_site()->name );
     }
 
     $site_id = $this->get_argument( "site_id", 0 );

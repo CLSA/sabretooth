@@ -38,7 +38,41 @@ class survey_manager extends \cenozo\singleton
   {
     $session = lib::create( 'business\session' );
 
-    if( 'operator' == $session->get_role()->name )
+    if( array_key_exists( 'rescoring_interview', $_COOKIE ) )
+    {
+      // get the interview being rescored
+      $db_interview = lib::create( 'database\interview', $_COOKIE['rescoring_interview'] );
+      if( is_null( $db_interview ) ) return false;
+
+      // determine the current sid and token
+      $sid = $this->get_current_sid();
+      $token = $this->get_current_token();
+      if( false === $sid || false == $token ) return false;
+      
+      // determine which language to use
+      $lang = $db_interview->get_participant()->language;
+      if( !$lang ) $lang = 'en';
+      
+      return LIMESURVEY_URL.sprintf( '/index.php?sid=%s&lang=%s&token=%s', $sid, $lang, $token );
+    }
+    else if( array_key_exists( 'contacting_alternates', $_COOKIE ) )
+    {
+      // get the participant being sourced
+      $db_participant = lib::create( 'database\participant', $_COOKIE['contacting_alternates'] );
+      if( is_null( $db_participant ) ) return false;
+
+      // determine the current sid and token
+      $sid = $this->get_current_sid();
+      $token = $this->get_current_token();
+      if( false === $sid || false == $token ) return false;
+      
+      // determine which language to use
+      $lang = $db_participant->language;
+      if( !$lang ) $lang = 'en';
+      
+      return LIMESURVEY_URL.sprintf( '/index.php?sid=%s&lang=%s&token=%s', $sid, $lang, $token );
+    }
+    else if( 'operator' == $session->get_role()->name )
     {
       // must have an assignment
       $db_assignment = $session->get_current_assignment();
@@ -57,23 +91,6 @@ class survey_manager extends \cenozo\singleton
       
       // determine which language to use
       $lang = $db_assignment->get_interview()->get_participant()->language;
-      if( !$lang ) $lang = 'en';
-      
-      return LIMESURVEY_URL.sprintf( '/index.php?sid=%s&lang=%s&token=%s', $sid, $lang, $token );
-    }
-    else if( array_key_exists( 'rescoring_interview', $_COOKIE ) )
-    {
-      // get the interview being rescored
-      $db_interview = lib::create( 'database\interview', $_COOKIE['rescoring_interview'] );
-      if( is_null( $db_interview ) ) return false;
-
-      // determine the current sid and token
-      $sid = $this->get_current_sid();
-      $token = $this->get_current_token();
-      if( false === $sid || false == $token ) return false;
-      
-      // determine which language to use
-      $lang = $db_interview->get_participant()->language;
       if( !$lang ) $lang = 'en';
       
       return LIMESURVEY_URL.sprintf( '/index.php?sid=%s&lang=%s&token=%s', $sid, $lang, $token );
@@ -124,6 +141,7 @@ class survey_manager extends \cenozo\singleton
     $this->current_token = false;
 
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
     $session = lib::create( 'business\session' );
 
     if( array_key_exists( 'rescoring_interview', $_COOKIE ) &&
@@ -172,7 +190,43 @@ class survey_manager extends \cenozo\singleton
       $this->current_sid = $sid;
       $this->current_token = $token;
     }
-    else // we're not rescoring an interview, so check for an assignment
+    else if( array_key_exists( 'contacting_alternates', $_COOKIE ) )
+    {
+      // get the participant being sourced
+      $db_participant = lib::create( 'database\participant', $_COOKIE['contacting_alternates'] );
+      if( is_null( $db_participant ) )
+      {
+        log::warning( 'Tried to determine survey information for an invalid participant.' );
+        return false;
+      }
+
+      $setting_manager = lib::create( 'business\setting_manager' );
+      $sid = $setting_manager->get_setting( 'general', 'alternate_script' );
+      $token = $db_participant->uid;
+
+      $tokens_class_name::set_sid( $sid );
+      $survey_class_name::set_sid( $sid );
+
+      // reset the script and token
+      $tokens_mod = lib::create( 'database\modifier' );
+      $tokens_mod->where( 'token', '=', $token );
+      foreach( $tokens_class_name::select( $tokens_mod ) as $db_tokens ) $db_tokens->delete();
+      $scripts_mod = lib::create( 'database\modifier' );
+      $scripts_mod->where( 'token', '=', $token );
+      foreach( $survey_class_name::select( $scripts_mod ) as $db_survey ) $db_survey->delete();
+
+      $db_tokens = lib::create( 'database\limesurvey\tokens' );
+      $db_tokens->token = $token;
+      $db_tokens->firstname = $db_participant->first_name;
+      $db_tokens->lastname = $db_participant->last_name;
+      $db_tokens->update_attributes( $db_participant );
+      $db_tokens->save();
+
+      // the alternate survey can be brought back up after it is complete, so always set these
+      $this->current_sid = $sid;
+      $this->current_token = $token;
+    }
+    else // we're not running a special interview, so check for an assignment
     {
       $db_assignment = $session->get_current_assignment();
       if( is_null( $db_assignment ) )

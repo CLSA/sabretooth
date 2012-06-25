@@ -30,7 +30,8 @@ abstract class base_new extends \cenozo\ui\push\base_new
     if( array_key_exists( 'columns', $args['noid'] ) &&
         array_key_exists( 'site', $args['noid']['columns'] ) &&
         is_array( $args['noid']['columns']['site'] ) )
-      $args['noid']['columns']['site']['cohort'] = 'tracking';
+      $args['noid']['columns']['site']['cohort'] =
+        lib::create( 'business\setting_manager' )->get_setting( 'general', 'cohort' );
     return $args;
   }
 }

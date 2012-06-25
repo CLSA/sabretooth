@@ -15,7 +15,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * 
  * @package sabretooth\ui
  */
-class queue_restriction_list extends \cenozo\ui\widget\site_restricted_list
+class queue_restriction_list extends site_restricted_list
 {
   /**
    * Constructor

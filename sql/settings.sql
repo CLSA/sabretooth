@@ -45,6 +45,11 @@ VALUES( "calling", "end time", "string", "21:00",
 "The time when calls end (not including appointments).  The local time at the participant's
 \"first address\" is tested." );
 
+INSERT INTO setting( category, name, type, value, description )
+VALUES( "calling", "max failed calls", "integer", "10",
+"Number of consecutive failed calls before the participant is considered unreachable and sourcing
+is required." );
+
 -- callback timing
 INSERT INTO setting( category, name, type, value, description )
 VALUES( "callback timing", "contacted", "integer", "10080",

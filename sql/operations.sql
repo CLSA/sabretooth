@@ -19,6 +19,10 @@ VALUES( "widget", "address", "list", true, "Lists a participant's address entrie
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "address", "primary", true, "Retrieves base address information." );
 
+-- alternate
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "list_alternate", true, "Lists a participant's alternate for sourcing purposes." );
+
 -- appointment
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "appointment", "delete", true, "Removes a participant's appointment from the system." );
@@ -67,7 +71,11 @@ VALUES( "pull", "availability", "primary", true, "Retrieves base availability in
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "appointment", "calendar", true, "Shows appointments in a calendar format." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "appointment", "feed", true, "Retrieves a list of shifts for a given time-span." );
+VALUES( "pull", "appointment", "feed", true, "Retrieves a list of appointments for a given time-span." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "availability", "calendar", true, "Shows aggregate availabilities in a calendar format." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "availability", "feed", true, "Retrieves a list of aggregate availabilities for a given time-span." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "shift", "calendar", true, "Shows shifts in a calendar format." );
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -154,6 +162,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant", "tree", true, "Returns the number of participants for every node of the participant tree." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant", "primary", true, "Retrieves base participant information." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "participant", "list", true, "Retrieves base information for a list of participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "withdraw", true, "Withdraws the participant (or cancels the withdraw).  This is meant to be used during an interview if the participant suddenly wishes to withdraw." );
 INSERT INTO operation( type, subject, name, restricted, description )

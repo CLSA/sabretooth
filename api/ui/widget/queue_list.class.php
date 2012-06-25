@@ -44,16 +44,17 @@ class queue_list extends \cenozo\ui\widget\base_list
     // make sure to display all queues on the same page
     $this->set_items_per_page( 1000 );
     
-    $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
-
     $this->add_column( 'rank', 'number', 'Rank', true );
-    if( $restrict_site_id )
-      $this->add_column( 'enabled', 'boolean', 'Enabled', false );
+    $this->add_column( 'enabled', 'boolean', 'Enabled', false );
     $this->add_column( 'participant_count', 'number', 'Participants', false );
     $this->add_column( 'description', 'text', 'Description', true, true, 'left' );
     $session = lib::create( 'business\session' );
     if( 3 != $session->get_role()->tier )
-      $this->set_heading( $this->get_heading().' for '.$session->get_site()->name );
+      $this->set_heading(
+        sprintf( '%s %s for %s',
+                 $this->get_subject(),
+                 $this->get_name(),
+                 $session->get_site()->name ) );
   }
 
   /**

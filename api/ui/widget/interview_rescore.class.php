@@ -43,16 +43,9 @@ class interview_rescore extends \cenozo\ui\widget\base_record
 
     $this->set_heading( 'Rescore Interview for '.$this->get_record()->get_participant()->uid );
 
-    try
-    {
-      // create the recording sub-list widget      
-      $this->recording_list = lib::create( 'ui\widget\recording_list', $this->arguments );
-      $this->recording_list->set_parent( $this );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->recording_list = NULL;
-    }
+    // create the recording sub-list widget      
+    $this->recording_list = lib::create( 'ui\widget\recording_list', $this->arguments );
+    $this->recording_list->set_parent( $this );
   }
 
   /**
@@ -68,11 +61,12 @@ class interview_rescore extends \cenozo\ui\widget\base_record
     $session = lib::create( 'business\session' );
     
     // process the child widgets
-    if( !is_null( $this->recording_list ) )
+    try
     {
       $this->recording_list->process();
       $this->set_variable( 'recording_list', $this->recording_list->get_variables() );
     }
+    catch( \cenozo\exception\permission $e ) {}
   }
   
   /**

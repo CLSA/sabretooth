@@ -53,18 +53,11 @@ class shift_add extends \cenozo\ui\widget\base_view
     $this->add_item( 'start_time', 'time', 'Start Time' );
     $this->add_item( 'end_time', 'time', 'End Time' );
 
-    try
-    {
-      // and a list of users
-      $this->user_list = lib::create( 'ui\widget\user_list', $this->arguments );
-      $this->user_list->set_parent( $this );
-      $this->user_list->set_checkable( true );
-      $this->user_list->set_heading( 'Choose users to add to this shift' );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->user_list = NULL;
-    }
+    // and a list of users
+    $this->user_list = lib::create( 'ui\widget\user_list', $this->arguments );
+    $this->user_list->set_parent( $this );
+    $this->user_list->set_checkable( true );
+    $this->user_list->set_heading( 'Choose users to add to this shift' );
   }
 
   /**
@@ -81,10 +74,14 @@ class shift_add extends \cenozo\ui\widget\base_view
     {
       $this->set_variable( 'user_id', $this->parent->get_record()->id );
     }
-    else if( !is_null( $this->user_list ) )
+    else
     {
-      $this->user_list->process();
-      $this->set_variable( 'user_list', $this->user_list->get_variables() );
+      try
+      {
+        $this->user_list->process();
+        $this->set_variable( 'user_list', $this->user_list->get_variables() );
+      }
+      catch( \cenozo\exception\permission $e ) {}
     }
 
     // set the view's items

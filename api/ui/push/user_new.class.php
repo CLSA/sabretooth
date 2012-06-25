@@ -44,7 +44,8 @@ class user_new extends \cenozo\ui\push\user_new
     $args = parent::convert_to_noid( $args );
     if( array_key_exists( 'columns', $args['noid'] ) &&
         array_key_exists( 'site', $args['noid']['columns'] ) )
-      $args['noid']['columns']['site']['cohort'] = 'tracking';
+      $args['noid']['columns']['site']['cohort'] =
+        lib::create( 'business\setting_manager' )->get_setting( 'general', 'cohort' );
     return $args;
   }
 }
