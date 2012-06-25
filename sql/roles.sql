@@ -1267,4 +1267,22 @@ SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "pull" AND subject = "system_message" AND name = "primary" );
 
+
+-- -----------------------------------------------------
+-- -----------------------------------------------------
+INSERT INTO role( name ) VALUES( "typist" );
+
+-- typist (specific to this role)
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id
+FROM role, operation
+WHERE role.name = "typist"
+AND operation.subject = "typist";
+
+-- consent
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "typist" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "push" AND subject = "consent" AND name = "new" );
+
 COMMIT;

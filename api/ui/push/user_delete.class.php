@@ -29,9 +29,6 @@ class user_delete extends \cenozo\ui\push\user_delete
 
     $this->set_machine_request_enabled( true );
     $this->set_machine_request_url( MASTODON_URL );
-
-    // don't validate access if the request came from mastodon
-    if( 'mastodon' == $this->get_machine_application_name() ) $this->set_validate_access( false );
   }
 }
 ?>
