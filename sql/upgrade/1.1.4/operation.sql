@@ -21,3 +21,8 @@ INSERT IGNORE INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "opal_instance", "list", true, "List opal instances in the system." );
 INSERT IGNORE INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "opal_instance", "primary", true, "Retrieves base opal instance information." );
+
+-- rename the participant list_alternate widget
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "secondary", true, "Lists a participant's alternates for sourcing purposes." );
+DELETE FROM operation WHERE type = "widget" AND subject = "participant" and name = "list_alternate";

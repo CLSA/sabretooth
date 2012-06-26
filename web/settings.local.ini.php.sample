@@ -16,7 +16,7 @@ $SETTINGS['general']['development_mode'] = true;
 $SETTINGS['general']['cohort'] = 'default';
 
 // The survey ID of the alternate contact script.  Comment out if the script is unavailable.
-//$SETTINGS['general']['alternate_script'] = 0;
+//$SETTINGS['general']['secondary_survey'] = 0;
 
 // The web url of the Cenozo framework
 $SETTINGS['url']['CENOZO'] = sprintf( 'http%s://%s/web/path/to/cenozo',

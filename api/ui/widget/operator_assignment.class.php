@@ -255,17 +255,17 @@ class operator_assignment extends \cenozo\ui\widget
       $this->set_variable( 'allow_end_assignment',
         !$on_call && ( 0 < $current_calls || $db_interview->completed ) );
 
-      $allow_alternate = false;
+      $allow_secondary = false;
       $max_failed_calls =
         lib::create( 'business\setting_manager' )->get_setting( 'calling', 'max failed calls' );
       if( $max_failed_calls <= $db_interview->get_failed_call_count() )
       {
         $db_operation =
-          $operation_class_name::get_operation( 'widget', 'participant', 'list_alternate' );
+          $operation_class_name::get_operation( 'widget', 'participant', 'secondary' );
         if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
-          $allow_alternate = true;
+          $allow_secondary = true;
       }
-      $this->set_variable( 'allow_alternate', $allow_alternate );
+      $this->set_variable( 'allow_secondary', $allow_secondary );
     }
   }
 }

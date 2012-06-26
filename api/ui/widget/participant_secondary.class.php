@@ -1,6 +1,6 @@
 <?php
 /**
- * participant_list_alternate.class.php
+ * participant_secondary.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @package sabretooth\ui
@@ -11,23 +11,23 @@ namespace sabretooth\ui\widget;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
- * widget participant list alternate
+ * widget participant secondary
  * 
  * @package sabretooth\ui
  */
-class participant_list_alternate extends \cenozo\ui\widget\base_record
+class participant_secondary extends \cenozo\ui\widget\base_record
 {
   /**
    * Constructor
    * 
-   * Defines all variables required by the participant list alternate widget.
+   * Defines all variables required by the participant secondary widget.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'participant', 'list_alternate', $args );
+    parent::__construct( 'participant', 'secondary', $args );
   }
 
   /**

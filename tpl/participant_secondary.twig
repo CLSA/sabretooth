@@ -1,5 +1,5 @@
 {##
- # alternate_list.tpl
+ # participant_secondary.tpl
  # 
  # List of a participant's alternates for sourcing purposes.
  # @author Patrick Emond <emondpd@mcmaster.ca>
@@ -36,7 +36,7 @@
         var first_name = $( "#{{ widget.full }}__first_name_" + id ).val();
         var last_name = $( "#{{ widget.full }}__last_name_" + id ).val();
 
-        // place the call and reload the page with the alternate script
+        // place the call and reload the page with the secondary survey
         args.phone_number = $( "#{{ widget.full }}__phone_" + id ).val();
         if( ajax_push( "phone_call", "begin", args ) ) {
           $.cookie( "secondary_id", id );

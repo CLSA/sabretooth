@@ -22,12 +22,12 @@
 
     $( function() {
       {% if participant_id|default(false) %}
-        {% if allow_alternate %}
+        {% if allow_secondary %}
           // secondary contact button
-          $( "#{{ widget.full }}__alternate" ).click( function() {
+          $( "#{{ widget.full }}__secondary" ).click( function() {
             window.location.reload();
-            // force the alternate list to be loaded in the main slot
-            slot_load( 'main', 'participant', 'list_alternate', { id: {{ participant_id }} } );
+            // force the secondary list to be loaded in the main slot
+            slot_load( 'main', 'participant', 'secondary', { id: {{ participant_id }} } );
           } );
         {% endif %}
 
@@ -180,12 +180,12 @@
       </table>
       
       <table class="spacer" cellpadding="4">
-        {% if allow_alternate %}
+        {% if allow_secondary %}
           <tr>
           <td align="left"></td>
             <td align="right">
               <button style="width: 180px;"
-                      id="{{ widget.full }}__alternate"
+                      id="{{ widget.full }}__secondary"
                       {{ allow_call or on_call ? '' : 'disabled' }}>Secondary Contact(s)</button>
             </td>
           </tr>

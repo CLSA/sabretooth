@@ -19,10 +19,6 @@ VALUES( "widget", "address", "list", true, "Lists a participant's address entrie
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "address", "primary", true, "Retrieves base address information." );
 
--- alternate
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "participant", "list_alternate", true, "Lists a participant's alternate for sourcing purposes." );
-
 -- appointment
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "appointment", "delete", true, "Removes a participant's appointment from the system." );
@@ -190,6 +186,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant", "sync", true, "Returns a summary of changes to be made given a list of UIDs to sync." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "sync", true, "Updates participants with their information in Mastodon." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "secondary", true, "Lists a participant's alternates for sourcing purposes." );
 
 -- phase
 INSERT INTO operation( type, subject, name, restricted, description )

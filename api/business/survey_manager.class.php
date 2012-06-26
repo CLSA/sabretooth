@@ -201,7 +201,7 @@ class survey_manager extends \cenozo\singleton
       }
 
       $setting_manager = lib::create( 'business\setting_manager' );
-      $sid = $setting_manager->get_setting( 'general', 'alternate_script' );
+      $sid = $setting_manager->get_setting( 'general', 'secondary_survey' );
       $token = $_COOKIE['secondary_id'];
 
       $tokens_class_name::set_sid( $sid );
@@ -222,7 +222,7 @@ class survey_manager extends \cenozo\singleton
       $db_tokens->update_attributes( $db_participant );
       $db_tokens->save();
 
-      // the alternate survey can be brought back up after it is complete, so always set these
+      // the secondary survey can be brought back up after it is complete, so always set these
       $this->current_sid = $sid;
       $this->current_token = $token;
     }
