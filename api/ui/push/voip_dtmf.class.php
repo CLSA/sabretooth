@@ -57,6 +57,7 @@ class voip_dtmf extends \cenozo\ui\push
   {
     parent::execute();
 
+    $voip_call = lib::create( 'business\voip_manager' )->get_call();
     $voip_call->dtmf( $this->get_argument( 'tone' ) );
   }
 }
