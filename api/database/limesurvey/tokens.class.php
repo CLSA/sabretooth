@@ -232,6 +232,11 @@ class tokens extends sid_record
                         : "";
           }
         }
+        else if( preg_match( '/secondary (first_name|last_name)/', $value ) )
+        {
+          $aspect = str_replace( ' ', '_', $value );
+          if( array_key_exists( $aspect, $_COOKIE ) ) $this->$key = $_COOKIE[$aspect];
+        }
         else if( 'previously completed' == $value )
         {
           // no need to set the token sid since it should already be set before calling this method

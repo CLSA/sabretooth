@@ -46,7 +46,8 @@ class phone_call_end extends \cenozo\ui\push
     $voip_call = lib::create( 'business\voip_manager' )->get_call();
     if( !is_null( $voip_call ) ) $voip_call->hang_up();
 
-    if( $is_operator )
+    // if this is an operator who is NOT calling a secondary contact then process the call result
+    if( $is_operator && !array_key_exists( 'secondary_id', $_COOKIE ) )
     { // set the end time and status of the call
       $db_phone_call = $session->get_current_phone_call();
       if( !is_null( $db_phone_call ) )

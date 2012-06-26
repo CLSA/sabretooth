@@ -12,18 +12,38 @@
 
   <script type="text/javascript">
     $( function() {
+      {% if secondary_id %}
+        // end call button
+        $( "#{{ widget.full }}__end_call" ).click( function() {
+          if( ajax_push( "phone_call", "end" ) ) {
+            $.cookie( "secondary_id", null );
+            $.cookie( "secondary_participant_id", null );
+            $.cookie( "secondary_first_name", null );
+            $.cookie( "secondary_last_name", null );
+            window.location.reload();
+          }
+        } );
+
+        // on a call, so disable the "done" button
+        $( "#{{ widget.full }}_back" ).attr( "disabled", "true" );
+      {% endif %}
+
       // phone call buttons
-      $( "button.{{ widget.full }}_connect" ).button( {
-        text: false,
-        icons: { primary: "ui-icon-person" }
-      } ).click( function() {
+      $( "button.{{ widget.full }}__connect" ).click( function() {
         var args = new Object();
         var id_string = $(this).attr( "id" );
-        args.phone_number = parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) );
-        // place the call and refresh the status widget
+        var id = parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) );
+        var first_name = $( "#{{ widget.full }}__first_name_" + id ).val();
+        var last_name = $( "#{{ widget.full }}__last_name_" + id ).val();
+
+        // place the call and reload the page with the alternate script
+        args.phone_number = $( "#{{ widget.full }}__phone_" + id ).val();
         if( ajax_push( "phone_call", "begin", args ) ) {
-          slot_refresh( "status" );
-          slot_refresh( "shortcuts" );
+          $.cookie( "secondary_id", id );
+          $.cookie( "secondary_participant_id", {{ id }} );
+          $.cookie( "secondary_first_name", first_name );
+          $.cookie( "secondary_last_name", last_name );
+          window.location.reload();
         }
       } );
 
@@ -36,13 +56,6 @@
           width: 800,
           height: 600
         } );
-      } );
-
-      // done button
-      $( "#{{ widget.full }}_done" ).click( function() {
-        $.cookie( "contacting_alternates", null );
-        window.location.reload();
-        slot_prev( {{ slot }} );
       } );
     } );
   </script>
@@ -69,7 +82,7 @@
           <tr>
             {% if loop.first %}
               <td style="font-weight: normal; padding-top:0.2em; padding-bottom:0.2em;">
-                {{ alternate.name }}
+                {{ alternate.first_name }} {{ alternate.last_name }}
               </td>
               <td style="font-weight: normal; padding-top:0.2em; padding-bottom:0.2em;">
                 {{ alternate.association }}
@@ -83,8 +96,18 @@
                 {% if phone.note %}<br>{{ phone.note }}{% endif %}
             </td>
             <td style="font-weight: normal; padding-top:0.2em; padding-bottom:0.2em;">
-              <button class="{{ widget.full }}_connect"
-                      id="{{ widget.full }}_{{ phone.clean_number }}">Call</button>
+              {% if alternate.id == secondary_id %}
+                <button id="{{ widget.full }}__end_call">End Call</button>
+              {% elseif 0 == secondary_id %}
+                <input id="{{ widget.full }}__first_name_{{ alternate.id }}"
+                       type="hidden" value="{{ alternate.first_name }}" />
+                <input id="{{ widget.full }}__last_name_{{ alternate.id }}"
+                       type="hidden" value="{{ alternate.last_name }}" />
+                <input id="{{ widget.full }}__phone_{{ alternate.id }}"
+                       type="hidden" value="{{ phone.clean_number }}" />
+                <button class="{{ widget.full }}__connect"
+                        id="{{ widget.full }}__call_{{ alternate.id }}">Call</button>
+              {% endif %}
             </td>
           </tr>
         {% endfor %}
@@ -94,6 +117,6 @@
   </table>
 
   {% from 'macros.twig' import confirm_buttons %}
-  {{ confirm_buttons( slot, widget.full, ['details','done'], '', 'right', true ) }}
+  {{ confirm_buttons( slot, widget.full, ['details'], 'Done', 'right', true ) }}
 
 {% endblock widget %}

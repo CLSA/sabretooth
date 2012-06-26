@@ -14,9 +14,9 @@
       $( function() {
         // alternate button
         $( "#{{ widget.full }}__alternate" ).click( function() {
-          $.cookie( "contacting_alternates", "{{ id }}" );
           window.location.reload();
-          slot_load( {{ slot }}, 'participant', 'list_alternate', { id: {{ id }} } );
+          // force the alternate list to be loaded in the main slot
+          slot_load( 'main', 'participant', 'list_alternate', { id: {{ id }} } );
         } );
       } );
     </script>

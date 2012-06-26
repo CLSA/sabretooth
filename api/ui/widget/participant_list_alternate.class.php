@@ -76,7 +76,9 @@ class participant_list_alternate extends \cenozo\ui\widget\base_record
         ksort( $phone_list );
 
         $alternate_list[] = array(
-          'name' => $alternate->first_name.' '.$alternate->last_name,
+          'id' => $alternate->id,
+          'first_name' => $alternate->first_name,
+          'last_name' => $alternate->last_name,
           'association' => $alternate->association ? $alternate->association : 'unknown',
           'phone_list' => $phone_list );
       }
@@ -85,6 +87,8 @@ class participant_list_alternate extends \cenozo\ui\widget\base_record
     $this->set_variable( 'alternate_list', $alternate_list );
     $this->set_variable( 'participant_name',
       sprintf( $this->get_record()->first_name.' '.$this->get_record()->last_name ) );
+    $this->set_variable( 'secondary_id',
+      array_key_exists( 'secondary_id', $_COOKIE ) ?  $_COOKIE['secondary_id'] : 0 );
   }
 }
 ?>

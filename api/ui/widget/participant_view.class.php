@@ -215,13 +215,16 @@ class participant_view extends \cenozo\ui\widget\base_view
       {
         $db_operation =
           $operation_class_name::get_operation( 'widget', 'participant', 'list_alternate' );
-        $this->add_action( 'alternate', 'Alternate Contacts', NULL,
-          'A list of alternate contacts which can be called to update a '.
-          'participant\'s contact information' );
-        $allow_alternate = true;
+        if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+        {
+          $this->add_action( 'alternate', 'Alternate Contacts', NULL,
+            'A list of alternate contacts which can be called to update a '.
+            'participant\'s contact information' );
+          $allow_alternate = true;
+        }
       }
     }
-    $this->set_variable( 'allow_alternate', false );
+    $this->set_variable( 'allow_alternate', $allow_alternate );
   }
   
   /**

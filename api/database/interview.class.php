@@ -217,7 +217,14 @@ class interview extends \cenozo\database\has_note
     }
   }
 
-  // TODO: document
+  /**
+   * Returns the most recent total number of consecutive failed calls.  A maximum of one
+   * failed call per assignment is counted.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access public
+   */
   public function get_failed_call_count()
   {
     $assignment_mod = lib::create( 'database\modifier' );

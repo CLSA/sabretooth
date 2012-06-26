@@ -55,10 +55,10 @@ class survey_manager extends \cenozo\singleton
       
       return LIMESURVEY_URL.sprintf( '/index.php?sid=%s&lang=%s&token=%s', $sid, $lang, $token );
     }
-    else if( array_key_exists( 'contacting_alternates', $_COOKIE ) )
+    else if( array_key_exists( 'secondary_id', $_COOKIE ) )
     {
       // get the participant being sourced
-      $db_participant = lib::create( 'database\participant', $_COOKIE['contacting_alternates'] );
+      $db_participant = lib::create( 'database\participant', $_COOKIE['secondary_participant_id'] );
       if( is_null( $db_participant ) ) return false;
 
       // determine the current sid and token
@@ -190,10 +190,10 @@ class survey_manager extends \cenozo\singleton
       $this->current_sid = $sid;
       $this->current_token = $token;
     }
-    else if( array_key_exists( 'contacting_alternates', $_COOKIE ) )
+    else if( array_key_exists( 'secondary_id', $_COOKIE ) )
     {
       // get the participant being sourced
-      $db_participant = lib::create( 'database\participant', $_COOKIE['contacting_alternates'] );
+      $db_participant = lib::create( 'database\participant', $_COOKIE['secondary_participant_id'] );
       if( is_null( $db_participant ) )
       {
         log::warning( 'Tried to determine survey information for an invalid participant.' );
@@ -202,7 +202,7 @@ class survey_manager extends \cenozo\singleton
 
       $setting_manager = lib::create( 'business\setting_manager' );
       $sid = $setting_manager->get_setting( 'general', 'alternate_script' );
-      $token = $db_participant->uid;
+      $token = $_COOKIE['secondary_id'];
 
       $tokens_class_name::set_sid( $sid );
       $survey_class_name::set_sid( $sid );
