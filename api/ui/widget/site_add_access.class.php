@@ -15,20 +15,36 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * 
  * @package sabretooth\ui
  */
-class site_add_access extends base_add_access
+class site_add_access extends \cenozo\ui\widget\site_add_access
 {
-  /** 
-   * Constructor
+  /**
+   * Overrides the role list widget's method.
    * 
-   * Defines all variables which need to be set for the associated template.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $name The name of the operation.
-   * @param array $args An associative array of arguments to be processed by the widget
-   * @access public
+   * @param database\modifier $modifier Modifications to the list.
+   * @return int
+   * @access protected
    */
-  public function __construct( $args )
+  public function determine_role_count( $modifier = NULL )
   {
-    parent::__construct( 'site', $args );
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'name', '!=', 'opal' );
+    return parent::determine_role_count( $modifier );
+  }
+
+  /**
+   * Overrides the role list widget's method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return array( record )
+   * @access protected
+   */
+  public function determine_role_list( $modifier = NULL )
+  {
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'name', '!=', 'opal' );
+    return parent::determine_role_list( $modifier );
   }
 }
 ?>
