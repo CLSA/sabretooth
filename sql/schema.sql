@@ -878,6 +878,11 @@ CREATE TABLE IF NOT EXISTS `participant_last_written_consent` (`participant_id` 
 CREATE TABLE IF NOT EXISTS `participant_phone_call_status_count` (`participant_id` INT, `status` INT, `total` INT);
 
 -- -----------------------------------------------------
+-- Placeholder table for view `interview_last_assignment`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `interview_last_assignment` (`interview_id` INT, `assignment_id` INT);
+
+-- -----------------------------------------------------
 -- View `participant_first_address`
 -- -----------------------------------------------------
 DROP VIEW IF EXISTS `participant_first_address` ;
@@ -1031,6 +1036,26 @@ JOIN interview ON participant.id = interview.participant_id
 JOIN assignment ON interview.id = assignment.interview_id
 JOIN phone_call ON assignment.id = phone_call.assignment_id
 GROUP BY participant.id, phone_call.status;
+
+-- -----------------------------------------------------
+-- View `interview_last_assignment`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `interview_last_assignment` ;
+DROP TABLE IF EXISTS `interview_last_assignment`;
+CREATE  OR REPLACE VIEW `interview_last_assignment` AS
+SELECT interview_1.id AS interview_id,
+       assignment_1.id AS assignment_id
+FROM assignment assignment_1
+JOIN interview interview_1
+WHERE interview_1.id = assignment_1.interview_id
+AND assignment_1.start_datetime = (
+  SELECT MAX( assignment_2.start_datetime )
+  FROM assignment assignment_2
+  JOIN interview interview_2
+  WHERE interview_2.id = assignment_2.interview_id
+  AND interview_1.id = interview_2.id
+  GROUP BY interview_2.id
+);
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

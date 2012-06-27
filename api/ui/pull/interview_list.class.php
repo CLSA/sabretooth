@@ -66,6 +66,43 @@ class interview_list extends \cenozo\ui\pull\base_list
     // make sure we have a qnaire set
     if( is_null( $this->db_qnaire ) )
       throw lib::create( 'exception\argument', 'qnaire_*', NULL, __METHOD__ );
+
+    // make sure the date spans are valid, if provided
+    $start_date = $this->get_argument( 'start_date', NULL );
+    if( !is_null( $start_date ) )
+    {
+      try
+      {
+        $this->start_date_obj = util::get_datetime_object( $start_date );
+      }
+      catch( \Exception $e )
+      {
+        throw lib::create( 'exception\argument', 'start_date', $start_date, $e, __METHOD__ );
+      }
+    }
+
+    $end_date = $this->get_argument( 'end_date', NULL );
+    if( !is_null( $end_date ) )
+    {
+      try
+      {
+        $this->end_date_obj = util::get_datetime_object( $end_date );
+      }
+      catch( \Exception $e )
+      {
+        throw lib::create( 'exception\argument', 'end_date', $end_date, $e, __METHOD__ );
+      }
+    }
+
+    // check range
+    if( !is_null( $this->start_date_obj ) &&
+        !is_null( $this->end_date_obj ) &&
+        util::get_interval( $this->start_date_obj, $this->end_date_obj )->invert )
+      throw lib::create( 'exception\runtime', sprintf(
+        'Start date "%s" comes after end date "%s".',
+        $this->start_date_obj->format( 'Y-m-d' ),
+        $this->end_date_obj->format( 'Y-m-d' ) ),
+        __METHOD__ );
   }
 
   /**
@@ -79,7 +116,23 @@ class interview_list extends \cenozo\ui\pull\base_list
     parent::setup();
 
     if( is_null( $this->modifier ) ) $this->modifier = lib::create( 'database\modifier' );
+    $this->modifier->order( 'interview.id' );
+    $this->modifier->where( 'completed', '=', true );
     $this->modifier->where( 'qnaire_id', '=', $this->db_qnaire->id );
+
+    // sort out the date spans
+    if( !is_null( $this->start_date_obj ) )
+    {
+      $this->modifier->where(
+        'assignment.start_datetime', '>=', $this->start_date_obj->format( 'Y-m-d' ).' 00:00:00' );
+    }
+
+    // sort out the date spans
+    if( !is_null( $this->end_date_obj ) )
+    {
+      $this->modifier->where(
+        'assignment.start_datetime', '<=', $this->end_date_obj->format( 'Y-m-d' ).' 23:59:59' );
+    }
   }
 
   /**
@@ -99,12 +152,12 @@ class interview_list extends \cenozo\ui\pull\base_list
     }
     else
     {
-      $tokens_class_name = lib::create( 'database\limesurvey\tokens' );
+      $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
 
       // instead of getting the interview's details, get the participant uid and the qnaire's token
       $item = array(
         'uid' => $record->get_participant()->uid,
-        'token' => $tokens_class_name::determine_token_string( $record );
+        'token' => $tokens_class_name::determine_token_string( $record ) );
     }
 
     return $item;
@@ -116,5 +169,19 @@ class interview_list extends \cenozo\ui\pull\base_list
    * @access protected
    */
   protected $db_qnaire = NULL;
+
+  /**
+   * The start date to restrict the list to.
+   * @var \Datetime
+   * @access protected
+   */
+  protected $start_date_obj = NULL;
+
+  /**
+   * The end date to restrict the list to.
+   * @var \Datetime
+   * @access protected
+   */
+  protected $end_date_obj = NULL;
 }
 ?>

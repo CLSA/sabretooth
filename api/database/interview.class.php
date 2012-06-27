@@ -251,4 +251,10 @@ $participant_site_mod = lib::create( 'database\modifier' );
 $participant_site_mod->where(
   'interview.participant_id', '=', 'participant_site.participant_id', false );
 interview::customize_join( 'participant_site', $participant_site_mod );
+
+// define the join to the last assignment
+$assignment_mod = lib::create( 'database\modifier' );
+$assignment_mod->where( 'interview.id', '=', 'interview_last_assignment.interview_id', false );
+$assignment_mod->where( 'interview_last_assignment.assignment_id', '=', 'assignment.id', false );
+interview::customize_join( 'assignment', $assignment_mod );
 ?>
