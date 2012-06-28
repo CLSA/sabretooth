@@ -40,7 +40,7 @@ class participant_secondary extends \cenozo\ui\widget\base_record
   {
     parent::prepare();
 
-    $this->set_heading( 'Alternate Contact List' );
+    $this->set_heading( 'Secondary Contact List' );
   }
 
   /**
@@ -61,7 +61,7 @@ class participant_secondary extends \cenozo\ui\widget\base_record
     $alternate_list = array();
     foreach( $alternate_info->data as $alternate )
     {
-      if( $alternate->alternate )
+      if( $alternate->alternate && isset( $alternate->phone_list ) )
       { // only add alternates (not proxies or informants)
         $phone_list = array();
         foreach( $alternate->phone_list as $phone )

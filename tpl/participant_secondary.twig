@@ -77,42 +77,47 @@
     </thead>
     <tbody>
       <tr><td colspan="0"><hr class="ui-widget ui-widget-content" /></td></tr>
-      {% for alternate in alternate_list %}
-        {% for phone in alternate.phone_list %}
-          <tr>
-            {% if loop.first %}
-              <td style="font-weight: normal; padding-top:0.2em; padding-bottom:0.2em;">
-                {{ alternate.first_name }} {{ alternate.last_name }}
-              </td>
-              <td style="font-weight: normal; padding-top:0.2em; padding-bottom:0.2em;">
-                {{ alternate.association }}
-              </td>
-            {% else %}
-              <td></td>
-              <td></td>
-            {% endif %}
-            <td style="font-weight: normal; padding-top:0.2em; padding-bottom:0.2em; text-align:right;">
-                {{ phone.type }}: {{ phone.number }}
-                {% if phone.note %}<br>{{ phone.note }}{% endif %}
-            </td>
-            <td style="font-weight: normal; padding-top:0.2em; padding-bottom:0.2em;">
-              {% if alternate.id == secondary_id %}
-                <button id="{{ widget.full }}__end_call">End Call</button>
-              {% elseif 0 == secondary_id %}
-                <input id="{{ widget.full }}__first_name_{{ alternate.id }}"
-                       type="hidden" value="{{ alternate.first_name }}" />
-                <input id="{{ widget.full }}__last_name_{{ alternate.id }}"
-                       type="hidden" value="{{ alternate.last_name }}" />
-                <input id="{{ widget.full }}__phone_{{ alternate.id }}"
-                       type="hidden" value="{{ phone.clean_number }}" />
-                <button class="{{ widget.full }}__connect"
-                        id="{{ widget.full }}__call_{{ alternate.id }}">Call</button>
-              {% endif %}
-            </td>
-          </tr>
-        {% endfor %}
+      {% if 0 == alternate_list|length %}
+        <tr><td colspan="0">No secondary contacts found.</td></tr>
         <tr><td colspan="0"><hr class="ui-widget ui-widget-content" /></td></tr>
-      {% endfor %}
+      {% else %}
+        {% for alternate in alternate_list %}
+          {% for phone in alternate.phone_list %}
+            <tr>
+              {% if loop.first %}
+                <td style="font-weight: normal; padding-top:0.2em; padding-bottom:0.2em;">
+                  {{ alternate.first_name }} {{ alternate.last_name }}
+                </td>
+                <td style="font-weight: normal; padding-top:0.2em; padding-bottom:0.2em;">
+                  {{ alternate.association }}
+                </td>
+              {% else %}
+                <td></td>
+                <td></td>
+              {% endif %}
+              <td style="font-weight: normal; padding-top:0.2em; padding-bottom:0.2em; text-align:right;">
+                  {{ phone.type }}: {{ phone.number }}
+                  {% if phone.note %}<br>{{ phone.note }}{% endif %}
+              </td>
+              <td style="font-weight: normal; padding-top:0.2em; padding-bottom:0.2em;">
+                {% if alternate.id == secondary_id %}
+                  <button id="{{ widget.full }}__end_call">End Call</button>
+                {% elseif 0 == secondary_id %}
+                  <input id="{{ widget.full }}__first_name_{{ alternate.id }}"
+                         type="hidden" value="{{ alternate.first_name }}" />
+                  <input id="{{ widget.full }}__last_name_{{ alternate.id }}"
+                         type="hidden" value="{{ alternate.last_name }}" />
+                  <input id="{{ widget.full }}__phone_{{ alternate.id }}"
+                         type="hidden" value="{{ phone.clean_number }}" />
+                  <button class="{{ widget.full }}__connect"
+                          id="{{ widget.full }}__call_{{ alternate.id }}">Call</button>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+          <tr><td colspan="0"><hr class="ui-widget ui-widget-content" /></td></tr>
+        {% endfor %}
+      {% endif %}
     </tbody>
   </table>
 
