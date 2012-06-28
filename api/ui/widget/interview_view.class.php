@@ -107,6 +107,36 @@ class interview_view extends \cenozo\ui\widget\base_view
   }
   
   /**
+   * Overrides the assignment list widget's method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return int
+   * @assignment protected
+   */
+  public function determine_assignment_count( $modifier = NULL )
+  {
+    if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'assignment.interview_id', '=', $this->get_record()->id );
+    return $this->assignment_list->determine_record_count( $modifier );
+  }
+
+  /**
+   * Overrides the assignment list widget's method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return array( record )
+   * @assignment protected
+   */
+  public function determine_assignment_list( $modifier = NULL )
+  {
+    if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'assignment.interview_id', '=', $this->get_record()->id );
+    return $this->assignment_list->determine_record_list( $modifier );
+  }
+  
+  /**
    * The interview list widget.
    * @var assignment_list
    * @access protected

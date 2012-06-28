@@ -1,0 +1,45 @@
+{##
+ # self_home.twig
+ # 
+ # Hope page.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @see widget.twig for parameters
+ #}
+{% extends "widget.twig" %}
+
+{% block widget %}
+
+  <div class="ui-widget ui-widget-content app-widget-content">
+    <div class="title" style="padding-top: 10px;">{{ title }}</div>
+    <div class="spacer"></div>
+    <div>
+      You are currently logged on as <span class="title">{{ user_name }}</span>
+      under the role of <span class="title">{{ role_name|capitalize }}</span>
+      from the <span class="title">{{ site_name|capitalize }}</span> site.
+    </div>
+    {% if last_day is defined and last_time is defined %}
+    <div>
+      Your last activity was on <span class="title">{{ last_day }}</span>
+      at <span class="title">{{ last_time }}</span>.
+    </div>
+    {% endif %}
+    <div class="spacer"></div>
+  </div>
+
+  <div class="spacer"></div>
+  <div class="ui-widget-header ui-state-hover app-widget-header">System Messages</div>
+  <div class="ui-widget ui-widget-content">
+    {% if message_list|length %}
+      {% for message in message_list %}
+        <div class="ui-widget ui-widget-header">{{ message.title }}</div>
+        <div style="padding: 1em; padding-left: 2em;"
+             class="ui-widget ui-widget-content">{{ message.note|nl2br|raw }}</div>
+      {% endfor %}
+    {% else %}
+      <div style="padding: 1em;">There are no system messages.</div>
+    {% endif %}
+  </div>
+
+  {% from 'macros.twig' import include_list %}
+  {{ include_list( 'assignment', assignment_list|default(false), true ) }}
+{% endblock widget %}
