@@ -34,6 +34,8 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
    * Sets up the operation with any pre-execution instructions that may be necessary.
    * 
    * @author Dean Inglis <inglisd@mcmaster.ca>
+   * @author Val DiPietro <dipietv@mcmaster.ca>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function setup()
@@ -41,121 +43,155 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
     parent::setup();
 
     $participant_class_name = lib::get_class_name( 'database\participant' );
+    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+    $source_class_name = lib::get_class_name( 'database\source' );
+    $source_survey_class_name = lib::get_class_name( 'database\source_survey' );
+    $phase_class_name = lib::get_class_name( 'database\phase' );
 
     // get the report arguments
-    $mailout_type = $this->get_argument( 'restrict_mailout_type' );
-    $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
+    $mailout_type =       $this->get_argument( 'restrict_mailout_type' );
+    $restrict_site_id =   $this->get_argument( 'restrict_site_id', 0 );
+    $restrict_source_id = $this->get_argument( 'restrict_source_id' );
+
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
 
-    // TODO: Change this to the title/code of the limesurvey question to check
-    // (this should be the new information package required question)
+    // prepare the date items
+    $report_date = util::get_datetime_object()->format( 'Y-m-d' );
 
-    if( $mailout_type == 'Participant information package' )
+    // add a list of all questions which we need to check
+    $question_code_list = array( 'INT_5', 'INT_8' );
+
+    if( $restrict_source_id )
     {
-      $question_code = 'A';
-      $title = 'Participant Information Package Required Report';
+      $db_source = lib::create( 'database\source', $restrict_source_id );
+      $source_title = $db_source->name;
     }
     else
     {
-      $question_code = 'B';
-      $title = 'Proxy Information Package Required Report';
+      $source_title = "All Sources";
     }
 
-    $this->add_title( 
+    $this->add_title( $mailout_type == 'Participant information package' ?
+      'Participant Information Package Required Report For '.strtoupper( $source_title ) :
+      'Proxy Information Package Required Report For '.strtoupper( $source_title ) );
+    $this->add_title(
       sprintf( 'Listing of those who requested a new information package during '.
                'the %s interview', $db_qnaire->name ) ) ;
-    
-    // modifiers common to each iteration of the following loops
-    $consent_mod = lib::create( 'database\modifier' );
-    $consent_mod->where( 'event', '=', 'verbal accept' );
-    $consent_mod->or_where( 'event', '=', 'written accept' );
+
+    // specify the type of consents we would like to avoid
+    $consent_types = array(
+      'written accept',
+      'verbal deny',
+      'written deny',
+      'retract',
+      'withdraw' );
 
     $contents = array();
-    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
 
-    // loop through participants searching for those who have completed their most recent interview
+    // filtering participants according to widget
     $participant_mod = lib::create( 'database\modifier' );
     if( $restrict_site_id )
-      $participant_mod->where( 'participant_site.site_id', '=', $restrict_site_id );
+    $participant_mod->where( 'participant_site.site_id', '=', $restrict_site_id );
+    // mailout type refers to proxy information packages which require certain age groups
+    $participant_mod->where(
+      'date_of_birth',
+      'Participant information package' == $mailout_type ? '>' : '<=' ,
+      'DATE_SUB( NOW(), INTERVAL 70 YEAR )', false );
+    if( $restrict_source_id ) $participant_mod->where( 'source_id', '=', $restrict_source_id );
+    $participant_mod->where( 'consent.event', 'not in', $consent_types );
+    $participant_mod->where( 'status', '=', NULL );
+    $participant_mod->where( 'interview.qnaire_id', '=', $db_qnaire->id );
+    $participant_mod->group( 'participant.id' );
+
+    // get the survey id for all sources (used by the report before the participant loop
+    // (to save processing time)
+    $survey_list = array();
+    $source_mod = lib::create( 'database\modifier' );
+    if( $restrict_source_id ) $source_mod->where( 'id', '=', $restrict_source_id );
+    foreach( $source_class_name::select( $source_mod ) as $db_source )
+    {
+      $db_phase = $phase_class_name::get_unique_record(
+        array( 'qnaire_id', 'rank' ),
+        array( $db_qnaire->id, 1 ) );
+
+      $db_source_survey = $source_survey_class_name::get_unique_record(
+        array( 'phase_id', 'source_id' ),
+        array( $db_phase->id, $db_source->id ) );
+
+      $survey_list[$db_source->id] =
+        is_null( $db_source_survey ) ? $db_phase->sid : $db_source_survey->sid;
+    }
+
     foreach( $participant_class_name::select( $participant_mod ) as $db_participant )
     {
       $done = false;
 
-      if( !is_null( $db_participant->status ) ) continue;      
+      $interview_mod = lib::create( 'database\modifier' );
+      $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
+      $db_participant->get_interview_list( $interview_mod );
+      $db_interview = current( $db_participant->get_interview_list( $interview_mod ) );
 
-      if( count( $db_participant->get_consent_list( $consent_mod ) ) )
+      // figure out the token and from that get this participant's surveys
+      $survey_class_name::set_sid( $survey_list[$db_participant->source_id] );
+      $survey_mod = lib::create( 'database\modifier' );
+      $survey_mod->where( 'token', 'LIKE', $db_interview->id.'_%' );
+      $survey_mod->order_desc( 'startdate' );
+
+      // go through each survey response and check to see if the question code has been set
+      $include_participant = false;
+      $answer_date = "";
+      foreach( $survey_class_name::select( $survey_mod ) as $db_survey )
       {
-        $interview_mod = lib::create( 'database\modifier' );
-        $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
-        $db_participant->get_interview_list( $interview_mod );
-        $db_interview = current( $db_participant->get_interview_list( $interview_mod ) );
-        if( $db_interview && $db_interview->completed )
+        foreach( $question_code_list as $question_code )
         {
-          foreach( $db_interview->get_qnaire()->get_phase_list() as $db_phase )
-          {
-            // figure out the token
-            $token = $tokens_class_name::determine_token_string( $db_interview );
+          if( 'YES' == $db_survey->get_response( $question_code ) ||
+              'NO'  == $db_survey->get_response( $question_code ) )
+          { // found a yes, include it as well as the date answered and continue
+            $include_participant = true;
+            $answer_date = util::from_server_datetime( $db_survey->startdate, 'Y-m-d' );
+            break;
+          }
+        }
+        if( $include_participant ) break;
+      }
 
-            // determine if the participant answered yes to the consent question
-            $survey_mod = lib::create( 'database\modifier' );
-            if( $db_phase->repeated )
-            {
-              // replace the token's 0 with a database % wildcard
-              $token = substr( $token, 0, -1 ).'%';
-              $survey_mod->where( 'token', 'LIKE', $token );
-            }
-            else $survey_mod->where( 'token', '=', $token );
+      if( $include_participant )
+      {
+        $db_address = $db_participant->get_first_address();
+        if( is_null( $db_address ) ) continue;
+        $db_region = $db_address->get_region();
 
-            $survey_class_name::set_sid( $db_phase->sid );
-            foreach( $survey_class_name::select( $survey_mod ) as $db_survey )
-            {
-              if( $db_survey && 'Y' == $db_survey->get_response( $question_code ) )
-              {
-                $db_address = $db_participant->get_first_address();
-                if( is_null( $db_address ) ) continue;
-                $db_region = $db_address->get_region();
-                $db_last_phone_call = $db_participant->get_last_contacted_phone_call();
-                $date_completed = 'NA';
-                if( !is_null( $db_last_phone_call ) )
-                {
-                  $date_completed = substr( $db_last_phone_call->start_datetime, 0, 
-                    strpos( $db_last_phone_call->start_datetime, ' ' ) );
-                }
-
-                $contents[] = array(
-                  $db_participant->uid,
-                  $db_participant->first_name,
-                  $db_participant->last_name,
-                  $db_address->address1,
-                  $db_address->city,
-                  $db_region->abbreviation,
-                  $db_region->country,
-                  $db_address->postcode,
-                  $date_completed );
-
-                $done = true;
-              }
-              if( $done ) break; // stop searching if we're done
-            } // end loop on survey
-            if( $done ) break; // stop searching if we're done
-          } // end loop on qnaire phases
-          if( $done ) break; // stop searching if we're done
-        } // end if completed interview
-      } // end if verbal or written consent obtained
+        $contents[] = array(
+          $db_participant->language,
+          $db_participant->uid,
+          $db_participant->first_name,
+          $db_participant->last_name,
+          $db_address->address1,
+          $db_address->address2,
+          $db_address->city,
+          $db_region->abbreviation,
+          $db_region->country,
+          $db_address->postcode,
+          $report_date,
+          $answer_date );
+        }
     }// end participant loop 
-    
+
     $header = array(
+      "Language",
       "UID",
       "First Name",
       "Last Name",
       "Address",
+      "Address2",
       "City",
       "Prov/State",
       "Country",
       "Postcode",
-      "Date Completed" );
-    
+      "Date of Report",
+      "Date Answered" );
+
     $this->add_table( NULL, $header, $contents, NULL );
   }
 }
