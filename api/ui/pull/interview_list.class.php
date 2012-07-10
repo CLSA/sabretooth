@@ -124,14 +124,14 @@ class interview_list extends \cenozo\ui\pull\base_list
     if( !is_null( $this->start_date_obj ) )
     {
       $this->modifier->where(
-        'assignment.start_datetime', '>=', $this->start_date_obj->format( 'Y-m-d' ).' 00:00:00' );
+        'assignment.end_datetime', '>=', $this->start_date_obj->format( 'Y-m-d' ).' 00:00:00' );
     }
 
     // sort out the date spans
     if( !is_null( $this->end_date_obj ) )
     {
       $this->modifier->where(
-        'assignment.start_datetime', '<=', $this->end_date_obj->format( 'Y-m-d' ).' 23:59:59' );
+        'assignment.end_datetime', '<=', $this->end_date_obj->format( 'Y-m-d' ).' 23:59:59' );
     }
   }
 
