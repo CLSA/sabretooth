@@ -88,5 +88,47 @@ class assignment_list extends site_restricted_list
                'note_count' => $record->get_note_count() ) );
     }
   }
+
+  /**
+   * Overrides the parent class method to restrict by interview id, if necessary
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return int
+   * @access protected
+   */
+  public function determine_record_count( $modifier = NULL )
+  {
+    $interview_id = $this->get_argument( 'interview_id', NULL );
+
+    if( !is_null( $interview_id ) )
+    {
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'interview_id', '=', $interview_id );
+    }
+
+    return parent::determine_record_count( $modifier );
+  }
+
+  /** 
+   * Overrides the parent class method to restrict by interview id, if necessary
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return array( record )
+   * @access protected
+   */
+  public function determine_record_list( $modifier = NULL )
+  {
+    $interview_id = $this->get_argument( 'interview_id', NULL );
+
+    if( !is_null( $interview_id ) )
+    {
+      if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'interview_id', '=', $interview_id );
+    }
+
+    return parent::determine_record_list( $modifier );
+  }
 }
 ?>
