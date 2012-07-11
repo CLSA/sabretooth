@@ -32,13 +32,15 @@ class participant_status_report extends \cenozo\ui\pull\base_report
   }
 
   /**
-   * Finished the report
+   * Sets up the operation with any pre-execution instructions that may be necessary.
    * 
-   * @author Dean Inglis <inglisd@mcmaster.ca>
-   * @access public
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
+    parent::setup();
+
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
     $region_class_name = lib::get_class_name( 'database\region' );
@@ -65,10 +67,10 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       'Soft refusal' => 0,
       'Appointment' => 0,
       'Appointment (missed)' => 0,
-      '10+ Unproductive Call Attempts' => 0 );
+      'Sourcing Required' => 0 );
       
     // add call results
-    $phone_call_status_start_index = count( $locale_totals ) - 1; // includes 10+ above
+    $phone_call_status_start_index = count( $locale_totals ) - 1; // includes "sourcing required" above
     foreach( $phone_call_class_name::get_enum_values( 'status' ) as $status )
       $locale_totals[ ucfirst( $status ) ] = 0;
     $phone_call_status_count = count( $locale_totals ) - $phone_call_status_start_index;
@@ -117,6 +119,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $participant_list = $participant_class_name::select( $participant_mod );
     foreach( $participant_list as $db_participant )
     {
+      $db_site = NULL;
       if( $restrict_by_site )
       {
         $db_site = $db_participant->get_primary_site();
@@ -131,6 +134,10 @@ class participant_status_report extends \cenozo\ui\pull\base_report
                 ? 'None'
                 : $db_address->get_region()->abbreviation;
       }
+
+      // get the maximum number of failed calls before sourcing is required
+      $max_failed_calls = lib::create( 'business\setting_manager' )->get_setting(
+        'calling', 'max failed calls', $db_site );
 
       // don't include the "None" column if a supervisor is running the report
       if( $is_supervisor && 'None' == $locale ) continue;
@@ -218,37 +225,30 @@ class participant_status_report extends \cenozo\ui\pull\base_report
           }
           else 
           {
-            $assignment_mod = lib::create( 'database\modifier' );
-            $assignment_mod->order_desc( 'start_datetime' );
-            $failed_calls = 0;
-            $db_recent_failed_call = NULL;
-            foreach( $db_interview->get_assignment_list( $assignment_mod ) as $db_assignment )
+            if( $max_failed_calls <= $db_interview->get_failed_call_count() )
             {
-              // find the most recently completed phone call
-              $phone_call_mod = lib::create( 'database\modifier' );
-              $phone_call_mod->order_desc( 'start_datetime' );
-              $phone_call_mod->where( 'end_datetime', '!=', NULL );
-              $phone_call_mod->limit( 1 );
-              $db_phone_call = current( $db_assignment->get_phone_call_list( $phone_call_mod ) );
-              if( false != $db_phone_call )
-              {
-                $failed_calls++;
-                // since the calls are sorted most recent to first, this captures the most
-                // recent failed call
-                if( 1 == $failed_calls )
-                {
-                  $db_recent_failed_call = $db_phone_call;
-                }
-              }
+              $locale_totals_list[ $locale ][ 'Sourcing Required' ]++;
             }
-            
-            if( 10 <= $failed_calls )
-            {
-              $locale_totals_list[ $locale ][ '10+ Unproductive Call Attempts' ]++;
-            }
-            else if( !is_null( $db_recent_failed_call ) )
+            else
             {              
-              $locale_totals_list[ $locale ][ ucfirst( $db_recent_failed_call->status ) ]++;
+              $assignment_mod = lib::create( 'database\modifier' );
+              $assignment_mod->order_desc( 'start_datetime' );
+              $assignment_mod->where( 'end_datetime', '!=', NULL );
+              $assignment_mod->limit( 1 );
+              $assignment_list = $db_interview->get_assignment_list( $assignment_mod );
+              if( 1 == count( $assignment_list ) )
+              {
+                $db_assignment = current( $assignment_list );
+
+                // find the most recently completed phone call
+                $phone_call_mod = lib::create( 'database\modifier' );
+                $phone_call_mod->order_desc( 'start_datetime' );
+                $phone_call_mod->where( 'end_datetime', '!=', NULL );
+                $phone_call_mod->limit( 1 );
+                $db_phone_call = current( $db_assignment->get_phone_call_list( $phone_call_mod ) );
+                if( $db_phone_call )
+                  $locale_totals_list[ $locale ][ ucfirst( $db_phone_call->status ) ]++;
+              }
             }  
           }// end interview not completed
         }// end non empty interview list
@@ -333,8 +333,6 @@ class participant_status_report extends \cenozo\ui\pull\base_report
         $content[ $subkey ][ $key ] = $subvalue;
    
     $this->add_table( NULL, $header, $content, NULL, $blank );
-
-    return parent::finish();
   }
 }
 ?>

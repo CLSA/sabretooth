@@ -28,22 +28,24 @@ class daily_shift_report extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'daily_shift', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Dean Inglis <inglisd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     $this->set_variable( 'description',
       'This report is for supervisors to complete at the end of their shift for remittance to the '.
       'NCC on a daily basis. The report includes operator activity data with operators '.
       'subclassified by language.  Areas are provided for questions/concerns and additional '.
       'comments.' );
-  }
-
-  /**
-   * @author Dean Inglis <inglisd@mcmaster.ca>
-   * @access public
-   */
-  public function finish()
-  {
-    parent::finish();
-    $this->finish_setting_parameters();
   }
 }
 ?>

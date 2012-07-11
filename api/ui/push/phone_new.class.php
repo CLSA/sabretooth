@@ -16,7 +16,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * Create a new phone.
  * @package sabretooth\ui
  */
-class phone_new extends \cenozo\ui\push\base_new
+class phone_new extends base_new
 {
   /**
    * Constructor.
@@ -30,45 +30,51 @@ class phone_new extends \cenozo\ui\push\base_new
   }
 
   /**
-   * Overrides the parent method to make sure the number isn't blank and is a valid number.
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
+    $this->set_machine_request_enabled( true );
+    $this->set_machine_request_url( MASTODON_URL );
+  }
+
+  /**
+   * Validate the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\notice
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function validate()
   {
-    // make sure the datetime column isn't blank
+    parent::validate();
+
     $columns = $this->get_argument( 'columns' );
+
+    // make sure the number column isn't blank
     if( !array_key_exists( 'number', $columns ) )
       throw lib::create( 'exception\notice', 'The number cannot be left blank.', __METHOD__ );
 
     // validate the phone number
-    if( 10 != strlen( preg_replace( '/[^0-9]/', '', $columns['number'] ) ) )
+    $number_only = preg_replace( '/[^0-9]/', '', $columns['number'] );
+    if( 10 != strlen( $number_only ) )
       throw lib::create( 'exception\notice',
         'Phone numbers must have exactly 10 digits.', __METHOD__ );
 
-    $args = $this->arguments;
-    unset( $args['columns']['participant_id'] );
-    unset( $args['columns']['address_id'] );
-
-    // replace the participant id with a unique key
-    $db_participant = lib::create( 'database\participant', $columns['participant_id'] );
-    $args['noid']['participant.uid'] = $db_participant->uid;
-
-    // replace the address id (if it is not null) a unique key
-    if( $columns['address_id'] )
-    {
-      $db_address = lib::create( 'database\address', $columns['address_id'] );
-      // this is only actually half of the key, the other half is provided by the participant above
-      $args['noid']['address.rank'] = $db_address->rank;
-    }
-
-    // no errors, go ahead and make the change
-    parent::finish();
-
-    // now send the same request to mastodon
-    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
-    $mastodon_manager->push( 'phone', 'new', $args );
+    $formatted_number = sprintf( '%s-%s-%s',
+                                 substr( $number_only, 0, 3 ),
+                                 substr( $number_only, 3, 3 ),
+                                 substr( $number_only, 6 ) );
+    if( !util::validate_phone_number( $formatted_number ) )
+      throw lib::create( 'exception\notice',
+        sprintf( 'The provided number "%s" is not a valid North American phone number.',
+                 $formatted_number ),
+        __METHOD__ );
   }
 }
 ?>

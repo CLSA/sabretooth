@@ -15,5 +15,5 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  *
  * @package sabretooth\database
  */
-class assignment_note extends \cenozo\database\record {}
+class assignment_note extends \cenozo\database\base_note {}
 ?>

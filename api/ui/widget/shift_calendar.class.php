@@ -28,6 +28,18 @@ class shift_calendar extends \cenozo\ui\widget\base_calendar
   public function __construct( $args )
   {
     parent::__construct( 'shift', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     $session = lib::create( 'business\session' );
 
@@ -51,11 +63,11 @@ class shift_calendar extends \cenozo\ui\widget\base_calendar
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     $this->set_variable( 'allow_all_day', false );
     $this->set_variable( 'editable', 'operator' != lib::create( 'business\session' )->get_role()->name );

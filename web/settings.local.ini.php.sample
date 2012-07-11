@@ -11,6 +11,13 @@ global $SETTINGS;
 // Whether or not to run the application in development mode
 $SETTINGS['general']['development_mode'] = true;
 
+// If more than one instance of Sabretooth and Beartooth is being used make sure this
+// setting is unique
+$SETTINGS['general']['cohort'] = 'default';
+
+// The survey ID of the alternate contact script.  Comment out if the script is unavailable.
+//$SETTINGS['general']['alternate_script'] = 0;
+
 // The web url of the Cenozo framework
 $SETTINGS['url']['CENOZO'] = sprintf( 'http%s://%s/web/path/to/cenozo',
                                       'on' == $_SERVER["HTTPS"] ? 's' : '',

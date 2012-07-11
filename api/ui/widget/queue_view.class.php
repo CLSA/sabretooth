@@ -28,6 +28,18 @@ class queue_view extends \cenozo\ui\widget\base_view
   public function __construct( $args )
   {
     parent::__construct( 'queue', 'view', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     $session = lib::create( 'business\session' );
     if( 3 != $session->get_role()->tier )
@@ -55,28 +67,21 @@ class queue_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'qnaire', 'constant', 'Questionnaire' );
     $this->add_item( 'viewing_date', 'constant', 'Viewing date' );
 
-    try
-    {
-      // create the participant sub-list widget
-      $this->participant_list = lib::create( 'ui\widget\participant_list', $args );
-      $this->participant_list->set_parent( $this );
-      $this->participant_list->set_heading( 'Queue participant list' );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->participant_list = NULL;
-    }
+    // create the participant sub-list widget
+    $this->participant_list = lib::create( 'ui\widget\participant_list', $this->arguments );
+    $this->participant_list->set_parent( $this );
+    $this->participant_list->set_heading( 'Queue participant list' );
   }
 
   /**
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     // set the view's items
     $this->set_item( 'title', $this->get_record()->title, true );
@@ -85,14 +90,16 @@ class queue_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'qnaire', $this->db_qnaire ? $this->db_qnaire->name : 'All questionnaires' );
     $this->set_item( 'viewing_date', $this->viewing_date );
 
-    $this->finish_setting_items();
-
-    // finish the child widgets
-    if( !is_null( $this->participant_list ) )
+    // process the child widgets
+    try
     {
-      $this->participant_list->finish();
+      $this->participant_list->process();
+      // can't sort by the source
+      $this->participant_list->add_column( 'source.name', 'string', 'Source', false );
+      $this->participant_list->execute();
       $this->set_variable( 'participant_list', $this->participant_list->get_variables() );
     }
+    catch( \cenozo\exception\permission $e ) {}
   }
 
   /**

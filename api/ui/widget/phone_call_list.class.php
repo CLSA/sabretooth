@@ -28,6 +28,18 @@ class phone_call_list extends \cenozo\ui\widget\base_list
   public function __construct( $args )
   {
     parent::__construct( 'phone_call', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     $this->add_column( 'phone.type', 'string', 'Phone', true );
     $this->add_column( 'start_datetime', 'date', 'Date', true );
@@ -40,11 +52,11 @@ class phone_call_list extends \cenozo\ui\widget\base_list
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     foreach( $this->get_record_list() as $record )
     {
@@ -56,8 +68,6 @@ class phone_call_list extends \cenozo\ui\widget\base_list
                'end_time' => $record->end_datetime,
                'status' => $record->status ? $record->status : 'in progress' ) );
     }
-
-    $this->finish_setting_rows();
   }
 }
 ?>

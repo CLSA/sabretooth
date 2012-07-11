@@ -28,6 +28,18 @@ class shift_add extends \cenozo\ui\widget\base_view
   public function __construct( $args )
   {
     parent::__construct( 'shift', 'add', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     $this->show_heading( false );
     
     // check for initial values
@@ -41,37 +53,35 @@ class shift_add extends \cenozo\ui\widget\base_view
     $this->add_item( 'start_time', 'time', 'Start Time' );
     $this->add_item( 'end_time', 'time', 'End Time' );
 
-    try
-    {
-      // and a list of users
-      $this->user_list = lib::create( 'ui\widget\user_list', $args );
-      $this->user_list->set_parent( $this, 'edit' );
-      $this->user_list->set_heading( 'Choose users to add to this shift' );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->user_list = NULL;
-    }
+    // and a list of users
+    $this->user_list = lib::create( 'ui\widget\user_list', $this->arguments );
+    $this->user_list->set_parent( $this );
+    $this->user_list->set_checkable( true );
+    $this->user_list->set_heading( 'Choose users to add to this shift' );
   }
 
   /**
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     if( $this->parent && 'user' == $this->parent->get_subject() )
     {
       $this->set_variable( 'user_id', $this->parent->get_record()->id );
     }
-    else if( !is_null( $this->user_list ) )
+    else
     {
-      $this->user_list->finish();
-      $this->set_variable( 'user_list', $this->user_list->get_variables() );
+      try
+      {
+        $this->user_list->process();
+        $this->set_variable( 'user_list', $this->user_list->get_variables() );
+      }
+      catch( \cenozo\exception\permission $e ) {}
     }
 
     // set the view's items
@@ -79,8 +89,6 @@ class shift_add extends \cenozo\ui\widget\base_view
     $this->set_item( 'date', $this->date, true );
     $this->set_item( 'start_time', $this->start_time, true );
     $this->set_item( 'end_time', $this->end_time, true );
-    
-    $this->finish_setting_items();
   }
 
   /**

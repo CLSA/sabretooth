@@ -28,6 +28,19 @@ class call_attempts_report extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'call_attempts', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->add_restriction( 'site' );
     $this->add_restriction( 'qnaire' );
     $this->add_restriction( 'source' );
@@ -37,16 +50,6 @@ class call_attempts_report extends base_report
       'completed the given interview.  The report includes the participant\'s UID, date of the '.
       'last time they were called and by which operator and the total number of times they '.
       'have been called.' );
-  }
-
-  /**
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function finish()
-  {
-    parent::finish();
-    $this->finish_setting_parameters();
   }
 }
 ?>

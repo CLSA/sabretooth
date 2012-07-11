@@ -28,6 +28,18 @@ class interview_view extends \cenozo\ui\widget\base_view
   public function __construct( $args )
   {
     parent::__construct( 'interview', 'view', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     // create an associative array with everything we want to display about the interview
     $this->add_item( 'uid', 'constant', 'UID' );
@@ -38,28 +50,21 @@ class interview_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'rescored', 'constant', 'Rescored' );
     $this->add_item( 'recordings', 'constant', 'Recordings' );
 
-    try
-    {
-      // create the assignment sub-list widget      
-      $this->assignment_list = lib::create( 'ui\widget\assignment_list', $args );
-      $this->assignment_list->set_parent( $this );
-      $this->assignment_list->set_heading( 'Assignments associated with this interview' );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->assignment_list = NULL;
-    }
+    // create the assignment sub-list widget      
+    $this->assignment_list = lib::create( 'ui\widget\assignment_list', $this->arguments );
+    $this->assignment_list->set_parent( $this );
+    $this->assignment_list->set_heading( 'Assignments associated with this interview' );
   }
 
   /**
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
        
     $db_participant = $this->get_record()->get_participant();
     $participant = sprintf( '%s, %s', $db_participant->last_name, $db_participant->first_name );
@@ -90,14 +95,15 @@ class interview_view extends \cenozo\ui\widget\base_view
       $this->add_action( 'rescore', 'Rescore', NULL,
         'Listen to the recordings made during the interview for rescoring purposes' );
 
-    $this->finish_setting_items();
-
-    // finish the child widgets
-    if( !is_null( $this->assignment_list ) )
+    // process the child widgets
+    try
     {
-      $this->assignment_list->finish();
+      $this->assignment_list->process();
+      $this->assignment_list->remove_column( 'uid' );
+      $this->assignment_list->execute();
       $this->set_variable( 'assignment_list', $this->assignment_list->get_variables() );
     }
+    catch( \cenozo\exception\permission $e ) {}
   }
   
   /**

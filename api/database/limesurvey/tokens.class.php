@@ -218,9 +218,19 @@ class tokens extends sid_record
           $alt_number = intval( $matches[1] );
           $aspect = $matches[2];
 
-          $this->$key = $alt_number <= count( $alternate_info->data )
-                      ? $alternate_info->data[$alt_number - 1]->$aspect
-                      : "";
+          if( 'phone' == $aspect )
+          {
+            $phone_list = $alternate_info->data[$alt_number - 1]->phone_list;
+            $this->$key = $alt_number <= count( $alternate_info->data )
+                        ? ( is_array( $phone_list ) ? $phone_list[0]->number : '' )
+                        : '';
+          }
+          else
+          {
+            $this->$key = $alt_number <= count( $alternate_info->data )
+                        ? $alternate_info->data[$alt_number - 1]->$aspect
+                        : "";
+          }
         }
         else if( 'previously completed' == $value )
         {

@@ -18,24 +18,17 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class user_delete extends \cenozo\ui\push\user_delete
 {
   /**
-   * Executes the push.
+   * Processes arguments, preparing them for the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function prepare()
   {
-    // we'll need the arguments to send to mastodon
-    $args = $this->arguments;
+    parent::prepare();
 
-    // replace the user id with a unique key
-    unset( $args['id'] );
-    $args['noid']['user.name'] = $this->get_record()->name;
-    
-    parent::finish();
-
-    // now send the same request to mastodon
-    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
-    $mastodon_manager->push( 'user', 'delete', $args );
+    $this->set_machine_request_enabled( true );
+    $this->set_machine_request_url( MASTODON_URL );
   }
 }
 ?>

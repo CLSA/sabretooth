@@ -26,43 +26,52 @@ class participant_primary extends \cenozo\ui\pull\base_primary
    */
   public function __construct( $args )
   {
+    parent::__construct( 'participant', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     // if the id is "assignment", then fetch the participant id based on the current assignment
-    if( isset( $args['id'] ) && 'assignment' == $args['id'] )
+    if( isset( $this->arguments['id'] ) && 'assignment' == $this->arguments['id'] )
     {
       $db_assignment = lib::create( 'business\session' )->get_current_assignment();
       if( is_null( $db_assignment ) )
         throw lib::create( 'exception\runtime',
           'Cannot get the current participant, there is no active assignment.', __METHOD__ );
-      $args['id'] = $db_assignment->get_interview()->get_participant()->id;
+      $this->arguments['id'] = $db_assignment->get_interview()->get_participant()->id;
     }
-
-    parent::__construct( 'participant', $args );
   }
 
   /**
-   * Overrides the parent class' base functionality by adding more data.
+   * This method executes the operation's purpose.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return associative array
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
-    $data = parent::finish();
+    parent::execute();
 
     // add the primary address
     $db_address = $this->get_record()->get_primary_address();
     if( !is_null( $db_address ) )
     {
-      $data['street'] = is_null( $db_address->address2 )
+      $this->data['street'] = is_null( $db_address->address2 )
                       ? $db_address->address1
                       : $db_address->address1.', '.$db_address->address2;
-      $data['city'] = $db_address->city;
-      $data['region'] = $db_address->get_region()->name;
-      $data['postcode'] = $db_address->postcode;
+      $this->data['city'] = $db_address->city;
+      $this->data['region'] = $db_address->get_region()->name;
+      $this->data['postcode'] = $db_address->postcode;
     }
-
-    return $data;
   }
 }
 ?>

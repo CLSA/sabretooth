@@ -28,6 +28,18 @@ class consent_form_report extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'consent_form', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     $this->add_restriction( 'qnaire' );
 
@@ -35,17 +47,6 @@ class consent_form_report extends base_report
       'This report lists all participants who require a new consent form to be mailed to '.
       'them.  The report generates the participant\'s name, address, phone number and last '.
       'time they were successfully contacted.' );
-  }
-
-  /**
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function finish()
-  {
-    parent::finish();
-
-    $this->finish_setting_parameters();
   }
 }
 ?>

@@ -7,6 +7,22 @@
  #}
 {% extends "base_view.twig" %}
 
+{% block javascript %}
+  {{ parent() }}
+  {% if allow_alternate %}
+    <script type="text/javascript">
+      $( function() {
+        // alternate button
+        $( "#{{ widget.full }}__alternate" ).click( function() {
+          $.cookie( "contacting_alternates", "{{ id }}" );
+          window.location.reload();
+          slot_load( {{ slot }}, 'participant', 'list_alternate', { id: {{ id }} } );
+        } );
+      } );
+    </script>
+  {% endif %}
+{% endblock javascript %}
+
 {% block record %}
 
   {{ parent() }}

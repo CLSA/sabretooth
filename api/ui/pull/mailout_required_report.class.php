@@ -31,14 +31,15 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
   }
 
   /**
-   * Builds the report based on the tables built by child classes.
+   * Sets up the operation with any pre-execution instructions that may be necessary.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return associative array
-   * @access public
+   * @author Dean Inglis <inglisd@mcmaster.ca>
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
+    parent::setup();
+
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
     // get the report arguments
@@ -156,8 +157,6 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
       "Date Completed" );
     
     $this->add_table( NULL, $header, $contents, NULL );
-
-    return parent::finish();
   }
 }
 ?>

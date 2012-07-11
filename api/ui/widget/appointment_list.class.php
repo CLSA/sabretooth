@@ -15,7 +15,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * 
  * @package sabretooth\ui
  */
-class appointment_list extends \cenozo\ui\widget\site_restricted_list
+class appointment_list extends site_restricted_list
 {
   /**
    * Constructor
@@ -28,8 +28,19 @@ class appointment_list extends \cenozo\ui\widget\site_restricted_list
   public function __construct( $args )
   {
     parent::__construct( 'appointment', $args );
-    $this->add_column( 'participant.first_name', 'string', 'First name', true );
-    $this->add_column( 'participant.last_name', 'string', 'Last name', true );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+    $this->add_column( 'participant.uid', 'string', 'UID', true );
     $this->add_column( 'phone', 'string', 'Phone number', false );
     $this->add_column( 'datetime', 'datetime', 'Date', true );
     $this->add_column( 'state', 'string', 'State', false );
@@ -41,22 +52,22 @@ class appointment_list extends \cenozo\ui\widget\site_restricted_list
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
     // don't add appointments if this list isn't parented
-    if( is_null( $this->parent ) ) $this->addable = false;
+    if( is_null( $this->parent ) ) $this->set_addable( false );
     else // don't add appointments if the parent already has an unassigned appointment
     {
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'participant_id', '=', $this->parent->get_record()->id );
       $modifier->where( 'assignment_id', '=', NULL );
       $class_name = lib::get_class_name( 'database\appointment' );
-      $this->addable = 0 == $class_name::count( $modifier );
+      $this->set_addable( 0 == $class_name::count( $modifier ) );
     }
 
-    parent::finish();
+    parent::setup();
 
     foreach( $this->get_record_list() as $record )
     {
@@ -74,8 +85,6 @@ class appointment_list extends \cenozo\ui\widget\site_restricted_list
                'datetime' => $record->datetime,
                'state' => $record->get_state() ) );
     }
-
-    $this->finish_setting_rows();
   }
 }
 ?>

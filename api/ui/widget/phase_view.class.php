@@ -28,34 +28,39 @@ class phase_view extends \cenozo\ui\widget\base_view
   public function __construct( $args )
   {
     parent::__construct( 'phase', 'view', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     // add items to the view
     $this->add_item( 'sid', 'enum', 'Default Survey' );
     $this->add_item( 'rank', 'enum', 'Stage' );
     $this->add_item( 'repeated', 'boolean', 'Repeated' );
 
-    try
-    {
-      // create the source_survey sub-list widget
-      $this->source_survey_list = lib::create( 'ui\widget\source_survey_list', $args );
-      $this->source_survey_list->set_parent( $this );
-      $this->source_survey_list->set_heading( 'Source-specific Surveys' );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->source_survey_list = NULL;
-    }
+    // create the source_survey sub-list widget
+    $this->source_survey_list = lib::create( 'ui\widget\source_survey_list', $this->arguments );
+    $this->source_survey_list->set_parent( $this );
+    $this->source_survey_list->set_heading( 'Source-specific Surveys' );
   }
 
   /**
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     // create enum arrays
     $surveys = array();
@@ -76,13 +81,12 @@ class phase_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'rank', $this->get_record()->rank, true, $ranks );
     $this->set_item( 'repeated', $this->get_record()->repeated, true );
 
-    $this->finish_setting_items();
-
-    if( !is_null( $this->source_survey_list ) )
+    try
     {
-      $this->source_survey_list->finish();
+      $this->source_survey_list->process();
       $this->set_variable( 'source_survey_list', $this->source_survey_list->get_variables() );
     }
+    catch( \cenozo\exception\permission $e ) {}
   }
 
   /**

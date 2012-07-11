@@ -18,44 +18,33 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class user_new_access extends \cenozo\ui\push\user_new_access
 {
   /**
-   * Executes the push.
+   * Processes arguments, preparing them for the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function prepare()
   {
-    // we'll need the arguments to send to mastodon
-    $args = $this->arguments;
+    parent::prepare();
 
-    // replace the user id with a unique key
-    $db_user = $this->get_record();
-    unset( $args['id'] );
-    $args['noid']['user.name'] = $db_user->name;
-    
-    foreach( $this->get_argument( 'role_id_list' ) as $role_id )
-    {
-      $this->get_record()->add_access( $this->get_argument( 'site_id_list' ), $role_id );
+    $this->set_machine_request_enabled( true );
+    $this->set_machine_request_url( MASTODON_URL );
+  }
 
-      // build a list of role names for mastodon
-      $db_role = lib::create( 'database\role', $role_id );
-      $role_name_list[] = $db_role->name;
-    }
-
-    // build a list of site names for mastodon
-    foreach( $this->get_argument( 'site_id_list' ) as $site_id )
-    {
-      $db_site = lib::create( 'database\site', $site_id );
-      $site_name_list[] = array( 'name' => $db_site->name, 'cohort' => 'tracking' );
-    }
-
-    unset( $args['role_id_list'] );
-    unset( $args['site_id_list'] );
-    $args['noid']['role_name_list'] = $role_name_list;
-    $args['noid']['site_name_list'] = $site_name_list;
-  
-    // now send the same request to mastodon
-    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
-    $mastodon_manager->push( 'user', 'new_access', $args );
+  /**
+   * Override the parent method to add the cohort to the site key.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param array $args An argument list, usually those passed to the push operation.
+   * @return array
+   * @access protected
+   */
+  protected function convert_to_noid( $args )
+  {
+    $args = parent::convert_to_noid( $args );
+    foreach( $args['noid']['site_list'] as $key => $value )
+      $args['noid']['site_list'][$key]['cohort'] =
+        lib::create( 'business\setting_manager' )->get_setting( 'general', 'cohort' );
+    return $args;
   }
 }
 ?>

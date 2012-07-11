@@ -28,6 +28,18 @@ class demographics_report extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'demographics', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Dean Inglis <inglisd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     $this->add_restriction( 'site' );
     $this->add_restriction( 'qnaire' );
@@ -38,17 +50,6 @@ class demographics_report extends base_report
     $this->set_variable( 'description',
       'This report lists participant demographics.  The report can be moderated by site, '.
       'questionnaire, province and consent status.' );
-  }
-
-  /**
-   * @author Dean Inglis <inglisd@mcmaster.ca>
-   * @access public
-   */
-  public function finish()
-  {
-    parent::finish();
-  
-    $this->finish_setting_parameters();
   }
 }
 ?>

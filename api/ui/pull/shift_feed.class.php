@@ -28,6 +28,18 @@ class shift_feed extends \cenozo\ui\pull\base_feed
   public function __construct( $args )
   {
     parent::__construct( 'shift', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     $session = lib::create( 'business\session' );
 
@@ -37,14 +49,15 @@ class shift_feed extends \cenozo\ui\pull\base_feed
   }
   
   /**
-   * Returns the data provided by this feed.
+   * This method executes the operation's purpose.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return array
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function execute()
   {
+    parent::execute();
+
     // determine from the start/end times whether this feed request is longer than a week
     $start = strtotime( $this->start_datetime );
     $end = strtotime( $this->end_datetime );
@@ -59,7 +72,7 @@ class shift_feed extends \cenozo\ui\pull\base_feed
     else
       $modifier->where( 'user_id', '=', $this->user_id );
     
-    $event_list = array();
+    $this->data = array();
     $class_name = lib::get_class_name( 'database\shift' );
     foreach( $class_name::select( $modifier ) as $db_shift )
     {
@@ -73,7 +86,7 @@ class shift_feed extends \cenozo\ui\pull\base_feed
       // remove the m in am/pm
       $end_time = substr( $end_time, 0, -1 );
 
-      $event_list[] = array(
+      $this->data[] = array(
         'id' => $db_shift->id,
         'title' => $showing_month
           ? sprintf( ' to %s: %s', $end_time, $db_shift->get_user()->name )
@@ -82,8 +95,6 @@ class shift_feed extends \cenozo\ui\pull\base_feed
         'start' => $start_datetime_obj->format( \DateTime::ISO8601 ),
         'end' => $end_datetime_obj->format( \DateTime::ISO8601 ) );
     }
-
-    return $event_list;
   }
 
   /**

@@ -28,6 +28,18 @@ class participant_status_report extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'participant_status', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     $this->add_restriction( 'qnaire' );
     $this->add_restriction( 'site_or_province' );
@@ -36,16 +48,6 @@ class participant_status_report extends base_report
     $this->set_variable( 'description',
       'This report provides totals of various status types.  Populations are broken down '.
       'by province or by site and various call, participant and consent statuses.' );
-  }
-
-  /**
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function finish()
-  {
-    parent::finish();
-    $this->finish_setting_parameters();
   }
 }
 ?>

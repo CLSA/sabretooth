@@ -28,20 +28,17 @@ class participant_tree extends \cenozo\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'participant', 'tree', $args );
-    $session = lib::create( 'business\session' );
-    if( 3 > $session->get_role()->tier )
-      $this->set_heading( $this->get_heading().' for '.$session->get_site()->name );
   }
 
   /**
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     $session = lib::create( 'business\session' );
     $is_top_tier = 3 == $session->get_role()->tier;
@@ -53,6 +50,10 @@ class participant_tree extends \cenozo\ui\widget
       $class_name = lib::get_class_name( 'database\site' );
       foreach( $class_name::select() as $db_site ) $sites[$db_site->id] = $db_site->name;
       $this->set_variable( 'sites', $sites );
+    }
+    else // otherwise show in the header which site the tree is for
+    {
+      $this->set_heading( $this->get_heading().' for '.$session->get_site()->name );
     }
 
     $site_id = $this->get_argument( "site_id", 0 );

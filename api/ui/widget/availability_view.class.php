@@ -28,6 +28,18 @@ class availability_view extends \cenozo\ui\widget\base_view
   public function __construct( $args )
   {
     parent::__construct( 'availability', 'view', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     // add items to the view
     $this->add_item( 'monday', 'boolean', 'Monday' );
@@ -45,11 +57,11 @@ class availability_view extends \cenozo\ui\widget\base_view
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     // set the view's items
     $this->set_item( 'monday', $this->get_record()->monday, true );
@@ -61,8 +73,6 @@ class availability_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'sunday', $this->get_record()->sunday, true );
     $this->set_item( 'start_time', $this->get_record()->start_time, true );
     $this->set_item( 'end_time', $this->get_record()->end_time, true );
-
-    $this->finish_setting_items();
   }
 }
 ?>

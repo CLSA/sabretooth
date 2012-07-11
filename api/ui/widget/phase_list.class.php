@@ -28,6 +28,18 @@ class phase_list extends \cenozo\ui\widget\base_list
   public function __construct( $args )
   {
     parent::__construct( 'phase', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     $this->add_column( 'survey', 'string', 'Default Survey', false );
     $this->add_column( 'rank', 'string', 'Stage', true );
@@ -38,11 +50,11 @@ class phase_list extends \cenozo\ui\widget\base_list
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
 
     foreach( $this->get_record_list() as $record )
     {
@@ -54,8 +66,6 @@ class phase_list extends \cenozo\ui\widget\base_list
                'rank' => $record->rank,
                'repeated' => $record->repeated ) );
     }
-
-    $this->finish_setting_rows();
   }
 }
 ?>

@@ -15,7 +15,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * 
  * @package sabretooth\ui
  */
-class queue_restriction_list extends \cenozo\ui\widget\site_restricted_list
+class queue_restriction_list extends site_restricted_list
 {
   /**
    * Constructor
@@ -28,6 +28,18 @@ class queue_restriction_list extends \cenozo\ui\widget\site_restricted_list
   public function __construct( $args )
   {
     parent::__construct( 'queue_restriction', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     $this->add_column( 'site.name', 'string', 'Site', true );
     $this->add_column( 'city', 'string', 'City', true );
@@ -39,11 +51,11 @@ class queue_restriction_list extends \cenozo\ui\widget\site_restricted_list
    * Set the rows array needed by the template.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     foreach( $this->get_record_list() as $record )
     {
@@ -57,8 +69,6 @@ class queue_restriction_list extends \cenozo\ui\widget\site_restricted_list
                'region.name' => $db_region ? $db_region->name : 'any',
                'postcode' => $record->postcode ? $record->postcode : 'any' ) );
     }
-
-    $this->finish_setting_rows();
   }
 
   /**

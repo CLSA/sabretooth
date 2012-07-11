@@ -28,6 +28,18 @@ class call_history_report extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'call_history', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
 
     $this->add_restriction( 'site' );
     $this->add_restriction( 'source' );
@@ -37,17 +49,6 @@ class call_history_report extends base_report
       'This report chronologically lists assignment call attempts.  The report includes the '.
       "participant's UID, operator's name, date of the assignment, result, start and end time ".
       'of each call.' );
-  }
-
-  /**
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   */
-  public function finish()
-  {
-    parent::finish();
-
-    $this->finish_setting_parameters();
   }
 }
 ?>

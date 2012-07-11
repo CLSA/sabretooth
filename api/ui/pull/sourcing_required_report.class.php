@@ -29,8 +29,20 @@ class sourcing_required_report extends \cenozo\ui\pull\base_report
     parent::__construct( 'sourcing_required', $args );
   }
 
-  public function finish()
+  /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
+   * @author Dean Inglis <inglisd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
   {
+    parent::setup();
+
+    throw lib::create(
+      'exception\notice', 'This report has been temporarily disabled.', __METHOD__ );
+
+    /*
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
     // get the report args
@@ -64,6 +76,10 @@ class sourcing_required_report extends \cenozo\ui\pull\base_report
       $db_interview = current( $db_participant->get_interview_list( $interview_mod ) );
       if( $db_interview && !$db_interview->completed )
       {
+        // get the maximum number of failed calls before sourcing is required
+        $max_failed_calls = lib::create( 'business\setting_manager' )->get_setting(
+          'calling', 'max failed calls', $db_participant->get_primary_site() );
+
         $failed_calls = 0;
         $db_recent_failed_call = NULL;
         foreach( $db_interview->get_assignment_list( $assignment_mod ) as $db_assignment )
@@ -84,7 +100,7 @@ class sourcing_required_report extends \cenozo\ui\pull\base_report
 
         $done = false;
 
-        if( 10 <= $failed_calls )
+        if( $max_failed_calls <= $failed_calls )
         {
           $done = true;
         }
@@ -120,8 +136,8 @@ class sourcing_required_report extends \cenozo\ui\pull\base_report
             $db_address->postcode,
             $date_completed );
         }
-      } // end non-null incomplete interview  
-    } // end loop on participants 
+      } // end non-null incomplete interview
+    } // end loop on participants
 
     // TODO we need two alternate contacts added to the report fields
     // but this functionality will have to come from mastodon manager
@@ -137,8 +153,7 @@ class sourcing_required_report extends \cenozo\ui\pull\base_report
       "Date Completed" );
   
     $this->add_table( NULL, $header, $contents, NULL );
-
-    return parent::finish();
+    */
   }
 }
 ?>

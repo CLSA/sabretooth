@@ -18,25 +18,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class interview extends \cenozo\database\has_note
 {
   /**
-   * Extend the select() method by adding a custom join to the participant_site table.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the selection.
-   * @param boolean $count If true the total number of records instead of a list
-   * @return array( record ) | int
-   * @static
-   * @access public
-   */
-  public static function select( $modifier = NULL, $count = false )
-  {
-    $participant_site_mod = lib::create( 'database\modifier' );
-    $participant_site_mod->where(
-      'interview.participant_id', '=', 'participant_site.participant_id', false );
-    static::customize_join( 'participant_site', $participant_site_mod );
-
-    return parent::select( $modifier, $count );
-  }
-  
-  /**
    * Returns the time in seconds that it took to complete a particular phase of this interview
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param phase $db_phase Which phase of the interview to get the time of.
@@ -235,5 +216,32 @@ class interview extends \cenozo\database\has_note
       }
     }
   }
+
+  // TODO: document
+  public function get_failed_call_count()
+  {
+    $assignment_mod = lib::create( 'database\modifier' );
+    $assignment_mod->order_desc( 'start_datetime' );
+    $assignment_mod->where( 'end_datetime', '!=', NULL );
+    $failed_calls = 0;
+    foreach( $this->get_assignment_list( $assignment_mod ) as $db_assignment )
+    {
+      // find the most recently completed phone call
+      $phone_call_mod = lib::create( 'database\modifier' );
+      $phone_call_mod->order_desc( 'start_datetime' );
+      $phone_call_mod->where( 'status', '=', 'contacted' );
+      $phone_call_mod->where( 'end_datetime', '!=', NULL );
+      if( 0 < $db_assignment->get_phone_call_count( $phone_call_mod ) ) break;
+      $failed_calls++;
+    }
+
+    return $failed_calls;
+  }
 }
+
+// define the join to the participant_site table
+$participant_site_mod = lib::create( 'database\modifier' );
+$participant_site_mod->where(
+  'interview.participant_id', '=', 'participant_site.participant_id', false );
+interview::customize_join( 'participant_site', $participant_site_mod );
 ?>

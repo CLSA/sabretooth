@@ -28,6 +28,18 @@ class qnaire_add extends \cenozo\ui\widget\base_view
   public function __construct( $args )
   {
     parent::__construct( 'qnaire', 'add', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
     // define all columns defining this record
     $this->add_item( 'name', 'string', 'Name' );
@@ -44,11 +56,11 @@ class qnaire_add extends \cenozo\ui\widget\base_view
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     // create enum arrays
     $qnaires = array();
@@ -78,8 +90,6 @@ class qnaire_add extends \cenozo\ui\widget\base_view
     $this->set_item( 'delay', 52, true );
     $this->set_item( 'withdraw_sid', key( $surveys ), true, $surveys );
     $this->set_item( 'description', '' );
-
-    $this->finish_setting_items();
   }
 }
 ?>

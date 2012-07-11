@@ -28,6 +28,19 @@ class operator_assignment extends \cenozo\ui\widget
   public function __construct( $args )
   {
     parent::__construct( 'operator', 'assignment', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->set_heading( 'Current Assignment' );
   }
 
@@ -35,11 +48,11 @@ class operator_assignment extends \cenozo\ui\widget
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     $session = lib::create( 'business\session' );
     $db_user = $session->get_user();
@@ -106,8 +119,6 @@ class operator_assignment extends \cenozo\ui\widget
       $db_interview = $db_assignment->get_interview();
       $db_participant = $db_interview->get_participant();
       
-      $name = sprintf( $db_participant->first_name.' '.$db_participant->last_name );
-
       $language = 'none';
       if( 'en' == $db_participant->language ) $language = 'english';
       else if( 'fr' == $db_participant->language ) $language = 'french';
@@ -167,8 +178,11 @@ class operator_assignment extends \cenozo\ui\widget
 
       $this->set_variable( 'assignment_id', $db_assignment->id );
       $this->set_variable( 'participant_id', $db_participant->id );
+      $this->set_variable( 'interview_id', $db_interview->id );
       $this->set_variable( 'participant_note_count', $db_participant->get_note_count() );
-      $this->set_variable( 'participant_name', $name );
+      $this->set_variable( 'participant_name',
+        sprintf( $db_participant->first_name.' '.$db_participant->last_name ) );
+      $this->set_variable( 'participant_uid', $db_participant->uid );
       $this->set_variable( 'participant_language', $language );
       $this->set_variable( 'participant_consent', $consent );
       $this->set_variable( 'withdrawing', $consent == $db_participant->get_source()->withdraw_type );

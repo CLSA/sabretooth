@@ -29,6 +29,19 @@ class user_add_shift extends \cenozo\ui\widget\base_add_record
   public function __construct( $args )
   {
     parent::__construct( 'user', 'shift', $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
+
     $this->add_widget->set_heading( "Create a new shift" );
 
     // set the child widget's properties, if they exist

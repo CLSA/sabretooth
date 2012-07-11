@@ -29,37 +29,43 @@ abstract class base_appointment_view extends \cenozo\ui\widget\base_view
   public function __construct( $name, $args )
   {
     parent::__construct( 'appointment', $name, $args );
+  }
+
+  /**
+   * Processes arguments, preparing them for the operation.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @throws exception\notice
+   * @access protected
+   */
+  protected function prepare()
+  {
+    parent::prepare();
     
-    try
-    {
-      // create the site calendar widget
-      $this->site_calendar = lib::create( 'ui\widget\site_calendar', $args );
-      $this->site_calendar->set_parent( $this );
-    }
-    catch( \cenozo\exception\permission $e )
-    {
-      $this->site_calendar = NULL;
-    }
+    // create the site calendar widget
+    $this->site_calendar = lib::create( 'ui\widget\site_calendar', $this->arguments );
+    $this->site_calendar->set_parent( $this );
   }
 
   /**
    * Finish setting the variables in a widget.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function setup()
   {
-    parent::finish();
+    parent::setup();
     
     // set up the site calendar if editing is enabled
-    if( $this->editable || 'add' == $this->get_name() )
+    if( $this->get_editable() || 'add' == $this->get_name() )
     {
-      if( !is_null( $this->site_calendar ) )
+      try
       {
-        $this->site_calendar->finish();
+        $this->site_calendar->process();
         $this->set_variable( 'site_calendar', $this->site_calendar->get_variables() );
       }
+      catch( \cenozo\exception\permission $e ) {}
     }
   }
 

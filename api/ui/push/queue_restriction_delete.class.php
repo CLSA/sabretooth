@@ -29,25 +29,26 @@ class queue_restriction_delete extends \cenozo\ui\push\base_delete
   }
 
   /**
-   * Executes the push.
+   * Validate the operation.
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\notice
-   * @access public
+   * @access protected
    */
-  public function finish()
+  protected function validate()
   {
-    // make sure that only top tier roles can remove queue restrictions not belonging
-    // to the current site
+    parent::validate();
+
     $session = lib::create( 'business\session' );
 
+    // make sure that only top tier roles can remove queue restrictions not belonging
+    // to the current site
     if( 3 != $session->get_role()->tier &&
         $session->get_site()->id != $this->get_record()->site_id )
     {
       throw lib::create( 'exception\notice',
         'You do not have access to remove this queue restriction.', __METHOD__ );
     }
-
-    parent::finish();
   }
 }
 ?>

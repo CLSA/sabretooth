@@ -11,10 +11,13 @@ global $SETTINGS;
 
 // tagged version
 $SETTINGS['general']['application_name'] = 'sabretooth';
-$SETTINGS['general']['version'] = '1.1.2';
+$SETTINGS['general']['version'] = '1.1.3';
 
 // always leave as false when running as production server
 $SETTINGS['general']['development_mode'] = false;
+
+// the name of the cohort associated with this application
+$SETTINGS['general']['cohort'] = 'default';
 
 // the location of sabretooth internal path
 $SETTINGS['path']['APPLICATION'] = '/usr/local/lib/sabretooth';
@@ -22,7 +25,7 @@ $SETTINGS['path']['APPLICATION'] = '/usr/local/lib/sabretooth';
 // the location of the Shift8 Asterisk library
 $SETTINGS['path']['SHIFT8'] = '/usr/local/lib/shift8';
 
-// the url of mastodon (set to NULL to disable mastodon support)
+// the url to Mastodon (set to NULL to disable Mastodon support)
 $SETTINGS['url']['MASTODON'] = NULL;
 
 // the url of limesurvey

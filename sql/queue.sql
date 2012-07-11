@@ -195,6 +195,20 @@ description = "Participants who are not eligible for answering questionnaires be
 institutionalized.";
 
 INSERT INTO queue SET
+name = "noncompliant",
+title = "Participants who are not complying with the rules of the study.",
+rank = NULL,
+qnaire_specific = false,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "ineligible" ) AS tmp ),
+description = "Participants who are not eligible for answering questionnaires because they are
+not complying with the rules of the study.  This list may include participants who are being abusive
+to CLSA staff.";
+
+INSERT INTO queue SET
 name = "other",
 title = "Participants with an undefined condition",
 rank = NULL,
