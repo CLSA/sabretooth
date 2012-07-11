@@ -137,8 +137,6 @@ class participant_list extends \cenozo\ui\pull\base_list
         'participant_last_written_consent.consent_id', '=', 'consent.id', false );
       $this->modifier->where( 'consent.event', '=', 'written accept' );
     }
-
-    \cenozo\database\database::$debug = true;
   }
 
   /**
