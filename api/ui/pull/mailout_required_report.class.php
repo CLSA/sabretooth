@@ -48,6 +48,7 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
     $source_class_name = lib::get_class_name( 'database\source' );
     $source_survey_class_name = lib::get_class_name( 'database\source_survey' );
     $phase_class_name = lib::get_class_name( 'database\phase' );
+    $consent_class_name = lib::get_class_name( 'database\consent' );
 
     // get the report arguments
     $mailout_type =       $this->get_argument( 'restrict_mailout_type' );
@@ -99,7 +100,7 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
       'Participant information package' == $mailout_type ? '>' : '<=' ,
       'DATE_SUB( NOW(), INTERVAL 70 YEAR )', false );
     if( $restrict_source_id ) $participant_mod->where( 'source_id', '=', $restrict_source_id );
-    $participant_mod->where( 'consent.event', 'not in', $consent_types );
+   // $participant_mod->where( 'consent.event', 'not in', $consent_types );
     $participant_mod->where( 'status', '=', NULL );
     $participant_mod->where( 'interview.qnaire_id', '=', $db_qnaire->id );
     $participant_mod->group( 'participant.id' );
@@ -125,6 +126,13 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
 
     foreach( $participant_class_name::select( $participant_mod ) as $db_participant )
     {
+      // check to make sure that the participant still wants to be a part of the study
+      // and make sure we haven't already recieved their consent form using the consent table
+      $consent_mod = lib::create( 'database\modifier' );
+      $consent_mod->where( 'participant_id', '=', $db_participant->id );
+      $consent_mod->where( 'event', 'IN', $consent_types );  
+      if( 0 < count( $consent_class_name::select( $consent_mod ) ) ) continue;
+
       $done = false;
 
       $interview_mod = lib::create( 'database\modifier' );
