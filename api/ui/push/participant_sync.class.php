@@ -52,15 +52,16 @@ class participant_sync extends \cenozo\ui\push
       $offset = 0;
       do
       {
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'cohort', '=', $cohort );
+        $modifier->where( 'sync_datetime', '=', NULL );
+        $modifier->limit( $limit, $offset );
         $args = array(
           'full' => true,
-          'limit' => $limit,
-          'offset' => $offset,
-          'restrictions' => array(
-            'cohort' => array( 'compare' => 'is', 'value' => $cohort ),
-            'sync_datetime' => array( 'compare' => 'is', 'value' => 'NULL' ) ) );
+          'modifier' => $modifier );
         $response = $mastodon_manager->pull( 'participant', 'list', $args );
         foreach( $response->data as $data ) $this->sync( $data );
+        $offset += $limit;
       } while( count( $response->data ) );
     }
     else
@@ -70,11 +71,12 @@ class participant_sync extends \cenozo\ui\push
       for( $offset = 0; $offset < $count; $offset += $limit )
       {
         $uid_sub_list = array_slice( $uid_list, $offset, $limit );
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'cohort', '=', $cohort );
+        $modifier->where( 'uid', 'IN', $uid_sub_list );
         $args = array(
           'full' => true,
-          'restrictions' => array(
-            'cohort' => array( 'compare' => 'is', 'value' => $cohort ),
-            'uid' => array( 'compare' => 'in', 'value' => implode( $uid_sub_list, ',' ) ) ) );
+          'modifier' => $modifier );
         $response = $mastodon_manager->pull( 'participant', 'list', $args );
         foreach( $response->data as $data ) $this->sync( $data );
       }
@@ -86,9 +88,9 @@ class participant_sync extends \cenozo\ui\push
    * participant and details.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param \StdClass $data
-   * @access public
+   * @access protected
    */
-  public function sync( $data )
+  protected function sync( $data )
   {
     $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
     $participant_class_name = lib::get_class_name( 'database\participant' );
@@ -97,15 +99,14 @@ class participant_sync extends \cenozo\ui\push
     $source_class_name = lib::get_class_name( 'database\source' );
     $site_class_name = lib::get_class_name( 'database\site' );
 
-    // if the participant already exists then skip
+    // if the participant already exists then don't sync
     $db_participant = $participant_class_name::get_unique_record( 'uid', $data->uid );
     if( !is_null( $db_participant ) ) return;
 
     $db_participant = lib::create( 'database\participant' );
 
     foreach( $db_participant->get_column_names() as $column )
-      if( 'id' != $column && 'site_id' != $column )
-        $db_participant->$column = $data->$column;
+      if( 'id' != $column ) $db_participant->$column = $data->$column;
 
     // set the source and site from unique keys
     $db_participant->source_id =
@@ -157,7 +158,7 @@ class participant_sync extends \cenozo\ui\push
         }
         else $record->$column_name = $value;
       }
-      
+
       $record->save();
     }
   }
