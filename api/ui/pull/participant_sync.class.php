@@ -40,8 +40,8 @@ class participant_sync extends \cenozo\ui\pull
   {
     parent::execute();
 
-    // Mastodon will only return ~400 records back at a time, so break up the list into chunks
-    $limit = 250;
+    // need to cut large participant lists into several consecutive requests
+    $limit = 100;
 
     $existing_count = 0;
     $new_count = 0;
