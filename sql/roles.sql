@@ -10,6 +10,36 @@ FROM role, operation
 WHERE role.name = "administrator"
 AND operation.subject = "administrator";
 
+-- opal instance
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "push" AND subject = "opal_instance" AND name = "delete" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "push" AND subject = "opal_instance" AND name = "edit" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "push" AND subject = "opal_instance" AND name = "new" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "opal_instance" AND name = "add" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "opal_instance" AND name = "view" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "opal_instance" AND name = "list" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "pull" AND subject = "opal_instance" AND name = "primary" );
+
 -- interview, recording, assignment and calling
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
@@ -73,12 +103,14 @@ INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "push" AND subject = "participant" AND name = "sync" );
-
--- alternate
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "widget" AND subject = "participant" AND name = "list_alternate" );
+      type = "pull" AND subject = "participant" AND name = "list" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "participant" AND name = "secondary" );
 
 -- appointment
 INSERT INTO role_has_operation
@@ -448,6 +480,23 @@ AND operation.name = "report";
 
 -- -----------------------------------------------------
 -- -----------------------------------------------------
+INSERT INTO role( name ) VALUES( "opal" );
+
+-- opal (specific to this role)
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id
+FROM role, operation
+WHERE role.name = "opal"
+AND operation.subject = "opal";
+
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "opal" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "pull" AND subject = "interview" AND name = "list" );
+
+
+-- -----------------------------------------------------
+-- -----------------------------------------------------
 INSERT INTO role( name ) VALUES( "operator" );
 
 -- operator (specific to this role)
@@ -538,12 +587,10 @@ INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "push" AND subject = "participant" AND name = "withdraw" );
-
--- alternate
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "operator" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "widget" AND subject = "alternate" AND name = "list" );
+      type = "widget" AND subject = "participant" AND name = "secondary" );
 
 -- appointment
 INSERT INTO role_has_operation
@@ -932,12 +979,14 @@ INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "widget" AND subject = "participant" AND name = "list" );
-
--- alternate
 INSERT INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
-      type = "widget" AND subject = "alternate" AND name = "list" );
+      type = "pull" AND subject = "participant" AND name = "list" );
+INSERT INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "participant" AND name = "secondary" );
 
 -- appointment
 INSERT INTO role_has_operation

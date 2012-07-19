@@ -9,14 +9,14 @@
 
 {% block javascript %}
   {{ parent() }}
-  {% if allow_alternate %}
+  {% if allow_secondary %}
     <script type="text/javascript">
       $( function() {
-        // alternate button
-        $( "#{{ widget.full }}__alternate" ).click( function() {
-          $.cookie( "contacting_alternates", "{{ id }}" );
+        // secondary button
+        $( "#{{ widget.full }}__secondary" ).click( function() {
           window.location.reload();
-          slot_load( {{ slot }}, 'participant', 'list_alternate', { id: {{ id }} } );
+          // force the secondary list to be loaded in the main slot
+          slot_load( 'main', 'participant', 'secondary', { id: {{ id }} } );
         } );
       } );
     </script>

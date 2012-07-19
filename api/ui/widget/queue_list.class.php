@@ -141,7 +141,7 @@ class queue_list extends \cenozo\ui\widget\base_list
    * @return int
    * @access protected
    */
-  protected function determine_record_count( $modifier = NULL )
+  public function determine_record_count( $modifier = NULL )
   {
     if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'rank', '!=', NULL );
@@ -158,7 +158,7 @@ class queue_list extends \cenozo\ui\widget\base_list
    * @return array( record )
    * @access protected
    */
-  protected function determine_record_list( $modifier = NULL )
+  public function determine_record_list( $modifier = NULL )
   {
     if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'rank', '!=', NULL );

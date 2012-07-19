@@ -27,34 +27,20 @@ class user_add extends \cenozo\ui\widget\user_add
   {
     parent::setup();
     
+    $role_class_name = lib::get_class_name( 'database\role' );
+
     $session = lib::create( 'business\session' );
     $is_top_tier = 3 == $session->get_role()->tier;
 
     // create enum arrays
     $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'name', '!=', 'opal' );
     $modifier->where( 'tier', '<=', $session->get_role()->tier );
     $roles = array();
-    $role_class_name = lib::get_class_name( 'database\role' );
     foreach( $role_class_name::select( $modifier ) as $db_role )
       $roles[$db_role->id] = $db_role->name;
     
-    $sites = array();
-    if( $is_top_tier )
-    {
-      $site_class_name = lib::get_class_name( 'database\site' );
-      $site_mod = lib::create( 'database\modifier' );
-      $site_mod->order( 'name' );
-      foreach( $site_class_name::select( $site_mod ) as $db_site )
-        $sites[$db_site->id] = $db_site->name;
-    }
-
-    // set the view's items
-    $this->set_item( 'name', '', true );
-    $this->set_item( 'first_name', '', true );
-    $this->set_item( 'last_name', '', true );
-    $this->set_item( 'active', true, true );
-    $value = $is_top_tier ? current( $sites ) : $session->get_site()->id;
-    $this->set_item( 'site_id', $value, true, $is_top_tier ? $sites : NULL );
+    // make operator the default new role
     $this->set_item( 'role_id', array_search( 'operator', $roles ), true, $roles );
   }
 }

@@ -217,7 +217,14 @@ class interview extends \cenozo\database\has_note
     }
   }
 
-  // TODO: document
+  /**
+   * Returns the most recent total number of consecutive failed calls.  A maximum of one
+   * failed call per assignment is counted.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return int
+   * @access public
+   */
   public function get_failed_call_count()
   {
     $assignment_mod = lib::create( 'database\modifier' );
@@ -244,4 +251,10 @@ $participant_site_mod = lib::create( 'database\modifier' );
 $participant_site_mod->where(
   'interview.participant_id', '=', 'participant_site.participant_id', false );
 interview::customize_join( 'participant_site', $participant_site_mod );
+
+// define the join to the last assignment
+$assignment_mod = lib::create( 'database\modifier' );
+$assignment_mod->where( 'interview.id', '=', 'interview_last_assignment.interview_id', false );
+$assignment_mod->where( 'interview_last_assignment.assignment_id', '=', 'assignment.id', false );
+interview::customize_join( 'assignment', $assignment_mod );
 ?>

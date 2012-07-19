@@ -90,78 +90,44 @@ class assignment_list extends site_restricted_list
   }
 
   /**
-   * Overrides the parent class method since the record count depends on the active role
+   * Overrides the parent class method to restrict by interview id, if necessary
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
    * @return int
    * @access protected
    */
-  protected function determine_record_count( $modifier = NULL )
+  public function determine_record_count( $modifier = NULL )
   {
-    if( !is_null( $this->parent ) )
-    {
-      if( 'interview_view' == $this->parent->get_class_name() )
-      {
-        // restrict the list to the interview's participant
-        if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-        $modifier->where(
-          'assignment.interview_id', '=', $this->parent->get_record()->id );
-      }
-      else
-      { // if this widget gets parented we need to address that parent here
-        throw lib::create( 'exception\runtime',
-                           'Invalid parent type '.$this->parent->get_class_name(),
-                           __METHOD__ );
-      }
-    }
-
-    // we may be restricting by interview
     $interview_id = $this->get_argument( 'interview_id', NULL );
+
     if( !is_null( $interview_id ) )
     {
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'assignment.interview_id', '=', $interview_id );
+      $modifier->where( 'interview_id', '=', $interview_id );
     }
-        
+
     return parent::determine_record_count( $modifier );
   }
 
-  /**
-   * Overrides the parent class method since the record list depends on the active role.
+  /** 
+   * Overrides the parent class method to restrict by interview id, if necessary
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the list.
    * @return array( record )
    * @access protected
    */
-  protected function determine_record_list( $modifier = NULL )
+  public function determine_record_list( $modifier = NULL )
   {
-    if( !is_null( $this->parent ) )
-    {
-      if( 'interview_view' == $this->parent->get_class_name() )
-      {
-        // restrict the list to the interview's participant
-        if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-        $modifier->where(
-          'assignment.interview_id', '=', $this->parent->get_record()->id );
-      }
-      else
-      { // if this widget gets parented we need to address that parent here
-        throw lib::create( 'exception\runtime',
-                           'Invalid parent type '.$this->parent->get_class_name(),
-                           __METHOD__ );
-      }
-    }
-
-    // we may be restricting by interview
     $interview_id = $this->get_argument( 'interview_id', NULL );
+
     if( !is_null( $interview_id ) )
     {
       if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'assignment.interview_id', '=', $interview_id );
+      $modifier->where( 'interview_id', '=', $interview_id );
     }
-        
+
     return parent::determine_record_list( $modifier );
   }
 }

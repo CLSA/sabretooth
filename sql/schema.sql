@@ -812,6 +812,27 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `opal_instance`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `opal_instance` ;
+
+CREATE  TABLE IF NOT EXISTS `opal_instance` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `user_id` INT UNSIGNED NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_user_id` (`user_id` ASC) ,
+  UNIQUE INDEX `uq_user_id` (`user_id` ASC) ,
+  CONSTRAINT `fk_opal_instance_user_id`
+    FOREIGN KEY (`user_id` )
+    REFERENCES `user` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Placeholder table for view `participant_first_address`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `participant_first_address` (`participant_id` INT, `address_id` INT);
@@ -845,6 +866,21 @@ CREATE TABLE IF NOT EXISTS `participant_last_contacted_phone_call` (`participant
 -- Placeholder table for view `participant_site`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `participant_site` (`participant_id` INT, `site_id` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `participant_last_written_consent`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `participant_last_written_consent` (`participant_id` INT, `consent_id` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `participant_phone_call_status_count`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `participant_phone_call_status_count` (`participant_id` INT, `status` INT, `total` INT);
+
+-- -----------------------------------------------------
+-- Placeholder table for view `interview_last_assignment`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `interview_last_assignment` (`interview_id` INT, `assignment_id` INT);
 
 -- -----------------------------------------------------
 -- View `participant_first_address`
@@ -972,6 +1008,54 @@ LEFT JOIN address
 ON participant_primary_address.address_id = address.id
 LEFT JOIN region
 ON address.region_id = region.id;
+
+-- -----------------------------------------------------
+-- View `participant_last_written_consent`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `participant_last_written_consent` ;
+DROP TABLE IF EXISTS `participant_last_written_consent`;
+CREATE  OR REPLACE VIEW `participant_last_written_consent` AS
+SELECT participant_id, id AS consent_id
+FROM consent AS t1
+WHERE t1.date = (
+  SELECT MAX( t2.date )
+  FROM consent AS t2
+  WHERE t1.participant_id = t2.participant_id
+  AND event LIKE 'written %'
+  GROUP BY t2.participant_id );
+
+-- -----------------------------------------------------
+-- View `participant_phone_call_status_count`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `participant_phone_call_status_count` ;
+DROP TABLE IF EXISTS `participant_phone_call_status_count`;
+CREATE  OR REPLACE VIEW `participant_phone_call_status_count` AS
+SELECT participant.id participant_id, phone_call.status status, COUNT( phone_call.id ) total
+FROM participant
+JOIN interview ON participant.id = interview.participant_id
+JOIN assignment ON interview.id = assignment.interview_id
+JOIN phone_call ON assignment.id = phone_call.assignment_id
+GROUP BY participant.id, phone_call.status;
+
+-- -----------------------------------------------------
+-- View `interview_last_assignment`
+-- -----------------------------------------------------
+DROP VIEW IF EXISTS `interview_last_assignment` ;
+DROP TABLE IF EXISTS `interview_last_assignment`;
+CREATE  OR REPLACE VIEW `interview_last_assignment` AS
+SELECT interview_1.id AS interview_id,
+       assignment_1.id AS assignment_id
+FROM assignment assignment_1
+JOIN interview interview_1
+WHERE interview_1.id = assignment_1.interview_id
+AND assignment_1.start_datetime = (
+  SELECT MAX( assignment_2.start_datetime )
+  FROM assignment assignment_2
+  JOIN interview interview_2
+  WHERE interview_2.id = assignment_2.interview_id
+  AND interview_1.id = interview_2.id
+  GROUP BY interview_2.id
+);
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

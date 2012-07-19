@@ -19,10 +19,6 @@ VALUES( "widget", "address", "list", true, "Lists a participant's address entrie
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "address", "primary", true, "Retrieves base address information." );
 
--- alternate
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "participant", "list_alternate", true, "Lists a participant's alternate for sourcing purposes." );
-
 -- appointment
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "appointment", "delete", true, "Removes a participant's appointment from the system." );
@@ -114,6 +110,24 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "interview", "edit", true, "Edits the details of an interview." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "interview", "rescore", true, "Provides an interface to rescore interview based on recordings." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "interview", "list", true, "Retrieves base information for a list of interviews." );
+
+-- opal_instance
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "opal_instance", "delete", true, "Removes a opal instance from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "opal_instance", "edit", true, "Edits a opal instance's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "opal_instance", "new", true, "Add a new opal instance to the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "opal_instance", "add", true, "View a form for creating a new opal instance." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "opal_instance", "view", true, "View a opal instance's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "opal_instance", "list", true, "List opal instances in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "opal_instance", "primary", true, "Retrieves base opal instance information." );
 
 -- operator
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -163,6 +177,8 @@ VALUES( "pull", "participant", "tree", true, "Returns the number of participants
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant", "primary", true, "Retrieves base participant information." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "participant", "list", true, "Retrieves base information for a list of participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "withdraw", true, "Withdraws the participant (or cancels the withdraw).  This is meant to be used during an interview if the participant suddenly wishes to withdraw." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "sync", true, "A form to synchronise participants between Sabretooth and Mastodon." );
@@ -170,6 +186,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant", "sync", true, "Returns a summary of changes to be made given a list of UIDs to sync." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "sync", true, "Updates participants with their information in Mastodon." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "secondary", true, "Lists a participant's alternates for sourcing purposes." );
 
 -- phase
 INSERT INTO operation( type, subject, name, restricted, description )
