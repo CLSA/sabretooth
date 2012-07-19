@@ -1,0 +1,40 @@
+#!/usr/bin/php
+<?php
+/** 
+ * Utility which prints the version tag value
+ * @author Patrick Emond <emondpd@mcmaster.ca>
+ */
+
+$filename = 'web/settings.ini.php';
+
+// validate arguments
+if( 1 != $argc )
+{
+  print "Script expects exactly zero arguments.\n";
+  exit( 1 );
+}
+
+// make sure ini file exists (checking ./ and ../)
+if( !file_exists( $filename ) ) $filename = '../'.$filename;
+
+if( !file_exists( $filename ) )
+{
+  print "Cannot find ini file.\n";
+  exit( 3 );
+}
+
+// replace the general-version setting in the main ini file
+include $filename;
+
+if( !isset( $SETTINGS ) ||
+    !is_array( $SETTINGS ) ||
+    !array_key_exists( 'general', $SETTINGS ) ||
+    !is_array( $SETTINGS['general'] ) ||
+    !array_key_exists( 'version', $SETTINGS['general'] ) )
+{
+  print "Cannot find version information.\n";
+  exit( 4 );
+}
+
+print $SETTINGS['general']['version']."\n";
+?>
