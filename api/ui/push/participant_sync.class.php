@@ -39,8 +39,8 @@ class participant_sync extends \cenozo\ui\push
   {
     parent::execute();
 
-    // Mastodon will only return ~400 records back at a time, so break up the list into chunks
-    $limit = 250;
+    // need to cut large participant lists into several consecutive requests
+    $limit = 100;
 
     $cohort = lib::create( 'business\setting_manager' )->get_setting( 'general', 'cohort' );
     $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
