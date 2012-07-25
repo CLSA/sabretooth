@@ -104,6 +104,17 @@ class interview_view extends \cenozo\ui\widget\base_view
       $this->set_variable( 'assignment_list', $this->assignment_list->get_variables() );
     }
     catch( \cenozo\exception\permission $e ) {}
+
+    // add an action to view the participant's details
+    $operation_class_name = lib::get_class_name( 'database\operation' );
+    $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'view' );
+    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+      $this->add_action(
+        'view_participant',
+        'View Participant',
+        NULL,
+        'View the participant\'s details' );
+    $this->set_variable( 'participant_id', $db_participant->id );
   }
   
   /**

@@ -10,14 +10,14 @@
 {% block javascript %}
   
   {{ parent() }}
-    <script type="text/javascript">
-      $( function() {
-        // view details button
-        $( "#{{ widget.full }}__view_details" ).click( function() {
-          slot_load( {{ slot }}, "participant", "view", { id: {{ participant_id }} } );
-        } );
+  <script type="text/javascript">
+    $( function() {
+      // view participant button
+      $( "#{{ widget.full }}__view_participant" ).click( function() {
+        slot_load( {{ slot }}, "participant", "view", { id: {{ participant_id }} } );
       } );
-    </script>
+    } );
+  </script>
 
 {% endblock javascript %}
 
