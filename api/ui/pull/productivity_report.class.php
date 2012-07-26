@@ -107,7 +107,10 @@ class productivity_report extends \cenozo\ui\pull\base_report
       $grand_total_time = 0;
       $grand_total_completes = 0;
       $grand_total_calls = 0;
-      foreach( $user_class_name::select() as $db_user )
+      $user_list_mod = lib::create( 'database\modifier' );
+      $user_list_mod->where( 'role_id', '=', $db_role->id );
+      foreach( $db_site->get_user_list( $user_list_mod ) as $db_user )
+      //foreach( $user_class_name::select() as $db_user )
       {
         // create modifiers for the activity, phone_call, interview and user_time queries
         $activity_mod = lib::create( 'database\modifier' );
