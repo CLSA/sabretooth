@@ -9,8 +9,8 @@
 
 {% block javascript %}
   {{ parent() }}
-  {% if allow_rescore %}
-    <script type="text/javascript">
+  <script type="text/javascript">
+    {% if allow_rescore %}
       $( function() {
         // rescore button
         $( "#{{ widget.full }}__rescore" ).click( function() {
@@ -19,9 +19,18 @@
           slot_load( {{ slot }}, 'interview', 'rescore', { id: {{ id }} } );
         } );
       } );
-    </script>
-  {% endif %}
+    {% endif %}
+  
+    $( function() {
+      // view participant details
+      $( "#{{ widget.full }}__view_participant" ).click( function() {
+        slot_load( {{ slot }}, "participant", "view", { id: {{ participant_id }} } );
+      } );
+    } );
+  </script>
+
 {% endblock javascript %}
+
 
 {% from 'macros.twig' import include_list, confirm_buttons %}
 {% block record %}

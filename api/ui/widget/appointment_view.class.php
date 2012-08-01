@@ -143,7 +143,11 @@ class appointment_view extends base_appointment_view
     // add an action to view the participant's details
     $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'view' );
     if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
-      $this->add_action( 'view_details', 'View Details', NULL, 'View the participant\'s details' );
+      $this->add_action(
+        'view_participant',
+        'View Participant',
+        NULL,
+        'View the participant\'s details' );
   }
 }
 ?>

@@ -1,0 +1,60 @@
+====================================================================================================
+1.1.5
+====================================================================================================
+
+* View details added to appointment view
+  - When viewing appointments a new "view details" button has been added which shows the
+    participant's details
+  - The participant's UID has been added to the appointment view
+
+* Mailout report (Val's first contribution to Sabretooth!)
+  - this report allows administrators to prepare mail-merges to mail information and/or proxy
+    packages to participants
+  - report can be broken down by site and source
+
+* Sorting queues by age on weekdays
+  - All queues are now sorted by age (oldest to youngest) on weekdays
+  - A new setting "queue","reverse sort time" defines the time where the sorting is reversed from
+    youngest to oldest
+  - The default is 5pm so that older participants are (preferentially) called during the day and
+    younger participants
+    called in the evenings
+  - The reverse sort time setting is based on the operator's time zone, not the participant's
+
+* Various bug fixes
+
+====================================================================================================
+1.1.4
+====================================================================================================
+
+* Secondary contact script added to system
+  - Operators will now see a "Secondary Contacts" button when they are assigned a participants who
+    has had 10+ failed call attempts
+  - The number of failed call attempts (default 10) is a setting which can be set individually by
+    each site.
+  - Clicking the secondary contact button will provide a list of alternates who can be called using
+    the secondary contact script
+  - Operators MUST still call the participant at least once before ending their assignment, even if
+    they call a secondary
+  - Admins and supervisors will see a secondary button in the participant view page for participants
+    with 10+ failed call attempts
+
+* Opal integration completed
+  - There is now an option to add an "Opal Instance" to Sabretooth
+  - Opal instances gain access to all collected data in the 60-minute interview
+  - Admins do not need to do anything here, I will be managing Opal instances personally
+
+* Availability changed from "only call when" to "prefer calling when"
+  - operators are not restricted to calling participants within available times anymore, instead
+    availability only causes a priority in queues
+  - all availability sub-queues now have the three "ready to call" options:
+    1. call participants who are currently available
+    2. call participants who are always available
+    3. call participants who are not currently available
+
+* Supervisors now see an "open assignment" list in their home screen.
+  - when first logging in at the "home" screen supervisors will see a list of all open assignments
+  - this may be useful to track down operators who may have accidentally forgotten to close
+    assignments
+
+* Various bug fixes
