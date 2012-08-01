@@ -93,7 +93,7 @@ class shift_new extends \cenozo\ui\push\base_new
     {
       // test the exception type to decide what type of exception to throw
       $e = current( $exceptions );
-      throw RUNTIME_SHIFT__SAVE_ERROR_NUMBER == $e->get_number() ?
+      throw RUNTIME__SABRETOOTH_DATABASE_SHIFT__SAVE__ERRNO == $e->get_number() ?
         lib::create( 'exception\notice', $e, __METHOD__, $e ) : $e;
     }
     else if( 1 < count( $exceptions ) )
@@ -102,7 +102,7 @@ class shift_new extends \cenozo\ui\push\base_new
       foreach( $exceptions as $e )
       {
         // if we find an unexpected exception throw it instead of a notice
-        if( RUNTIME_SHIFT__SAVE_ERROR_NUMBER != $e->get_number() ) throw $e;
+        if( RUNTIME__SABRETOOTH_DATABASE_SHIFT__SAVE__ERRNO != $e->get_number() ) throw $e;
         $message .= $e->get_raw_message()."<br>\n";
       }
       throw lib::create( 'exception\notice', $message, __METHOD__ );

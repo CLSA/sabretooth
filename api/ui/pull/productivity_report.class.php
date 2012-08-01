@@ -107,6 +107,7 @@ class productivity_report extends \cenozo\ui\pull\base_report
       $grand_total_time = 0;
       $grand_total_completes = 0;
       $grand_total_calls = 0;
+      $user_list_mod = lib::create( 'database\modifier' );
       foreach( $user_class_name::select() as $db_user )
       {
         // create modifiers for the activity, phone_call, interview and user_time queries
@@ -154,8 +155,7 @@ class productivity_report extends \cenozo\ui\pull\base_report
         }
 
         // if there is no activity then skip this user
-        if( is_null( $activity_class_name::get_min_datetime( $activity_mod ) ) ||
-            is_null( $activity_class_name::get_max_datetime( $activity_mod ) ) ) continue;
+        if( 0 == $activity_class_name::count( $activity_mod ) ) continue;
 
         // Determine the number of phone calls, completed interviews and interview times
         $calls = $db_user->get_phone_call_count( $db_qnaire, $phone_call_mod );
@@ -190,8 +190,8 @@ class productivity_report extends \cenozo\ui\pull\base_report
           $contents[] = array(
             $db_user->name,
             $completes,
-            is_null( $min_datetime_obj ) ? '??' : $min_datetime_obj->format( "H:i" ),
-            is_null( $max_datetime_obj ) ? '??' : $max_datetime_obj->format( "H:i" ),
+            is_null( $min_datetime_obj ) ? '??' : $min_datetime_obj->format( 'H:i' ),
+            is_null( $max_datetime_obj ) ? '??' : $max_datetime_obj->format( 'H:i' ),
             sprintf( '%0.2f', $total_time ),
             $total_time > 0 ? sprintf( '%0.2f', $completes / $total_time ) : '',
             $completes  > 0 ? sprintf( '%0.2f', $interview_time / $completes / 60 ) : '',
@@ -221,41 +221,41 @@ class productivity_report extends \cenozo\ui\pull\base_report
       if( $single_date )
       {
         $header = array(
-          "Operator",
-          "Completes",
-          "Start Time",
-          "End Time",
-          "Total Time",
-          "CompPH",
-          "Avg. Length",
-          "CallPH" );
+          'Operator',
+          'Completes',
+          'Start Time',
+          'End Time',
+          'Total Time',
+          'CompPH',
+          'Avg. Length',
+          'CallPH' );
 
         $footer = array(
-          "Total",
-          "sum()",
-          "--",
-          "--",
-          "sum()",
+          'Total',
+          'sum()',
+          '--',
+          '--',
+          'sum()',
           $average_compPH,
-          "average()",
+          'average()',
           $average_callPH );
       }
       else
       {
         $header = array(
-          "Operator",
-          "Completes",
-          "Total Time",
-          "CompPH",
-          "Avg. Length",
-          "CallPH" );
+          'Operator',
+          'Completes',
+          'Total Time',
+          'CompPH',
+          'Avg. Length',
+          'CallPH' );
 
         $footer = array(
-          "Total",
-          "sum()",
-          "sum()",
+          'Total',
+          'sum()',
+          'sum()',
           $average_compPH,
-          "average()",
+          'average()',
           $average_callPH );
       }
 
