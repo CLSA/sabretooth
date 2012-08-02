@@ -16,6 +16,14 @@
       $( "#{{ widget.full }}__view_participant" ).click( function() {
         slot_load( {{ slot }}, "participant", "view", { id: {{ participant_id }} } );
       } );
+      // listen in on call
+      $( "#{{ widget.full }}__voip_spy" ).click( function() {
+        if( ajax_push( "voip", "spy", { user_id: {{ user_id }} } ) )
+        {
+          slot_refresh( "status" );
+          slot_refresh( "shortcuts" );
+        }
+      } );
     } );
   </script>
 

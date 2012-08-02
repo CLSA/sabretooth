@@ -63,9 +63,17 @@ class assignment_list extends site_restricted_list
   protected function setup()
   {
     parent::setup();
+
+    $operation_class_name = lib::get_class_name( 'database\operation' );
+
+    // define whether or not voip spying is allowed
+    $db_operation = $operation_class_name::get_operation( 'push', 'voip', 'spy' );
+    $this->set_variable( 'allow_spy', lib::create( 'business\session' )->is_allowed( $db_operation ) );
     
     foreach( $this->get_record_list() as $record )
     {
+      $db_user = $record->get_user();
+
       // get the status of the last phone call for this assignment
       $modifier = lib::create( 'database\modifier' );
       $modifier->order_desc( 'end_datetime' );
@@ -74,9 +82,23 @@ class assignment_list extends site_restricted_list
       $status = 0 == count( $phone_call_list ) ? 'no calls made' : $phone_call_list[0]->status;
       if( 0 == strlen( $status ) ) $status = 'in progress';
 
+      // determine whether we can spy on this assignment
+      $allow_spy = false;
+      $phone_call_mod = lib::create( 'database\modifier' );
+      $phone_call_mod->where( 'end_datetime', '=', NULL );
+      $open_call_count = $record->get_phone_call_count( $phone_call_mod );
+      if( 0 < $open_call_count )
+      { // if this assignment has an open call
+        $voip_manager = lib::create( 'business\voip_manager' );
+        if( $voip_manager->get_sip_enabled() && $voip_manager->get_call( $db_user ) )
+        { // and if voip is enabled and the user has an active call
+          $allow_spy = true;
+        }
+      }
+
       // assemble the row for this record
       $this->add_row( $record->id,
-        array( 'user.name' => $record->get_user()->name,
+        array( 'user.name' => $db_user->name,
                'site.name' => $record->get_site()->name,
                'uid' => $record->get_interview()->get_participant()->uid,
                'calls' => $record->get_phone_call_count(),
@@ -84,6 +106,9 @@ class assignment_list extends site_restricted_list
                'start_time' => $record->start_datetime,
                'end_time' => $record->end_datetime,
                'status' => $status,
+               // allow_spy and user_id aren't columns, they are used for voip spying
+               'allow_spy' => $allow_spy,
+               'user_id' => $db_user->id,
                // note_count isn't a column, it's used for the note button
                'note_count' => $record->get_note_count() ) );
     }

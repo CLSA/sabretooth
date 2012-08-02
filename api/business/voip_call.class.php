@@ -129,7 +129,7 @@ class voip_call extends \cenozo\base_object
     if( !$this->manager->originate(
       'Local/playback@default',  // channel
       'default',                 // context
-      'chanspy',                 // extension
+      'playbackspy',             // extension
       1,                         // priority
       false,                     // application
       false,                     // data
@@ -153,7 +153,7 @@ class voip_call extends \cenozo\base_object
       if( !$this->manager->originate(
         'Local/playback@default',  // channel
         'default',                 // context
-        'chanspy',                 // extension
+        'playbackspy',             // extension
         1,                         // priority
         false,                     // application
         false,                     // data

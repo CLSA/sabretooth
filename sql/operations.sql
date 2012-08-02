@@ -424,5 +424,7 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "voip", "begin_monitor", true, "Starts monitoring the active call." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "voip", "end_monitor", true, "Stops monitoring the active call." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "voip", "spy", true, "Opens a listen-only connection to an existing operator's call." );
 
 COMMIT;
