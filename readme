@@ -1,22 +1,32 @@
-This document outlines Sabretooth's organization.  For install instructions see doc/install.readme
+Sabretooth
+==========
+
+Web-based computer-assisted telephone interviewing (CATI) management software which
+coordinates the collection of questionnaires from participants by telephone.
+Designed for large epidemiology studies, Sabretooth provides an interface for the
+management of multiple call-centres.
+
+See doc/install.readme for install instructions.
 
 api/
-  This is where the programming interface belongs.  This includes all packages, classes, functions,
-  settings, etc.
+  This is where the programming interface belongs.
+  This includes all packages, classes, functions, settings, etc.
 
 aux/
   Any auxiliary files which are needed by the software go here.
 
 tpl/
-  This is where display templates belong.  This includes twig templates, xslt, etc.
+  This is where display templates belong.
+  This includes twig templates, javascript, etc.
 
 web/
-  This is the public web directory that a web server usually links to.
+  This is the public web directory that a web server links to.
 
 doc/
-  All documentation for Sabretooth is found here including the phpdoc generated API documentation
-  and design documents.
+  All documentation for Sabretooth is found here including the apigen generated API
+  documentation and design documents.
 
 sql/
-  This is where all sql needed to install the application belongs.  This includes database schemas,
-  default data, etc.
+  This is where all sql needed to install the application belongs.
+  This includes database schemas, default data and script to upgrade from older
+  versions.
