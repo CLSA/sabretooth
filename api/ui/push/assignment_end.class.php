@@ -3,7 +3,6 @@
  * assignment_end.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: assignment end
  *
  * Assigns a participant to an assignment.
- * @package sabretooth\ui
  */
 class assignment_end extends \cenozo\ui\push
 {

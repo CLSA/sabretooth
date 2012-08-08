@@ -3,7 +3,6 @@
  * setting_manager.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\business
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Manages software settings
- * 
- * @package sabretooth\business
  */
 class setting_manager extends \cenozo\business\setting_manager
 {

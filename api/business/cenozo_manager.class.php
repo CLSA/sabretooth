@@ -3,7 +3,6 @@
  * cenozo_manager.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package cenozo\business
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Extends Cenozo's manager with custom methods
- * 
- * @package sabretooth\business
  */
 class cenozo_manager extends \cenozo\business\cenozo_manager
 {

@@ -3,7 +3,6 @@
  * main.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Class that manages variables in main user interface template.
- * 
- * @package sabretooth\ui
  */
 class main extends \cenozo\ui\main
 {

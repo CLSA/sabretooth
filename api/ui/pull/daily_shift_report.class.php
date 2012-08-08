@@ -3,7 +3,6 @@
  * daily_shift_report.class.php
  * 
  * @author Dean Inglis <inglisd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * Daily shift report data.
  * 
  * @abstract
- * @package sabretooth\ui
  */
 class daily_shift_report extends \cenozo\ui\pull\base_report
 {

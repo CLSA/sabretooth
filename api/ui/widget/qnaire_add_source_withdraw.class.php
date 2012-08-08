@@ -3,7 +3,6 @@
  * qnaire_add_source_withdraw.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget qnaire add_source_withdraw
- * 
- * @package sabretooth\ui
  */
 class qnaire_add_source_withdraw extends \cenozo\ui\widget\base_add_record
 {

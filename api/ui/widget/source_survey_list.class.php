@@ -3,7 +3,6 @@
  * source_survey_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget source_survey list
- * 
- * @package sabretooth\ui
  */
 class source_survey_list extends \cenozo\ui\widget\base_list
 {

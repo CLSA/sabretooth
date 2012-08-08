@@ -3,7 +3,6 @@
  * shift_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: shift new
  *
  * Create a new shift.
- * @package sabretooth\ui
  */
 class shift_new extends \cenozo\ui\push\base_new
 {

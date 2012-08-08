@@ -3,7 +3,6 @@
  * survey_timings.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Access to limesurvey's survey_SID_timings tables.
- * 
- * @package sabretooth\database
  */
 class survey_timings extends sid_record
 {

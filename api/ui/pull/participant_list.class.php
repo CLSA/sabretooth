@@ -3,7 +3,6 @@
  * participant_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * Class for participant list pull operations.
  * 
  * @abstract
- * @package sabretooth\ui
  */
 class participant_list extends \cenozo\ui\pull\base_list
 {

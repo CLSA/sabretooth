@@ -3,7 +3,6 @@
  * assignment_view.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget assignment view
- * 
- * @package sabretooth\ui
  */
 class assignment_view extends \cenozo\ui\widget\base_view
 {

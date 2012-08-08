@@ -3,7 +3,6 @@
  * phone_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: phone edit
  *
  * Edit a phone.
- * @package sabretooth\ui
  */
 class phone_edit extends base_edit
 {

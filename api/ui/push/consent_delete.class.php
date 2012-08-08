@@ -3,7 +3,6 @@
  * consent_delete.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: consent delete
- * 
- * @package sabretooth\ui
  */
 class consent_delete extends \cenozo\ui\push\base_delete
 {

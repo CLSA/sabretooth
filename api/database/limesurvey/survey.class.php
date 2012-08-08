@@ -3,7 +3,6 @@
  * survey.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Access to limesurvey's survey_SID tables.
- * 
- * @package sabretooth\database
  */
 class survey extends sid_record
 {

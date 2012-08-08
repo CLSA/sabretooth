@@ -3,7 +3,6 @@
  * phone_call_primary.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * pull: phone_call primary
- * 
- * @package sabretooth\ui
  */
 class phone_call_primary extends \cenozo\ui\pull\base_primary
 {

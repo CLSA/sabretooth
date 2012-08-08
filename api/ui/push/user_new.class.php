@@ -3,7 +3,6 @@
  * user_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: user new
  *
  * Create a new user.
- * @package sabretooth\ui
  */
 class user_new extends \cenozo\ui\push\user_new
 {

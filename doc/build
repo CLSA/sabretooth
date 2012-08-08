@@ -1,0 +1,17 @@
+#!/bin/sh
+# 
+# build_docs
+# 
+# Builds API documentation for Cenozo using phpDocumentor.
+# @author Patrick Emond <emondpd@mcmaster.ca>
+
+if [ ! -d "html" ]; then
+  # create html/ if id doesn't already exist
+  mkdir html
+else
+  # clean out html/ of old files
+  rm -rf html/*
+fi
+
+# generate the documentation
+apigen --config apigen.conf

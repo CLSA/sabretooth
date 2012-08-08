@@ -3,7 +3,6 @@
  * site_add_access.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget site add_access
- * 
- * @package sabretooth\ui
  */
 class site_add_access extends \cenozo\ui\widget\site_add_access
 {

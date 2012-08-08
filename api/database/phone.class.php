@@ -3,7 +3,6 @@
  * phone.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * phone: record
- *
- * @package sabretooth\database
  */
 class phone extends \cenozo\database\has_rank
 {

@@ -3,7 +3,6 @@
  * base_report.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * Base class for all report widgets
  * 
  * @abstract
- * @package sabretooth\ui
  */
 abstract class base_report extends \cenozo\ui\widget\base_report
 {

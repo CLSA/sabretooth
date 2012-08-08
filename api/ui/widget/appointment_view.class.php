@@ -3,7 +3,6 @@
  * appointment_view.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget appointment view
- * 
- * @package sabretooth\ui
  */
 class appointment_view extends base_appointment_view
 {

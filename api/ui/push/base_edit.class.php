@@ -3,7 +3,6 @@
  * base_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Extends Cenozo's base class for all record "edit" push operations.
- * 
- * @package sabretooth\ui
  */
 abstract class base_edit extends \cenozo\ui\push\base_edit
 {

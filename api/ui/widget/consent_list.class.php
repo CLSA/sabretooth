@@ -3,7 +3,6 @@
  * consent_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget consent list
- * 
- * @package sabretooth\ui
  */
 class consent_list extends \cenozo\ui\widget\base_list
 {

@@ -3,7 +3,6 @@
  * shift_template.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * shift_template: record
- *
- * @package sabretooth\database
  */
 class shift_template extends \cenozo\database\record
 {

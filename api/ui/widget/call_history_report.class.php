@@ -3,7 +3,6 @@
  * call_history.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget call history report
- * 
- * @package sabretooth\ui
  */
 class call_history_report extends base_report
 {

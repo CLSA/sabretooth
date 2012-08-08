@@ -3,7 +3,6 @@
  * shift_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: shift edit
  *
  * Edit a shift.
- * @package sabretooth\ui
  */
 class shift_edit extends \cenozo\ui\push\base_edit
 {

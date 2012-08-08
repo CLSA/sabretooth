@@ -3,7 +3,6 @@
  * note_delete.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,7 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Extends the parent class to send machine requests.
- * @package sabretooth\ui
  */
 class note_delete extends \cenozo\ui\push\note_delete
 {

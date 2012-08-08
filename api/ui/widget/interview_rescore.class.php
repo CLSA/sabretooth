@@ -3,7 +3,6 @@
  * interview_rescore.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget operator assignment
- * 
- * @package sabretooth\ui
  */
 class interview_rescore extends \cenozo\ui\widget\base_record
 {

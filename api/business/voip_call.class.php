@@ -3,7 +3,6 @@
  * voip_call.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\business
  * @filesource
  */
 
@@ -14,8 +13,6 @@ require_once SHIFT8_PATH.'/library/Shift8.php';
 
 /**
  * The details of a voip call.
- * 
- * @package sabretooth\business
  */
 class voip_call extends \cenozo\base_object
 {

@@ -3,7 +3,6 @@
  * participant_delete_availability.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: participant delete_availability
- * 
- * @package sabretooth\ui
  */
 class participant_delete_availability extends \cenozo\ui\push\base_delete_record
 {

@@ -3,7 +3,6 @@
  * source_withdraw_add.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget source_withdraw add
- * 
- * @package sabretooth\ui
  */
 class source_withdraw_add extends \cenozo\ui\widget\base_view
 {

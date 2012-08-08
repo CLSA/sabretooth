@@ -3,7 +3,6 @@
  * voip_manager.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\business
  * @filesource
  */
 
@@ -14,8 +13,6 @@ require_once SHIFT8_PATH.'/library/Shift8.php';
 
 /**
  * Manages VoIP communications.
- * 
- * @package sabretooth\business
  */
 class voip_manager extends \cenozo\singleton
 {
