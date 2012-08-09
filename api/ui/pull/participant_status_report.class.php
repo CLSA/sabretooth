@@ -51,9 +51,35 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
     $restrict_by_site = $this->get_argument( 'restrict_site_or_province' ) == 'Site' ? true : false;
     $restrict_source_id = $this->get_argument( 'restrict_source_id' );
+
     $this->add_title( 
       sprintf( 'Listing of categorical totals pertaining to '.
                'the %s interview', $db_qnaire->name ) ) ;
+
+    $restrict_start_date = $this->get_argument( 'restrict_start_date' );
+    $restrict_end_date = $this->get_argument( 'restrict_end_date' );
+    $now_datetime_obj = util::get_datetime_object();
+    $start_datetime_obj = NULL;
+    $end_datetime_obj = NULL;
+    
+    if( $restrict_start_date )
+    {
+      $start_datetime_obj = util::get_datetime_object( $restrict_start_date );
+      if( $start_datetime_obj > $now_datetime_obj )
+        $start_datetime_obj = clone $now_datetime_obj;
+    }
+    if( $restrict_end_date )
+    {
+      $end_datetime_obj = util::get_datetime_object( $restrict_end_date );
+      if( $end_datetime_obj > $now_datetime_obj )
+        $end_datetime_obj = clone $now_datetime_obj;
+    }
+    if( $restrict_start_date && $restrict_end_date && $end_datetime_obj < $start_datetime_obj )
+    {
+      $temp_datetime_obj = clone $start_datetime_obj;
+      $start_datetime_obj = clone $end_datetime_obj;
+      $end_datetime_obj = clone $temp_datetime_obj;
+    }
 
     $locale_totals = array(
       'Completed interview - Consent not received' => 0,
@@ -114,6 +140,12 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $participant_mod = lib::create( 'database\modifier' );
     if( $is_supervisor ) $participant_mod->where( 'site_id', '=', $session->get_site()->id );
     if( 0 < $restrict_source_id ) $participant_mod->where( 'source_id', '=', $restrict_source_id );
+    if( $restrict_start_date )
+      $participant_mod->where(
+        'participant.create_timestamp', '>=', $start_datetime_obj->format( 'Y-m-d' ) );
+    if( $restrict_end_date )
+      $participant_mod->where(
+        'participant.create_timestamp', '<=', $end_datetime_obj->format( 'Y-m-d' ) );
     $participant_list = $participant_class_name::select( $participant_mod );
     foreach( $participant_list as $db_participant )
     {
