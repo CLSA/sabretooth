@@ -1,17 +1,12 @@
 #!/bin/sh
 # 
-# build_docs
+# build
 # 
-# Builds API documentation for Cenozo using phpDocumentor.
+# Builds API documentation for Mastodon using apigen
 # @author Patrick Emond <emondpd@mcmaster.ca>
 
-if [ ! -d "html" ]; then
-  # create html/ if id doesn't already exist
-  mkdir html
-else
-  # clean out html/ of old files
-  rm -rf html/*
-fi
+# get the path to cenozo
+cenozo_path=`grep "\['path'\]\['CENOZO'\]" ../web/settings.local.ini.php | sed -e "s#.* = '\(.*\)';#\1#"`
 
 # generate the documentation
-apigen --config apigen.conf
+apigen --source "$cenozo_path/api,../api" --config apigen.conf
