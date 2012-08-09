@@ -3,7 +3,6 @@
  * age_group.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * age_group: record
- *
- * @package sabretooth\database
  */
 class age_group extends \cenozo\database\record {}
 

@@ -3,7 +3,6 @@
  * participant_sync.class.php
  * 
  * @author Dean Inglis <inglisd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * Base class for all list pull operations.
  * 
  * @abstract
- * @package sabretooth\ui
  */
 class participant_sync extends \cenozo\ui\pull
 {

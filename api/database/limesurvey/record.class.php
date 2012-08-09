@@ -3,7 +3,6 @@
  * record.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\database
  * @filesource
  */
 
@@ -13,8 +12,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * This is the abstract database table object for all limesurvey tables.
- * 
- * @package sabretooth\database
  */
 abstract class record extends \cenozo\database\record
 {

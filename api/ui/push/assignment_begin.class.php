@@ -3,7 +3,6 @@
  * assignment_begin.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: assignment begin
  *
  * Assigns a participant to an assignment.
- * @package sabretooth\ui
  */
 class assignment_begin extends \cenozo\ui\push
 {

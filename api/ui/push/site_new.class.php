@@ -3,7 +3,6 @@
  * site_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: site new
  *
  * Create a new site.
- * @package sabretooth\ui
  */
 class site_new extends \cenozo\ui\push\site_new
 {

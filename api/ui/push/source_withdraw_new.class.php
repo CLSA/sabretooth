@@ -3,7 +3,6 @@
  * source_withdraw_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: source_withdraw new
  *
  * Create a new source_withdraw.
- * @package sabretooth\ui
  */
 class source_withdraw_new extends \cenozo\ui\push\base_new
 {

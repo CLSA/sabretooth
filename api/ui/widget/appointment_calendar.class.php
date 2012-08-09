@@ -3,7 +3,6 @@
  * appointment_calendar.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget appointment calendar
- * 
- * @package sabretooth\ui
  */
 class appointment_calendar extends \cenozo\ui\widget\base_calendar
 {

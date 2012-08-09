@@ -3,7 +3,6 @@
  * consent_view.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget consent view
- * 
- * @package sabretooth\ui
  */
 class consent_view extends \cenozo\ui\widget\base_view
 {

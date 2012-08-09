@@ -3,7 +3,6 @@
  * queue.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * queue: record
- *
- * @package sabretooth\database
  */
 class queue extends \cenozo\database\record
 {

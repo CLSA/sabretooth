@@ -3,7 +3,6 @@
  * participant_tree.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget call attempts report
- * 
- * @package sabretooth\ui
  */
 class participant_tree_report extends base_report
 {

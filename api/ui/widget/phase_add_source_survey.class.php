@@ -3,7 +3,6 @@
  * phase_add_source_survey.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget phase add_source_survey
- * 
- * @package sabretooth\ui
  */
 class phase_add_source_survey extends \cenozo\ui\widget\base_add_record
 {

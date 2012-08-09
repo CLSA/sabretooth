@@ -3,7 +3,6 @@
  * availability_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: availability edit
  *
  * Edit a availability.
- * @package sabretooth\ui
  */
 class availability_edit extends base_edit
 {

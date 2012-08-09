@@ -3,7 +3,6 @@
  * session.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\business
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Extends Cenozo's session class with custom functionality
- *
- * @package sabretooth\business
  */
 class session extends \cenozo\business\session
 {

@@ -3,7 +3,6 @@
  * demographics_report.class.php
  * 
  * @author Dean Inglis <inglisd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget demographics report
- * 
- * @package sabretooth\ui
  */
 class demographics_report extends base_report
 {

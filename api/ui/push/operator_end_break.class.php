@@ -3,7 +3,6 @@
  * operator_end_break.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: operator end_break
  *
  * Start the current user on a break (away_time)
- * @package sabretooth\ui
  */
 class operator_end_break extends \cenozo\ui\push
 {

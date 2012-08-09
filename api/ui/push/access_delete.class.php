@@ -3,7 +3,6 @@
  * access_delete.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: access delete
- * 
- * @package sabretooth\ui
  */
 class access_delete extends \cenozo\ui\push\access_delete
 {

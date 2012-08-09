@@ -3,7 +3,6 @@
  * user_view.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget user view
- * 
- * @package sabretooth\ui
  */
 class user_view extends \cenozo\ui\widget\user_view
 {

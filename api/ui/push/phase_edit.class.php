@@ -3,7 +3,6 @@
  * phase_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: phase edit
  *
  * Edit a phase.
- * @package sabretooth\ui
  */
 class phase_edit extends \cenozo\ui\push\base_edit
 {

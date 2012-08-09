@@ -3,7 +3,6 @@
  * phase.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * phase: record
- *
- * @package sabretooth\database
  */
 class phase extends \cenozo\database\has_rank
 {

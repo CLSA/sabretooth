@@ -3,7 +3,6 @@
  * participant_sync.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: participant sync
  *
  * Syncs participant information between Sabretooth and Mastodon
- * @package sabretooth\ui
  */
 class participant_sync extends \cenozo\ui\push
 {

@@ -3,7 +3,6 @@
  * self_set_password.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -15,7 +14,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * 
  * Changes the current user's password.
  * Arguments must include 'password'.
- * @package sabretooth\ui
  */
 class self_set_password extends \cenozo\ui\push\self_set_password
 {

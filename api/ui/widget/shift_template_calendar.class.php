@@ -3,7 +3,6 @@
  * shift_template_calendar.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget shift template calendar
- * 
- * @package sabretooth\ui
  */
 class shift_template_calendar extends \cenozo\ui\widget\base_calendar
 {

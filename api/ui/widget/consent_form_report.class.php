@@ -3,7 +3,6 @@
  * consent_form_report.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget consent form report
- * 
- * @package sabretooth\ui
  */
 class consent_form_report extends base_report
 {

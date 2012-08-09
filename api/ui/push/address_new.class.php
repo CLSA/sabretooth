@@ -3,7 +3,6 @@
  * address_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: address new
  *
  * Create a new address.
- * @package sabretooth\ui
  */
 class address_new extends base_new
 {

@@ -3,7 +3,6 @@
  * participant_delete_address.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: participant delete_address
- * 
- * @package sabretooth\ui
  */
 class participant_delete_address extends \cenozo\ui\push\base_delete_record
 {

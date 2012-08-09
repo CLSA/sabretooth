@@ -1,4 +1,19 @@
 ====================================================================================================
+1.1.6
+====================================================================================================
+* Listen in to phone calls
+  - Supervisors can now listen-in to their operator's live phone calls
+  - The assignment list (as well as the "open assignment list") has a magnifying glass to connect to
+    a call
+  - Viewing an assignment also has a "listen in" button (when the assignment has a call which is
+    active)
+
+* Calendar date persistence
+  - Calendars don't reset to today's date after changing event
+
+* Various bug fixes
+
+====================================================================================================
 1.1.5
 ====================================================================================================
 

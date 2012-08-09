@@ -3,7 +3,6 @@
  * opal_instance_view.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget opal_instance view
- * 
- * @package sabretooth\ui
  */
 class opal_instance_view extends \cenozo\ui\widget\base_view
 {
