@@ -200,14 +200,6 @@ class voip_manager extends \cenozo\singleton
       throw lib::create( 'exception\voip', $this->manager->getLastError(), __METHOD__ );
     }
 
-    /*
-    // originate call using ChanSpy application
-    $peer = lib::create( 'business\session' )->get_user()->name;
-    $channel = sprintf( 'Local/%s@spying', $peer );
-    $options = sprintf( $voip_call->get_channel().',q' ); // ,dqw to whisper
-    if( !$this->manager->originate( $channel, false, false, false, 'ChanSpy', $options ) )
-      throw lib::create( 'exception\voip', $this->manager->getLastError(), __METHOD__ );
-    */
     // rebuild the call list and return (what should be) the peer's only call
     $this->rebuild_call_list();
     log::debug( $this->call_list );
