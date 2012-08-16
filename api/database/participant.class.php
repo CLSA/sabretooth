@@ -15,33 +15,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class participant extends \cenozo\database\has_note
 {
   /**
-   * Get the participant's most recent assignment.
-   * This will return the participant's current assignment, or the most recently closed assignment
-   * if the participant is not currently assigned.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return assignment
-   * @access public
-   */
-  public function get_last_assignment()
-  {
-    // check the primary key value
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to query participant with no id.' );
-      return NULL;
-    }
-    
-    // need custom SQL
-    $database_class_name = lib::get_class_name( 'database\database' );
-    $assignment_id = static::db()->get_one(
-      sprintf( 'SELECT assignment_id '.
-               'FROM participant_last_assignment '.
-               'WHERE participant_id = %s',
-               $database_class_name::format_string( $this->id ) ) );
-    return $assignment_id ? lib::create( 'database\assignment', $assignment_id ) : NULL;
-  }
-
-  /**
    * Get the participant's most recent, closed assignment.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return assignment
@@ -252,12 +225,13 @@ class participant extends \cenozo\database\has_note
         '           ) '.
         '       ) AS start_qnaire_date '.
         'FROM participant '.
-        'LEFT JOIN participant_last_assignment '.
-        'ON participant.id = participant_last_assignment.participant_id '.
-        'LEFT JOIN assignment '.
-        'ON participant_last_assignment.assignment_id = assignment.id '.
+
         'LEFT JOIN interview AS current_interview '.
         'ON current_interview.participant_id = participant.id '.
+        'LEFT JOIN interview_last_assignment '.
+        'ON current_interview.id = interview_last_assignment.interview_id '.
+        'LEFT JOIN assignment '.
+        'ON interview_last_assignment.assignment_id = assignment.id '.
         'LEFT JOIN qnaire AS current_qnaire '.
         'ON current_qnaire.id = current_interview.qnaire_id '.
         'LEFT JOIN qnaire AS next_qnaire '.

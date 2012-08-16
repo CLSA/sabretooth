@@ -484,12 +484,12 @@ class queue extends \cenozo\database\record
           'ON participant.id = participant_last_consent.participant_id',
           'LEFT JOIN consent '.
           'ON consent.id = participant_last_consent.consent_id',
-          'LEFT JOIN participant_last_assignment '.
-          'ON participant.id = participant_last_assignment.participant_id',
-          'LEFT JOIN assignment '.
-          'ON participant_last_assignment.assignment_id = assignment.id',
           'LEFT JOIN interview AS current_interview '.
           'ON current_interview.participant_id = participant.id',
+          'LEFT JOIN interview_last_assignment '.
+          'ON current_interview.id = interview_last_assignment.interview_id '.
+          'LEFT JOIN assignment '.
+          'ON interview_last_assignment.assignment_id = assignment.id',
           'LEFT JOIN qnaire AS current_qnaire '.
           'ON current_qnaire.id = current_interview.qnaire_id',
           'LEFT JOIN qnaire AS next_qnaire '.
