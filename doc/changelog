@@ -5,6 +5,8 @@
   - This report now has a start/end date parameters which restricts the list based on when the
     participant was created in Sabretooth
 
+* Adding quotas (full list/view/add/delete functionality)
+
 * Various bug fixes
 
 ====================================================================================================
