@@ -16,7 +16,8 @@
       $( "#{{ widget.compound }}_download" ).click( function () {
         error_dialog( 'Not Available',
           'The "sourcing required" report has been disabled for design reasons.  Please speak to ' +
-          'the development team if you need it re-activated.' );
+          'the development team if you need it re-activated.',
+          true );
         return;
       } );
     } );
