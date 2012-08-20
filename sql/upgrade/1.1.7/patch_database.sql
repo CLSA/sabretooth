@@ -8,3 +8,4 @@ SOURCE participant_phone_call_status_count.sql
 SOURCE participant_last_appointment.sql
 SOURCE participant_last_consent.sql
 SOURCE quota.sql
+SOURCE queue.sql

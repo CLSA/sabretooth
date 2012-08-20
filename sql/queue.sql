@@ -234,6 +234,18 @@ parent_queue_id = (
 description = "Participants who are eligible to answer questionnaires.";
 
 INSERT INTO queue SET
+name = "quota",
+title = "Quota Disabled",
+rank = NULL,
+qnaire_specific = false,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "eligible" ) AS tmp ),
+description = "Participants who belong to a quota which has been disabled";
+
+INSERT INTO queue SET
 name = "qnaire",
 title = "Questionnaire",
 rank = NULL,

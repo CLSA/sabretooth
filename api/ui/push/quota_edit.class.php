@@ -41,6 +41,25 @@ class quota_edit extends \cenozo\ui\push\base_edit
     $this->set_machine_request_url( MASTODON_URL );
   }
 
+  /** 
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
+  {
+    parent::setup();
+
+    if( $this->get_machine_request_enabled() )
+    {   
+      $columns = $this->get_argument( 'columns', array() );
+
+      // don't send certain information
+      if( array_key_exists( 'disabled', $columns ) ) $this->set_machine_request_enabled( false );
+    }   
+  }
+
   /**
    * Converts primary keys to unique keys in operation arguments.
    * All converted arguments will appear in the array under a 'noid' key.

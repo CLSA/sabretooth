@@ -43,6 +43,8 @@ class quota_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'gender', 'enum', 'Gender' );
     $this->add_item( 'age_group_id', 'enum', 'Age Group' );
     $this->add_item( 'population', 'number', 'Population' );
+    $this->add_item( 'disabled', 'boolean', 'Disabled',
+      'Whether participants belonging to this quota are to be removed from the queues.' );
   }
 
   /**
@@ -78,6 +80,7 @@ class quota_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'gender', $this->get_record()->gender, true, $genders );
     $this->set_item( 'age_group_id', $this->get_record()->age_group_id, true, $age_groups );
     $this->set_item( 'population', $this->get_record()->population );
+    $this->set_item( 'disabled', $this->get_record()->disabled, true );
   }
 }
 ?>

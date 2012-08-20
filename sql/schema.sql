@@ -845,6 +845,7 @@ CREATE  TABLE IF NOT EXISTS `quota` (
   `gender` ENUM('male','female') NOT NULL ,
   `age_group_id` INT UNSIGNED NOT NULL ,
   `population` INT NOT NULL ,
+  `disabled` TINYINT(1) NOT NULL DEFAULT false ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_region_id` (`region_id` ASC) ,
   INDEX `fk_age_group_id` (`age_group_id` ASC) ,

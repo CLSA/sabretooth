@@ -75,6 +75,9 @@ class quota_new extends \cenozo\ui\push\base_new
     $args['columns']['cohort'] =
       lib::create( 'business\setting_manager' )->get_setting( 'general', 'cohort' );
 
+    // remove the disabled column
+    unset( $args['columns']['disabled'] );
+
     return $args;
   }
 }
