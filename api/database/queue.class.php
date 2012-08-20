@@ -57,7 +57,6 @@ class queue extends \cenozo\database\record
     
     // finish the queue list
     $queue_list = array_merge( $queue_list, array(
-      'quota',
       'eligible',
       'qnaire',
       'restricted',
@@ -69,6 +68,7 @@ class queue extends \cenozo\database\record
       'assignable appointment',
       'missed appointment',
       'no appointment',
+      'quota disabled',
       'new participant',
       'new participant outside calling time',
       'new participant within calling time',
@@ -609,21 +609,10 @@ class queue extends \cenozo\database\record
         ')';
       return $parts;
     }
-    else if( 'quota' == $queue )
-    {
-      $parts = self::get_query_parts( 'eligible' );
-      // who belong to a quota which is disabled
-      $parts['join'][] = $quota_join;
-      $parts['where'][] = 'quota.disabled = true';
-      return $parts;
-    }
     else if( 'qnaire' == $queue )
     {
       $parts = self::get_query_parts( 'eligible' );
       $parts['where'][] = $current_qnaire_id.' <QNAIRE_TEST>';
-      // who belong to a quota which is not disabled or doesn't exist
-      $parts['join'][] = $quota_join;
-      $parts['where'][] = '( quota.disabled IS NULL OR quota.disabled = true )';
       return $parts;
     }
     else if( 'restricted' == $queue )
@@ -727,9 +716,20 @@ class queue extends \cenozo\database\record
       $parts['where'][] = 'appointment.id IS NULL';
       return $parts;
     }
+    else if( 'quota disabled' == $queue )
+    {
+      $parts = self::get_query_parts( 'no appointment' );
+      // who belong to a quota which is disabled
+      $parts['join'][] = $quota_join;
+      $parts['where'][] = 'quota.disabled = true';
+      return $parts;
+    }
     else if( 'new participant' == $queue )
     {
       $parts = self::get_query_parts( 'no appointment' );
+      // who belong to a quota which is not disabled or doesn't exist
+      $parts['join'][] = $quota_join;
+      $parts['where'][] = '( quota.disabled IS NULL OR quota.disabled = false )';
       // If there is a start_qnaire_date then the current qnaire has never been started,
       // the exception is for participants who have never been assigned
       $parts['where'][] =
@@ -779,6 +779,9 @@ class queue extends \cenozo\database\record
     else if( 'old participant' == $queue )
     {
       $parts = self::get_query_parts( 'no appointment' );
+      // who belong to a quota which is not disabled or doesn't exist
+      $parts['join'][] = $quota_join;
+      $parts['where'][] = '( quota.disabled IS NULL OR quota.disabled = false )';
       // add the last phone call's information
       $parts['from'][] = 'phone_call';
       $parts['from'][] = 'assignment_last_phone_call';

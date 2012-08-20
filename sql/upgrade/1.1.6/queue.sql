@@ -262,18 +262,6 @@ CREATE PROCEDURE patch_queue()
       description = "Participants who are eligible to answer questionnaires.";
 
       INSERT INTO queue SET
-      name = "quota",
-      title = "Quota Disabled",
-      rank = NULL,
-      qnaire_specific = false,
-      parent_queue_id = (
-        SELECT id FROM(
-          SELECT id
-          FROM queue
-          WHERE name = "eligible" ) AS tmp ),
-      description = "Participants who belong to a quota which has been disabled";
-
-      INSERT INTO queue SET
       name = "qnaire",
       title = "Questionnaire",
       rank = NULL,
@@ -393,6 +381,18 @@ CREATE PROCEDURE patch_queue()
           FROM queue
           WHERE name = "not assigned" ) AS tmp ),
       description = "Participants who do not have an appointment.";
+
+      INSERT INTO queue SET
+      name = "quota disabled",
+      title = "Participant's quota is disabled",
+      rank = NULL,
+      qnaire_specific = true,
+      parent_queue_id = (
+        SELECT id FROM(
+          SELECT id
+          FROM queue
+          WHERE name = "no appointment" ) AS tmp ),
+      description = "Participants who belong to a quota which has been disabled";
 
       INSERT INTO queue SET
       name = "new participant",
@@ -1496,16 +1496,6 @@ CREATE PROCEDURE patch_queue()
       UPDATE assignment SET queue_id = 32 WHERE queue_id = 31;
       UPDATE assignment SET queue_id = 31 WHERE queue_id = 30;
       UPDATE assignment SET queue_id = 30 WHERE queue_id = 29;
-      UPDATE assignment SET queue_id = 29 WHERE queue_id = 28;
-      UPDATE assignment SET queue_id = 28 WHERE queue_id = 27;
-      UPDATE assignment SET queue_id = 27 WHERE queue_id = 26;
-      UPDATE assignment SET queue_id = 26 WHERE queue_id = 25;
-      UPDATE assignment SET queue_id = 25 WHERE queue_id = 24;
-      UPDATE assignment SET queue_id = 24 WHERE queue_id = 23;
-      UPDATE assignment SET queue_id = 23 WHERE queue_id = 22;
-      UPDATE assignment SET queue_id = 22 WHERE queue_id = 21;
-      UPDATE assignment SET queue_id = 21 WHERE queue_id = 20;
-      UPDATE assignment SET queue_id = 20 WHERE queue_id = 19;
 
       -- add back assignment's foreign key to the queue table
       ALTER TABLE assignment
