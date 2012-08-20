@@ -61,7 +61,10 @@ class quota_add extends \cenozo\ui\widget\base_view
 
     // create enum arrays
     $regions = array();
-    foreach( $region_class_name::select() as $db_region )
+    $region_mod = lib::create( 'database\modifier' );
+    $region_mod->order( 'country' );
+    $region_mod->order( 'name' );
+    foreach( $region_class_name::select( $region_mod ) as $db_region )
       $regions[$db_region->id] = $db_region->name;
     $genders = $quota_class_name::get_enum_values( 'gender' );
     $genders = array_combine( $genders, $genders );

@@ -6,6 +6,7 @@
     participant was created in Sabretooth
 
 * Adding quotas (full list/view/add/delete functionality)
+  - Quotas are application linked, so changes made in Sabretooth will be changed in Mastodon as well
 
 * Various bug fixes
 
