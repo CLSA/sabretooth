@@ -44,11 +44,16 @@ class voip_spy extends \cenozo\ui\push
       throw lib::create( 'exception\notice',
         'Unable to find operator to connect to.', __METHOD__ );
 
-    $this->voip_call = lib::create( 'business\voip_manager' )->get_call( $db_user );
+    $voip_manager = lib::create( 'business\voip_manager' );
+    $this->voip_call = $voip_manager->get_call( $db_user );
     if( is_null( $this->voip_call ) )
       throw lib::create( 'exception\notice',
         sprintf( 'Cannot listen in to user "%s", not currently in a call.', $db_user->name ),
         __METHOD__ );
+
+    if( !is_null( $voip_manager->get_call() ) )
+      throw lib::create( 'exception\notice',
+        'You must hang up before you can listen in on this call.', __METHOD__ );
   }
 
   /**
