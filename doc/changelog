@@ -1,5 +1,5 @@
 ====================================================================================================
-1.1.7
+1.1.6
 ====================================================================================================
 * Participant status report restriction by participant synch date
   - This report now has a start/end date parameters which restricts the list based on when the
@@ -12,11 +12,6 @@
   - Quotas include a "disabled" column which, when set to true, removes those participants from the
     calling queues
 
-* Various bug fixes
-
-====================================================================================================
-1.1.6
-====================================================================================================
 * Listen in to phone calls
   - Supervisors can now listen-in to their operator's live phone calls
   - The assignment list (as well as the "open assignment list") has a magnifying glass to connect to
