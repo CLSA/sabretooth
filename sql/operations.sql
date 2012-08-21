@@ -63,6 +63,22 @@ VALUES( "widget", "availability", "list", true, "Lists a participant's availabil
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "availability", "primary", true, "Retrieves base availability information." );
 
+-- away_time
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "away_time", "delete", true, "Removes an away time from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "away_time", "edit", true, "Edits a away time's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "away_time", "new", true, "Add a new away time to the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "away_time", "add", true, "View a form for creating a new away time." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "away_time", "view", true, "View a away time's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "away_time", "list", true, "List away times in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "away_time", "primary", true, "Retrieves base away time information." );
+
 -- calendar
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "appointment", "calendar", true, "Shows appointments in a calendar format." );

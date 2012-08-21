@@ -1,6 +1,16 @@
 ====================================================================================================
+1.1.7
+====================================================================================================
+
+* Supervisors now have full list/view/add/delete access to operator away times
+  - existing away times user, start and end times can be changed
+  - new away times can be added to users with operator access to the supervisor's site
+  - away times must always have no operator activity between the start/end times
+
+====================================================================================================
 1.1.6
 ====================================================================================================
+
 * Participant status report restriction by participant synch date
   - This report now has a start/end date parameters which restricts the list based on when the
     participant was created in Sabretooth
