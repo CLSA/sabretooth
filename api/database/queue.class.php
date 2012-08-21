@@ -547,8 +547,6 @@ class queue extends \cenozo\database\record
     else if( 'ineligible' == $queue )
     {
       $parts = self::get_query_parts( 'all' );
-      // current_qnaire_id is the either the next qnaire to work on or the one in progress
-      $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
       // ineligible means either inactive or with a "final" status
       $parts['where'][] =
         '('.
