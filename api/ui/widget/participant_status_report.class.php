@@ -25,6 +25,7 @@ class participant_status_report extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'participant_status', $args );
+    $this->use_cache = true;
   }
 
   /**

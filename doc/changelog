@@ -7,6 +7,9 @@
   - new away times can be added to users with operator access to the supervisor's site
   - away times must always have no operator activity between the start/end times
 
+* Adding caching ability to select reports
+  - cached reports are generated overnight to save processing and wait time
+
 ====================================================================================================
 1.1.6
 ====================================================================================================
