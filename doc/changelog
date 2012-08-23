@@ -10,6 +10,11 @@
 * Adding caching ability to select reports
   - cached reports are generated overnight to save processing and wait time
 
+* Changing participant status report to have new "Breakdown by" and "Province" options
+  - breakdown includes old "site or province" options and the new "quota" option
+  - breaking down by quota organizes the report into quota categories (gender & age group)
+  - province option restricts to participants who's primary address is in that province
+
 ====================================================================================================
 1.1.6
 ====================================================================================================
