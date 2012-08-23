@@ -77,6 +77,13 @@ class assignment_begin extends \cenozo\ui\push
         __METHOD__ );
     }
 
+    // determine which way to order the queues
+    $reverse_sort_time = $setting_manager->get_setting( 'queue', 'reverse sort time' );
+    $now_datetime_obj = util::get_datetime_object();
+    $weekday = 6 > $now_datetime_obj->format( 'N' );
+    $age_desc = (bool)
+      $now_datetime_obj->diff( util::get_datetime_object( $reverse_sort_time ) )->invert;
+
     // Search through every queue for a new assignment until one is found.
     // This search has to be done one qnaire at a time
     $db_origin_queue = NULL;
@@ -96,7 +103,10 @@ class assignment_begin extends \cenozo\ui\push
         if( $setting_manager->get_setting( 'queue state', $db_queue->name ) )
         {
           $participant_mod = lib::create( 'database\modifier' );
+          // on a weekday sort the queue by age, the order defined by the reverse sort time setting
+          if( $weekday ) $participant_mod->order( 'date_of_birth', $age_desc );
           $participant_mod->limit( 1 );
+
           $db_queue->set_site( $session->get_site() );
           $db_queue->set_qnaire( $db_qnaire );
           $participant_list = $db_queue->get_participant_list( $participant_mod );

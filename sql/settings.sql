@@ -8,6 +8,11 @@ INSERT INTO setting( category, name, type, value, description )
 VALUES( "voip", "survey without sip", "boolean", "false",
 "Whether to allow operators to fill out surveys without an active SIP connection." );
 
+-- queue
+INSERT INTO setting( category, name, type, value, description )
+VALUES( "queue", "reverse sort time", "string", "17:00",
+"The time when the weekday calling queue sorting is reversed (from youngest to oldest)." );
+
 -- queue state
 INSERT INTO setting( category, name, type, value, description )
 SELECT "queue state", name, "boolean", "true",

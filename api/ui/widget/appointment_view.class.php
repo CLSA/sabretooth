@@ -42,6 +42,7 @@ class appointment_view extends base_appointment_view
     parent::prepare();
     
     // add items to the view
+    $this->add_item( 'uid', 'constant', 'UID' );
     $this->add_item( 'phone_id', 'enum', 'Phone Number',
       'Select a specific phone number to call for the appointment, or leave this field blank if '.
       'any of the participant\'s phone numbers can be called.' );
@@ -63,6 +64,8 @@ class appointment_view extends base_appointment_view
   {
     $db_assignment = $this->get_record()->get_assignment();
 
+    $operation_class_name = lib::get_class_name( 'database\operation' );
+
     // don't allow editing if the appointment has been assigned
     if( true == $this->get_editable() ) $this->set_editable( is_null( $db_assignment ) );
 
@@ -70,13 +73,10 @@ class appointment_view extends base_appointment_view
 
     $db_participant = lib::create( 'database\participant', $this->get_record()->participant_id );
   
-    // determine the time difference
-    $db_phone = $this->get_record()->get_phone();
-
-    // go with the phone's address if there is one, and the first address if not
-    $db_address = is_null( $db_phone )
-                ? $db_participant->get_first_address()
-                : $db_phone->get_address();
+    // determine the time difference: use the first address unless there is a phone number with
+    // an address
+    $db_address = is_null( $db_phone ) ? NULL : $db_phone->get_address();
+    if( is_null( $db_address ) ) $db_address = $db_participant->get_first_address();
     $time_diff = is_null( $db_address ) ? NULL : $db_address->get_time_diff();
 
     // need to add the participant's timezone information as information to the date item
@@ -127,6 +127,7 @@ class appointment_view extends base_appointment_view
     $types = array_combine( $types, $types );
 
     // set the view's items
+    $this->set_item( 'uid', $db_participant->uid );
     $this->set_item( 'phone_id', $this->get_record()->phone_id, false, $phones );
     $this->set_item( 'datetime', $this->get_record()->datetime, true );
     $this->set_item( 'state', $this->get_record()->get_state(), false );
@@ -134,6 +135,16 @@ class appointment_view extends base_appointment_view
 
     // hide the calendar if requested to
     $this->set_variable( 'hide_calendar', $this->get_argument( 'hide_calendar', false ) );
+    $this->set_variable( 'participant_id', $db_participant->id );
+
+    // add an action to view the participant's details
+    $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'view' );
+    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+      $this->add_action(
+        'view_participant',
+        'View Participant',
+        NULL,
+        'View the participant\'s details' );
   }
 }
 ?>

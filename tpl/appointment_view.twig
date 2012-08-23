@@ -7,6 +7,20 @@
  #}
 {% extends "base_view.twig" %}
 
+{% block javascript %}
+  
+  {{ parent() }}
+  <script type="text/javascript">
+    $( function() {
+      // view participant button
+      $( "#{{ widget.full }}__view_participant" ).click( function() {
+        slot_load( {{ slot }}, "participant", "view", { id: {{ participant_id }} } );
+      } );
+    } );
+  </script>
+
+{% endblock javascript %}
+
 {% block record %}
   
   {{ parent() }}

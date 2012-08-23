@@ -44,6 +44,7 @@ class mailout_required_report extends base_report
     $this->add_restriction( 'site' );
     $this->add_restriction( 'mailout' );
     $this->add_restriction( 'qnaire' );
+    $this->add_restriction( 'source' );
 
     $this->set_variable( 'description',
       'This report lists all participants (or proxies) who require an information package'.
