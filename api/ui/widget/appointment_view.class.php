@@ -73,13 +73,10 @@ class appointment_view extends base_appointment_view
 
     $db_participant = lib::create( 'database\participant', $this->get_record()->participant_id );
   
-    // determine the time difference
-    $db_phone = $this->get_record()->get_phone();
-
-    // go with the phone's address if there is one, and the first address if not
-    $db_address = is_null( $db_phone )
-                ? $db_participant->get_first_address()
-                : $db_phone->get_address();
+    // determine the time difference: use the first address unless there is a phone number with
+    // an address
+    $db_address = is_null( $db_phone ) ? NULL : $db_phone->get_address();
+    if( is_null( $db_address ) ) $db_address = $db_participant->get_first_address();
     $time_diff = is_null( $db_address ) ? NULL : $db_address->get_time_diff();
 
     // need to add the participant's timezone information as information to the date item
