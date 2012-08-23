@@ -3,7 +3,6 @@
  * assignment_view.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget assignment view
- * 
- * @package sabretooth\ui
  */
 class assignment_view extends \cenozo\ui\widget\base_view
 {
@@ -65,6 +62,8 @@ class assignment_view extends \cenozo\ui\widget\base_view
   protected function setup()
   {
     parent::setup();
+
+    $operation_class_name = lib::get_class_name( 'database\operation' );
        
     $db_participant = $this->get_record()->get_interview()->get_participant();
     $participant = sprintf( '%s, %s', $db_participant->last_name, $db_participant->first_name );
@@ -90,7 +89,6 @@ class assignment_view extends \cenozo\ui\widget\base_view
     catch( \cenozo\exception\permission $e ) {}
 
     // add an action to view the participant's details
-    $operation_class_name = lib::get_class_name( 'database\operation' );
     $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'view' );
     if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
       $this->add_action(
@@ -99,6 +97,30 @@ class assignment_view extends \cenozo\ui\widget\base_view
         NULL,
         'View the participant\'s details' );
     $this->set_variable( 'participant_id', $db_participant->id );
+
+    // add a listen-in action to the active call for this assignment
+    $db_assignment = $this->get_record();
+    $db_user = $db_assignment->get_user();
+    $db_operation = $operation_class_name::get_operation( 'push', 'voip', 'spy' );
+    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+    { // if the user is allowed to spy
+      $phone_call_mod = lib::create( 'database\modifier' );
+      $phone_call_mod->where( 'end_datetime', '=', NULL );
+      $open_call_count = $db_assignment->get_phone_call_count( $phone_call_mod );
+      if( 0 < $open_call_count )
+      { // if this assignment has an open call
+        $voip_manager = lib::create( 'business\voip_manager' );
+        if( $voip_manager->get_sip_enabled() && $voip_manager->get_call( $db_user ) )
+        { // and if sip is enabled and the user has an active call
+          $this->add_action(
+            'voip_spy',
+            'Listen In',
+            NULL,
+            'Listen in on the phone call currently in progress for this assignment.' );
+        }
+      }
+    }
+    $this->set_variable( 'user_id', $db_user->id );
   }
   
   /**

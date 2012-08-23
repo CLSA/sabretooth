@@ -3,7 +3,6 @@
  * self_shortcuts.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget self shortcuts
- * 
- * @package sabretooth\ui
  */
 class self_shortcuts extends \cenozo\ui\widget\self_shortcuts
 {

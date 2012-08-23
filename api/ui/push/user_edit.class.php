@@ -3,7 +3,6 @@
  * user_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: user edit
  *
  * Edit a user.
- * @package sabretooth\ui
  */
 class user_edit extends \cenozo\ui\push\user_edit
 {

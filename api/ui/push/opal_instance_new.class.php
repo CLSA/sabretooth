@@ -3,7 +3,6 @@
  * opal_instance_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: opal_instance new
  *
  * Create a new opal_instance.
- * @package sabretooth\ui
  */
 class opal_instance_new extends \cenozo\ui\push\base_new
 {

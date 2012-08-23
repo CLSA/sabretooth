@@ -3,7 +3,6 @@
  * source_withdraw_primary.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * pull: source_withdraw primary
- * 
- * @package sabretooth\ui
  */
 class source_withdraw_primary extends \cenozo\ui\pull\base_primary
 {

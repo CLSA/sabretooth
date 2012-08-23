@@ -3,7 +3,6 @@
  * participant_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: participant new
  *
  * Create a new participant.
- * @package sabretooth\ui
  */
 class participant_new extends base_new
 {

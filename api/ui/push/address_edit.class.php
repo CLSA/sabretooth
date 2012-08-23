@@ -3,7 +3,6 @@
  * address_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: address edit
  *
  * Edit a address.
- * @package sabretooth\ui
  */
 class address_edit extends base_edit
 {

@@ -3,7 +3,6 @@
  * shift_add.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget shift add
- * 
- * @package sabretooth\ui
  */
 class shift_add extends \cenozo\ui\widget\base_view
 {

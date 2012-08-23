@@ -3,7 +3,6 @@
  * site_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: site edit
  *
  * Edit a site.
- * @package sabretooth\ui
  */
 class site_edit extends \cenozo\ui\push\site_edit
 {

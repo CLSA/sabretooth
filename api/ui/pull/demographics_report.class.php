@@ -3,7 +3,6 @@
  * demographics_report.class.php
  * 
  * @author Dean Inglis <inglisd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * Participant status report data.
  * 
  * @abstract
- * @package sabretooth\ui
  */
 class demographics_report extends \cenozo\ui\pull\base_report
 {

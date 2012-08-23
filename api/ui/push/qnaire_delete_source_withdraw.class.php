@@ -3,7 +3,6 @@
  * qnaire_delete_source_withdraw.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: qnaire delete_source_withdraw
- * 
- * @package sabretooth\ui
  */
 class qnaire_delete_source_withdraw extends \cenozo\ui\push\base_delete_record
 {

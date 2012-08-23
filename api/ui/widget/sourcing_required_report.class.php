@@ -3,7 +3,6 @@
  * sourcing_required_report.class.php
  * 
  * @author Dean Inglis <inglisd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget sourcing required report
- * 
- * @package sabretooth\ui
  */
 class sourcing_required_report extends base_report
 {

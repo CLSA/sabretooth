@@ -3,7 +3,6 @@
  * survey_manager.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\business
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * The survey manager is responsible for business-layer survey functionality.
- *
- * @package sabretooth\business
  */
 class survey_manager extends \cenozo\singleton
 {

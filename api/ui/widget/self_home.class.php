@@ -3,7 +3,6 @@
  * self_home.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget self home
- * 
- * @package sabretooth\ui
  */
 class self_home extends \cenozo\ui\widget\self_home
 {

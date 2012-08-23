@@ -3,7 +3,6 @@
  * phase_view.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget phase view
- * 
- * @package sabretooth\ui
  */
 class phase_view extends \cenozo\ui\widget\base_view
 {

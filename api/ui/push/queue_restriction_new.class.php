@@ -3,7 +3,6 @@
  * queue_restriction_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: queue_restriction new
  *
  * Create a new queue_restriction.
- * @package sabretooth\ui
  */
 class queue_restriction_new extends \cenozo\ui\push\base_new
 {

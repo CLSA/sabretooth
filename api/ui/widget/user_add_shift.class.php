@@ -3,7 +3,6 @@
  * user_add_shift.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget user add_shift
- * 
- * @package sabretooth\ui
  */
 class user_add_shift extends \cenozo\ui\widget\base_add_record
 {

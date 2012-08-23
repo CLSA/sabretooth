@@ -3,7 +3,6 @@
  * recording.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * recording: record
- *
- * @package sabretooth\database
  */
 class recording extends \cenozo\database\record
 {

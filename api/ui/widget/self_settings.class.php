@@ -3,7 +3,6 @@
  * self_settings.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget self settings
- * 
- * @package sabretooth\ui
  */
 class self_settings extends \cenozo\ui\widget\self_settings
 {

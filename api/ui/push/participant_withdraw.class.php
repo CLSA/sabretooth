@@ -3,7 +3,6 @@
  * participant_withdraw.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: participant withdraw
  *
  * Edit a participant.
- * @package sabretooth\ui
  */
 class participant_withdraw extends \cenozo\ui\push\base_record
 {

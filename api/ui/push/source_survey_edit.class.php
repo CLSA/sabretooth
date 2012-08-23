@@ -3,7 +3,6 @@
  * source_survey_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: source_survey edit
  *
  * Edit a source_survey.
- * @package sabretooth\ui
  */
 class source_survey_edit extends \cenozo\ui\push\base_edit
 {

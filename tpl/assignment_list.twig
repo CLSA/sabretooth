@@ -9,11 +9,46 @@
 
 {% from 'macros.twig' import note_widget %}
 
+{% block javascript %}
+
+  {{ parent() }}
+  {% if allow_spy %}
+    <script type="text/javascript">
+      $( function() {
+        // make voip spy button icon
+        $( "button.{{ widget.full }}_voip_spy" ).button( {
+          text: false,
+          icons: { primary: "ui-icon-search" }
+        } ).click( function() {
+          var args = new Object();
+          var id_string = $(this).attr( "id" );
+          args.user_id = parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) );
+          // place the call and refresh the status widget
+          if( ajax_push( "voip", "spy", args ) )
+          {
+            slot_refresh( "status" );
+            slot_refresh( "shortcuts" );
+          }
+        } );
+      } );
+    </script>
+  {% endif %}
+
+{% endblock javascript %}
+
 {% block header_button_columns %}
+  {% if allow_spy %}<th width="1%"></th>{% endif %}
   <th width="1%"></th>
 {% endblock header_button_columns %}
 
 {% block button_columns %}
+  {% if allow_spy %}
+    <td>
+      <button class="{{ widget.full }}_voip_spy"
+              {{ row.columns['assignment.allow_spy'] ? '' : 'disabled' }}
+              id="{{ widget.full }}_voip_spy_{{ row.columns['assignment.user_id'] }}">listen</button>
+    </td>
+  {% endif %}
   <td>{{ note_widget( widget.full,
                       "assignment",
                       row.id,

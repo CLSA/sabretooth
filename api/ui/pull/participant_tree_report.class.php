@@ -3,7 +3,6 @@
  * participant_tree.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * Consent form report data.
  * 
  * @abstract
- * @package sabretooth\ui
  */
 class participant_tree_report extends \cenozo\ui\pull\base_report
 {

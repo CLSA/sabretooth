@@ -3,7 +3,6 @@
  * appointment_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget appointment list
- * 
- * @package sabretooth\ui
  */
 class appointment_list extends site_restricted_list
 {

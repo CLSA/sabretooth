@@ -3,7 +3,6 @@
  * source_survey_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: source_survey new
  *
  * Create a new source_survey.
- * @package sabretooth\ui
  */
 class source_survey_new extends \cenozo\ui\push\base_new
 {

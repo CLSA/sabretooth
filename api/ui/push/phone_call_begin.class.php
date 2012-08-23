@@ -3,7 +3,6 @@
  * phone_call_begin.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: phone_call begin
  *
  * Assigns a participant to a phone call.
- * @package sabretooth\ui
  */
 class phone_call_begin extends \cenozo\ui\push
 {

@@ -3,7 +3,6 @@
  * participant_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * Class for participant list pull operations.
  * 
  * @abstract
- * @package sabretooth\ui
  */
 class participant_list extends \cenozo\ui\pull\base_list
 {
@@ -63,16 +61,10 @@ class participant_list extends \cenozo\ui\pull\base_list
   {
     parent::validate();
 
-    // if are using any one of 'contacted', 'reached', 'completed' or 'consented'
-    // then we need to make sure we also have a qnaire rank or name
-    $contacted = $this->get_argument( 'contacted', NULL );
-    $reached = $this->get_argument( 'reached', NULL );
-    $completed = $this->get_argument( 'completed', NULL );
-    $consented = $this->get_argument( 'consented', NULL );
-    if( ( !is_null( $contacted ) ||
-          !is_null( $reached ) ||
-          !is_null( $completed ) ||
-          !is_null( $consented ) ) && is_null( $this->db_qnaire ) )
+    // if are using a special state restriction then we need to make sure
+    // we also have a qnaire rank or name
+    $state = $this->get_argument( 'state', NULL );
+    if( !is_null( $state ) && is_null( $this->db_qnaire ) )
       throw lib::create( 'exception\argument', 'qnaire_*', NULL, __METHOD__ );
   }
 
@@ -86,6 +78,9 @@ class participant_list extends \cenozo\ui\pull\base_list
   {
     parent::setup();
 
+    // an array of all negative consent types
+    $neg_consent_list = array( 'written deny', 'retract', 'withdraw' );
+
     // see if we are restricting by region
     $region_key = $this->get_argument( 'region', NULL );
     if( !is_null( $region_key ) )
@@ -97,45 +92,77 @@ class participant_list extends \cenozo\ui\pull\base_list
       $this->modifier->where( 'address.region_id', '=', $db_region->id );
     }
 
-    // see if we are restricting by "contacted" (at least one call attempted)
-    $contacted = $this->get_argument( 'contacted', NULL );
-    if( !is_null( $contacted ) )
-    {
-      // if the participant has an interview then they have been assigned at least once,
-      // which means they have been called at least once
-      if( is_null( $this->modifier ) ) $this->modifier = lib::create( 'database\modifier' );
-      $this->modifier->where( 'interview.qnaire_id', '=', $this->db_qnaire->id );
-    }
-
-    // see if we are restricting by "reached" (at least one 'contacted' call result)
-    $reached = $this->get_argument( 'reached', NULL );
-    if( !is_null( $reached ) )
-    {
-      // look for a phone call with a "contacted" result, and group by participant
-      if( is_null( $this->modifier ) ) $this->modifier = lib::create( 'database\modifier' );
-      $this->modifier->where( 'participant_phone_call_status_count.status', '=', 'contacted' );
-      $this->modifier->where( 'participant_phone_call_status_count.total', '>', 0 );
-    }
-
-    // see if we are restricting by "completed" (interview completed)
-    $completed = $this->get_argument( 'completed', NULL );
-    if( !is_null( $completed ) )
+    $state = $this->get_argument( 'state', NULL );
+    if( !is_null( $state ) )
     {
       if( is_null( $this->modifier ) ) $this->modifier = lib::create( 'database\modifier' );
       $this->modifier->where( 'interview.qnaire_id', '=', $this->db_qnaire->id );
-      $this->modifier->where( 'interview.completed', '=', true );
-    }
 
-    // see if we are restricting by "consented" (interview completed and written consent received)
-    $consented = $this->get_argument( 'consented', NULL );
-    if( !is_null( $consented ) )
-    {
-      if( is_null( $this->modifier ) ) $this->modifier = lib::create( 'database\modifier' );
-      $this->modifier->where( 'interview.qnaire_id', '=', $this->db_qnaire->id );
-      $this->modifier->where( 'interview.completed', '=', true );
-      $this->modifier->where(
-        'participant_last_written_consent.consent_id', '=', 'consent.id', false );
-      $this->modifier->where( 'consent.event', '=', 'written accept' );
+      if( 'contacted' == $state )
+      {
+        // if the participant has an interview then they have been assigned at least once, which
+        // means they have been called at least once, therefore we don't need to do anything else
+      }
+      else if( 'reached' == $state )
+      {
+        // the participant is eligible
+        $this->modifier->where( 'participant.status', '=', NULL );
+        $this->modifier->where_bracket( true );
+        $this->modifier->where( 'participant_last_consent.event', '=', NULL );
+        $this->modifier->or_where( 'participant_last_consent.event', 'NOT IN', $neg_consent_list );
+        $this->modifier->where_bracket( false );
+
+        // and the participant has been contacted at least once
+        $this->modifier->where(
+          'interview.id', '=', 'interview_phone_call_status_count.interview_id', false );
+        $this->modifier->where( 'interview_phone_call_status_count.status', '=', 'contacted' );
+        $this->modifier->where( 'interview_phone_call_status_count.total', '>', 0 );
+      }
+      else if( 'appointment' == $state )
+      {
+        // the participant is eligible
+        $this->modifier->where( 'participant.status', '=', NULL );
+        $this->modifier->where_bracket( true );
+        $this->modifier->where( 'participant_last_consent.event', '=', NULL );
+        $this->modifier->or_where( 'participant_last_consent.event', 'NOT IN', $neg_consent_list );
+        $this->modifier->where_bracket( false );
+
+        // and either there is an upcomming appointment (reached is null) or the interview is complete
+        $this->modifier->where_bracket( true );
+
+        $this->modifier->where_bracket( true );
+        $this->modifier->where( 'participant_last_appointment.appointment_id', '!=', NULL );
+        $this->modifier->where( 'participant_last_appointment.reached', '=', NULL );
+        $this->modifier->where_bracket( false );
+        
+        $this->modifier->where_bracket( true, true );
+        $this->modifier->where( 'interview.completed', '=', true );
+        $this->modifier->where_bracket( false );
+        
+        $this->modifier->where_bracket( false );
+      }
+      else if( 'completed' == $state )
+      {
+        // the participant is eligible
+        $this->modifier->where( 'participant.status', '=', NULL );
+        $this->modifier->where_bracket( true );
+        $this->modifier->where( 'participant_last_consent.event', '=', NULL );
+        $this->modifier->or_where( 'participant_last_consent.event', 'NOT IN', $neg_consent_list );
+        $this->modifier->where_bracket( false );
+
+        // and the interview is complete
+        $this->modifier->where( 'interview.completed', '=', true );
+      }
+      else if( 'consented' == $state )
+      {
+        // the interview must be complete and signed consent received
+        // (it doesn't matter if the participant is still eligible)
+        $this->modifier->where( 'interview.completed', '=', true );
+        $this->modifier->where(
+          'participant_last_written_consent.consent_id', '=', 'consent.id', false );
+        $this->modifier->where( 'consent.event', '=', 'written accept' );
+      }
+      else throw lib::create( 'exception\argument', 'state', $state, __METHOD__ );
     }
   }
 

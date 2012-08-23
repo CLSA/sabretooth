@@ -3,7 +3,6 @@
  * site_calendar.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget site calendar
- * 
- * @package sabretooth\ui
  */
 class site_calendar extends \cenozo\ui\widget\base_calendar
 {

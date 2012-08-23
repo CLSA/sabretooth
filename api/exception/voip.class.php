@@ -3,7 +3,6 @@
  * voip.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\exception
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * voip: voip exceptions
  * 
  * All exceptions caused because of the voip connection.
- * @package sabretooth\exception
  */
 class voip extends \cenozo\exception\runtime
 {

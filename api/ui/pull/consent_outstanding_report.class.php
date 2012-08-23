@@ -3,7 +3,6 @@
  * consent_outstanding_report.class.php
  * 
  * @author Dean Inglis <inglisd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Consent outstanding report data.
- * 
- * @package sabretooth\ui
  */
 class consent_outstanding_report extends \cenozo\ui\pull\base_report
 {

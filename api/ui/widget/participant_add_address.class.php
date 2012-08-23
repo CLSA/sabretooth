@@ -3,7 +3,6 @@
  * participant_add_address.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget participant add_address
- * 
- * @package sabretooth\ui
  */
 class participant_add_address extends \cenozo\ui\widget\base_add_record
 {
