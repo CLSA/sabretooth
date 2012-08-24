@@ -61,9 +61,24 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $start_datetime_obj = NULL;
     $end_datetime_obj = NULL;
     
-    if( $restrict_province_id )
-      $this->add_title(
-        'Restricted to '.lib::create( 'database\region', $restrict_province_id )->name );
+    if( $restrict_province_id || $restrict_source_id )
+    {
+      $province_name = $restrict_province_id
+                     ? lib::create( 'database\region', $restrict_province_id )->name
+                     : false;
+      $source_name = $restrict_source_id
+                   ? lib::create( 'database\source', $restrict_source_id )->name
+                   : false;
+
+      if( $province_name && $source_name )
+        $title = 'Restricted to '.$province_name.', '.$source_name;
+      else if( $province_name )
+        $title = 'Restricted to '.$province_name;
+      else if( $source_name )
+        $title = 'Restricted to '.$source_name;
+                           
+      $this->add_title( $title );
+    }
 
     if( $restrict_start_date )
     {
