@@ -490,7 +490,7 @@ class queue extends \cenozo\database\record
           'ON participant.id = participant_first_address.participant_id',
           'LEFT JOIN address AS first_address '.
           'ON participant_first_address.address_id = first_address.id',
-          'LEFT JOIN participant_last_consent '.
+          'JOIN participant_last_consent '.
           'ON participant.id = participant_last_consent.participant_id',
           'LEFT JOIN consent '.
           'ON consent.id = participant_last_consent.consent_id',
