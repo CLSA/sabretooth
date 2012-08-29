@@ -547,6 +547,8 @@ class queue extends \cenozo\database\record
     else if( 'ineligible' == $queue )
     {
       $parts = self::get_query_parts( 'all' );
+      // current_qnaire_id is the either the next qnaire to work on or the one in progress
+      $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
       // ineligible means either inactive or with a "final" status
       $parts['where'][] =
         '('.
@@ -560,12 +562,14 @@ class queue extends \cenozo\database\record
     else if( 'inactive' == $queue )
     {
       $parts = self::get_query_parts( 'all' );
+      $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
       $parts['where'][] = 'participant.active = false';
       return $parts;
     }
     else if( 'refused consent' == $queue )
     {
       $parts = self::get_query_parts( 'all' );
+      $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
       $parts['where'][] = 'participant.active = true';
       $parts['where'][] =
         'consent.event IN( "verbal deny", "written deny", "retract", "withdraw" )';
@@ -574,6 +578,7 @@ class queue extends \cenozo\database\record
     else if( 'sourcing required' == $queue )
     {
       $parts = self::get_query_parts( 'all' );
+      $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
       $parts['where'][] = 'participant.active = true';
       $parts['where'][] =
         '('.
@@ -587,6 +592,7 @@ class queue extends \cenozo\database\record
     else if( in_array( $queue, $participant_status_list ) )
     {
       $parts = self::get_query_parts( 'all' );
+      $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
       $parts['where'] = array_merge( $parts['where'], $status_where_list );
       $parts['where'][] = 'participant.status = "'.$queue.'"'; // queue name is same as status name
       return $parts;
