@@ -72,6 +72,7 @@ class appointment_view extends base_appointment_view
   
     // determine the time difference: use the first address unless there is a phone number with
     // an address
+    $db_phone = $this->get_record()->get_phone();
     $db_address = is_null( $db_phone ) ? NULL : $db_phone->get_address();
     if( is_null( $db_address ) ) $db_address = $db_participant->get_first_address();
     $time_diff = is_null( $db_address ) ? NULL : $db_address->get_time_diff();

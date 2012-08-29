@@ -202,7 +202,6 @@ class voip_manager extends \cenozo\singleton
 
     // rebuild the call list and return (what should be) the peer's only call
     $this->rebuild_call_list();
-    log::debug( $this->call_list );
     return $this->get_call();
   }
 
