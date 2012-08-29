@@ -2,3 +2,5 @@
 
 SOURCE operation.sql
 SOURCE role_has_operation.sql
+SOURCE queue.sql
+SOURCE setting.sql
