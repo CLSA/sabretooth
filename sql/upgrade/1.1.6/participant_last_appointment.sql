@@ -7,6 +7,5 @@ LEFT JOIN appointment t1
 ON participant.id = t1.participant_id
 AND t1.datetime = (
   SELECT MAX( t2.datetime ) FROM appointment t2
-  WHERE t1.participant_id = t2.participant_id
-  GROUP BY t2.participant_id )
+  WHERE t1.participant_id = t2.participant_id )
 GROUP BY participant.id;
