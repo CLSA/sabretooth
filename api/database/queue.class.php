@@ -42,6 +42,9 @@ class queue extends \cenozo\database\record
    */
   protected static function generate_query_list()
   {
+    $participant_class_name = lib::get_class_name( 'database\participant' );
+    $phone_call_class_name = lib::get_class_name( 'database\phone_call' ); 
+
     // define the SQL for each queue
     $queue_list = array(
       'all',
@@ -52,8 +55,7 @@ class queue extends \cenozo\database\record
       'sourcing required' );
 
     // add the participant final status types
-    $class_name = lib::get_class_name( 'database\participant' );
-    $queue_list = array_merge( $queue_list, $class_name::get_enum_values( 'status' ) );
+    $queue_list = array_merge( $queue_list, $participant_class_name::get_enum_values( 'status' ) );
     
     // finish the queue list
     $queue_list = array_merge( $queue_list, array(
@@ -103,15 +105,14 @@ class queue extends \cenozo\database\record
     
     // now add the sql for each call back status, grouping machine message, machine no message,
     // not reached, disconnected and wrong number into a single "not reached" category
-    $class_name = lib::get_class_name( 'database\phone_call' ); 
-    $phone_call_status_list = $class_name::get_enum_values( 'status' );
+    $phone_call_status_list = $phone_call_class_name::get_enum_values( 'status' );
     $remove_list = array(
       'machine message',
       'machine no message',
       'disconnected',
       'wrong number' );
     $phone_call_status_list = array_diff( $phone_call_status_list, $remove_list );
-    foreach( $class_name::get_enum_values( 'status' ) as $phone_call_status )
+    foreach( $phone_call_class_name::get_enum_values( 'status' ) as $phone_call_status )
     {
       $queue_list = array(
         'phone call status',
@@ -303,8 +304,7 @@ class queue extends \cenozo\database\record
       $check_time = false;
     }
 
-    $class_name = lib::get_class_name( 'database\participant' );
-    $participant_status_list = $class_name::get_enum_values( 'status' );
+    $participant_status_list = $participant_class_name::get_enum_values( 'status' );
 
     $phone_count = 
       '( '.
@@ -894,8 +894,8 @@ class queue extends \cenozo\database\record
     // fill in all callback timing settings
     $setting_mod = lib::create( 'database\modifier' ); 
     $setting_mod->where( 'category', '=', 'callback timing' );
-    $class_name = lib::get_class_name( 'database\setting' );
-    foreach( $class_name::select( $setting_mod ) as $db_setting )
+    $setting_class_name = lib::get_class_name( 'database\setting' );
+    foreach( $setting_class_name::select( $setting_mod ) as $db_setting )
     {
       $setting = $setting_manager->get_setting(
         'callback timing', $db_setting->name, $this->db_site );
