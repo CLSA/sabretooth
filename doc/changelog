@@ -15,6 +15,11 @@
   - breaking down by quota organizes the report into quota categories (gender & age group)
   - province option restricts to participants who's primary address is in that province
 
+* Queues have been thinned out to improve performance
+  - outside calling time is now higher in the tree
+  - "machine message" and "machine no message" have been combined into the "not reached" queue
+  - "always available" has been merged into the "not available" queue
+
 ====================================================================================================
 1.1.6
 ====================================================================================================
