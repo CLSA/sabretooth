@@ -304,6 +304,7 @@ class queue extends \cenozo\database\record
       $check_time = false;
     }
 
+    $participant_class_name = lib::get_class_name( 'database\participant' );
     $participant_status_list = $participant_class_name::get_enum_values( 'status' );
 
     $phone_count = 
@@ -592,6 +593,13 @@ class queue extends \cenozo\database\record
     {
       $parts = self::get_query_parts( 'all' );
       $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
+      $parts['where'][] = 'participant.active = true';
+      $parts['where'][] =
+        '('.
+        '  consent.event IS NULL'.
+        '  OR consent.event NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
+        ')';
+      $parts['where'][] = $phone_count.' > 0';
       $parts['where'] = array_merge( $parts['where'], $status_where_list );
       $parts['where'][] = 'participant.status = "'.$queue.'"'; // queue name is same as status name
       return $parts;
