@@ -137,6 +137,19 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     // only include the "None" column if user isn't a supervisor
     if( !$is_supervisor ) $locale_totals_list[ 'None' ] = $locale_totals;
 
+    // create a temporary table to quickly select participant's last consent
+    $participant_class_name::db()->execute(
+      'CREATE TEMPORARY TABLE temp_participant_last_consent '.
+      'SELECT participant.id AS participant_id, t1.id AS consent_id '.
+      'FROM participant '.
+      'LEFT JOIN consent AS t1 '.
+      'ON participant.id = t1.participant_id '.
+      'AND t1.date = ( '.
+      '  SELECT MAX( t2.date ) '.
+      '  FROM consent AS t2 '.
+      '  WHERE t1.participant_id = t2.participant_id ) '.
+      'GROUP BY participant.id' );
+
     $participant_mod = lib::create( 'database\modifier' );
     if( $is_supervisor ) $participant_mod->where( 'site_id', '=', $session->get_site()->id );
     if( 0 < $restrict_source_id ) $participant_mod->where( 'source_id', '=', $restrict_source_id );
@@ -214,7 +227,17 @@ class participant_status_report extends \cenozo\ui\pull\base_report
         $interview_list = $db_participant->get_interview_list( $interview_mod );
 
         // first deal with withdrawn and retracted participants
-        $db_consent = $db_participant->get_last_consent();
+
+        // For performance issues we cannot use the participant record's get_last_consent() method.
+        // Instead, we use the temporary table created before this loop.
+        $consent_id = $participant_class_name::db()->get_one(
+          sprintf( 'SELECT consent_id '.
+                   'FROM temp_participant_last_consent '.
+                   'WHERE participant_id = %s',
+                   $db_participant->id ) );
+        $db_consent = is_null( $consent_id )
+                    ? NULL
+                    : lib::create( 'database\consent', $consent_id );
         if( !is_null( $db_consent ) && 'retract' == $db_consent->event )
         {
           $locale_totals_list[ $locale ][ 'Retracted from study' ]++;
