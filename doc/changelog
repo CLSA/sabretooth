@@ -1,6 +1,32 @@
 ====================================================================================================
+1.1.7
+====================================================================================================
+
+* Supervisors now have full list/view/add/delete access to operator away times
+  - existing away times user, start and end times can be changed
+  - new away times can be added to users with operator access to the supervisor's site
+  - away times must always have no operator activity between the start/end times
+
+* Adding caching ability to select reports
+  - cached reports are generated overnight to save processing and wait time
+
+* Changing participant status report to have new "Breakdown by" and "Province" options
+  - breakdown includes old "site or province" options and the new "quota" option
+  - breaking down by quota organizes the report into quota categories (gender & age group)
+  - province option restricts to participants who's primary address is in that province
+
+* Queues have been thinned out to improve performance
+  - outside calling time is now higher in the tree
+  - "machine message" and "machine no message" have been combined into the "not reached" queue
+  - "always available" has been merged into the "not available" queue
+
+* Adding email address to participant view
+  - This property is synched with the email address in Mastodon
+
+====================================================================================================
 1.1.6
 ====================================================================================================
+
 * Participant status report restriction by participant synch date
   - This report now has a start/end date parameters which restricts the list based on when the
     participant was created in Sabretooth

@@ -25,6 +25,7 @@ class participant_status_report extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'participant_status', $args );
+    $this->use_cache = true;
   }
 
   /**
@@ -39,15 +40,29 @@ class participant_status_report extends base_report
     parent::prepare();
 
     $this->add_restriction( 'qnaire' );
-    $this->add_restriction( 'site_or_province' );
+    $this->add_parameter( 'breakdown', 'enum', 'Breakdown by' );
+    $this->add_restriction( 'province' );
     $this->add_restriction( 'source' );
     $this->add_restriction( 'dates' );
 
     $this->set_variable( 'description',
       'This report provides totals of various status types.  Populations are broken down '.
-      'by province or by site and various call, participant and consent statuses.  If set, '.
-      'the start and end dates will restrict the report to participants who were synched '.
-      'between the dates provided, inclusive.' );
+      'by province, site or quota.  If set, the start and end dates will restrict the report '.
+      'to participants who were synched between the dates provided, inclusive.' );
+  }
+
+  /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
+  {
+    parent::setup();
+
+    $breakdowns = array( 'Site', 'Province', 'Quota' );
+    $breakdowns = array_combine( $breakdowns, $breakdowns );
+    $this->set_parameter( 'breakdown', 'site', true, $breakdowns );
   }
 }
 ?>

@@ -8,6 +8,5 @@ ON participant.id = t1.participant_id
 AND t1.date = (
   SELECT MAX( t2.date )
   FROM consent AS t2
-  WHERE t1.participant_id = t2.participant_id
-  GROUP BY t2.participant_id )
+  WHERE t1.participant_id = t2.participant_id )
 GROUP BY participant.id;

@@ -92,7 +92,18 @@
       
         // begin assignment button
         $( "#{{ widget.full }}__assignment" ).click( function() {
-          if( ajax_push( "assignment", "begin" ) ) slot_refresh( {{ slot }} );
+          // disable the button to prevent button-mashing
+          $(this).button( {
+            disabled: true,
+            label: "Working..."
+          } );
+          if( ajax_push( "assignment", "begin" ) ) {
+            slot_refresh( {{ slot }} ); } else {
+            $(this).button( {
+              disabled: false,
+              label: "Request assignment"
+            } );
+          }
         } );
 
         // view schedule button

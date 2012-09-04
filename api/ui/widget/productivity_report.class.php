@@ -25,6 +25,7 @@ class productivity_report extends base_report
   public function __construct( $args )
   {
     parent::__construct( 'productivity', $args );
+    $this->use_cache = true;
   }
 
   /**

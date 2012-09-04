@@ -56,6 +56,7 @@ CREATE  TABLE IF NOT EXISTS `participant` (
   `status` ENUM('deceased', 'deaf', 'mentally unfit','language barrier','age range','not canadian','federal reserve','armed forces','institutionalized','noncompliant','other') NULL DEFAULT NULL ,
   `language` ENUM('en','fr') NULL DEFAULT NULL ,
   `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'If not null then force all calls to this participant to the site.' ,
+  `email` VARCHAR(255) NULL ,
   `prior_contact_date` DATE NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `dk_active` (`active` ASC) ,
@@ -967,8 +968,7 @@ ON participant.id = t1.participant_id
 AND t1.date = (
   SELECT MAX( t2.date )
   FROM consent AS t2
-  WHERE t1.participant_id = t2.participant_id
-  GROUP BY t2.participant_id )
+  WHERE t1.participant_id = t2.participant_id )
 GROUP BY participant.id;
 
 -- -----------------------------------------------------
@@ -1063,8 +1063,7 @@ LEFT JOIN appointment t1
 ON participant.id = t1.participant_id
 AND t1.datetime = (
   SELECT MAX( t2.datetime ) FROM appointment t2
-  WHERE t1.participant_id = t2.participant_id
-  GROUP BY t2.participant_id )
+  WHERE t1.participant_id = t2.participant_id )
 GROUP BY participant.id;
 
 
