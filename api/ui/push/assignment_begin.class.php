@@ -106,8 +106,8 @@ class assignment_begin extends \cenozo\ui\push
             $participant_mod = lib::create( 'database\modifier' );
             // on a weekday sort the queue by age, the order defined by the reverse sort time setting
             if( $weekday ) $participant_mod->order(
-              'DATEDIFF( DATE( NOW() ), date_of_birth ) < 65 * 365', $age_desc );
-            $participant_mod->order( 'source_id' );
+              'DATEDIFF( DATE( NOW() ), participant_date_of_birth ) < 65 * 365', $age_desc );
+            $participant_mod->order( 'participant_source_id' );
             $participant_mod->limit( 1 );
 
             $db_queue->set_site( $session->get_site() );
