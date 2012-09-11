@@ -19,6 +19,7 @@
   - outside calling time is now higher in the tree
   - "machine message" and "machine no message" have been combined into the "not reached" queue
   - "always available" has been merged into the "not available" queue
+  - performance has been internally improved
 
 * Adding email address to participant view
   - This property is synched with the email address in Mastodon
