@@ -51,6 +51,7 @@ class appointment_calendar extends \cenozo\ui\widget\base_calendar
   {
     parent::setup();
 
+    $this->set_variable( 'default_view', 'basicWeek' );
     $this->set_variable( 'allow_all_day', false );
     $this->set_variable( 'editable', true );
   }
