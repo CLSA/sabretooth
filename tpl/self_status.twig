@@ -21,16 +21,26 @@
 
     $( function() {
       $( "#{{ widget.full }}_icons" ).children().tooltip();
-
-      // add the clock
-      setInterval( 'update_clock()', 1000 );
+      setInterval( 'update_clock()', 1000 ); // add the clock
     } );
+
+    {% if home %}
+      $( "#{{ widget.full }}_home" ).button( {
+        text: false,
+        icons: {
+          primary: "ui-icon-home"
+        }
+      } ).click( function() {
+        slot_load( "main", "self", "home" );
+      } );
+    {% endif %}
   </script>
 
 {% endblock javascript %}
 
 {% block widget %}
 
+  {% if home %}<button id="{{ widget.full }}_home">home</button>{% endif %}
   <span id="{{ widget.full }}_icons" class="status_icons ui-widget ui-state-default ui-corner-all">
     <span id="{{ widget.full }}_sip"
           title="VoIP is {{ sip_enabled ? 'enabled' : 'disabled' }}"

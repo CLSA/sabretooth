@@ -153,21 +153,21 @@
         } );
       {% endif %}
 
-        $( "#{{ widget.full }}_font_down" ).button( {
-          text: false,
-          icons: {
-            primary: "ui-icon-minus"
-          }
-        } ).click( function() {
-        } ).fontscale( "body", "down" );
+      $( "#{{ widget.full }}_font_down" ).button( {
+        text: false,
+        icons: {
+          primary: "ui-icon-minus"
+        }
+      } ).click( function() {
+      } ).fontscale( "body", "down" );
 
-        $( "#{{ widget.full }}_font_up" ).button( {
-          text: false,
-          icons: {
-            primary: "ui-icon-plus"
-          }
-        } ).click( function() {
-        } ).fontscale( "body", "up" ).parent().buttonset();
+      $( "#{{ widget.full }}_font_up" ).button( {
+        text: false,
+        icons: {
+          primary: "ui-icon-plus"
+        }
+      } ).click( function() {
+      } ).fontscale( "body", "up" ).parent().buttonset();
 
     } );
   </script>
