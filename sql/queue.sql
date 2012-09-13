@@ -662,7 +662,7 @@ time has not yet been reached.";
 INSERT INTO queue SET
 name = "not reached available",
 title = "Last call: not reached (available)",
-rank = 15,
+rank = 11,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
@@ -676,7 +676,7 @@ back time has been reached.";
 INSERT INTO queue SET
 name = "not reached not available",
 title = "Last call: not reached (not available)",
-rank = 16,
+rank = 12,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
@@ -715,7 +715,7 @@ time has not yet been reached.";
 INSERT INTO queue SET
 name = "hang up available",
 title = "Last call: hang up (available)",
-rank = 11,
+rank = 13,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
@@ -728,7 +728,7 @@ back time has been reached.";
 INSERT INTO queue SET
 name = "hang up not available",
 title = "Last call: hang up (not available)",
-rank = 12,
+rank = 14,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
@@ -766,7 +766,7 @@ time has not yet been reached.";
 INSERT INTO queue SET
 name = "soft refusal available",
 title = "Last call: soft refusal (available)",
-rank = 13,
+rank = 15,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
@@ -779,7 +779,7 @@ back time has been reached.";
 INSERT INTO queue SET
 name = "soft refusal not available",
 title = "Last call: soft refusal (not available)",
-rank = 14,
+rank = 16,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
