@@ -1,4 +1,16 @@
 ====================================================================================================
+1.1.8
+====================================================================================================
+
+* Scheduled calls
+  - In the participant's details a new "Scheduled Call" item has been added
+  - When set, the participant is taken out of the calling queue until that time
+  - Participants who have a scheduled call are assigned before all other participants except for
+    those with an appointment
+  - Appointments override scheduled calls
+  - A scheduled call is "cleared" once the participant is assigned
+
+====================================================================================================
 1.1.7
 ====================================================================================================
 

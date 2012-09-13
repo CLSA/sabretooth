@@ -58,6 +58,7 @@ CREATE  TABLE IF NOT EXISTS `participant` (
   `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'If not null then force all calls to this participant to the site.' ,
   `email` VARCHAR(255) NULL ,
   `prior_contact_date` DATE NULL DEFAULT NULL ,
+  `scheduled_call_datetime` DATETIME NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `dk_active` (`active` ASC) ,
   INDEX `dk_status` (`status` ASC) ,

@@ -54,6 +54,7 @@ class participant_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'prior_contact_date', 'constant', 'Prior Contact Date' );
     $this->add_item( 'current_qnaire_name', 'constant', 'Current Questionnaire' );
     $this->add_item( 'start_qnaire_date', 'constant', 'Delay Questionnaire Until' );
+    $this->add_item( 'scheduled_call_datetime', 'datetime', 'Scheduled Call' );
     
     try
     {
@@ -162,6 +163,7 @@ class participant_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'prior_contact_date', $record->prior_contact_date );
     $this->set_item( 'current_qnaire_name', $current_qnaire_name );
     $this->set_item( 'start_qnaire_date', $start_qnaire_date );
+    $this->set_item( 'scheduled_call_datetime', $record->scheduled_call_datetime );
 
     try
     {

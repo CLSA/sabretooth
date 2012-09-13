@@ -69,6 +69,9 @@ class queue extends \cenozo\database\record
       'upcoming appointment',
       'assignable appointment',
       'missed appointment',
+      'scheduled call',
+      'scheduled call waiting',
+      'scheduled call ready',
       'no appointment',
       'quota disabled',
       'outside calling time',
@@ -285,6 +288,19 @@ class queue extends \cenozo\database\record
                                          'upcoming appointment',
                                          'assignable appointment',
                                          'missed appointment' ) );
+  }
+
+  /**
+   * Get whether this queue is related to a scheduled call
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function from_scheduled_call()
+  {
+    return in_array( $this->name, array( 'scheduled call',
+                                         'scheduled call waiting',
+                                         'scheduled call ready' ) );
   }
 
   /**
@@ -672,8 +688,44 @@ class queue extends \cenozo\database\record
         $viewing_date );
       return $parts;
     }
+    else if( 'scheduled call' == $queue )
+    {
+      // participants who have a scheduled call time
+      $parts['where'][] = 'participant_scheduled_call_datetime IS NOT NULL';
+      // make sure there is no unassigned appointment.  By design there can only be one of per
+      // participant, so if the appointment is null then the participant has no pending
+      // appointments.
+      $parts['join'][] =
+        'LEFT JOIN appointment '.
+        'ON appointment.participant_id = participant_for_queue.id '.
+        'AND appointment.assignment_id IS NULL';
+      $parts['where'][] = 'appointment.id IS NULL';
+      return $parts;
+    }
+    else if( 'scheduled call waiting' == $queue )
+    {
+      // participants who have a scheduled call time in the future
+      $parts['where'][] = sprintf(
+        $check_time ? '%s < participant_scheduled_call_datetime - '.
+                      'INTERVAL <APPOINTMENT_PRE_WINDOW> MINUTE'
+                    : 'DATE( %s ) != DATE( participant_scheduled_call_datetime )',
+        $viewing_date );
+      return $parts;
+    }
+    else if( 'scheduled call ready' == $queue )
+    {
+      // participants who have a scheduled call time now or in the past
+      $parts['where'][] = sprintf(
+        $check_time ? '%s >= participant_scheduled_call_datetime - '.
+                      'INTERVAL <APPOINTMENT_PRE_WINDOW> MINUTE'
+                    : 'DATE( %s ) = DATE( participant_scheduled_call_datetime )',
+        $viewing_date );
+      return $parts;
+    }
     else if( 'no appointment' == $queue )
     {
+      // participants who do not have a scheduled call time
+      $parts['where'][] = 'participant_scheduled_call_datetime IS NULL';
       // make sure there is no unassigned appointment.  By design there can only be one of per
       // participant, so if the appointment is null then the participant has no pending
       // appointments.
@@ -958,6 +1010,7 @@ participant.language AS participant_language,
 participant.site_id AS participant_site_id,
 participant.email AS participant_email,
 participant.prior_contact_date AS participant_prior_contact_date,
+participant.scheduled_call_datetime AS participant_scheduled_call_datetime,
 primary_address.id AS primary_address_id,
 primary_address.participant_id AS primary_address_participant_id,
 primary_address.active AS primary_address_active,

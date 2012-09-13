@@ -209,6 +209,11 @@ class assignment_begin extends \cenozo\ui\push
           $db_appointment->save();
         }
       }
+      else if( $db_origin_queue->from_scheduled_call() )
+      { // if this is a scheduled call then clear the scheduled call time
+        $db_participant->scheduled_call_datetime = NULL;
+        $db_participant->save();
+      }
     }
 
     // release the semaphore
