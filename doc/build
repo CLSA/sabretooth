@@ -1,0 +1,12 @@
+#!/bin/sh
+# 
+# build
+# 
+# Builds API documentation for Mastodon using apigen
+# @author Patrick Emond <emondpd@mcmaster.ca>
+
+# get the path to cenozo
+cenozo_path=`grep "\['path'\]\['CENOZO'\]" ../web/settings.local.ini.php | sed -e "s#.* = '\(.*\)';#\1#"`
+
+# generate the documentation
+apigen --source "$cenozo_path/api,../api" --config apigen.conf

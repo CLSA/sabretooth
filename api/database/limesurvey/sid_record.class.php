@@ -3,7 +3,6 @@
  * sid_record.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\database
  * @filesource
  */
 
@@ -15,8 +14,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * 
  * Since limesurvey's database structure for some tables is dynamic this class overrides
  * much of the functionality in record class as is appropriate.
- * 
- * @package sabretooth\database
  */
 abstract class sid_record extends record
 {

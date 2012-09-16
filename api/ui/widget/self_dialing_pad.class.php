@@ -3,7 +3,6 @@
  * self_dialing_pad.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget self dialing_pad
- * 
- * @package sabretooth\ui
  */
 class self_dialing_pad extends \cenozo\ui\widget
 {

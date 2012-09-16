@@ -3,7 +3,6 @@
  * users.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\database
  * @filesource
  */
 
@@ -11,8 +10,6 @@ namespace sabretooth\database\limesurvey;
 
 /**
  * users: record
- *
- * @package sabretooth\database
  */
 class users extends record
 {

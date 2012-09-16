@@ -3,7 +3,6 @@
  * operator_assignment.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget operator assignment
- * 
- * @package sabretooth\ui
  */
 class operator_assignment extends \cenozo\ui\widget
 {

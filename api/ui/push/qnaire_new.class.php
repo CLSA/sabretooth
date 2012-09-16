@@ -3,7 +3,6 @@
  * qnaire_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: qnaire new
  *
  * Create a new qnaire.
- * @package sabretooth\ui
  */
 class qnaire_new extends \cenozo\ui\push\base_new
 {

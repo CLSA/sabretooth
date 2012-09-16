@@ -3,7 +3,6 @@
  * activity.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * activity: record
- *
- * @package sabretooth\database
  */
 class activity extends \cenozo\database\activity
 {

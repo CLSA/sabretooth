@@ -3,7 +3,6 @@
  * opal_instance_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: opal_instance edit
  *
  * Edit a opal_instance.
- * @package sabretooth\ui
  */
 class opal_instance_edit extends \cenozo\ui\push\base_edit
 {

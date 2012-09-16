@@ -3,7 +3,6 @@
  * participant_status_report.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * Participant status report data.
  * 
  * @abstract
- * @package sabretooth\ui
  */
 class participant_status_report extends \cenozo\ui\pull\base_report
 {
@@ -53,9 +51,35 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
     $restrict_by_site = $this->get_argument( 'restrict_site_or_province' ) == 'Site' ? true : false;
     $restrict_source_id = $this->get_argument( 'restrict_source_id' );
+
     $this->add_title( 
       sprintf( 'Listing of categorical totals pertaining to '.
                'the %s interview', $db_qnaire->name ) ) ;
+
+    $restrict_start_date = $this->get_argument( 'restrict_start_date' );
+    $restrict_end_date = $this->get_argument( 'restrict_end_date' );
+    $now_datetime_obj = util::get_datetime_object();
+    $start_datetime_obj = NULL;
+    $end_datetime_obj = NULL;
+    
+    if( $restrict_start_date )
+    {
+      $start_datetime_obj = util::get_datetime_object( $restrict_start_date );
+      if( $start_datetime_obj > $now_datetime_obj )
+        $start_datetime_obj = clone $now_datetime_obj;
+    }
+    if( $restrict_end_date )
+    {
+      $end_datetime_obj = util::get_datetime_object( $restrict_end_date );
+      if( $end_datetime_obj > $now_datetime_obj )
+        $end_datetime_obj = clone $now_datetime_obj;
+    }
+    if( $restrict_start_date && $restrict_end_date && $end_datetime_obj < $start_datetime_obj )
+    {
+      $temp_datetime_obj = clone $start_datetime_obj;
+      $start_datetime_obj = clone $end_datetime_obj;
+      $end_datetime_obj = clone $temp_datetime_obj;
+    }
 
     $locale_totals = array(
       'Completed interview - Consent not received' => 0,
@@ -113,9 +137,28 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     // only include the "None" column if user isn't a supervisor
     if( !$is_supervisor ) $locale_totals_list[ 'None' ] = $locale_totals;
 
+    // create a temporary table to quickly select participant's last consent
+    $participant_class_name::db()->execute(
+      'CREATE TEMPORARY TABLE temp_participant_last_consent '.
+      'SELECT participant.id AS participant_id, t1.id AS consent_id '.
+      'FROM participant '.
+      'LEFT JOIN consent AS t1 '.
+      'ON participant.id = t1.participant_id '.
+      'AND t1.date = ( '.
+      '  SELECT MAX( t2.date ) '.
+      '  FROM consent AS t2 '.
+      '  WHERE t1.participant_id = t2.participant_id ) '.
+      'GROUP BY participant.id' );
+
     $participant_mod = lib::create( 'database\modifier' );
     if( $is_supervisor ) $participant_mod->where( 'site_id', '=', $session->get_site()->id );
     if( 0 < $restrict_source_id ) $participant_mod->where( 'source_id', '=', $restrict_source_id );
+    if( $restrict_start_date )
+      $participant_mod->where(
+        'participant.create_timestamp', '>=', $start_datetime_obj->format( 'Y-m-d' ) );
+    if( $restrict_end_date )
+      $participant_mod->where(
+        'participant.create_timestamp', '<=', $end_datetime_obj->format( 'Y-m-d' ) );
     $participant_list = $participant_class_name::select( $participant_mod );
     foreach( $participant_list as $db_participant )
     {
@@ -184,7 +227,17 @@ class participant_status_report extends \cenozo\ui\pull\base_report
         $interview_list = $db_participant->get_interview_list( $interview_mod );
 
         // first deal with withdrawn and retracted participants
-        $db_consent = $db_participant->get_last_consent();
+
+        // For performance issues we cannot use the participant record's get_last_consent() method.
+        // Instead, we use the temporary table created before this loop.
+        $consent_id = $participant_class_name::db()->get_one(
+          sprintf( 'SELECT consent_id '.
+                   'FROM temp_participant_last_consent '.
+                   'WHERE participant_id = %s',
+                   $db_participant->id ) );
+        $db_consent = is_null( $consent_id )
+                    ? NULL
+                    : lib::create( 'database\consent', $consent_id );
         if( !is_null( $db_consent ) && 'retract' == $db_consent->event )
         {
           $locale_totals_list[ $locale ][ 'Retracted from study' ]++;

@@ -3,7 +3,6 @@
  * consent_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: consent edit
  *
  * Edit a consent.
- * @package sabretooth\ui
  */
 class consent_edit extends base_edit
 {

@@ -3,7 +3,6 @@
  * tokens.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Access to limesurvey's tokens_SID tables.
- * 
- * @package sabretooth\database
  */
 class tokens extends sid_record
 {

@@ -3,7 +3,6 @@
  * availability_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: availability new
  *
  * Create a new availability.
- * @package sabretooth\ui
  */
 class availability_new extends base_new
 {

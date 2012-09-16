@@ -3,7 +3,6 @@
  * productivity_report.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget productivity report
- * 
- * @package sabretooth\ui
  */
 class productivity_report extends base_report
 {

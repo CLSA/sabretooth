@@ -3,7 +3,6 @@
  * queue.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * queue: record
- *
- * @package sabretooth\database
  */
 class queue extends \cenozo\database\record
 {
@@ -71,6 +68,7 @@ class queue extends \cenozo\database\record
       'assignable appointment',
       'missed appointment',
       'no appointment',
+      'quota disabled',
       'new participant',
       'new participant outside calling time',
       'new participant within calling time',
@@ -182,6 +180,8 @@ class queue extends \cenozo\database\record
       self::$participant_count_cache[$this->name] = array();
     if( !array_key_exists( $qnaire_id, self::$participant_count_cache[$this->name] ) )
       self::$participant_count_cache[$this->name][$qnaire_id] = array();
+    $db_parent = $this->parent_queue_id ? new static( $this->parent_queue_id ) : NULL;
+    $parent = is_null( $db_parent ) ? 'NULL' : $db_parent->name;
     self::$participant_count_cache[$this->name][$qnaire_id][$site_id] =
       (integer) static::db()->get_one( sprintf( '%s %s',
         $this->get_sql( 'COUNT( DISTINCT participant.id )' ),
@@ -325,6 +325,13 @@ class queue extends \cenozo\database\record
       ')',
       $phone_count.' > 0' );
     
+    // join to the quota table based on region, gender and age group
+    $quota_join = 
+      'LEFT JOIN quota '.
+      'ON quota.region_id = primary_region.id '.
+      'AND quota.gender = participant.gender '.
+      'AND quota.age_group_id = participant.age_group_id';
+    
     // join to the queue_restriction table based on site, city, region or postcode
     $restriction_join = 
       'LEFT JOIN queue_restriction '.
@@ -332,7 +339,7 @@ class queue extends \cenozo\database\record
       'OR queue_restriction.city = first_address.city '.
       'OR queue_restriction.region_id = first_address.region_id '.
       'OR queue_restriction.postcode = first_address.postcode';
-    
+
     // checks to see if participant is not restricted
     $check_restriction_sql =
       '('.
@@ -483,16 +490,16 @@ class queue extends \cenozo\database\record
           'ON participant.id = participant_first_address.participant_id',
           'LEFT JOIN address AS first_address '.
           'ON participant_first_address.address_id = first_address.id',
-          'LEFT JOIN participant_last_consent '.
+          'JOIN participant_last_consent '.
           'ON participant.id = participant_last_consent.participant_id',
           'LEFT JOIN consent '.
           'ON consent.id = participant_last_consent.consent_id',
-          'LEFT JOIN participant_last_assignment '.
-          'ON participant.id = participant_last_assignment.participant_id',
-          'LEFT JOIN assignment '.
-          'ON participant_last_assignment.assignment_id = assignment.id',
           'LEFT JOIN interview AS current_interview '.
           'ON current_interview.participant_id = participant.id',
+          'LEFT JOIN interview_last_assignment '.
+          'ON current_interview.id = interview_last_assignment.interview_id '.
+          'LEFT JOIN assignment '.
+          'ON interview_last_assignment.assignment_id = assignment.id',
           'LEFT JOIN qnaire AS current_qnaire '.
           'ON current_qnaire.id = current_interview.qnaire_id',
           'LEFT JOIN qnaire AS next_qnaire '.
@@ -540,6 +547,8 @@ class queue extends \cenozo\database\record
     else if( 'ineligible' == $queue )
     {
       $parts = self::get_query_parts( 'all' );
+      // current_qnaire_id is the either the next qnaire to work on or the one in progress
+      $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
       // ineligible means either inactive or with a "final" status
       $parts['where'][] =
         '('.
@@ -553,12 +562,14 @@ class queue extends \cenozo\database\record
     else if( 'inactive' == $queue )
     {
       $parts = self::get_query_parts( 'all' );
+      $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
       $parts['where'][] = 'participant.active = false';
       return $parts;
     }
     else if( 'refused consent' == $queue )
     {
       $parts = self::get_query_parts( 'all' );
+      $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
       $parts['where'][] = 'participant.active = true';
       $parts['where'][] =
         'consent.event IN( "verbal deny", "written deny", "retract", "withdraw" )';
@@ -567,6 +578,7 @@ class queue extends \cenozo\database\record
     else if( 'sourcing required' == $queue )
     {
       $parts = self::get_query_parts( 'all' );
+      $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
       $parts['where'][] = 'participant.active = true';
       $parts['where'][] =
         '('.
@@ -580,6 +592,7 @@ class queue extends \cenozo\database\record
     else if( in_array( $queue, $participant_status_list ) )
     {
       $parts = self::get_query_parts( 'all' );
+      $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
       $parts['where'] = array_merge( $parts['where'], $status_where_list );
       $parts['where'][] = 'participant.status = "'.$queue.'"'; // queue name is same as status name
       return $parts;
@@ -707,9 +720,20 @@ class queue extends \cenozo\database\record
       $parts['where'][] = 'appointment.id IS NULL';
       return $parts;
     }
+    else if( 'quota disabled' == $queue )
+    {
+      $parts = self::get_query_parts( 'no appointment' );
+      // who belong to a quota which is disabled
+      $parts['join'][] = $quota_join;
+      $parts['where'][] = 'quota.disabled = true';
+      return $parts;
+    }
     else if( 'new participant' == $queue )
     {
       $parts = self::get_query_parts( 'no appointment' );
+      // who belong to a quota which is not disabled or doesn't exist
+      $parts['join'][] = $quota_join;
+      $parts['where'][] = '( quota.disabled IS NULL OR quota.disabled = false )';
       // If there is a start_qnaire_date then the current qnaire has never been started,
       // the exception is for participants who have never been assigned
       $parts['where'][] =
@@ -759,6 +783,9 @@ class queue extends \cenozo\database\record
     else if( 'old participant' == $queue )
     {
       $parts = self::get_query_parts( 'no appointment' );
+      // who belong to a quota which is not disabled or doesn't exist
+      $parts['join'][] = $quota_join;
+      $parts['where'][] = '( quota.disabled IS NULL OR quota.disabled = false )';
       // add the last phone call's information
       $parts['from'][] = 'phone_call';
       $parts['from'][] = 'assignment_last_phone_call';

@@ -3,7 +3,6 @@
  * ldap_manager.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\business
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Manages LDAP entries
- * 
- * @package sabretooth\business
  */
 class ldap_manager extends \cenozo\business\ldap_manager
 {

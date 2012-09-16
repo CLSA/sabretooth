@@ -3,7 +3,6 @@
  * source_survey_delete.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * push: source_survey delete
- * 
- * @package sabretooth\ui
  */
 class source_survey_delete extends \cenozo\ui\push\base_delete
 {

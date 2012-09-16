@@ -3,7 +3,6 @@
  * participant_status_report.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget self status
- * 
- * @package sabretooth\ui
  */
 class participant_status_report extends base_report
 {
@@ -44,10 +41,13 @@ class participant_status_report extends base_report
     $this->add_restriction( 'qnaire' );
     $this->add_restriction( 'site_or_province' );
     $this->add_restriction( 'source' );
+    $this->add_restriction( 'dates' );
 
     $this->set_variable( 'description',
       'This report provides totals of various status types.  Populations are broken down '.
-      'by province or by site and various call, participant and consent statuses.' );
+      'by province or by site and various call, participant and consent statuses.  If set, '.
+      'the start and end dates will restrict the report to participants who were synched '.
+      'between the dates provided, inclusive.' );
   }
 }
 ?>

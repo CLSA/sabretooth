@@ -3,7 +3,6 @@
  * user_add.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget user add
- * 
- * @package sabretooth\ui
  */
 class user_add extends \cenozo\ui\widget\user_add
 {

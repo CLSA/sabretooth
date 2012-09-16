@@ -3,7 +3,6 @@
  * address.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\database
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * address: record
- *
- * @package sabretooth\database
  */
 class address extends \cenozo\database\has_rank
 {

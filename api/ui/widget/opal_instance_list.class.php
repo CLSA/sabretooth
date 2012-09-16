@@ -3,7 +3,6 @@
  * opal_instance_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget opal_instance list
- * 
- * @package sabretooth\ui
  */
 class opal_instance_list extends \cenozo\ui\widget\base_list
 {

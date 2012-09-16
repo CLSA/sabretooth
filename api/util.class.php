@@ -3,7 +3,6 @@
  * util.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib;
  * util: utility class of static methods
  *
  * Extends cenozo's util class with additional functionality.
- * @package sabretooth
  */
 class util extends \cenozo\util
 {

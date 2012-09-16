@@ -3,7 +3,6 @@
  * phase_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: phase new
  *
  * Create a new phase.
- * @package sabretooth\ui
  */
 class phase_new extends \cenozo\ui\push\base_new
 {

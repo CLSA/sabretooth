@@ -3,7 +3,6 @@
  * participant_secondary.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -12,8 +11,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * widget participant secondary
- * 
- * @package sabretooth\ui
  */
 class participant_secondary extends \cenozo\ui\widget\base_record
 {

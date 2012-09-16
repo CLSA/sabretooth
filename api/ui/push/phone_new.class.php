@@ -3,7 +3,6 @@
  * phone_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: phone new
  *
  * Create a new phone.
- * @package sabretooth\ui
  */
 class phone_new extends base_new
 {

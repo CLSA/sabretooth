@@ -281,6 +281,22 @@ VALUES( "widget", "queue_restriction", "list", true, "List queue restrictions in
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "queue_restriction", "primary", true, "Retrieves base queue restriction information." );
 
+-- quota
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "quota", "delete", true, "Removes a quota from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "quota", "edit", true, "Edits a quota's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "quota", "new", true, "Add a new quota to the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "quota", "add", true, "View a form for creating a new quota." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "quota", "view", true, "View a quota's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "quota", "list", true, "List quotas in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "quota", "primary", true, "Retrieves base quota information." );
+
 -- recording
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "recording", "list", true, "Lists recordings." );
@@ -424,5 +440,7 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "voip", "begin_monitor", true, "Starts monitoring the active call." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "voip", "end_monitor", true, "Stops monitoring the active call." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "voip", "spy", true, "Opens a listen-only connection to an existing operator's call." );
 
 COMMIT;

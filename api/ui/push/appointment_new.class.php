@@ -3,7 +3,6 @@
  * appointment_new.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: appointment new
  *
  * Create a new appointment.
- * @package sabretooth\ui
  */
 class appointment_new extends \cenozo\ui\push\base_new
 {

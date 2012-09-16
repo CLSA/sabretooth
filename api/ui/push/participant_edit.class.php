@@ -3,7 +3,6 @@
  * participant_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @package sabretooth\ui
  * @filesource
  */
 
@@ -14,7 +13,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * push: participant edit
  *
  * Edit a participant.
- * @package sabretooth\ui
  */
 class participant_edit extends base_edit
 {
