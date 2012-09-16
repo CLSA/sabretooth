@@ -249,7 +249,6 @@ class participant_status_report extends \cenozo\ui\pull\base_report
         $db_appointment = current( $db_participant->get_appointment_list( $appointment_mod ) );
         if( $db_appointment )
         {
-          log::debug( $db_appointment );
           $type = 'missed' == $db_appointment->get_state() ? 'Appointment (missed)' : 'Appointment';
           $category_totals_list[ $category ][ $type ]++;
           continue;
