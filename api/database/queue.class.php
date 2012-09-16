@@ -893,7 +893,7 @@ class queue extends \cenozo\database\record
   
   /**
    * Whether the participant_for_queue temporary table has been created.
-   * @var boolean $participant_for_queue_created
+   * @var boolean
    * @static
    */
   protected static $participant_for_queue_created = false;
