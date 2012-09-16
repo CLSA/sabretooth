@@ -48,6 +48,7 @@ class participant_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'status', 'enum', 'Condition' );
     $this->add_item( 'default_site', 'constant', 'Default Site' );
     $this->add_item( 'site_id', 'enum', 'Prefered Site' );
+    $this->add_item( 'email', 'string', 'Email' );
     $this->add_item( 'gender', 'enum', 'Gender' );
     $this->add_item( 'date_of_birth', 'date', 'Date of Birth' );
     $this->add_item( 'prior_contact_date', 'constant', 'Prior Contact Date' );
@@ -155,6 +156,7 @@ class participant_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'status', $record->status, false, $statuses );
     $this->set_item( 'default_site', $default_site );
     $this->set_item( 'site_id', $site_id, false, $sites );
+    $this->set_item( 'email', $record->email );
     $this->set_item( 'gender', $record->gender, true, $genders );
     $this->set_item( 'date_of_birth', $record->date_of_birth );
     $this->set_item( 'prior_contact_date', $record->prior_contact_date );

@@ -1,6 +1,6 @@
 <?php
 /**
- * appointment_calendar.class.php
+ * away_time_list.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,21 +10,21 @@ namespace sabretooth\ui\widget;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
- * widget appointment calendar
+ * widget away_time list
  */
-class appointment_calendar extends \cenozo\ui\widget\base_calendar
+class away_time_list extends site_restricted_list
 {
   /**
    * Constructor
    * 
-   * Defines all variables required by the appointment calendar.
+   * Defines all variables required by the away time list.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'appointment', $args );
+    parent::__construct( 'away_time', $args );
   }
 
   /**
@@ -37,8 +37,10 @@ class appointment_calendar extends \cenozo\ui\widget\base_calendar
   protected function prepare()
   {
     parent::prepare();
-
-    $this->set_heading( 'Appointments for '.lib::create( 'business\session' )->get_site()->name );
+    
+    $this->add_column( 'user.name', 'string', 'User', true );
+    $this->add_column( 'start_datetime', 'datetime', 'Start', true );
+    $this->add_column( 'end_datetime', 'datetime', 'End', true );
   }
   
   /**
@@ -50,10 +52,15 @@ class appointment_calendar extends \cenozo\ui\widget\base_calendar
   protected function setup()
   {
     parent::setup();
-
-    $this->set_variable( 'default_view', 'basicWeek' );
-    $this->set_variable( 'allow_all_day', false );
-    $this->set_variable( 'editable', true );
+    
+    foreach( $this->get_record_list() as $record )
+    {
+      // assemble the row for this record
+      $this->add_row( $record->id,
+        array( 'user.name' => $record->get_user()->name,
+               'start_datetime' => $record->start_datetime,
+               'end_datetime' => is_null( $record->end_datetime ) ? '' : $record->end_datetime ) );
+    }
   }
 }
 ?>

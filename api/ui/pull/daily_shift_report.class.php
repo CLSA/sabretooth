@@ -30,15 +30,12 @@ class daily_shift_report extends \cenozo\ui\pull\base_report
   }
 
   /**
-   * Sets up the operation with any pre-execution instructions that may be necessary.
-   * 
+   * Builds the report.
    * @author Dean Inglis <inglisd@mcmaster.ca>
    * @access protected
    */
-  protected function setup()
+  protected function build()
   {
-    parent::setup();
-
     // get the current user's role, if it isnt a supervisor then bailout 
 
     $session = lib::create( 'business\session' );

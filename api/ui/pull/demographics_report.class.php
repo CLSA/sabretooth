@@ -30,15 +30,12 @@ class demographics_report extends \cenozo\ui\pull\base_report
   }
 
   /**
-   * Sets up the operation with any pre-execution instructions that may be necessary.
-   * 
+   * Builds the report.
    * @author Dean Inglis <inglisd@mcmaster.ca>
    * @access protected
    */
-  protected function setup()
+  protected function build()
   {
-    parent::setup();
-
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
     // get the report arguments
