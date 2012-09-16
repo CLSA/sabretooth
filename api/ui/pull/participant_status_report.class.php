@@ -184,6 +184,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       'GROUP BY participant.id' );
 
     $participant_mod = lib::create( 'database\modifier' );
+    $participant_mod->where( 'age_group_id', '!=', NULL );
     if( $is_supervisor ) $participant_mod->where( 'site_id', '=', $session->get_site()->id );
     if( $restrict_province_id ) $participant_mod->where( 'address.region_id', '=', $restrict_province_id );
     if( 0 < $restrict_source_id ) $participant_mod->where( 'source_id', '=', $restrict_source_id );
@@ -240,33 +241,23 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       }
       else
       {
+        // first see if this participant has an unassigned appointment
         $now_datetime_obj = util::get_datetime_object();
         $appointment_mod = lib::create( 'database\modifier' );
         $appointment_mod->where( 'assignment_id', '=', NULL );
-        $appointment_mod->where( 'datetime', '>', $now_datetime_obj->format( 'Y-m-d H:i:s' ) );
-        $has_appointment = false;
-        foreach( $db_participant->get_appointment_list( $appointment_mod ) as $db_appointment )
+        $appointment_mod->order_desc( 'datetime' );
+        $db_appointment = current( $db_participant->get_appointment_list( $appointment_mod ) );
+        if( $db_appointment )
         {
-          if( 'missed' == $db_appointment->get_state() )
-          {
-            $category_totals_list[ $category ][ 'Appointment (missed)' ]++;
-            $has_appointment = true;
-            break;
-          }
-          else
-          {
-            $category_totals_list[ $category ][ 'Appointment' ]++;
-            $has_appointment = true;
-            break;
-          }
+          $type = 'missed' == $db_appointment->get_state() ? 'Appointment (missed)' : 'Appointment';
+          $category_totals_list[ $category ][ $type ]++;
+          continue;
         }
-        if( $has_appointment ) continue;
 
+        // next deal with withdrawn and retracted participants
         $interview_mod = lib::create( 'database\modifier' );
         $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id ); 
         $interview_list = $db_participant->get_interview_list( $interview_mod );
-
-        // first deal with withdrawn and retracted participants
 
         // For performance issues we cannot use the participant record's get_last_consent() method.
         // Instead, we use the temporary table created before this loop.
