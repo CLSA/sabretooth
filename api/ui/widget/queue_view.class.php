@@ -112,11 +112,9 @@ class queue_view extends \cenozo\ui\widget\base_view
     // replace participant. with participant_ in the where columns of the modifier
     // (see queue record's participant_for_queue for details)
     if( !is_null( $modifier ) )
-    {
       foreach( $modifier->get_where_columns() as $column )
         $modifier->change_where_column(
-          $column, str_replace( 'participant.', 'participant_', $column ) );
-    }
+          $column, preg_replace( '/^participant\./', 'participant_', $column ) );
 
     $db_queue = $this->get_record();
     $db_queue->set_site( $this->db_site );
@@ -140,10 +138,10 @@ class queue_view extends \cenozo\ui\widget\base_view
     {
       foreach( $modifier->get_where_columns() as $column )
         $modifier->change_where_column(
-          $column, str_replace( 'participant.', 'participant_', $column ) );
+          $column, preg_replace( '/^participant\./', 'participant_', $column ) );
       foreach( $modifier->get_order_columns() as $column )
         $modifier->change_order_column(
-          $column, str_replace( 'participant.', 'participant_', $column ) );
+          $column, preg_replace( '/^participant\./', 'participant_', $column ) );
     }
 
     $db_queue = $this->get_record();
