@@ -153,13 +153,6 @@ class participant_status_report extends \cenozo\ui\pull\base_report
         'FROM temp_participant '.
         'LEFT JOIN participant_site ON temp_participant.id = participant_site.participant_id '.
         'LEFT JOIN site ON participant_site.site_id = site.id ';
-
-      if( $restrict_province_id )
-        $this->base_sql .=
-          'LEFT JOIN participant_primary_address '.
-          'ON temp_participant.id = participant_primary_address.participant_id '.
-          'LEFT JOIN address '.
-          'ON participant_primary_address.address_id = address.id ';
     }
     else if( 'Province' == $breakdown )
     {
@@ -202,20 +195,22 @@ class participant_status_report extends \cenozo\ui\pull\base_report
         'temp_participant.id '.
         'FROM temp_participant '.
         'JOIN age_group ON temp_participant.age_group_id = age_group.id ';
-
-      if( $restrict_province_id )
-        $this->base_sql .=
-          'LEFT JOIN participant_primary_address '.
-          'ON temp_participant.id = participant_primary_address.participant_id '.
-          'LEFT JOIN address '.
-          'ON participant_primary_address.address_id = address.id ';
     }
 
     // we will need a table containing the most recent 
     // to avoid double-counting participants we create a temporary table with all participants,
     // then remove them as they fall into a category
-    $record_class_name::db()->execute(
-      'CREATE TEMPORARY TABLE temp_participant SELECT * FROM participant' );
+    $temp_table_sql = 
+      'CREATE TEMPORARY TABLE temp_participant SELECT participant.* '.
+      'FROM participant ';
+    if( 'Province' == $breakdown || $restrict_province_id ) $temp_table_sql .=
+      'LEFT JOIN participant_primary_address '.
+      'ON participant.id = participant_primary_address.participant_id '.
+      'LEFT JOIN address '.
+      'ON participant_primary_address.address_id = address.id ';
+    if( 'Province' == $breakdown ) $temp_table_sql .=
+      'LEFT JOIN region ON address.region_id = region.id '.
+      'AND region.country = "Canada" ';
 
     // add restrictions based on input parameters
     $modifier = lib::create( 'database\modifier' );
@@ -224,26 +219,27 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     if( 0 < $restrict_source_id ) $modifier->where( 'source_id', '=', $restrict_source_id );
     if( $restrict_start_date )
       $modifier->where(
-        'temp_participant.create_timestamp', '>=', $start_datetime_obj->format( 'Y-m-d' ) );
+        'participant.create_timestamp', '>=', $start_datetime_obj->format( 'Y-m-d' ) );
     if( $restrict_end_date )
       $modifier->where(
-        'temp_participant.create_timestamp', '<=', $end_datetime_obj->format( 'Y-m-d' ) );
+        'participant.create_timestamp', '<=', $end_datetime_obj->format( 'Y-m-d' ) );
+    $record_class_name::db()->execute( sprintf( '%s %s', $temp_table_sql, $modifier->get_sql() ) );
 
     // total of all phone calls
     $sub_cat = 'Total number of calls';
-    $sub_mod = clone $modifier;
-    $sub_mod->group( 'category' );
     $extra_sql = sprintf( 'JOIN interview ON temp_participant.id = interview.participant_id '.
                           'AND interview.qnaire_id = %s '.
                           'JOIN assignment ON interview.id = assignment.interview_id '.
                           'JOIN phone_call ON assignment.id = phone_call.assignment_id ',
                           $db_qnaire->id );
 
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->group( 'category' );
     $rows = $record_class_name::db()->get_all(
       sprintf( '%s %s %s',
                preg_replace( '/temp_participant\.id/', 'COUNT(*) AS total', $this->base_sql, 1 ),
                $extra_sql,
-               $sub_mod->get_sql() ) );
+               $modifier->get_sql() ) );
     foreach( $rows as $row )
     {
       if( is_null( $row['category'] ) )
@@ -256,15 +252,15 @@ class participant_status_report extends \cenozo\ui\pull\base_report
 
     // deceased
     $sub_cat = 'Deceased';
-    $sub_mod = clone $modifier;
-    $sub_mod->where( 'temp_participant.status', '=', 'deceased' );
-    $this->set_category_totals( $sub_cat, '', $sub_mod );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'temp_participant.status', '=', 'deceased' );
+    $this->set_category_totals( $sub_cat, '', $modifier );
 
     // final status not null
     $sub_cat = 'Permanent condition (excl. deceased)';
-    $sub_mod = clone $modifier;
-    $sub_mod->where( 'temp_participant.status', '!=', NULL );
-    $this->set_category_totals( $sub_cat, '', $sub_mod );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'temp_participant.status', '!=', NULL );
+    $this->set_category_totals( $sub_cat, '', $modifier );
 
     // unassigned past appointment
     $sub_cat = 'Appointment (missed)';
@@ -280,54 +276,48 @@ class participant_status_report extends \cenozo\ui\pull\base_report
 
     // unassigned future appointment (all remaining unassigned appointments
     $sub_cat = 'Appointment';
-    $sub_mod = clone $modifier;
     $extra_sql =
       'JOIN participant_last_appointment '.
       'ON temp_participant.id = participant_last_appointment.participant_id '.
       'JOIN appointment '.
       'ON participant_last_appointment.appointment_id = appointment.id '.
       'AND appointment.assignment_id IS NULL ';
-    $this->set_category_totals( $sub_cat, $extra_sql, $sub_mod );
+    $this->set_category_totals( $sub_cat, $extra_sql );
 
     // last consent retract
     $sub_cat = 'Retracted from study';
-    $sub_mod = clone $modifier;
     $extra_sql =
       'JOIN participant_last_consent '.
       'ON temp_participant.id = participant_last_consent.participant_id '.
       'JOIN consent '.
       'ON participant_last_consent.consent_id = consent.id '.
       'AND consent.event = "retract" ';
-    $this->set_category_totals( $sub_cat, $extra_sql, $sub_mod );
+    $this->set_category_totals( $sub_cat, $extra_sql );
 
     // last consent withdraw
     $sub_cat = 'Withdrawn from study';
-    $sub_mod = clone $modifier;
     $extra_sql =
       'JOIN participant_last_consent '.
       'ON temp_participant.id = participant_last_consent.participant_id '.
       'JOIN consent '.
       'ON participant_last_consent.consent_id = consent.id '.
       'AND consent.event = "withdraw" ';
-    $this->set_category_totals( $sub_cat, $extra_sql, $sub_mod );
+    $this->set_category_totals( $sub_cat, $extra_sql );
 
     // no interviews
     $sub_cat = 'Not yet called';
-    $sub_mod = clone $modifier;
-    $sub_mod->where( 'interview.id', '=', NULL );
     $extra_sql = sprintf(
       'LEFT JOIN interview '.
       'ON temp_participant.id = interview.participant_id '.
       'AND interview.qnaire_id = %s ',
       $db_qnaire->id );
-    $this->set_category_totals( $sub_cat, $extra_sql, $sub_mod );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'interview.id', '=', NULL );
+    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
 
     // has a complete interview
     // last consent: none
     $sub_cat = 'Completed interview - No consent information';
-    $sub_mod = clone $modifier;
-    $sub_mod->where( 'interview.completed', '=', true );
-    $sub_mod->where( 'participant_last_consent.consent_id', '=', NULL );
     $extra_sql = sprintf(
       'JOIN participant_last_consent '.
       'ON temp_participant.id = participant_last_consent.participant_id '.
@@ -335,14 +325,14 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       'ON temp_participant.id = interview.participant_id '.
       'AND interview.qnaire_id = %s ',
       $db_qnaire->id );
-    $this->set_category_totals( $sub_cat, $extra_sql, $sub_mod );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'interview.completed', '=', true );
+    $modifier->where( 'participant_last_consent.consent_id', '=', NULL );
+    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
 
     // has a complete interview
     // last consent: written accept
     $sub_cat = 'Completed interview - Consent received';
-    $sub_mod = clone $modifier;
-    $sub_mod->where( 'interview.completed', '=', true );
-    $sub_mod->where( 'consent.event', '=', 'written accept' );
     $extra_sql = sprintf(
       'JOIN participant_last_consent '.
       'ON temp_participant.id = participant_last_consent.participant_id '.
@@ -352,15 +342,14 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       'ON temp_participant.id = interview.participant_id '.
       'AND interview.qnaire_id = %s ',
       $db_qnaire->id );
-    $this->set_category_totals( $sub_cat, $extra_sql, $sub_mod );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'interview.completed', '=', true );
+    $modifier->where( 'consent.event', '=', 'written accept' );
+    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
 
     // has a complete interview
     // last consent: verbal deny, verbal accept or written deny
     $sub_cat = 'Completed interview - Consent not received';
-    $sub_mod = clone $modifier;
-    $sub_mod->where( 'interview.completed', '=', true );
-    $sub_mod->where( 'consent.event', 'IN',
-      array( 'verbal deny', 'verbal accept', 'written deny' ) );
     $extra_sql = sprintf(
       'JOIN participant_last_consent '.
       'ON temp_participant.id = participant_last_consent.participant_id '.
@@ -370,14 +359,15 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       'ON temp_participant.id = interview.participant_id '.
       'AND interview.qnaire_id = %s ',
       $db_qnaire->id );
-    $this->set_category_totals( $sub_cat, $extra_sql, $sub_mod );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'interview.completed', '=', true );
+    $modifier->where( 'consent.event', 'IN',
+      array( 'verbal deny', 'verbal accept', 'written deny' ) );
+    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
 
     // has an incomplete interview
     // last consent: verbal or written deny
     $sub_cat = 'Hard refusal';
-    $sub_mod = clone $modifier;
-    $sub_mod->where( 'interview.completed', '=', false );
-    $sub_mod->where( 'consent.event', 'IN', array( 'verbal deny', 'written deny' ) );
     $extra_sql = sprintf(
       'JOIN participant_last_consent '.
       'ON temp_participant.id = participant_last_consent.participant_id '.
@@ -387,7 +377,10 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       'ON temp_participant.id = interview.participant_id '.
       'AND interview.qnaire_id = %s ',
       $db_qnaire->id );
-    $this->set_category_totals( $sub_cat, $extra_sql, $sub_mod );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'interview.completed', '=', false );
+    $modifier->where( 'consent.event', 'IN', array( 'verbal deny', 'written deny' ) );
+    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
 
     // has an incomplete interview
     // failed call count >= max failed calls
@@ -396,9 +389,6 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $max_failed_calls =
       lib::create( 'business\setting_manager' )->get_setting( 'calling', 'max failed calls' );
     $interview_class_name::create_interview_failed_call_count();
-    $sub_mod = clone $modifier;
-    $sub_mod->where( 'interview.completed', '=', false );
-    $sub_mod->where( 'interview_failed_call_count.total', '>=', $max_failed_calls );
     $extra_sql = sprintf(
       'LEFT JOIN interview '.
       'ON temp_participant.id = interview.participant_id '.
@@ -406,16 +396,16 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       'JOIN interview_failed_call_count '.
       'ON interview.id = interview_failed_call_count.interview_id ',
       $db_qnaire->id );
-    $this->set_category_totals( $sub_cat, $extra_sql, $sub_mod );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'interview.completed', '=', false );
+    $modifier->where( 'interview_failed_call_count.total', '>=', $max_failed_calls );
+    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
 
     // has an incomplete interview
     // last phone call status
     foreach( $phone_call_class_name::get_enum_values( 'status' ) as $status )
     {
       $sub_cat = ucfirst( $status );
-      $sub_mod = clone $modifier;
-      $sub_mod->where( 'interview.completed', '=', false );
-      $sub_mod->where( 'phone_call.status', '=', $status );
       $extra_sql = sprintf( 
         'LEFT JOIN interview '.
         'ON temp_participant.id = interview.participant_id '.
@@ -427,7 +417,10 @@ class participant_status_report extends \cenozo\ui\pull\base_report
         'JOIN phone_call '.
         'ON assignment_last_phone_call.phone_call_id = phone_call.id ',
         $db_qnaire->id );
-      $this->set_category_totals( $sub_cat, $extra_sql, $sub_mod );
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'interview.completed', '=', false );
+      $modifier->where( 'phone_call.status', '=', $status );
+      $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
     }
 
     $header = array( 'Current Outcome' );
