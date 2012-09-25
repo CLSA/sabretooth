@@ -27,3 +27,13 @@ INSERT IGNORE INTO role_has_operation
 SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
     operation_id = ( SELECT id FROM operation WHERE
       type = "pull" AND subject = "away_time" AND name = "primary" );
+
+-- add appointment report to supervisors
+INSERT IGNORE INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "widget" AND subject = "appointment" AND name = "report" );
+INSERT IGNORE INTO role_has_operation
+SET role_id = ( SELECT id FROM role WHERE name = "supervisor" ),
+    operation_id = ( SELECT id FROM operation WHERE
+      type = "pull" AND subject = "appointment" AND name = "report" );
