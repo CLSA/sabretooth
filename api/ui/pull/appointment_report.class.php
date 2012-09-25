@@ -54,12 +54,13 @@ class appointment_report extends \cenozo\ui\pull\base_report
     $appointment_mod->order( 'datetime' );
     foreach( $appointment_class_name::select( $appointment_mod ) as $db_appointment )
     {
+      $db_assignment = $db_appointment->get_assignment();
       $contents[] = array(
         $db_appointment->get_participant()->uid,
         util::get_formatted_time( $db_appointment->datetime, false ),
         $db_appointment->type,
         $db_appointment->reached ? 'Yes' : 'No',
-        $db_appointment->reached ? $db_appointment->get_assignment()->get_user()->name : 'N/A' );
+        is_null( $db_assignment ) ? 'none' : $db_assignment->get_user()->name );
     }
 
     // remove the site if we are restricting the report
