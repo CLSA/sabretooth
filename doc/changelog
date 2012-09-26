@@ -36,6 +36,9 @@
 * Adding email address to participant view
   - This property is synched with the email address in Mastodon
 
+* Added new appointment report
+  - Report can be ran by supervisors for any one day, shows list of all appointments on that day
+
 ====================================================================================================
 1.1.6
 ====================================================================================================
