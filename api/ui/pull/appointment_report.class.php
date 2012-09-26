@@ -63,13 +63,6 @@ class appointment_report extends \cenozo\ui\pull\base_report
         is_null( $db_assignment ) ? 'none' : $db_assignment->get_user()->name );
     }
 
-    // remove the site if we are restricting the report
-    if( $restrict_site_id )
-    {
-      array_shift( $header );
-      foreach( $contents as $index => $content ) array_shift( $contents[$index] );
-    }
-
     $this->add_table( NULL, $header, $contents, NULL );
   }
 }
