@@ -28,12 +28,13 @@ class self_shortcuts extends \cenozo\ui\widget\self_shortcuts
     $survey_manager = lib::create( 'business\survey_manager' );
     $voip_manager = lib::create( 'business\voip_manager' );
     $session = lib::create( 'business\session' );
+    $db_site = $session->get_site();
 
     $voip_enabled = $setting_manager->get_setting( 'voip', 'enabled' );
     $is_operator = 'operator' == $session->get_role()->name;
     
     // get the xor key and make sure it is at least as long as the password
-    $xor_key = $setting_manager->get_setting( 'voip', 'xor_key' );
+    $xor_key = $db_site->voip_xor_key;
     $password = $_SERVER['PHP_AUTH_PW'];
 
     // avoid infinite loops by using a counter
@@ -45,7 +46,8 @@ class self_shortcuts extends \cenozo\ui\widget\self_shortcuts
     }
     
     $this->set_variable( 'webphone_parameters', sprintf(
-      'username=%s&password=%s',
+      'host=%s&username=%s&password=%s',
+      $db_site->voip_host,
       $_SERVER['PHP_AUTH_USER'],
       base64_encode( $password ^ $xor_key ) ) );
     $this->set_variable( 'webphone',
