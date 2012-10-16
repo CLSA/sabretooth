@@ -56,7 +56,7 @@ $SETTINGS['ldap']['active_directory'] = true;
 
 // The Asterisk AJAM url, username and password
 $SETTINGS['voip']['enabled'] = false;
-$SETTINGS['voip']['url'] = 'http://localhost:8088/mxml';
+$SETTINGS['voip']['url'] = 'http://%s:8088/mxml'; // %s will be replaced with the voip host
 $SETTINGS['voip']['username'] = 'put your asterisk username here';
 $SETTINGS['voip']['password'] = 'put your asterisk password here';
 $SETTINGS['voip']['prefix'] = '00';
