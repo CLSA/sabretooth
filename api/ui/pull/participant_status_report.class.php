@@ -498,7 +498,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       foreach( $subarr as $subkey => $subvalue )
         $content[ $subkey ][ $key ] = $subvalue;
 
-    $this->add_table( NULL, $header, $content, NULL );
+    $this->add_table( NULL, $header, $content, NULL, NULL, array( 'A' ) );
   }
 
   /**
