@@ -205,31 +205,41 @@ class participant_view extends \cenozo\ui\widget\base_view
     }
     catch( \cenozo\exception\permission $e ) {}
 
-    // add an action for secondary contact if this participant has too many call attempts
+    // add an action for secondary contact if this participant has no active phone numbers or
+    // too many failed call attempts
     $allow_secondary = false;
     $interview_mod = lib::create( 'database\modifier' );
     $interview_mod->where( 'completed', '=', false );
     $interview_list = $this->get_record()->get_interview_list( $interview_mod );
-    if( 0 < count( $interview_list ) )
+    
+    $phone_mod = lib::create( 'database\modifier' );
+    $phone_mod->where( 'active', '=', true );
+    if( 0 == $this->get_record()->get_phone_count( $phone_mod ) )
+    {
+      $allow_secondary = true;
+    }
+    else if( 0 < count( $interview_list ) )
     {
       $max_failed_calls = lib::create( 'business\setting_manager' )->get_setting(
         'calling', 'max failed calls', $this->get_record()->get_primary_site() );
 
       // should only be one incomplete interview
       $db_interview = current( $interview_list );
-      if( $max_failed_calls <= $db_interview->get_failed_call_count() )
-      {
-        $db_operation =
-          $operation_class_name::get_operation( 'widget', 'participant', 'secondary' );
-        if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
-        {
-          $this->add_action( 'secondary', 'Secondary Contacts', NULL,
-            'A list of alternate contacts which can be called to update a '.
-            'participant\'s contact information' );
-          $allow_secondary = true;
-        }
-      }
+      if( $max_failed_calls <= $db_interview->get_failed_call_count() ) $allow_secondary = true;
     }
+
+    if( $allow_secondary )
+    {
+      $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'secondary' );
+      if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+      {
+        $this->add_action( 'secondary', 'Secondary Contacts', NULL,
+          'A list of alternate contacts which can be called to update a '.
+          'participant\'s contact information' );
+      }
+      else $allow_secondary = false;
+    }
+
     $this->set_variable( 'allow_secondary', $allow_secondary );
   }
   
