@@ -69,9 +69,23 @@ class shift_template_view extends \cenozo\ui\widget\base_view
     $this->set_variable( 'saturday', $this->get_record()->saturday );
     $this->set_variable( 'sunday', $this->get_record()->sunday );
 
+    $start_time = $this->get_record()->start_time;
+    $end_time = $this->get_record()->end_time;
+
+    // if server is in daylight savings mode, convert to standard time
+    if( '1' == util::get_datetime_object()->format( 'I' ) )
+    {
+      $start_datetime_obj = util::get_datetime_object( $start_time );
+      $start_datetime_obj->sub( new \DateInterval( 'PT1H' ) );
+      $start_time = $start_datetime_obj->format( 'H:i:s' );
+      $end_datetime_obj = util::get_datetime_object( $end_time );
+      $end_datetime_obj->sub( new \DateInterval( 'PT1H' ) );
+      $end_time = $end_datetime_obj->format( 'H:i:s' );
+    }
+
     // set the view's items
-    $this->set_item( 'start_time', $this->get_record()->start_time, true );
-    $this->set_item( 'end_time', $this->get_record()->end_time, true );
+    $this->set_item( 'start_time', $start_time, true );
+    $this->set_item( 'end_time', $end_time, true );
     $this->set_item( 'operators', 1, true );
     $this->set_item( 'start_date', $this->get_record()->start_date, true );
     $this->set_item( 'end_date', $this->get_record()->end_date, false );

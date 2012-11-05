@@ -40,6 +40,7 @@ class shift_template_feed extends \cenozo\ui\pull\base_feed
     $this->data = array();
     $db_site = lib::create( 'business\session' )->get_site();
 
+    $daylight_savings = '1' == util::get_datetime_object()->format( 'I' );
     $calendar_start_datetime_obj = util::get_datetime_object( $this->start_datetime );
     $calendar_end_datetime_obj   = util::get_datetime_object( $this->end_datetime );
 
@@ -113,6 +114,14 @@ class shift_template_feed extends \cenozo\ui\pull\base_feed
           $event_end_datetime_obj = util::get_datetime_object(
             $datetime_obj->format( 'Y-m-d' ).$db_shift_template->end_time );
 
+          // need to adjust for daylight savings, but only if the server is currently in daylight
+          // savings mode
+          if( $daylight_savings )
+          {
+            $event_start_datetime_obj->sub( new \DateInterval( 'PT1H' ) );
+            $event_end_datetime_obj->sub( new \DateInterval( 'PT1H' ) );
+          }
+          
           $end_time = '00' == $event_end_datetime_obj->format( 'i' )
                     ? $event_end_datetime_obj->format( 'ga' )
                     : $event_end_datetime_obj->format( 'g:ia' );
