@@ -38,6 +38,8 @@ class participant_status_report extends \cenozo\ui\pull\base_report
    */
   protected function build()
   {
+    $this->report->set_orientation( 'landscape' );
+
     $record_class_name = lib::get_class_name( 'database\record' );
     $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
     $region_class_name = lib::get_class_name( 'database\region' );
@@ -131,10 +133,6 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       'Response rate (excl. soft refusals)' => 0,
       'Total number of calls' => 0,
       'Completed interviews / total number of calls' => 0 ) );
-
-    // insert a blank line before Total number of calls
-    $blank = array();
-    $blank[] = count( $category_totals ) - 3;
 
     $this->category_totals_list = array();
     if( 'Site' == $breakdown )
@@ -500,7 +498,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       foreach( $subarr as $subkey => $subvalue )
         $content[ $subkey ][ $key ] = $subvalue;
 
-    $this->add_table( NULL, $header, $content, NULL, $blank );
+    $this->add_table( NULL, $header, $content, NULL, NULL, array( 'A' ) );
   }
 
   /**

@@ -26,5 +26,25 @@ class shift_template_edit extends \cenozo\ui\push\base_edit
   {
     parent::__construct( 'shift_template', $args );
   }
+
+  /**
+   * If server is in daylight savings mode, convert to standard time
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
+  {
+    parent::setup();
+
+    if( '1' == util::get_datetime_object()->format( 'I' ) )
+    {
+      $start_datetime_obj = util::get_datetime_object( $this->arguments['columns']['start_time'] );
+      $start_datetime_obj->add( new \DateInterval( 'PT1H' ) );
+      $this->arguments['columns']['start_time'] = $start_datetime_obj->format( 'H:i:s' );
+      $end_datetime_obj = util::get_datetime_object( $this->arguments['columns']['end_time'] );
+      $end_datetime_obj->add( new \DateInterval( 'PT1H' ) );
+      $this->arguments['columns']['end_time'] = $end_datetime_obj->format( 'H:i:s' );
+    }
+  }
 }
 ?>

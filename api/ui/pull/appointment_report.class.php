@@ -50,7 +50,8 @@ class appointment_report extends \cenozo\ui\pull\base_report
     $appointment_class_name = lib::get_class_name( 'database\appointment' );
     $appointment_mod = lib::create( 'database\modifier' );
     $appointment_mod->where( 'participant_site.site_id', '=', $db_site->id );
-    $appointment_mod->where( 'DATE( datetime )', '=', $date );
+    $appointment_mod->where( 'datetime', '>=', $date.' 00:00:00' );
+    $appointment_mod->where( 'datetime', '<=', $date.' 23:59:59' );
     $appointment_mod->order( 'datetime' );
     foreach( $appointment_class_name::select( $appointment_mod ) as $db_appointment )
     {

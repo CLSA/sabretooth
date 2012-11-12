@@ -73,5 +73,31 @@ class away_time_new extends \cenozo\ui\push\base_new
         'Unable to change away time, user has activity between the start and end times.',
         __METHOD__ );
   }
+
+  /**
+   * Delete any user_time for the day the of the away time so that it is re-calculated
+   * next time it is needed.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
+  {
+    parent::setup();
+
+    $columns = $this->get_argument( 'columns' );
+    $user_time_class_name = lib::get_class_name( 'database\user_time' );
+
+    $user_time_mod = lib::create( 'database\modifier' );
+    $user_time_mod->where( 'user_id', '=', $columns['user_id'] );
+    $user_time_mod->where( 'site_id', '=', $columns['site_id'] );
+    $user_time_mod->where( 'role_id', '=', $columns['role_id'] );
+    $user_time_mod->where(
+      'date', '>=', sprintf( 'DATE( "%s" )', $columns['start_datetime'] ), false );
+    $user_time_mod->where(
+      'date', '<=', sprintf( 'DATE( "%s" )', $columns['end_datetime'] ), false );
+    foreach( $user_time_class_name::select( $user_time_mod ) as $db_user_time )
+      $db_user_time->delete();
+  }
 }
 ?>
