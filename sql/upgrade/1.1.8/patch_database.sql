@@ -3,3 +3,4 @@
 SOURCE queue.sql
 SOURCE setting.sql
 SOURCE participant.sql
+SOURCE interview.sql
