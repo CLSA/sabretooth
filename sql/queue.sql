@@ -320,7 +320,7 @@ description = "Participants who have an appointment in the future.";
 
 INSERT INTO queue SET
 name = "assignable appointment",
-title = "Appointment assignnable",
+title = "Appointment assignable",
 rank = 1,
 qnaire_specific = true,
 parent_queue_id = (
@@ -343,8 +343,8 @@ parent_queue_id = (
 description = "Participants who have an appointment which was missed.";
 
 INSERT INTO queue SET
-name = "scheduled call",
-title = "Participants with a scheduled call",
+name = "callback",
+title = "Participants with callbacks",
 rank = NULL,
 qnaire_specific = true,
 parent_queue_id = (
@@ -352,35 +352,35 @@ parent_queue_id = (
     SELECT id
     FROM queue
     WHERE name = "not assigned" ) AS tmp ),
-description = "Participants who have a scheduled call.";
+description = "Participants who have an (unassigned) callback.";
 
 INSERT INTO queue SET
-name = "scheduled call waiting",
-title = "Participants with a scheduled call (waiting)",
+name = "upcoming callback",
+title = "Callback upcoming",
 rank = NULL,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "scheduled call" ) AS tmp ),
-description = "Participants who have a scheduled call that is not yet ready for calling.";
+    WHERE name = "callback" ) AS tmp ),
+description = "Participants who have an callback in the future.";
 
 INSERT INTO queue SET
-name = "scheduled call ready",
-title = "Participants with a scheduled call (ready)",
+name = "assignable callback",
+title = "Callback assignable",
 rank = 3,
 qnaire_specific = true,
 parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "scheduled call" ) AS tmp ),
-description = "Participants who have a scheduled call who is ready to be called.";
+    WHERE name = "callback" ) AS tmp ),
+description = "Participants who have an immediate callback which is ready to be assigned.";
 
 INSERT INTO queue SET
 name = "no appointment",
-title = "Participants without appointments",
+title = "Participants without appointments or callbacks",
 rank = NULL,
 qnaire_specific = true,
 parent_queue_id = (
@@ -388,7 +388,7 @@ parent_queue_id = (
     SELECT id
     FROM queue
     WHERE name = "not assigned" ) AS tmp ),
-description = "Participants who do not have an appointment or a scheduled call.";
+description = "Participants who do not have an appointment or callback.";
 
 INSERT INTO queue SET
 name = "quota disabled",

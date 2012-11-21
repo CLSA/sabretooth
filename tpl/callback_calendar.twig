@@ -1,0 +1,31 @@
+{##
+ # callback_calendar.twig
+ # 
+ # Displays a calendar of all callbacks for a particular site.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ #}
+{% extends "base_calendar.twig" %}
+
+{% block callbacks %}
+
+        eventClick: function( event, jsEvent, view ) {
+          // edit the callback
+          slot_load( "{{ widget.full }}", "callback", "view", { id: event.id, hide_calendar: true } );
+          $( "#{{ widget.full }}_slot" ).dialog( "open" );
+        },
+        events: function( start, end, callback ) {
+          var args = new Object();
+          args.start = start.getFullYear() + "-" + ( start.getMonth() + 1 ) + "-" + start.getDate();
+          args.end = end.getFullYear() + "-" + ( end.getMonth() + 1 ) + "-" + end.getDate();
+
+          var data = ajax_pull( "callback", "feed", args );
+          if( undefined != data ) {
+            var events = new Array();
+            for( var index = 0; index < data.length; index++ ) {
+              events.push( data[index] );
+            }
+            callback( events );
+          }
+        }
+
+{% endblock callbacks %}

@@ -115,6 +115,7 @@ class operator_assignment extends \cenozo\ui\widget
     { // fill out the participant's details
       $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
       $appointment_class_name = lib::get_class_name( 'database\appointment' );
+      $callback_class_name = lib::get_class_name( 'database\callback' );
       $operation_class_name = lib::get_class_name( 'database\operation' );
 
       $db_interview = $db_assignment->get_interview();
@@ -189,11 +190,23 @@ class operator_assignment extends \cenozo\ui\widget
       $this->set_variable(
         'allow_withdraw', !is_null( $db_interview->get_qnaire()->withdraw_sid ) );
       
-      // set the appointment variable
+      // set the appointment and callback variables
+      $this->set_variable( 'appointment', false );
+      $this->set_variable( 'callback', false );
+      $this->set_variable( 'phone_id', false );
+
+      // get the appointment associated with this assignment, if any
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'assignment_id', '=', $db_assignment->id );
       $appointment_list = $appointment_class_name::select( $modifier );
       $db_appointment = 0 == count( $appointment_list ) ? NULL : $appointment_list[0];
+
+      // get the callback associated with this assignment, if any
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'assignment_id', '=', $db_assignment->id );
+      $callback_list = $callback_class_name::select( $modifier );
+      $db_callback = 0 == count( $callback_list ) ? NULL : $callback_list[0];
+      
       if( !is_null( $db_appointment ) )
       {
         // Determine whether the appointment was missed by calling get_state( true )
@@ -226,10 +239,23 @@ class operator_assignment extends \cenozo\ui\widget
           $this->set_variable( 'phone_at', false );
         }
       }
-      else
+      else if( !is_null( $db_callback ) )
       {
-        $this->set_variable( 'appointment', false );
-        $this->set_variable( 'phone_id', false );
+        $this->set_variable( 'callback',
+          util::get_formatted_time( $db_callback->datetime, false ) );
+
+        if( !is_null( $db_callback->phone_id ) )
+        {
+          $db_phone = lib::create( 'database\phone', $db_callback->phone_id );
+          $this->set_variable( 'phone_id', $db_callback->phone_id );
+          $this->set_variable( 'phone_at',
+            sprintf( '%d. %s (%s)', $db_phone->rank, $db_phone->type, $db_phone->number ) );
+        }
+        else
+        {
+          $this->set_variable( 'phone_id', false );
+          $this->set_variable( 'phone_at', false );
+        }
       }
 
       if( !is_null( $db_last_assignment ) )

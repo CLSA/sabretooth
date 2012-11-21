@@ -54,7 +54,6 @@ class participant_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'prior_contact_date', 'constant', 'Prior Contact Date' );
     $this->add_item( 'current_qnaire_name', 'constant', 'Current Questionnaire' );
     $this->add_item( 'start_qnaire_date', 'constant', 'Delay Questionnaire Until' );
-    $this->add_item( 'scheduled_call_datetime', 'datetime', 'Scheduled Call' );
     
     try
     {
@@ -84,6 +83,11 @@ class participant_view extends \cenozo\ui\widget\base_view
     $this->appointment_list = lib::create( 'ui\widget\appointment_list', $this->arguments );
     $this->appointment_list->set_parent( $this );
     $this->appointment_list->set_heading( 'Appointments' );
+
+    // create the callback sub-list widget
+    $this->callback_list = lib::create( 'ui\widget\callback_list', $this->arguments );
+    $this->callback_list->set_parent( $this );
+    $this->callback_list->set_heading( 'Callbacks' );
 
     // create the availability sub-list widget
     $this->availability_list = lib::create( 'ui\widget\availability_list', $this->arguments );
@@ -163,7 +167,6 @@ class participant_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'prior_contact_date', $record->prior_contact_date );
     $this->set_item( 'current_qnaire_name', $current_qnaire_name );
     $this->set_item( 'start_qnaire_date', $start_qnaire_date );
-    $this->set_item( 'scheduled_call_datetime', $record->scheduled_call_datetime );
 
     try
     {
@@ -183,6 +186,13 @@ class participant_view extends \cenozo\ui\widget\base_view
     {
       $this->appointment_list->process();
       $this->set_variable( 'appointment_list', $this->appointment_list->get_variables() );
+    }
+    catch( \cenozo\exception\permission $e ) {}
+
+    try
+    {
+      $this->callback_list->process();
+      $this->set_variable( 'callback_list', $this->callback_list->get_variables() );
     }
     catch( \cenozo\exception\permission $e ) {}
 
@@ -297,6 +307,13 @@ class participant_view extends \cenozo\ui\widget\base_view
    * @access protected
    */
   protected $appointment_list = NULL;
+  
+  /**
+   * The participant list widget.
+   * @var callback_list
+   * @access protected
+   */
+  protected $callback_list = NULL;
   
   /**
    * The participant list widget.

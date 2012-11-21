@@ -33,6 +33,7 @@ class self_menu extends \cenozo\ui\widget\self_menu
       'address',
       'appointment',
       'availability',
+      'callback',
       'consent',
       'operation',
       'phase',

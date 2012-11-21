@@ -4,3 +4,6 @@ SOURCE queue.sql
 SOURCE setting.sql
 SOURCE participant.sql
 SOURCE interview.sql
+SOURCE callback.sql
+SOURCE operation.sql
+SOURCE role_has_operation.sql

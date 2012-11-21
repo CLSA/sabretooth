@@ -57,8 +57,9 @@ class assignment_end extends \cenozo\ui\push
     $db_assignment = lib::create( 'business\session' )->get_current_assignment();
     if( !is_null( $db_assignment ) )
     {
-      // if there is an appointment associated with this assignment, set the status
+      // if there is an appointment or callback associated with this assignment, set the status
       $appointment_list = $db_assignment->get_appointment_list();
+      $callback_list = $db_assignment->get_callback_list();
       if( 0 < count( $appointment_list ) )
       {
         // there should always only be one appointment per assignment
@@ -74,6 +75,22 @@ class assignment_end extends \cenozo\ui\push
         $modifier->where( 'status', '=', 'contacted' );
         $db_appointment->reached = 0 < $db_assignment->get_phone_call_count( $modifier );
         $db_appointment->save();
+      }
+      else if( 0 < count( $callback_list ) )
+      {
+        // there should always only be one callback per assignment
+        if( 1 < count( $callback_list ) )
+          log::crit(
+            sprintf( 'Assignment %d has more than one associated callback!',
+                     $db_assignment->id ) );
+
+        $db_callback = current( $callback_list );
+
+        // set the callback status based on whether any calls reached the participant
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'status', '=', 'contacted' );
+        $db_callback->reached = 0 < $db_assignment->get_phone_call_count( $modifier );
+        $db_callback->save();
       }
 
       // save the assignment's end time
