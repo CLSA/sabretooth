@@ -188,10 +188,6 @@ class queue extends \cenozo\database\record
     $db_parent = $this->parent_queue_id ? new static( $this->parent_queue_id ) : NULL;
     $parent = is_null( $db_parent ) ? 'NULL' : $db_parent->name;
 
-    if( 'callback' == $this->name )
-      log::debug( sprintf( '%s %s',
-        $this->get_sql( 'COUNT( DISTINCT participant_for_queue.id )' ),
-        $modifier->get_sql( true ) ) );
     self::$participant_count_cache[$this->name][$qnaire_id][$site_id] =
       (integer) static::db()->get_one( sprintf( '%s %s',
         $this->get_sql( 'COUNT( DISTINCT participant_for_queue.id )' ),
