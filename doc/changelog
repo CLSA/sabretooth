@@ -1,4 +1,17 @@
 ====================================================================================================
+1.1.8
+====================================================================================================
+
+* Scheduled calls
+  - In the participant's details a new "Scheduled Call" list has been added
+  - Added new category to queue similar to appointments
+  - Participants are held in "waiting" queue until scheduled call time arrives at which point they
+    are assigned in priority after appointments
+
+* Cognitive Rescoring
+  - Minor changes due to requirement changes
+
+====================================================================================================
 1.1.7
 ====================================================================================================
 
@@ -23,6 +36,9 @@
 
 * Adding email address to participant view
   - This property is synched with the email address in Mastodon
+
+* Added new appointment report
+  - Report can be ran by supervisors for any one day, shows list of all appointments on that day
 
 ====================================================================================================
 1.1.6

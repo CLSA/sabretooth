@@ -1,0 +1,31 @@
+{##
+ # callback_add.twig
+ # 
+ # Form for creating new callbacks.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @see base_add.twig for parameters
+ #}
+{% extends "base_add.twig" %}
+
+{% block javascript %}
+
+  <script type="text/javascript">
+    $( function () {
+      // add button
+      $( "#{{ widget.compound }}_add" ).click( function () {
+        // push the form information
+        var args = new Object();
+        var columns = new Object();
+        $( "#{{ widget.full }}_add_form :input" ).each( function() {
+          var id_string = $(this).attr( "id" );
+          var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
+          columns[column_name] = $(this).val();
+        } );
+        args.columns = columns;
+
+        if( ajax_push( "{{ widget.subject }}", "new", args ) ) slot_prev( {{ slot }} );
+      } );
+    } );
+  </script>
+
+{% endblock javascript %}

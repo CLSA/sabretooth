@@ -79,11 +79,31 @@ VALUES( "widget", "away_time", "list", true, "List away times in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "away_time", "primary", true, "Retrieves base away time information." );
 
+-- callback
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "callback", "delete", true, "Removes a participant's callback from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "callback", "edit", true, "Edits the details of a participant's callback." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "callback", "new", true, "Creates new callback entry for a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "callback", "add", true, "View a form for creating new callbacks for a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "callback", "view", true, "View the details of a participant's particular callback." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "callback", "list", true, "Lists a participant's callbacks." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "callback", "primary", true, "Retrieves base callback information." );
+
 -- calendar
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "appointment", "calendar", true, "Shows appointments in a calendar format." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "appointment", "feed", true, "Retrieves a list of appointments for a given time-span." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "callback", "calendar", true, "Shows callbacks in a calendar format." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "callback", "feed", true, "Retrieves a list of callbacks for a given time-span." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "availability", "calendar", true, "Shows aggregate availabilities in a calendar format." );
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -170,6 +190,10 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "add_appointment", true, "A form to create a new appointment to add to a participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "delete_appointment", true, "Remove a participant's appointment." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "add_callback", true, "A form to create a new callback to add to a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "participant", "delete_callback", true, "Remove a participant's callback." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "add_availability", true, "A form to create a new availability entry to add to a participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -358,10 +382,10 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant_tree", "report", true, "Set up a participant tree report." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant_tree", "report", true, "Download a participant tree report." );
--- INSERT INTO operation( type, subject, name, restricted, description )
--- VALUES( "widget", "daily_shift", "report", true, "Set up a new daily shift report." );
--- INSERT INTO operation( type, subject, name, restricted, description )
--- VALUES( "pull", "daily_shift", "report", true, "Download a new daily shift report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "appointment", "report", true, "Set up a appointment report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "appointment", "report", true, "Download a appointment report." );
 
 -- self
 INSERT INTO operation( type, subject, name, restricted, description )

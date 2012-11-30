@@ -23,12 +23,15 @@
             "volume": $volume.val() } );
       } );
       
-      // monitor buttons are pushed
-      $( "#{{ widget.full }}__start_monitor" ).click( function() {
-        ajax_push( "voip", "begin_monitor" );
-      } );
-      $( "#{{ widget.full }}__stop_monitor" ).click( function() {
-        ajax_push( "voip", "end_monitor" );
+      // monitor button is pushed
+      $( "#{{ widget.full }}__monitor" ).click( function() {
+        if( "Stop Recording Participant" == $(this).html() ) {
+          ajax_push( "voip", "end_monitor" );
+          $(this).html( "Begin Recording Participant" );
+        } else if ( {{ on_call ? "true" : "false" }} ) {
+          ajax_push( "voip", "begin_monitor" );
+          $(this).html( "Stop Recording Participant" );
+        }
       } );
       
       // timer type is changed
@@ -124,10 +127,8 @@
   <hr class="ui-widget ui-widget-content">
   <table>
     <tr>
-      <td><button id="{{ widget.full }}__start_monitor"
-                  style="width: 100%; font-weight: bold;">Start Recording</button></td>
-      <td><button id="{{ widget.full }}__stop_monitor"
-                  style="width: 100%; font-weight: bold;">Stop Recording</button></td>
+      <td><button id="{{ widget.full }}__monitor"
+                  style="width: 100%; font-weight: bold;">Begin Recording Participant</button></td>
     </tr>
   </table>
   <hr class="ui-widget ui-widget-content">

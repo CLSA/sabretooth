@@ -69,6 +69,9 @@ class queue extends \cenozo\database\record
       'upcoming appointment',
       'assignable appointment',
       'missed appointment',
+      'callback',
+      'upcoming callback',
+      'assignable callback',
       'no appointment',
       'quota disabled',
       'outside calling time',
@@ -285,6 +288,19 @@ class queue extends \cenozo\database\record
                                          'upcoming appointment',
                                          'assignable appointment',
                                          'missed appointment' ) );
+  }
+
+  /**
+   * Get whether this queue is related to a callback
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function from_callback()
+  {
+    return in_array( $this->name, array( 'callback',
+                                         'upcoming callback',
+                                         'assignable callback' ) );
   }
 
   /**
@@ -672,9 +688,37 @@ class queue extends \cenozo\database\record
         $viewing_date );
       return $parts;
     }
+    else if( 'callback' == $queue )
+    {
+      // link to callback table and make sure the callback hasn't been assigned
+      // (by design, there can only ever one unassigned callback per participant)
+      $parts['from'][] = 'callback';
+      $parts['where'][] = 'callback.participant_id = participant_for_queue.id';
+      $parts['where'][] = 'callback.assignment_id IS NULL';
+      return $parts;
+    }
+    else if( 'upcoming callback' == $queue )
+    {
+      // callback time (in UTC) is in the future
+      $parts['where'][] = sprintf(
+        $check_time ? '%s < callback.datetime - INTERVAL <CALLBACK_PRE_WINDOW> MINUTE'
+                    : 'DATE( %s ) < DATE( callback.datetime )',
+        $viewing_date );
+      return $parts;
+    }
+    else if( 'assignable callback' == $queue )
+    {
+      // callback time (in UTC) is in the calling window
+      $parts['where'][] = sprintf(
+        $check_time ? '%s >= callback.datetime - INTERVAL <CALLBACK_PRE_WINDOW> MINUTE'
+                    : 'DATE( %s ) = DATE( callback.datetime )',
+        $viewing_date,
+        $viewing_date );
+      return $parts;
+    }
     else if( 'no appointment' == $queue )
     {
-      // make sure there is no unassigned appointment.  By design there can only be one of per
+      // Make sure there is no unassigned appointment.  By design there can only be one of per
       // participant, so if the appointment is null then the participant has no pending
       // appointments.
       $parts['join'][] =
@@ -682,6 +726,14 @@ class queue extends \cenozo\database\record
         'ON appointment.participant_id = participant_for_queue.id '.
         'AND appointment.assignment_id IS NULL';
       $parts['where'][] = 'appointment.id IS NULL';
+      // Make sure there is no unassigned callback.  By design there can only be one of per
+      // participant, so if the callback is null then the participant has no pending
+      // callbacks.
+      $parts['join'][] =
+        'LEFT JOIN callback '.
+        'ON callback.participant_id = participant_for_queue.id '.
+        'AND callback.assignment_id IS NULL';
+      $parts['where'][] = 'callback.id IS NULL';
       return $parts;
     }
     else if( 'quota disabled' == $queue )
@@ -838,6 +890,8 @@ class queue extends \cenozo\database\record
     $sql = str_replace( '<APPOINTMENT_PRE_WINDOW>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'appointment', 'call post-window', $this->db_site );
     $sql = str_replace( '<APPOINTMENT_POST_WINDOW>', $setting, $sql );
+    $setting = $setting_manager->get_setting( 'callback', 'call pre-window', $this->db_site );
+    $sql = str_replace( '<CALLBACK_PRE_WINDOW>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'calling', 'start time', $this->db_site );
     $sql = str_replace( '<CALLING_START_TIME>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'calling', 'end time', $this->db_site );

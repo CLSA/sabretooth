@@ -1,0 +1,30 @@
+{##
+ # callback_view.twig
+ # 
+ # View callback details.
+ # @author Patrick Emond <emondpd@mcmaster.ca>
+ # @see base_view.twig for parameters
+ #}
+{% extends "base_view.twig" %}
+
+{% block javascript %}
+  
+  {{ parent() }}
+  <script type="text/javascript">
+    $( function() {
+      // view participant button
+      $( "#{{ widget.full }}__view_participant" ).click( function() {
+        slot_load( {{ slot }}, "participant", "view", { id: {{ participant_id }} } );
+      } );
+    } );
+  </script>
+
+{% endblock javascript %}
+
+{% block post_record %}
+
+  {{ parent() }}
+  {% from 'macros.twig' import confirm_buttons %}
+  {{ confirm_buttons( slot, widget.full, '', 'Back', 'right', true ) }}
+
+{% endblock post_record %}

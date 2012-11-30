@@ -12,3 +12,7 @@ INSERT IGNORE INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "away_time", "list", true, "List away times in the system." );
 INSERT IGNORE INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "away_time", "primary", true, "Retrieves base away time information." );
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "appointment", "report", true, "Set up a appointment report." );
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "appointment", "report", true, "Download a appointment report." );

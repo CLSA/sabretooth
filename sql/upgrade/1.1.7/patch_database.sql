@@ -6,3 +6,4 @@ SOURCE queue.sql
 SOURCE setting_value.sql
 SOURCE setting.sql
 SOURCE participant.sql
+SOURCE site.sql
