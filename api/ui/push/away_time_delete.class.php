@@ -46,10 +46,7 @@ class away_time_delete extends \cenozo\ui\push\base_delete
     $user_time_mod->where(
       'date', '<=', sprintf( 'DATE( "%s" )', $this->get_record()->end_datetime ), false );
     foreach( $user_time_class_name::select( $user_time_mod ) as $db_user_time )
-    {
-      log::debug( $db_user_time->id );
       $db_user_time->delete();
-    }
   }
 }
 ?>

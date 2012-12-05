@@ -41,7 +41,7 @@ class interview_list extends site_restricted_list
     $this->add_column( 'participant.uid', 'string', 'UID', true );
     $this->add_column( 'qnaire.name', 'string', 'Questionnaire', true );
     $this->add_column( 'completed', 'boolean', 'Completed', true );
-    $this->add_column( 'rescored', 'enum', 'Rescored', true );
+    $this->add_column( 'rescored', 'boolean', 'Rescored', true );
 
     $this->extended_site_selection = true;
   }

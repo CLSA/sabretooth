@@ -39,6 +39,11 @@ VALUES( "appointment", "call post-window", "integer", "15",
 "Number of minutes after an appointment when it is considered assignable, after which it will be
 considered missed." );
 
+-- callback
+INSERT INTO setting( category, name, type, value, description )
+VALUES( "callback", "call pre-window", "integer", "5",
+"Number of minutes before a callback when it is considered assignable." );
+
 -- calling times
 INSERT INTO setting( category, name, type, value, description )
 VALUES( "calling", "start time", "string", "09:00",

@@ -164,8 +164,6 @@ class survey_manager extends \cenozo\singleton
       $tokens_mod->where( 'token', '=', $token );
       $db_tokens = current( $tokens_class_name::select( $tokens_mod ) );
 
-      // by default the interview has NOT been rescored
-      $db_interview->rescored = 'No';
       if( false === $db_tokens )
       { // token not found, create it
         $db_tokens = lib::create( 'database\limesurvey\tokens' );
@@ -177,7 +175,7 @@ class survey_manager extends \cenozo\singleton
       }
       else if( 'N' != $db_tokens->completed )
       { // rescoring is complete
-        $db_interview->rescored = 'Yes';
+        $db_interview->rescored = true;
       }
 
       // save whatever rescoring state we set above

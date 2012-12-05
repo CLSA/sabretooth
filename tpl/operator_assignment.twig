@@ -172,6 +172,18 @@
               {% endif %}
             </td>
           </tr>
+        {% elseif callback %}
+          <tr>
+            <td class="heading">Appointment:</td>
+            <td class="content" style="font-style: italic">
+              This assignment is fulfilling a callback scheduled for {{ callback }}.<br>
+              {% if phone_at %}
+                The participant specified to be called at: {{ phone_at }}.
+              {% else %}
+                The participant did not specify which number to call.
+              {% endif %}
+            </td>
+          </tr>
         {% endif %}
         <tr>
           <td class="heading">Previous Assignment:</td>

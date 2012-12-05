@@ -84,6 +84,11 @@ class participant_view extends \cenozo\ui\widget\base_view
     $this->appointment_list->set_parent( $this );
     $this->appointment_list->set_heading( 'Appointments' );
 
+    // create the callback sub-list widget
+    $this->callback_list = lib::create( 'ui\widget\callback_list', $this->arguments );
+    $this->callback_list->set_parent( $this );
+    $this->callback_list->set_heading( 'Callbacks' );
+
     // create the availability sub-list widget
     $this->availability_list = lib::create( 'ui\widget\availability_list', $this->arguments );
     $this->availability_list->set_parent( $this );
@@ -181,6 +186,13 @@ class participant_view extends \cenozo\ui\widget\base_view
     {
       $this->appointment_list->process();
       $this->set_variable( 'appointment_list', $this->appointment_list->get_variables() );
+    }
+    catch( \cenozo\exception\permission $e ) {}
+
+    try
+    {
+      $this->callback_list->process();
+      $this->set_variable( 'callback_list', $this->callback_list->get_variables() );
     }
     catch( \cenozo\exception\permission $e ) {}
 
@@ -295,6 +307,13 @@ class participant_view extends \cenozo\ui\widget\base_view
    * @access protected
    */
   protected $appointment_list = NULL;
+  
+  /**
+   * The participant list widget.
+   * @var callback_list
+   * @access protected
+   */
+  protected $callback_list = NULL;
   
   /**
    * The participant list widget.

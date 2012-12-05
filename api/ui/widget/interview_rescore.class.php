@@ -40,7 +40,7 @@ class interview_rescore extends \cenozo\ui\widget\base_record
 
     $this->set_heading( 'Rescore Interview for '.$this->get_record()->get_participant()->uid );
 
-    // create the recording sub-list widget      
+    // create the recording sub-list widget
     $this->recording_list = lib::create( 'ui\widget\recording_list', $this->arguments );
     $this->recording_list->set_parent( $this );
   }
