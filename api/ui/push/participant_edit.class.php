@@ -40,22 +40,5 @@ class participant_edit extends base_edit
     $this->set_machine_request_enabled( true );
     $this->set_machine_request_url( MASTODON_URL );
   }
-
-  /** 
-   * Sets up the operation with any pre-execution instructions that may be necessary.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
-   */
-  protected function setup()
-  {
-    parent::setup();
-
-    $columns = $this->get_argument( 'columns', array() );
-
-    // don't send information 
-    if( array_key_exists( 'scheduled_call_datetime', $columns ) )
-      $this->set_machine_request_enabled( false );
-  }
 }
 ?>
