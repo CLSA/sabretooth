@@ -382,6 +382,10 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "appointment", "report", true, "Set up a appointment report." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "appointment", "report", true, "Download a appointment report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "timing", "report", true, "Set up a timing report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "timing", "report", true, "Download a timing report." );
 
 -- self
 INSERT INTO operation( type, subject, name, restricted, description )
