@@ -4,6 +4,10 @@
 
 * Removing defunct auditing system
 
+* Adding new timing report
+  - This reports provides the average time taken to complete each stage of each phase of a
+    questionnaire
+
 ====================================================================================================
 1.1.8
 ====================================================================================================
