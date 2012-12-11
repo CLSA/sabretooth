@@ -67,22 +67,26 @@ class survey_timings extends sid_record
 
     if( !is_null( $db_region ) )
     {
-      $database_name = lib::create( 'business\session' )->get_database()->get_name();
+      $db = lib::create( 'business\session' )->get_database();
 
       // TODO: table prefixes are not included in the following query
       $sql .= sprintf( ' '.
         'FROM %s t '.
         'JOIN %s s ON t.id = s.id '.
-        'JOIN %s.interview i ON s.token LIKE CONCAT( i.id, "_%%" ) '.
-        'JOIN %s.participant_primary_address p ON i.participant_id = p.participant_id '.
-        'JOIN %s.address a ON p.address_id = a.id '.
-        'JOIN %s.region r ON a.region_id = r.id AND r.id = %d',
+        'JOIN %s.%sinterview i ON s.token LIKE CONCAT( i.id, "_%%" ) '.
+        'JOIN %s.%sparticipant_primary_address p ON i.participant_id = p.participant_id '.
+        'JOIN %s.%saddress a ON p.address_id = a.id '.
+        'JOIN %s.%sregion r ON a.region_id = r.id AND r.id = %d',
         static::get_table_name(),
         str_replace( '_timings', '', static::get_table_name() ),
-        $database_name,
-        $database_name,
-        $database_name,
-        $database_name,
+        $db->get_name(),
+        $db->get_prefix(),
+        $db->get_name(),
+        $db->get_prefix(),
+        $db->get_name(),
+        $db->get_prefix(),
+        $db->get_name(),
+        $db->get_prefix(),
         $db_region->id );
     }
     else
