@@ -53,7 +53,7 @@ CREATE  TABLE IF NOT EXISTS `participant` (
   `gender` ENUM('male','female') NOT NULL ,
   `date_of_birth` DATE NULL ,
   `age_group_id` INT UNSIGNED NULL ,
-  `status` ENUM('deceased', 'deaf', 'mentally unfit','language barrier','age range','not canadian','federal reserve','armed forces','institutionalized','noncompliant','other') NULL DEFAULT NULL ,
+  `status` ENUM('deceased', 'deaf', 'mentally unfit','language barrier','age range','not canadian','federal reserve','armed forces','institutionalized','noncompliant','sourcing required','other') NULL DEFAULT NULL ,
   `language` ENUM('en','fr') NULL DEFAULT NULL ,
   `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'If not null then force all calls to this participant to the site.' ,
   `email` VARCHAR(255) NULL ,

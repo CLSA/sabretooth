@@ -8,6 +8,10 @@
   - This reports provides the average time taken to complete each stage of each phase of a
     questionnaire
 
+* Adding further handling of participants who require sourcing
+  - There is now a "sourcing required" participant status
+  - Participants who have no active phone numbers are included in the "sourcing required" queue
+
 ====================================================================================================
 1.1.8
 ====================================================================================================

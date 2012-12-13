@@ -338,15 +338,6 @@ class queue extends \cenozo\database\record
       '  AND phone.number IS NOT NULL '.
       ')';
 
-    // first a list of commonly used elements
-    $status_where_list = array(
-      'participant_active = true',
-      '('.
-      '  last_consent_event IS NULL'.
-      '  OR last_consent_event NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
-      ')',
-      $phone_count.' > 0' );
-    
     // join to the quota table based on region, gender and age group
     $quota_join = 
       'LEFT JOIN quota '.
@@ -561,19 +552,6 @@ class queue extends \cenozo\database\record
         'last_consent_event IN( "verbal deny", "written deny", "retract", "withdraw" )';
       return $parts;
     }
-    else if( 'sourcing required' == $queue )
-    {
-      $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
-      $parts['where'][] = 'participant_active = true';
-      $parts['where'][] =
-        '('.
-        '  last_consent_event IS NULL'.
-        '  OR last_consent_event NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
-        ')';
-      $parts['where'][] = $phone_count.' = 0';
-
-      return $parts;
-    }
     else if( in_array( $queue, $participant_status_list ) )
     {
       $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
@@ -583,9 +561,20 @@ class queue extends \cenozo\database\record
         '  last_consent_event IS NULL'.
         '  OR last_consent_event NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
         ')';
-      $parts['where'][] = $phone_count.' > 0';
-      $parts['where'] = array_merge( $parts['where'], $status_where_list );
-      $parts['where'][] = 'participant_status = "'.$queue.'"'; // queue name is same as status name
+
+      if( 'sourcing required' == $queue )
+      { // add participants with no phone numbers to the sourcing required list
+        $parts['where'][] =
+          '('.
+          '  ( participant_status IS NULL AND '.$phone_count.' = 0 ) OR'.
+          '  participant_status = "'.$queue.'"'. // queue name is same as status name
+          ')';
+      }
+      else
+      {
+        $parts['where'][] = 'participant_status = "'.$queue.'"'; // queue name is same as status name
+      }
+
       return $parts;
     }
     else if( 'eligible' == $queue )
