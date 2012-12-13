@@ -51,8 +51,7 @@ class queue extends \cenozo\database\record
       'finished',
       'ineligible',
       'inactive',
-      'refused consent',
-      'sourcing required' );
+      'refused consent' );
 
     // add the participant final status types
     $queue_list = array_merge( $queue_list, $participant_class_name::get_enum_values( 'status' ) );
@@ -567,12 +566,12 @@ class queue extends \cenozo\database\record
         $parts['where'][] =
           '('.
           '  ( participant_status IS NULL AND '.$phone_count.' = 0 ) OR'.
-          '  participant_status = "'.$queue.'"'. // queue name is same as status name
+          '  participant_status = "'.$queue.'"'.
           ')';
       }
       else
       {
-        $parts['where'][] = 'participant_status = "'.$queue.'"'; // queue name is same as status name
+        $parts['where'][] = 'participant_status = "'.$queue.'"';
       }
 
       return $parts;
