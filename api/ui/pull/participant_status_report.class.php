@@ -59,7 +59,6 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       sprintf( 'Listing of categorical totals pertaining to '.
                'the %s interview', $db_qnaire->name ) ) ;
 
-    $breakdown = $this->get_argument( 'breakdown' );
     $restrict_province_id = $this->get_argument( 'restrict_province_id' );
     $restrict_start_date = $this->get_argument( 'restrict_start_date' );
     $restrict_end_date = $this->get_argument( 'restrict_end_date' );
