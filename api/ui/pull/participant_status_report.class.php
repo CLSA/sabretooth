@@ -126,7 +126,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $category_totals = array_merge( $category_totals, array(
       'Not yet called' => 0,
       'Deceased' => 0,
-      'Permanent condition (excl. deceased)' => 0,
+      'Permanent condition (excl. deceased/source)' => 0,
       'Grand Total Attempted' => 0,
       'Total completed interviews' => 0,
       'Response rate (incl. soft refusals)' => 0,
@@ -212,7 +212,11 @@ class participant_status_report extends \cenozo\ui\pull\base_report
 
     // add restrictions based on input parameters
     $modifier = lib::create( 'database\modifier' );
-    if( $is_supervisor ) $modifier->where( 'site_id', '=', $session->get_site()->id );
+    if( $is_supervisor )
+    {
+      $temp_table_sql .= 'JOIN participant_site ON participant.id = participant_site.participant_id ';
+      $modifier->where( 'participant_site.site_id', '=', $session->get_site()->id );
+    }
     if( $restrict_province_id ) $modifier->where( 'address.region_id', '=', $restrict_province_id );
     if( 0 < $restrict_source_id ) $modifier->where( 'source_id', '=', $restrict_source_id );
     if( $restrict_start_date )
@@ -254,8 +258,14 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $modifier->where( 'temp_participant.status', '=', 'deceased' );
     $this->set_category_totals( $sub_cat, '', $modifier );
 
+    // sourcing required (based on the participant status column)
+    $sub_cat = 'Sourcing Required';
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'temp_participant.status', '=', 'sourcing required' );
+    $this->set_category_totals( $sub_cat, '', $modifier );
+
     // final status not null
-    $sub_cat = 'Permanent condition (excl. deceased)';
+    $sub_cat = 'Permanent condition (excl. deceased/source)';
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'temp_participant.status', '!=', NULL );
     $this->set_category_totals( $sub_cat, '', $modifier );
