@@ -12,6 +12,8 @@
   - There is now a "sourcing required" participant status
   - Participants who have no active phone numbers are included in the "sourcing required" queue
 
+* Quotas can now be defined by site as well as region
+
 ====================================================================================================
 1.1.8
 ====================================================================================================

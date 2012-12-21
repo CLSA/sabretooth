@@ -14,7 +14,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  *
  * Edit a quota.
  */
-class quota_edit extends \cenozo\ui\push\base_edit
+class quota_edit extends base_edit
 {
   /**
    * Constructor.
@@ -73,7 +73,7 @@ class quota_edit extends \cenozo\ui\push\base_edit
     $args = parent::convert_to_noid( $args );
 
     // add in the quota's cohort
-    $args['noid']['quota']['cohort'] =
+    $args['noid']['quota']['site_id']['cohort'] =
       lib::create( 'business\setting_manager' )->get_setting( 'general', 'cohort' );
 
     return $args;
