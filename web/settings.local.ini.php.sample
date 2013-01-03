@@ -15,6 +15,10 @@ $SETTINGS['general']['development_mode'] = true;
 // setting is unique
 $SETTINGS['general']['cohort'] = 'default';
 
+// Defines the username and password used by mastodon when communicating as a machine
+$SETTINGS['general']['machine_user'] = 'put machine user name here';
+$SETTINGS['general']['machine_password'] = 'put machine password here';
+
 // The survey ID of the alternate contact script.  Comment out if the script is unavailable.
 //$SETTINGS['general']['secondary_survey'] = 0;
 
