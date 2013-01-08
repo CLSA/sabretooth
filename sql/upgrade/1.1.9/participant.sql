@@ -15,8 +15,7 @@ CREATE PROCEDURE patch_participant()
       AND COLUMN_TYPE NOT LIKE "%sourcing required%" );
     IF @test = 1 THEN
       ALTER TABLE participant
-      MODIFY COLUMN status enum('deceased','deaf','mentally unfit','language barrier','age range','not canadian','federal reserve','armed forces','institutionalized','noncompliant','sourcing required','other') DEFAULT NULL
-      AFTER site_id;
+      MODIFY COLUMN status enum('deceased','deaf','mentally unfit','language barrier','age range','not canadian','federal reserve','armed forces','institutionalized','noncompliant','sourcing required','unreachable','other') DEFAULT NULL;
     END IF;
   END //
 DELIMITER ;
