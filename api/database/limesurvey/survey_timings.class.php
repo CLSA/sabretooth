@@ -32,6 +32,70 @@ class survey_timings extends sid_record
 
     return sprintf( 'survey_%s_timings', static::get_sid() );
   }
+
+  /**
+   * Returns an associative array of the average time for all questions in this survey
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\region $db_region Restrict average to participants from a certain region
+   * @return array
+   * @access public
+   */
+  public static function get_averages( $db_region = NULL )
+  {
+    // we need to get all *X*X*time based column names from the information schema
+    // to build custom sql
+    $information_mod = lib::create( 'database\modifier' );
+    $information_mod->where( 'table_schema', '=', static::db()->get_name() );
+    $information_mod->where( 'table_name', '=', static::get_table_name() );
+    $information_mod->where( 'column_name', 'LIKE', '%X%X%time' );
+
+    $column_list = static::db()->get_col( sprintf(
+      'SELECT column_name '.
+      'FROM information_schema.columns %s',
+      $information_mod->get_sql() ) );
+
+    $sql = '';
+    $first = true;
+    foreach( $column_list as $column )
+    {
+      $sql .= sprintf( '%s AVG( NULLIF(%s,0) ) %s',
+                       $first ? 'SELECT' : ',',
+                       $column,
+                       $column );
+      if( $first ) $first = false;
+    }
+
+    if( !is_null( $db_region ) )
+    {
+      $db = lib::create( 'business\session' )->get_database();
+
+      // TODO: table prefixes are not included in the following query
+      $sql .= sprintf( ' '.
+        'FROM %s t '.
+        'JOIN %s s ON t.id = s.id '.
+        'JOIN %s.%sinterview i ON s.token LIKE CONCAT( i.id, "_%%" ) '.
+        'JOIN %s.%sparticipant_primary_address p ON i.participant_id = p.participant_id '.
+        'JOIN %s.%saddress a ON p.address_id = a.id '.
+        'JOIN %s.%sregion r ON a.region_id = r.id AND r.id = %d',
+        static::get_table_name(),
+        str_replace( '_timings', '', static::get_table_name() ),
+        $db->get_name(),
+        $db->get_prefix(),
+        $db->get_name(),
+        $db->get_prefix(),
+        $db->get_name(),
+        $db->get_prefix(),
+        $db->get_name(),
+        $db->get_prefix(),
+        $db_region->id );
+    }
+    else
+    {
+      $sql .= ' FROM '.static::get_table_name();
+    }
+
+    return static::db()->get_row( $sql );
+  }
   
   /**
    * The name of the table's primary key column.

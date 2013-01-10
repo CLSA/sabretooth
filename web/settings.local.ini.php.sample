@@ -15,6 +15,10 @@ $SETTINGS['general']['development_mode'] = true;
 // setting is unique
 $SETTINGS['general']['cohort'] = 'default';
 
+// Defines the username and password used by mastodon when communicating as a machine
+$SETTINGS['general']['machine_user'] = 'put machine user name here';
+$SETTINGS['general']['machine_password'] = 'put machine password here';
+
 // The survey ID of the alternate contact script.  Comment out if the script is unavailable.
 //$SETTINGS['general']['secondary_survey'] = 0;
 
@@ -41,12 +45,6 @@ $SETTINGS['url']['LIMESURVEY'] = 'http://path/to/limesurvey';
 $SETTINGS['db']['database'] = 'put your database name here';
 $SETTINGS['db']['username'] = 'put your database username here';
 $SETTINGS['db']['password'] = 'put your database password here';
-
-// audit database settings (null values use the limesurvey database settings)
-// NOTE: either the prefix or the database must not different from limesurvey's prefix
-// and server, otherwise auditing will not work.
-$SETTINGS['audit_db']['enabled'] = false;
-$SETTINGS['audit_db']['prefix'] = 'audit_';
 
 // The LDAP base dn, username, password and whether LDAP is in active directory mode
 $SETTINGS['ldap']['base'] = 'put your ldap base here';

@@ -66,34 +66,6 @@ class session extends \cenozo\business\session
   }
 
   /**
-   * Get the audit database.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return database
-   * @access public
-   */
-  public function get_audit_database()
-  {
-    // create the database if it doesn't exist yet
-    if( is_null( $this->audit_database ) )
-    {
-      $setting_manager = lib::create( 'business\setting_manager' );
-      if( $setting_manager->get_setting( 'audit_db', 'enabled' ) )
-      {
-        $this->audit_database = lib::create( 'database\database',
-          $setting_manager->get_setting( 'audit_db', 'driver' ),
-          $setting_manager->get_setting( 'audit_db', 'server' ),
-          $setting_manager->get_setting( 'audit_db', 'username' ),
-          $setting_manager->get_setting( 'audit_db', 'password' ),
-          $setting_manager->get_setting( 'audit_db', 'database' ),
-          $setting_manager->get_setting( 'audit_db', 'prefix' ) );
-      }
-    }
-
-    return $this->audit_database;
-  }
-  
-  /**
    * Get the user's current assignment.
    * Should only be called if the user is an operator, otherwise an exception will be thrown.
    * 
@@ -285,12 +257,5 @@ class session extends \cenozo\business\session
    * @access private
    */
   private $survey_database = NULL;
-
-  /**
-   * The survey database object.
-   * @var database
-   * @access private
-   */
-  private $audit_database = NULL;
 }
 ?>

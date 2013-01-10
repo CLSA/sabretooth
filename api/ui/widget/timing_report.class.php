@@ -1,8 +1,8 @@
 <?php
 /**
- * demographics_report.class.php
+ * timing.class.php
  * 
- * @author Dean Inglis <inglisd@mcmaster.ca>
+ * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
  */
 
@@ -10,27 +10,28 @@ namespace sabretooth\ui\widget;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
- * widget demographics report
+ * widget timing report
  */
-class demographics_report extends base_report
+class timing_report extends base_report
 {
   /**
    * Constructor
    * 
    * Defines all variables which need to be set for the associated template.
-   * @author Dean Inglis <inglisd@mcmaster.ca>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'demographics', $args );
+    parent::__construct( 'timing', $args );
+    $this->use_cache = true;
   }
 
   /**
    * Processes arguments, preparing them for the operation.
    * 
-   * @author Dean Inglis <inglisd@mcmaster.ca>
+   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @throws exception\notice
    * @access protected
    */
@@ -38,15 +39,10 @@ class demographics_report extends base_report
   {
     parent::prepare();
 
-    $this->add_restriction( 'site' );
     $this->add_restriction( 'qnaire' );
-    $this->add_restriction( 'source' );
-    $this->add_restriction( 'consent' );
-    $this->add_restriction( 'province' );
-    
+
     $this->set_variable( 'description',
-      'This report lists participant demographics.  The report can be moderated by site, '.
-      'questionnaire, province and consent status.' );
+      'This report provides the average time taken to complete each module of a questionnaire.' );
   }
 }
 ?>

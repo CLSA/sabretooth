@@ -11,7 +11,7 @@ global $SETTINGS;
 
 // tagged version
 $SETTINGS['general']['application_name'] = 'sabretooth';
-$SETTINGS['general']['version'] = '1.1.8';
+$SETTINGS['general']['version'] = '1.1.9';
 
 // always leave as false when running as production server
 $SETTINGS['general']['development_mode'] = false;
@@ -45,15 +45,6 @@ $SETTINGS['db']['username'] = 'sabretooth';
 $SETTINGS['db']['password'] = '';
 $SETTINGS['db']['database'] = 'sabretooth';
 $SETTINGS['db']['prefix'] = '';
-
-// audit database settings (false values use the limesurvey database settings)
-$SETTINGS['audit_db']['enabled'] = false;
-$SETTINGS['audit_db']['driver'] = false;
-$SETTINGS['audit_db']['server'] = false;
-$SETTINGS['audit_db']['username'] = false;
-$SETTINGS['audit_db']['password'] = false;
-$SETTINGS['audit_db']['database'] = false;
-$SETTINGS['audit_db']['prefix'] = 'audit_';
 
 // voip settings
 $SETTINGS['voip']['enabled'] = false;
