@@ -1,9 +1,8 @@
 -- reorder the queue if "sourcing required" is still the 5th queue
-DROP PROCEDURE IF EXISTS patch_queue;
+DROP PROCEDURE IF EXISTS patch_queue1;
 DELIMITER //
-CREATE PROCEDURE patch_queue()
+CREATE PROCEDURE patch_queue1()
   BEGIN
-    DECLARE test INT;
     SET @test = (
       SELECT id
       FROM queue
@@ -27,9 +26,64 @@ CREATE PROCEDURE patch_queue()
   END //
 DELIMITER ;
 
+-- proceedure used by patch_queue2
+DROP PROCEDURE IF EXISTS increment_queue_ids;
+DELIMITER //
+CREATE PROCEDURE increment_queue_ids( min_id INT, max_id INT )
+  BEGIN
+    SET @current_id = max_id;
+    WHILE @current_id >= min_id DO
+      UPDATE queue SET id = ( @current_id + 1 ) WHERE id = @current_id;
+      UPDATE queue SET parent_queue_id = ( @current_id + 1 ) WHERE parent_queue_id = @current_id;
+      UPDATE assignment SET queue_id = ( @current_id + 1 ) WHERE queue_id = @current_id;
+      SET @current_id = @current_id - 1; 
+    END WHILE;
+  END //
+DELIMITER ;
+
+-- add the new "unreachable" queue
+DROP PROCEDURE IF EXISTS patch_queue2;
+DELIMITER //
+CREATE PROCEDURE patch_queue2()
+  BEGIN
+    SET @test = (
+      SELECT COUNT(*)
+      FROM queue
+      WHERE name = "unreachable" );
+    IF @test = 0 THEN
+      -- we need to change primary keys so disable checks
+      SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+
+      -- move all queue ids from 18 to 65 up by one
+      SET @min_id := 18;
+      SET @max_id := ( SELECT MAX( id ) max_id FROM queue );
+      CALL increment_queue_ids( @min_id, @max_id );
+
+      -- insert the new unreachable status queue
+      INSERT INTO queue SET
+      id = @min_id,
+      name = "unreachable",
+      title = "Participants who are unreachable",
+      rank = NULL,
+      qnaire_specific = false,
+      parent_queue_id = (
+        SELECT id FROM(
+          SELECT id
+          FROM queue
+          WHERE name = "ineligible" ) AS tmp ),
+      description = "Participants who are not eligible for answering questionnaires because they are unreachable even after sourcing attempts.";
+
+      SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+    END IF;
+  END //
+DELIMITER ;
+
 -- now call the procedure and remove the procedure
-CALL patch_queue();
-DROP PROCEDURE IF EXISTS patch_queue;
+CALL patch_queue1();
+CALL patch_queue2();
+DROP PROCEDURE IF EXISTS patch_queue1;
+DROP PROCEDURE IF EXISTS patch_queue2;
+DROP PROCEDURE IF EXISTS increment_queue_ids;
 
 -- update the sourcing required queue's title and description
 UPDATE queue
