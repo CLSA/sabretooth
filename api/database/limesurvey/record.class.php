@@ -9,7 +9,6 @@
 namespace sabretooth\database\limesurvey;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
-
 /**
  * This is the abstract database table object for all limesurvey tables.
  */
