@@ -222,6 +222,19 @@ description = "Participants who are not eligible for answering questionnaires be
 no valid phone number to call.";
 
 INSERT INTO queue SET
+name = "unreachable",
+title = "Participants who are unreachable",
+rank = NULL,
+qnaire_specific = false,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "ineligible" ) AS tmp ),
+description = "Participants who are not eligible for answering questionnaires because they are
+unreachable even after sourcing attempts.";
+
+INSERT INTO queue SET
 name = "eligible",
 title = "Eligible to answer questionnaires",
 rank = NULL,
