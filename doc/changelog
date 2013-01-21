@@ -14,6 +14,7 @@
   - Removing old/defunct sourcing required report
 
 * Quotas can now be defined by site as well as region
+  - Supervisors now have read-only access to quotas and the quota report
 
 ====================================================================================================
 1.1.8
