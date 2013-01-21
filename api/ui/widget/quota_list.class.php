@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * widget quota list
  */
-class quota_list extends \cenozo\ui\widget\base_list
+class quota_list extends site_restricted_list
 {
   /**
    * Constructor
