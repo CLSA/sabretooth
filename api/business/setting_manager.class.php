@@ -28,7 +28,7 @@ class setting_manager extends \cenozo\business\setting_manager
     $static_settings = $arguments[0];
 
     // add a few categories to the manager
-    foreach( array( 'audit_db', 'voip' ) as $category )
+    foreach( array( 'voip' ) as $category )
     {
       // make sure the category exists
       if( !array_key_exists( $category, $static_settings ) )
@@ -52,13 +52,5 @@ class setting_manager extends \cenozo\business\setting_manager
              'password' => $databasepass,
              'database' => $databasename,
              'prefix' => $dbprefix );
-
-    // have the audit settings mirror limesurvey, if necessary
-    foreach( $this->static_settings['audit_db'] as $key => $value )
-    {
-      if( false === $value && 'enabled' != $key )
-        $this->static_settings['audit_db'][$key] =
-          $this->static_settings['survey_db'][$key];
-    }
   }
 }

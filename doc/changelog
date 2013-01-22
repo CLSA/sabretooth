@@ -1,4 +1,22 @@
 ====================================================================================================
+1.1.9
+====================================================================================================
+
+* Removing defunct auditing system
+
+* Adding new timing report
+  - This reports provides the average time taken to complete each stage of each phase of a
+    questionnaire
+
+* Adding further handling of participants who require sourcing
+  - New conditions "sourcing required" and "unreachable" have been added to participant status
+  - Participants who have no active phone numbers are included in the "sourcing required" queue
+  - Removing old/defunct sourcing required report
+
+* Quotas can now be defined by site as well as region
+  - Supervisors now have read-only access to quotas and the quota report
+
+====================================================================================================
 1.1.8
 ====================================================================================================
 

@@ -371,14 +371,6 @@ VALUES( "widget", "mailout_required", "report", true, "Set up a new mailout requ
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "mailout_required", "report", true, "Download a new mailout required report." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "sourcing_required", "report", true, "Set up a new sourcing required report." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "sourcing_required", "report", true, "Download a new sourcing required report." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "demographics", "report", true, "Set up a new demographics report." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "demographics", "report", true, "Download a new demographics report." );
-INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant_tree", "report", true, "Set up a participant tree report." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant_tree", "report", true, "Download a participant tree report." );
@@ -386,6 +378,10 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "appointment", "report", true, "Set up a appointment report." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "appointment", "report", true, "Download a appointment report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "timing", "report", true, "Set up a timing report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "timing", "report", true, "Download a timing report." );
 
 -- self
 INSERT INTO operation( type, subject, name, restricted, description )

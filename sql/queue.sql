@@ -52,19 +52,6 @@ description = "Participants who are not eligible for answering questionnaires be
 been marked as inactive.";
 
 INSERT INTO queue SET
-name = "sourcing required",
-title = "Participants without a phone number",
-rank = NULL,
-qnaire_specific = false,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "ineligible" ) AS tmp ),
-description = "Participants who are not eligible for answering questionnaires because they have
-no active phone numbers.";
-
-INSERT INTO queue SET
 name = "refused consent",
 title = "Participants who refused consent",
 rank = NULL,
@@ -220,6 +207,32 @@ parent_queue_id = (
     WHERE name = "ineligible" ) AS tmp ),
 description = "Participants who are not eligible for answering questionnaires because they have
 been identified to have an undefined condition (other).";
+
+INSERT INTO queue SET
+name = "sourcing required",
+title = "Participants who require sourcing",
+rank = NULL,
+qnaire_specific = false,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "ineligible" ) AS tmp ),
+description = "Participants who are not eligible for answering questionnaires because they have
+no valid phone number to call.";
+
+INSERT INTO queue SET
+name = "unreachable",
+title = "Participants who are unreachable",
+rank = NULL,
+qnaire_specific = false,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "ineligible" ) AS tmp ),
+description = "Participants who are not eligible for answering questionnaires because they are
+unreachable even after sourcing attempts.";
 
 INSERT INTO queue SET
 name = "eligible",
