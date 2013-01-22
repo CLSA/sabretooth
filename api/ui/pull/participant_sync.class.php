@@ -55,12 +55,72 @@ class participant_sync extends \cenozo\ui\pull
     $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
     $uid_list_string = preg_replace( '/[^a-zA-Z0-9]/', ' ', $this->get_argument( 'uid_list' ) );
     $uid_list_string = trim( $uid_list_string );
+    $start_date = $this->get_argument( 'start_date', '' );
+    $end_date = $this->get_argument( 'end_date', '' );
     
-    if( 0 == strcasecmp( 'all', $uid_list_string ) )
-    {
-      $valid_count = 'N/A';
-      $missing_count = 'N/A';
+    $valid_count = 'N/A';
+    $missing_count = 'N/A';
 
+    if( 0 < strlen( $start_date ) || 0 < strlen( $end_date ) )
+    { // use start/end date to select participants
+      $offset = 0;
+      do
+      { // participants from the import system
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'participant.cohort', '=', $cohort );
+        $modifier->where( 'sync_datetime', '=', NULL );
+        if( 0 < strlen( $start_date ) ) $modifier->where( 'import_entry.date', '>=', $start_date );
+        if( 0 < strlen( $end_date ) ) $modifier->where( 'import_entry.date', '<=', $end_date );
+        $modifier->limit( $limit, $offset );
+        $args = array(
+          'full' => true,
+          'modifier' => $modifier );
+        $response = $mastodon_manager->pull( 'participant', 'list', $args );
+        foreach( $response->data as $data )
+        {
+          $address_count += count( $data->address_list );
+          $phone_count += count( $data->phone_list );
+          $consent_count += count( $data->consent_list );
+          $availability_count += count( $data->availability_list );
+          $note_count += count( $data->note_list );
+
+          if( !is_null( $participant_class_name::get_unique_record( 'uid', $data->uid ) ) )
+            $existing_count++;
+          else $new_count++;
+        }
+        $offset += $limit;
+      } while( count( $response->data ) );
+
+      $offset = 0;
+      do
+      { // participants from the data entry system
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'participant.cohort', '=', $cohort );
+        $modifier->where( 'sync_datetime', '=', NULL );
+        if( 0 < strlen( $start_date ) ) $modifier->where( 'contact_form.date', '>=', $start_date );
+        if( 0 < strlen( $end_date ) ) $modifier->where( 'contact_form.date', '<=', $end_date );
+        $modifier->limit( $limit, $offset );
+        $args = array(
+          'full' => true,
+          'modifier' => $modifier );
+        $response = $mastodon_manager->pull( 'participant', 'list', $args );
+        foreach( $response->data as $data )
+        {
+          $address_count += count( $data->address_list );
+          $phone_count += count( $data->phone_list );
+          $consent_count += count( $data->consent_list );
+          $availability_count += count( $data->availability_list );
+          $note_count += count( $data->note_list );
+
+          if( !is_null( $participant_class_name::get_unique_record( 'uid', $data->uid ) ) )
+            $existing_count++;
+          else $new_count++;
+        }
+        $offset += $limit;
+      } while( count( $response->data ) );
+    }
+    else if( 0 == strcasecmp( 'all', $uid_list_string ) )
+    { // include all unsynched participants
       $offset = 0;
       do
       {
@@ -88,7 +148,7 @@ class participant_sync extends \cenozo\ui\pull
       } while( count( $response->data ) );
     }
     else
-    {
+    { // include participants in the list only
       $uid_list = array_unique( preg_split( '/\s+/', $uid_list_string ) );
       $valid_count = count( $uid_list );
       
