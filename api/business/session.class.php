@@ -15,6 +15,22 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class session extends \cenozo\business\session
 {
   /**
+   * Constructor.
+   * 
+   * Since this class uses the singleton pattern the constructor is never called directly.  Instead
+   * use the {@link singleton} method.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function __construct( $arguments )
+  {
+    parent::__construct( $arguments );
+
+    // add the opal_instance new operation to the censored list
+    $this->censored_operation_list[] = 'opal_instance_new';
+  }
+
+  /**
    * Initializes the session.
    * 
    * This method should be called immediately after initial construct of the session.
