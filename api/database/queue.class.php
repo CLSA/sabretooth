@@ -737,6 +737,9 @@ class queue extends \cenozo\database\record
       $parts['where'][] = $check_time
                         ? 'NOT '.$calling_time_sql
                         : 'NOT true'; // purposefully a negative tautology
+      // who belong to a quota which is not disabled or doesn't exist
+      $parts['join'][] = $quota_join;
+      $parts['where'][] = '( quota.disabled IS NULL OR quota.disabled = false )';
       return $parts;
     }
     else if( 'new participant' == $queue )

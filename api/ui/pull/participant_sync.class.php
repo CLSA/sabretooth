@@ -65,7 +65,7 @@ class participant_sync extends \cenozo\ui\pull
       do
       {
         $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'cohort', '=', $cohort );
+        $modifier->where( 'cohort.name', '=', $cohort );
         $modifier->where( 'sync_datetime', '=', NULL );
         $modifier->limit( $limit, $offset );
         $args = array(
@@ -97,7 +97,7 @@ class participant_sync extends \cenozo\ui\pull
       {
         $uid_sub_list = array_slice( $uid_list, $offset, $limit );
         $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'cohort', '=', $cohort );
+        $modifier->where( 'cohort.name', '=', $cohort );
         $modifier->where( 'uid', 'IN', $uid_sub_list );
         $args = array(
           'full' => true,

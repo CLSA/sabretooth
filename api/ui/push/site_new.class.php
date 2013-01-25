@@ -41,11 +41,8 @@ class site_new extends \cenozo\ui\push\site_new
   protected function convert_to_noid( $args )
   {
     $args = parent::convert_to_noid( $args );
-
-    // add in the site's cohort
-    $args['columns']['cohort'] =
-      lib::create( 'business\setting_manager' )->get_setting( 'general', 'cohort' );
-
+    $args['noid']['columns']['service'] = array( 'name' =>
+      lib::create( 'business\setting_manager' )->get_setting( 'general', 'application_name' ) );
     return $args;
   }
 }

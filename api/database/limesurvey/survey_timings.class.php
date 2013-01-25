@@ -69,7 +69,6 @@ class survey_timings extends sid_record
     {
       $db = lib::create( 'business\session' )->get_database();
 
-      // TODO: table prefixes are not included in the following query
       $sql .= sprintf( ' '.
         'FROM %s t '.
         'JOIN %s s ON t.id = s.id '.

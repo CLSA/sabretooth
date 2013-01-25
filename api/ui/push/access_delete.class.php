@@ -29,7 +29,7 @@ class access_delete extends \cenozo\ui\push\access_delete
   }
 
   /**
-   * Override the parent method to add the cohort to the site key.
+   * Override the parent method to add the service name to the site key.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An argument list, usually those passed to the push operation.
    * @return array
@@ -38,8 +38,8 @@ class access_delete extends \cenozo\ui\push\access_delete
   protected function convert_to_noid( $args )
   {
     $args = parent::convert_to_noid( $args );
-    $args['noid']['access']['site_id']['cohort'] =
-      lib::create( 'business\setting_manager' )->get_setting( 'general', 'cohort' );
+    $args['noid']['access']['site_id']['service_id'] = array( 'name' =>
+      lib::create( 'business\setting_manager' )->get_setting( 'general', 'application_name' ) );
     return $args;
   }
 }

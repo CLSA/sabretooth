@@ -31,7 +31,7 @@ class user_new extends \cenozo\ui\push\user_new
   }
 
   /**
-   * Override the parent method to add the cohort to the site key.
+   * Override the parent method to add the service name to the site key.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An argument list, usually those passed to the push operation.
    * @return array
@@ -42,8 +42,8 @@ class user_new extends \cenozo\ui\push\user_new
     $args = parent::convert_to_noid( $args );
     if( array_key_exists( 'columns', $args['noid'] ) &&
         array_key_exists( 'site', $args['noid']['columns'] ) )
-      $args['noid']['columns']['site']['cohort'] =
-        lib::create( 'business\setting_manager' )->get_setting( 'general', 'cohort' );
+      $args['noid']['columns']['site']['service_id'] = array( 'name' =>
+        lib::create( 'business\setting_manager' )->get_setting( 'general', 'application_name' ) );
     return $args;
   }
 }

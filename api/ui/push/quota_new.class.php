@@ -60,8 +60,7 @@ class quota_new extends \cenozo\ui\push\base_new
   }
 
   /**
-   * Converts primary keys to unique keys in operation arguments.
-   * All converted arguments will appear in the array under a 'noid' key.
+   * Override the parent method to add the service name to the site key.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An argument list, usually those passed to the push operation.
    * @return array
@@ -70,10 +69,8 @@ class quota_new extends \cenozo\ui\push\base_new
   protected function convert_to_noid( $args )
   {
     $args = parent::convert_to_noid( $args );
-
-    // remove the disabled column
-    unset( $args['columns']['disabled'] );
-
+    $args['noid']['columns']['site']['service_id'] = array( 'name' => 
+      lib::create( 'business\setting_manager' )->get_setting( 'general', 'application_name' ) );
     return $args;
   }
 }
