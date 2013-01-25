@@ -162,28 +162,6 @@ class session extends \cenozo\business\session
   }
   
   /**
-   * Add an operation to this user's activity log.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param ui\operation $operation The operation to log.
-   * @param array $args The arguments passed to the operation.
-   * @access public
-   */
-  public function log_activity( $operation, $args )
-  {
-    // add the operation as activity
-    $activity = lib::create( 'database\activity' );
-    $activity->user_id = $this->get_user()->id;
-    $activity->site_id = $this->get_site()->id;
-    $activity->role_id = $this->get_role()->id;
-    $activity->operation_id = $operation->get_id();
-    $activity->query = serialize( $args );
-    $activity->elapsed = util::get_elapsed_time();
-    $activity->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
-    $activity->save();
-  }
-  
-  /**
    * Resets the slot stacks to their initial state.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
