@@ -88,4 +88,3 @@ class participant_secondary extends \cenozo\ui\widget\base_record
       array_key_exists( 'secondary_id', $_COOKIE ) ?  $_COOKIE['secondary_id'] : 0 );
   }
 }
-?>

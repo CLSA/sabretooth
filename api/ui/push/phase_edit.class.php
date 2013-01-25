@@ -27,4 +27,3 @@ class phase_edit extends \cenozo\ui\push\base_edit
     parent::__construct( 'phase', $args );
   }
 }
-?>

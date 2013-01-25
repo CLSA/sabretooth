@@ -63,4 +63,3 @@ class self_shortcuts extends \cenozo\ui\widget\self_shortcuts
     $this->set_variable( 'navigation', !$is_operator );
   }
 }
-?>

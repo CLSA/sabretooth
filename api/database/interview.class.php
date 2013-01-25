@@ -335,4 +335,3 @@ $assignment_mod = lib::create( 'database\modifier' );
 $assignment_mod->where( 'interview.id', '=', 'interview_last_assignment.interview_id', false );
 $assignment_mod->where( 'interview_last_assignment.assignment_id', '=', 'assignment.id', false );
 interview::customize_join( 'assignment', $assignment_mod );
-?>

@@ -30,4 +30,3 @@ class user_edit extends \cenozo\ui\push\user_edit
     $this->set_machine_request_url( MASTODON_URL );
   }
 }
-?>

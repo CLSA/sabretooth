@@ -28,4 +28,3 @@ class participant_add_phone extends \cenozo\ui\widget\base_add_record
     parent::__construct( 'participant', 'phone', $args );
   }
 }
-?>

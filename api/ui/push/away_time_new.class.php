@@ -100,4 +100,3 @@ class away_time_new extends \cenozo\ui\push\base_new
       $db_user_time->delete();
   }
 }
-?>

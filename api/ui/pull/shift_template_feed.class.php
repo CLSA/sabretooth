@@ -139,4 +139,3 @@ class shift_template_feed extends \cenozo\ui\pull\base_feed
     }
   }
 }
-?>

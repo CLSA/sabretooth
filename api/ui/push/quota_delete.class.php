@@ -54,4 +54,3 @@ class quota_delete extends \cenozo\ui\push\base_delete
     return $args;
   }
 }
-?>

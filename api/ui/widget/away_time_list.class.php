@@ -63,4 +63,3 @@ class away_time_list extends site_restricted_list
     }
   }
 }
-?>

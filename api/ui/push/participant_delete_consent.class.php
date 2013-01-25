@@ -25,4 +25,3 @@ class participant_delete_consent extends \cenozo\ui\push\base_delete_record
     parent::__construct( 'participant', 'consent', $args );
   }
 }
-?>

@@ -26,4 +26,3 @@ class source_survey_primary extends \cenozo\ui\pull\base_primary
     parent::__construct( 'source_survey', $args );
   }
 }
-?>

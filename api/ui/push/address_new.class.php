@@ -82,4 +82,3 @@ class address_new extends base_new
     parent::execute();
   }
 }
-?>

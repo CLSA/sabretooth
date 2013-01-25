@@ -77,4 +77,3 @@ class appointment_new extends \cenozo\ui\push\base_new
     }
   }
 }
-?>

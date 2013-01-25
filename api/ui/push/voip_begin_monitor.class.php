@@ -42,4 +42,3 @@ class voip_begin_monitor extends \cenozo\ui\push
       lib::create( 'business\survey_manager' )->get_current_token() );
   }
 }
-?>

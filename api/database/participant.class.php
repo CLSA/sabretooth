@@ -288,4 +288,3 @@ $address_mod = lib::create( 'database\modifier' );
 $address_mod->where( 'participant.id', '=', 'participant_primary_address.participant_id', false );
 $address_mod->where( 'participant_primary_address.address_id', '=', 'address.id', false );
 participant::customize_join( 'address', $address_mod );
-?>

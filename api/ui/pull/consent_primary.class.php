@@ -26,4 +26,3 @@ class consent_primary extends \cenozo\ui\pull\base_primary
     parent::__construct( 'consent', $args );
   }
 }
-?>

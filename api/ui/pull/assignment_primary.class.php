@@ -26,4 +26,3 @@ class assignment_primary extends \cenozo\ui\pull\base_primary
     parent::__construct( 'assignment', $args );
   }
 }
-?>

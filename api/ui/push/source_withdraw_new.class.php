@@ -27,4 +27,3 @@ class source_withdraw_new extends \cenozo\ui\push\base_new
     parent::__construct( 'source_withdraw', $args );
   }
 }
-?>

@@ -279,4 +279,3 @@ class participant_list extends \cenozo\ui\pull\base_list
    */
   protected $db_qnaire = NULL;
 }
-?>

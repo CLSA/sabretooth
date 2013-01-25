@@ -95,4 +95,3 @@ class away_time_edit extends \cenozo\ui\push\base_edit
       $db_user_time->delete();
   }
 }
-?>

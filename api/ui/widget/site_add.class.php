@@ -58,4 +58,3 @@ class site_add extends \cenozo\ui\widget\site_add
     $this->set_item( 'voip_xor_key', '' );
   }
 }
-?>

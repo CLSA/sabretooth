@@ -161,4 +161,3 @@ class participant_sync extends \cenozo\ui\push
     }
   }
 }
-?>

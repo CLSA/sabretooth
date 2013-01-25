@@ -265,4 +265,3 @@ class daily_shift_report extends \cenozo\ui\pull\base_report
       $legend, NULL );
   }
 }
-?>

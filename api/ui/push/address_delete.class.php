@@ -39,4 +39,3 @@ class address_delete extends \cenozo\ui\push\base_delete
     $this->set_machine_request_url( MASTODON_URL );
   }
 }
-?>

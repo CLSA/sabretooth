@@ -102,4 +102,3 @@ class address_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'note', $record->note );
   }
 }
-?>

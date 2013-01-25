@@ -103,4 +103,3 @@ class self_home extends \cenozo\ui\widget\self_home
    */
   protected $assignment_list = NULL;
 }
-?>

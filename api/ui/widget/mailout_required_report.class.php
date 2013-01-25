@@ -49,4 +49,3 @@ class mailout_required_report extends base_report
       ' name, address and last date they were successfully contacted.' );
   }
 }
-?>

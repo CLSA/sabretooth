@@ -26,4 +26,3 @@ class quota_primary extends \cenozo\ui\pull\base_primary
     parent::__construct( 'quota', $args );
   }
 }
-?>

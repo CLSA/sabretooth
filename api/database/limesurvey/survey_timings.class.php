@@ -103,4 +103,3 @@ class survey_timings extends sid_record
    */
   protected static $primary_key_name = 'id';
 }
-?>

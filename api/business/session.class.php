@@ -258,4 +258,3 @@ class session extends \cenozo\business\session
    */
   private $survey_database = NULL;
 }
-?>

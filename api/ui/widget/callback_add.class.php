@@ -111,4 +111,3 @@ class callback_add extends base_callback_view
     $this->set_variable( 'is_mid_tier', 2 == $session->get_role()->tier );
   }
 }
-?>

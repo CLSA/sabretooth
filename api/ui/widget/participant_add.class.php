@@ -90,4 +90,3 @@ class participant_add extends \cenozo\ui\widget\base_view
     $this->set_item( 'prior_contact_date', '' );
   }
 }
-?>

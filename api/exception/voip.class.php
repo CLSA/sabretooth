@@ -29,4 +29,3 @@ class voip extends \cenozo\exception\runtime
     parent::__construct( $message, $context, $previous );
   }
 }
-?>

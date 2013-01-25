@@ -26,4 +26,3 @@ class queue_primary extends \cenozo\ui\pull\base_primary
     parent::__construct( 'queue', $args );
   }
 }
-?>

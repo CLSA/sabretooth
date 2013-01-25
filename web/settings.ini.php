@@ -56,4 +56,3 @@ $SETTINGS['voip']['prefix'] = '';
 // the directory to write recorded calls
 // (must be an absolute path that the asterisk server's user has access to)
 $SETTINGS['path']['VOIP_MONITOR'] = '/var/local/sabretooth/monitor';
-?>

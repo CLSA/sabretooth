@@ -28,4 +28,3 @@ class participant_add_consent extends \cenozo\ui\widget\base_add_record
     parent::__construct( 'participant', 'consent', $args );
   }
 }
-?>

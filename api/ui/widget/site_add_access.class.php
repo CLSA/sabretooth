@@ -44,4 +44,3 @@ class site_add_access extends \cenozo\ui\widget\site_add_access
     return parent::determine_role_list( $modifier );
   }
 }
-?>

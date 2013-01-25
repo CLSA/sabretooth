@@ -62,4 +62,3 @@ class callback_feed extends \cenozo\ui\pull\base_feed
     }
   }
 }
-?>

@@ -91,4 +91,3 @@ class shift_template_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'end_date', $this->get_record()->end_date, false );
   }
 }
-?>

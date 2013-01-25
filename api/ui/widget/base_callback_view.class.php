@@ -28,4 +28,3 @@ abstract class base_callback_view extends \cenozo\ui\widget\base_view
     parent::__construct( 'callback', $name, $args );
   }
 }
-?>

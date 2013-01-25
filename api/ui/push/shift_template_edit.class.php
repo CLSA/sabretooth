@@ -47,4 +47,3 @@ class shift_template_edit extends \cenozo\ui\push\base_edit
     }
   }
 }
-?>

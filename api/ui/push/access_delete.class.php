@@ -43,4 +43,3 @@ class access_delete extends \cenozo\ui\push\access_delete
     return $args;
   }
 }
-?>

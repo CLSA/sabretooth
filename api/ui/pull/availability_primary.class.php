@@ -26,4 +26,3 @@ class availability_primary extends \cenozo\ui\pull\base_primary
     parent::__construct( 'availability', $args );
   }
 }
-?>

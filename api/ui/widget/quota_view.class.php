@@ -70,4 +70,3 @@ class quota_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'disabled', $this->get_record()->disabled, true );
   }
 }
-?>

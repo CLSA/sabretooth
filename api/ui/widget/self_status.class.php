@@ -43,4 +43,3 @@ class self_status extends \cenozo\ui\widget\self_status
       'home', 'operator' != lib::create( 'business\session' )->get_role()->name );
   }
 }
-?>

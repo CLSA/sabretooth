@@ -25,4 +25,3 @@ class appointment_delete extends \cenozo\ui\push\base_delete
     parent::__construct( 'appointment', $args );
   }
 }
-?>

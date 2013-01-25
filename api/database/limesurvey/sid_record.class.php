@@ -69,4 +69,3 @@ abstract class sid_record extends record
    */
   private static $table_sid_list = array();
 }
-?>

@@ -141,4 +141,3 @@ class callback_view extends base_callback_view
         'View the participant\'s details' );
   }
 }
-?>

@@ -25,4 +25,3 @@ class phase_delete_source_survey extends \cenozo\ui\push\base_delete_record
     parent::__construct( 'phase', 'source_survey', $args );
   }
 }
-?>

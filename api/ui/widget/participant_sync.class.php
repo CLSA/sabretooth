@@ -27,4 +27,3 @@ class participant_sync extends \cenozo\ui\widget
     parent::__construct( 'participant', 'sync', $args );
   }
 }
-?>

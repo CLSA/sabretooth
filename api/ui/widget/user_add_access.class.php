@@ -44,4 +44,3 @@ class user_add_access extends \cenozo\ui\widget\user_add_access
     return parent::determine_role_list( $modifier );
   }
 }
-?>

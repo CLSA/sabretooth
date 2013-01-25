@@ -26,4 +26,3 @@ class opal_instance_primary extends \cenozo\ui\pull\base_primary
     parent::__construct( 'opal_instance', $args );
   }
 }
-?>

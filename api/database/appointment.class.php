@@ -297,4 +297,3 @@ $participant_site_mod = lib::create( 'database\modifier' );
 $participant_site_mod->where(
   'appointment.participant_id', '=', 'participant_site.participant_id', false );
 appointment::customize_join( 'participant_site', $participant_site_mod );
-?>

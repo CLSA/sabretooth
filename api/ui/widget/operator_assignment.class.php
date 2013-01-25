@@ -292,4 +292,3 @@ class operator_assignment extends \cenozo\ui\widget
     }
   }
 }
-?>

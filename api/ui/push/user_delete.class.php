@@ -28,4 +28,3 @@ class user_delete extends \cenozo\ui\push\user_delete
     $this->set_machine_request_url( MASTODON_URL );
   }
 }
-?>

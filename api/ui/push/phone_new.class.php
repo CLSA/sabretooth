@@ -75,4 +75,3 @@ class phone_new extends base_new
         __METHOD__ );
   }
 }
-?>

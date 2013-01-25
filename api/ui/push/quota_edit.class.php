@@ -27,4 +27,3 @@ class quota_edit extends base_edit
     parent::__construct( 'quota', $args );
   }
 }
-?>

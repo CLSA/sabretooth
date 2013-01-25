@@ -65,4 +65,3 @@ class participant_status_report extends base_report
     $this->set_parameter( 'breakdown', 'site', true, $breakdowns );
   }
 }
-?>

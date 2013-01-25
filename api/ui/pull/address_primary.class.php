@@ -26,4 +26,3 @@ class address_primary extends \cenozo\ui\pull\base_primary
     parent::__construct( 'address', $args );
   }
 }
-?>

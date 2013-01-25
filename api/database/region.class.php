@@ -13,4 +13,3 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * region: record
  */
 class region extends \cenozo\database\record {}
-?>

@@ -73,4 +73,3 @@ class interview_rescore extends \cenozo\ui\widget\base_record
    */
   protected $recording_list = NULL;
 }
-?>

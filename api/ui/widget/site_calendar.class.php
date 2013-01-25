@@ -69,4 +69,3 @@ class site_calendar extends \cenozo\ui\widget\base_calendar
     $this->set_variable( 'editable', false );
   }
 }
-?>

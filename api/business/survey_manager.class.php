@@ -360,4 +360,3 @@ class survey_manager extends \cenozo\singleton
    */
   private $current_token = NULL;
 }
-?>

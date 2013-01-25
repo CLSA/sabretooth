@@ -84,4 +84,3 @@ class callback_list extends site_restricted_list
     }
   }
 }
-?>

@@ -32,4 +32,3 @@ abstract class base_new extends \cenozo\ui\push\base_new
     return $args;
   }
 }
-?>

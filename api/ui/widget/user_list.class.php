@@ -48,4 +48,3 @@ class user_list extends \cenozo\ui\widget\user_list
     return parent::determine_record_list( $modifier );
   }
 }
-?>

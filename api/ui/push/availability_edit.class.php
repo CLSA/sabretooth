@@ -41,4 +41,3 @@ class availability_edit extends base_edit
     $this->set_machine_request_url( MASTODON_URL );
   }
 }
-?>

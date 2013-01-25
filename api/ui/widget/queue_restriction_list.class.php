@@ -118,4 +118,3 @@ class queue_restriction_list extends site_restricted_list
     return $class_name::determine_record_list( $modifier );
   }
 }
-?>

@@ -28,4 +28,3 @@ class self_settings extends \cenozo\ui\widget\self_settings
     $this->set_variable( 'logo', 'img/logo_small.png' );
   }
 }
-?>

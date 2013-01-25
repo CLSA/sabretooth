@@ -58,4 +58,3 @@ class shift_edit extends \cenozo\ui\push\base_edit
     unset( $this->arguments['columns']['end_time'] );
   }
 }
-?>

@@ -32,4 +32,3 @@ abstract class base_edit extends \cenozo\ui\push\base_edit
     return $args;
   }
 }
-?>

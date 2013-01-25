@@ -251,4 +251,3 @@ class tokens extends sid_record
    */
   protected static $primary_key_name = 'tid';
 }
-?>

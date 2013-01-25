@@ -32,4 +32,3 @@ class note_edit extends \cenozo\ui\push\note_edit
     }
   }
 }
-?>

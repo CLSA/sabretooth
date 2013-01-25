@@ -85,4 +85,3 @@ class away_time_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'end_datetime', $this->get_record()->end_datetime, true );
   }
 }
-?>

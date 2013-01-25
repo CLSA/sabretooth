@@ -153,4 +153,3 @@ class assignment_list extends site_restricted_list
     return parent::determine_record_list( $modifier );
   }
 }
-?>

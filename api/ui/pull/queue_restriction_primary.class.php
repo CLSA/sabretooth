@@ -26,4 +26,3 @@ class queue_restriction_primary extends \cenozo\ui\pull\base_primary
     parent::__construct( 'queue_restriction', $args );
   }
 }
-?>

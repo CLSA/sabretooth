@@ -45,4 +45,3 @@ class user_view extends \cenozo\ui\widget\user_view
     }
   }
 }
-?>

@@ -41,4 +41,3 @@ class voip_end_monitor extends \cenozo\ui\push
     lib::create( 'business\voip_manager' )->get_call()->stop_monitoring();
   }
 }
-?>

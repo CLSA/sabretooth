@@ -75,4 +75,3 @@ class away_time_add extends \cenozo\ui\widget\base_view
     $this->set_item( 'end_datetime', '' );
   }
 }
-?>

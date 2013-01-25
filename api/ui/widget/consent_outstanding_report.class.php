@@ -47,4 +47,3 @@ class consent_outstanding_report extends base_report
       'date they were successfully contacted.' );
   }
 }
-?>

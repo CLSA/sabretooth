@@ -46,4 +46,3 @@ class site_new extends \cenozo\ui\push\site_new
     return $args;
   }
 }
-?>

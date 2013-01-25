@@ -40,4 +40,3 @@ class surveys extends record
    */
   protected static $primary_key_name = 'sid';
 }
-?>

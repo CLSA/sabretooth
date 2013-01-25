@@ -25,4 +25,3 @@ $interview_mod = lib::create( 'database\modifier' );
 $interview_mod->where(
   'availability.participant_id', '=', 'interview.participant_id', false );
 availability::customize_join( 'interview', $interview_mod );
-?>

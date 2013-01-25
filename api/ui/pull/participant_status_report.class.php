@@ -563,4 +563,3 @@ class participant_status_report extends \cenozo\ui\pull\base_report
    */
   private $base_sql = '';
 }
-?>

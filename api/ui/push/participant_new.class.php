@@ -62,4 +62,3 @@ class participant_new extends base_new
         'The participant\'s last name cannot be left blank.', __METHOD__ );
   }
 }
-?>

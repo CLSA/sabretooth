@@ -32,4 +32,3 @@ class self_set_password extends \cenozo\ui\push\self_set_password
       lib::create( 'business\session' )->get_user() );
   }
 }
-?>

@@ -55,4 +55,3 @@ class interview_edit extends \cenozo\ui\push\base_edit
       'Only the "completed" state of an interview may be edited.', __METHOD__ );
   }
 }
-?>

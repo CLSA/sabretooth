@@ -130,4 +130,3 @@ $participant_site_mod = lib::create( 'database\modifier' );
 $participant_site_mod->where(
   'callback.participant_id', '=', 'participant_site.participant_id', false );
 callback::customize_join( 'participant_site', $participant_site_mod );
-?>

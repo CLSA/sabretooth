@@ -74,4 +74,3 @@ class quota_new extends \cenozo\ui\push\base_new
     return $args;
   }
 }
-?>

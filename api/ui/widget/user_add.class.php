@@ -41,4 +41,3 @@ class user_add extends \cenozo\ui\widget\user_add
     $this->set_item( 'role_id', array_search( 'operator', $roles ), true, $roles );
   }
 }
-?>

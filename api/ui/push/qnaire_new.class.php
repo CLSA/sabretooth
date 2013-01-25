@@ -45,4 +45,3 @@ class qnaire_new extends \cenozo\ui\push\base_new
         'The questionnaire\'s name cannot be left blank.', __METHOD__ );
   }
 }
-?>

@@ -32,4 +32,3 @@ class note_delete extends \cenozo\ui\push\note_delete
     }
   }
 }
-?>

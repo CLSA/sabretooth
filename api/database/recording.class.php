@@ -36,4 +36,3 @@ class recording extends \cenozo\database\record
                     $this->rank - 1 );
   }
 }
-?>

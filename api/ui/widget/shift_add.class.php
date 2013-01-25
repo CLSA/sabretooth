@@ -156,4 +156,3 @@ class shift_add extends \cenozo\ui\widget\base_view
    */
   protected $user_list = NULL;
 }
-?>
