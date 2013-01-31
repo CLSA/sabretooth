@@ -4,4 +4,7 @@ SET AUTOCOMMIT=0;
 
 SOURCE activity.sql
 
+-- this must be last
+SOURCE convert_database.sql
+
 COMMIT;

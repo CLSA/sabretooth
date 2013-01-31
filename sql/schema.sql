@@ -26,7 +26,7 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`qnaire` (
   UNIQUE INDEX `uq_name` (`name` ASC) ,
   UNIQUE INDEX `uq_rank` (`rank` ASC) ,
   INDEX `fk_prev_qnaire_id` (`prev_qnaire_id` ASC) ,
-  CONSTRAINT `fk_qnaire_prev_qnaire`
+  CONSTRAINT `fk_qnaire_prev_qnaire_id`
     FOREIGN KEY (`prev_qnaire_id` )
     REFERENCES `sabretooth`.`qnaire` (`id` )
     ON DELETE NO ACTION
@@ -46,7 +46,7 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`phase` (
   `qnaire_id` INT UNSIGNED NOT NULL ,
   `sid` INT NOT NULL COMMENT 'The default survey ID to use for this phase.' ,
   `rank` SMALLINT UNSIGNED NOT NULL ,
-  `repeated` TINYINT(1) NOT NULL DEFAULT false ,
+  `repeated` TINYINT(1) NOT NULL DEFAULT 0 ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_qnaire_id` (`qnaire_id` ASC) ,
   UNIQUE INDEX `uq_qnaire_id_rank` (`qnaire_id` ASC, `rank` ASC) ,
@@ -70,8 +70,8 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`interview` (
   `create_timestamp` TIMESTAMP NOT NULL ,
   `qnaire_id` INT UNSIGNED NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
-  `require_supervisor` TINYINT(1) NOT NULL DEFAULT false ,
-  `completed` TINYINT(1) NOT NULL DEFAULT false ,
+  `require_supervisor` TINYINT(1) NOT NULL DEFAULT 0 ,
+  `completed` TINYINT(1) NOT NULL DEFAULT 0 ,
   `rescored` ENUM('Yes','No','N/A') NOT NULL DEFAULT 'N/A' ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_participant_id` (`participant_id` ASC) ,
@@ -79,7 +79,7 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`interview` (
   INDEX `dk_completed` (`completed` ASC) ,
   UNIQUE INDEX `uq_participant_id_qnaire_id` (`participant_id` ASC, `qnaire_id` ASC) ,
   INDEX `dk_rescored` (`rescored` ASC) ,
-  CONSTRAINT `fk_interview_participant`
+  CONSTRAINT `fk_interview_participant_id`
     FOREIGN KEY (`participant_id` )
     REFERENCES `cenozo`.`participant` (`id` )
     ON DELETE NO ACTION
@@ -185,7 +185,7 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`phone_call` (
   INDEX `fk_phone_id` (`phone_id` ASC) ,
   INDEX `dk_start_datetime` (`start_datetime` ASC) ,
   INDEX `dk_end_datetime` (`end_datetime` ASC) ,
-  CONSTRAINT `fk_phone_call_assignment`
+  CONSTRAINT `fk_phone_call_assignment_id`
     FOREIGN KEY (`assignment_id` )
     REFERENCES `sabretooth`.`assignment` (`id` )
     ON DELETE NO ACTION
@@ -240,7 +240,7 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`assignment_note` (
   `create_timestamp` TIMESTAMP NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
   `assignment_id` INT UNSIGNED NOT NULL ,
-  `sticky` TINYINT(1) NOT NULL DEFAULT false ,
+  `sticky` TINYINT(1) NOT NULL DEFAULT 0 ,
   `datetime` DATETIME NOT NULL ,
   `note` TEXT NOT NULL ,
   PRIMARY KEY (`id`) ,
@@ -271,7 +271,7 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`appointment` (
   `create_timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `phone_id` INT UNSIGNED NULL DEFAULT NULL ,
-  `assignment_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'This appointment\'s assignment.' ,
+  `assignment_id` INT UNSIGNED NULL DEFAULT NULL ,
   `datetime` DATETIME NOT NULL ,
   `type` ENUM('full','half') NOT NULL DEFAULT 'full' ,
   `reached` TINYINT(1) NULL DEFAULT NULL COMMENT 'If the appointment was met, whether the participant was reached.' ,
@@ -281,12 +281,12 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`appointment` (
   INDEX `dk_reached` (`reached` ASC) ,
   INDEX `fk_phone_id` (`phone_id` ASC) ,
   INDEX `dk_datetime` (`datetime` ASC) ,
-  CONSTRAINT `fk_appointment_participant`
+  CONSTRAINT `fk_appointment_participant_id`
     FOREIGN KEY (`participant_id` )
     REFERENCES `cenozo`.`participant` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_appointment_assignment`
+  CONSTRAINT `fk_appointment_assignment_id`
     FOREIGN KEY (`assignment_id` )
     REFERENCES `sabretooth`.`assignment` (`id` )
     ON DELETE NO ACTION
@@ -354,13 +354,13 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`shift_template` (
   `operators` INT UNSIGNED NOT NULL ,
   `repeat_type` ENUM('weekly','day of month','day of week') NOT NULL DEFAULT "weekly" ,
   `repeat_every` INT NOT NULL DEFAULT 1 ,
-  `monday` TINYINT(1) NOT NULL DEFAULT false ,
-  `tuesday` TINYINT(1) NOT NULL DEFAULT false ,
-  `wednesday` TINYINT(1) NOT NULL DEFAULT false ,
-  `thursday` TINYINT(1) NOT NULL DEFAULT false ,
-  `friday` TINYINT(1) NOT NULL DEFAULT false ,
-  `saturday` TINYINT(1) NOT NULL DEFAULT false ,
-  `sunday` TINYINT(1) NOT NULL DEFAULT false ,
+  `monday` TINYINT(1) NOT NULL DEFAULT 0 ,
+  `tuesday` TINYINT(1) NOT NULL DEFAULT 0 ,
+  `wednesday` TINYINT(1) NOT NULL DEFAULT 0 ,
+  `thursday` TINYINT(1) NOT NULL DEFAULT 0 ,
+  `friday` TINYINT(1) NOT NULL DEFAULT 0 ,
+  `saturday` TINYINT(1) NOT NULL DEFAULT 0 ,
+  `sunday` TINYINT(1) NOT NULL DEFAULT 0 ,
   PRIMARY KEY (`id`) ,
   INDEX `fk_site_id` (`site_id` ASC) ,
   INDEX `dk_start_time` (`start_time` ASC) ,
@@ -563,7 +563,7 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`callback` (
   `create_timestamp` TIMESTAMP NOT NULL ,
   `participant_id` INT UNSIGNED NOT NULL ,
   `phone_id` INT UNSIGNED NULL DEFAULT NULL ,
-  `assignment_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'This callback\'s assignment.' ,
+  `assignment_id` INT UNSIGNED NULL DEFAULT NULL ,
   `datetime` DATETIME NOT NULL ,
   `reached` TINYINT(1) NULL DEFAULT NULL COMMENT 'If the callback was met, whether the participant was reached.' ,
   PRIMARY KEY (`id`) ,
@@ -591,6 +591,151 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `sabretooth`.`setting`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`setting` ;
+
+CREATE  TABLE IF NOT EXISTS `sabretooth`.`setting` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `category` VARCHAR(45) NOT NULL ,
+  `name` VARCHAR(45) NOT NULL ,
+  `type` ENUM('boolean', 'integer', 'float', 'string') NOT NULL ,
+  `value` VARCHAR(45) NOT NULL ,
+  `description` TEXT NULL DEFAULT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `dk_category` (`category` ASC) ,
+  INDEX `dk_name` (`name` ASC) ,
+  UNIQUE INDEX `uq_category_name` (`category` ASC, `name` ASC) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `sabretooth`.`setting_value`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`setting_value` ;
+
+CREATE  TABLE IF NOT EXISTS `sabretooth`.`setting_value` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `setting_id` INT UNSIGNED NOT NULL ,
+  `site_id` INT UNSIGNED NOT NULL ,
+  `value` VARCHAR(45) NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_site_id` (`site_id` ASC) ,
+  UNIQUE INDEX `uq_setting_id_site_id` (`setting_id` ASC, `site_id` ASC) ,
+  INDEX `fk_setting_id` (`setting_id` ASC) ,
+  CONSTRAINT `fk_setting_value_site_id`
+    FOREIGN KEY (`site_id` )
+    REFERENCES `cenozo`.`site` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_setting_value_setting_id`
+    FOREIGN KEY (`setting_id` )
+    REFERENCES `sabretooth`.`setting` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Site-specific setting overriding the default.';
+
+
+-- -----------------------------------------------------
+-- Table `sabretooth`.`operation`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`operation` ;
+
+CREATE  TABLE IF NOT EXISTS `sabretooth`.`operation` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `type` ENUM('push','pull','widget') NOT NULL ,
+  `subject` VARCHAR(45) NOT NULL ,
+  `name` VARCHAR(45) NOT NULL ,
+  `restricted` TINYINT(1) NOT NULL DEFAULT 1 ,
+  `description` TEXT NULL DEFAULT NULL ,
+  PRIMARY KEY (`id`) ,
+  UNIQUE INDEX `uq_type_subject_name` (`type` ASC, `subject` ASC, `name` ASC) ,
+  INDEX `dk_type` (`type` ASC) ,
+  INDEX `dk_subject` (`subject` ASC) ,
+  INDEX `dk_name` (`name` ASC) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `sabretooth`.`activity`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`activity` ;
+
+CREATE  TABLE IF NOT EXISTS `sabretooth`.`activity` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `user_id` INT UNSIGNED NOT NULL ,
+  `site_id` INT UNSIGNED NOT NULL ,
+  `role_id` INT UNSIGNED NOT NULL ,
+  `operation_id` INT UNSIGNED NOT NULL ,
+  `query` VARCHAR(511) NOT NULL ,
+  `elapsed` FLOAT NOT NULL DEFAULT 0 COMMENT 'The total time to perform the operation in seconds.' ,
+  `error_code` VARCHAR(20) NULL DEFAULT '(incomplete)' COMMENT 'NULL if no error occurred.' ,
+  `datetime` DATETIME NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_user_id` (`user_id` ASC) ,
+  INDEX `fk_role_id` (`role_id` ASC) ,
+  INDEX `fk_site_id` (`site_id` ASC) ,
+  INDEX `fk_operation_id` (`operation_id` ASC) ,
+  INDEX `dk_datetime` (`datetime` ASC) ,
+  CONSTRAINT `fk_activity_user_id`
+    FOREIGN KEY (`user_id` )
+    REFERENCES `cenozo`.`user` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_activity_role_id`
+    FOREIGN KEY (`role_id` )
+    REFERENCES `cenozo`.`role` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_activity_site_id`
+    FOREIGN KEY (`site_id` )
+    REFERENCES `cenozo`.`site` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_activity_operation_id`
+    FOREIGN KEY (`operation_id` )
+    REFERENCES `sabretooth`.`operation` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `sabretooth`.`role_has_operation`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`role_has_operation` ;
+
+CREATE  TABLE IF NOT EXISTS `sabretooth`.`role_has_operation` (
+  `role_id` INT UNSIGNED NOT NULL ,
+  `operation_id` INT UNSIGNED NOT NULL ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  PRIMARY KEY (`role_id`, `operation_id`) ,
+  INDEX `fk_operation_id` (`operation_id` ASC) ,
+  INDEX `fk_role_id` (`role_id` ASC) ,
+  CONSTRAINT `fk_role_has_operation_role_id`
+    FOREIGN KEY (`role_id` )
+    REFERENCES `cenozo`.`role` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_role_has_operation_operation_id`
+    FOREIGN KEY (`operation_id` )
+    REFERENCES `sabretooth`.`operation` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Placeholder table for view `sabretooth`.`assignment_last_phone_call`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `sabretooth`.`assignment_last_phone_call` (`assignment_id` INT, `phone_call_id` INT);
@@ -601,14 +746,14 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`assignment_last_phone_call` (`assignmen
 CREATE TABLE IF NOT EXISTS `sabretooth`.`interview_last_assignment` (`interview_id` INT, `assignment_id` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `sabretooth`.`participant_phone_call_status_count`
+-- Placeholder table for view `sabretooth`.`interview_phone_call_status_count`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `sabretooth`.`participant_phone_call_status_count` (`participant_id` INT, `status` INT, `total` INT);
+CREATE TABLE IF NOT EXISTS `sabretooth`.`interview_phone_call_status_count` (`interview_id` INT, `status` INT, `total` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `sabretooth`.`participant_last_appointment`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `sabretooth`.`participant_last_appointment` (`participant_id` INT, `appointment_id` INT, `completed` INT);
+CREATE TABLE IF NOT EXISTS `sabretooth`.`participant_last_appointment` (`participant_id` INT, `appointment_id` INT, `reached` INT);
 
 -- -----------------------------------------------------
 -- View `sabretooth`.`assignment_last_phone_call`
@@ -649,18 +794,17 @@ AND assignment_1.start_datetime = (
   GROUP BY interview_2.id );
 
 -- -----------------------------------------------------
--- View `sabretooth`.`participant_phone_call_status_count`
+-- View `sabretooth`.`interview_phone_call_status_count`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `sabretooth`.`participant_phone_call_status_count` ;
-DROP TABLE IF EXISTS `sabretooth`.`participant_phone_call_status_count`;
+DROP VIEW IF EXISTS `sabretooth`.`interview_phone_call_status_count` ;
+DROP TABLE IF EXISTS `sabretooth`.`interview_phone_call_status_count`;
 USE `sabretooth`;
-CREATE  OR REPLACE VIEW `sabretooth`.`participant_phone_call_status_count` AS
-SELECT participant.id participant_id, phone_call.status status, COUNT( phone_call.id ) total
-FROM cenozo.participant
-JOIN interview ON participant.id = interview.participant_id
+CREATE  OR REPLACE VIEW `sabretooth`.`interview_phone_call_status_count` AS
+SELECT interview.id AS interview_id, phone_call.status, COUNT( phone_call.id ) AS total
+FROM interview
 JOIN assignment ON interview.id = assignment.interview_id
 JOIN phone_call ON assignment.id = phone_call.assignment_id
-GROUP BY participant.id, phone_call.status;
+GROUP BY interview.id, phone_call.status;
 
 -- -----------------------------------------------------
 -- View `sabretooth`.`participant_last_appointment`
