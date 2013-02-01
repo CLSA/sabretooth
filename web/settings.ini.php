@@ -38,14 +38,6 @@ $SETTINGS['url']['JQUERY_PLUGINS'] = $SETTINGS['url']['JQUERY'].'/plugins';
 $SETTINGS['url']['JQUERY_JSTREE_JS'] = $SETTINGS['url']['JQUERY_PLUGINS'].'/jsTree.js';
 $SETTINGS['url']['JQUERY_TIMERS_JS'] = $SETTINGS['url']['JQUERY_PLUGINS'].'/timers.js';
 
-// database settings
-$SETTINGS['db']['driver'] = 'mysql';
-$SETTINGS['db']['server'] = 'localhost';
-$SETTINGS['db']['username'] = 'sabretooth';
-$SETTINGS['db']['password'] = '';
-$SETTINGS['db']['database'] = 'sabretooth';
-$SETTINGS['db']['prefix'] = '';
-
 // voip settings
 $SETTINGS['voip']['enabled'] = false;
 $SETTINGS['voip']['url'] = 'http://localhost:8088/mxml';

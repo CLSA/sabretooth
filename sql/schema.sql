@@ -352,7 +352,7 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`shift_template` (
   `start_date` DATE NOT NULL ,
   `end_date` DATE NULL DEFAULT NULL ,
   `operators` INT UNSIGNED NOT NULL ,
-  `repeat_type` ENUM('weekly','day of month','day of week') NOT NULL DEFAULT "weekly" ,
+  `repeat_type` ENUM('weekly','day of month','day of week') NOT NULL DEFAULT 'weekly' ,
   `repeat_every` INT NOT NULL DEFAULT 1 ,
   `monday` TINYINT(1) NOT NULL DEFAULT 0 ,
   `tuesday` TINYINT(1) NOT NULL DEFAULT 0 ,

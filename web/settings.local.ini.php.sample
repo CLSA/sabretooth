@@ -8,51 +8,35 @@
 
 global $SETTINGS;
 
-// Whether or not to run the application in development mode
+// whether or not to run the application in development mode
 $SETTINGS['general']['development_mode'] = true;
 
-// If more than one instance of Sabretooth and Beartooth is being used make sure this
-// setting is unique
-$SETTINGS['general']['cohort'] = 'default';
-
-// Defines the username and password used by mastodon when communicating as a machine
+// defines the username and password used by mastodon when communicating as a machine
 $SETTINGS['general']['machine_user'] = 'put machine user name here';
 $SETTINGS['general']['machine_password'] = 'put machine password here';
 
-// The survey ID of the alternate contact script.  Comment out if the script is unavailable.
-//$SETTINGS['general']['secondary_survey'] = 0;
+// the survey ID of the alternate contact script (comment out if the script is unavailable)
+$SETTINGS['general']['secondary_survey'] = 0;
 
-// The web url of the Cenozo framework
-$SETTINGS['url']['CENOZO'] = sprintf( 'http%s://%s/web/path/to/cenozo',
-                                      'on' == $_SERVER["HTTPS"] ? 's' : '',
-                                      $_SERVER["HTTP_HOST"] );
-
-// The file path to the framework and application
+// the file path to the framework and application
 $SETTINGS['path']['CENOZO'] = '/path/to/cenozo';
 $SETTINGS['path']['APPLICATION'] = '/path/to/sabretooth';
 
-// The path to the log file
+// the path to the log file
 $SETTINGS['path']['LOG_FILE'] = $SETTINGS['path']['APPLICATION'].'/log';
 
-// The url of Mastodon (cannot be relative).  Comment out to disable mastodon support.
+// the url of Mastodon (cannot be relative)
 //$SETTINGS['url']['MASTODON'] = 'https://url/to/mastodon';
 
-// The path and url of Limesurvey
+// the path and url of Limesurvey
 $SETTINGS['path']['LIMESURVEY'] = '/path/to/limesurvey';
-$SETTINGS['url']['LIMESURVEY'] = 'http://path/to/limesurvey';
+$SETTINGS['url']['LIMESURVEY'] = 'http://url/to/limesurvey';
 
-// The database name, username and password
-$SETTINGS['db']['database'] = 'put your database name here';
+// database settings (the driver, server and prefixes are set in the framework's settings)
 $SETTINGS['db']['username'] = 'put your database username here';
 $SETTINGS['db']['password'] = 'put your database password here';
 
-// The LDAP base dn, username, password and whether LDAP is in active directory mode
-$SETTINGS['ldap']['base'] = 'put your ldap base here';
-$SETTINGS['ldap']['username'] = 'put your ldap username here';
-$SETTINGS['ldap']['password'] = 'put your ldap password here';
-$SETTINGS['ldap']['active_directory'] = true;
-
-// The Asterisk AJAM url, username and password
+// the Asterisk AJAM url, username and password
 $SETTINGS['voip']['enabled'] = false;
 $SETTINGS['voip']['url'] = 'http://%s:8088/mxml'; // %s will be replaced with the voip host
 $SETTINGS['voip']['username'] = 'put your asterisk username here';

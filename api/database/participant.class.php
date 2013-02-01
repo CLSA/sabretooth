@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * participant: record
  */
-class participant extends \cenozo\database\has_note
+class participant extends \cenozo\database\participant
 {
   /**
    * Get the participant's most recent, closed assignment.
@@ -67,104 +67,6 @@ class participant extends \cenozo\database\has_note
   }
 
   /**
-   * Get the participant's last consent
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return consent
-   * @access public
-   */
-  public function get_last_consent()
-  {
-    // check the primary key value
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to query participant with no id.' );
-      return NULL;
-    }
-    
-    // need custom SQL
-    $database_class_name = lib::get_class_name( 'database\database' );
-    $consent_id = static::db()->get_one(
-      sprintf( 'SELECT consent_id '.
-               'FROM participant_last_consent '.
-               'WHERE participant_id = %s',
-               $database_class_name::format_string( $this->id ) ) );
-    return $consent_id ? lib::create( 'database\consent', $consent_id ) : NULL;
-  }
-
-  /**
-   * Get the participant's "primary" address.  This is the highest ranking canadian address.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return address
-   * @access public
-   */
-  public function get_primary_address()
-  {
-    // check the primary key value
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to query participant with no id.' );
-      return NULL;
-    }
-    
-    // need custom SQL
-    $database_class_name = lib::get_class_name( 'database\database' );
-    $address_id = static::db()->get_one(
-      sprintf( 'SELECT address_id FROM participant_primary_address WHERE participant_id = %s',
-               $database_class_name::format_string( $this->id ) ) );
-    return $address_id ? lib::create( 'database\address', $address_id ) : NULL;
-  }
-
-  /**
-   * Get the participant's "first" address.  This is the highest ranking, active, available
-   * address.
-   * Note: this address may be in the United States
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return address
-   * @access public
-   */
-  public function get_first_address()
-  {
-    // check the primary key value
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to query participant with no id.' );
-      return NULL;
-    }
-    
-    // need custom SQL
-    $database_class_name = lib::get_class_name( 'database\database' );
-    $address_id = static::db()->get_one(
-      sprintf( 'SELECT address_id FROM participant_first_address WHERE participant_id = %s',
-               $database_class_name::format_string( $this->id ) ) );
-    return $address_id ? lib::create( 'database\address', $address_id ) : NULL;
-  }
-
-  /**
-   * Get the default site that the participant belongs to.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return site
-   * @access public
-   */
-  public function get_default_site()
-  {
-    $db_site = NULL;
-    $db_address = $this->get_primary_address();
-    if( !is_null( $db_address ) ) $db_site = $db_address->get_region()->get_site();
-    return $db_site;
-  }
-
-  /**
-   * Get the site that the participant belongs to.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return site
-   * @access public
-   */
-  public function get_primary_site()
-  {
-    return is_null( $this->site_id ) ? $this->get_default_site() : $this->get_site();
-  }
-  
-  /**
    * Override parent's magic get method so that supplementary data can be retrieved
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name The name of the column or table being fetched from the database
@@ -173,7 +75,8 @@ class participant extends \cenozo\database\has_note
    */
   public function __get( $column_name )
   {
-    if( 'current_qnaire_id' == $column_name || 'start_qnaire_date' == $column_name )
+    if( 'current_qnaire_id' == $column_name ||
+        'start_qnaire_date' == $column_name )
     {
       $this->get_queue_data();
       return $this->$column_name;
@@ -282,9 +185,3 @@ class participant extends \cenozo\database\has_note
    */
   private $start_qnaire_date = NULL;
 }
-
-// define the join to the address table
-$address_mod = lib::create( 'database\modifier' );
-$address_mod->where( 'participant.id', '=', 'participant_primary_address.participant_id', false );
-$address_mod->where( 'participant_primary_address.address_id', '=', 'address.id', false );
-participant::customize_join( 'address', $address_mod );
