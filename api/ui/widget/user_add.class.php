@@ -25,9 +25,7 @@ class user_add extends \cenozo\ui\widget\user_add
     parent::setup();
     
     $role_class_name = lib::get_class_name( 'database\role' );
-
     $session = lib::create( 'business\session' );
-    $is_top_tier = 3 == $session->get_role()->tier;
 
     // create enum arrays
     $modifier = lib::create( 'database\modifier' );

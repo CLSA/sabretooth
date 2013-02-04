@@ -30,14 +30,9 @@ class self_menu extends \cenozo\ui\widget\self_menu
     if( 'administrator' == $role ) $this->exclude_calendar( 'site' );
 
     $this->exclude_list( array(
-      'address',
       'appointment',
-      'availability',
       'callback',
-      'consent',
-      'operation',
       'phase',
-      'phone',
       'phone_call',
       'recording',
       'source_survey',
