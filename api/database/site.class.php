@@ -26,3 +26,5 @@ class site extends \cenozo\database\site
     return $this->name;
   }
 }
+
+site::add_extending_table( 'voip' );

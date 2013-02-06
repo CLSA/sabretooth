@@ -986,6 +986,34 @@ CREATE PROCEDURE convert_database()
 
       DROP TABLE role_has_operation_old;
 
+      -- site_voip ---------------------------------------------------------------------------------
+      SET @sql = CONCAT(
+        "CREATE TABLE IF NOT EXISTS site_voip ( ",
+          "site_id INT UNSIGNED NOT NULL , ",
+          "host VARCHAR( 45 ) NULL DEFAULT NULL , ",
+          "xor_key VARCHAR( 45 ) NULL DEFAULT NULL , ",
+          "PRIMARY KEY ( site_id ) , ",
+          "INDEX fk_site_id ( site_id ASC ) , ",
+          "CONSTRAINT fk_site_voip_site_id ",
+            "FOREIGN KEY ( site_id ) ",
+            "REFERENCES ", @cenozo, ".site ( id ) ",
+            "ON DELETE NO ACTION ",
+            "ON UPDATE NO ACTION ) ",
+        "ENGINE = InnoDB " );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
+      SET @sql = CONCAT(
+        "INSERT INTO site_voip( site_id, host, xor_key ) ",
+        "SELECT csite.id, site.voip_host, site.voip_xor_key ",
+        "FROM site ",
+        "JOIN ", @cenozo, ".site csite ON site.name = csite.name ",
+        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE name = 'Sabretooth' )" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
       -- participant_last_appointment --------------------------------------------------------------
       DROP VIEW participant_last_appointment;
       SET @sql = CONCAT(

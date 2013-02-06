@@ -736,6 +736,25 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `sabretooth`.`site_voip`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`site_voip` ;
+
+CREATE  TABLE IF NOT EXISTS `sabretooth`.`site_voip` (
+  `site_id` INT UNSIGNED NOT NULL ,
+  `host` VARCHAR(45) NULL DEFAULT NULL ,
+  `xor_key` VARCHAR(45) NULL DEFAULT NULL ,
+  PRIMARY KEY (`site_id`) ,
+  INDEX `fk_site_id` (`site_id` ASC) ,
+  CONSTRAINT `fk_site_voip_site_id`
+    FOREIGN KEY (`site_id` )
+    REFERENCES `cenozo`.`site` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Placeholder table for view `sabretooth`.`assignment_last_phone_call`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `sabretooth`.`assignment_last_phone_call` (`assignment_id` INT, `phone_call_id` INT);
