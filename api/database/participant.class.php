@@ -15,6 +15,24 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class participant extends \cenozo\database\participant
 {
   /**
+   * Extend parent method by restricting selection to records belonging to this service only
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the selection.
+   * @param boolean $count If true the total number of records instead of a list
+   * @access public
+   * @static
+   */
+  public static function select( $modifier = NULL, $count = false )
+  {
+    // make sure to only include sites belonging to this application
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'service_has_participant.service_id', '=',
+                      lib::create( 'business\session' )->get_service()->id );
+    $modifier->where( 'service_has_participant.datetime', '!=', NULL );
+    return parent::select( $modifier, $count );
+  }
+  
+  /**
    * Get the participant's most recent, closed assignment.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return assignment

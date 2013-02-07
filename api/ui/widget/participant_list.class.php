@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * widget participant list
  */
-class participant_list extends \cenozo\api\ui\widget\participant_list
+class participant_list extends \cenozo\ui\widget\participant_list
 {
   /**
    * Set the rows array needed by the template.

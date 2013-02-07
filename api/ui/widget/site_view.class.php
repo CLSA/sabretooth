@@ -45,5 +45,8 @@ class site_view extends \cenozo\ui\widget\site_view
     // set the view's items
     $this->set_item( 'voip_host', $record->voip_host );
     $this->set_item( 'voip_xor_key', $record->voip_xor_key );
+
+    // remove the service item
+    $this->remove_item( 'service_id' );
   }
 }

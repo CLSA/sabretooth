@@ -53,7 +53,7 @@ class appointment_new extends \cenozo\ui\push\base_new
       if( !$this->get_record()->validate_date() )
       {
         $db_participant = lib::create( 'database\participant', $this->get_record()->participant_id );
-        $db_site = $db_participant->get_primary_site();
+        $db_site = $db_participant->get_effective_site();
 
         // determine the full and half appointment intervals
         $setting_manager = lib::create( 'business\setting_manager' );

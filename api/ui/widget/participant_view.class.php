@@ -114,7 +114,7 @@ class participant_view extends \cenozo\ui\widget\participant_view
     else if( 0 < count( $interview_list ) )
     {
       $max_failed_calls = lib::create( 'business\setting_manager' )->get_setting(
-        'calling', 'max failed calls', $this->get_record()->get_primary_site() );
+        'calling', 'max failed calls', $this->get_record()->get_effective_site() );
 
       // should only be one incomplete interview
       $db_interview = current( $interview_list );

@@ -75,7 +75,7 @@ class callback extends \cenozo\database\record
     if( !is_null( $this->reached ) ) return $this->reached ? 'reached' : 'not reached';
 
     $db_participant = lib::create( 'database\participant', $this->participant_id );
-    $db_site = $db_participant->get_primary_site();
+    $db_site = $db_participant->get_effective_site();
 
     $status = 'unknown';
     

@@ -65,7 +65,7 @@ class appointment extends \cenozo\database\record
 
     $daylight_savings = '1' == util::get_datetime_object()->format( 'I' );
     $db_participant = lib::create( 'database\participant', $this->participant_id );
-    $db_site = $db_participant->get_primary_site();
+    $db_site = $db_participant->get_effective_site();
     if( is_null( $db_site ) )
       throw lib::create( 'exception\runtime',
         'Cannot validate an appointment date, participant has no primary address.', __METHOD__ );
@@ -236,7 +236,7 @@ class appointment extends \cenozo\database\record
     if( !is_null( $this->reached ) ) return $this->reached ? 'reached' : 'not reached';
 
     $db_participant = lib::create( 'database\participant', $this->participant_id );
-    $db_site = $db_participant->get_primary_site();
+    $db_site = $db_participant->get_effective_site();
 
     $status = 'unknown';
     
