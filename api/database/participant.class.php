@@ -129,18 +129,11 @@ class participant extends \cenozo\database\participant
         '           IF( current_interview.completed, next_qnaire.id, current_qnaire.id ) '.
         '       ) AS current_qnaire_id, '.
         '       IF( current_interview.id IS NULL, '.
-        '           IF( participant.prior_contact_date IS NULL, '.
-        '               NULL, '.
-        '               participant.prior_contact_date + INTERVAL( '.
-        '                 SELECT delay FROM qnaire WHERE rank = 1 '.
-        '               ) WEEK ), '.
+        '           NULL, '.
         '           IF( current_interview.completed, '.
         '               IF( next_qnaire.id IS NULL, '.
         '                   NULL, '.
-        '                   IF( next_prev_assignment.end_datetime IS NULL, '.
-        '                       participant.prior_contact_date, '.
-        '                       next_prev_assignment.end_datetime '.
-        '                   ) + INTERVAL next_qnaire.delay WEEK '.
+        '                   next_prev_assignment.end_datetime INTERVAL next_qnaire.delay WEEK '.
         '               ), '.
         '               NULL '.
         '           ) '.

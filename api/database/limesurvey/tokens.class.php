@@ -172,7 +172,10 @@ class tokens extends sid_record
         }
         else if( 'previous CCHS contact date' == $value )
         {
-          $this->$key = $db_participant->prior_contact_date;
+          $event_class_name = lib::get_class_name( 'database\event' );
+          $datetime_list = $db_participant->get_event_datetime_list(
+            $event_class_name::get_unique_record( 'name', 'completed pilot interview' ) );
+          $this->$key = 0 < count( $datetime_list ) ? current( $datetime_list ) : NULL;
         }
         else if( false !== strpos( $value, 'alternate' ) )
         {

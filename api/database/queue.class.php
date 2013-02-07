@@ -440,13 +440,7 @@ class queue extends \cenozo\database\record
       '  IF '.
       '  ( '.
       '    current_interview_id IS NULL, '.
-      '    IF '.
-      '    ( '.
-      '      participant_prior_contact_date IS NULL, '.
-      '      NULL, '.
-      '      participant_prior_contact_date + INTERVAL '.
-      '      ( SELECT delay FROM qnaire WHERE rank = 1 ) WEEK '.
-      '    ), '.
+      '    NULL, '.
       '    IF '.
       '    ( '.
       '      current_interview_completed, '.
@@ -454,12 +448,7 @@ class queue extends \cenozo\database\record
       '      ( '.
       '        next_qnaire_id IS NULL, '.
       '        NULL, '.
-      '        IF '.
-      '        ( '.
-      '          next_prev_assignment_end_datetime IS NULL, '.
-      '          participant_prior_contact_date, '.
-      '          next_prev_assignment_end_datetime '.
-      '        ) + INTERVAL next_qnaire_delay WEEK '.
+      '        next_prev_assignment_end_datetime + INTERVAL next_qnaire_delay WEEK '.
       '      ), '.
       '      NULL '.
       '    ) '.
@@ -1002,7 +991,6 @@ participant.status AS participant_status,
 participant.language AS participant_language,
 participant.site_id AS participant_site_id,
 participant.email AS participant_email,
-participant.prior_contact_date AS participant_prior_contact_date,
 primary_address.id AS primary_address_id,
 primary_address.participant_id AS primary_address_participant_id,
 primary_address.active AS primary_address_active,
