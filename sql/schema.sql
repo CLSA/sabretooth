@@ -235,7 +235,7 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `sabretooth`.`assignment_note` ;
 
 CREATE  TABLE IF NOT EXISTS `sabretooth`.`assignment_note` (
-  `id` INT NOT NULL AUTO_INCREMENT ,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
   `user_id` INT UNSIGNED NOT NULL ,
