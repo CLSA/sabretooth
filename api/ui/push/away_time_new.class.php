@@ -66,7 +66,7 @@ class away_time_new extends \cenozo\ui\push\base_new
     $activity_mod = lib::create( 'database\modifier' );
     $activity_mod->where( 'datetime', '>=', $start_datetime );
     $activity_mod->where( 'datetime', '<=', $end_datetime );
-    $activity_mod->where( 'role_id', '=', $columns['role_id'] );
+    $activity_mod->where( 'activity.role_id', '=', $columns['role_id'] );
     $activity_mod->where( 'operation.name', 'NOT IN', array( 'begin_break', 'end_break' ) );
     if( $db_user->get_activity_count( $activity_mod ) )
       throw lib::create( 'exception\notice',

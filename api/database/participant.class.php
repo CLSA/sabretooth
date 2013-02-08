@@ -133,7 +133,7 @@ class participant extends \cenozo\database\participant
         '           IF( current_interview.completed, '.
         '               IF( next_qnaire.id IS NULL, '.
         '                   NULL, '.
-        '                   next_prev_assignment.end_datetime INTERVAL next_qnaire.delay WEEK '.
+        '                   next_prev_assignment.end_datetime + INTERVAL next_qnaire.delay WEEK '.
         '               ), '.
         '               NULL '.
         '           ) '.

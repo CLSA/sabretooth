@@ -61,8 +61,8 @@ class operator_assignment extends \cenozo\ui\widget
 
     // global messages go first
     $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', NULL );
-    $modifier->where( 'role_id', '=', NULL );
+    $modifier->where( 'access.site_id', '=', NULL );
+    $modifier->where( 'access.role_id', '=', NULL );
     $system_message_class_name = lib::get_class_name( 'database\system_message' );
     foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
     {
@@ -72,8 +72,8 @@ class operator_assignment extends \cenozo\ui\widget
     
     // then all-site messages
     $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', NULL );
-    $modifier->where( 'role_id', '=', $db_role->id );
+    $modifier->where( 'access.site_id', '=', NULL );
+    $modifier->where( 'access.role_id', '=', $db_role->id );
     foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
     {
       $message_list[] = array( 'title' => $db_system_message->title,
@@ -82,8 +82,8 @@ class operator_assignment extends \cenozo\ui\widget
 
     // then all-role site-specific messages
     $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'role_id', '=', NULL );
+    $modifier->where( 'access.site_id', '=', $db_site->id );
+    $modifier->where( 'access.role_id', '=', NULL );
     foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
     {
       $message_list[] = array( 'title' => $db_system_message->title,
@@ -92,8 +92,8 @@ class operator_assignment extends \cenozo\ui\widget
 
     // then role-specific site-specific messages
     $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'role_id', '=', $db_role->id );
+    $modifier->where( 'access.site_id', '=', $db_site->id );
+    $modifier->where( 'access.role_id', '=', $db_role->id );
     foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
     {
       $message_list[] = array( 'title' => $db_system_message->title,

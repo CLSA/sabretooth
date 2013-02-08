@@ -64,8 +64,8 @@ class away_time_add extends \cenozo\ui\widget\base_view
 
     $users = array();
     $user_mod = lib::create( 'database\modifier' );
-    $user_mod->where( 'role_id', '=', $db_role->id );
-    $user_mod->where( 'site_id', '=', $db_site->id );
+    $user_mod->where( 'access.role_id', '=', $db_role->id );
+    $user_mod->where( 'access.site_id', '=', $db_site->id );
     foreach( $user_class_name::select( $user_mod ) as $db_user ) $users[$db_user->id] = $db_user->name;
 
     $this->set_item( 'role_id', $db_role->id );
