@@ -29,7 +29,7 @@ class queue extends \cenozo\database\record
   {
     parent::__construct( $id );
   }
-  
+
   /**
    * Generates the query list.
    * 
@@ -43,7 +43,7 @@ class queue extends \cenozo\database\record
   protected static function generate_query_list()
   {
     $participant_class_name = lib::get_class_name( 'database\participant' );
-    $phone_call_class_name = lib::get_class_name( 'database\phone_call' ); 
+    $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
 
     // define the SQL for each queue
     $queue_list = array(
@@ -55,7 +55,7 @@ class queue extends \cenozo\database\record
 
     // add the participant final status types
     $queue_list = array_merge( $queue_list, $participant_class_name::get_enum_values( 'status' ) );
-    
+
     // finish the queue list
     $queue_list = array_merge( $queue_list, array(
       'eligible',
@@ -78,11 +78,11 @@ class queue extends \cenozo\database\record
       'new participant available',
       'new participant not available',
       'old participant' ) );
-     
+
     foreach( $queue_list as $queue )
     {
       $parts = self::get_query_parts( $queue );
-      
+
       $from_sql = '';
       $first = true;
       // reverse order to make sure the join works
@@ -91,20 +91,20 @@ class queue extends \cenozo\database\record
         $from_sql .= sprintf( $first ? 'FROM %s' : ', %s', $from );
         $first = false;
       }
-      
+
       $join_sql = '';
       foreach( $parts['join'] as $join ) $join_sql .= ' '.$join;
-      
+
       $where_sql = 'WHERE true';
       foreach( $parts['where'] as $where ) $where_sql .= ' AND '.$where;
-      
+
       self::$query_list[$queue] =
         sprintf( 'SELECT <SELECT_PARTICIPANT> %s %s %s',
                  $from_sql,
                  $join_sql,
                  $where_sql );
     }
-    
+
     // now add the sql for each call back status, grouping machine message, machine no message,
     // not reached, disconnected and wrong number into a single "not reached" category
     $phone_call_status_list = $phone_call_class_name::get_enum_values( 'status' );
@@ -125,7 +125,7 @@ class queue extends \cenozo\database\record
       foreach( $queue_list as $queue )
       {
         $parts = self::get_query_parts( $queue, $phone_call_status );
-        
+
         $from_sql = '';
         $first = true;
         // reverse order to make sure the join works
@@ -134,13 +134,13 @@ class queue extends \cenozo\database\record
           $from_sql .= sprintf( $first ? 'FROM %s' : ', %s', $from );
           $first = false;
         }
-        
+
         $join_sql = '';
         foreach( $parts['join'] as $join ) $join_sql .= ' '.$join;
-        
+
         $where_sql = 'WHERE true';
         foreach( $parts['where'] as $where ) $where_sql .= ' AND '.$where;
-        
+
         $queue_name = str_replace( 'phone call status', $phone_call_status, $queue );
         self::$query_list[$queue_name] =
           sprintf( 'SELECT <SELECT_PARTICIPANT> %s %s %s',
@@ -178,8 +178,9 @@ class queue extends \cenozo\database\record
 
     // restrict to the site
     if( !is_null( $this->db_site ) ) $modifier->where(
-      'IFNULL( participant_site_id, primary_region_site_id )', '=', $this->db_site->id );
-    
+      'IFNULL( service_has_participant_preferred_site_id, primary_region_site_id )',
+      '=', $this->db_site->id );
+
     if( !array_key_exists( $this->name, self::$participant_count_cache ) )
       self::$participant_count_cache[$this->name] = array();
     if( !array_key_exists( $qnaire_id, self::$participant_count_cache[$this->name] ) )
@@ -241,7 +242,8 @@ class queue extends \cenozo\database\record
 
     // restrict to the site
     if( !is_null( $this->db_site ) ) $modifier->where(
-      'IFNULL( participant_site_id, primary_region_site_id )', '=', $this->db_site->id );
+      'IFNULL( service_has_participant_preferred_site_id, primary_region_site_id )',
+      '=', $this->db_site->id );
 
     $participant_ids = static::db()->get_col(
       sprintf( '%s %s',
@@ -274,7 +276,7 @@ class queue extends \cenozo\database\record
   {
     $this->db_site = $db_site;
   }
-  
+
   /**
    * Get whether this queue is related to an appointment
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -328,89 +330,91 @@ class queue extends \cenozo\database\record
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $participant_status_list = $participant_class_name::get_enum_values( 'status' );
 
-    $phone_count = 
+    $phone_count =
       '( '.
-      '  SELECT COUNT( DISTINCT phone.id ) '.
-      '  FROM phone '.
-      '  WHERE phone.participant_id = participant_for_queue.id '.
-      '  AND phone.active '.
-      '  AND phone.number IS NOT NULL '.
+        'SELECT COUNT( DISTINCT phone.id ) '.
+        'FROM phone '.
+        'WHERE phone.person_id = participant_for_queue.participant_person_id '.
+        'AND phone.active '.
+        'AND phone.number IS NOT NULL '.
       ')';
 
     // join to the quota table based on region, gender and age group
-    $quota_join = 
+    $quota_join =
       'LEFT JOIN quota '.
       'ON quota.region_id = primary_region_id '.
       'AND quota.gender = participant_gender '.
       'AND quota.age_group_id = participant_age_group_id';
-    
+
     // join to the queue_restriction table based on site, city, region or postcode
-    $restriction_join = 
+    $restriction_join =
       'LEFT JOIN queue_restriction '.
-      'ON queue_restriction.site_id = IFNULL( participant_site_id, primary_region_site_id ) '.
+      'ON queue_restriction.site_id = '.
+      'IFNULL( service_has_participant_preferred_site_id, primary_region_site_id ) '.
       'OR queue_restriction.city = first_address_city '.
       'OR queue_restriction.region_id = first_address_region_id '.
       'OR queue_restriction.postcode = first_address_postcode';
 
     // checks to see if participant is not restricted
     $check_restriction_sql =
-      '('.
+      '( '.
       // tests to see if all restrictions are null (meaning, no restriction)
-      '  ('.
-      '    queue_restriction.site_id IS NULL AND'.
-      '    queue_restriction.city IS NULL AND'.
-      '    queue_restriction.region_id IS NULL AND'.
-      '    queue_restriction.postcode IS NULL'.
-      '  )'.
+        '( '.
+          'queue_restriction.site_id IS NULL AND '.
+          'queue_restriction.city IS NULL AND '.
+          'queue_restriction.region_id IS NULL AND '.
+          'queue_restriction.postcode IS NULL '.
+        ') '.
       // tests to see if the site is being restricted but the participant isn't included
-      '  OR ('.
-      '    queue_restriction.site_id IS NOT NULL AND'.
-      '    queue_restriction.site_id != IFNULL( participant_site_id, primary_region_site_id )'.
-      '  )'.
+        'OR ( '.
+          'queue_restriction.site_id IS NOT NULL AND '.
+          'queue_restriction.site_id != '.
+          'IFNULL( service_has_participant_preferred_site_id, primary_region_site_id ) '.
+        ') '.
       // tests to see if the city is being restricted but the participant isn't included
-      '  OR ('.
-      '    queue_restriction.city IS NOT NULL AND'.
-      '    queue_restriction.city != first_address_city'.
-      '  )'.
+        'OR ( '.
+          'queue_restriction.city IS NOT NULL AND '.
+          'queue_restriction.city != first_address_city '.
+        ') '.
       // tests to see if the region is being restricted but the participant isn't included
-      '  OR ('.
-      '    queue_restriction.region_id IS NOT NULL AND'.
-      '    queue_restriction.region_id != first_address_region_id'.
-      '  )'.
+        'OR ( '.
+          'queue_restriction.region_id IS NOT NULL AND '.
+          'queue_restriction.region_id != first_address_region_id '.
+        ') '.
       // tests to see if the postcode is being restricted but the participant isn't included
-      '  OR ('.
-      '    queue_restriction.postcode IS NOT NULL AND'.
-      '    queue_restriction.postcode != first_address_postcode'.
-      '  )'.
+        'OR ( '.
+          'queue_restriction.postcode IS NOT NULL AND '.
+          'queue_restriction.postcode != first_address_postcode '.
+        ') '.
       ')';
-    
+
     // checks a participant's availability
     $check_availability_sql = sprintf(
       '( SELECT MAX( '.
-      '    CASE DAYOFWEEK( %s ) '.
-      '      WHEN 1 THEN availability.sunday '.
-      '      WHEN 2 THEN availability.monday '.
-      '      WHEN 3 THEN availability.tuesday '.
-      '      WHEN 4 THEN availability.wednesday '.
-      '      WHEN 5 THEN availability.thursday '.
-      '      WHEN 6 THEN availability.friday '.
-      '      WHEN 7 THEN availability.saturday '.
-      '      ELSE 0 END ',
+          'CASE DAYOFWEEK( %s ) '.
+            'WHEN 1 THEN availability.sunday '.
+            'WHEN 2 THEN availability.monday '.
+            'WHEN 3 THEN availability.tuesday '.
+            'WHEN 4 THEN availability.wednesday '.
+            'WHEN 5 THEN availability.thursday '.
+            'WHEN 6 THEN availability.friday '.
+            'WHEN 7 THEN availability.saturday '.
+            'ELSE 0 END ',
       $viewing_date );
 
     if( $check_time )
     {
       $check_availability_sql .= sprintf(
         '* IF( IF( TIME( %s ) < availability.start_time, '.
-        '        24*60*60 + TIME_TO_SEC( TIME( %s ) ), '.
-        '        TIME_TO_SEC( TIME( %s ) ) ) >= '.
-        '    TIME_TO_SEC( availability.start_time ), 1, 0 ) '.
+                '24*60*60 + TIME_TO_SEC( TIME( %s ) ), '.
+                'TIME_TO_SEC( TIME( %s ) ) ) >= '.
+            'TIME_TO_SEC( availability.start_time ), 1, 0 ) '.
         '* IF( IF( TIME( %s ) < availability.start_time, '.
-        '        24*60*60 + TIME_TO_SEC( TIME( %s ) ), '.
-        '        TIME_TO_SEC( TIME( %s ) ) ) < '.
-        '    IF( availability.end_time < availability.start_time, '.
-        '        24*60*60 + TIME_TO_SEC( availability.end_time ), '.
-        '        TIME_TO_SEC( availability.end_time ) ), 1, 0 ) ',
+                '24*60*60 + TIME_TO_SEC( TIME( %s ) ), '.
+                'TIME_TO_SEC( TIME( %s ) ) ) < '.
+            'IF( availability.end_time < availability.start_time, '.
+                '24*60*60 + TIME_TO_SEC( availability.end_time ), '.
+                'TIME_TO_SEC( availability.end_time ) ), 1, 0 ) ',
         $viewing_date,
         $viewing_date,
         $viewing_date,
@@ -418,7 +422,7 @@ class queue extends \cenozo\database\record
         $viewing_date,
         $viewing_date );
     }
-    
+
     // finish the check availability sql
     $check_availability_sql .=
       ') '.
@@ -427,32 +431,32 @@ class queue extends \cenozo\database\record
 
     $current_qnaire_id =
       '( '.
-      '  IF '.
-      '  ( '.
-      '    current_interview_id IS NULL, '.
-      '    ( SELECT id FROM qnaire WHERE rank = 1 ), '.
-      '    IF( current_interview_completed, next_qnaire_id, current_qnaire_id ) '.
-      '  ) '.
+        'IF '.
+        '( '.
+          'current_interview_id IS NULL, '.
+          '( SELECT id FROM qnaire WHERE rank = 1 ), '.
+          'IF( current_interview_completed, next_qnaire_id, current_qnaire_id ) '.
+        ') '.
       ')';
 
     $start_qnaire_date =
       '( '.
-      '  IF '.
-      '  ( '.
-      '    current_interview_id IS NULL, '.
-      '    NULL, '.
-      '    IF '.
-      '    ( '.
-      '      current_interview_completed, '.
-      '      IF '.
-      '      ( '.
-      '        next_qnaire_id IS NULL, '.
-      '        NULL, '.
-      '        next_prev_assignment_end_datetime + INTERVAL next_qnaire_delay WEEK '.
-      '      ), '.
-      '      NULL '.
-      '    ) '.
-      '  ) '.
+        'IF '.
+        '( '.
+          'current_interview_id IS NULL, '.
+          'NULL, '.
+          'IF '.
+          '( '.
+            'current_interview_completed, '.
+            'IF '.
+            '( '.
+              'next_qnaire_id IS NULL, '.
+              'NULL, '.
+              'next_prev_assignment_end_datetime + INTERVAL next_qnaire_delay WEEK '.
+            '), '.
+            'NULL '.
+          ') '.
+        ') '.
       ')';
 
     // checks to make sure a participant is within calling time hours
@@ -463,9 +467,9 @@ class queue extends \cenozo\database\record
               ? 'first_address_timezone_offset + first_address_daylight_savings'
               : 'first_address_timezone_offset';
       $calling_time_sql = sprintf(
-        '('.
-        '  TIME( %s + INTERVAL %s HOUR ) >= "<CALLING_START_TIME>" AND'.
-        '  TIME( %s + INTERVAL %s HOUR ) < "<CALLING_END_TIME>"'.
+        '( '.
+          'TIME( %s + INTERVAL %s HOUR ) >= "<CALLING_START_TIME>" AND '.
+          'TIME( %s + INTERVAL %s HOUR ) < "<CALLING_END_TIME>" '.
         ')',
         $viewing_date,
         $offset,
@@ -518,11 +522,11 @@ class queue extends \cenozo\database\record
       $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
       // ineligible means either inactive or with a "final" status
       $parts['where'][] =
-        '('.
-        '  participant_active = false'.
-        '  OR participant_status IS NOT NULL'.
-        '  OR '.$phone_count.' = 0'.
-        '  OR last_consent_event IN( "verbal deny", "written deny", "retract", "withdraw" )'.
+        '( '.
+          'participant_active = false '.
+          'OR participant_status IS NOT NULL '.
+          'OR '.$phone_count.' = 0 '.
+          'OR last_consent_event IN( "verbal deny", "written deny", "retract", "withdraw" ) '.
         ')';
       return $parts;
     }
@@ -545,17 +549,17 @@ class queue extends \cenozo\database\record
       $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
       $parts['where'][] = 'participant_active = true';
       $parts['where'][] =
-        '('.
-        '  last_consent_event IS NULL'.
-        '  OR last_consent_event NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
+        '( '.
+          'last_consent_event IS NULL '.
+          'OR last_consent_event NOT IN( "verbal deny", "written deny", "retract", "withdraw" ) '.
         ')';
 
       if( 'sourcing required' == $queue )
       { // add participants with no phone numbers to the sourcing required list
         $parts['where'][] =
-          '('.
-          '  ( participant_status IS NULL AND '.$phone_count.' = 0 ) OR'.
-          '  participant_status = "'.$queue.'"'.
+          '( '.
+            '( participant_status IS NULL AND '.$phone_count.' = 0 ) OR '.
+            'participant_status = "'.$queue.'" '.
           ')';
       }
       else
@@ -574,9 +578,9 @@ class queue extends \cenozo\database\record
       $parts['where'][] = 'participant_status IS NULL';
       $parts['where'][] = $phone_count.' > 0';
       $parts['where'][] =
-        '('.
-        '  last_consent_event IS NULL OR'.
-        '  last_consent_event NOT IN( "verbal deny", "written deny", "retract", "withdraw" )'.
+        '( '.
+          'last_consent_event IS NULL OR '.
+          'last_consent_event NOT IN( "verbal deny", "written deny", "retract", "withdraw" ) '.
         ')';
       return $parts;
     }
@@ -609,7 +613,8 @@ class queue extends \cenozo\database\record
       $parts['join'][] = $restriction_join;
       $parts['where'][] = $check_restriction_sql;
       // assigned participants
-      $parts['where'][] = '( last_assignment_id IS NOT NULL AND last_assignment_end_datetime IS NULL )';
+      $parts['where'][] =
+        '( last_assignment_id IS NOT NULL AND last_assignment_end_datetime IS NULL )';
       return $parts;
     }
     else if( 'not assigned' == $queue )
@@ -619,12 +624,13 @@ class queue extends \cenozo\database\record
       $parts['where'][] = $check_restriction_sql;
       // the qnaire is ready to start if the start_qnaire_date is null or we have reached that date
       $parts['where'][] = sprintf(
-        '('.
-        '  '.$start_qnaire_date.' IS NULL OR'.
-        '  DATE( '.$start_qnaire_date.' ) <= DATE( %s )'.
+        '( '.
+          $start_qnaire_date.' IS NULL OR '.
+          'DATE( '.$start_qnaire_date.' ) <= DATE( %s ) '.
         ')',
         $viewing_date );
-      $parts['where'][] = '( last_assignment_id IS NULL OR last_assignment_end_datetime IS NOT NULL )';
+      $parts['where'][] =
+        '( last_assignment_id IS NULL OR last_assignment_end_datetime IS NOT NULL )';
       return $parts;
     }
     else if( 'appointment' == $queue )
@@ -743,9 +749,9 @@ class queue extends \cenozo\database\record
       // If there is a start_qnaire_date then the current qnaire has never been started,
       // the exception is for participants who have never been assigned
       $parts['where'][] =
-        '('.
-        '  '.$start_qnaire_date.' IS NOT NULL OR'.
-        '  last_assignment_id IS NULL'.
+        '( '.
+          $start_qnaire_date.' IS NOT NULL OR '.
+          'last_assignment_id IS NULL '.
         ')';
       return $parts;
     }
@@ -878,7 +884,7 @@ class queue extends \cenozo\database\record
     $sql = str_replace( '<CALLING_END_TIME>', $setting, $sql );
 
     // fill in all callback timing settings
-    $setting_mod = lib::create( 'database\modifier' ); 
+    $setting_mod = lib::create( 'database\modifier' );
     $setting_mod->where( 'category', '=', 'callback timing' );
     $setting_class_name = lib::get_class_name( 'database\setting' );
     foreach( $setting_class_name::select( $setting_mod ) as $db_setting )
@@ -891,7 +897,7 @@ class queue extends \cenozo\database\record
     }
     return $sql;
   }
-  
+
   /**
    * The date (YYYY-MM-DD) with respect to check all queue states.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -905,10 +911,10 @@ class queue extends \cenozo\database\record
     $datetime_obj = util::get_datetime_object( $date );
     if( $date != $datetime_obj->format( 'Y-m-d' ) )
       log::err( 'The selected viewing date ('.$date.') may not be valid.' );
-    
+
     self::$viewing_date = $datetime_obj->format( 'Y-m-d' );
   }
-  
+
   /**
    * Creates the participant_for_queue temporary table needed by all queues.
    * 
@@ -918,35 +924,43 @@ class queue extends \cenozo\database\record
    */
   protected static function create_participant_for_queue()
   {
+    $database_class_name = lib::get_class_name( 'database\database' );
+
     if( static::$participant_for_queue_created ) return;
-    $sql = 'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue '.
-           static::$participant_for_queue_sql;
+    $sql = sprintf( 'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue '.
+                    static::$participant_for_queue_sql,
+                    $database_class_name::format_string(
+                      lib::create( 'business\session' )->get_service()->id ) );
     static::db()->execute( $sql );
     static::$participant_for_queue_created = true;
   }
-  
+
   /**
    * Whether the participant_for_queue temporary table has been created.
    * @var boolean
+   * @access protected
    * @static
    */
   protected static $participant_for_queue_created = false;
-  
+
   /**
    * The qnaire to restrict the queue to.
    * @var qnaire
+   * @access protected
    */
   protected $db_qnaire = NULL;
 
   /**
    * The site to restrict the queue to.
    * @var site
+   * @access protected
    */
   protected $db_site = NULL;
 
   /**
    * The date (YYYY-MM-DD) with respect to check all queue states.
    * @var string
+   * @access protected
    * @static
    */
   protected static $viewing_date = NULL;
@@ -954,6 +968,7 @@ class queue extends \cenozo\database\record
   /**
    * Whether or not calling times are enabled.
    * @var boolean
+   * @access protected
    * @static
    */
   protected static $calling_times_enabled = NULL;
@@ -961,6 +976,7 @@ class queue extends \cenozo\database\record
   /**
    * The queries for each queue
    * @var associative array of strings
+   * @access protected
    * @static
    */
   protected static $query_list = array();
@@ -968,6 +984,7 @@ class queue extends \cenozo\database\record
   /**
    * A cache of participant counts for each queue and each qnaire
    * @var associative array of integers
+   * @access protected
    * @static
    */
   protected static $participant_count_cache = array();
@@ -975,13 +992,16 @@ class queue extends \cenozo\database\record
   /**
    * A string containing the SQL used to create the participant_for_queue data
    * @var string
+   * @access protected
    * @static
    */
   protected static $participant_for_queue_sql = <<<'SQL'
 SELECT participant.id,
+participant.person_id AS participant_person_id,
 participant.active AS participant_active,
 participant.uid AS participant_uid,
 participant.source_id AS participant_source_id,
+participant.cohort_id AS participant_cohort_id,
 participant.first_name AS participant_first_name,
 participant.last_name AS participant_last_name,
 participant.gender AS participant_gender,
@@ -989,10 +1009,14 @@ participant.date_of_birth AS participant_date_of_birth,
 participant.age_group_id AS participant_age_group_id,
 participant.status AS participant_status,
 participant.language AS participant_language,
-participant.site_id AS participant_site_id,
+participant.use_informant AS participant_use_informant,
 participant.email AS participant_email,
+service_has_participant.service_id AS service_has_participant_service_id,
+service_has_participant.participant_id AS service_has_participant_participant_id,
+service_has_participant.preferred_site_id AS service_has_participant_preferred_site_id,
+service_has_participant.datetime AS service_has_participant_datetime,
 primary_address.id AS primary_address_id,
-primary_address.participant_id AS primary_address_participant_id,
+primary_address.person_id AS primary_address_person_id,
 primary_address.active AS primary_address_active,
 primary_address.rank AS primary_address_rank,
 primary_address.address1 AS primary_address_address1,
@@ -1021,7 +1045,7 @@ primary_region.abbreviation AS primary_region_abbreviation,
 primary_region.country AS primary_region_country,
 primary_region.site_id AS primary_region_site_id,
 first_address.id AS first_address_id,
-first_address.participant_id AS first_address_participant_id,
+first_address.person_id AS first_address_person_id,
 first_address.active AS first_address_active,
 first_address.rank AS first_address_rank,
 first_address.address1 AS first_address_address1,
@@ -1099,7 +1123,10 @@ next_prev_assignment.interview_id AS next_prev_assignment_interview_id,
 next_prev_assignment.queue_id AS next_prev_assignment_queue_id,
 next_prev_assignment.start_datetime AS next_prev_assignment_start_datetime,
 next_prev_assignment.end_datetime AS next_prev_assignment_end_datetime
-FROM participant 
+FROM participant
+JOIN service_has_participant
+ON participant.id = service_has_participant.participant_id
+AND service_id = %s
 LEFT JOIN participant_primary_address
 ON participant.id = participant_primary_address.participant_id
 LEFT JOIN address AS primary_address

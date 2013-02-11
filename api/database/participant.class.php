@@ -31,7 +31,7 @@ class participant extends \cenozo\database\participant
     $modifier->where( 'service_has_participant.datetime', '!=', NULL );
     return parent::select( $modifier, $count );
   }
-  
+
   /**
    * Get the participant's most recent, closed assignment.
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -46,7 +46,7 @@ class participant extends \cenozo\database\participant
       log::warning( 'Tried to query participant with no id.' );
       return NULL;
     }
-    
+
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'interview.participant_id', '=', $this->id );
     $modifier->where( 'end_datetime', '!=', NULL );
@@ -72,7 +72,7 @@ class participant extends \cenozo\database\participant
       log::warning( 'Tried to query participant with no id.' );
       return NULL;
     }
-    
+
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'interview.participant_id', '=', $this->id );
     $modifier->where( 'end_datetime', '=', NULL );
@@ -116,65 +116,13 @@ class participant extends \cenozo\database\participant
       log::warning( 'Tried to query participant with no id.' );
       return NULL;
     }
-    
+
+    $database_class_name = lib::get_class_name( 'database\database' );
+
     if( is_null( $this->current_qnaire_id ) && is_null( $this->start_qnaire_date ) )
     {
-      $database_class_name = lib::get_class_name( 'database\database' );
-      // special sql to get the current qnaire id and start date
-      // NOTE: when updating this query database\queue::get_query_parts()
-      //       should also be updated as it performs a very similar query
       $sql = sprintf(
-        'SELECT IF( current_interview.id IS NULL, '.
-        '           ( SELECT id FROM qnaire WHERE rank = 1 ), '.
-        '           IF( current_interview.completed, next_qnaire.id, current_qnaire.id ) '.
-        '       ) AS current_qnaire_id, '.
-        '       IF( current_interview.id IS NULL, '.
-        '           NULL, '.
-        '           IF( current_interview.completed, '.
-        '               IF( next_qnaire.id IS NULL, '.
-        '                   NULL, '.
-        '                   next_prev_assignment.end_datetime + INTERVAL next_qnaire.delay WEEK '.
-        '               ), '.
-        '               NULL '.
-        '           ) '.
-        '       ) AS start_qnaire_date '.
-        'FROM participant '.
-
-        'LEFT JOIN interview AS current_interview '.
-        'ON current_interview.participant_id = participant.id '.
-        'LEFT JOIN interview_last_assignment '.
-        'ON current_interview.id = interview_last_assignment.interview_id '.
-        'LEFT JOIN assignment '.
-        'ON interview_last_assignment.assignment_id = assignment.id '.
-        'LEFT JOIN qnaire AS current_qnaire '.
-        'ON current_qnaire.id = current_interview.qnaire_id '.
-        'LEFT JOIN qnaire AS next_qnaire '.
-        'ON next_qnaire.rank = ( current_qnaire.rank + 1 ) '.
-        'LEFT JOIN qnaire AS next_prev_qnaire '.
-        'ON next_prev_qnaire.id = next_qnaire.prev_qnaire_id '.
-        'LEFT JOIN interview AS next_prev_interview '.
-        'ON next_prev_interview.qnaire_id = next_prev_qnaire.id '.
-        'AND next_prev_interview.participant_id = participant.id '.
-        'LEFT JOIN assignment next_prev_assignment '.
-        'ON next_prev_assignment.interview_id = next_prev_interview.id '.
-        'WHERE ( '.
-        '  current_qnaire.rank IS NULL OR '.
-        '  current_qnaire.rank = ( '.
-        '    SELECT MAX( qnaire.rank ) '.
-        '    FROM interview, qnaire '.
-        '    WHERE qnaire.id = interview.qnaire_id '.
-        '    AND current_interview.participant_id = interview.participant_id '.
-        '    GROUP BY current_interview.participant_id ) ) '.
-        'AND ( '.
-        '  next_prev_assignment.end_datetime IS NULL OR '.
-        '  next_prev_assignment.end_datetime = ( '.
-        '    SELECT MAX( assignment.end_datetime ) '.
-        '    FROM interview, assignment '.
-        '    WHERE interview.qnaire_id = next_prev_qnaire.id '.
-        '    AND interview.id = assignment.interview_id '.
-        '    AND next_prev_assignment.id = assignment.id '.
-        '    GROUP BY next_prev_assignment.interview_id ) ) '.
-        'AND participant.id = %s',
+        $this->participant_additional_sql,
         $database_class_name::format_string( $this->id ) );
       $row = static::db()->get_row( $sql );
       $this->current_qnaire_id = $row['current_qnaire_id'];
@@ -195,4 +143,79 @@ class participant extends \cenozo\database\participant
    * @access private
    */
   private $start_qnaire_date = NULL;
+
+  /**
+   * A string containing the SQL used to get the additional participant information used by
+   * get_queue_data()
+   * @var string
+   * @access private
+   */
+  private $participant_additional_sql = <<<'SQL'
+SELECT IF
+(
+  current_interview.id IS NULL,
+  ( SELECT id FROM qnaire WHERE rank = 1 ),
+  IF( current_interview.completed, next_qnaire.id, current_qnaire.id )
+) AS current_qnaire_id,
+IF
+(
+  current_interview.id IS NULL,
+  NULL,
+  IF
+  (
+    current_interview.completed,
+    IF
+    (
+      next_qnaire.id IS NULL,
+      NULL,
+      next_prev_assignment.end_datetime + INTERVAL next_qnaire.delay WEEK
+    ),
+    NULL
+  )
+) AS start_qnaire_date
+FROM participant
+LEFT JOIN interview AS current_interview
+ON current_interview.participant_id = participant.id
+LEFT JOIN interview_last_assignment
+ON current_interview.id = interview_last_assignment.interview_id
+LEFT JOIN assignment
+ON interview_last_assignment.assignment_id = assignment.id
+LEFT JOIN qnaire AS current_qnaire
+ON current_qnaire.id = current_interview.qnaire_id
+LEFT JOIN qnaire AS next_qnaire
+ON next_qnaire.rank = ( current_qnaire.rank + 1 )
+LEFT JOIN qnaire AS next_prev_qnaire
+ON next_prev_qnaire.id = next_qnaire.prev_qnaire_id
+LEFT JOIN interview AS next_prev_interview
+ON next_prev_interview.qnaire_id = next_prev_qnaire.id
+AND next_prev_interview.participant_id = participant.id
+LEFT JOIN assignment next_prev_assignment
+ON next_prev_assignment.interview_id = next_prev_interview.id
+WHERE
+(
+  current_qnaire.rank IS NULL OR
+  current_qnaire.rank =
+  (
+    SELECT MAX( qnaire.rank )
+    FROM interview, qnaire
+    WHERE qnaire.id = interview.qnaire_id
+    AND current_interview.participant_id = interview.participant_id
+    GROUP BY current_interview.participant_id
+  )
+)
+AND
+(
+  next_prev_assignment.end_datetime IS NULL OR
+  next_prev_assignment.end_datetime =
+  (
+    SELECT MAX( assignment.end_datetime )
+    FROM interview, assignment
+    WHERE interview.qnaire_id = next_prev_qnaire.id
+    AND interview.id = assignment.interview_id
+    AND next_prev_assignment.id = assignment.id
+    GROUP BY next_prev_assignment.interview_id
+  )
+)
+AND participant.id = %s
+SQL;
 }
