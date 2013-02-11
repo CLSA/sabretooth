@@ -3,6 +3,7 @@
 SET AUTOCOMMIT=0;
 
 SOURCE activity.sql
+SOURCE queue.sql
 
 -- this must be last
 SOURCE convert_database.sql

@@ -259,18 +259,6 @@ parent_queue_id = (
 description = "Eligible participants who are currently assigned to the questionnaire.";
 
 INSERT INTO queue SET
-name = "restricted",
-title = "Restricted from calling",
-rank = NULL,
-qnaire_specific = true,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "qnaire" ) AS tmp ),
-description = "Eligible participants whose city, province or postcode have been restricted.";
-
-INSERT INTO queue SET
 name = "qnaire waiting",
 title = "Waiting to begin",
 rank = NULL,
@@ -296,18 +284,6 @@ parent_queue_id = (
 description = "Eligible participants who are currently assigned to an operator.";
 
 INSERT INTO queue SET
-name = "not assigned",
-title = "Not assigned",
-rank = NULL,
-qnaire_specific = true,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "qnaire" ) AS tmp ),
-description = "Eligible participants who are not assigned to an operator.";
-
-INSERT INTO queue SET
 name = "appointment",
 title = "Participants with appointments",
 rank = NULL,
@@ -316,7 +292,7 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "not assigned" ) AS tmp ),
+    WHERE name = "qnaire" ) AS tmp ),
 description = "Participants who have an (unassigned) appointment.";
 
 INSERT INTO queue SET
@@ -356,6 +332,30 @@ parent_queue_id = (
 description = "Participants who have an appointment which was missed.";
 
 INSERT INTO queue SET
+name = "restricted",
+title = "Restricted from calling",
+rank = NULL,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "qnaire" ) AS tmp ),
+description = "Eligible participants whose city, province or postcode have been restricted.";
+
+INSERT INTO queue SET
+name = "quota disabled",
+title = "Participant's quota is disabled",
+rank = NULL,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "qnaire" ) AS tmp ),
+description = "Participants who belong to a quota which has been disabled";
+
+INSERT INTO queue SET
 name = "callback",
 title = "Participants with callbacks",
 rank = NULL,
@@ -364,7 +364,7 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "not assigned" ) AS tmp ),
+    WHERE name = "qnaire" ) AS tmp ),
 description = "Participants who have an (unassigned) callback.";
 
 INSERT INTO queue SET
@@ -392,30 +392,6 @@ parent_queue_id = (
 description = "Participants who have an immediate callback which is ready to be assigned.";
 
 INSERT INTO queue SET
-name = "no appointment",
-title = "Participants without appointments or callbacks",
-rank = NULL,
-qnaire_specific = true,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "not assigned" ) AS tmp ),
-description = "Participants who do not have an appointment or callback.";
-
-INSERT INTO queue SET
-name = "quota disabled",
-title = "Participant's quota is disabled",
-rank = NULL,
-qnaire_specific = true,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "no appointment" ) AS tmp ),
-description = "Participants who belong to a quota which has been disabled";
-
-INSERT INTO queue SET
 name = "outside calling time",
 title = "Outside calling time",
 rank = NULL,
@@ -424,7 +400,7 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "no appointment" ) AS tmp ),
+    WHERE name = "qnaire" ) AS tmp ),
 description = "Participants whose local time is outside of the valid calling hours.";
 
 INSERT INTO queue SET
@@ -436,7 +412,7 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "no appointment" ) AS tmp ),
+    WHERE name = "qnaire" ) AS tmp ),
 description = "Participants whose local time is within the valid calling hours and
 have never been assigned to an operator.";
 
@@ -473,7 +449,7 @@ parent_queue_id = (
   SELECT id FROM(
     SELECT id
     FROM queue
-    WHERE name = "no appointment" ) AS tmp ),
+    WHERE name = "qnaire" ) AS tmp ),
 description = "Participants whose local time is within the valid calling hours and
 have been previously assigned.";
 
