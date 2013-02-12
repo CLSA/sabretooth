@@ -37,7 +37,8 @@ class self_menu extends \cenozo\ui\widget\self_menu
       'recording',
       'service',
       'source_survey',
-      'source_withdraw' ) );
+      'source_withdraw',
+      'survey' ) );
   }
 
   /**
