@@ -46,7 +46,7 @@
           
         // if today's date is selected change it to "current"
         if( "{{ current_date }}" == args.viewing_date ) args.viewing_date = "current";
-        slot_load( "{{ widget.full }}", "queue", "view", args );
+        slot_load( {{ slot }}, "queue", "view", args );
 
         $("#{{ widget.full }}_slot").dialog( { 
           title: "Viewing Queue Details",

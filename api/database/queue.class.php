@@ -163,6 +163,9 @@ class queue extends \cenozo\database\record
     // make sure the temporary table exists
     static::create_participant_for_queue();
 
+    // make sure the queue list cache exists
+    static::create_queue_list_cache();
+
     $site_id = is_null( $this->db_site ) ? 0 : $this->db_site->id;
     $qnaire_id = !$this->qnaire_specific || is_null( $this->db_qnaire )
                ? 0 : $this->db_qnaire->id;
@@ -183,8 +186,6 @@ class queue extends \cenozo\database\record
       self::$participant_count_cache[$this->name] = array();
     if( !array_key_exists( $qnaire_id, self::$participant_count_cache[$this->name] ) )
       self::$participant_count_cache[$this->name][$qnaire_id] = array();
-    $db_parent = $this->parent_queue_id ? new static( $this->parent_queue_id ) : NULL;
-    $parent = is_null( $db_parent ) ? 'NULL' : $db_parent->name;
 
     self::$participant_count_cache[$this->name][$qnaire_id][$site_id] =
       (integer) static::db()->get_one( sprintf( '%s %s',
@@ -210,9 +211,7 @@ class queue extends \cenozo\database\record
    */
   private static function set_child_count_cache_to_zero( $db_queue, $qnaire_id, $site_id )
   {
-    $queue_mod = lib::create( 'database\modifier' );
-    $queue_mod->where( 'parent_queue_id', '=', $db_queue->id );
-    foreach( static::select( $queue_mod ) as $db_child_queue )
+    foreach( self::$queue_list_cache[$db_queue->name]['children'] as $db_child_queue )
     {
       if( !array_key_exists( $db_child_queue->name, self::$participant_count_cache ) )
         self::$participant_count_cache[$db_child_queue->name] = array();
@@ -235,6 +234,9 @@ class queue extends \cenozo\database\record
   {
     // make sure the temporary table exists
     static::create_participant_for_queue();
+
+    // make sure the queue list cache exists
+    static::create_queue_list_cache();
 
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
 
@@ -342,10 +344,12 @@ class queue extends \cenozo\database\record
         'AND phone.number IS NOT NULL '.
       ')';
 
-    // join to the quota table based on region, gender and age group
+    // join to the quota table based on site, region, gender and age group
     $quota_join =
       'LEFT JOIN quota '.
-      'ON quota.region_id = primary_region_id '.
+      'ON quota.site_id = '.
+      'IFNULL( service_has_participant_preferred_site_id, primary_region_site_id ) '.
+      'AND quota.region_id = primary_region_id '.
       'AND quota.gender = participant_gender '.
       'AND quota.age_group_id = participant_age_group_id';
 
@@ -483,15 +487,12 @@ class queue extends \cenozo\database\record
     // get the parent queue's query parts
     if( is_null( $phone_call_status ) )
     {
-      $db_queue = static::get_unique_record( 'name', $queue );
+      $db_queue = self::$queue_list_cache[$queue]['object'];
       if( is_null( $db_queue ) ) // invalid queue name
         throw lib::create( 'exception\runtime',
           sprintf( 'Cannot find queue named "%s"', $queue ), __METHOD__ );
       if( !is_null( $db_queue->parent_queue_id ) )
-      {
-        $db_parent = new static( $db_queue->parent_queue_id );
-        $parts = self::get_query_parts( $db_parent->name );
-      }
+        $parts = self::get_query_parts( self::$queue_list_cache[$queue]['parent']->name );
     }
     else if( 'phone call status' == $queue )
     {
@@ -918,6 +919,44 @@ class queue extends \cenozo\database\record
   }
 
   /**
+   * Creates the queue_list_cache needed by all queues.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   * @static
+   */
+  protected static function create_queue_list_cache()
+  {
+    if( 0 == count( self::$queue_list_cache ) )
+    {
+      $queue_mod = lib::create( 'database\modifier' );
+      $queue_mod->order( 'id' );
+      foreach( static::select( $queue_mod ) as $db_queue )
+      {
+        self::$queue_list_cache[$db_queue->name] =
+          array( 'object' => $db_queue,
+                 'parent' => NULL,
+                 'children' => array() );
+
+        if( !is_null( $db_queue->parent_queue_id ) )
+        { // this queue has a parent, find and index it
+          foreach( array_reverse( self::$queue_list_cache ) as $queue_cache )
+          { // search in reverse order, most parent's aren't far from their child
+            if( $db_queue->parent_queue_id == $queue_cache['object']->id )
+            {
+              // set the child
+              self::$queue_list_cache[$db_queue->name]['parent'] = $queue_cache['object'];
+              // set the parent
+              self::$queue_list_cache[$queue_cache['object']->name]['children'][] = $db_queue;
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
    * Whether the participant_for_queue temporary table has been created.
    * @var boolean
    * @access protected
@@ -962,6 +1001,14 @@ class queue extends \cenozo\database\record
    * @static
    */
   protected static $query_list = array();
+
+  /**
+   * A cache of all queues and their parents used by get_query_parts()
+   * @var array
+   * @access private
+   * @static
+   */
+  private static $queue_list_cache = array();
 
   /**
    * A cache of participant counts for each queue and each qnaire
