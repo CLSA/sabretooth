@@ -2,7 +2,6 @@ DROP PROCEDURE IF EXISTS patch_quota;
 DELIMITER //
 CREATE PROCEDURE patch_quota()
   BEGIN
-    DECLARE test INT;
     SET @test = (
       SELECT COUNT(*)
       FROM information_schema.COLUMNS
@@ -29,6 +28,15 @@ CREATE PROCEDURE patch_quota()
       ALTER TABLE quota
       ADD UNIQUE INDEX uq_region_id_site_id_gender_age_group_id
       (region_id ASC, site_id ASC, gender ASC, age_group_id ASC);
+
+      UPDATE quota
+      SET site_id = (
+        SELECT site.id
+        FROM region
+        JOIN site
+        ON region.site_id = site.id
+        AND region.id = ( SELECT id FROM region WHERE id = quota.region_id )
+      );
 
       SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
       SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
