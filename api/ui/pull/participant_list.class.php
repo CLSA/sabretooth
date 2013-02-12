@@ -79,7 +79,7 @@ class participant_list extends \cenozo\ui\pull\base_list
     parent::setup();
 
     // an array of all negative consent types
-    $neg_consent_list = array( 'written deny', 'retract', 'withdraw' );
+    $neg_consent_list = array( 'verbal deny', 'written deny', 'retract', 'withdraw' );
 
     // see if we are restricting by site
     $site_key = $this->get_argument( 'site', NULL );
