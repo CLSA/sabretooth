@@ -63,14 +63,6 @@ class self_menu extends \cenozo\ui\widget\self_menu
                             'subject' => 'participant',
                             'name' => 'tree' );
 
-    // insert the participant sync operation into the utilities
-    $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'sync' );
-    if( $session->is_allowed( $db_operation ) )
-      $utilities[] = array( 'heading' => 'Participant Sync',
-                            'type' => 'widget',
-                            'subject' => 'participant',
-                            'name' => 'sync' );
-
     $this->set_variable( 'utilities', $utilities );
   }
 }

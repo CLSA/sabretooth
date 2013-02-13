@@ -48,7 +48,7 @@ class participant_status_report extends base_report
     $this->set_variable( 'description',
       'This report provides totals of various status types.  Populations are broken down '.
       'by province, site or quota.  If set, the start and end dates will restrict the report '.
-      'to participants who were synched between the dates provided, inclusive.' );
+      'to participants who were released between the dates provided, inclusive.' );
   }
 
   /**
