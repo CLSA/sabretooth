@@ -50,34 +50,33 @@ class participant_secondary extends \cenozo\ui\widget\base_record
   {
     parent::setup();
 
-    // get a list of this participant's alternates from Mastodon
-    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
-    $alternate_info = $mastodon_manager->pull( 'participant','list_alternate',
-      array( 'uid' => $this->get_record()->uid ) );
-
     $alternate_list = array();
-    foreach( $alternate_info->data as $alternate )
+    foreach( $this->get_record()->get_alternate_list() as $db_alternate )
     {
-      if( $alternate->alternate && isset( $alternate->phone_list ) )
+      if( $db_alternate->alternate )
       { // only add alternates (not proxies or informants)
         $phone_list = array();
-        foreach( $alternate->phone_list as $phone )
+        foreach( $db_alternate->get_phone_list() as $db_phone )
         {
-          if( $phone->active )
-            $phone_list[$phone->rank] = array(
-              'type' => $phone->type,
-              'number' => $phone->number,
-              'clean_number' => preg_replace( '/[^0-9]/', '', $phone->number ),
-              'note' => $phone->note ? $phone->note : '' );
+          if( $db_phone->active )
+            $phone_list[$db_phone->rank] = array(
+              'type' => $db_phone->type,
+              'number' => $db_phone->number,
+              'clean_number' => preg_replace( '/[^0-9]/', '', $db_phone->number ),
+              'note' => $db_phone->note ? $db_phone->note : '' );
         }
-        ksort( $phone_list );
 
-        $alternate_list[] = array(
-          'id' => $alternate->id,
-          'first_name' => $alternate->first_name,
-          'last_name' => $alternate->last_name,
-          'association' => $alternate->association ? $alternate->association : 'unknown',
-          'phone_list' => $phone_list );
+        if( count( $phone_list ) )
+        {
+          ksort( $phone_list );
+
+          $alternate_list[] = array(
+            'id' => $db_alternate->id,
+            'first_name' => $db_alternate->first_name,
+            'last_name' => $db_alternate->last_name,
+            'association' => $db_alternate->association ? $db_alternate->association : 'unknown',
+            'phone_list' => $phone_list );
+        }
       }
     }
 
