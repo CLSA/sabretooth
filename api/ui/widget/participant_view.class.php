@@ -70,9 +70,6 @@ class participant_view extends \cenozo\ui\widget\participant_view
       $start_qnaire_date = util::get_formatted_date( $start_qnaire_date, 'immediately' );
     }
 
-    $db_default_site = $record->get_default_site();
-    $default_site = is_null( $db_default_site ) ? 'None' : $db_default_site->name;
-
     // set the view's items
     $this->set_item( 'current_qnaire_name', $current_qnaire_name );
     $this->set_item( 'start_qnaire_date', $start_qnaire_date );
