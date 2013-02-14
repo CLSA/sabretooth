@@ -36,7 +36,7 @@ class participant_view extends \cenozo\ui\widget\participant_view
     // create the callback sub-list widget
     $this->callback_list = lib::create( 'ui\widget\callback_list', $this->arguments );
     $this->callback_list->set_parent( $this );
-    $this->callback_list->set_heading( 'Callbacks' );
+    $this->callback_list->set_heading( 'Scheduled Callbacks' );
 
     // create the interview sub-list widget
     $this->interview_list = lib::create( 'ui\widget\interview_list', $this->arguments );
