@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * widget callback view
  */
-class callback_view extends base_callback_view
+class callback_view extends \cenozo\ui\widget\base_view
 {
   /**
    * Constructor
@@ -24,7 +24,7 @@ class callback_view extends base_callback_view
    */
   public function __construct( $args )
   {
-    parent::__construct( 'view', $args );
+    parent::__construct( 'callback', 'view', $args );
   }
 
   /**
