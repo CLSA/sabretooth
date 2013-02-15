@@ -45,7 +45,8 @@ class consent_outstanding_report extends \cenozo\ui\pull\base_report
 
     // modifiers common to each iteration of the following loops
     $consent_mod = lib::create( 'database\modifier' );
-    $consent_mod->where( 'event', '=', 'verbal accept' );
+    $consent_mod->where( 'accept', '=', 1 );
+    $consent_mod->where( 'written', '=', 0 );
 
     $contents = array();
 

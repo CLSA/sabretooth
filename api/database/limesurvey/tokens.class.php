@@ -90,7 +90,7 @@ class tokens extends sid_record
         else if( 'written consent received' == $value )
         {
           $consent_mod = lib::create( 'database\modifier' );
-          $consent_mod->where( 'event', 'like', 'written %' );
+          $consent_mod->where( 'written', '=', true );
           $this->$key = 0 < $db_participant->get_consent_count( $consent_mod ) ? '1' : '0';
         }
         else if( false !== strpos( $value, 'HIN' ) )

@@ -237,9 +237,8 @@ class survey_manager extends \cenozo\singleton
       $db_interview = $db_assignment->get_interview();
       $db_participant = $db_interview->get_participant();
       $db_consent = $db_participant->get_last_consent();
-      $event = $db_participant->get_source()->withdraw_type;
-      if( $db_consent && $event == $db_consent->event )
-      { // the participant has withdrawn, check to see if the withdraw script is complete
+      if( $db_consent && false == $db_consent->accept )
+      { // the participant's last consent is consent, see if the withdraw script is complete
         $db_qnaire = $db_interview->get_qnaire();
         
         // let the tokens record class know which SID we are dealing with by checking if

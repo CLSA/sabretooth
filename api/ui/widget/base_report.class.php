@@ -43,7 +43,6 @@ abstract class base_report extends \cenozo\ui\widget\base_report
 
     $this->restrictions['source'] = false;
     $this->restrictions['qnaire'] = false;
-    $this->restrictions['consent'] = false;
     $this->restrictions['mailout'] = false;
   }
 
@@ -78,17 +77,6 @@ abstract class base_report extends \cenozo\ui\widget\base_report
         'restrict_qnaire_id', key( $qnaire_list ), true, $qnaire_list );
     }
 
-    if( $this->restrictions[ 'consent' ] )
-    {
-      $consent_list = array( 'any' );
-      $class_name = lib::get_class_name( 'database\consent' );
-      $consent_list = array_merge( $consent_list, $class_name::get_enum_values( 'event' ) );
-      $consent_list = array_combine( $consent_list, $consent_list );
-
-      $this->set_parameter(
-        'restrict_consent_type', key( $consent_list ), true, $consent_list );
-    }
-
     if( $this->restrictions[ 'mailout' ] )
     {
       $mailout_list = array( 'Participant information package',
@@ -120,11 +108,6 @@ abstract class base_report extends \cenozo\ui\widget\base_report
     {
       $this->restrictions[ 'qnaire' ] = true;
       $this->add_parameter( 'restrict_qnaire_id', 'enum', 'Questionnaire' );
-    }
-    else if( 'consent' == $restriction_type )
-    {
-      $this->restrictions[ 'consent' ] = true;
-      $this->add_parameter( 'restrict_consent_type', 'enum', 'Consent Status');
     }
     else if( 'mailout' == $restriction_type )
     {

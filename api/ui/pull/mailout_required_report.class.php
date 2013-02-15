@@ -75,14 +75,6 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
       sprintf( 'Listing of those who requested a new information package during '.
                'the %s interview', $db_qnaire->name ) ) ;
 
-    // specify the type of consents we would like to avoid
-    $consent_types = array(
-      'written accept',
-      'verbal deny',
-      'written deny',
-      'retract',
-      'withdraw' );
-
     $contents = array();
 
     // filtering participants according to widget
@@ -95,7 +87,6 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
       'Participant information package' == $mailout_type ? '>' : '<=' ,
       'DATE_SUB( NOW(), INTERVAL 70 YEAR )', false );
     if( $restrict_source_id ) $participant_mod->where( 'source_id', '=', $restrict_source_id );
-   // $participant_mod->where( 'consent.event', 'not in', $consent_types );
     $participant_mod->where( 'status', '=', NULL );
     $participant_mod->where( 'interview.qnaire_id', '=', $db_qnaire->id );
     $participant_mod->group( 'participant.id' );
@@ -125,7 +116,8 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
       // and make sure we haven't already recieved their consent form using the consent table
       $consent_mod = lib::create( 'database\modifier' );
       $consent_mod->where( 'participant_id', '=', $db_participant->id );
-      $consent_mod->where( 'event', 'IN', $consent_types );  
+      $consent_mod->where( 'accept', '=' 1 );
+      $consent_mod->where( 'written', '=' 0 );
       if( 0 < count( $consent_class_name::select( $consent_mod ) ) ) continue;
 
       $done = false;
