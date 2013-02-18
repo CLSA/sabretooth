@@ -62,4 +62,5 @@ $SETTINGS['voip']['prefix'] = '00';
 // the directory to write monitored calls
 // (must be an absolute path that the asterisk server's user has access to)
 $SETTINGS['path']['VOIP_MONITOR'] = $SETTINGS['path']['APPLICATION'].'/web/monitor';
+$SETTINGS['url']['VOIP_MONITOR'] = 'monitor';
 ?>

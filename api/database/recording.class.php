@@ -21,21 +21,26 @@ class recording extends \cenozo\database\record
    * @return string
    * @access public
    */
-  public function get_file()
+  public function get_filename()
   {
-    // check the primary key value
-    if( is_null( $this->id ) )
+    // make sure the recording has the interview set
+    if( is_null( $this->interview_id ) )
     {
-      log::warning( 'Tried to query participant with no id.' );
+      log::warning(
+        'Tried to get filename of recording without both interview_id.' );
       return NULL;
     }
     
-    $padded = str_pad( $this->interview_id, 7, '0', STR_PAD_LEFT );
-    $base = sprintf( 'monitor/%s/%s/%s', substr( $padded, 0, 3 ), substr( $padded, 3, 2 ), substr( $padded, 5 ) );
-    return sprintf( 1 == $this->rank ? '%s_%d-out.wav' : '%s_%d-%d-out.wav',
-                    $base,
-                    is_null( $this->assignment_id ) ? 0 : $this->assignment_id,
-                    $this->rank - 1 );
+    $padded_interview_id = str_pad( $this->interview_id, 7, '0', STR_PAD_LEFT );
+    $padded_rank = str_pad( is_null( $this->rank ) ? 1 : $this->rank, 2, '0', STR_PAD_LEFT );
+    $filename = sprintf( '%s/%s/%s_%s-%s',
+                         substr( $padded_interview_id, 0, 3 ),
+                         substr( $padded_interview_id, 3, 2 ),
+                         substr( $padded_interview_id, 5 ),
+                         is_null( $this->assignment_id ) ? 0 : $this->assignment_id,
+                         $padded_rank );
+    
+    return $filename;
   }
 }
 ?>

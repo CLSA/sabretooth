@@ -201,9 +201,16 @@ class interview extends \cenozo\database\has_note
     // make sure that all recordings on disk have a corresponding database record
     if( is_dir( VOIP_MONITOR_PATH ) )
     {
+      // create new recording record based on this interview
+      $db_recording = lib::create( 'database\recording' );
+      $db_recording->interview_id = $this->id;
+      $glob_search = sprintf( '%s/%s',
+                              VOIP_MONITOR_PATH,
+                              str_replace( '_0-01', '_*', $db_recording->get_filename() ) );
+
       $values = '';
       $first = true;
-      foreach( glob( sprintf( '%s/%d_*-out.wav', VOIP_MONITOR_PATH, $this->id ) ) as $filename )
+      foreach( glob( $glob_search ) as $filename )
       {
         // remove the path from the filename
         $parts = preg_split( '#/#', $filename );
@@ -214,7 +221,7 @@ class interview extends \cenozo\database\has_note
           if( 3 <= count( $parts ) )
           {
             $assignment_id = 0 < $parts[1] ? $parts[1] : 'NULL';
-            $rank = 4 <= count( $parts ) ? $parts[2] + 1 : 1;
+            $rank = intval( $parts[2] );
             $values .= sprintf( '%s( %d, %s, %d )',
                                 $first ? '' : ', ',
                                 $this->id,
