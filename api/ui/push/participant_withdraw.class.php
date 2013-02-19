@@ -37,10 +37,6 @@ class participant_withdraw extends \cenozo\ui\push\base_record
   {
     parent::execute();
 
-    // get the consent type based on participant source
-    $event = $this->get_record()->get_source()->withdraw_type;
-    $event = 'any negative event'
-
     if( $this->get_argument( 'cancel', false ) )
     { // if the most recent consent is the event, remove it
       $consent_mod = lib::create( 'database\modifier' );

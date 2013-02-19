@@ -116,8 +116,8 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
       // and make sure we haven't already recieved their consent form using the consent table
       $consent_mod = lib::create( 'database\modifier' );
       $consent_mod->where( 'participant_id', '=', $db_participant->id );
-      $consent_mod->where( 'accept', '=' 1 );
-      $consent_mod->where( 'written', '=' 0 );
+      $consent_mod->where( 'accept', '=', 1 );
+      $consent_mod->where( 'written', '=', 0 );
       if( 0 < count( $consent_class_name::select( $consent_mod ) ) ) continue;
 
       $done = false;
