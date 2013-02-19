@@ -540,8 +540,7 @@ class queue extends \cenozo\database\record
     {
       $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
       $parts['where'][] = 'participant_active = true';
-      $parts['where'][] =
-        'last_consent_accept = 0" )';
+      $parts['where'][] = 'last_consent_accept = 0';
     }
     else if( in_array( $queue, $participant_status_list ) )
     {
