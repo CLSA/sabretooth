@@ -245,10 +245,6 @@ VALUES( "widget", "call_history", "report", true, "Set up a call history report.
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "call_history", "report", true, "Download a call history report." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "consent_outstanding", "report", true, "Set up a written consent outstanding report." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "consent_outstanding", "report", true, "Download a written consent outstanding report." );
-INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "mailout_required", "report", true, "Set up a new mailout required report." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "mailout_required", "report", true, "Download a new mailout required report." );

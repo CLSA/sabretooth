@@ -46,7 +46,7 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
     $consent_class_name = lib::get_class_name( 'database\consent' );
 
     // get the report arguments
-    $mailout_type =       $this->get_argument( 'restrict_mailout_type' );
+    $mailout_type =       $this->get_argument( 'mailout_type' );
     $restrict_site_id =   $this->get_argument( 'restrict_site_id', 0 );
     $restrict_source_id = $this->get_argument( 'restrict_source_id' );
 
