@@ -1,8 +1,5 @@
--- remove participant_sync operations
-DELETE FROM operation
-WHERE subject = "participant"
-AND name = "sync";
-
--- remove consent outstanding report
-DELETE FROM operation
-WHERE subject = "consent_outstanding";
+-- participant report
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "report", true, "Set up a participant report." );
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "participant", "report", true, "Download a participant report." );
