@@ -31,3 +31,5 @@ class quota extends \cenozo\database\quota
     return parent::select( $modifier, $count );
   }
 }
+
+quota::add_extending_table( 'state' );

@@ -549,6 +549,42 @@ CREATE PROCEDURE convert_database()
 
       DROP TABLE queue_restriction_old;
 
+      -- quota_state -------------------------------------------------------------------------------
+      SET @sql = CONCAT(
+        "CREATE TABLE IF NOT EXISTS quota_state ( ",
+          "quota_id INT UNSIGNED NOT NULL , ",
+          "disabled TINYINT( 1 ) NOT NULL DEFAULT 0 , ",
+          "PRIMARY KEY ( quota_id) , ",
+          "CONSTRAINT fk_quota_state_quota_id ",
+            "FOREIGN KEY ( quota_id ) ",
+            "REFERENCES ", @cenozo, ".quota ( id ) ",
+            "ON DELETE NO ACTION ",
+            "ON UPDATE NO ACTION ) ",
+        "ENGINE = InnoDB" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
+      SET @sql = CONCAT(
+        "INSERT INTO quota_state ( quota_id, disabled ) ",
+        "SELECT cquota.id, quota.disabled ",
+        "FROM ", @cenozo, ".quota cquota ",
+        "JOIN ", @cenozo, ".region cregion ON cquota.region_id = cregion.id ",
+        "JOIN region ON cregion.name = region.name ",
+        "JOIN ", @cenozo, ".site csite ON cquota.site_id = csite.id ",
+        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE name = 'Sabretooth' ) ",
+        "JOIN site ON csite.name = site.name ",
+        "JOIN ", @cenozo, ".age_group cage_group ON cquota.age_group_id = cage_group.id ",
+        "JOIN age_group ON cage_group.lower = age_group.lower ",
+        "LEFT JOIN quota ",
+        "ON quota.region_id = region.id ",
+        "AND quota.site_id = site.id ",
+        "AND quota.gender = cquota.gender ",
+        "AND quota.age_group_id = age_group.id" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
       -- recording ---------------------------------------------------------------------------------
       ALTER TABLE recording DROP FOREIGN KEY fk_recording_interview;
       ALTER TABLE recording

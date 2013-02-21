@@ -351,7 +351,9 @@ class queue extends \cenozo\database\record
       'IFNULL( service_has_participant_preferred_site_id, primary_region_site_id ) '.
       'AND quota.region_id = primary_region_id '.
       'AND quota.gender = participant_gender '.
-      'AND quota.age_group_id = participant_age_group_id';
+      'AND quota.age_group_id = participant_age_group_id '.
+      'LEFT JOIN quota_state '.
+      'ON quota.id = quota_state.quota_id';
 
     // join to the queue_restriction table based on site, city, region or postcode
     $restriction_join =
@@ -645,16 +647,16 @@ class queue extends \cenozo\database\record
               // participants who are not restricted
               $parts['where'][] = $check_restriction_sql;              
 
-                $parts['join'][] = $quota_join;
+              $parts['join'][] = $quota_join;
               if( 'quota disabled' == $queue )
               {
                 // who belong to a quota which is disabled
-                $parts['where'][] = 'quota.disabled = true';
+                $parts['where'][] = 'quota_state.disabled = true';
               }
               else
               {
                 // who belong to a quota which is not disabled or doesn't exist
-                $parts['where'][] = '( quota.disabled IS NULL OR quota.disabled = false )';
+                $parts['where'][] = '( quota_state.disabled IS NULL OR quota_state.disabled = false )';
                 
                 if( 'callback' == $queue )
                 {
