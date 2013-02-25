@@ -1,6 +1,6 @@
 <?php
 /**
- * recording_list.class.php
+ * callback.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,21 +10,21 @@ namespace sabretooth\ui\widget;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
- * widget recording list
+ * widget callback report
  */
-class recording_list extends \cenozo\ui\widget\base_list
+class callback_report extends base_report
 {
   /**
    * Constructor
    * 
-   * Defines all variables required by the recording list.
+   * Defines all variables which need to be set for the associated template.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param array $args An associative array of arguments to be processed by the widget
    * @access public
    */
   public function __construct( $args )
   {
-    parent::__construct( 'recording', $args );
+    parent::__construct( 'callback', $args );
   }
 
   /**
@@ -37,14 +37,15 @@ class recording_list extends \cenozo\ui\widget\base_list
   protected function prepare()
   {
     parent::prepare();
-    
-    $this->add_column( 'interview.qnaire_name', 'string', 'Interview', false );
-    $this->add_column( 'rank', 'number', 'Number', true );
+
+    $this->add_parameter( 'date', 'date', 'Date' );
+
+    $this->set_variable( 'description',
+      'This report provides a list of all callbacks scheduled for a particular day.' );
   }
-  
+
   /**
-   * Set the rows array needed by the template.
-   * 
+   * Sets up the operation with any pre-execution instructions that may be necessary.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
@@ -52,13 +53,7 @@ class recording_list extends \cenozo\ui\widget\base_list
   {
     parent::setup();
 
-    foreach( $this->get_record_list() as $record )
-    {
-      $filename = sprintf( '%s/%s-out.wav', VOIP_MONITOR_URL, $record->get_filename() );
-      $this->add_row( $record->id,
-        array( 'interview' => $record->get_interview()->get_qnaire()->name,
-               'rank' => $record->rank,
-               'filename' => $filename ) );
-    }
+    $this->set_parameter( 'date', util::get_datetime_object()->format( 'Y-m-d' ), true );
   }
 }
+?>

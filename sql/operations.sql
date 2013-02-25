@@ -257,6 +257,10 @@ VALUES( "widget", "appointment", "report", true, "Set up a appointment report." 
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "appointment", "report", true, "Download a appointment report." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "callback", "report", true, "Set up a callback report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "callback", "report", true, "Download a callback report." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "timing", "report", true, "Set up a timing report." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "timing", "report", true, "Download a timing report." );

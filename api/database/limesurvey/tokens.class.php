@@ -34,7 +34,7 @@ class tokens extends sid_record
     $db_user = lib::create( 'business\session' )->get_user();
 
     // determine the first part of the token
-    $token_part = substr( $this->token, 0, -1 );
+    $token_part = substr( $this->token, 0, strpos( $this->token, '_' ) + 1 );
     
     // fill in the email
     $this->email = $db_participant->email;

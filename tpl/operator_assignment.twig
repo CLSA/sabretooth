@@ -198,6 +198,13 @@
             {% endif %}
           </td>
         </tr>
+        {% if on_call and phone_note %}
+          <tr>
+            <td class="heading">Phone Number Notes:</td>
+            <td class="content ui-widget-content">{% autoescape false %}{{ phone_note|nl2br }}{% endautoescape %}</td>
+          </tr>
+        {% endif %}
+
       </table>
       
       <table class="spacer" cellpadding="4">
