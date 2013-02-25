@@ -124,11 +124,9 @@ class tokens extends sid_record
           $phase_mod->where( 'rank', '=', 1 );
           $phase_list = $db_interview->get_qnaire()->get_phase_list( $phase_mod );
 
-          log::debug( $this->token.' '.$value );
           // determine the SID of the first phase of the questionnaire (where the question is asked)
           if( 1 == count( $phase_list ) )
           {
-            log::debug( 'a' );
             $db_phase = current( $phase_list );
             $db_source_survey = $source_survey_class_name::get_unique_record(
               array( 'phase_id', 'source_id' ),
@@ -139,7 +137,6 @@ class tokens extends sid_record
             $survey_mod = lib::create( 'database\modifier' );
             $survey_mod->where( 'token', 'LIKE', $token_part.'%' );
             $survey_mod->order_desc( 'datestamp' );
-            log::debug( $survey_mod );
             $survey_list = $survey_class_name::select( $survey_mod );
 
             $found = false;
@@ -147,11 +144,9 @@ class tokens extends sid_record
             { // loop through all surveys until an answer is found
               try
               {
-                log::debug( 'b' );
                 $this->$key = $db_survey->get_response( $value );
                 // INT_13a matches any survey response, others match any NON NULL response
                 if( 'INT_13a' == $value || !is_null( $this->$key ) ) $found = true;
-                log::debug( array( $this->$key, $found ? 'y' : 'n' ) );
               }
               catch( \cenozo\exception\runtime $e )
               {
@@ -160,8 +155,6 @@ class tokens extends sid_record
               
               if( $found ) break;
             }
-            log::debug( 'c' );
-            log::debug( array( $this->$key, $found ? 'y' : 'n' ) );
           }
         }
         else if( 'operator first_name' == $value )
