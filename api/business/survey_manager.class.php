@@ -139,6 +139,7 @@ class survey_manager extends \cenozo\singleton
 
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+    $event_type_class_name = lib::get_class_name( 'database\event_type' );
     $session = lib::create( 'business\session' );
 
     if( array_key_exists( 'rescoring_interview', $_COOKIE ) &&
@@ -237,11 +238,11 @@ class survey_manager extends \cenozo\singleton
       $db_interview = $db_assignment->get_interview();
       $db_participant = $db_interview->get_participant();
       $db_consent = $db_participant->get_last_consent();
+      $db_qnaire = $db_interview->get_qnaire();
 
+      // the participant's last consent is consent, see if the withdraw script is complete
       if( $db_consent && false == $db_consent->accept )
-      { // the participant's last consent is consent, see if the withdraw script is complete
-        $db_qnaire = $db_interview->get_qnaire();
-        
+      {
         // let the tokens record class know which SID we are dealing with by checking if
         // there is a source-specific survey for the participant, and if not falling back
         // on the default withdraw survey
@@ -281,7 +282,7 @@ class survey_manager extends \cenozo\singleton
         $phase_mod = lib::create( 'database\modifier' );
         $phase_mod->order( 'rank' );
         
-        $phase_list = $db_interview->get_qnaire()->get_phase_list( $phase_mod );
+        $phase_list = $db_qnaire->get_phase_list( $phase_mod );
         if( 0 == count( $phase_list ) )
         {
           log::emerg( 'Questionnaire with no phases has been assigned.' );
@@ -341,6 +342,15 @@ class survey_manager extends \cenozo\singleton
         {
           $db_interview->completed = true;
           $db_interview->save();
+
+          // record the event (if one exists)
+          $event_type_name = sprintf( 'completed (%s)', $db_qnaire->name );
+          $db_event_type = $event_type_class_name::get_unique_record( 'name', $event_type_name );
+          if( $db_event_type )
+          {
+            $datetime_obj = util::get_datetime_object();
+            $db_participant->add_event( $db_event_type, $datetime_obj->format( 'Y-m-d H:i:s' ) );
+          }
         }
       }
     }

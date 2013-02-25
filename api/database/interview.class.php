@@ -98,6 +98,7 @@ class interview extends \cenozo\database\has_note
     $phase_mod->where( 'repeated', '!=', true );
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+    $event_type_class_name = lib::get_class_name( 'database\event_type' );
     foreach( $this->get_qnaire()->get_phase_list( $phase_mod ) as $db_phase )
     {
       // update tokens
@@ -136,6 +137,15 @@ class interview extends \cenozo\database\has_note
     // finally, update the record
     $this->completed = true;
     $this->save();
+
+    // record the event (if one exists)
+    $event_type_name = sprintf( 'completed (%s)', $this->get_qnaire()->name );
+    $db_event_type = $event_type_class_name::get_unique_record( 'name', $event_type_name );
+    if( $db_event_type )
+    {
+      $datetime_obj = util::get_datetime_object();
+      $this->get_participant()->add_event( $db_event_type, $datetime_obj->format( 'Y-m-d H:i:s' ) );
+    }
   }
 
   /**
