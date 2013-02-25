@@ -54,7 +54,7 @@ class shift_template_feed extends \cenozo\ui\pull\base_feed
            $datetime_obj <= $calendar_end_datetime_obj;
            $datetime_obj->add( new \DateInterval( 'P1D' ) ) )
       {
-        $add_event = false;
+        $add_template = false;
         $start_datetime_obj = util::get_datetime_object( $db_shift_template->start_date );
         $end_datetime_obj   = util::get_datetime_object( $db_shift_template->end_date );
   
@@ -71,13 +71,13 @@ class shift_template_feed extends \cenozo\ui\pull\base_feed
             {
               // make sure the day of the week matches
               $weekday = strtolower( $datetime_obj->format( 'l' ) );
-              if( $db_shift_template->$weekday ) $add_event = true;
+              if( $db_shift_template->$weekday ) $add_template = true;
             }
           }
           else if( 'day of month' == $db_shift_template->repeat_type )
           {
             if( $datetime_obj->format( 'j' ) == $start_datetime_obj->format( 'j' ) )
-              $add_event = true;
+              $add_template = true;
           }
           else if( 'day of week' == $db_shift_template->repeat_type )
           {
@@ -102,29 +102,29 @@ class shift_template_feed extends \cenozo\ui\pull\base_feed
               $start_week_number =
                 $start_datetime_obj->format( 'W' ) - $last_month_datetime_obj->format( 'W' );
   
-              if( $week_number == $start_week_number ) $add_event = true;
+              if( $week_number == $start_week_number ) $add_template = true;
             }
           }
         }
 
-        if( $add_event )
+        if( $add_template )
         {
-          $event_start_datetime_obj = util::get_datetime_object(
+          $template_start_datetime_obj = util::get_datetime_object(
             $datetime_obj->format( 'Y-m-d' ).$db_shift_template->start_time );
-          $event_end_datetime_obj = util::get_datetime_object(
+          $template_end_datetime_obj = util::get_datetime_object(
             $datetime_obj->format( 'Y-m-d' ).$db_shift_template->end_time );
 
           // need to adjust for daylight savings, but only if the server is currently in daylight
           // savings mode
           if( $daylight_savings )
           {
-            $event_start_datetime_obj->sub( new \DateInterval( 'PT1H' ) );
-            $event_end_datetime_obj->sub( new \DateInterval( 'PT1H' ) );
+            $template_start_datetime_obj->sub( new \DateInterval( 'PT1H' ) );
+            $template_end_datetime_obj->sub( new \DateInterval( 'PT1H' ) );
           }
           
-          $end_time = '00' == $event_end_datetime_obj->format( 'i' )
-                    ? $event_end_datetime_obj->format( 'ga' )
-                    : $event_end_datetime_obj->format( 'g:ia' );
+          $end_time = '00' == $template_end_datetime_obj->format( 'i' )
+                    ? $template_end_datetime_obj->format( 'ga' )
+                    : $template_end_datetime_obj->format( 'g:ia' );
 
           $this->data[] = array(
             'id' => $db_shift_template->id,
@@ -132,8 +132,8 @@ class shift_template_feed extends \cenozo\ui\pull\base_feed
               $end_time,
               $db_shift_template->operators ),
             'allDay' => false,
-            'start' => $event_start_datetime_obj->format( \DateTime::ISO8601 ),
-            'end' => $event_end_datetime_obj->format( \DateTime::ISO8601 ) );
+            'start' => $template_start_datetime_obj->format( \DateTime::ISO8601 ),
+            'end' => $template_end_datetime_obj->format( \DateTime::ISO8601 ) );
         }
       }
     }
