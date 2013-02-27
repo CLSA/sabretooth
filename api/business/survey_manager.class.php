@@ -346,7 +346,7 @@ class survey_manager extends \cenozo\singleton
           // record the event (if one exists)
           $event_type_name = sprintf( 'completed (%s)', $db_qnaire->name );
           $db_event_type = $event_type_class_name::get_unique_record( 'name', $event_type_name );
-          if( $db_event_type )
+          if( !is_null( $db_event_type ) )
           {
             $datetime_obj = util::get_datetime_object();
             $db_participant->add_event( $db_event_type, $datetime_obj->format( 'Y-m-d H:i:s' ) );

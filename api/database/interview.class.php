@@ -141,7 +141,7 @@ class interview extends \cenozo\database\has_note
     // record the event (if one exists)
     $event_type_name = sprintf( 'completed (%s)', $this->get_qnaire()->name );
     $db_event_type = $event_type_class_name::get_unique_record( 'name', $event_type_name );
-    if( $db_event_type )
+    if( !is_null( $db_event_type ) )
     {
       $datetime_obj = util::get_datetime_object();
       $this->get_participant()->add_event( $db_event_type, $datetime_obj->format( 'Y-m-d H:i:s' ) );
