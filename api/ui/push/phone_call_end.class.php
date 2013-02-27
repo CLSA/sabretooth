@@ -60,7 +60,7 @@ class phone_call_end extends \cenozo\ui\push
         // if the participant has never had a contact attempt made then mark the event
         $db_interview = $db_phone_call->get_assignment()->get_interview();
         $db_participant = $db_interview->get_participant();
-        $event_type_name = sprintf( 'contact (%s)', $db_interview->get_qnaire()->name );
+        $event_type_name = sprintf( 'first attempt (%s)', $db_interview->get_qnaire()->name );
         $db_event_type = $event_type_class_name::get_unique_record( 'name', $event_type_name );
         if( !is_null( $db_event_type ) )
         {
