@@ -24,6 +24,7 @@ CREATE PROCEDURE convert_database()
                             'cenozo' );
 
       -- qnaire ------------------------------------------------------------------------------------
+      SELECT "Processing qnaire" AS "";
       ALTER TABLE qnaire DROP FOREIGN KEY fk_qnaire_prev_qnaire;
       ALTER TABLE qnaire
       ADD CONSTRAINT fk_qnaire_prev_qnaire_id
@@ -31,6 +32,7 @@ CREATE PROCEDURE convert_database()
       ON DELETE NO ACTION ON UPDATE NO ACTION;
 
       -- phase -------------------------------------------------------------------------------------
+      SELECT "Processing phase" AS "";
       ALTER TABLE phase DROP FOREIGN KEY fk_phase_qnaire;
       ALTER TABLE phase
       ADD CONSTRAINT fk_phase_qnaire_id
@@ -38,6 +40,7 @@ CREATE PROCEDURE convert_database()
       ON DELETE NO ACTION ON UPDATE NO ACTION;
 
       -- interview ---------------------------------------------------------------------------------
+      SELECT "Processing interview" AS "";
       ALTER TABLE interview RENAME interview_old;
       ALTER TABLE interview_old
       DROP FOREIGN KEY fk_interiew_duplicate_qnaire_id,
@@ -91,6 +94,7 @@ CREATE PROCEDURE convert_database()
       DROP TABLE interview_old;
 
       -- assignment --------------------------------------------------------------------------------
+      SELECT "Processing assignment" AS "";
       ALTER TABLE assignment RENAME assignment_old;
       ALTER TABLE assignment_old
       DROP FOREIGN KEY fk_assignment_interview,
@@ -159,6 +163,7 @@ CREATE PROCEDURE convert_database()
       DROP TABLE assignment_old;
 
       -- phone_call --------------------------------------------------------------------------------
+      SELECT "Processing phone_call" AS "";
       ALTER TABLE phone_call RENAME phone_call_old;
       ALTER TABLE phone_call_old
       DROP FOREIGN KEY fk_phone_call_assignment,
@@ -215,6 +220,7 @@ CREATE PROCEDURE convert_database()
       DROP TABLE phone_call_old;
 
       -- shift -------------------------------------------------------------------------------------
+      SELECT "Processing shift" AS "";
       ALTER TABLE shift RENAME shift_old;
       ALTER TABLE shift_old
       DROP FOREIGN KEY fk_shift_site,
@@ -267,6 +273,7 @@ CREATE PROCEDURE convert_database()
       DROP TABLE shift_old;
 
       -- assignment_note ---------------------------------------------------------------------------
+      SELECT "Processing assignment_note" AS "";
       ALTER TABLE assignment_note RENAME assignment_note_old;
       ALTER TABLE assignment_note_old
       DROP FOREIGN KEY fk_assignment_note_assignment,
@@ -316,6 +323,7 @@ CREATE PROCEDURE convert_database()
       DROP TABLE assignment_note_old;
 
       -- appointment -------------------------------------------------------------------------------
+      SELECT "Processing appointment" AS "";
       ALTER TABLE appointment RENAME appointment_old;
       ALTER TABLE appointment_old
       DROP FOREIGN KEY fk_appointment_assignment,
@@ -378,6 +386,7 @@ CREATE PROCEDURE convert_database()
       DROP TABLE appointment_old;
 
       -- away_time ---------------------------------------------------------------------------------
+      SELECT "Processing away_time" AS "";
       ALTER TABLE away_time RENAME away_time_old;
       ALTER TABLE away_time_old
       DROP FOREIGN KEY fk_away_time_role_id,
@@ -440,6 +449,7 @@ CREATE PROCEDURE convert_database()
       DROP TABLE away_time_old;
 
       -- shift_template --------------------------------------------------------------------------------
+      SELECT "Processing shift_template" AS "";
       ALTER TABLE shift_template RENAME shift_template_old;
       ALTER TABLE shift_template_old
       DROP FOREIGN KEY fk_shift_template_site;
@@ -498,6 +508,7 @@ CREATE PROCEDURE convert_database()
       DROP TABLE shift_template_old;
 
       -- queue_restriction --------------------------------------------------------------------------------
+      SELECT "Processing queue_restriction" AS "";
       ALTER TABLE queue_restriction RENAME queue_restriction_old;
       ALTER TABLE queue_restriction_old
       DROP FOREIGN KEY fk_region_id1,
@@ -550,6 +561,7 @@ CREATE PROCEDURE convert_database()
       DROP TABLE queue_restriction_old;
 
       -- quota_state -------------------------------------------------------------------------------
+      SELECT "Processing quota_state" AS "";
       SET @sql = CONCAT(
         "CREATE TABLE IF NOT EXISTS quota_state ( ",
           "quota_id INT UNSIGNED NOT NULL , ",
@@ -586,6 +598,7 @@ CREATE PROCEDURE convert_database()
       DEALLOCATE PREPARE statement;
 
       -- recording ---------------------------------------------------------------------------------
+      SELECT "Processing recording" AS "";
       ALTER TABLE recording DROP FOREIGN KEY fk_recording_interview;
       ALTER TABLE recording
       ADD CONSTRAINT fk_recording_interview_id
@@ -593,15 +606,16 @@ CREATE PROCEDURE convert_database()
       ON DELETE NO ACTION ON UPDATE NO ACTION;
 
       ALTER TABLE recording DROP FOREIGN KEY fk_assignment_id1;
+      DROP INDEX fk_assignment_id1 ON recording;
+      CREATE INDEX fk_assignment_id ON recording ( assignment_id );
       ALTER TABLE recording
       ADD CONSTRAINT fk_recording_assignment_id
       FOREIGN KEY ( assignment_id ) REFERENCES assignment ( id )
       ON DELETE NO ACTION ON UPDATE NO ACTION;
 
-      DROP INDEX fk_assignment_id1 ON recording;
-      CREATE INDEX fk_assignment_id ON recording ( assignment_id );
 
       -- source_survey -----------------------------------------------------------------------------
+      SELECT "Processing source_survey" AS "";
       ALTER TABLE source_survey RENAME source_survey_old;
       ALTER TABLE source_survey_old
       DROP FOREIGN KEY fk_source_survey_phase_id,
@@ -647,6 +661,7 @@ CREATE PROCEDURE convert_database()
       DROP TABLE source_survey_old;
 
       -- source_withdraw ---------------------------------------------------------------------------
+      SELECT "Processing source_withdraw" AS "";
       ALTER TABLE source_withdraw RENAME source_withdraw_old;
       ALTER TABLE source_withdraw_old
       DROP FOREIGN KEY fk_source_withdraw_qnaire_id,
@@ -692,6 +707,7 @@ CREATE PROCEDURE convert_database()
       DROP TABLE source_withdraw_old;
 
       -- user_time ---------------------------------------------------------------------------------
+      SELECT "Processing user_time" AS "";
       ALTER TABLE user_time RENAME user_time_old;
       ALTER TABLE user_time_old
       DROP FOREIGN KEY fk_operator_time_role_id,
@@ -754,6 +770,7 @@ CREATE PROCEDURE convert_database()
       DROP TABLE user_time_old;
 
       -- opal_instance -----------------------------------------------------------------------------
+      SELECT "Processing opal_instance" AS "";
       ALTER TABLE opal_instance RENAME opal_instance_old;
       ALTER TABLE opal_instance_old
       DROP FOREIGN KEY fk_opal_instance_user_id;
@@ -790,6 +807,7 @@ CREATE PROCEDURE convert_database()
       DROP TABLE opal_instance_old;
 
       -- callback ----------------------------------------------------------------------------------
+      SELECT "Processing callback" AS "";
       ALTER TABLE callback RENAME callback_old;
       ALTER TABLE callback_old
       DROP FOREIGN KEY fk_callback_assignment_id,
@@ -851,12 +869,14 @@ CREATE PROCEDURE convert_database()
       DROP TABLE callback_old;
 
       -- setting -----------------------------------------------------------------------------------
+      SELECT "Processing setting" AS "";
       DROP INDEX category ON setting;
       CREATE INDEX dk_category ON setting ( category );
       DROP INDEX name ON setting;
       CREATE INDEX dk_name ON setting ( name );
 
       -- setting_value -----------------------------------------------------------------------------
+      SELECT "Processing setting_value" AS "";
       ALTER TABLE setting_value RENAME setting_value_old;
       ALTER TABLE setting_value_old
       DROP FOREIGN KEY fk_setting_value_setting_id,
@@ -904,10 +924,12 @@ CREATE PROCEDURE convert_database()
       DROP TABLE setting_value_old;
       
       -- operation ---------------------------------------------------------------------------------
+      SELECT "Processing operation" AS "";
       ALTER TABLE operation MODIFY COLUMN type ENUM( 'push','pull','widget' ) NOT NULL;
       CREATE INDEX dk_type ON operation ( type );
       
       -- activity ----------------------------------------------------------------------------------
+      SELECT "Processing activity" AS "";
       ALTER TABLE activity RENAME activity_old;
       ALTER TABLE activity_old
       DROP FOREIGN KEY fk_activity_operation,
@@ -981,6 +1003,7 @@ CREATE PROCEDURE convert_database()
       DROP TABLE activity_old;
       
       -- role_has_operation ------------------------------------------------------------------------
+      SELECT "Processing role_has_operation" AS "";
       ALTER TABLE role_has_operation RENAME role_has_operation_old;
       ALTER TABLE role_has_operation_old
       DROP FOREIGN KEY fk_role_has_operation_operation,
@@ -1023,6 +1046,7 @@ CREATE PROCEDURE convert_database()
       DROP TABLE role_has_operation_old;
 
       -- site_voip ---------------------------------------------------------------------------------
+      SELECT "Processing site_voip" AS "";
       SET @sql = CONCAT(
         "CREATE TABLE IF NOT EXISTS site_voip ( ",
           "site_id INT UNSIGNED NOT NULL , ",
@@ -1051,6 +1075,7 @@ CREATE PROCEDURE convert_database()
       DEALLOCATE PREPARE statement;
 
       -- participant_last_appointment --------------------------------------------------------------
+      SELECT "Processing participant_last_appointment" AS "";
       DROP VIEW participant_last_appointment;
       SET @sql = CONCAT(
         "CREATE VIEW participant_last_appointment AS ",
@@ -1067,6 +1092,7 @@ CREATE PROCEDURE convert_database()
       DEALLOCATE PREPARE statement;
 
       -- drop tables which have been moved to the @cenozo database
+      SELECT "Dropping old tables" AS "";
       DROP TABLE access;
       DROP TABLE phone;
       DROP VIEW participant_first_address;
@@ -1090,6 +1116,7 @@ CREATE PROCEDURE convert_database()
       DROP TABLE site;
 
       -- add the new operations --------------------------------------------------------------------
+      SELECT "Adding new operations" AS "";
       INSERT INTO operation( type, subject, name, restricted, description )
       VALUES( "push", "alternate", "delete", true, "Removes an alternate contact person from the system." );
       INSERT INTO operation( type, subject, name, restricted, description )
