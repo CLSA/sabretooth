@@ -14,50 +14,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  */
 class participant extends \cenozo\database\participant
 {
-  /**
-   * Extend parent method by restricting selection to records belonging to this service only
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\modifier $modifier Modifications to the selection.
-   * @param boolean $count If true the total number of records instead of a list
-   * @access public
-   * @static
-   */
-  public static function select( $modifier = NULL, $count = false )
-  {
-    // make sure to only include sites belonging to this application
-    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'service_has_participant.service_id', '=',
-                      lib::create( 'business\session' )->get_service()->id );
-    $modifier->where( 'service_has_participant.datetime', '!=', NULL );
-    return parent::select( $modifier, $count );
-  }
-
-  /**
-   * Override parent method by restricting returned records to those belonging to this service only
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string|array $column A column with the unique key property (or array of columns)
-   * @param string|array $value The value of the column to match (or array of values)
-   * @return database\record
-   * @static
-   * @access public
-   */
-  public static function get_unique_record( $column, $value )
-  {
-    $db_participant = parent::get_unique_record( $column, $value );
-
-    if( !is_null( $db_participant ) )
-    { // make sure the participant has been released
-      $db_service = lib::create( 'business\session' )->get_service();
-
-      $participant_mod = lib::create( 'database\modifier' );
-      $participant_mod->where( 'participant.id', '=', $db_participant->id );
-      $participant_mod->where( 'service_has_participant.datetime', '!=', NULL );
-      if( 0 == $db_service->get_participant_count( $participant_mod ) ) $db_participant = NULL;
-    }
-
-    return $db_participant;
-  }
-
   /*
    * Get the participant's most recent, closed assignment.
    * @author Patrick Emond <emondpd@mcmaster.ca>
