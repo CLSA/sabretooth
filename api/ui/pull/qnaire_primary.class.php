@@ -26,4 +26,3 @@ class qnaire_primary extends \cenozo\ui\pull\base_primary
     parent::__construct( 'qnaire', $args );
   }
 }
-?>

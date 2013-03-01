@@ -74,4 +74,3 @@ abstract class base_appointment_view extends \cenozo\ui\widget\base_view
    */
   protected $site_calendar = NULL;
 }
-?>

@@ -93,4 +93,3 @@ class phase_view extends \cenozo\ui\widget\base_view
    */
   protected $source_survey_list = NULL;
 }
-?>

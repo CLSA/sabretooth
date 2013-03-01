@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * widget callback add
  */
-class callback_add extends base_callback_view
+class callback_add extends \cenozo\ui\widget\base_view
 {
   /**
    * Constructor
@@ -24,7 +24,7 @@ class callback_add extends base_callback_view
    */
   public function __construct( $args )
   {
-    parent::__construct( 'add', $args );
+    parent::__construct( 'callback', 'add', $args );
   }
 
   /**
@@ -62,7 +62,6 @@ class callback_add extends base_callback_view
         'Callback widget must have a parent with participant as the subject.', __METHOD__ );
 
     $db_participant = lib::create( 'database\participant', $this->parent->get_record()->id );
-    $this->set_variable( 'site_id', $db_participant->site_id );
     
     // determine the time difference
     $db_address = $db_participant->get_first_address();
@@ -111,4 +110,3 @@ class callback_add extends base_callback_view
     $this->set_variable( 'is_mid_tier', 2 == $session->get_role()->tier );
   }
 }
-?>

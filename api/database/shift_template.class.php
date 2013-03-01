@@ -86,4 +86,3 @@ class shift_template extends \cenozo\database\record
     return false;
   }
 }
-?>

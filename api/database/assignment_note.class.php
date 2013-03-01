@@ -13,4 +13,3 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * assignment_note: record
  */
 class assignment_note extends \cenozo\database\base_note {}
-?>

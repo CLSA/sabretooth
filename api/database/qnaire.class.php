@@ -13,4 +13,3 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * qnaire: record
  */
 class qnaire extends \cenozo\database\has_rank {}
-?>

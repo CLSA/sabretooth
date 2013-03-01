@@ -27,4 +27,3 @@ class source_survey_new extends \cenozo\ui\push\base_new
     parent::__construct( 'source_survey', $args );
   }
 }
-?>

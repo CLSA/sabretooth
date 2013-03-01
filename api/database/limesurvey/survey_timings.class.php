@@ -42,6 +42,8 @@ class survey_timings extends sid_record
    */
   public static function get_averages( $db_region = NULL )
   {
+    $database_class_name = lib::get_class_name( 'database\database' );
+
     // we need to get all *X*X*time based column names from the information schema
     // to build custom sql
     $information_mod = lib::create( 'database\modifier' );
@@ -69,14 +71,13 @@ class survey_timings extends sid_record
     {
       $db = lib::create( 'business\session' )->get_database();
 
-      // TODO: table prefixes are not included in the following query
       $sql .= sprintf( ' '.
         'FROM %s t '.
         'JOIN %s s ON t.id = s.id '.
         'JOIN %s.%sinterview i ON s.token LIKE CONCAT( i.id, "_%%" ) '.
         'JOIN %s.%sparticipant_primary_address p ON i.participant_id = p.participant_id '.
         'JOIN %s.%saddress a ON p.address_id = a.id '.
-        'JOIN %s.%sregion r ON a.region_id = r.id AND r.id = %d',
+        'JOIN %s.%sregion r ON a.region_id = r.id AND r.id = %s',
         static::get_table_name(),
         str_replace( '_timings', '', static::get_table_name() ),
         $db->get_name(),
@@ -87,7 +88,7 @@ class survey_timings extends sid_record
         $db->get_prefix(),
         $db->get_name(),
         $db->get_prefix(),
-        $db_region->id );
+        $database_class_name::format_string( $db_region->id ) );
     }
     else
     {
@@ -104,4 +105,3 @@ class survey_timings extends sid_record
    */
   protected static $primary_key_name = 'id';
 }
-?>

@@ -224,8 +224,6 @@ print_exception_block( $error_codes, 'voip' );
 
 print <<<OUTPUT
 
-?>
 
 OUTPUT;
 
-?>

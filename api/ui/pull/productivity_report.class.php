@@ -107,9 +107,9 @@ class productivity_report extends \cenozo\ui\pull\base_report
       {
         // create modifiers for the activity, phone_call, interview and user_time queries
         $activity_mod = lib::create( 'database\modifier' );
-        $activity_mod->where( 'user_id', '=', $db_user->id );
-        $activity_mod->where( 'site_id', '=', $db_site->id );
-        $activity_mod->where( 'role_id', '=', $db_role->id );
+        $activity_mod->where( activity.user_id, '=', $db_user->id );
+        $activity_mod->where( activity.site_id, '=', $db_site->id );
+        $activity_mod->where( activity.role_id, '=', $db_role->id );
         $activity_mod->where( 'operation.subject', '!=', 'self' );
         $phone_call_mod = lib::create( 'database\modifier' );
         $interview_mod = lib::create( 'database\modifier' );
@@ -170,9 +170,9 @@ class productivity_report extends \cenozo\ui\pull\base_report
         if( $single_date )
         {
           $day_activity_mod = lib::create( 'database\modifier' );
-          $day_activity_mod->where( 'user_id', '=', $db_user->id );
-          $day_activity_mod->where( 'site_id', '=', $db_site->id );
-          $day_activity_mod->where( 'role_id', '=', $db_role->id );
+          $day_activity_mod->where( activity.user_id, '=', $db_user->id );
+          $day_activity_mod->where( activity.site_id, '=', $db_site->id );
+          $day_activity_mod->where( activity.role_id, '=', $db_role->id );
           $day_activity_mod->where( 'operation.subject', '!=', 'self' );
           $day_activity_mod->where( 'datetime', '>=',
             $start_datetime_obj->format( 'Y-m-d' ).' 0:00:00' );
@@ -259,4 +259,3 @@ class productivity_report extends \cenozo\ui\pull\base_report
     }
   }
 }
-?>

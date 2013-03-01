@@ -25,4 +25,3 @@ class user_delete_shift extends \cenozo\ui\push\base_delete_record
     parent::__construct( 'user', 'shift', $args );
   }
 }
-?>

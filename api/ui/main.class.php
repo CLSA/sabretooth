@@ -31,4 +31,3 @@ class main extends \cenozo\ui\main
     return $variables;
   }
 }
-?>

@@ -136,4 +136,3 @@ class qnaire_view extends \cenozo\ui\widget\base_view
    */
   protected $source_withdraw_list = NULL;
 }
-?>

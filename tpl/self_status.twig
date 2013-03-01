@@ -14,14 +14,14 @@
       now_obj.setTime( now_obj.getTime() + {{ timezone_offset }} * 1000 );
       var hours = ( now_obj.getUTCHours() < 10 ? '0' : '' ) + now_obj.getUTCHours();
       var minutes = ( now_obj.getUTCMinutes() < 10 ? '0' : '' ) + now_obj.getUTCMinutes();
-      var seconds = ( now_obj.getUTCSeconds() < 10 ? '0' : '' ) + now_obj.getUTCSeconds();
       $( "#{{ widget.full }}_clock" ).html(
-        hours + ":" + minutes + ":" + seconds + " {{ timezone_name }}" );
+        hours + ":" + minutes + " {{ timezone_name }}" );
     }
 
     $( function() {
       $( "#{{ widget.full }}_icons" ).children().tooltip();
-      setInterval( 'update_clock()', 1000 ); // add the clock
+      update_clock();
+      setInterval( 'update_clock()', 60000 ); // add the clock
     } );
 
     {% if home %}

@@ -109,4 +109,3 @@ class user extends \cenozo\database\user
     return array( 'count' => count( $interview_id_list ), 'time' => $time );
   }
 }
-?>

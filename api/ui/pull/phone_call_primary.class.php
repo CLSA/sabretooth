@@ -26,4 +26,3 @@ class phone_call_primary extends \cenozo\ui\pull\base_primary
     parent::__construct( 'phone_call', $args );
   }
 }
-?>

@@ -59,4 +59,3 @@ class voip_dtmf extends \cenozo\ui\push
     $voip_call->dtmf( $this->get_argument( 'tone' ) );
   }
 }
-?>

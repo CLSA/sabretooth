@@ -108,4 +108,3 @@ class opal_instance_view extends \cenozo\ui\widget\base_view
    */
   protected $activity_list = NULL;
 }
-?>

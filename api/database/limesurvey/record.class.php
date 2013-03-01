@@ -87,4 +87,3 @@ abstract class record extends \cenozo\database\record
     return lib::create( 'business\session' )->get_survey_database();
   }
 }
-?>

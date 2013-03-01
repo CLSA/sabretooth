@@ -55,4 +55,3 @@ class self_dialing_pad extends \cenozo\ui\widget
     $this->set_variable( 'allow_hangup', 'operator' != $role_name );
   }
 }
-?>

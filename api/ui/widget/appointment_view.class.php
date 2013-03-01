@@ -145,4 +145,3 @@ class appointment_view extends base_appointment_view
         'View the participant\'s details' );
   }
 }
-?>

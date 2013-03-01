@@ -82,4 +82,3 @@ class queue_restriction_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'postcode', $this->get_record()->postcode, false );
   }
 }
-?>

@@ -43,13 +43,15 @@ class phone_call_begin extends \cenozo\ui\push
     if( !is_null( $phone_id ) && 'operator' == $session->get_role()->name )
     { // make sure that operators are calling their current assignment only
       $db_phone = lib::create( 'database\phone', $phone_id );
+      $db_participant = $db_phone->get_person()->get_participant();
       $db_assignment = $session->get_current_assignment();
   
       if( is_null( $db_assignment ) )
         throw lib::create( 'exception\runtime',
           'Operator tried to make call without an assignment.', __METHOD__ );
 
-      if( $db_phone->participant_id != $db_assignment->get_interview()->participant_id )
+      if( is_null( $db_participant ) ||
+          $db_participant->id != $db_assignment->get_interview()->participant_id )
         throw lib::create( 'exception\runtime',
           'Operator tried to make call to participant who is not currently assigned.', __METHOD__ );
     }
@@ -99,4 +101,3 @@ class phone_call_begin extends \cenozo\ui\push
     }
   }
 }
-?>

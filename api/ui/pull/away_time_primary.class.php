@@ -26,4 +26,3 @@ class away_time_primary extends \cenozo\ui\pull\base_primary
     parent::__construct( 'away_time', $args );
   }
 }
-?>

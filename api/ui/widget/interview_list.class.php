@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * widget interview list
  */
-class interview_list extends site_restricted_list
+class interview_list extends \cenozo\ui\widget\site_restricted_list
 {
   /**
    * Constructor
@@ -67,4 +67,3 @@ class interview_list extends site_restricted_list
     }
   }
 }
-?>

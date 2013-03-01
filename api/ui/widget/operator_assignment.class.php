@@ -61,8 +61,8 @@ class operator_assignment extends \cenozo\ui\widget
 
     // global messages go first
     $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', NULL );
-    $modifier->where( 'role_id', '=', NULL );
+    $modifier->where( 'access.site_id', '=', NULL );
+    $modifier->where( 'access.role_id', '=', NULL );
     $system_message_class_name = lib::get_class_name( 'database\system_message' );
     foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
     {
@@ -72,8 +72,8 @@ class operator_assignment extends \cenozo\ui\widget
     
     // then all-site messages
     $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', NULL );
-    $modifier->where( 'role_id', '=', $db_role->id );
+    $modifier->where( 'access.site_id', '=', NULL );
+    $modifier->where( 'access.role_id', '=', $db_role->id );
     foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
     {
       $message_list[] = array( 'title' => $db_system_message->title,
@@ -82,8 +82,8 @@ class operator_assignment extends \cenozo\ui\widget
 
     // then all-role site-specific messages
     $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'role_id', '=', NULL );
+    $modifier->where( 'access.site_id', '=', $db_site->id );
+    $modifier->where( 'access.role_id', '=', NULL );
     foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
     {
       $message_list[] = array( 'title' => $db_system_message->title,
@@ -92,8 +92,8 @@ class operator_assignment extends \cenozo\ui\widget
 
     // then role-specific site-specific messages
     $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'role_id', '=', $db_role->id );
+    $modifier->where( 'access.site_id', '=', $db_site->id );
+    $modifier->where( 'access.role_id', '=', $db_role->id );
     foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
     {
       $message_list[] = array( 'title' => $db_system_message->title,
@@ -103,8 +103,8 @@ class operator_assignment extends \cenozo\ui\widget
     $this->set_variable( 'message_list', $message_list );
 
     // see if this user has an open assignment
-    $db_assignment = $session->get_current_assignment();
-    if( is_null( $db_assignment ) )
+    $db_current_assignment = $session->get_current_assignment();
+    if( is_null( $db_current_assignment ) )
     {
       // determine whether the operator is on a break
       $away_time_mod = lib::create( 'database\modifier' );
@@ -118,16 +118,16 @@ class operator_assignment extends \cenozo\ui\widget
       $callback_class_name = lib::get_class_name( 'database\callback' );
       $operation_class_name = lib::get_class_name( 'database\operation' );
 
-      $db_interview = $db_assignment->get_interview();
+      $db_interview = $db_current_assignment->get_interview();
       $db_participant = $db_interview->get_participant();
+      $db_current_phone_call = $session->get_current_phone_call();
       
       $language = 'none';
       if( 'en' == $db_participant->language ) $language = 'english';
       else if( 'fr' == $db_participant->language ) $language = 'french';
 
-      $consent = 'none';
-      $db_consent = $db_participant->get_last_consent();
-      if( !is_null( $db_consent ) ) $consent = $db_consent->event;
+      $db_last_consent = $db_participant->get_last_consent();
+      $consent = is_null( $db_last_consent ) ? 'none' : $db_last_consent->to_string();
       
       $previous_call_list = array();
       $db_last_assignment = $db_participant->get_last_finished_assignment();
@@ -150,8 +150,8 @@ class operator_assignment extends \cenozo\ui\widget
       
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'end_datetime', '!=', NULL );
-      $current_calls = $db_assignment->get_phone_call_count( $modifier );
-      $on_call = !is_null( $session->get_current_phone_call() );
+      $current_calls = $db_current_assignment->get_phone_call_count( $modifier );
+      $on_call = !is_null( $db_current_phone_call );
 
       if( 0 == count( $db_phone_list ) && 0 == $current_calls )
       {
@@ -177,7 +177,7 @@ class operator_assignment extends \cenozo\ui\widget
                    $db_participant->id ) );
       }
 
-      $this->set_variable( 'assignment_id', $db_assignment->id );
+      $this->set_variable( 'assignment_id', $db_current_assignment->id );
       $this->set_variable( 'participant_id', $db_participant->id );
       $this->set_variable( 'interview_id', $db_interview->id );
       $this->set_variable( 'participant_note_count', $db_participant->get_note_count() );
@@ -186,7 +186,7 @@ class operator_assignment extends \cenozo\ui\widget
       $this->set_variable( 'participant_uid', $db_participant->uid );
       $this->set_variable( 'participant_language', $language );
       $this->set_variable( 'participant_consent', $consent );
-      $this->set_variable( 'withdrawing', $consent == $db_participant->get_source()->withdraw_type );
+      $this->set_variable( 'withdrawing', $db_last_consent && false == $db_last_consent->accept );
       $this->set_variable(
         'allow_withdraw', !is_null( $db_interview->get_qnaire()->withdraw_sid ) );
       
@@ -197,13 +197,13 @@ class operator_assignment extends \cenozo\ui\widget
 
       // get the appointment associated with this assignment, if any
       $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'assignment_id', '=', $db_assignment->id );
+      $modifier->where( 'assignment_id', '=', $db_current_assignment->id );
       $appointment_list = $appointment_class_name::select( $modifier );
       $db_appointment = 0 == count( $appointment_list ) ? NULL : $appointment_list[0];
 
       // get the callback associated with this assignment, if any
       $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'assignment_id', '=', $db_assignment->id );
+      $modifier->where( 'assignment_id', '=', $db_current_assignment->id );
       $callback_list = $callback_class_name::select( $modifier );
       $db_callback = 0 == count( $callback_list ) ? NULL : $callback_list[0];
       
@@ -272,7 +272,13 @@ class operator_assignment extends \cenozo\ui\widget
       $this->set_variable( 'interview_completed', $db_interview->completed );
       $this->set_variable( 'allow_call', $session->get_allow_call() );
       $this->set_variable( 'on_call', $on_call );
-      
+      if( !is_null( $db_current_phone_call ) )
+      {
+        $note = $db_current_phone_call->get_phone()->note;
+        $this->set_variable( 'phone_note', is_null( $note ) ? false : $note );
+      }
+      else $this->set_variable( 'phone_note', false );
+
       // only allow an assignment to be ended if the operator is not in a call and
       // they have made at least one call or the interview is completed
       $this->set_variable( 'allow_end_assignment',
@@ -292,4 +298,3 @@ class operator_assignment extends \cenozo\ui\widget
     }
   }
 }
-?>

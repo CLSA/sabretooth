@@ -34,7 +34,7 @@ class tokens extends sid_record
     $db_user = lib::create( 'business\session' )->get_user();
 
     // determine the first part of the token
-    $token_part = substr( $this->token, 0, -1 );
+    $token_part = substr( $this->token, 0, strpos( $this->token, '_' ) + 1 );
     
     // fill in the email
     $this->email = $db_participant->email;
@@ -90,7 +90,7 @@ class tokens extends sid_record
         else if( 'written consent received' == $value )
         {
           $consent_mod = lib::create( 'database\modifier' );
-          $consent_mod->where( 'event', 'like', 'written %' );
+          $consent_mod->where( 'written', '=', true );
           $this->$key = 0 < $db_participant->get_consent_count( $consent_mod ) ? '1' : '0';
         }
         else if( false !== strpos( $value, 'HIN' ) )
@@ -172,20 +172,18 @@ class tokens extends sid_record
         }
         else if( 'previous CCHS contact date' == $value )
         {
-          $this->$key = $db_participant->prior_contact_date;
+          $event_type_class_name = lib::get_class_name( 'database\event_type' );
+          $datetime_list = $db_participant->get_event_datetime_list(
+            $event_type_class_name::get_unique_record( 'name', 'completed pilot interview' ) );
+          $this->$key = 0 < count( $datetime_list ) ? current( $datetime_list ) : NULL;
         }
         else if( false !== strpos( $value, 'alternate' ) )
         {
-          // get alternate info from mastodon (fake it if mastodon is not enabled)
-          $alternate_info = array();
-          if( $mastodon_manager->is_enabled() )
-            $alternate_info =
-              $mastodon_manager->pull(
-                'participant', 'list_alternate', array( 'uid' => $db_participant->uid ) );
+          $alternate_list = $db_participant->get_alternate_list();
 
           if( 'number of alternate contacts' == $value )
           {
-            $this->$key = count( $alternate_info->data );
+            $this->$key = count( $alternate_list );
           }
           else if(
             preg_match( '/alternate([0-9]+) (first_name|last_name|phone)/', $value, $matches ) )
@@ -193,7 +191,7 @@ class tokens extends sid_record
             $alt_number = intval( $matches[1] );
             $aspect = $matches[2];
 
-            if( count( $alternate_info->data ) < $alt_number )
+            if( count( $alternate_list ) < $alt_number )
             {
               $this->$key = '';
             }
@@ -201,12 +199,12 @@ class tokens extends sid_record
             {
               if( 'phone' == $aspect )
               {
-                $phone_list = $alternate_info->data[$alt_number - 1]->phone_list;
+                $phone_list = $alternate_list[$alt_number - 1]->get_phone_list();
                 $this->$key = is_array( $phone_list ) ? $phone_list[0]->number : '';
               }
               else
               {
-                $this->$key = $alternate_info->data[$alt_number - 1]->$aspect;
+                $this->$key = $alternate_list[$alt_number - 1]->$aspect;
               }
             }
           }
@@ -251,4 +249,3 @@ class tokens extends sid_record
    */
   protected static $primary_key_name = 'tid';
 }
-?>

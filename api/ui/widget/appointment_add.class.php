@@ -115,4 +115,3 @@ class appointment_add extends base_appointment_view
     $this->set_variable( 'is_mid_tier', 2 == $session->get_role()->tier );
   }
 }
-?>

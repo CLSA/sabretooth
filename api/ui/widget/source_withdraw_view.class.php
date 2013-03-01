@@ -73,4 +73,3 @@ class source_withdraw_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'sid', $this->get_record()->sid, true, $surveys );
   }
 }
-?>

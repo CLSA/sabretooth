@@ -1,4 +1,12 @@
 ====================================================================================================
+1.2.0
+====================================================================================================
+
+* Adding new cohort and service tables
+  - Cohorts are now dynamic and can grow beyond the old tracking/comprehensive pair
+  - Services are also now dynamic and linked to a particular cohort.
+
+====================================================================================================
 1.1.9
 ====================================================================================================
 
@@ -14,6 +22,10 @@
   - Removing old/defunct sourcing required report
 
 * Quotas can now be defined by site as well as region
+  - Supervisors now have read-only access to quotas and the quota report
+
+* Participant sync by date
+  - Participants can now be sync based on the date they were added to the data entry system
 
 ====================================================================================================
 1.1.8
