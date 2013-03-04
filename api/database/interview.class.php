@@ -15,6 +15,29 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class interview extends \cenozo\database\has_note
 {
   /**
+   * Get the interview's last (most recent) assignment.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return assignment
+   * @access public
+   */
+  public function get_last_assignment()
+  {
+    // check the last key value
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to query interview with no id.' );
+      return NULL;
+    }
+    
+    // need custom SQL
+    $database_class_name = lib::get_class_name( 'database\database' );
+    $assignment_id = static::db()->get_one(
+      sprintf( 'SELECT assignment_id FROM interview_last_assignment WHERE interview_id = %s',
+               $database_class_name::format_string( $this->id ) ) );
+    return $assignment_id ? lib::create( 'database\assignment', $assignment_id ) : NULL;
+  }
+
+  /**
    * Returns the time in seconds that it took to complete a particular phase of this interview
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param phase $db_phase Which phase of the interview to get the time of.
