@@ -155,7 +155,7 @@ CREATE PROCEDURE convert_database()
         "JOIN ", @cenozo, ".user cuser ON user.name = cuser.name ",
         "JOIN site ON old.site_id = site.id ",
         "JOIN ", @cenozo, ".site csite ON site.name = csite.name ",
-        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE name = 'Sabretooth' )" );
+        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE title = 'Sabretooth' )" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
@@ -265,7 +265,7 @@ CREATE PROCEDURE convert_database()
         "JOIN ", @cenozo, ".user cuser ON user.name = cuser.name ",
         "JOIN site ON old.site_id = site.id ",
         "JOIN ", @cenozo, ".site csite ON site.name = csite.name ",
-        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE name = 'Sabretooth' )" );
+        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE title = 'Sabretooth' )" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
@@ -439,7 +439,7 @@ CREATE PROCEDURE convert_database()
         "JOIN ", @cenozo, ".user cuser ON user.name = cuser.name ",
         "JOIN site ON old.site_id = site.id ",
         "JOIN ", @cenozo, ".site csite ON site.name = csite.name ",
-        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE name = 'Sabretooth' )",
+        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE title = 'Sabretooth' )",
         "JOIN role ON old.role_id = role.id ",
         "JOIN ", @cenozo, ".role crole ON role.name = crole.name" );
       PREPARE statement FROM @sql;
@@ -500,7 +500,7 @@ CREATE PROCEDURE convert_database()
         "FROM shift_template_old old ",
         "JOIN site ON old.site_id = site.id ",
         "JOIN ", @cenozo, ".site csite ON site.name = csite.name ",
-        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE name = 'Sabretooth' )" );
+        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE title = 'Sabretooth' )" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
@@ -553,7 +553,7 @@ CREATE PROCEDURE convert_database()
         "JOIN ", @cenozo, ".region cregion ON region.name = cregion.name ",
         "JOIN site ON old.site_id = site.id ",
         "JOIN ", @cenozo, ".site csite ON site.name = csite.name ",
-        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE name = 'Sabretooth' )" );
+        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE title = 'Sabretooth' )" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
@@ -584,7 +584,7 @@ CREATE PROCEDURE convert_database()
         "JOIN ", @cenozo, ".region cregion ON cquota.region_id = cregion.id ",
         "JOIN region ON cregion.name = region.name ",
         "JOIN ", @cenozo, ".site csite ON cquota.site_id = csite.id ",
-        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE name = 'Sabretooth' ) ",
+        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE title = 'Sabretooth' ) ",
         "JOIN site ON csite.name = site.name ",
         "JOIN ", @cenozo, ".age_group cage_group ON cquota.age_group_id = cage_group.id ",
         "JOIN age_group ON cage_group.lower = age_group.lower ",
@@ -760,7 +760,7 @@ CREATE PROCEDURE convert_database()
         "JOIN ", @cenozo, ".user cuser ON user.name = cuser.name ",
         "JOIN site ON old.site_id = site.id ",
         "JOIN ", @cenozo, ".site csite ON site.name = csite.name ",
-        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE name = 'Sabretooth' ) ",
+        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE title = 'Sabretooth' ) ",
         "JOIN role ON old.role_id = role.id ",
         "JOIN ", @cenozo, ".role crole ON role.name = crole.name" );
       PREPARE statement FROM @sql;
@@ -916,7 +916,7 @@ CREATE PROCEDURE convert_database()
         "FROM setting_value_old old ",
         "JOIN site ON old.site_id = site.id ",
         "JOIN ", @cenozo, ".site csite ON site.name = csite.name ",
-        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE name = 'Sabretooth' )" );
+        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE title = 'Sabretooth' )" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
@@ -995,7 +995,7 @@ CREATE PROCEDURE convert_database()
         "JOIN ", @cenozo, ".role crole ON role.name = crole.name ",
         "JOIN site ON old.site_id = site.id ",
         "JOIN ", @cenozo, ".site csite ON site.name = csite.name ",
-        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE name = 'Sabretooth' )" );
+        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE title = 'Sabretooth' )" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
@@ -1069,7 +1069,7 @@ CREATE PROCEDURE convert_database()
         "SELECT csite.id, site.voip_host, site.voip_xor_key ",
         "FROM site ",
         "JOIN ", @cenozo, ".site csite ON site.name = csite.name ",
-        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE name = 'Sabretooth' )" );
+        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE title = 'Sabretooth' )" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
@@ -1145,7 +1145,7 @@ CREATE PROCEDURE convert_database()
         "SELECT crole.id, operation.id ",
         "FROM operation, ", @cenozo, ".role crole ",
         "JOIN ", @cenozo, ".service_has_role cservice_has_role ON crole.id = cservice_has_role.role_id ",
-        "AND cservice_has_role.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE name = 'Sabretooth' )",
+        "AND cservice_has_role.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE title = 'Sabretooth' )",
         "WHERE operation.subject = 'alternate'" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
@@ -1188,7 +1188,7 @@ CREATE PROCEDURE convert_database()
         "SELECT crole.id, operation.id ",
         "FROM operation, ", @cenozo, ".role crole ",
         "JOIN ", @cenozo, ".service_has_role cservice_has_role ON crole.id = cservice_has_role.role_id ",
-        "AND cservice_has_role.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE name = 'Sabretooth' )",
+        "AND cservice_has_role.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE title = 'Sabretooth' )",
         "WHERE operation.subject = 'participant' ",
         "AND operation.name LIKE '%_alternate'" );
       PREPARE statement FROM @sql;

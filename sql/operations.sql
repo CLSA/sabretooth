@@ -299,12 +299,6 @@ VALUES( "widget", "shift_template", "view", true, "View a shift template's detai
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "shift_template", "primary", true, "Retrieves base shift template information." );
 
--- site
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "site", "add_shift", true, "View users to add shifts to." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "site", "delete_shift", true, "Remove shifts from a site." );
-
 -- source_survey
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "source_survey", "delete", true, "Removes a phase's source-specific survey from the system." );
