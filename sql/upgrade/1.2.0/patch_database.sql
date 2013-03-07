@@ -9,7 +9,8 @@ SOURCE activity.sql
 SOURCE role_has_operation2.sql
 SOURCE operation2.sql
 
--- this must be last
+-- these must come after the preceeding calls
 SOURCE convert_database.sql
+SOURCE qnaire.sql
 
 COMMIT;

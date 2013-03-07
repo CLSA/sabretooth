@@ -146,12 +146,7 @@ IF
   IF
   (
     current_interview.completed,
-    IF
-    (
-      next_qnaire.id IS NULL,
-      NULL,
-      next_prev_assignment.end_datetime + INTERVAL next_qnaire.delay WEEK
-    ),
+    next_prev_assignment.end_datetime + INTERVAL next_qnaire.delay WEEK,
     NULL
   )
 ) AS start_qnaire_date
@@ -175,26 +170,26 @@ LEFT JOIN assignment next_prev_assignment
 ON next_prev_assignment.interview_id = next_prev_interview.id
 WHERE
 (
-  current_qnaire.rank IS NULL OR
-  current_qnaire.rank =
+  current_qnaire.rank IS NULL
+  OR current_qnaire.rank =
   (
     SELECT MAX( qnaire.rank )
-    FROM interview, qnaire
-    WHERE qnaire.id = interview.qnaire_id
-    AND current_interview.participant_id = interview.participant_id
+    FROM interview
+    JOIN qnaire ON qnaire.id = interview.qnaire_id
+    WHERE interview.participant_id = current_interview.participant_id
     GROUP BY current_interview.participant_id
   )
 )
 AND
 (
-  next_prev_assignment.end_datetime IS NULL OR
-  next_prev_assignment.end_datetime =
+  next_prev_assignment.end_datetime IS NULL
+  OR next_prev_assignment.end_datetime =
   (
     SELECT MAX( assignment.end_datetime )
-    FROM interview, assignment
+    FROM interview
+    JOIN assignment ON assignment.interview_id = interview.id
     WHERE interview.qnaire_id = next_prev_qnaire.id
-    AND interview.id = assignment.interview_id
-    AND next_prev_assignment.id = assignment.id
+    AND assignment.id = next_prev_assignment.id
     GROUP BY next_prev_assignment.interview_id
   )
 )

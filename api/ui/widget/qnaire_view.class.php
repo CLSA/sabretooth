@@ -43,8 +43,11 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'rank', 'enum', 'Rank' );
     $this->add_item( 'prev_qnaire_id', 'enum', 'Previous Questionnaire',
       'The questionnaire which must be finished before this one begins.' );
+    $this->add_item( 'event_type_id', 'enum', 'Event Type',
+      'The event type which must be present before this questionnaire begins.' );
     $this->add_item( 'delay', 'number', 'Delay (weeks)',
-      'How many weeks after the previous questionnaire is completed before this one may begin.' );
+      'How many weeks after the previous questionnaire or event is completed '.
+      'before this questionnaire may begin.' );
     $this->add_item( 'withdraw_sid', 'enum', 'Withdraw Survey' );
     $this->add_item( 'rescore_sid', 'enum', 'Rescore Survey' );
     $this->add_item( 'phases', 'constant', 'Number of phases' );
@@ -71,12 +74,18 @@ class qnaire_view extends \cenozo\ui\widget\base_view
   {
     parent::setup();
 
+    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
+    $event_type_class_name = lib::get_class_name( 'database\event_type' );
+    $surveys_class_name = lib::get_class_name( 'database\limesurvey\surveys' );
+
     // create enum arrays
     $qnaires = array();
-    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
     foreach( $qnaire_class_name::select() as $db_qnaire )
       if( $db_qnaire->id != $this->get_record()->id )
         $qnaires[$db_qnaire->id] = $db_qnaire->name;
+    $event_types = array();
+    foreach( $event_type_class_name::select() as $db_event_type )
+      $event_types[$db_event_type->id] = $db_event_type->name;
     $num_ranks = $qnaire_class_name::count();
     $ranks = array();
     for( $rank = 1; $rank <= ( $num_ranks + 1 ); $rank++ ) $ranks[] = $rank;
@@ -87,7 +96,6 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     $modifier->where( 'active', '=', 'Y' );
     $modifier->where( 'anonymized', '=', 'N' );
     $modifier->where( 'tokenanswerspersistence', '=', 'Y' );
-    $surveys_class_name = lib::get_class_name( 'database\limesurvey\surveys' );
     foreach( $surveys_class_name::select( $modifier ) as $db_survey )
       $surveys[$db_survey->sid] = $db_survey->get_title();
 
@@ -95,6 +103,7 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'name', $this->get_record()->name, true );
     $this->set_item( 'rank', $this->get_record()->rank, true, $ranks );
     $this->set_item( 'prev_qnaire_id', $this->get_record()->prev_qnaire_id, false, $qnaires );
+    $this->set_item( 'event_type_id', $this->get_record()->event_type_id, false, $event_types );
     $this->set_item( 'delay', $this->get_record()->delay, true );
     $this->set_item( 'withdraw_sid', $this->get_record()->withdraw_sid, false, $surveys );
     $this->set_item( 'rescore_sid', $this->get_record()->rescore_sid, false, $surveys );
