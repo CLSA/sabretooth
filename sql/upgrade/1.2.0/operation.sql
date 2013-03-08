@@ -23,3 +23,11 @@ INSERT IGNORE INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "report", true, "Set up a participant report." );
 INSERT IGNORE INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "participant", "report", true, "Download a participant report." );
+
+-- qnaire event types
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "qnaire", "add_event_type", true, "A form to add an event type to a qnaire." );
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "qnaire", "new_event_type", true, "Add an event type to a qnaire." );
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "qnaire", "delete_event_type", true, "Remove a qnaire's event type." );

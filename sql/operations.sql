@@ -196,6 +196,12 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "qnaire", "delete_source_withdraw", true, "Remove a questionnaire's source-specific withdraw survey." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "qnaire", "primary", true, "Retrieves base questionnaire information." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "qnaire", "add_event_type", true, "A form to add an event type to a qnaire." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "qnaire", "new_event_type", true, "Add an event type to a qnaire." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "qnaire", "delete_event_type", true, "Remove a qnaire's event type." );
 
 -- queue
 INSERT INTO operation( type, subject, name, restricted, description )

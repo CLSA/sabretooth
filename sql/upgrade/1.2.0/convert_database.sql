@@ -31,6 +31,32 @@ CREATE PROCEDURE convert_database()
       FOREIGN KEY ( prev_qnaire_id ) REFERENCES qnaire ( id )
       ON DELETE NO ACTION ON UPDATE NO ACTION;
 
+      -- qnaire_has_event_type ---------------------------------------------------------------------
+      SELECT "Processing qnaire_has_event_type" AS "";
+      SET @sql = CONCAT(
+        "CREATE  TABLE IF NOT EXISTS qnaire_has_event_type ( ",
+          "qnaire_id INT UNSIGNED NOT NULL , ",
+          "event_type_id INT UNSIGNED NOT NULL , ",
+          "update_timestamp TIMESTAMP NOT NULL , ",
+          "create_timestamp TIMESTAMP NOT NULL , ",
+          "PRIMARY KEY ( qnaire_id, event_type_id ) , ",
+          "INDEX fk_event_type_id ( event_type_id ASC ) , ",
+          "INDEX fk_qnaire_id ( qnaire_id ASC ) , ",
+          "CONSTRAINT fk_qnaire_has_event_type_qnaire_id ",
+            "FOREIGN KEY ( qnaire_id ) ",
+            "REFERENCES qnaire ( id ) ",
+            "ON DELETE NO ACTION ",
+            "ON UPDATE NO ACTION, ",
+          "CONSTRAINT fk_qnaire_has_event_type_event_type_id ",
+            "FOREIGN KEY ( event_type_id ) ",
+            "REFERENCES ", @cenozo, ".event_type ( id ) ",
+            "ON DELETE NO ACTION ",
+            "ON UPDATE NO ACTION ) ",
+        "ENGINE = InnoDB" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
       -- phase -------------------------------------------------------------------------------------
       SELECT "Processing phase" AS "";
       ALTER TABLE phase DROP FOREIGN KEY fk_phase_qnaire;

@@ -1132,7 +1132,6 @@ current_qnaire.id AS current_qnaire_id,
 current_qnaire.name AS current_qnaire_name,
 current_qnaire.rank AS current_qnaire_rank,
 current_qnaire.prev_qnaire_id AS current_qnaire_prev_qnaire_id,
-current_qnaire.event_type_id AS current_qnaire_event_type_id,
 current_qnaire.delay AS current_qnaire_delay,
 current_qnaire.withdraw_sid AS current_qnaire_withdraw_sid,
 current_qnaire.rescore_sid AS current_qnaire_rescore_sid,
@@ -1141,7 +1140,6 @@ next_qnaire.id AS next_qnaire_id,
 next_qnaire.name AS next_qnaire_name,
 next_qnaire.rank AS next_qnaire_rank,
 next_qnaire.prev_qnaire_id AS next_qnaire_prev_qnaire_id,
-next_qnaire.event_type_id AS next_qnaire_event_type_id,
 next_qnaire.delay AS next_qnaire_delay,
 next_qnaire.withdraw_sid AS next_qnaire_withdraw_sid,
 next_qnaire.rescore_sid AS next_qnaire_rescore_sid,
@@ -1150,7 +1148,6 @@ next_prev_qnaire.id AS next_prev_qnaire_id,
 next_prev_qnaire.name AS next_prev_qnaire_name,
 next_prev_qnaire.rank AS next_prev_qnaire_rank,
 next_prev_qnaire.prev_qnaire_id AS next_prev_qnaire_prev_qnaire_id,
-next_prev_qnaire.event_type_id AS next_prev_qnaire_event_type_id,
 next_prev_qnaire.delay AS next_prev_qnaire_delay,
 next_prev_qnaire.withdraw_sid AS next_prev_qnaire_withdraw_sid,
 next_prev_qnaire.rescore_sid AS next_prev_qnaire_rescore_sid,
@@ -1200,10 +1197,20 @@ CROSS JOIN qnaire AS first_qnaire
 ON first_qnaire.rank = 1
 LEFT JOIN event first_event
 ON participant.id = first_event.participant_id
-AND first_event.event_type_id = first_qnaire.event_type_id
+AND first_event.event_type_id IN
+(
+  SELECT event_type_id
+  FROM qnaire_has_event_type
+  WHERE qnaire_id = first_qnaire.id
+)
 LEFT JOIN event next_event
 ON participant.id = next_event.participant_id
-AND next_event.event_type_id = next_qnaire.event_type_id
+AND next_event.event_type_id IN
+(
+  SELECT event_type_id
+  FROM qnaire_has_event_type
+  WHERE qnaire_id = next_qnaire.id
+)
 WHERE
 (
   current_qnaire.rank IS NULL

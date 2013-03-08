@@ -68,6 +68,20 @@ CREATE PROCEDURE patch_role_has_operation()
           operation_id = ( SELECT id FROM operation WHERE
             type = "pull" AND subject = "participant" AND name = "report" );
 
+      -- qnaire event types
+      INSERT IGNORE INTO role_has_operation
+      SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+          operation_id = ( SELECT id FROM operation WHERE
+            type = "widget" AND subject = "qnaire" AND name = "add_event_type" );
+      INSERT IGNORE INTO role_has_operation
+      SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+          operation_id = ( SELECT id FROM operation WHERE
+            type = "push" AND subject = "qnaire" AND name = "new_event_type" );
+      INSERT IGNORE INTO role_has_operation
+      SET role_id = ( SELECT id FROM role WHERE name = "administrator" ),
+          operation_id = ( SELECT id FROM operation WHERE
+            type = "push" AND subject = "qnaire" AND name = "delete_event_type" );
+
     END IF;
   END //
 DELIMITER ;

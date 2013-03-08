@@ -473,6 +473,13 @@ SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "widget" AND subject = "event" AND operation.name = "view"
 AND role.name IN ( "administrator" );
 
+-- event_type
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "event_type" AND operation.name = "list"
+AND role.name IN( "administrator" );
+
 -- interview
 
 INSERT INTO role_has_operation( role_id, operation_id )
@@ -906,6 +913,11 @@ AND role.name IN ( "administrator" );
 
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "qnaire" AND operation.name = "add_event_type"
+AND role.name IN ( "administrator" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "widget" AND subject = "qnaire" AND operation.name = "add_phase"
 AND role.name IN ( "administrator" );
 
@@ -917,6 +929,11 @@ AND role.name IN ( "administrator" );
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "push" AND subject = "qnaire" AND operation.name = "delete"
+AND role.name IN ( "administrator" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "push" AND subject = "qnaire" AND operation.name = "delete_event_type"
 AND role.name IN ( "administrator" );
 
 INSERT INTO role_has_operation( role_id, operation_id )
@@ -942,6 +959,11 @@ AND role.name IN ( "administrator" );
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "push" AND subject = "qnaire" AND operation.name = "new"
+AND role.name IN ( "administrator" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "push" AND subject = "qnaire" AND operation.name = "new_event_type"
 AND role.name IN ( "administrator" );
 
 INSERT INTO role_has_operation( role_id, operation_id )

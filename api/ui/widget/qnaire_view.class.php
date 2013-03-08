@@ -43,8 +43,6 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'rank', 'enum', 'Rank' );
     $this->add_item( 'prev_qnaire_id', 'enum', 'Previous Questionnaire',
       'The questionnaire which must be finished before this one begins.' );
-    $this->add_item( 'event_type_id', 'enum', 'Event Type',
-      'The event type which must be present before this questionnaire begins.' );
     $this->add_item( 'delay', 'number', 'Delay (weeks)',
       'How many weeks after the previous questionnaire or event is completed '.
       'before this questionnaire may begin.' );
@@ -62,6 +60,11 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     $this->source_withdraw_list = lib::create( 'ui\widget\source_withdraw_list', $this->arguments );
     $this->source_withdraw_list->set_parent( $this );
     $this->source_withdraw_list->set_heading( 'Source-specific Withdraw Surveys' );
+
+    // create the event_type sub-list widget
+    $this->event_type_list = lib::create( 'ui\widget\event_type_list', $this->arguments );
+    $this->event_type_list->set_parent( $this );
+    $this->event_type_list->set_heading( 'Events required to begin this Questionnaire' );
   }
 
   /**
@@ -75,7 +78,6 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     parent::setup();
 
     $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
-    $event_type_class_name = lib::get_class_name( 'database\event_type' );
     $surveys_class_name = lib::get_class_name( 'database\limesurvey\surveys' );
 
     // create enum arrays
@@ -83,9 +85,6 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     foreach( $qnaire_class_name::select() as $db_qnaire )
       if( $db_qnaire->id != $this->get_record()->id )
         $qnaires[$db_qnaire->id] = $db_qnaire->name;
-    $event_types = array();
-    foreach( $event_type_class_name::select() as $db_event_type )
-      $event_types[$db_event_type->id] = $db_event_type->name;
     $num_ranks = $qnaire_class_name::count();
     $ranks = array();
     for( $rank = 1; $rank <= ( $num_ranks + 1 ); $rank++ ) $ranks[] = $rank;
@@ -103,18 +102,14 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'name', $this->get_record()->name, true );
     $this->set_item( 'rank', $this->get_record()->rank, true, $ranks );
     $this->set_item( 'prev_qnaire_id', $this->get_record()->prev_qnaire_id, false, $qnaires );
-    $this->set_item( 'event_type_id', $this->get_record()->event_type_id, false, $event_types );
     $this->set_item( 'delay', $this->get_record()->delay, true );
     $this->set_item( 'withdraw_sid', $this->get_record()->withdraw_sid, false, $surveys );
     $this->set_item( 'rescore_sid', $this->get_record()->rescore_sid, false, $surveys );
     $this->set_item( 'phases', $this->get_record()->get_phase_count() );
     $this->set_item( 'description', $this->get_record()->description );
-    
-    // process the child widgets
     $this->set_item( 'phases', $this->get_record()->get_phase_count() );
     $this->set_item( 'description', $this->get_record()->description );
     
-    // process the child widgets
     try
     {
       $this->phase_list->process();
@@ -122,11 +117,17 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     }
     catch( \cenozo\exception\permission $e ) {}
     
-    // process the child widgets
     try
     {
       $this->source_withdraw_list->process();
       $this->set_variable( 'source_withdraw_list', $this->source_withdraw_list->get_variables() );
+    }
+    catch( \cenozo\exception\permission $e ) {}
+    
+    try
+    {
+      $this->event_type_list->process();
+      $this->set_variable( 'event_type_list', $this->event_type_list->get_variables() );
     }
     catch( \cenozo\exception\permission $e ) {}
   }
@@ -144,4 +145,11 @@ class qnaire_view extends \cenozo\ui\widget\base_view
    * @access protected
    */
   protected $source_withdraw_list = NULL;
+  
+  /**
+   * The qnaire list widget.
+   * @var event_type_list
+   * @access protected
+   */
+  protected $event_type_list = NULL;
 }
