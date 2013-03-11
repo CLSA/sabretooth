@@ -16,8 +16,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "appointment", "view", true, "View the details of a participant's particular appointment." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "appointment", "list", true, "Lists a participant's appointments." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "appointment", "primary", true, "Retrieves base appointment information." );
 
 -- assignment
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -28,8 +26,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "assignment", "begin", true, "Requests a new assignment." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "assignment", "end", true, "Ends the current assignment." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "assignment", "primary", true, "Retrieves base assignment information." );
 
 -- away_time
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -44,8 +40,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "away_time", "view", true, "View a away time's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "away_time", "list", true, "List away times in the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "away_time", "primary", true, "Retrieves base away time information." );
 
 -- callback
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -60,8 +54,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "callback", "view", true, "View the details of a participant's particular callback." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "callback", "list", true, "Lists a participant's callbacks." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "callback", "primary", true, "Retrieves base callback information." );
 
 -- calendar
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -114,8 +106,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "opal_instance", "view", true, "View a opal instance's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "opal_instance", "list", true, "List opal instances in the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "opal_instance", "primary", true, "Retrieves base opal instance information." );
 
 -- operator
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -160,8 +150,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "phase", "add_source_survey", true, "A form to add a new source-specific survey to the phase." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "phase", "delete_source_survey", true, "Remove a phase's source-specific survey." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "phase", "primary", true, "Retrieves base phase information." );
 
 -- phone call
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -170,8 +158,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "phone_call", "begin", true, "Starts a new phone call." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "phone_call", "end", true, "Ends the current phone call." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "phone_call", "primary", true, "Retrieves base phone call information." );
 
 -- qnaire
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -195,8 +181,6 @@ VALUES( "widget", "qnaire", "add_source_withdraw", true, "A form to add a new so
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "qnaire", "delete_source_withdraw", true, "Remove a questionnaire's source-specific withdraw survey." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "qnaire", "primary", true, "Retrieves base questionnaire information." );
-INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "qnaire", "add_event_type", true, "A form to add an event type to a qnaire." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "qnaire", "new_event_type", true, "Add an event type to a qnaire." );
@@ -209,8 +193,6 @@ VALUES( "widget", "queue", "list", true, "List queues in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "queue", "view", true, "View a queue's details and list of participants." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "queue", "primary", true, "Retrieves base queue information." );
-INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "queue_restriction", "delete", true, "Removes a queue restriction from the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "queue_restriction", "edit", true, "Edits a queue restriction's details." );
@@ -222,8 +204,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "queue_restriction", "view", true, "View a queue restriction's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "queue_restriction", "list", true, "List queue restrictions in the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "queue_restriction", "primary", true, "Retrieves base queue restriction information." );
 
 -- recording
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -288,8 +268,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "shift", "add", true, "View a form for creating a new shift." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "shift", "view", true, "View a shift's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "shift", "primary", true, "Retrieves base shift information." );
 
 -- shift_template
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -302,8 +280,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "shift_template", "add", true, "View a form for creating a new shift template." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "shift_template", "view", true, "View a shift template's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "shift_template", "primary", true, "Retrieves base shift template information." );
 
 -- source_survey
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -318,8 +294,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "source_survey", "view", true, "View the details of a phase's particular source-specific survey." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "source_survey", "list", true, "Lists a phase's source-specific survey entries." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "source_survey", "primary", true, "Retrieves base source-specific survey information." );
 
 -- source_withdraw
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -334,14 +308,10 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "source_withdraw", "view", true, "View the details of a questionnaire's particular source-specific withdraw survey." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "source_withdraw", "list", true, "Lists a questionnaire's source-specific withdraw survey entries." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "source_withdraw", "primary", true, "Retrieves base source-specific withdraw survey information." );
 
 -- survey
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "survey", "list", true, "List surveys in the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "survey", "primary", true, "Retrieves base survey information." );
 
 -- user
 INSERT INTO operation( type, subject, name, restricted, description )
