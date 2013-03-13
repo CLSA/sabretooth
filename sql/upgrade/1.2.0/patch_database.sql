@@ -11,6 +11,5 @@ SOURCE operation2.sql
 
 -- these must come after the preceeding calls
 SOURCE convert_database.sql
-SOURCE qnaire.sql
 
 COMMIT;
