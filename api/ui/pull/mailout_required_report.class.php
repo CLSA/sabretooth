@@ -92,6 +92,14 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
     $participant_mod->where( 'source_id', '!=', $db_statscan_source->id );
     $participant_mod->where( 'status', '=', NULL );
     $participant_mod->where( 'interview.qnaire_id', '=', $db_qnaire->id );
+    $participant_mod->where_bracket( true );
+    $participant_mod->where( 'participant_last_consent.consent_id', '=', NULL );
+    $participant_mod->where_bracket( true, true );
+    $participant_mod->where( 'participant_last_consent.accept', '=', true );
+    $participant_mod->where( 'participant_last_consent.written', '=', false );
+    $participant_mod->where_bracket( false );
+    $participant_mod->where_bracket( false );
+
     $participant_mod->group( 'participant.id' );
 
     // get the survey id for all sources (used by the report before the participant loop
@@ -115,16 +123,6 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
 
     foreach( $participant_class_name::select( $participant_mod ) as $db_participant )
     {
-      // check to make sure that the participant still wants to be a part of the study
-      // and make sure we haven't already recieved their consent form using the consent table
-      $consent_mod = lib::create( 'database\modifier' );
-      $consent_mod->where( 'participant_id', '=', $db_participant->id );
-      $consent_mod->where( 'accept', '=', 1 );
-      $consent_mod->where( 'written', '=', 0 );
-      if( 0 < count( $consent_class_name::select( $consent_mod ) ) ) continue;
-
-      $done = false;
-
       $interview_mod = lib::create( 'database\modifier' );
       $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
       $db_participant->get_interview_list( $interview_mod );
