@@ -402,8 +402,8 @@ CREATE PROCEDURE convert_database()
         "FROM appointment_old old ",
         "JOIN participant ON old.participant_id = participant.id ",
         "JOIN ", @cenozo, ".participant cparticipant ON participant.uid = cparticipant.uid ",
-        "JOIN phone ON old.phone_id = phone.id ",
-        "JOIN ", @cenozo, ".phone cphone ON phone.rank = cphone.rank ",
+        "LEFT JOIN phone ON old.phone_id = phone.id ",
+        "LEFT JOIN ", @cenozo, ".phone cphone ON phone.rank = cphone.rank ",
         "AND cparticipant.person_id = cphone.person_id" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
@@ -575,10 +575,10 @@ CREATE PROCEDURE convert_database()
         "SELECT old.id, old.update_timestamp, old.create_timestamp, ",
                "csite.id, old.city, cregion.id, old.postcode ",
         "FROM queue_restriction_old old ",
-        "JOIN region ON old.region_id = region.id ",
-        "JOIN ", @cenozo, ".region cregion ON region.name = cregion.name ",
-        "JOIN site ON old.site_id = site.id ",
-        "JOIN ", @cenozo, ".site csite ON site.name = csite.name ",
+        "LEFT JOIN region ON old.region_id = region.id ",
+        "LEFT JOIN ", @cenozo, ".region cregion ON region.name = cregion.name ",
+        "LEFT JOIN site ON old.site_id = site.id ",
+        "LEFT JOIN ", @cenozo, ".site csite ON site.name = csite.name ",
         "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE title = 'Sabretooth' )" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
@@ -885,8 +885,8 @@ CREATE PROCEDURE convert_database()
         "FROM callback_old old ",
         "JOIN participant ON old.participant_id = participant.id ",
         "JOIN ", @cenozo, ".participant cparticipant ON participant.uid = cparticipant.uid ",
-        "JOIN phone ON old.phone_id = phone.id ",
-        "JOIN ", @cenozo, ".phone cphone ON phone.rank = cphone.rank ",
+        "LEFT JOIN phone ON old.phone_id = phone.id ",
+        "LEFT JOIN ", @cenozo, ".phone cphone ON phone.rank = cphone.rank ",
         "AND cparticipant.person_id = cphone.person_id" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
