@@ -30,7 +30,6 @@ class tokens extends sid_record
       return;
     }
 
-    $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
     $db_user = lib::create( 'business\session' )->get_user();
 
     // determine the first part of the token
@@ -93,23 +92,13 @@ class tokens extends sid_record
           $consent_mod->where( 'written', '=', true );
           $this->$key = 0 < $db_participant->get_consent_count( $consent_mod ) ? '1' : '0';
         }
-        else if( false !== strpos( $value, 'HIN' ) )
+        else if( 'consented to provide HIN' == $value )
         {
-          // get HIN info from mastodon (fake it if mastodon is not enabled)
-          $participant_info = array( 'hin_access' => '', 'hin_missing' => 1 );
-          if( $mastodon_manager->is_enabled() )
-            $participant_info =
-              $mastodon_manager->pull(
-                'participant', 'primary', array( 'uid' => $db_participant->uid ) );
-          
-          if( 'consented to provide HIN' == $value )
-          {
-            $this->$key = $participant_info->data->hin_access;
-          }
-          else if( 'HIN recorded' == $value )
-          {
-            $this->$key = $participant_info->data->hin_missing ? 0 : 1;
-          }
+          $this->$key = $db_participant->get_hin()->access;
+        }
+        else if( 'HIN recorded' == $value )
+        {
+          $this->$key = !is_null( $db_participant->get_hin()->code );
         }
         else if( 'INT_13a' == $value || 'INCL_2f' == $value )
         {
