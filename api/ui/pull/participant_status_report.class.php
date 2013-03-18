@@ -154,9 +154,9 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     {
       $region_mod = lib::create( 'database\modifier' );
       $region_mod->order( 'abbreviation' );
-      $region_mod->where( 'country', '=', 'Canada' );
+      $region_mod->where( 'service_region_site.service_id', '=', $session->get_service()->id );
       if( $is_supervisor )
-        $region_mod->where( 'site_id', '=', $session->get_site()->id );
+        $region_mod->where( 'service_region_site.site_id', '=', $session->get_site()->id );
       foreach( $region_class_name::select( $region_mod ) as $db_region )
         $this->category_totals_list[ $db_region->abbreviation ] = $category_totals;
 

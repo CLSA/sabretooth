@@ -337,7 +337,8 @@ class queue extends \cenozo\database\record
     // join to the participant's primary region
     $primary_region_join =
       'LEFT JOIN participant_for_queue_primary_region '.
-      'ON participant_for_queue_primary_region.person_id = participant_person_id';
+      'ON participant_for_queue_primary_region.person_id = participant_person_id '.
+      'AND primary_region_service_id = service_has_participant_service_id';
 
     // join to the queue_restriction table based on site, city, region or postcode
     $restriction_join =
@@ -447,7 +448,7 @@ class queue extends \cenozo\database\record
         'IF '.
         '( '.
           'current_interview_id IS NULL, '.
-          'IFNULL( first_event_datetime, UTC_TIMESTAMP() ) + INTERVAL first_qnaire_delay WEEK, '.
+          'first_event_datetime + INTERVAL first_qnaire_delay WEEK, '.
           'IF '.
           '( '.
             'current_interview_completed, '.
@@ -521,7 +522,7 @@ class queue extends \cenozo\database\record
       $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
       // ineligible means either inactive or with a "final" status
       $parts['join'][] = 
-        'LEFT JOIN participant_for_queue_phone_count '.
+        'JOIN participant_for_queue_phone_count '.
         'ON participant_for_queue_phone_count.person_id = participant_person_id';
       $parts['where'][] =
         '( '.
@@ -552,18 +553,10 @@ class queue extends \cenozo\database\record
           'OR last_consent_accept = 1 '.
         ')';
 
-      if( 'sourcing required' == $queue )
-      { // add participants with no phone numbers to the sourcing required list
-        $parts['where'][] =
-          '( '.
-            '( participant_status IS NULL AND phone_count = 0 ) OR '.
-            'participant_status = "'.$queue.'" '.
-          ')';
-      }
-      else
-      {
-        $parts['where'][] = 'participant_status = "'.$queue.'"';
-      }
+      // add participants with no phone numbers to the sourcing required list
+      $parts['where'][] = 'sourcing required' == $queue
+                        ? '( phone_count = 0 OR participant_status = "'.$queue.'" )'
+                        : 'participant_status = "'.$queue.'"';
     }
     else if( 'eligible' == $queue )
     {
@@ -571,7 +564,7 @@ class queue extends \cenozo\database\record
       $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
       // active participant who does not have a "final" status and has at least one phone number
       $parts['join'][] = 
-        'LEFT JOIN participant_for_queue_phone_count '.
+        'JOIN participant_for_queue_phone_count '.
         'ON participant_for_queue_phone_count.person_id = participant_person_id';
       $parts['where'][] = 'participant_active = true';
       $parts['where'][] = 'participant_status IS NULL';
@@ -911,12 +904,14 @@ class queue extends \cenozo\database\record
   protected static function create_participant_for_queue()
   {
     $database_class_name = lib::get_class_name( 'database\database' );
+    $service_id = lib::create( 'business\session' )->get_service()->id;
 
     if( static::$participant_for_queue_created ) return;
+
+    static::db()->execute( 'DROP TABLE IF EXISTS participant_for_queue' );
     $sql = sprintf( 'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue '.
                     static::$participant_for_queue_sql,
-                    $database_class_name::format_string(
-                      lib::create( 'business\session' )->get_service()->id ) );
+                    $database_class_name::format_string( $service_id ) );
     static::db()->execute( $sql );
     static::db()->execute(
       'ALTER TABLE participant_for_queue '.
@@ -933,33 +928,44 @@ class queue extends \cenozo\database\record
       'ADD INDEX fk_last_consent_accept ( last_consent_accept ), '.
       'ADD INDEX fk_last_assignment_id ( last_assignment_id )' );
 
-    static::db()->execute(
+    static::db()->execute( 'DROP TABLE IF EXISTS participant_for_queue_phone_count' );
+    static::db()->execute( sprintf(
       'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue_phone_count '.
-      'SELECT person_id, COUNT(*) phone_count '.
-      'FROM phone '.
-      'WHERE active AND number IS NOT NULL '.
-      'GROUP BY person_id' );
+      'SELECT participant.person_id, COUNT(*) phone_count '.
+      'FROM participant '.
+      'JOIN service_has_participant ON participant.id = service_has_participant.participant_id '.
+      'AND service_has_participant.service_id = %s '.
+      'LEFT JOIN phone ON participant.person_id = phone.person_id '.
+      'AND phone.active AND phone.number IS NOT NULL '.
+      'GROUP BY participant.person_id',
+      $service_id ) );
     static::db()->execute(
       'ALTER TABLE participant_for_queue_phone_count '.
       'ADD INDEX dk_person_id ( person_id ), '.
       'ADD INDEX dk_phone_count ( phone_count )' );
 
+    static::db()->execute( 'DROP TABLE IF EXISTS participant_for_queue_primary_region' );
     static::db()->execute(
       'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue_primary_region '.
       'SELECT person_primary_address.person_id, '.
              'region.id AS primary_region_id, '.
-             'region.site_id primary_region_site_id '.
+             'service_region_site.site_id primary_region_site_id, '.
+             'service_region_site.service_id primary_region_service_id '.
       'FROM person_primary_address '.
       'LEFT JOIN address '.
       'ON person_primary_address.address_id = address.id '.
       'LEFT JOIN region '.
-      'ON address.region_id = region.id' );
+      'ON address.region_id = region.id '.
+      'LEFT JOIN service_region_site '.
+      'ON region.id = service_region_site.region_id' );
     static::db()->execute(
       'ALTER TABLE participant_for_queue_primary_region '.
       'ADD INDEX dk_person_id ( person_id ), '.
       'ADD INDEX dk_primary_region_id ( primary_region_id ), '.
-      'ADD INDEX dk_primary_region_site_id ( primary_region_site_id )' );
+      'ADD INDEX dk_primary_region_site_id ( primary_region_site_id ), '.
+      'ADD INDEX dk_primary_region_service_id ( primary_region_service_id )' );
 
+    static::db()->execute( 'DROP TABLE IF EXISTS participant_for_queue_first_address' );
     static::db()->execute(
       'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue_first_address '.
       'SELECT person_first_address.person_id, '.
