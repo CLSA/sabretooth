@@ -28,4 +28,3 @@ class qnaire_add_source_withdraw extends \cenozo\ui\widget\base_add_record
     parent::__construct( 'qnaire', 'source_withdraw', $args );
   }
 }
-?>

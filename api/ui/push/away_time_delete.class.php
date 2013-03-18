@@ -49,4 +49,3 @@ class away_time_delete extends \cenozo\ui\push\base_delete
       $db_user_time->delete();
   }
 }
-?>

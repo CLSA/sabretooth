@@ -25,4 +25,3 @@ class source_withdraw_delete extends \cenozo\ui\push\base_delete
     parent::__construct( 'source_withdraw', $args );
   }
 }
-?>

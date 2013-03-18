@@ -55,4 +55,3 @@ class self_timer extends \cenozo\ui\widget
       !is_null( lib::create( 'business\voip_manager' )->get_call() ) );
   }
 }
-?>

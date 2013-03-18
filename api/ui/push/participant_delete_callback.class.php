@@ -25,4 +25,3 @@ class participant_delete_callback extends \cenozo\ui\push\base_delete_record
     parent::__construct( 'participant', 'callback', $args );
   }
 }
-?>

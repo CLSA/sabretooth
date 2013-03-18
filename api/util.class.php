@@ -56,4 +56,3 @@ class util extends \cenozo\util
    */
   private static $widget_mode = NULL;
 }
-?>

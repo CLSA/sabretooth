@@ -61,4 +61,3 @@ class activity extends \cenozo\database\activity
     return $total_time;
   }
 }
-?>

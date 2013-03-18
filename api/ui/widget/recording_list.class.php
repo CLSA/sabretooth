@@ -54,11 +54,11 @@ class recording_list extends \cenozo\ui\widget\base_list
 
     foreach( $this->get_record_list() as $record )
     {
+      $filename = sprintf( '%s/%s-out.wav', VOIP_MONITOR_URL, $record->get_filename() );
       $this->add_row( $record->id,
         array( 'interview' => $record->get_interview()->get_qnaire()->name,
                'rank' => $record->rank,
-               'file' => $record->get_file() ) );
+               'filename' => $filename ) );
     }
   }
 }
-?>

@@ -42,4 +42,3 @@ class site_add_shift extends \cenozo\ui\widget\base_add_record
     $this->add_widget->set_heading( "Create a new shift" );
   }
 }
-?>

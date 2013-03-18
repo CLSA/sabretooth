@@ -108,7 +108,6 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       'Completed interview - Consent not received' => 0,
       'Completed interview - Consent received' => 0,
       'Completed interview - No consent information' => 0,
-      'Retracted from study' => 0,
       'Withdrawn from study' => 0,
       'Hard refusal' => 0,
       'Soft refusal' => 0,
@@ -146,7 +145,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       if( !$is_supervisor ) $this->category_totals_list['None'] = $category_totals;
 
       $this->base_sql =
-        'SELECT site.name AS category, temp_participant.id '.
+        'SELECT site.name AS category, DISTINCT temp_participant.id '.
         'FROM temp_participant '.
         'LEFT JOIN participant_site ON temp_participant.id = participant_site.participant_id '.
         'LEFT JOIN site ON participant_site.site_id = site.id ';
@@ -166,7 +165,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
         $this->category_totals_list['None'] = $category_totals;
 
       $this->base_sql =
-        'SELECT region.abbreviation AS category, temp_participant.id '.
+        'SELECT region.abbreviation AS category, DISTINCT temp_participant.id '.
         'FROM temp_participant '.
         'LEFT JOIN participant_primary_address '.
         'ON temp_participant.id = participant_primary_address.participant_id '.
@@ -189,7 +188,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       $this->base_sql =
         'SELECT '.
         'CONCAT( IF( temp_participant.gender = "female", "F", "M" ), age_group.lower ) AS category, '.
-        'temp_participant.id '.
+        'DISTINCT temp_participant.id '.
         'FROM temp_participant '.
         'JOIN age_group ON temp_participant.age_group_id = age_group.id ';
     }
@@ -291,24 +290,17 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       'AND appointment.assignment_id IS NULL ';
     $this->set_category_totals( $sub_cat, $extra_sql );
 
-    // last consent retract
-    $sub_cat = 'Retracted from study';
-    $extra_sql =
-      'JOIN participant_last_consent '.
-      'ON temp_participant.id = participant_last_consent.participant_id '.
-      'JOIN consent '.
-      'ON participant_last_consent.consent_id = consent.id '.
-      'AND consent.event = "retract" ';
-    $this->set_category_totals( $sub_cat, $extra_sql );
-
     // last consent withdraw
     $sub_cat = 'Withdrawn from study';
     $extra_sql =
+      'JOIN consent consent_accept '.
+      'ON temp_participant.id = consent_accept.participant_id '.
+      'AND consent_accept.accept = 1 AND consent_accept.written = 1 '.
       'JOIN participant_last_consent '.
       'ON temp_participant.id = participant_last_consent.participant_id '.
       'JOIN consent '.
       'ON participant_last_consent.consent_id = consent.id '.
-      'AND consent.event = "withdraw" ';
+      'AND consent.accept = 0 ';
     $this->set_category_totals( $sub_cat, $extra_sql );
 
     // no interviews
@@ -351,7 +343,8 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       $db_qnaire->id );
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'interview.completed', '=', true );
-    $modifier->where( 'consent.event', '=', 'written accept' );
+    $modifier->where( 'consent.accept', '=', true );
+    $modifier->where( 'consent.written', '=', true );
     $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
 
     // has a complete interview
@@ -368,8 +361,8 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       $db_qnaire->id );
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'interview.completed', '=', true );
-    $modifier->where( 'consent.event', 'IN',
-      array( 'verbal deny', 'verbal accept', 'written deny' ) );
+    $modifier->where( 'consent.accept', '!=', 1 );
+    $modifier->where( 'consent.written', '!=', 1 );
     $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
 
     // has an incomplete interview
@@ -386,7 +379,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       $db_qnaire->id );
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'interview.completed', '=', false );
-    $modifier->where( 'consent.event', 'IN', array( 'verbal deny', 'written deny' ) );
+    $modifier->where( 'consent.accept', '=', 0 );
     $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
 
     // has an incomplete interview
@@ -563,4 +556,3 @@ class participant_status_report extends \cenozo\ui\pull\base_report
    */
   private $base_sql = '';
 }
-?>

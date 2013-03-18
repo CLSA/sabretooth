@@ -52,4 +52,3 @@ class user_add_shift extends \cenozo\ui\widget\base_add_record
     if( !is_null( $end_time ) ) $this->add_widget->end_time = $end_time;
   }
 }
-?>

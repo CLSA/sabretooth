@@ -76,4 +76,3 @@ class voip_spy extends \cenozo\ui\push
    */
   protected $voip_call = NULL;
 }
-?>

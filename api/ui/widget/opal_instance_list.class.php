@@ -69,4 +69,3 @@ class opal_instance_list extends \cenozo\ui\widget\base_list
     }
   }
 }
-?>

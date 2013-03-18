@@ -172,7 +172,7 @@
           </tr>
         {% elseif callback %}
           <tr>
-            <td class="heading">Appointment:</td>
+            <td class="heading">Callback:</td>
             <td class="content" style="font-style: italic">
               This assignment is fulfilling a callback scheduled for {{ callback }}.<br>
               {% if phone_at %}
@@ -198,6 +198,13 @@
             {% endif %}
           </td>
         </tr>
+        {% if on_call and phone_note %}
+          <tr>
+            <td class="heading">Phone Number Notes:</td>
+            <td class="content ui-widget-content">{% autoescape false %}{{ phone_note|nl2br }}{% endautoescape %}</td>
+          </tr>
+        {% endif %}
+
       </table>
       
       <table class="spacer" cellpadding="4">

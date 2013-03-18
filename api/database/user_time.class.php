@@ -116,4 +116,3 @@ class user_time extends \cenozo\database\record
       $modifier->get_sql() ) ) + (float) $today_time;
   }
 }
-?>

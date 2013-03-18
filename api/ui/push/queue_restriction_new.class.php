@@ -58,4 +58,3 @@ class queue_restriction_new extends \cenozo\ui\push\base_new
     }
   }
 }
-?>

@@ -25,4 +25,3 @@ class participant_delete_appointment extends \cenozo\ui\push\base_delete_record
     parent::__construct( 'participant', 'appointment', $args );
   }
 }
-?>

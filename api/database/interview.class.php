@@ -15,6 +15,29 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class interview extends \cenozo\database\has_note
 {
   /**
+   * Get the interview's last (most recent) assignment.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return assignment
+   * @access public
+   */
+  public function get_last_assignment()
+  {
+    // check the last key value
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to query interview with no id.' );
+      return NULL;
+    }
+    
+    // need custom SQL
+    $database_class_name = lib::get_class_name( 'database\database' );
+    $assignment_id = static::db()->get_one(
+      sprintf( 'SELECT assignment_id FROM interview_last_assignment WHERE interview_id = %s',
+               $database_class_name::format_string( $this->id ) ) );
+    return $assignment_id ? lib::create( 'database\assignment', $assignment_id ) : NULL;
+  }
+
+  /**
    * Returns the time in seconds that it took to complete a particular phase of this interview
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param phase $db_phase Which phase of the interview to get the time of.
@@ -98,6 +121,7 @@ class interview extends \cenozo\database\has_note
     $phase_mod->where( 'repeated', '!=', true );
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+    $event_type_class_name = lib::get_class_name( 'database\event_type' );
     foreach( $this->get_qnaire()->get_phase_list( $phase_mod ) as $db_phase )
     {
       // update tokens
@@ -136,6 +160,15 @@ class interview extends \cenozo\database\has_note
     // finally, update the record
     $this->completed = true;
     $this->save();
+
+    // record the event (if one exists)
+    $event_type_name = sprintf( 'completed (%s)', $this->get_qnaire()->name );
+    $db_event_type = $event_type_class_name::get_unique_record( 'name', $event_type_name );
+    if( !is_null( $db_event_type ) )
+    {
+      $datetime_obj = util::get_datetime_object();
+      $this->get_participant()->add_event( $db_event_type, $datetime_obj->format( 'Y-m-d H:i:s' ) );
+    }
   }
 
   /**
@@ -201,9 +234,16 @@ class interview extends \cenozo\database\has_note
     // make sure that all recordings on disk have a corresponding database record
     if( is_dir( VOIP_MONITOR_PATH ) )
     {
+      // create new recording record based on this interview
+      $db_recording = lib::create( 'database\recording' );
+      $db_recording->interview_id = $this->id;
+      $glob_search = sprintf( '%s/%s',
+                              VOIP_MONITOR_PATH,
+                              str_replace( '_0-01', '_*', $db_recording->get_filename() ) );
+
       $values = '';
       $first = true;
-      foreach( glob( sprintf( '%s/%d_*-out.wav', VOIP_MONITOR_PATH, $this->id ) ) as $filename )
+      foreach( glob( $glob_search ) as $filename )
       {
         // remove the path from the filename
         $parts = preg_split( '#/#', $filename );
@@ -214,7 +254,7 @@ class interview extends \cenozo\database\has_note
           if( 3 <= count( $parts ) )
           {
             $assignment_id = 0 < $parts[1] ? $parts[1] : 'NULL';
-            $rank = 4 <= count( $parts ) ? $parts[2] + 1 : 1;
+            $rank = intval( $parts[2] );
             $values .= sprintf( '%s( %d, %s, %d )',
                                 $first ? '' : ', ',
                                 $this->id,
@@ -335,4 +375,3 @@ $assignment_mod = lib::create( 'database\modifier' );
 $assignment_mod->where( 'interview.id', '=', 'interview_last_assignment.interview_id', false );
 $assignment_mod->where( 'interview_last_assignment.assignment_id', '=', 'assignment.id', false );
 interview::customize_join( 'assignment', $assignment_mod );
-?>

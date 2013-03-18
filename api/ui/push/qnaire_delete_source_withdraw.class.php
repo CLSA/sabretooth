@@ -25,4 +25,3 @@ class qnaire_delete_source_withdraw extends \cenozo\ui\push\base_delete_record
     parent::__construct( 'qnaire', 'source_withdraw', $args );
   }
 }
-?>

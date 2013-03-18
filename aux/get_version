@@ -37,4 +37,3 @@ if( !isset( $SETTINGS ) ||
 }
 
 print $SETTINGS['general']['version']."\n";
-?>

@@ -78,4 +78,3 @@ class shift_calendar extends \cenozo\ui\widget\base_calendar
    */
   protected $user_id = NULL;
 }
-?>

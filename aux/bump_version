@@ -75,4 +75,3 @@ if( !fclose( $handler ) )
 }
 
 print "Successfully bumped version to $new_version\n";
-?>

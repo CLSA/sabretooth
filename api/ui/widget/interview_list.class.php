@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * widget interview list
  */
-class interview_list extends site_restricted_list
+class interview_list extends \cenozo\ui\widget\site_restricted_list
 {
   /**
    * Constructor
@@ -42,6 +42,7 @@ class interview_list extends site_restricted_list
     $this->add_column( 'qnaire.name', 'string', 'Questionnaire', true );
     $this->add_column( 'completed', 'boolean', 'Completed', true );
     $this->add_column( 'rescored', 'boolean', 'Rescored', true );
+    $this->add_column( 'assignment.end_datetime', 'date', 'Date', true );
 
     $this->extended_site_selection = true;
   }
@@ -63,8 +64,8 @@ class interview_list extends site_restricted_list
         array( 'participant.uid' => $record->get_participant()->uid,
                'qnaire.name' => $record->get_qnaire()->name,
                'completed' => $record->completed,
-               'rescored' => $record->rescored ) );
+               'rescored' => $record->rescored,
+               'assignment.end_datetime' => $record->get_last_assignment()->end_datetime ) );
     }
   }
 }
-?>

@@ -47,4 +47,3 @@ class participant_tree_report extends base_report
       'currently belong.' );
   }
 }
-?>
