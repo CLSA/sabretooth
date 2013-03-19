@@ -36,14 +36,22 @@ class shift_template_edit extends \cenozo\ui\push\base_edit
   {
     parent::setup();
 
+    log::debug( $this->arguments['columns'] );
     if( '1' == util::get_datetime_object()->format( 'I' ) )
     {
-      $start_datetime_obj = util::get_datetime_object( $this->arguments['columns']['start_time'] );
-      $start_datetime_obj->add( new \DateInterval( 'PT1H' ) );
-      $this->arguments['columns']['start_time'] = $start_datetime_obj->format( 'H:i:s' );
-      $end_datetime_obj = util::get_datetime_object( $this->arguments['columns']['end_time'] );
-      $end_datetime_obj->add( new \DateInterval( 'PT1H' ) );
-      $this->arguments['columns']['end_time'] = $end_datetime_obj->format( 'H:i:s' );
+      if( array_key_exists( 'start_time', $this->arguments['columns'] ) )
+      {
+        $start_datetime_obj = util::get_datetime_object( $this->arguments['columns']['start_time'] );
+        $start_datetime_obj->add( new \DateInterval( 'PT1H' ) );
+        $this->arguments['columns']['start_time'] = $start_datetime_obj->format( 'H:i:s' );
+      }
+
+      if( array_key_exists( 'end_time', $this->arguments['columns'] ) )
+      {
+        $end_datetime_obj = util::get_datetime_object( $this->arguments['columns']['end_time'] );
+        $end_datetime_obj->add( new \DateInterval( 'PT1H' ) );
+        $this->arguments['columns']['end_time'] = $end_datetime_obj->format( 'H:i:s' );
+      }
     }
   }
 }
