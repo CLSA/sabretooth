@@ -153,6 +153,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     else if( 'Province' == $breakdown )
     {
       $region_mod = lib::create( 'database\modifier' );
+      $region_mod->order( 'country' );
       $region_mod->order( 'abbreviation' );
       $region_mod->where( 'service_region_site.service_id', '=', $session->get_service()->id );
       if( $is_supervisor )
