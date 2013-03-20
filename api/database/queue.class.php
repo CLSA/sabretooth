@@ -938,7 +938,7 @@ class queue extends \cenozo\database\record
       'LEFT JOIN phone ON participant.person_id = phone.person_id '.
       'AND phone.active AND phone.number IS NOT NULL '.
       'GROUP BY participant.person_id',
-      $service_id ) );
+      $database_class_name::format_string( $service_id ) ) );
     static::db()->execute(
       'ALTER TABLE participant_for_queue_phone_count '.
       'ADD INDEX dk_person_id ( person_id ), '.
