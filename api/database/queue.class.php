@@ -443,12 +443,18 @@ class queue extends \cenozo\database\record
         ') '.
       ')';
 
+    // when to start the qnaire (NULL means right away)
     $start_qnaire_date =
       '( '.
         'IF '.
         '( '.
           'current_interview_id IS NULL, '.
-          'first_event_datetime + INTERVAL first_qnaire_delay WEEK, '.
+          'IF '.
+          '( '.
+            '( SELECT COUNT(*) FROM qnaire_has_event_type WHERE qnaire_id = first_qnaire_id ), '.
+            'IFNULL( first_event_datetime, UTC_TIMESTAMP() ) + INTERVAL first_qnaire_delay WEEK, '.
+            'NULL '.
+          '), '.
           'IF '.
           '( '.
             'current_interview_completed, '.
@@ -1171,7 +1177,14 @@ next_prev_assignment.interview_id AS next_prev_assignment_interview_id,
 next_prev_assignment.queue_id AS next_prev_assignment_queue_id,
 next_prev_assignment.start_datetime AS next_prev_assignment_start_datetime,
 next_prev_assignment.end_datetime AS next_prev_assignment_end_datetime,
+first_qnaire.id AS first_qnaire_id,
+first_qnaire.name AS first_qnaire_name,
+first_qnaire.rank AS first_qnaire_rank,
+first_qnaire.prev_qnaire_id AS first_qnaire_prev_qnaire_id,
 first_qnaire.delay AS first_qnaire_delay,
+first_qnaire.withdraw_sid AS first_qnaire_withdraw_sid,
+first_qnaire.rescore_sid AS first_qnaire_rescore_sid,
+first_qnaire.description AS first_qnaire_description,
 first_event.datetime AS first_event_datetime,
 next_event.datetime AS next_event_datetime
 FROM participant
