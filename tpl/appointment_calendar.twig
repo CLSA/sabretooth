@@ -8,24 +8,24 @@
 
 {% block callbacks %}
 
-        eventClick: function( event, jsEvent, view ) {
-          // edit the appointment
-          slot_load( "{{ widget.full }}", "appointment", "view", { id: event.id, hide_calendar: true } );
-          $( "#{{ widget.full }}_slot" ).dialog( "open" );
-        },
-        events: function( start, end, callback ) {
-          var args = new Object();
-          args.start = start.getFullYear() + "-" + ( start.getMonth() + 1 ) + "-" + start.getDate();
-          args.end = end.getFullYear() + "-" + ( end.getMonth() + 1 ) + "-" + end.getDate();
+  eventClick: function( event, jsEvent, view ) {
+    // edit the appointment
+    slot_load( "{{ widget.full }}", "appointment", "view", { id: event.id, hide_calendar: true } );
+    $( "#{{ widget.full }}_slot" ).dialog( "open" );
+  },
+  events: function( start, end, callback ) {
+    var args = new Object();
+    args.start = start.getFullYear() + "-" + ( start.getMonth() + 1 ) + "-" + start.getDate();
+    args.end = end.getFullYear() + "-" + ( end.getMonth() + 1 ) + "-" + end.getDate();
 
-          var data = ajax_pull( "appointment", "feed", args );
-          if( undefined != data ) {
-            var events = new Array();
-            for( var index = 0; index < data.length; index++ ) {
-              events.push( data[index] );
-            }
-            callback( events );
-          }
-        }
+    var data = ajax_pull( "appointment", "feed", args );
+    if( undefined != data ) {
+      var events = new Array();
+      for( var index = 0; index < data.length; index++ ) {
+        events.push( data[index] );
+      }
+      callback( events );
+    }
+  }
 
 {% endblock callbacks %}

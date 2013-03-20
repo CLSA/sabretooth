@@ -4,7 +4,6 @@
  # Creates a list of shortcuts which are meant to be used under any circumstance.
  # @author Patrick Emond <emondpd@mcmaster.ca>
  # @param boolean navigation Whether to include the navigation buttons
- # @param boolean refresh Whether to include the refresh button
  # @param boolean home Whether to include the home button
  #}
 {% extends "widget.twig" %}
@@ -50,7 +49,8 @@
             modal: false,
             width: 180,
             height: 225,
-            autoOpen: true
+            autoOpen: true,
+            beforeClose: function( event, ui ) { $(this).html( "" ); }
           } );
           slot_load( "dialing_pad", "self", "dialing_pad" );
         } ).parent().buttonset();
@@ -69,7 +69,8 @@
             modal: false,
             width: 400,
             height: 235,
-            autoOpen: true
+            autoOpen: true,
+            beforeClose: function( event, ui ) { $(this).html( "" ); }
           } );
           slot_load( "timer", "self", "timer" );
         } ).parent().buttonset();
@@ -87,7 +88,8 @@
             modal: false,
             width: 225,
             height: 320,
-            autoOpen: true
+            autoOpen: true,
+            beforeClose: function( event, ui ) { $(this).html( "" ); }
           } );
           slot_load( "calculator", "self", "calculator" );
         } ).parent().buttonset();
@@ -105,7 +107,8 @@
             modal: false,
             width: 300,
             height: 250,
-            autoOpen: true
+            autoOpen: true,
+            beforeClose: function( event, ui ) { $(this).html( "" ); }
           } );
           slot_load( "timezone_calculator", "self", "timezone_calculator" );
         } ).parent().buttonset();
@@ -127,19 +130,6 @@
         } ).click( function() {
           slot_next( "main" );
         } ).parent().buttonset();
-      {% endif %}
-      
-      {% if refresh %}
-        $( "#{{ widget.full }}_refresh" ).button( {
-          text: false,
-          icons: {
-            primary: "ui-icon-arrowrefresh-1-e"
-          }
-        } ).click( function() {
-          slot_refresh( "status" );
-          slot_refresh( "shortcuts" );
-          slot_refresh( "main" );
-        } );
       {% endif %}
       
       {% if home %}
@@ -202,7 +192,6 @@
         <button id="{{ widget.full }}_next">forward</button>
       </span>
     {% endif %}
-    {% if refresh %}<button id="{{ widget.full }}_refresh">refresh</button>{% endif %}
     {% if home %}<button id="{{ widget.full }}_home">home</button>{% endif %}
     <span>
       <button id="{{ widget.full }}_font_down">smaller font</button>

@@ -34,9 +34,10 @@
           slot_load( "{{ widget.full }}", "participant", "view", { id: {{ participant_id }} } );
           $( "#{{ widget.full }}_slot" ).dialog( {
             title: "Viewing details for {{ participant_name }}",
-            modal: false,
+            modal: true,
             width: 800,
-            height: 600
+            height: 600,
+            beforeClose: function( event, ui ) { $(this).html( "" ); }
           } );
         } );
       
@@ -46,9 +47,10 @@
                     { interview_id: {{ interview_id }} } );
           $( "#{{ widget.full }}_slot" ).dialog( {
             title: "Viewing call history for {{ participant_name }}",
-            modal: false,
+            modal: true,
             width: 800,
-            height: 600
+            height: 600,
+            beforeClose: function( event, ui ) { $(this).html( "" ); }
           } );
         } );
       
@@ -109,9 +111,10 @@
           slot_load( "{{ widget.full }}", "shift", "calendar" );
           $( "#{{ widget.full }}_slot" ).dialog( {
             title: "Schedule",
-            modal: false,
+            modal: true,
             width: 800,
-            height: 600
+            height: 600,
+            beforeClose: function( event, ui ) { $(this).html( "" ); }
           } );
         } );
 
