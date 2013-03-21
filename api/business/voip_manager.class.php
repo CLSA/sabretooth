@@ -142,7 +142,7 @@ class voip_manager extends \cenozo\singleton
     else
     {
       $db_phone = $phone;
-      if( 'sabretooth\\database\\phone' != get_class( $db_phone ) )
+      if( !is_object( $db_phone ) )
         throw lib::create( 'exception\argument', 'db_phone', $db_phone, __METHOD__ );
 
       $number = $db_phone->number;
