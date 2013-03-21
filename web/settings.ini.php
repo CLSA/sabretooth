@@ -45,6 +45,7 @@ $SETTINGS['voip']['url'] = 'http://localhost:8088/mxml';
 $SETTINGS['voip']['username'] = '';
 $SETTINGS['voip']['password'] = '';
 $SETTINGS['voip']['prefix'] = '';
+$SETTINGS['voip']['xor_key'] = '';
 
 // the directory to write recorded calls
 // (must be an absolute path that the asterisk server's user has access to)
