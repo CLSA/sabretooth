@@ -51,13 +51,15 @@ abstract class record extends \cenozo\database\record
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
+   * @param boolean $distinct Whether to use the DISTINCT sql keyword
    * @return array( record )
    * @static
    * @access public
    */
-  public static function select( $modifier = NULL, $count = false )
+  public static function select( $modifier = NULL, $count = false, $distinct = true )
   {
-    $sql = sprintf( $count ? 'SELECT COUNT( %s ) FROM %s %s' : 'SELECT %s FROM %s %s',
+    $sql = sprintf( $count ? 'SELECT COUNT( %s %s ) FROM %s %s' : 'SELECT %s %s FROM %s %s',
+                    $distinct ? 'DISTINCT' : '',
                     static::get_primary_key_name(),
                     static::get_table_name(),
                     is_null( $modifier ) ? '' : $modifier->get_sql() );
