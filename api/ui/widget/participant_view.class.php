@@ -25,6 +25,7 @@ class participant_view extends \cenozo\ui\widget\participant_view
   {
     parent::prepare();
     
+    $this->add_item( 'quota_state', 'constant', 'Quota State' );
     $this->add_item( 'current_qnaire_name', 'constant', 'Current Questionnaire' );
     $this->add_item( 'start_qnaire_date', 'constant', 'Delay Questionnaire Until' );
     
@@ -71,6 +72,10 @@ class participant_view extends \cenozo\ui\widget\participant_view
     }
 
     // set the view's items
+    $db_quota = $record->get_quota();
+    $this->set_item( 'quota_state',
+      is_null( $db_quota ) ? '(no quota)' :
+        ( $db_quota->state_disabled ? 'Disabled' : 'Enabled' ) );
     $this->set_item( 'current_qnaire_name', $current_qnaire_name );
     $this->set_item( 'start_qnaire_date', $start_qnaire_date );
 
