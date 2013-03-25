@@ -39,6 +39,16 @@ class operator_assignment extends \cenozo\ui\widget
     parent::prepare();
 
     $this->set_heading( 'Current Assignment' );
+
+    // see if this user has an open assignment
+    $db_current_assignment = lib::create( 'business\session' )->get_current_assignment();
+    if( is_null( $db_current_assignment ) )
+    {
+      // create the system message show sub-widget
+      $this->system_message_show = lib::create( 'ui\widget\system_message_show', $this->arguments );
+      $this->system_message_show->set_parent( $this );
+      $this->system_message_show->set_heading( 'System Messages' );
+    }
   }
 
   /**
@@ -56,52 +66,6 @@ class operator_assignment extends \cenozo\ui\widget
     $db_role = $session->get_role();
     $db_site = $session->get_site();
 
-    // add any messages that apply to this user
-    $message_list = array();
-
-    // global messages go first
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'access.site_id', '=', NULL );
-    $modifier->where( 'access.role_id', '=', NULL );
-    $system_message_class_name = lib::get_class_name( 'database\system_message' );
-    foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
-    {
-      $message_list[] = array( 'title' => $db_system_message->title,
-                               'note' => $db_system_message->note );
-    }
-    
-    // then all-site messages
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'access.site_id', '=', NULL );
-    $modifier->where( 'access.role_id', '=', $db_role->id );
-    foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
-    {
-      $message_list[] = array( 'title' => $db_system_message->title,
-                               'note' => $db_system_message->note );
-    }
-
-    // then all-role site-specific messages
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'access.site_id', '=', $db_site->id );
-    $modifier->where( 'access.role_id', '=', NULL );
-    foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
-    {
-      $message_list[] = array( 'title' => $db_system_message->title,
-                               'note' => $db_system_message->note );
-    }
-
-    // then role-specific site-specific messages
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'access.site_id', '=', $db_site->id );
-    $modifier->where( 'access.role_id', '=', $db_role->id );
-    foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
-    {
-      $message_list[] = array( 'title' => $db_system_message->title,
-                               'note' => $db_system_message->note );
-    }
-
-    $this->set_variable( 'message_list', $message_list );
-
     // see if this user has an open assignment
     $db_current_assignment = $session->get_current_assignment();
     if( is_null( $db_current_assignment ) )
@@ -110,6 +74,14 @@ class operator_assignment extends \cenozo\ui\widget
       $away_time_mod = lib::create( 'database\modifier' );
       $away_time_mod->where( 'end_datetime', '=', NULL );
       $this->set_variable( 'on_break', 0 < $db_user->get_away_time_count( $away_time_mod ) );
+
+      try
+      {
+        $this->system_message_show->process();
+        $this->set_variable( 'system_message_show', $this->system_message_show->get_variables() );
+      }
+      catch( \cenozo\exception\permission $e ) {}
+
     }
     else
     { // fill out the participant's details

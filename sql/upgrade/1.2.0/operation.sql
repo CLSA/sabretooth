@@ -128,6 +128,10 @@ CREATE PROCEDURE patch_operation()
       INSERT IGNORE INTO operation( type, subject, name, restricted, description )
       VALUES( "push", "service", "delete_role", true, "Remove a service's role." );
 
+      -- system message
+      INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+      VALUES( "widget", "system_message", "show", false, "Displays appropriate system messages to the user." );
+
     END IF;
   END //
 DELIMITER ;
