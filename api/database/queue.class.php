@@ -1121,6 +1121,7 @@ service_has_participant.service_id AS service_has_participant_service_id,
 service_has_participant.participant_id AS service_has_participant_participant_id,
 service_has_participant.preferred_site_id AS service_has_participant_preferred_site_id,
 service_has_participant.datetime AS service_has_participant_datetime,
+cohort.name AS cohort_name,
 last_consent.id AS last_consent_id,
 last_consent.participant_id AS last_consent_participant_id,
 last_consent.accept AS last_consent_accept,
@@ -1191,6 +1192,7 @@ FROM participant
 JOIN service_has_participant
 ON participant.id = service_has_participant.participant_id
 AND service_id = %s
+JOIN cohort ON cohort.id = participant.cohort_id
 JOIN participant_last_consent
 ON participant.id = participant_last_consent.participant_id
 LEFT JOIN consent AS last_consent
