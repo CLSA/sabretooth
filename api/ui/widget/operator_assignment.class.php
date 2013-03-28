@@ -99,7 +99,6 @@ class operator_assignment extends \cenozo\ui\widget
       else if( 'fr' == $db_participant->language ) $language = 'french';
 
       $db_last_consent = $db_participant->get_last_consent();
-      $consent = is_null( $db_last_consent ) ? 'none' : $db_last_consent->to_string();
       
       $previous_call_list = array();
       $db_last_assignment = $db_participant->get_last_finished_assignment();
@@ -157,8 +156,10 @@ class operator_assignment extends \cenozo\ui\widget
         sprintf( $db_participant->first_name.' '.$db_participant->last_name ) );
       $this->set_variable( 'participant_uid', $db_participant->uid );
       $this->set_variable( 'participant_language', $language );
-      $this->set_variable( 'participant_consent', $consent );
-      $this->set_variable( 'withdrawing', $db_last_consent && false == $db_last_consent->accept );
+      $this->set_variable(
+        'participant_consent', is_null( $db_last_consent ) ? 'none' : $db_last_consent->to_string() );
+      $this->set_variable(
+        'withdrawing', !is_null( $db_last_consent ) && false == $db_last_consent->accept );
       $this->set_variable(
         'allow_withdraw', !is_null( $db_interview->get_qnaire()->withdraw_sid ) );
       
