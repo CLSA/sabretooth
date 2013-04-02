@@ -22,18 +22,18 @@
       $( "#{{ widget.full }}_icons" ).children().tooltip();
       update_clock();
       setInterval( 'update_clock()', 60000 ); // add the clock
-    } );
 
-    {% if home %}
-      $( "#{{ widget.full }}_home" ).button( {
-        text: false,
-        icons: {
-          primary: "ui-icon-home"
-        }
-      } ).click( function() {
-        slot_load( "main", "self", "home" );
-      } );
-    {% endif %}
+      {% if home %}
+        $( "#{{ widget.full }}_home" ).button( {
+          text: false,
+          icons: {
+            primary: "ui-icon-home"
+          }
+        } ).click( function() {
+          slot_load( "main", "self", "home" );
+        } );
+      {% endif %}
+    } );
   </script>
 
 {% endblock javascript %}
