@@ -77,6 +77,8 @@ CREATE PROCEDURE patch_operation()
       VALUES( "push", "participant", "delete_alternate", true, "Remove a participant's alternate contact." );
       INSERT IGNORE INTO operation( type, subject, name, restricted, description )
       VALUES( "widget", "participant", "hin", true, "View a participant's HIN details." );
+      INSERT INTO operation( type, subject, name, restricted, description )
+      VALUES( "pull", "participant", "multinote", true, "Gets a summary of participants affected by a multinote operation." );
       INSERT IGNORE INTO operation( type, subject, name, restricted, description )
       VALUES( "widget", "participant", "multinote", true, "A form to add a note to multiple participants at once." );
       INSERT IGNORE INTO operation( type, subject, name, restricted, description )
@@ -85,6 +87,8 @@ CREATE PROCEDURE patch_operation()
       VALUES( "widget", "participant", "report", true, "Set up a participant report." );
       INSERT IGNORE INTO operation( type, subject, name, restricted, description )
       VALUES( "pull", "participant", "report", true, "Download a participant report." );
+      INSERT INTO operation( type, subject, name, restricted, description )
+      VALUES( "pull", "participant", "site_reassign", true, "Gets a summary of participants affected by a site reassign operation." );
       INSERT IGNORE INTO operation( type, subject, name, restricted, description )
       VALUES( "widget", "participant", "site_reassign", true, "A form to mass reassign the preferred site of multiple participants at once." );
       INSERT IGNORE INTO operation( type, subject, name, restricted, description )
