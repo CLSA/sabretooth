@@ -25,25 +25,25 @@ class shift_template_edit extends \cenozo\ui\push\base_edit
   public function __construct( $args )
   {
     parent::__construct( 'shift_template', $args );
-  }
 
-  /**
-   * If server is in daylight savings mode, convert to standard time
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
-   */
-  protected function setup()
-  {
-    parent::setup();
-
+    // When observing daylight savings time we need to shift times by one hour.
+    // This MUST be done before the parent's validate method (which is why this code
+    // is in the constructor).
     if( '1' == util::get_datetime_object()->format( 'I' ) )
     {
-      $start_datetime_obj = util::get_datetime_object( $this->arguments['columns']['start_time'] );
-      $start_datetime_obj->add( new \DateInterval( 'PT1H' ) );
-      $this->arguments['columns']['start_time'] = $start_datetime_obj->format( 'H:i:s' );
-      $end_datetime_obj = util::get_datetime_object( $this->arguments['columns']['end_time'] );
-      $end_datetime_obj->add( new \DateInterval( 'PT1H' ) );
-      $this->arguments['columns']['end_time'] = $end_datetime_obj->format( 'H:i:s' );
+      if( array_key_exists( 'start_time', $this->arguments['columns'] ) )
+      {
+        $start_datetime_obj = util::get_datetime_object( $this->arguments['columns']['start_time'] );
+        $start_datetime_obj->add( new \DateInterval( 'PT1H' ) );
+        $this->arguments['columns']['start_time'] = $start_datetime_obj->format( 'H:i:s' );
+      }
+
+      if( array_key_exists( 'end_time', $this->arguments['columns'] ) )
+      {
+        $end_datetime_obj = util::get_datetime_object( $this->arguments['columns']['end_time'] );
+        $end_datetime_obj->add( new \DateInterval( 'PT1H' ) );
+        $this->arguments['columns']['end_time'] = $end_datetime_obj->format( 'H:i:s' );
+      }
     }
   }
 }

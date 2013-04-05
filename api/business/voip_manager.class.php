@@ -24,8 +24,11 @@ class voip_manager extends \cenozo\singleton
    */
   protected function __construct()
   {
+    /*
     $voip_host = lib::create( 'business\session' )->get_site()->voip_host;
     if( $_SERVER['SERVER_NAME'] == $voip_host ) $voip_host = 'localhost';
+    */
+    $voip_host = 'localhost';
     $setting_manager = lib::create( 'business\setting_manager' );
     $this->enabled = true === $setting_manager->get_setting( 'voip', 'enabled' );
     $this->url = sprintf( $setting_manager->get_setting( 'voip', 'url' ), $voip_host );
