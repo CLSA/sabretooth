@@ -68,8 +68,11 @@ class phone_call_end extends \cenozo\ui\push
           $event_mod->where( 'event_type_id', '=', $db_event_type->id );
           if( 0 == $db_participant->get_event_count( $event_mod ) )
           {
-            $datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
-            $db_participant->add_event( $db_event_type, $datetime );
+            $db_event = lib::create( 'database\event' );
+            $db_event->participant_id = $db_participant->id;
+            $db_event->event_type_id = $db_event_type->id;
+            $db_event->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+            $db_event->save();
           }
         }
 
@@ -116,8 +119,11 @@ class phone_call_end extends \cenozo\ui\push
             $event_mod->where( 'event_type_id', '=', $db_event_type->id );
             if( 0 == $db_participant->get_event_count( $event_mod ) )
             {
-              $datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
-              $db_participant->add_event( $db_event_type, $datetime );
+              $db_event = lib::create( 'database\event' );
+              $db_event->participant_id = $db_participant->id;
+              $db_event->event_type_id = $db_event_type->id;
+              $db_event->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+              $db_event->save();
             }
           }
         }
