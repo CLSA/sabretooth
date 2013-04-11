@@ -69,10 +69,10 @@ class queue extends \cenozo\database\record
       'missed appointment',
       'restricted',
       'quota disabled',
+      'outside calling time',
       'callback',
       'upcoming callback',
       'assignable callback',
-      'outside calling time',
       'new participant',
       'new participant available',
       'new participant not available',
@@ -327,8 +327,8 @@ class queue extends \cenozo\database\record
 
     // an array containing all of the qnaire queue's direct children queues
     $qnaire_children = array(
-      'qnaire waiting', 'assigned', 'appointment', 'restricted', 'quota disabled', 'callback',
-      'outside calling time', 'new participant', 'old participant' );
+      'qnaire waiting', 'assigned', 'appointment', 'restricted', 'quota disabled',
+      'outside calling time', 'callback', 'new participant', 'old participant' );
 
     // sql resolving to the participant's effective site
     $participant_site_id =
@@ -659,38 +659,38 @@ class queue extends \cenozo\database\record
                 // who belong to a quota which is not disabled or doesn't exist
                 $parts['where'][] = '( quota_state.disabled IS NULL OR quota_state.disabled = false )';
                 
-                if( 'callback' == $queue )
+                if( 'outside calling time' == $queue )
                 {
-                  // link to callback table and make sure the callback hasn't been assigned
-                  // (by design, there can only ever one unassigned callback per participant)
-                  $parts['from'][] = 'callback';
-                  $parts['where'][] = 'callback.participant_id = participant_for_queue.id';
-                  $parts['where'][] = 'callback.assignment_id IS NULL';
+                  // outside of the calling time
+                  $parts['where'][] = $check_time
+                                    ? 'NOT '.$calling_time_sql
+                                    : 'NOT true'; // purposefully a negative tautology
                 }
                 else
                 {
-                  // Make sure there is no unassigned callback.  By design there can only be one of
-                  // per participant, so if the callback is null then the participant has no pending
-                  // callbacks.
-                  $parts['join'][] =
-                    'LEFT JOIN callback '.
-                    'ON callback.participant_id = participant_for_queue.id '.
-                    'AND callback.assignment_id IS NULL';
-                  $parts['where'][] = 'callback.id IS NULL';
+                  // within the calling time
+                  $parts['where'][] = $check_time
+                                    ? $calling_time_sql
+                                    : 'true'; // purposefully a tautology
 
-                  if( 'outside calling time' == $queue )
+                  if( 'callback' == $queue )
                   {
-                    // outside of the calling time
-                    $parts['where'][] = $check_time
-                                      ? 'NOT '.$calling_time_sql
-                                      : 'NOT true'; // purposefully a negative tautology
+                    // link to callback table and make sure the callback hasn't been assigned
+                    // (by design, there can only ever one unassigned callback per participant)
+                    $parts['from'][] = 'callback';
+                    $parts['where'][] = 'callback.participant_id = participant_for_queue.id';
+                    $parts['where'][] = 'callback.assignment_id IS NULL';
                   }
                   else
                   {
-                    // within the calling time
-                    $parts['where'][] = $check_time
-                                      ? $calling_time_sql
-                                      : 'true'; // purposefully a tautology
+                    // Make sure there is no unassigned callback.  By design there can only be one of
+                    // per participant, so if the callback is null then the participant has no pending
+                    // callbacks.
+                    $parts['join'][] =
+                      'LEFT JOIN callback '.
+                      'ON callback.participant_id = participant_for_queue.id '.
+                      'AND callback.assignment_id IS NULL';
+                    $parts['where'][] = 'callback.id IS NULL';
 
                     if( 'new participant' == $queue )
                     {

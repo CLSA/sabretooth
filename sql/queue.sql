@@ -356,6 +356,18 @@ parent_queue_id = (
 description = "Participants who belong to a quota which has been disabled";
 
 INSERT INTO queue SET
+name = "outside calling time",
+title = "Outside calling time",
+rank = NULL,
+qnaire_specific = true,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "qnaire" ) AS tmp ),
+description = "Participants whose local time is outside of the valid calling hours.";
+
+INSERT INTO queue SET
 name = "callback",
 title = "Participants with callbacks",
 rank = NULL,
@@ -390,18 +402,6 @@ parent_queue_id = (
     FROM queue
     WHERE name = "callback" ) AS tmp ),
 description = "Participants who have an immediate callback which is ready to be assigned.";
-
-INSERT INTO queue SET
-name = "outside calling time",
-title = "Outside calling time",
-rank = NULL,
-qnaire_specific = true,
-parent_queue_id = (
-  SELECT id FROM(
-    SELECT id
-    FROM queue
-    WHERE name = "qnaire" ) AS tmp ),
-description = "Participants whose local time is outside of the valid calling hours.";
 
 INSERT INTO queue SET
 name = "new participant",

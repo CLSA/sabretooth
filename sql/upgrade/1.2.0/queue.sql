@@ -34,7 +34,10 @@ CREATE PROCEDURE patch_queue()
       CALL set_queue_id( 28, 100026 );
       CALL set_queue_id( 21, 100027 );
       CALL set_queue_id( 33, 100028 );
-      CALL set_queue_id( 34, 100032 );
+      CALL set_queue_id( 34, 100029 );
+      CALL set_queue_id( 29, 100030 );
+      CALL set_queue_id( 30, 100031 );
+      CALL set_queue_id( 31, 100032 );
       CALL set_queue_id( 35, 100033 );
       CALL set_queue_id( 36, 100034 );
       CALL set_queue_id( 37, 100035 );
