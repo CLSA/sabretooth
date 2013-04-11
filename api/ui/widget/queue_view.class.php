@@ -68,6 +68,7 @@ class queue_view extends \cenozo\ui\widget\base_view
     $this->participant_list = lib::create( 'ui\widget\participant_list', $this->arguments );
     $this->participant_list->set_parent( $this );
     $this->participant_list->set_heading( 'Queue participant list' );
+    $this->participant_list->set_allow_restrict_condition( false );
   }
 
   /**
@@ -109,12 +110,18 @@ class queue_view extends \cenozo\ui\widget\base_view
    */
   public function determine_participant_count( $modifier = NULL )
   {
-    // replace participant. with participant_ in the where columns of the modifier
-    // (see queue record's participant_for_queue for details)
+    // replace participant. with participant_ and cohort. with cohort_ in the where columns
+    // of the modifier (see queue record's participant_for_queue for details)
     if( !is_null( $modifier ) )
+    {
       foreach( $modifier->get_where_columns() as $column )
+      {
         $modifier->change_where_column(
           $column, preg_replace( '/^participant\./', 'participant_', $column ) );
+        $modifier->change_where_column(
+          $column, preg_replace( '/^cohort\./', 'cohort_', $column ) );
+      }
+    }
 
     $db_queue = $this->get_record();
     $db_queue->set_site( $this->db_site );
@@ -132,16 +139,25 @@ class queue_view extends \cenozo\ui\widget\base_view
    */
   public function determine_participant_list( $modifier = NULL )
   {
-    // replace participant. with participant_ in the where and order columns of the modifier
-    // (see queue record's participant_for_queue for details)
+    // replace participant. with participant_ and cohort. with cohort_ in the where and order
+    // columns of the modifier (see queue record's participant_for_queue for details)
     if( !is_null( $modifier ) )
     {
       foreach( $modifier->get_where_columns() as $column )
+      {
         $modifier->change_where_column(
           $column, preg_replace( '/^participant\./', 'participant_', $column ) );
+        $modifier->change_where_column(
+          $column, preg_replace( '/^cohort\./', 'cohort_', $column ) );
+      }
+
       foreach( $modifier->get_order_columns() as $column )
+      {
         $modifier->change_order_column(
           $column, preg_replace( '/^participant\./', 'participant_', $column ) );
+        $modifier->change_order_column(
+          $column, preg_replace( '/^cohort\./', 'cohort_', $column ) );
+      }
     }
 
     $db_queue = $this->get_record();

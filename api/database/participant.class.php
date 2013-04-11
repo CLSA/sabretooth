@@ -142,11 +142,20 @@ SELECT IF
 IF
 (
   current_interview.id IS NULL,
-  NULL,
+  IF
+  (
+    ( SELECT COUNT(*) FROM qnaire_has_event_type WHERE qnaire_id = first_qnaire.id ),
+    IFNULL( first_event.datetime, UTC_TIMESTAMP() ) + INTERVAL first_qnaire.delay WEEK,
+    NULL
+  ),
   IF
   (
     current_interview.completed,
-    next_prev_assignment.end_datetime + INTERVAL next_qnaire.delay WEEK,
+    GREATEST
+    (
+      IFNULL( next_event.datetime, "" ),
+      IFNULL( next_prev_assignment.end_datetime, "" )
+    ) + INTERVAL next_qnaire.delay WEEK,
     NULL
   )
 ) AS start_qnaire_date
@@ -168,6 +177,24 @@ ON next_prev_interview.qnaire_id = next_prev_qnaire.id
 AND next_prev_interview.participant_id = participant.id
 LEFT JOIN assignment next_prev_assignment
 ON next_prev_assignment.interview_id = next_prev_interview.id
+CROSS JOIN qnaire AS first_qnaire
+ON first_qnaire.rank = 1
+LEFT JOIN event first_event
+ON participant.id = first_event.participant_id
+AND first_event.event_type_id IN
+(
+  SELECT event_type_id
+  FROM qnaire_has_event_type
+  WHERE qnaire_id = first_qnaire.id
+)
+LEFT JOIN event next_event
+ON participant.id = next_event.participant_id
+AND next_event.event_type_id IN
+(
+  SELECT event_type_id
+  FROM qnaire_has_event_type
+  WHERE qnaire_id = next_qnaire.id
+)
 WHERE
 (
   current_qnaire.rank IS NULL

@@ -24,11 +24,9 @@ class voip_manager extends \cenozo\singleton
    */
   protected function __construct()
   {
-    $voip_host = lib::create( 'business\session' )->get_site()->voip_host;
-    if( $_SERVER['SERVER_NAME'] == $voip_host ) $voip_host = 'localhost';
     $setting_manager = lib::create( 'business\setting_manager' );
     $this->enabled = true === $setting_manager->get_setting( 'voip', 'enabled' );
-    $this->url = sprintf( $setting_manager->get_setting( 'voip', 'url' ), $voip_host );
+    $this->url = $setting_manager->get_setting( 'voip', 'url' );
     $this->username = $setting_manager->get_setting( 'voip', 'username' );
     $this->password = $setting_manager->get_setting( 'voip', 'password' );
     $this->prefix = $setting_manager->get_setting( 'voip', 'prefix' );
@@ -144,7 +142,7 @@ class voip_manager extends \cenozo\singleton
     else
     {
       $db_phone = $phone;
-      if( 'sabretooth\\database\\phone' != get_class( $db_phone ) )
+      if( !is_object( $db_phone ) )
         throw lib::create( 'exception\argument', 'db_phone', $db_phone, __METHOD__ );
 
       $number = $db_phone->number;

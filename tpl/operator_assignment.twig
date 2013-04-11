@@ -34,9 +34,10 @@
           slot_load( "{{ widget.full }}", "participant", "view", { id: {{ participant_id }} } );
           $( "#{{ widget.full }}_slot" ).dialog( {
             title: "Viewing details for {{ participant_name }}",
-            modal: false,
+            modal: true,
             width: 800,
-            height: 600
+            height: 600,
+            beforeClose: function( event, ui ) { $(this).html( "" ); }
           } );
         } );
       
@@ -46,9 +47,10 @@
                     { interview_id: {{ interview_id }} } );
           $( "#{{ widget.full }}_slot" ).dialog( {
             title: "Viewing call history for {{ participant_name }}",
-            modal: false,
+            modal: true,
             width: 800,
-            height: 600
+            height: 600,
+            beforeClose: function( event, ui ) { $(this).html( "" ); }
           } );
         } );
       
@@ -109,9 +111,10 @@
           slot_load( "{{ widget.full }}", "shift", "calendar" );
           $( "#{{ widget.full }}_slot" ).dialog( {
             title: "Schedule",
-            modal: false,
+            modal: true,
             width: 800,
-            height: 600
+            height: 600,
+            beforeClose: function( event, ui ) { $(this).html( "" ); }
           } );
         } );
 
@@ -285,20 +288,7 @@
   <div class="spacer" />
 
   {% if not participant_id|default(false) %}
-    <div class="ui-widget-header ui-state-hover app-widget-header">System Messages</div>
-    <div class="ui-widget ui-widget-content app-widget-content">
-      {% if message_list|length %}
-        <div class="spacer" />
-        {% for message in message_list %}
-          <div class="ui-widget ui-widget-header">{{ message.title }}</div>
-          <div style="padding: 1em; padding-left: 2em;"
-               class="ui-widget ui-widget-content">{{ message.note|nl2br|raw }}</div>
-        {% endfor %}
-        <div class="spacer" />
-      {% else %}
-        <div style="padding: 1em;">There are no system messages.</div>
-      {% endif %}
-    </div>
+    {% include "system_message_show.twig" with system_message_show %}
   {% endif %}
 
 {% endblock widget %}

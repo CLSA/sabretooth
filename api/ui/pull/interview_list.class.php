@@ -115,7 +115,6 @@ class interview_list extends \cenozo\ui\pull\base_list
 
     if( is_null( $this->modifier ) ) $this->modifier = lib::create( 'database\modifier' );
     $this->modifier->order( 'interview.id' );
-    $this->modifier->where( 'completed', '=', true );
     $this->modifier->where( 'qnaire_id', '=', $this->db_qnaire->id );
 
     // sort out the date spans

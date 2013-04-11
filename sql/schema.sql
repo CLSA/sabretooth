@@ -736,25 +736,6 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`site_voip`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`site_voip` ;
-
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`site_voip` (
-  `site_id` INT UNSIGNED NOT NULL ,
-  `host` VARCHAR(45) NULL DEFAULT NULL ,
-  `xor_key` VARCHAR(45) NULL DEFAULT NULL ,
-  PRIMARY KEY (`site_id`) ,
-  INDEX `fk_site_id` (`site_id` ASC) ,
-  CONSTRAINT `fk_site_voip_site_id`
-    FOREIGN KEY (`site_id` )
-    REFERENCES `cenozo`.`site` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `sabretooth`.`quota_state`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `sabretooth`.`quota_state` ;
@@ -792,6 +773,35 @@ CREATE  TABLE IF NOT EXISTS `sabretooth`.`qnaire_has_event_type` (
   CONSTRAINT `fk_qnaire_has_event_type_event_type_id`
     FOREIGN KEY (`event_type_id` )
     REFERENCES `cenozo`.`event_type` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `sabretooth`.`system_message`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`system_message` ;
+
+CREATE  TABLE IF NOT EXISTS `sabretooth`.`system_message` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `site_id` INT UNSIGNED NULL ,
+  `role_id` INT UNSIGNED NULL ,
+  `title` VARCHAR(255) NOT NULL ,
+  `note` TEXT NOT NULL ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_site_id` (`site_id` ASC) ,
+  INDEX `fk_role_id` (`role_id` ASC) ,
+  CONSTRAINT `fk_system_message_site_id`
+    FOREIGN KEY (`site_id` )
+    REFERENCES `cenozo`.`site` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_system_message_role_id`
+    FOREIGN KEY (`role_id` )
+    REFERENCES `cenozo`.`role` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

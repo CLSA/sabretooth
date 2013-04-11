@@ -94,11 +94,13 @@ class tokens extends sid_record
         }
         else if( 'consented to provide HIN' == $value )
         {
-          $this->$key = $db_participant->get_hin()->access;
+          $db_hin = $db_participant->get_hin();
+          $this->$key = is_null( $db_hin ) ? -1 : $get_hin->access;
         }
         else if( 'HIN recorded' == $value )
         {
-          $this->$key = !is_null( $db_participant->get_hin()->code );
+          $db_hin = $db_participant->get_hin();
+          $this->$key = !( is_null( $db_hin ) || is_null( $db_hin->code ) );
         }
         else if( 'INT_13a' == $value || 'INCL_2f' == $value )
         {
