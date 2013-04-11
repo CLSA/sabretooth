@@ -28,4 +28,3 @@ class participant_add_callback extends \cenozo\ui\widget\base_add_record
     parent::__construct( 'participant', 'callback', $args );
   }
 }
-?>

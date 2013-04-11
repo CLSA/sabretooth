@@ -11,7 +11,8 @@ global $SETTINGS;
 
 // tagged version
 $SETTINGS['general']['application_name'] = 'sabretooth';
-$SETTINGS['general']['version'] = '1.1.9';
+$SETTINGS['general']['service_name'] = $SETTINGS['general']['application_name'];
+$SETTINGS['general']['version'] = '1.2.0';
 
 // always leave as false when running as production server
 $SETTINGS['general']['development_mode'] = false;
@@ -38,22 +39,14 @@ $SETTINGS['url']['JQUERY_PLUGINS'] = $SETTINGS['url']['JQUERY'].'/plugins';
 $SETTINGS['url']['JQUERY_JSTREE_JS'] = $SETTINGS['url']['JQUERY_PLUGINS'].'/jsTree.js';
 $SETTINGS['url']['JQUERY_TIMERS_JS'] = $SETTINGS['url']['JQUERY_PLUGINS'].'/timers.js';
 
-// database settings
-$SETTINGS['db']['driver'] = 'mysql';
-$SETTINGS['db']['server'] = 'localhost';
-$SETTINGS['db']['username'] = 'sabretooth';
-$SETTINGS['db']['password'] = '';
-$SETTINGS['db']['database'] = 'sabretooth';
-$SETTINGS['db']['prefix'] = '';
-
 // voip settings
 $SETTINGS['voip']['enabled'] = false;
 $SETTINGS['voip']['url'] = 'http://localhost:8088/mxml';
 $SETTINGS['voip']['username'] = '';
 $SETTINGS['voip']['password'] = '';
 $SETTINGS['voip']['prefix'] = '';
+$SETTINGS['voip']['xor_key'] = '';
 
 // the directory to write recorded calls
 // (must be an absolute path that the asterisk server's user has access to)
 $SETTINGS['path']['VOIP_MONITOR'] = '/var/local/sabretooth/monitor';
-?>

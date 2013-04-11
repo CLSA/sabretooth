@@ -45,4 +45,3 @@ class operator_begin_break extends \cenozo\ui\push
     $db_away_time->save();
   }
 }
-?>

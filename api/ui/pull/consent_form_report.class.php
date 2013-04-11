@@ -52,17 +52,12 @@ class consent_form_report extends \cenozo\ui\pull\base_report
     $tokens_class_name   = lib::get_class_name( 'database\limesurvey\tokens' );
     $survey_class_name   = lib::get_class_name( 'database\limesurvey\survey' );
 
-    // modifiers common to each iteration of the following loops
-    $consent_mod = lib::create( 'database\modifier' );
-    $consent_mod->where( 'event', '=', 'written accept' );
-    $consent_mod->or_where( 'event', '=', 'written deny' );
-    $consent_mod->or_where( 'event', '=', 'retract' );
-    $consent_mod->or_where( 'event', '=', 'withdraw' );
-
     // loop through every participant searching for those who have no written consent
     foreach( $database_class_name::select() as $db_participant )
     {
       $done = false;
+      $consent_mod = lib::create( 'database\modifier' );
+      $consent_mod->where( 'written', '=', true );
       if( 0 == count( $db_participant->get_consent_list( $consent_mod ) ) )
       {
         // now go through their interviews until the consent question code is found
@@ -133,4 +128,3 @@ class consent_form_report extends \cenozo\ui\pull\base_report
     $this->add_table( NULL, $header, $contents, NULL );
   }
 }
-?>

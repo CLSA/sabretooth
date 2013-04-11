@@ -100,4 +100,3 @@ class assignment_end extends \cenozo\ui\push
     }
   }
 }
-?>

@@ -43,4 +43,3 @@ class voip_play extends \cenozo\ui\push
       $this->get_argument( 'volume' ) );
   }
 }
-?>

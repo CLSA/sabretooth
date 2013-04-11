@@ -27,4 +27,3 @@ class qnaire_edit extends \cenozo\ui\push\base_edit
     parent::__construct( 'qnaire', $args );
   }
 }
-?>

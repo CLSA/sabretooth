@@ -35,9 +35,9 @@ class interview_edit extends \cenozo\ui\push\base_edit
    */
   protected function execute()
   {
-    // skip the parent's execute() method
-    $base_record_class_name = lib::get_class_name( 'ui\push\base_record' );
-    $base_record_class_name::execute();
+    // skip the parent method
+    $grand_parent = get_parent_class( get_parent_class( get_class() ) );
+    $grand_parent::execute();
 
     $columns = $this->get_argument( 'columns', array() );
 
@@ -55,4 +55,3 @@ class interview_edit extends \cenozo\ui\push\base_edit
       'Only the "completed" state of an interview may be edited.', __METHOD__ );
   }
 }
-?>

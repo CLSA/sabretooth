@@ -63,4 +63,3 @@ class productivity_report extends base_report
     $this->set_parameter( 'round_times', true, true );
   }
 }
-?>

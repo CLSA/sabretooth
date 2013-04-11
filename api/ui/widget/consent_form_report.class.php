@@ -46,4 +46,3 @@ class consent_form_report extends base_report
       'time they were successfully contacted.' );
   }
 }
-?>

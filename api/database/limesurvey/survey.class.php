@@ -71,4 +71,3 @@ class survey extends sid_record
    */
   protected static $primary_key_name = 'id';
 }
-?>

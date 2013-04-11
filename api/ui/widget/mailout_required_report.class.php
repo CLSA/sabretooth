@@ -39,14 +39,29 @@ class mailout_required_report extends base_report
     parent::prepare();
 
     $this->add_restriction( 'site' );
-    $this->add_restriction( 'mailout' );
     $this->add_restriction( 'qnaire' );
     $this->add_restriction( 'source' );
+    $this->add_parameter( 'mailout_type', 'enum', 'Mailout' );
 
     $this->set_variable( 'description',
       'This report lists all participants (or proxies) who require an information package'.
       ' to be mailed out to them.  The report generates the participant\'s id,'. 
       ' name, address and last date they were successfully contacted.' );
   }
+
+  /**
+   * Extending the parent setup method with extra restrictions.
+   * @author Dean Inglis <inglisd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
+  {
+    parent::setup();
+
+    $mailout_type_list = array( 'Participant information package',
+                                'Proxy information package' );
+    $mailout_type_list = array_combine( $mailout_type_list, $mailout_type_list );
+
+    $this->set_parameter( 'mailout_type', key( $mailout_type_list ), true, $mailout_type_list );
+  }
 }
-?>

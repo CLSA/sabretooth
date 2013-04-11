@@ -64,8 +64,8 @@ class away_time_view extends \cenozo\ui\widget\base_view
     $users = array();
     $db_role = $role_class_name::get_unique_record( 'name', 'operator' );
     $user_mod = lib::create( 'database\modifier' );
-    $user_mod->where( 'role_id', '=', $db_role->id );
-    $user_mod->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
+    $user_mod->where( 'access.role_id', '=', $db_role->id );
+    $user_mod->where( 'access.site_id', '=', lib::create( 'business\session' )->get_site()->id );
     $user_mod->order( 'name' );
     $found = false;
     foreach( $user_class_name::select( $user_mod ) as $db_user )
@@ -85,4 +85,3 @@ class away_time_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'end_datetime', $this->get_record()->end_datetime, true );
   }
 }
-?>

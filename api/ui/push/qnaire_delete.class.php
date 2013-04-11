@@ -25,4 +25,3 @@ class qnaire_delete extends \cenozo\ui\push\base_delete
     parent::__construct( 'qnaire', $args );
   }
 }
-?>

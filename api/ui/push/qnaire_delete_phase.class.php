@@ -25,4 +25,3 @@ class qnaire_delete_phase extends \cenozo\ui\push\base_delete_record
     parent::__construct( 'qnaire', 'phase', $args );
   }
 }
-?>

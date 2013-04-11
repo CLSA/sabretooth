@@ -80,4 +80,3 @@ class source_withdraw_add extends \cenozo\ui\widget\base_view
     $this->set_item( 'sid', key( $sources ), true, $surveys );
   }
 }
-?>

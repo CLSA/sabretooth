@@ -48,4 +48,3 @@ class queue_restriction_delete extends \cenozo\ui\push\base_delete
     }
   }
 }
-?>

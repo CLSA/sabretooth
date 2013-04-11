@@ -23,9 +23,10 @@
         $( "#{{ widget.full }}_slot" ).dialog( { 
           autoOpen: false,
           title: "Shift calendar",
-          modal: false,
+          modal: true,
           width: 800,
-          height: 600
+          height: 600,
+          beforeClose: function( event, ui ) { $(this).html( "" ); }
         } );
       } );
     </script>

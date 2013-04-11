@@ -59,7 +59,7 @@ class site_calendar extends \cenozo\ui\widget\base_calendar
         'participant_add_appointment' == $this->parent->parent->get_class_name() )
     {
       $db_site = lib::create( 'database\site',
-        $this->parent->parent->get_record()->get_primary_site()->id );
+        $this->parent->parent->get_record()->get_effective_site()->id );
       $this->set_variable( 'site_id', $db_site->id );
       $this->set_heading( 'Open appointment slots for '.$db_site->name );
     }
@@ -69,4 +69,3 @@ class site_calendar extends \cenozo\ui\widget\base_calendar
     $this->set_variable( 'editable', false );
   }
 }
-?>

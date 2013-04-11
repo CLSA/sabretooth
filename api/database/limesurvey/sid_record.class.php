@@ -26,8 +26,9 @@ abstract class sid_record extends record
    */
   public static function get_sid()
   {
-    return array_key_exists( get_called_class(), self::$table_sid_list )
-         ? self::$table_sid_list[get_called_class()] : NULL;
+    $class_index = lib::get_class_name( get_called_class(), true );
+    return array_key_exists( $class_index, self::$table_sid_list )
+         ? self::$table_sid_list[$class_index] : NULL;
   }
 
   /**
@@ -40,7 +41,8 @@ abstract class sid_record extends record
    */
   public static function set_sid( $sid )
   {
-    self::$table_sid_list[get_called_class()] = $sid;
+    $class_index = lib::get_class_name( get_called_class(), true );
+    self::$table_sid_list[$class_index] = $sid;
   }
 
   /**
@@ -69,4 +71,3 @@ abstract class sid_record extends record
    */
   private static $table_sid_list = array();
 }
-?>

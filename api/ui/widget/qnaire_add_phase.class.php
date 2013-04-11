@@ -28,4 +28,3 @@ class qnaire_add_phase extends \cenozo\ui\widget\base_add_record
     parent::__construct( 'qnaire', 'phase', $args );
   }
 }
-?>

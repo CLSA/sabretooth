@@ -12,9 +12,9 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * participant: record
  */
-class participant extends \cenozo\database\has_note
+class participant extends \cenozo\database\participant
 {
-  /**
+  /*
    * Get the participant's most recent, closed assignment.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return assignment
@@ -28,7 +28,7 @@ class participant extends \cenozo\database\has_note
       log::warning( 'Tried to query participant with no id.' );
       return NULL;
     }
-    
+
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'interview.participant_id', '=', $this->id );
     $modifier->where( 'end_datetime', '!=', NULL );
@@ -54,7 +54,7 @@ class participant extends \cenozo\database\has_note
       log::warning( 'Tried to query participant with no id.' );
       return NULL;
     }
-    
+
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'interview.participant_id', '=', $this->id );
     $modifier->where( 'end_datetime', '=', NULL );
@@ -67,104 +67,6 @@ class participant extends \cenozo\database\has_note
   }
 
   /**
-   * Get the participant's last consent
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return consent
-   * @access public
-   */
-  public function get_last_consent()
-  {
-    // check the primary key value
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to query participant with no id.' );
-      return NULL;
-    }
-    
-    // need custom SQL
-    $database_class_name = lib::get_class_name( 'database\database' );
-    $consent_id = static::db()->get_one(
-      sprintf( 'SELECT consent_id '.
-               'FROM participant_last_consent '.
-               'WHERE participant_id = %s',
-               $database_class_name::format_string( $this->id ) ) );
-    return $consent_id ? lib::create( 'database\consent', $consent_id ) : NULL;
-  }
-
-  /**
-   * Get the participant's "primary" address.  This is the highest ranking canadian address.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return address
-   * @access public
-   */
-  public function get_primary_address()
-  {
-    // check the primary key value
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to query participant with no id.' );
-      return NULL;
-    }
-    
-    // need custom SQL
-    $database_class_name = lib::get_class_name( 'database\database' );
-    $address_id = static::db()->get_one(
-      sprintf( 'SELECT address_id FROM participant_primary_address WHERE participant_id = %s',
-               $database_class_name::format_string( $this->id ) ) );
-    return $address_id ? lib::create( 'database\address', $address_id ) : NULL;
-  }
-
-  /**
-   * Get the participant's "first" address.  This is the highest ranking, active, available
-   * address.
-   * Note: this address may be in the United States
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return address
-   * @access public
-   */
-  public function get_first_address()
-  {
-    // check the primary key value
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to query participant with no id.' );
-      return NULL;
-    }
-    
-    // need custom SQL
-    $database_class_name = lib::get_class_name( 'database\database' );
-    $address_id = static::db()->get_one(
-      sprintf( 'SELECT address_id FROM participant_first_address WHERE participant_id = %s',
-               $database_class_name::format_string( $this->id ) ) );
-    return $address_id ? lib::create( 'database\address', $address_id ) : NULL;
-  }
-
-  /**
-   * Get the default site that the participant belongs to.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return site
-   * @access public
-   */
-  public function get_default_site()
-  {
-    $db_site = NULL;
-    $db_address = $this->get_primary_address();
-    if( !is_null( $db_address ) ) $db_site = $db_address->get_region()->get_site();
-    return $db_site;
-  }
-
-  /**
-   * Get the site that the participant belongs to.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return site
-   * @access public
-   */
-  public function get_primary_site()
-  {
-    return is_null( $this->site_id ) ? $this->get_default_site() : $this->get_site();
-  }
-  
-  /**
    * Override parent's magic get method so that supplementary data can be retrieved
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $column_name The name of the column or table being fetched from the database
@@ -173,7 +75,8 @@ class participant extends \cenozo\database\has_note
    */
   public function __get( $column_name )
   {
-    if( 'current_qnaire_id' == $column_name || 'start_qnaire_date' == $column_name )
+    if( 'current_qnaire_id' == $column_name ||
+        'start_qnaire_date' == $column_name )
     {
       $this->get_queue_data();
       return $this->$column_name;
@@ -195,72 +98,13 @@ class participant extends \cenozo\database\has_note
       log::warning( 'Tried to query participant with no id.' );
       return NULL;
     }
-    
+
+    $database_class_name = lib::get_class_name( 'database\database' );
+
     if( is_null( $this->current_qnaire_id ) && is_null( $this->start_qnaire_date ) )
     {
-      $database_class_name = lib::get_class_name( 'database\database' );
-      // special sql to get the current qnaire id and start date
-      // NOTE: when updating this query database\queue::get_query_parts()
-      //       should also be updated as it performs a very similar query
       $sql = sprintf(
-        'SELECT IF( current_interview.id IS NULL, '.
-        '           ( SELECT id FROM qnaire WHERE rank = 1 ), '.
-        '           IF( current_interview.completed, next_qnaire.id, current_qnaire.id ) '.
-        '       ) AS current_qnaire_id, '.
-        '       IF( current_interview.id IS NULL, '.
-        '           IF( participant.prior_contact_date IS NULL, '.
-        '               NULL, '.
-        '               participant.prior_contact_date + INTERVAL( '.
-        '                 SELECT delay FROM qnaire WHERE rank = 1 '.
-        '               ) WEEK ), '.
-        '           IF( current_interview.completed, '.
-        '               IF( next_qnaire.id IS NULL, '.
-        '                   NULL, '.
-        '                   IF( next_prev_assignment.end_datetime IS NULL, '.
-        '                       participant.prior_contact_date, '.
-        '                       next_prev_assignment.end_datetime '.
-        '                   ) + INTERVAL next_qnaire.delay WEEK '.
-        '               ), '.
-        '               NULL '.
-        '           ) '.
-        '       ) AS start_qnaire_date '.
-        'FROM participant '.
-
-        'LEFT JOIN interview AS current_interview '.
-        'ON current_interview.participant_id = participant.id '.
-        'LEFT JOIN interview_last_assignment '.
-        'ON current_interview.id = interview_last_assignment.interview_id '.
-        'LEFT JOIN assignment '.
-        'ON interview_last_assignment.assignment_id = assignment.id '.
-        'LEFT JOIN qnaire AS current_qnaire '.
-        'ON current_qnaire.id = current_interview.qnaire_id '.
-        'LEFT JOIN qnaire AS next_qnaire '.
-        'ON next_qnaire.rank = ( current_qnaire.rank + 1 ) '.
-        'LEFT JOIN qnaire AS next_prev_qnaire '.
-        'ON next_prev_qnaire.id = next_qnaire.prev_qnaire_id '.
-        'LEFT JOIN interview AS next_prev_interview '.
-        'ON next_prev_interview.qnaire_id = next_prev_qnaire.id '.
-        'AND next_prev_interview.participant_id = participant.id '.
-        'LEFT JOIN assignment next_prev_assignment '.
-        'ON next_prev_assignment.interview_id = next_prev_interview.id '.
-        'WHERE ( '.
-        '  current_qnaire.rank IS NULL OR '.
-        '  current_qnaire.rank = ( '.
-        '    SELECT MAX( qnaire.rank ) '.
-        '    FROM interview, qnaire '.
-        '    WHERE qnaire.id = interview.qnaire_id '.
-        '    AND current_interview.participant_id = interview.participant_id '.
-        '    GROUP BY current_interview.participant_id ) ) '.
-        'AND ( '.
-        '  next_prev_assignment.end_datetime IS NULL OR '.
-        '  next_prev_assignment.end_datetime = ( '.
-        '    SELECT MAX( assignment.end_datetime ) '.
-        '    FROM interview, assignment '.
-        '    WHERE interview.qnaire_id = next_prev_qnaire.id '.
-        '    AND interview.id = assignment.interview_id '.
-        '    AND next_prev_assignment.id = assignment.id '.
-        '    GROUP BY next_prev_assignment.interview_id ) ) '.
-        'AND participant.id = %s',
+        $this->participant_additional_sql,
         $database_class_name::format_string( $this->id ) );
       $row = static::db()->get_row( $sql );
       $this->current_qnaire_id = $row['current_qnaire_id'];
@@ -281,11 +125,101 @@ class participant extends \cenozo\database\has_note
    * @access private
    */
   private $start_qnaire_date = NULL;
-}
 
-// define the join to the address table
-$address_mod = lib::create( 'database\modifier' );
-$address_mod->where( 'participant.id', '=', 'participant_primary_address.participant_id', false );
-$address_mod->where( 'participant_primary_address.address_id', '=', 'address.id', false );
-participant::customize_join( 'address', $address_mod );
-?>
+  /**
+   * A string containing the SQL used to get the additional participant information used by
+   * get_queue_data()
+   * @var string
+   * @access private
+   */
+  private $participant_additional_sql = <<<'SQL'
+SELECT IF
+(
+  current_interview.id IS NULL,
+  ( SELECT id FROM qnaire WHERE rank = 1 ),
+  IF( current_interview.completed, next_qnaire.id, current_qnaire.id )
+) AS current_qnaire_id,
+IF
+(
+  current_interview.id IS NULL,
+  IF
+  (
+    ( SELECT COUNT(*) FROM qnaire_has_event_type WHERE qnaire_id = first_qnaire.id ),
+    IFNULL( first_event.datetime, UTC_TIMESTAMP() ) + INTERVAL first_qnaire.delay WEEK,
+    NULL
+  ),
+  IF
+  (
+    current_interview.completed,
+    GREATEST
+    (
+      IFNULL( next_event.datetime, "" ),
+      IFNULL( next_prev_assignment.end_datetime, "" )
+    ) + INTERVAL next_qnaire.delay WEEK,
+    NULL
+  )
+) AS start_qnaire_date
+FROM participant
+LEFT JOIN interview AS current_interview
+ON current_interview.participant_id = participant.id
+LEFT JOIN interview_last_assignment
+ON current_interview.id = interview_last_assignment.interview_id
+LEFT JOIN assignment
+ON interview_last_assignment.assignment_id = assignment.id
+LEFT JOIN qnaire AS current_qnaire
+ON current_qnaire.id = current_interview.qnaire_id
+LEFT JOIN qnaire AS next_qnaire
+ON next_qnaire.rank = ( current_qnaire.rank + 1 )
+LEFT JOIN qnaire AS next_prev_qnaire
+ON next_prev_qnaire.id = next_qnaire.prev_qnaire_id
+LEFT JOIN interview AS next_prev_interview
+ON next_prev_interview.qnaire_id = next_prev_qnaire.id
+AND next_prev_interview.participant_id = participant.id
+LEFT JOIN assignment next_prev_assignment
+ON next_prev_assignment.interview_id = next_prev_interview.id
+CROSS JOIN qnaire AS first_qnaire
+ON first_qnaire.rank = 1
+LEFT JOIN event first_event
+ON participant.id = first_event.participant_id
+AND first_event.event_type_id IN
+(
+  SELECT event_type_id
+  FROM qnaire_has_event_type
+  WHERE qnaire_id = first_qnaire.id
+)
+LEFT JOIN event next_event
+ON participant.id = next_event.participant_id
+AND next_event.event_type_id IN
+(
+  SELECT event_type_id
+  FROM qnaire_has_event_type
+  WHERE qnaire_id = next_qnaire.id
+)
+WHERE
+(
+  current_qnaire.rank IS NULL
+  OR current_qnaire.rank =
+  (
+    SELECT MAX( qnaire.rank )
+    FROM interview
+    JOIN qnaire ON qnaire.id = interview.qnaire_id
+    WHERE interview.participant_id = current_interview.participant_id
+    GROUP BY current_interview.participant_id
+  )
+)
+AND
+(
+  next_prev_assignment.end_datetime IS NULL
+  OR next_prev_assignment.end_datetime =
+  (
+    SELECT MAX( assignment.end_datetime )
+    FROM interview
+    JOIN assignment ON assignment.interview_id = interview.id
+    WHERE interview.qnaire_id = next_prev_qnaire.id
+    AND assignment.id = next_prev_assignment.id
+    GROUP BY next_prev_assignment.interview_id
+  )
+)
+AND participant.id = %s
+SQL;
+}

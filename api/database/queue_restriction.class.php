@@ -13,4 +13,3 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * queue_restriction: record
  */
 class queue_restriction extends \cenozo\database\record {}
-?>

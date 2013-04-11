@@ -27,7 +27,7 @@ class user_list extends \cenozo\ui\widget\user_list
     $role_class_name = lib::get_class_name( 'database\role' );
     $db_role = $role_class_name::get_unique_record( 'name', 'opal' );
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'role_id', '!=', $db_role->id );
+    $modifier->where( 'access.role_id', '!=', $db_role->id );
     return parent::determine_record_count( $modifier );
   }
   
@@ -44,8 +44,7 @@ class user_list extends \cenozo\ui\widget\user_list
     $role_class_name = lib::get_class_name( 'database\role' );
     $db_role = $role_class_name::get_unique_record( 'name', 'opal' );
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'role_id', '!=', $db_role->id );
+    $modifier->where( 'access.role_id', '!=', $db_role->id );
     return parent::determine_record_list( $modifier );
   }
 }
-?>

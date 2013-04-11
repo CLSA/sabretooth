@@ -95,4 +95,3 @@ class survey_list extends \cenozo\ui\widget\base_list
     return $class_name::select( $modifier );
   }
 }
-?>

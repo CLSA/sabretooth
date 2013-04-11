@@ -45,4 +45,3 @@ class timing_report extends base_report
       'This report provides the average time taken to complete each module of a questionnaire.' );
   }
 }
-?>

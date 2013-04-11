@@ -28,4 +28,3 @@ class phase_add_source_survey extends \cenozo\ui\widget\base_add_record
     parent::__construct( 'phase', 'source_survey', $args );
   }
 }
-?>

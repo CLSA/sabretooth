@@ -84,7 +84,7 @@ class call_attempts_report extends \cenozo\ui\pull\base_report
         $db_phone_call = current( $db_last_assignment->get_phone_call_list( $phone_call_mod ) );
 
         $contents[] = array(
-          $db_participant->get_primary_site()->name,
+          $db_participant->get_effective_site()->name,
           $db_participant->uid,
           $db_last_assignment->get_user()->first_name.' '.
             $db_last_assignment->get_user()->last_name,
@@ -112,4 +112,3 @@ class call_attempts_report extends \cenozo\ui\pull\base_report
     $this->add_table( NULL, $header, $contents, NULL );
   }
 }
-?>

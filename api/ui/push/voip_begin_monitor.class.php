@@ -48,4 +48,3 @@ class voip_begin_monitor extends \cenozo\ui\push
     lib::create( 'business\voip_manager' )->get_call()->start_monitoring( $filename );
   }
 }
-?>

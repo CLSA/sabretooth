@@ -62,4 +62,3 @@ class source_withdraw_list extends \cenozo\ui\widget\base_list
     }
   }
 }
-?>

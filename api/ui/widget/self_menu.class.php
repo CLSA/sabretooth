@@ -30,18 +30,16 @@ class self_menu extends \cenozo\ui\widget\self_menu
     if( 'administrator' == $role ) $this->exclude_calendar( 'site' );
 
     $this->exclude_list( array(
-      'address',
       'appointment',
-      'availability',
       'callback',
-      'consent',
-      'operation',
+      'event_type',
       'phase',
-      'phone',
       'phone_call',
       'recording',
+      'service',
       'source_survey',
-      'source_withdraw' ) );
+      'source_withdraw',
+      'survey' ) );
   }
 
   /**
@@ -66,15 +64,6 @@ class self_menu extends \cenozo\ui\widget\self_menu
                             'subject' => 'participant',
                             'name' => 'tree' );
 
-    // insert the participant sync operation into the utilities
-    $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'sync' );
-    if( $session->is_allowed( $db_operation ) )
-      $utilities[] = array( 'heading' => 'Participant Sync',
-                            'type' => 'widget',
-                            'subject' => 'participant',
-                            'name' => 'sync' );
-
     $this->set_variable( 'utilities', $utilities );
   }
 }
-?>

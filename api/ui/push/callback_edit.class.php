@@ -27,4 +27,3 @@ class callback_edit extends \cenozo\ui\push\base_edit
     parent::__construct( 'callback', $args );
   }
 }
-?>
