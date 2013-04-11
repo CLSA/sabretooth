@@ -1079,7 +1079,7 @@ CREATE PROCEDURE convert_database()
       DROP FOREIGN KEY fk_system_message_site_id;
 
       SET @sql = CONCAT(
-        "CREATE  TABLE IF NOT EXISTS beartooth.system_message ( ",
+        "CREATE TABLE IF NOT EXISTS system_message ( ",
           "id INT UNSIGNED NOT NULL AUTO_INCREMENT , ",
           "update_timestamp TIMESTAMP NOT NULL , ",
           "create_timestamp TIMESTAMP NOT NULL , ",
@@ -1113,7 +1113,7 @@ CREATE PROCEDURE convert_database()
         "FROM system_message_old old ",
         "JOIN site ON old.site_id = site.id ",
         "JOIN ", @cenozo, ".site csite ON site.name = csite.name ",
-        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE title = 'Sabretooth' )" );
+        "AND csite.service_id = ( SELECT id FROM ", @cenozo, ".service WHERE title = 'Sabretooth' ) ",
         "JOIN role ON old.role_id = role.id ",
         "JOIN ", @cenozo, ".role crole ON role.name = crole.name" );
       PREPARE statement FROM @sql;
