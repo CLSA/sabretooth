@@ -42,6 +42,7 @@ class participant_list extends site_restricted_list
     $this->add_column( 'first_name', 'string', 'First', true );
     $this->add_column( 'last_name', 'string', 'Last', true );
     $this->add_column( 'source.name', 'string', 'Source', true );
+    $this->add_column( 'status', 'string', 'Condition', true );
     $this->add_column( 'primary_site', 'string', 'Site', false );
 
     $this->extended_site_selection = true;
@@ -61,12 +62,15 @@ class participant_list extends site_restricted_list
     {
       $db_source = $record->get_source();
       $source_name = is_null( $db_source ) ? '(none)' : $db_source->name;
+      $db_site = $record->get_primary_site();
+
       $this->add_row( $record->id,
         array( 'uid' => $record->uid ? $record->uid : '(none)',
                'first_name' => $record->first_name,
                'last_name' => $record->last_name,
                'source.name' => $source_name,
-               'primary_site' => $record->get_primary_site()->name,
+               'status' => $record->status ? $record->status : '(none)',
+               'primary_site' => is_null( $db_site ) ? '(none)' : $db_site->name,
                // note count isn't a column, it's used for the note button
                'note_count' => $record->get_note_count() ) );
     }

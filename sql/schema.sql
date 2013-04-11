@@ -53,9 +53,10 @@ CREATE  TABLE IF NOT EXISTS `participant` (
   `gender` ENUM('male','female') NOT NULL ,
   `date_of_birth` DATE NULL ,
   `age_group_id` INT UNSIGNED NULL ,
-  `status` ENUM('deceased', 'deaf', 'mentally unfit','language barrier','age range','not canadian','federal reserve','armed forces','institutionalized','noncompliant','other') NULL DEFAULT NULL ,
+  `status` ENUM('deceased', 'deaf', 'mentally unfit','language barrier','age range','not canadian','federal reserve','armed forces','institutionalized','noncompliant','sourcing required','unreachable','other') NULL DEFAULT NULL ,
   `language` ENUM('en','fr') NULL DEFAULT NULL ,
   `site_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'If not null then force all calls to this participant to the site.' ,
+  `email` VARCHAR(255) NULL ,
   `prior_contact_date` DATE NULL DEFAULT NULL ,
   PRIMARY KEY (`id`) ,
   INDEX `dk_active` (`active` ASC) ,
@@ -833,6 +834,24 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `site`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `site` ;
+
+CREATE  TABLE IF NOT EXISTS `site` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `name` VARCHAR(45) NOT NULL ,
+  `timezone` ENUM('Canada/Pacific','Canada/Mountain','Canada/Central','Canada/Eastern','Canada/Atlantic','Canada/Newfoundland') NOT NULL ,
+  `voip_host` VARCHAR(45) NULL ,
+  `voip_xor_key` VARCHAR(45) NULL ,
+  PRIMARY KEY (`id`) ,
+  UNIQUE INDEX `name_UNIQUE` (`name` ASC) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `quota`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `quota` ;
@@ -842,6 +861,7 @@ CREATE  TABLE IF NOT EXISTS `quota` (
   `update_timestamp` TIMESTAMP NOT NULL ,
   `create_timestamp` TIMESTAMP NOT NULL ,
   `region_id` INT UNSIGNED NOT NULL ,
+  `site_id` INT UNSIGNED NOT NULL ,
   `gender` ENUM('male','female') NOT NULL ,
   `age_group_id` INT UNSIGNED NOT NULL ,
   `population` INT NOT NULL ,
@@ -849,7 +869,8 @@ CREATE  TABLE IF NOT EXISTS `quota` (
   PRIMARY KEY (`id`) ,
   INDEX `fk_region_id` (`region_id` ASC) ,
   INDEX `fk_age_group_id` (`age_group_id` ASC) ,
-  UNIQUE INDEX `uq_region_id_gender_age_group_id` (`region_id` ASC, `gender` ASC, `age_group_id` ASC) ,
+  UNIQUE INDEX `uq_region_id_site_id_gender_age_group_id` (`region_id` ASC, `site_id` ASC, `gender` ASC, `age_group_id` ASC) ,
+  INDEX `fk_site_id` (`site_id` ASC) ,
   CONSTRAINT `fk_quota_region`
     FOREIGN KEY (`region_id` )
     REFERENCES `region` (`id` )
@@ -858,6 +879,49 @@ CREATE  TABLE IF NOT EXISTS `quota` (
   CONSTRAINT `fk_quota_age_group_id`
     FOREIGN KEY (`age_group_id` )
     REFERENCES `age_group` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_quota_site_id`
+    FOREIGN KEY (`site_id` )
+    REFERENCES `site` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `callback`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `callback` ;
+
+CREATE  TABLE IF NOT EXISTS `callback` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `participant_id` INT UNSIGNED NOT NULL ,
+  `phone_id` INT UNSIGNED NULL DEFAULT NULL ,
+  `assignment_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'This callback\'s assignment.' ,
+  `datetime` DATETIME NOT NULL ,
+  `reached` TINYINT(1) NULL DEFAULT NULL COMMENT 'If the callback was met, whether the participant was reached.' ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_participant_id` (`participant_id` ASC) ,
+  INDEX `fk_assignment_id` (`assignment_id` ASC) ,
+  INDEX `dk_reached` (`reached` ASC) ,
+  INDEX `fk_phone_id` (`phone_id` ASC) ,
+  INDEX `dk_datetime` (`datetime` ASC) ,
+  CONSTRAINT `fk_callback_participant_id`
+    FOREIGN KEY (`participant_id` )
+    REFERENCES `participant` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_callback_assignment_id`
+    FOREIGN KEY (`assignment_id` )
+    REFERENCES `assignment` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_callback_phone_id`
+    FOREIGN KEY (`phone_id` )
+    REFERENCES `phone` (`id` )
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

@@ -29,17 +29,14 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
   }
 
   /**
-   * Sets up the operation with any pre-execution instructions that may be necessary.
-   * 
+   * Builds the report.
    * @author Dean Inglis <inglisd@mcmaster.ca>
    * @author Val DiPietro <dipietv@mcmaster.ca>
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
-  protected function setup()
+  protected function build()
   {
-    parent::setup();
-
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
@@ -47,6 +44,8 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
     $source_survey_class_name = lib::get_class_name( 'database\source_survey' );
     $phase_class_name = lib::get_class_name( 'database\phase' );
     $consent_class_name = lib::get_class_name( 'database\consent' );
+
+    $db_statscan_source = $source_class_name::get_unique_record( 'name', 'statscan' );
 
     // get the report arguments
     $mailout_type =       $this->get_argument( 'restrict_mailout_type' );
@@ -98,7 +97,8 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
       'Participant information package' == $mailout_type ? '>' : '<=' ,
       'DATE_SUB( NOW(), INTERVAL 70 YEAR )', false );
     if( $restrict_source_id ) $participant_mod->where( 'source_id', '=', $restrict_source_id );
-   // $participant_mod->where( 'consent.event', 'not in', $consent_types );
+    $participant_mod->where( 'source_id', '!=', $db_statscan_source->id );
+    // $participant_mod->where( 'consent.event', 'not in', $consent_types );
     $participant_mod->where( 'status', '=', NULL );
     $participant_mod->where( 'interview.qnaire_id', '=', $db_qnaire->id );
     $participant_mod->group( 'participant.id' );
@@ -153,7 +153,7 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
         {
           if( 'YES' == $db_survey->get_response( $question_code ) ||
               'NO'  == $db_survey->get_response( $question_code ) )
-          { // found a yes, include it as well as the date answered and continue
+          { // question was answered, include the participant (no need to keep searching)
             $include_participant = true;
             $answer_date = util::from_server_datetime( $db_survey->startdate, 'Y-m-d' );
             break;

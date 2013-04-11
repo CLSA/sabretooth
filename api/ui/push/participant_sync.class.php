@@ -44,9 +44,47 @@ class participant_sync extends \cenozo\ui\push
     $mastodon_manager = lib::create( 'business\cenozo_manager', MASTODON_URL );
     $uid_list_string = preg_replace( '/[^a-zA-Z0-9]/', ' ', $this->get_argument( 'uid_list' ) );
     $uid_list_string = trim( $uid_list_string );
+    $start_date = $this->get_argument( 'start_date', NULL );
+    $end_date = $this->get_argument( 'end_date', NULL );
 
-    if( 'all' == $uid_list_string )
-    {
+    if( 0 < strlen( $start_date ) || 0 < strlen( $end_date ) )
+    { // use start/end date to select participants
+      $offset = 0;
+      do
+      { // participants from the import system
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'participant.cohort', '=', $cohort );
+        $modifier->where( 'sync_datetime', '=', NULL );
+        if( 0 < strlen( $start_date ) ) $modifier->where( 'import_entry.date', '>=', $start_date );
+        if( 0 < strlen( $end_date ) ) $modifier->where( 'import_entry.date', '<=', $end_date );
+        $modifier->limit( $limit, $offset );
+        $args = array(
+          'full' => true,
+          'modifier' => $modifier );
+        $response = $mastodon_manager->pull( 'participant', 'list', $args );
+        foreach( $response->data as $data ) $this->sync( $data );
+        $offset += $limit;
+      } while( count( $response->data ) );
+
+      $offset = 0;
+      do
+      { // participants from the data entry system
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'participant.cohort', '=', $cohort );
+        $modifier->where( 'sync_datetime', '=', NULL );
+        if( 0 < strlen( $start_date ) ) $modifier->where( 'contact_form.date', '>=', $start_date );
+        if( 0 < strlen( $end_date ) ) $modifier->where( 'contact_form.date', '<=', $end_date );
+        $modifier->limit( $limit, $offset );
+        $args = array(
+          'full' => true,
+          'modifier' => $modifier );
+        $response = $mastodon_manager->pull( 'participant', 'list', $args );
+        foreach( $response->data as $data ) $this->sync( $data );
+        $offset += $limit;
+      } while( count( $response->data ) );
+    }
+    else if( 'all' == $uid_list_string )
+    { // sync all unsynched participants
       $offset = 0;
       do
       {
@@ -63,7 +101,7 @@ class participant_sync extends \cenozo\ui\push
       } while( count( $response->data ) );
     }
     else
-    {
+    { // sync participants in the list only
       $uid_list = array_unique( preg_split( '/\s+/', $uid_list_string ) );
       $count = count( $uid_list );
       for( $offset = 0; $offset < $count; $offset += $limit )

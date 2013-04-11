@@ -39,6 +39,7 @@ class quota_add extends \cenozo\ui\widget\base_view
     parent::prepare();
     
     // define all columns defining this record
+    $this->add_item( 'site_id', 'enum', 'Site' );
     $this->add_item( 'region_id', 'enum', 'Region' );
     $this->add_item( 'gender', 'enum', 'Gender' );
     $this->add_item( 'age_group_id', 'enum', 'Age Group' );
@@ -57,11 +58,17 @@ class quota_add extends \cenozo\ui\widget\base_view
   {
     parent::setup();
     
+    $site_class_name = lib::get_class_name( 'database\site' );
     $region_class_name = lib::get_class_name( 'database\region' );
     $quota_class_name = lib::get_class_name( 'database\quota' );
     $age_group_class_name = lib::get_class_name( 'database\age_group' );
 
     // create enum arrays
+    $sites = array();
+    $site_mod = lib::create( 'database\modifier' );
+    $site_mod->order( 'name' );
+    foreach( $site_class_name::select( $site_mod ) as $db_site )
+      $sites[$db_site->id] = $db_site->name;
     $regions = array();
     $region_mod = lib::create( 'database\modifier' );
     $region_mod->order( 'country' );
@@ -76,6 +83,7 @@ class quota_add extends \cenozo\ui\widget\base_view
         sprintf( '%d to %d', $db_age_group->lower, $db_age_group->upper );
 
     // set the view's items
+    $this->set_item( 'site_id', key( $sites ), true, $sites );
     $this->set_item( 'region_id', key( $regions ), true, $regions );
     $this->set_item( 'gender', key( $genders ), true, $genders );
     $this->set_item( 'age_group_id', key( $age_groups ), true, $age_groups );

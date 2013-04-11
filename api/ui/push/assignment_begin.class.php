@@ -106,8 +106,8 @@ class assignment_begin extends \cenozo\ui\push
             $participant_mod = lib::create( 'database\modifier' );
             // on a weekday sort the queue by age, the order defined by the reverse sort time setting
             if( $weekday ) $participant_mod->order(
-              'DATEDIFF( DATE( NOW() ), date_of_birth ) < 65 * 365', $age_desc );
-            $participant_mod->order( 'source_id' );
+              'DATEDIFF( DATE( NOW() ), participant_date_of_birth ) < 65 * 365', $age_desc );
+            $participant_mod->order( 'participant_source_id' );
             $participant_mod->limit( 1 );
 
             $db_queue->set_site( $session->get_site() );
@@ -189,8 +189,8 @@ class assignment_begin extends \cenozo\ui\push
       $db_assignment->save();
 
       if( $db_origin_queue->from_appointment() )
-      { // if this is an appointment queue, mark the appointment now associated with the appointment
-        // this should always be the appointment with the earliest date
+      { // if this is an appointment queue, mark the appointment now associated with the assignment
+        // (this should always be the appointment with the earliest date)
         $appointment_mod = lib::create( 'database\modifier' );
         $appointment_mod->where( 'assignment_id', '=', NULL );
         $appointment_mod->order( 'datetime' );
@@ -207,6 +207,27 @@ class assignment_begin extends \cenozo\ui\push
           $db_appointment = current( $appointment_list );
           $db_appointment->assignment_id = $db_assignment->id;
           $db_appointment->save();
+        }
+      }
+      else if( $db_origin_queue->from_callback() )
+      { // if this is a callback queue, mark the callback now associated with the assignment
+        // (this should always be the callback with the earliest date)
+        $callback_mod = lib::create( 'database\modifier' );
+        $callback_mod->where( 'assignment_id', '=', NULL );
+        $callback_mod->order( 'datetime' );
+        $callback_mod->limit( 1 );
+        $callback_list = $db_participant->get_callback_list( $callback_mod );
+
+        if( 0 == count( $callback_list ) )
+        {
+          log::crit(
+            'Participant queue is from a callback but no callback is found.', __METHOD__ );
+        }
+        else
+        {
+          $db_callback = current( $callback_list );
+          $db_callback->assignment_id = $db_assignment->id;
+          $db_callback->save();
         }
       }
     }

@@ -63,6 +63,7 @@ class appointment extends \cenozo\database\record
       throw lib::create( 'exception\runtime',
         'Cannot validate appointment date, participant id is not set.', __METHOD__ );
 
+    $daylight_savings = '1' == util::get_datetime_object()->format( 'I' );
     $db_participant = lib::create( 'database\participant', $this->participant_id );
     $db_site = $db_participant->get_primary_site();
     if( is_null( $db_site ) )
@@ -104,12 +105,14 @@ class appointment extends \cenozo\database\record
           $start_time_as_int =
             intval( preg_replace( '/[^0-9]/', '',
               substr( $db_shift_template->start_time, 0, -3 ) ) );
+          if( $daylight_savings ) $start_time_as_int -= 100; // adjust for daylight savings
           if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[$start_time_as_int] = 0;
           $diffs[$start_time_as_int] += $db_shift_template->operators;
 
           $end_time_as_int =
             intval( preg_replace( '/[^0-9]/', '',
               substr( $db_shift_template->end_time, 0, -3 ) ) );
+          if( $daylight_savings ) $end_time_as_int -= 100; // adjust for daylight savings
           if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[$end_time_as_int] = 0;
           $diffs[$end_time_as_int] -= $db_shift_template->operators;
         }

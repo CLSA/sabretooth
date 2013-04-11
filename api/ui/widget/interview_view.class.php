@@ -45,7 +45,6 @@ class interview_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'completed', 'boolean', 'Completed',
       'Warning: force-completing an interview cannot be undone!' );
     $this->add_item( 'rescored', 'constant', 'Rescored' );
-    $this->add_item( 'recordings', 'constant', 'Recordings' );
 
     // create the assignment sub-list widget      
     $this->assignment_list = lib::create( 'ui\widget\assignment_list', $this->arguments );
@@ -63,33 +62,39 @@ class interview_view extends \cenozo\ui\widget\base_view
   {
     parent::setup();
        
-    $db_participant = $this->get_record()->get_participant();
+    $operation_class_name = lib::get_class_name( 'database\operation' );
+    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+
+    $db_interview = $this->get_record();
+    $db_participant = $db_interview->get_participant();
     $participant = sprintf( '%s, %s', $db_participant->last_name, $db_participant->first_name );
+    $cog_consent = $db_interview->get_cognitive_consent();
+    $rescored = 0 == strcasecmp( 'yes', $cog_consent )
+              ? ( $db_interview->rescored ? 'Yes' : 'No' )
+              : 'N/A';
 
     // set the view's items
     $this->set_item( 'uid', $db_participant->uid );
     $this->set_item( 'participant', $participant );
-    $this->set_item( 'qnaire', $this->get_record()->get_qnaire()->name );
-    $this->set_item( 'completed', $this->get_record()->completed, true );
-    $this->set_item( 'rescored', $this->get_record()->rescored );
-    $this->set_item( 'recordings', $this->get_record()->get_recording_count() );
+    $this->set_item( 'qnaire', $db_interview->get_qnaire()->name );
+    $this->set_item( 'completed', $db_interview->completed, true );
+    $this->set_item( 'rescored', $rescored );
 
-    // only allow rescoring if the interview's qnaire has a rescore ID, the user has access
-    // to the rescoring operation, the interview is complete and there are recordings available
-    $operation_class_name = lib::get_class_name( 'database\operation' );
-    $db_operation = $operation_class_name::get_operation( 'widget', 'interview', 'rescore' );
-    $allow_rescore =
-      // the interview is completed
-      $this->get_record()->completed &&
-      // the interview is not already rescored
-      'No' == $this->get_record()->rescored &&
-      // the user is allowed to rescore interviews
-      lib::create( 'business\session' )->is_allowed( $db_operation ) &&
-      // the qnaire has a rescoring survey
-      !is_null( $this->get_record()->get_qnaire()->rescore_sid );
-      // the interview has at least 1 recording
-      // NOTE: not used to help clarify why interviews can't be rescored
-      //0 < $this->get_record()->get_recording_count();
+    // only rescore if there is a rescore sid set
+    $allow_rescore = false;
+    if( $db_interview->get_qnaire()->rescore_sid )
+    {
+      $db_operation = $operation_class_name::get_operation( 'widget', 'interview', 'rescore' );
+      $allow_rescore =
+        // the interview is not already rescored
+        !$db_interview->rescored &&
+        // the user is allowed to rescore interviews
+        lib::create( 'business\session' )->is_allowed( $db_operation ) &&
+        // the participant consented to be recorded
+        0 == strcasecmp( 'yes', $cog_consent );
+    }
+      
     $this->set_variable( 'allow_rescore', $allow_rescore );
     if( $allow_rescore )
       $this->add_action( 'rescore', 'Rescore', NULL,
@@ -106,7 +111,6 @@ class interview_view extends \cenozo\ui\widget\base_view
     catch( \cenozo\exception\permission $e ) {}
 
     // add an action to view the participant's details
-    $operation_class_name = lib::get_class_name( 'database\operation' );
     $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'view' );
     if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
       $this->add_action(

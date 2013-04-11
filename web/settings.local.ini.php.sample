@@ -15,6 +15,10 @@ $SETTINGS['general']['development_mode'] = true;
 // setting is unique
 $SETTINGS['general']['cohort'] = 'default';
 
+// Defines the username and password used by mastodon when communicating as a machine
+$SETTINGS['general']['machine_user'] = 'put machine user name here';
+$SETTINGS['general']['machine_password'] = 'put machine password here';
+
 // The survey ID of the alternate contact script.  Comment out if the script is unavailable.
 //$SETTINGS['general']['secondary_survey'] = 0;
 
@@ -42,12 +46,6 @@ $SETTINGS['db']['database'] = 'put your database name here';
 $SETTINGS['db']['username'] = 'put your database username here';
 $SETTINGS['db']['password'] = 'put your database password here';
 
-// audit database settings (null values use the limesurvey database settings)
-// NOTE: either the prefix or the database must not different from limesurvey's prefix
-// and server, otherwise auditing will not work.
-$SETTINGS['audit_db']['enabled'] = false;
-$SETTINGS['audit_db']['prefix'] = 'audit_';
-
 // The LDAP base dn, username, password and whether LDAP is in active directory mode
 $SETTINGS['ldap']['base'] = 'put your ldap base here';
 $SETTINGS['ldap']['username'] = 'put your ldap username here';
@@ -56,13 +54,13 @@ $SETTINGS['ldap']['active_directory'] = true;
 
 // The Asterisk AJAM url, username and password
 $SETTINGS['voip']['enabled'] = false;
-$SETTINGS['voip']['url'] = 'http://localhost:8088/mxml';
+$SETTINGS['voip']['url'] = 'http://%s:8088/mxml'; // %s will be replaced with the voip host
 $SETTINGS['voip']['username'] = 'put your asterisk username here';
 $SETTINGS['voip']['password'] = 'put your asterisk password here';
 $SETTINGS['voip']['prefix'] = '00';
-$SETTINGS['voip']['xor_key'] = 'put your webphone xor key here';
 
 // the directory to write monitored calls
 // (must be an absolute path that the asterisk server's user has access to)
 $SETTINGS['path']['VOIP_MONITOR'] = $SETTINGS['path']['APPLICATION'].'/web/monitor';
+$SETTINGS['url']['VOIP_MONITOR'] = 'monitor';
 ?>

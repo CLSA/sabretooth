@@ -31,6 +31,23 @@ class site_edit extends \cenozo\ui\push\site_edit
   }
 
   /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
+  {
+    parent::setup();
+
+    $columns = $this->get_argument( 'columns' );
+
+    // only send a machine request if editing the name or time zone
+    $this->set_machine_request_enabled(
+      array_key_exists( 'name', $columns ) || array_key_exists( 'timezone', $columns ) );
+  }
+
+  /**
    * Converts primary keys to unique keys in operation arguments.
    * All converted arguments will appear in the array under a 'noid' key.
    * @author Patrick Emond <emondpd@mcmaster.ca>

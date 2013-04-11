@@ -79,7 +79,18 @@ class participant_list extends \cenozo\ui\pull\base_list
     parent::setup();
 
     // an array of all negative consent types
-    $neg_consent_list = array( 'written deny', 'retract', 'withdraw' );
+    $neg_consent_list = array( 'verbal deny', 'written deny', 'retract', 'withdraw' );
+
+    // see if we are restricting by site
+    $site_key = $this->get_argument( 'site', NULL );
+    if( !is_null( $site_key ) )
+    {
+      $site_class_name = lib::get_class_name( 'database\site' );
+      $db_site = lib::create( 'database\site',
+        $site_class_name::get_primary_from_unique_key( $site_key ) );
+      if( is_null( $this->modifier ) ) $this->modifier = lib::create( 'database\modifier' );
+      $this->modifier->where( 'participant_site.site_id', '=', $db_site->id );
+    }
 
     // see if we are restricting by region
     $region_key = $this->get_argument( 'region', NULL );

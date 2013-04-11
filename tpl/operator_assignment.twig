@@ -25,8 +25,6 @@
         {% if allow_secondary %}
           // secondary contact button
           $( "#{{ widget.full }}__secondary" ).click( function() {
-            window.location.reload();
-            // force the secondary list to be loaded in the main slot
             slot_load( 'main', 'participant', 'secondary', { id: {{ participant_id }} } );
           } );
         {% endif %}
@@ -172,6 +170,18 @@
               {% endif %}
             </td>
           </tr>
+        {% elseif callback %}
+          <tr>
+            <td class="heading">Appointment:</td>
+            <td class="content" style="font-style: italic">
+              This assignment is fulfilling a callback scheduled for {{ callback }}.<br>
+              {% if phone_at %}
+                The participant specified to be called at: {{ phone_at }}.
+              {% else %}
+                The participant did not specify which number to call.
+              {% endif %}
+            </td>
+          </tr>
         {% endif %}
         <tr>
           <td class="heading">Previous Assignment:</td>
@@ -188,6 +198,13 @@
             {% endif %}
           </td>
         </tr>
+        {% if on_call and phone_note %}
+          <tr>
+            <td class="heading">Phone Number Notes:</td>
+            <td class="content ui-widget-content">{% autoescape false %}{{ phone_note|nl2br }}{% endautoescape %}</td>
+          </tr>
+        {% endif %}
+
       </table>
       
       <table class="spacer" cellpadding="4">

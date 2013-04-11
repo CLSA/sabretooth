@@ -37,6 +37,7 @@ class site_feed extends \cenozo\ui\pull\base_feed
   {
     parent::execute();
 
+    $daylight_savings = '1' == util::get_datetime_object()->format( 'I' );
     $site_id = $this->get_argument( 'site_id', false );
     $db_site = $site_id
              ? lib::create( 'database\site', $site_id )
@@ -83,12 +84,14 @@ class site_feed extends \cenozo\ui\pull\base_feed
           $start_time_as_int =
             intval( preg_replace( '/[^0-9]/', '',
               substr( $db_shift_template->start_time, 0, -3 ) ) );
+          if( $daylight_savings ) $start_time_as_int -= 100; // adjust for daylight savings
           if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
           $diffs[ $start_time_as_int ] += $db_shift_template->operators;
 
           $end_time_as_int =
             intval( preg_replace( '/[^0-9]/', '',
               substr( $db_shift_template->end_time, 0, -3 ) ) );
+          if( $daylight_savings ) $end_time_as_int -= 100; // adjust for daylight savings
           if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[ $end_time_as_int ] = 0;
           $diffs[ $end_time_as_int ] -= $db_shift_template->operators;
         }

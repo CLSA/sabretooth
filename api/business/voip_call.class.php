@@ -142,9 +142,9 @@ class voip_call extends \cenozo\base_object
     
     if( $bridge )
     {
-      // Sleep for 2 miliseconds to try and fix asterisk bug caused by playing two sounds
+      // Sleep for 5 miliseconds to try and fix asterisk bug caused by playing two sounds
       // in quick succession
-      time_nanosleep( 0, 200000000 );
+      time_nanosleep( 0, 500000000 );
 
       // play sound in bridged channel
       if( !$this->manager->originate(
@@ -170,21 +170,28 @@ class voip_call extends \cenozo\base_object
    * Starts recording (monitoring) the call.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $file The file name the recorded call is to be saved under.
+   * @param string $filename The file name the recorded call is to be saved under.
    * @access public
    */
-  public function start_monitoring( $file )
+  public function start_monitoring( $filename )
   {
     if( !lib::create( 'business\voip_manager' )->get_enabled() ) return;
  
-    $filename = sprintf( '%s/%s', VOIP_MONITOR_PATH, $file );
+    $filename = sprintf( '%s/%s', VOIP_MONITOR_PATH, $filename );
 
     // make sure to not overwrite any existing recordings
-    if( file_exists( $filename.'-in.wav' ) )
+    if( file_exists( $filename.'-out.wav' ) )
     {
+      $base_filename = str_replace( '-01', '', $filename );
       $index = 1;
-      while( file_exists( $filename.'-'.$index.'-in.wav' ) ) $index++;
-      $filename .= '-'.$index; 
+      do
+      {
+        $index++;
+        $filename = sprintf( '%s-%s',
+                             $base_filename,
+                             str_pad( $index, 2, '0', STR_PAD_LEFT ) );
+      }
+      while( file_exists( $filename.'-out.wav' ) );
     }
 
     if( false == $this->manager->monitor( $this->get_channel(), $filename, 'wav' ) )
