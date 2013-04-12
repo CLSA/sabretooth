@@ -937,7 +937,7 @@ class queue extends \cenozo\database\record
     static::db()->execute( 'DROP TABLE IF EXISTS participant_for_queue_phone_count' );
     static::db()->execute( sprintf(
       'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue_phone_count '.
-      'SELECT participant.person_id, COUNT(*) phone_count '.
+      'SELECT participant.person_id, IF( phone.id IS NULL, 0, COUNT(*) ) phone_count '.
       'FROM participant '.
       'JOIN service_has_participant ON participant.id = service_has_participant.participant_id '.
       'AND service_has_participant.service_id = %s '.
