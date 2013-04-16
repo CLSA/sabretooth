@@ -176,7 +176,7 @@ class survey_manager extends \cenozo\singleton
       }
       else if( 'N' != $db_tokens->completed )
       { // rescoring is complete
-        $db_interview->rescored = true;
+        $db_interview->rescored = 'Yes';
       }
 
       // save whatever rescoring state we set above
