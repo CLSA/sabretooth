@@ -440,17 +440,17 @@ AND role.name IN ( "opal" );
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "widget" AND subject = "interview" AND operation.name = "list"
-AND role.name IN( "administrator", "supervisor" );
+AND role.name IN( "administrator", "supervisor", "typist" );
 
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "widget" AND subject = "interview" AND operation.name = "rescore"
-AND role.name IN ( "supervisor" );
+AND role.name IN ( "supervisor", "typist" );
 
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "widget" AND subject = "interview" AND operation.name = "view"
-AND role.name IN( "administrator", "supervisor" );
+AND role.name IN( "administrator", "supervisor", "typist" );
 
 -- mailout_required
 

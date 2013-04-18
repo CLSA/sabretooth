@@ -87,8 +87,6 @@ class interview_view extends \cenozo\ui\widget\base_view
     {
       $db_operation = $operation_class_name::get_operation( 'widget', 'interview', 'rescore' );
       $allow_rescore =
-        // the interview is not already rescored
-        !$db_interview->rescored &&
         // the user is allowed to rescore interviews
         lib::create( 'business\session' )->is_allowed( $db_operation ) &&
         // the participant consented to be recorded
