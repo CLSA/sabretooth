@@ -266,6 +266,9 @@ class queue extends \cenozo\database\record
   public function set_site( $db_site = NULL )
   {
     $this->db_site = $db_site;
+
+    // reset the query list
+    self::$query_list = array();
   }
 
   /**
