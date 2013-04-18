@@ -50,7 +50,11 @@ class tokens extends sid_record
         $matches = array(); // for pregs below
         
         // now get the info based on the attribute name
-        if( false !== strpos( $value, 'address' ) )
+        if( 'cohort' == $value )
+        {
+          $this->$key = $db_participant->cohort;
+        }
+        else if( false !== strpos( $value, 'address' ) )
         {
           $db_address = $db_participant->get_primary_address();
           
@@ -101,6 +105,55 @@ class tokens extends sid_record
         {
           $db_hin = $db_participant->get_hin();
           $this->$key = !( is_null( $db_hin ) || is_null( $db_hin->code ) );
+        }
+        else if( 'DCS samples' == $value )
+        {
+          // get data from Opal
+          $opal_manager = lib::create( 'business\opal_manager' );
+          
+          $this->$key = '';
+          try
+          {
+            $blood = $opal_manager->get_value(
+              'clsa-dcs', 'Phlebotomy', $db_participant, 'AGREE_BS' );
+            $urine = $opal_manager->get_value(
+              'clsa-dcs', 'Phlebotomy', $db_participant, 'AGREE_URINE' );
+
+            $this->$key = 0 == strcasecmp( 'yes', $blood ) ||
+                          0 == strcasecmp( 'yes', $urine )
+                        ? 1 : 0;
+          }
+          catch( \cenozo\exception\runtime $e )
+          {
+            // ignore the error but warn about it
+            log::warning( sprintf( 
+              'Failed to get %s variable for %s from Opal.',
+              $value,
+              $db_participant->uid ) );
+          }
+        }
+        else if( 'CCT_PARK_TRM' == $value )
+        {
+          // get data from Opal
+          $opal_manager = lib::create( 'business\opal_manager' );
+          
+          $this->$key = '';
+          try
+          {
+            $this->$key = $opal_manager->get_value(
+              'clsa-cati',
+              '60 min Questionnaire (Tracking Main Wave & Injury)',
+              $db_participant,
+              'CCT_PARK_TRM' );
+          }
+          catch( \cenozo\exception\runtime $e )
+          {
+            // ignore the error but warn about it
+            log::warning( sprintf( 
+              'Failed to get %s variable for %s from Opal.',
+              $value,
+              $db_participant->uid ) );
+          }
         }
         else if( 'INT_13a' == $value || 'INCL_2f' == $value )
         {
@@ -167,6 +220,22 @@ class tokens extends sid_record
           $datetime_list = $db_participant->get_event_datetime_list(
             $event_type_class_name::get_unique_record( 'name', 'completed pilot interview' ) );
           $this->$key = 0 < count( $datetime_list ) ? current( $datetime_list ) : NULL;
+        }
+        else if( 'last interview date' == $value )
+        {
+          $event_type_class_name = lib::get_class_name( 'database\event_type' );
+          $event_mod = lib::create( 'database\modifier' );
+          $event_mod->order_desc( 'datetime' );
+          $event_mod->where( 'event_type_id', '=',
+            $event_type_class_name::get_unique_record( 'name', 'completed (Baseline)' )->id );
+          $event_mod->or_where( 'event_type_id', '=',
+            $event_type_class_name::get_unique_record( 'name', 'completed (Baseline Site)' )->id );
+          
+          $event_list = $db_participant->get_event_list( $event_mod );
+          $db_event = 0 < count( $event_list ) ? current( $event_list ) : NULL;
+          $this->$key = is_null( $db_event )
+                      ? 'DATE UNKNOWN'
+                      : util::get_formatted_date( $db_event->datetime );
         }
         else if( false !== strpos( $value, 'alternate' ) )
         {

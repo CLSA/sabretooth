@@ -70,16 +70,13 @@ class interview_view extends \cenozo\ui\widget\base_view
     $db_participant = $db_interview->get_participant();
     $participant = sprintf( '%s, %s', $db_participant->last_name, $db_participant->first_name );
     $cog_consent = $db_interview->get_cognitive_consent();
-    $rescored = 0 == strcasecmp( 'yes', $cog_consent )
-              ? ( $db_interview->rescored ? 'Yes' : 'No' )
-              : 'N/A';
 
     // set the view's items
     $this->set_item( 'uid', $db_participant->uid );
     $this->set_item( 'participant', $participant );
     $this->set_item( 'qnaire', $db_interview->get_qnaire()->name );
     $this->set_item( 'completed', $db_interview->completed, true );
-    $this->set_item( 'rescored', $rescored );
+    $this->set_item( 'rescored', $db_interview->rescored );
 
     // only rescore if there is a rescore sid set
     $allow_rescore = false;
