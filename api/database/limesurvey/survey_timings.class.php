@@ -75,18 +75,15 @@ class survey_timings extends sid_record
         'FROM %s t '.
         'JOIN %s s ON t.id = s.id '.
         'JOIN %s.%sinterview i ON s.token LIKE CONCAT( i.id, "_%%" ) '.
-        'JOIN %s.%sparticipant_primary_address p ON i.participant_id = p.participant_id '.
-        'JOIN %s.%saddress a ON p.address_id = a.id '.
-        'JOIN %s.%sregion r ON a.region_id = r.id AND r.id = %s',
+        'JOIN %sparticipant_primary_address p ON i.participant_id = p.participant_id '.
+        'JOIN %saddress a ON p.address_id = a.id '.
+        'JOIN %sregion r ON a.region_id = r.id AND r.id = %s',
         static::get_table_name(),
         str_replace( '_timings', '', static::get_table_name() ),
         $db->get_name(),
         $db->get_prefix(),
-        $db->get_name(),
         $db->get_prefix(),
-        $db->get_name(),
         $db->get_prefix(),
-        $db->get_name(),
         $db->get_prefix(),
         $database_class_name::format_string( $db_region->id ) );
     }

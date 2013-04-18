@@ -89,6 +89,13 @@ class interview_view extends \cenozo\ui\widget\base_view
         // the participant consented to be recorded
         0 == strcasecmp( 'yes', $cog_consent );
     }
+
+    // if we can rescore and the rescore is set to N/A change it to No
+    if( $allow_rescore && 'N/A' == $db_interview->rescore )
+    {
+      $db_interview->rescore = 'No';
+      $db_interview->save();
+    }
       
     $this->set_variable( 'allow_rescore', $allow_rescore );
     if( $allow_rescore )
