@@ -91,9 +91,9 @@ class interview_view extends \cenozo\ui\widget\base_view
     }
 
     // if we can rescore and the rescore is set to N/A change it to No
-    if( $allow_rescore && 'N/A' == $db_interview->rescore )
+    if( $allow_rescore && 'N/A' == $db_interview->rescored )
     {
-      $db_interview->rescore = 'No';
+      $db_interview->rescored = 'No';
       $db_interview->save();
     }
       
