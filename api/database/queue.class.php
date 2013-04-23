@@ -1194,6 +1194,7 @@ next_event.datetime AS next_event_datetime
 FROM participant
 JOIN service_has_participant
 ON participant.id = service_has_participant.participant_id
+AND service_has_participant.datetime IS NOT NULL
 AND service_id = %s
 JOIN cohort ON cohort.id = participant.cohort_id
 JOIN participant_last_consent
