@@ -16,6 +16,8 @@ class tokens extends sid_record
 {
   /**
    * Updates the token attributes with current values from Mastodon
+   * TODO: this method contains many reference to CLSA-specific features which
+   *       should be made generic
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant The record of the participant linked to this token.
@@ -31,6 +33,7 @@ class tokens extends sid_record
     }
 
     $db_user = lib::create( 'business\session' )->get_user();
+    $db_cohort = $db_participant->get_cohort();
 
     // determine the first part of the token
     $token_part = substr( $this->token, 0, strpos( $this->token, '_' ) + 1 );
@@ -52,7 +55,7 @@ class tokens extends sid_record
         // now get the info based on the attribute name
         if( 'cohort' == $value )
         {
-          $this->$key = $db_participant->cohort;
+          $this->$key = $db_cohort->name;
         }
         else if( false !== strpos( $value, 'address' ) )
         {
@@ -85,10 +88,39 @@ class tokens extends sid_record
         }
         else if( 'age' == $value )
         {
+          // if this is the participant's first assignment copy the date of birth from Opal
+          // (if it exists)
+          $db_interview = lib::create( 'business\session')->get_current_assignment()->get_interview();
+          $phase_mod = lib::create( 'database\modifier' );
+          $phase_mod->where( 'rank', '=', 1 );
+          $phase_list = $db_interview->get_qnaire()->get_phase_list( $phase_mod );
+          
+          $db_phase = current( $phase_list );
+          if( $db_phase && 1 == $db_interview->get_assignment_count() )
+          {
+            $opal_manager = lib::create( 'business\opal_manager' );
+            
+            try
+            {
+              $datasource = 'comprehensive' == $db_cohort->name ? 'clsa-inhome' : 'clsa-cati';
+              $table = 'comprehensive' == $db_cohort->name
+                     ? 'InHome_Id'
+                     : '60 min Questionnaire (Tracking Main Wave & Injury)';
+              $variable = 'comprehensive' == $db_cohort->name ? 'AGE_DOB_AGE_COM' : 'AGE_DOB_TRM';
+              $dob = $opal_manager->get_value( $datasource, $table, $db_participant, $variable );
+              $db_participant->date_of_birth = $dob;
+              $db_participant->save();
+            }
+            catch( \cenozo\exception\runtime $e )
+            {
+              // ignore the error (don't bother warning)
+            }
+          }
+
           $this->$key = strlen( $db_participant->date_of_birth )
                       ? util::get_interval(
                           util::get_datetime_object( $db_participant->date_of_birth ) )->y
-                      : "";
+                      : '';
         }
         else if( 'written consent received' == $value )
         {
@@ -111,55 +143,58 @@ class tokens extends sid_record
           // get data from Opal
           $opal_manager = lib::create( 'business\opal_manager' );
           
-          $this->$key = '';
-          try
-          {
-            $blood = $opal_manager->get_value(
-              'clsa-dcs', 'Phlebotomy', $db_participant, 'AGREE_BS' );
-            $urine = $opal_manager->get_value(
-              'clsa-dcs', 'Phlebotomy', $db_participant, 'AGREE_URINE' );
+          $this->$key = 0;
 
-            $this->$key = 0 == strcasecmp( 'yes', $blood ) ||
-                          0 == strcasecmp( 'yes', $urine )
-                        ? 1 : 0;
-          }
-          catch( \cenozo\exception\runtime $e )
+          if( 'comprehensive' == $db_cohort->name )
           {
-            // ignore the error but warn about it
-            log::warning( sprintf( 
-              'Failed to get %s variable for %s from Opal.',
-              $value,
-              $db_participant->uid ) );
+            try
+            {
+              $blood = $opal_manager->get_value(
+                'clsa-dcs', 'Phlebotomy', $db_participant, 'AGREE_BS' );
+              $urine = $opal_manager->get_value(
+                'clsa-dcs', 'Phlebotomy', $db_participant, 'AGREE_URINE' );
+
+              $this->$key = 0 == strcasecmp( 'yes', $blood ) ||
+                            0 == strcasecmp( 'yes', $urine )
+                          ? 1 : 0;
+            }
+            catch( \cenozo\exception\runtime $e )
+            {
+              // ignore the error but warn about it
+              log::warning( sprintf( 
+                'Failed to get "%s" variable for %s from Opal.',
+                $value,
+                $db_participant->uid ) );
+            }
           }
         }
-        else if( 'CCT_PARK_TRM' == $value )
+        else if( 'parkinsonism' == $value )
         {
           // get data from Opal
           $opal_manager = lib::create( 'business\opal_manager' );
           
-          $this->$key = '';
+          $this->$key = 'NO';
           try
           {
+            $datasource = 'comprehensive' == $db_cohort->name ? 'clsa-dcs' : 'clsa-cati';
+            $table = 'comprehensive' == $db_cohort->name
+                   ? 'DiseaseSymptoms'
+                   : '60 min Questionnaire (Tracking Main Wave & Injury)';
+            $variable = 'comprehensive' == $db_cohort->name ? 'CCC_PARK_DCS' : 'CCT_PARK_TRM';
             $this->$key = $opal_manager->get_value(
-              'clsa-cati',
-              '60 min Questionnaire (Tracking Main Wave & Injury)',
-              $db_participant,
-              'CCT_PARK_TRM' );
+              $datasource, $table, $db_participant, $variable );
           }
           catch( \cenozo\exception\runtime $e )
           {
             // ignore the error but warn about it
             log::warning( sprintf( 
-              'Failed to get %s variable for %s from Opal.',
+              'Failed to get "%s" variable for %s from Opal.',
               $value,
               $db_participant->uid ) );
           }
         }
         else if( 'INT_13a' == $value || 'INCL_2f' == $value )
         {
-          // TODO: This is a custom token attribute which refers to a specific question in the
-          // introduction survey.  This code is not generic and needs to eventually be made
-          // generic.
           $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
           $source_survey_class_name = lib::get_class_name( 'database\source_survey' );
           
