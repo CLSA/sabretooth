@@ -7,6 +7,11 @@
   - navigation buttons removed when rescoring
   - interviews can be rescored even after rescoring is complete
 
+* Adding new role.all_sites column
+
+  - Used to determine whether a role should be restricted to a single site or not
+  - Many old references to "tier" have been replaced 
+
 ====================================================================================================
 1.2.0
 ====================================================================================================

@@ -106,7 +106,5 @@ class callback_add extends \cenozo\ui\widget\base_view
     $this->set_item( 'participant_id', $this->parent->get_record()->id );
     $this->set_item( 'phone_id', '', false, $phones );
     $this->set_item( 'datetime', '', true, $datetime_limits );
-
-    $this->set_variable( 'is_mid_tier', 2 == $session->get_role()->tier );
   }
 }

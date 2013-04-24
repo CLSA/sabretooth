@@ -33,7 +33,7 @@
 {% endblock javascript %}
 
 {% block record_extra_post_items %}
-  {% if is_mid_tier %}
+  {% if allow_forced_appointment %}
     <tr><td></td><td><hr class="ui-widget ui-widget-content" /></td></tr>
     <tr id="{{widget.full }}__force_row">
       <td class="heading">Force appointment:</td>
