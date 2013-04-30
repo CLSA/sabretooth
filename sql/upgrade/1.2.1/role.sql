@@ -26,7 +26,7 @@ CREATE PROCEDURE patch_role()
       SET @sql = CONCAT(
         "UPDATE ", @cenozo, ".role ",
         "SET all_sites = 1 ",
-        "WHERE name IN ( 'administrator', 'typist' )" );
+        "WHERE name IN ( 'administrator', 'opal', 'typist' )" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
