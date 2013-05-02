@@ -230,37 +230,6 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`assignment_note`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`assignment_note` ;
-
-CREATE  TABLE IF NOT EXISTS `sabretooth`.`assignment_note` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-  `update_timestamp` TIMESTAMP NOT NULL ,
-  `create_timestamp` TIMESTAMP NOT NULL ,
-  `user_id` INT UNSIGNED NOT NULL ,
-  `assignment_id` INT UNSIGNED NOT NULL ,
-  `sticky` TINYINT(1) NOT NULL DEFAULT 0 ,
-  `datetime` DATETIME NOT NULL ,
-  `note` TEXT NOT NULL ,
-  PRIMARY KEY (`id`) ,
-  INDEX `fk_assignment_id` (`assignment_id` ASC) ,
-  INDEX `fk_user_id` (`user_id` ASC) ,
-  INDEX `dk_sticky_datetime` (`sticky` ASC, `datetime` ASC) ,
-  CONSTRAINT `fk_assignment_note_assignment_id`
-    FOREIGN KEY (`assignment_id` )
-    REFERENCES `sabretooth`.`assignment` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_assignment_note_user_id`
-    FOREIGN KEY (`user_id` )
-    REFERENCES `cenozo`.`user` (`id` )
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
 -- Table `sabretooth`.`appointment`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `sabretooth`.`appointment` ;

@@ -12,6 +12,10 @@
   - Used to determine whether a role should be restricted to a single site or not
   - Many old references to "tier" have been replaced 
 
+* Replacing assignment notes with participant notes
+  - All existing assignment notes are converted to participant notes
+  - Assignment notes no longer exist
+
 ====================================================================================================
 1.2.0
 ====================================================================================================

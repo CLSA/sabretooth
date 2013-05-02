@@ -234,8 +234,6 @@ class operator_assignment extends \cenozo\ui\widget
       if( !is_null( $db_last_assignment ) )
       {
         $this->set_variable( 'previous_assignment_id', $db_last_assignment->id );
-        $this->set_variable( 'previous_assignment_note_count',
-          $db_last_assignment->get_note_count() );
         $this->set_variable( 'previous_assignment_date',
           util::get_formatted_date( $db_last_assignment->start_datetime ) );
         $this->set_variable( 'previous_assignment_time',

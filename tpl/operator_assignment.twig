@@ -145,7 +145,7 @@
           <td class="heading">Participant:</td>
           <td class="content" style="position:relative">
             {{ participant_name }} ({{ participant_uid }})
-            {{ note_widget( widget.full, "participant", participant_id,
+            {{ note_widget( [widget.full,"icon"]|join, "participant", participant_id,
                             true, participant_note_count ) }}
           </td>
         </tr>
@@ -193,8 +193,6 @@
               new participant (never assigned)
             {% else %}
               Last assigned on {{ previous_assignment_date }} at {{ previous_assignment_time }}
-              {{ note_widget( widget.full, "assignment", previous_assignment_id,
-                              true, previous_assignment_note_count ) }}
               <ul>
                 {% for call in previous_call_list %}<li>{{ call }}</li>{% endfor %}
               </ul>
@@ -261,8 +259,8 @@
         </tr>
         <tr>
           <td align="left">
-            {{ note_widget( widget.full, "assignment", assignment_id,
-                            false, "Assignment Notes" ) }}
+            {{ note_widget( widget.full, "participant", participant_id,
+                            false, "Participant Notes" ) }}
           </td>
           <td align="right">
             {% if allow_withdraw %}
