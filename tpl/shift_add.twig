@@ -53,7 +53,7 @@
             // clear the checked ids object cookie and return to the previous page
             $.cookie( "{{ widget.full }}_user_list_checked_ids", null );
             $slot = $( "#" + {{ slot }} + "_slot" );
-            if( "#main_slot" == $slot.selector ) slot_prev( {{ slot }} );
+            if( "#main_slot" == $slot.selector ) slot_prev_clip( {{ slot }} );
             else $slot.dialog( "close" ); // assume we're in a popup dialog
           }
         }
