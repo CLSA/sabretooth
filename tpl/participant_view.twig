@@ -9,18 +9,30 @@
 
 {% block javascript %}
   {{ parent() }}
-  {% if allow_secondary %}
-    <script type="text/javascript">
-      $( function() {
+  <script type="text/javascript">
+    $( function() {
+      {% if allow_secondary %}
         // secondary button
         $( "#{{ widget.full }}__secondary" ).click( function() {
           window.location.reload();
           // force the secondary list to be loaded in the main slot
           slot_load( 'main', 'participant', 'secondary', { id: {{ id }} } );
         } );
+      {% endif %}
+
+      // withdraw button
+      $( "#{{ widget.full }}__withdraw" ).click( function() {
+        if( ajax_push( "participant", "withdraw",
+                       { "id": {{ id }},
+                         "cancel": "0" } ) ) {
+          // force the withdraw list to be loaded in the main slot
+          $.cookie( "withdrawing_participant", "{{ id }}" );
+          window.location.reload();
+          slot_load( 'main', 'participant', 'withdraw', { id: {{ id }} } );
+        }
       } );
-    </script>
-  {% endif %}
+    } );
+  </script>
 {% endblock javascript %}
 
 {% block record %}

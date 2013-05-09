@@ -16,6 +16,10 @@
   - All existing assignment notes are converted to participant notes
   - Assignment notes no longer exist
 
+* Adding new withdraw button in participant actions
+  - Participants can now be withdrawn by clicking the "withdraw" button when viewing their file
+  - Operators can still withdraw a participant during an assignment the same way as before
+
 ====================================================================================================
 1.2.0
 ====================================================================================================

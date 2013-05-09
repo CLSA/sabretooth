@@ -700,7 +700,12 @@ AND role.name IN( "administrator", "operator", "supervisor" );
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "push" AND subject = "participant" AND operation.name = "withdraw"
-AND role.name IN ( "operator" );
+AND role.name IN ( "administrator", "operator", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "withdraw" AND subject = "participant" AND operation.name = "withdraw"
+AND role.name IN ( "administrator", "supervisor" );
 
 -- participant_status
 

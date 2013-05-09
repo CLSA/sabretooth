@@ -136,6 +136,17 @@ class participant_view extends \cenozo\ui\widget\participant_view
     }
 
     $this->set_variable( 'allow_secondary', $allow_secondary );
+
+    // add an action to withdraw the participant
+    $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'withdraw' );
+    $db_last_consent = $this->get_record()->get_last_consent();
+    if( lib::create( 'business\session' )->is_allowed( $db_operation ) &&
+        ( is_null( $db_last_consent ) || true == $db_last_consent->accept ) )
+    {
+      $this->add_action( 'withdraw', 'Withdraw', NULL,
+        'Marks the participant as denying consent and brings up the withdraw script '.
+        'in order to process the participant\'s withdraw preferences.' );
+    }
   }
   
   /**
