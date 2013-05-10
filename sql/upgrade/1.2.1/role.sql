@@ -31,6 +31,17 @@ CREATE PROCEDURE patch_role()
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
     END IF;
+
+    -- add new roles
+    SELECT "Adding new roles" AS ""; 
+
+    SET @sql = CONCAT(
+      "INSERT IGNORE INTO ", @cenozo, ".role ( name, tier, all_sites ) VALUES "
+      "( 'curator', 2, true ), "
+      "( 'helpline', 2, true )" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement;
+    DEALLOCATE PREPARE statement;
   END //
 DELIMITER ;
 
