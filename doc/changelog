@@ -20,6 +20,8 @@
   - Participants can now be withdrawn by clicking the "withdraw" button when viewing their file
   - Operators can still withdraw a participant during an assignment the same way as before
 
+* Adding "duplicate" to possible participant condition list
+
 ====================================================================================================
 1.2.0
 ====================================================================================================
