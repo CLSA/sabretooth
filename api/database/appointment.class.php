@@ -67,8 +67,8 @@ class appointment extends \cenozo\database\record
     $db_participant = lib::create( 'database\participant', $this->participant_id );
     $db_site = $db_participant->get_effective_site();
     if( is_null( $db_site ) )
-      throw lib::create( 'exception\runtime',
-        'Cannot validate an appointment date, participant has no primary address.', __METHOD__ );
+      throw lib::create( 'exception\notice',
+        'Cannot validate appointment date, participant has no primary address.', __METHOD__ );
     
     $shift_template_class_name = lib::get_class_name( 'database\shift_template' );
     $shift_class_name = lib::get_class_name( 'database\shift' );

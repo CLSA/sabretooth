@@ -58,10 +58,18 @@ class site_calendar extends \cenozo\ui\widget\base_calendar
         !is_null( $this->parent->parent ) &&
         'participant_add_appointment' == $this->parent->parent->get_class_name() )
     {
-      $db_site = lib::create( 'database\site',
-        $this->parent->parent->get_record()->get_effective_site()->id );
-      $this->set_variable( 'site_id', $db_site->id );
-      $this->set_heading( 'Open appointment slots for '.$db_site->name );
+      $db_site = $this->parent->parent->get_record()->get_effective_site();
+
+      if( is_null( $db_site ) )
+      {
+        $this->set_variable( 'site_id', 0 );
+        $this->set_heading( 'WARNING! Participant does not belong to any site, showing blank calendar' );
+      }
+      else
+      {
+        $this->set_variable( 'site_id', $db_site->id );
+        $this->set_heading( 'Open appointment slots for '.$db_site->name );
+      }
     }
     else $this->set_variable( 'site_id', lib::create( 'business\session' )->get_site()->id );
 
