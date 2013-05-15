@@ -7,7 +7,7 @@ CREATE PROCEDURE patch_participant()
     SET @cenozo = CONCAT( SUBSTRING( DATABASE(), 1, LOCATE( 'mastodon', DATABASE() ) - 1 ),
                           'cenozo' );
 
-    -- add the all_sites column if it is missing
+    -- add the 'duplicate' option to the participant.status enum column
     SELECT "Adding 'duplicate' to participant.status enum column" AS "";
     SET @test = (
       SELECT COUNT(*)
