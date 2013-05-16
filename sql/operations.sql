@@ -95,6 +95,12 @@ VALUES( "pull", "consent_form", "report", true, "Download a consent form report.
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "consent_form", "report", true, "Set up a consent form report." );
 
+-- consent_form
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "consent_required", "report", true, "Download a consent required report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "consent_required", "report", true, "Set up a consent required report." );
+
 -- interview
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "interview", "edit", true, "Edits the details of an interview." );

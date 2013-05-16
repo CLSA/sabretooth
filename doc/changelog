@@ -22,6 +22,11 @@
 
 * Adding "duplicate" to possible participant condition list
 
+* Adding new Consent Required report
+  - Report lists all participants who have completed an interview and have not provided signed
+    consent
+  - May be restricted by interview complete date
+
 ====================================================================================================
 1.2.0
 ====================================================================================================
