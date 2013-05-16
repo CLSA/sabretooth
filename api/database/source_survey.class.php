@@ -13,4 +13,3 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * source_survey: record
  */
 class source_survey extends \cenozo\database\record {}
-?>

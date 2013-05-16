@@ -101,8 +101,8 @@ class shift_add extends \cenozo\ui\widget\base_view
     $role_class_name = lib::get_class_name( 'database\role' );
     $db_role = $role_class_name::get_unique_record( 'name', 'operator' );
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'role_id', '=', $db_role->id );
-    $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
+    $modifier->where( 'access.role_id', '=', $db_role->id );
+    $modifier->where( 'access.site_id', '=', lib::create( 'business\session' )->get_site()->id );
 
     $user_class_name = lib::get_class_name( 'database\user' );
     return $user_class_name::count( $modifier );
@@ -121,8 +121,8 @@ class shift_add extends \cenozo\ui\widget\base_view
     $role_class_name = lib::get_class_name( 'database\role' );
     $db_role = $role_class_name::get_unique_record( 'name', 'operator' );
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'role_id', '=', $db_role->id );
-    $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
+    $modifier->where( 'access.role_id', '=', $db_role->id );
+    $modifier->where( 'access.site_id', '=', lib::create( 'business\session' )->get_site()->id );
 
     $user_class_name = lib::get_class_name( 'database\user' );
     return $user_class_name::select( $modifier );
@@ -156,4 +156,3 @@ class shift_add extends \cenozo\ui\widget\base_view
    */
   protected $user_list = NULL;
 }
-?>

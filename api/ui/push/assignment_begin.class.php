@@ -237,4 +237,3 @@ class assignment_begin extends \cenozo\ui\push
       log::err( sprintf( 'Unable to release semaphore for user %s', $db_user->name ) );
   }
 }
-?>

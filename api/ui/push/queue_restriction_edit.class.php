@@ -73,4 +73,3 @@ class queue_restriction_edit extends \cenozo\ui\push\base_edit
     }
   }
 }
-?>

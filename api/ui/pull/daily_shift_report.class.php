@@ -99,7 +99,7 @@ class daily_shift_report extends \cenozo\ui\pull\base_report
     $total_completes = 0; 
     
     $user_mod = lib::create( 'database\modifier' );
-    $user_mod->where( 'site_id', '=', $db_current_site->id );
+    $user_mod->where( 'access.site_id', '=', $db_current_site->id );
     $user_class_name     = lib::get_class_name( 'database\user' );
     $activity_class_name = lib::get_class_name( 'database\activity');
 
@@ -119,8 +119,8 @@ class daily_shift_report extends \cenozo\ui\pull\base_report
 
       // make sure the operator has min/max time for this date range
       $activity_mod = lib::create( 'database\modifier' );
-      $activity_mod->where( 'user_id', '=', $db_user->id );
-      $activity_mod->where( 'site_id', '=', $db_current_site->id );
+      $activity_mod->where( 'activity.user_id', '=', $db_user->id );
+      $activity_mod->where( 'activity.site_id', '=', $db_current_site->id );
 
       // get the min and max datetimes for this day
       $activity_mod->where( 'datetime', '>=',
@@ -265,4 +265,3 @@ class daily_shift_report extends \cenozo\ui\pull\base_report
       $legend, NULL );
   }
 }
-?>

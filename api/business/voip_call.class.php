@@ -315,4 +315,3 @@ class voip_call extends \cenozo\base_object
    */
   private $manager = NULL;
 }
-?>

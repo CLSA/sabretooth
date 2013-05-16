@@ -44,7 +44,8 @@ class qnaire_add extends \cenozo\ui\widget\base_view
     $this->add_item( 'prev_qnaire_id', 'enum', 'Previous Questionnaire',
       'The questionnaire which must be finished before this one begins.' );
     $this->add_item( 'delay', 'number', 'Delay (weeks)',
-      'How many weeks after the previous questionnaire is completed before this one may begin.' );
+      'How many weeks after the previous questionnaire or event type is completed '.
+      'before this questionnaire may begin.' );
     $this->add_item( 'withdraw_sid', 'enum', 'Withdraw Survey' );
     $this->add_item( 'description', 'text', 'Description' );
   }
@@ -58,11 +59,14 @@ class qnaire_add extends \cenozo\ui\widget\base_view
   protected function setup()
   {
     parent::setup();
+
+    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
+    $surveys_class_name = lib::get_class_name( 'database\limesurvey\surveys' );
     
     // create enum arrays
     $qnaires = array();
-    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
-    foreach( $qnaire_class_name::select() as $db_qnaire ) $qnaires[$db_qnaire->id] = $db_qnaire->name;
+    foreach( $qnaire_class_name::select() as $db_qnaire )
+      $qnaires[$db_qnaire->id] = $db_qnaire->name;
     $num_ranks = $qnaire_class_name::count();
     $ranks = array();
     for( $rank = 1; $rank <= ( $num_ranks + 1 ); $rank++ ) $ranks[] = $rank;
@@ -76,17 +80,15 @@ class qnaire_add extends \cenozo\ui\widget\base_view
     $modifier->where( 'active', '=', 'Y' );
     $modifier->where( 'anonymized', '=', 'N' );
     $modifier->where( 'tokenanswerspersistence', '=', 'Y' );
-    $surveys_class_name = lib::get_class_name( 'database\limesurvey\surveys' );
     foreach( $surveys_class_name::select( $modifier ) as $db_survey )
       $surveys[$db_survey->sid] = $db_survey->get_title();
 
     // set the view's items
     $this->set_item( 'name', '', true );
     $this->set_item( 'rank', $last_rank_key, true, $ranks );
-    $this->set_item( 'prev_qnaire_id', key( $qnaires ), false, $qnaires );
+    $this->set_item( 'prev_qnaire_id', NULL, false, $qnaires );
     $this->set_item( 'delay', 52, true );
     $this->set_item( 'withdraw_sid', key( $surveys ), true, $surveys );
     $this->set_item( 'description', '' );
   }
 }
-?>

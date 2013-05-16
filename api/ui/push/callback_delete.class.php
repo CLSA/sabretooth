@@ -25,4 +25,3 @@ class callback_delete extends \cenozo\ui\push\base_delete
     parent::__construct( 'callback', $args );
   }
 }
-?>

@@ -25,4 +25,3 @@ class shift_template_delete extends \cenozo\ui\push\base_delete
     parent::__construct( 'shift_template', $args );
   }
 }
-?>

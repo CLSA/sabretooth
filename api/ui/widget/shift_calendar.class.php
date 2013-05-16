@@ -51,7 +51,8 @@ class shift_calendar extends \cenozo\ui\widget\base_calendar
     else
     {
       $db_user = lib::create( 'database\user', $this->user_id );
-      $this->set_heading( 'Shifts for '.$db_user->name );
+      $this->set_heading(
+        sprintf( 'Shifts for %s %s', $db_user->first_name, $db_user->last_name ) );
     }
 
   }
@@ -67,7 +68,8 @@ class shift_calendar extends \cenozo\ui\widget\base_calendar
     parent::setup();
     
     $this->set_variable( 'allow_all_day', false );
-    $this->set_variable( 'editable', 'operator' != lib::create( 'business\session' )->get_role()->name );
+    $this->set_variable(
+      'editable', 'operator' != lib::create( 'business\session' )->get_role()->name );
     $this->set_variable( 'user_id', $this->user_id );
   }
 
@@ -78,4 +80,3 @@ class shift_calendar extends \cenozo\ui\widget\base_calendar
    */
   protected $user_id = NULL;
 }
-?>

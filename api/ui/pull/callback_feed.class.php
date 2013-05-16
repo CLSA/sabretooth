@@ -49,14 +49,7 @@ class callback_feed extends \cenozo\ui\pull\base_feed
     $setting_manager = lib::create( 'business\setting_manager');
     foreach( $callback_class_name::select( $modifier ) as $db_callback )
     {
-      $start_datetime_obj = util::get_datetime_object( $db_callback->datetime );
-      $end_datetime_obj = clone $start_datetime_obj;
-      /* TODO NEXT: can end == start?
-      $duration = $db_callback->type == 'full' ? 
-                  $setting_manager->get_setting( 'callback', 'full duration' ) : 
-                  $setting_manager->get_setting( 'callback', 'half duration' );
-      $end_datetime_obj->modify(  sprintf( '+%d minute', $duration ) );
-      */
+      $datetime_obj = util::get_datetime_object( $db_callback->datetime );
 
       $db_participant = $db_callback->get_participant();
       $this->data[] = array(
@@ -65,9 +58,7 @@ class callback_feed extends \cenozo\ui\pull\base_feed
           $db_participant->first_name.' '.$db_participant->last_name :
           $db_participant->uid,
         'allDay' => false,
-        'start' => $start_datetime_obj->format( \DateTime::ISO8601 ),
-        'end' => $end_datetime_obj->format( \DateTime::ISO8601 ) );
+        'start' => $datetime_obj->format( \DateTime::ISO8601 ) );
     }
   }
 }
-?>

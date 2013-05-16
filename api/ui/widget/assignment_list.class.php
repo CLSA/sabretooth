@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * widget assignment list
  */
-class assignment_list extends site_restricted_list
+class assignment_list extends \cenozo\ui\widget\site_restricted_list
 {
   /**
    * Constructor
@@ -153,4 +153,3 @@ class assignment_list extends site_restricted_list
     return parent::determine_record_list( $modifier );
   }
 }
-?>

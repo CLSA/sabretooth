@@ -181,4 +181,3 @@ class interview_list extends \cenozo\ui\pull\base_list
    */
   protected $end_date_obj = NULL;
 }
-?>

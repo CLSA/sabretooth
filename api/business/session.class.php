@@ -15,6 +15,22 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class session extends \cenozo\business\session
 {
   /**
+   * Constructor.
+   * 
+   * Since this class uses the singleton pattern the constructor is never called directly.  Instead
+   * use the {@link singleton} method.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function __construct( $arguments )
+  {
+    parent::__construct( $arguments );
+
+    // add the opal_instance new operation to the censored list
+    $this->censored_operation_list[] = 'opal_instance_new';
+  }
+
+  /**
    * Initializes the session.
    * 
    * This method should be called immediately after initial construct of the session.
@@ -162,28 +178,6 @@ class session extends \cenozo\business\session
   }
   
   /**
-   * Add an operation to this user's activity log.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param ui\operation $operation The operation to log.
-   * @param array $args The arguments passed to the operation.
-   * @access public
-   */
-  public function log_activity( $operation, $args )
-  {
-    // add the operation as activity
-    $activity = lib::create( 'database\activity' );
-    $activity->user_id = $this->get_user()->id;
-    $activity->site_id = $this->get_site()->id;
-    $activity->role_id = $this->get_role()->id;
-    $activity->operation_id = $operation->get_id();
-    $activity->query = serialize( $args );
-    $activity->elapsed = util::get_elapsed_time();
-    $activity->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
-    $activity->save();
-  }
-  
-  /**
    * Resets the slot stacks to their initial state.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -258,4 +252,3 @@ class session extends \cenozo\business\session
    */
   private $survey_database = NULL;
 }
-?>

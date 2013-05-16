@@ -99,4 +99,3 @@ class opal_instance_new extends \cenozo\ui\push\base_new
     $this->arguments['columns']['user_id'] = $db_user->id;
   }
 }
-?>

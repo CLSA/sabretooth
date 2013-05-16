@@ -42,4 +42,3 @@ class phase extends \cenozo\database\has_rank
    */
   protected static $rank_parent = 'qnaire';
 }
-?>

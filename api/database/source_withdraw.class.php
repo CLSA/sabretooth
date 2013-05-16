@@ -13,4 +13,3 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  * source_withdraw: record
  */
 class source_withdraw extends \cenozo\database\record {}
-?>

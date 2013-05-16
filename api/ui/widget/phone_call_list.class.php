@@ -67,4 +67,3 @@ class phone_call_list extends \cenozo\ui\widget\base_list
     }
   }
 }
-?>

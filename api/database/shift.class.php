@@ -82,4 +82,3 @@ class shift extends \cenozo\database\record
     parent::save();
   }
 }
-?>

@@ -54,4 +54,3 @@ class shift_template_calendar extends \cenozo\ui\widget\base_calendar
     $this->set_variable( 'editable', true );
   }
 }
-?>

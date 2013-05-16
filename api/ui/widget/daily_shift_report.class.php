@@ -45,4 +45,3 @@ class daily_shift_report extends base_report
       'comments.' );
   }
 }
-?>

@@ -27,4 +27,3 @@ class phase_new extends \cenozo\ui\push\base_new
     parent::__construct( 'phase', $args );
   }
 }
-?>

@@ -23,4 +23,3 @@ class groups
       !is_null( $modifier ) ? $modifier->get_sql() : '' ) );
   }
 }
-?>

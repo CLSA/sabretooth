@@ -20,4 +20,3 @@ $participant_mod->where( 'phone_call.assignment_id', '=', 'assignment.id', false
 $participant_mod->where( 'assignment.interview_id', '=', 'interview.id', false );
 $participant_mod->where( 'interview.participant_id', '=', 'participant.id', false );
 phone_call::customize_join( 'participant', $participant_mod );
-?>

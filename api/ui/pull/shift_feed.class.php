@@ -101,4 +101,3 @@ class shift_feed extends \cenozo\ui\pull\base_feed
    */
   protected $user_id = NULL;
 }
-?>

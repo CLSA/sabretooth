@@ -39,6 +39,16 @@ class operator_assignment extends \cenozo\ui\widget
     parent::prepare();
 
     $this->set_heading( 'Current Assignment' );
+
+    // see if this user has an open assignment
+    $db_current_assignment = lib::create( 'business\session' )->get_current_assignment();
+    if( is_null( $db_current_assignment ) )
+    {
+      // create the system message show sub-widget
+      $this->system_message_show = lib::create( 'ui\widget\system_message_show', $this->arguments );
+      $this->system_message_show->set_parent( $this );
+      $this->system_message_show->set_heading( 'System Messages' );
+    }
   }
 
   /**
@@ -56,52 +66,6 @@ class operator_assignment extends \cenozo\ui\widget
     $db_role = $session->get_role();
     $db_site = $session->get_site();
 
-    // add any messages that apply to this user
-    $message_list = array();
-
-    // global messages go first
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', NULL );
-    $modifier->where( 'role_id', '=', NULL );
-    $system_message_class_name = lib::get_class_name( 'database\system_message' );
-    foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
-    {
-      $message_list[] = array( 'title' => $db_system_message->title,
-                               'note' => $db_system_message->note );
-    }
-    
-    // then all-site messages
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', NULL );
-    $modifier->where( 'role_id', '=', $db_role->id );
-    foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
-    {
-      $message_list[] = array( 'title' => $db_system_message->title,
-                               'note' => $db_system_message->note );
-    }
-
-    // then all-role site-specific messages
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'role_id', '=', NULL );
-    foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
-    {
-      $message_list[] = array( 'title' => $db_system_message->title,
-                               'note' => $db_system_message->note );
-    }
-
-    // then role-specific site-specific messages
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'role_id', '=', $db_role->id );
-    foreach( $system_message_class_name::select( $modifier ) as $db_system_message )
-    {
-      $message_list[] = array( 'title' => $db_system_message->title,
-                               'note' => $db_system_message->note );
-    }
-
-    $this->set_variable( 'message_list', $message_list );
-
     // see if this user has an open assignment
     $db_current_assignment = $session->get_current_assignment();
     if( is_null( $db_current_assignment ) )
@@ -110,6 +74,14 @@ class operator_assignment extends \cenozo\ui\widget
       $away_time_mod = lib::create( 'database\modifier' );
       $away_time_mod->where( 'end_datetime', '=', NULL );
       $this->set_variable( 'on_break', 0 < $db_user->get_away_time_count( $away_time_mod ) );
+
+      try
+      {
+        $this->system_message_show->process();
+        $this->set_variable( 'system_message_show', $this->system_message_show->get_variables() );
+      }
+      catch( \cenozo\exception\permission $e ) {}
+
     }
     else
     { // fill out the participant's details
@@ -126,9 +98,7 @@ class operator_assignment extends \cenozo\ui\widget
       if( 'en' == $db_participant->language ) $language = 'english';
       else if( 'fr' == $db_participant->language ) $language = 'french';
 
-      $consent = 'none';
-      $db_consent = $db_participant->get_last_consent();
-      if( !is_null( $db_consent ) ) $consent = $db_consent->event;
+      $db_last_consent = $db_participant->get_last_consent();
       
       $previous_call_list = array();
       $db_last_assignment = $db_participant->get_last_finished_assignment();
@@ -186,8 +156,10 @@ class operator_assignment extends \cenozo\ui\widget
         sprintf( $db_participant->first_name.' '.$db_participant->last_name ) );
       $this->set_variable( 'participant_uid', $db_participant->uid );
       $this->set_variable( 'participant_language', $language );
-      $this->set_variable( 'participant_consent', $consent );
-      $this->set_variable( 'withdrawing', $consent == $db_participant->get_source()->withdraw_type );
+      $this->set_variable(
+        'participant_consent', is_null( $db_last_consent ) ? 'none' : $db_last_consent->to_string() );
+      $this->set_variable(
+        'withdrawing', !is_null( $db_last_consent ) && false == $db_last_consent->accept );
       $this->set_variable(
         'allow_withdraw', !is_null( $db_interview->get_qnaire()->withdraw_sid ) );
       
@@ -299,4 +271,3 @@ class operator_assignment extends \cenozo\ui\widget
     }
   }
 }
-?>

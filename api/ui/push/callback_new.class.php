@@ -45,4 +45,3 @@ class callback_new extends \cenozo\ui\push\base_new
       throw lib::create( 'exception\notice', 'The date/time cannot be left blank.', __METHOD__ );
   }
 }
-?>

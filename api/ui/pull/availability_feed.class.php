@@ -37,10 +37,9 @@ class availability_feed extends \cenozo\ui\pull\base_feed
   {
     parent::execute();
 
-    $availability_class_name = lib::get_class_name( 'database\availability' );
+    $queue_class_name = lib::get_class_name( 'database\queue' );
 
     $this->data = array();
-    $db_site = lib::create( 'business\session' )->get_site();
 
     $start_datetime_obj = util::get_datetime_object( $this->start_datetime );
     $end_datetime_obj   = util::get_datetime_object( $this->end_datetime );
@@ -56,32 +55,35 @@ class availability_feed extends \cenozo\ui\pull\base_feed
       $current_datetime_obj->add( new \DateInterval( 'P1D' ) );
     }
 
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'participant_site.site_id', '=', $db_site->id );
-    $modifier->where( 'interview.completed', '=', false );
-    foreach( $availability_class_name::select( $modifier ) as $db_availability )
+    $db_queue = $queue_class_name::get_unique_record( 'name', 'eligible' );
+    $db_queue->set_site( lib::create( 'business\session' )->get_site() );
+
+    foreach( $db_queue->get_participant_list() as $db_participant )
     {
-      foreach( $days as $date => $day )
+      foreach( $db_participant->get_availability_list() as $db_availability )
       {
-        $diffs = &$days[$date]['diffs'];
-
-        if( $db_availability->$day['dow'] )
+        foreach( $days as $date => $day )
         {
-          $start_time_as_int =
-            intval( preg_replace( '/[^0-9]/', '',
-              substr( $db_availability->start_time, 0, -3 ) ) );
-          if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
-          $diffs[ $start_time_as_int ] += 1;
+          $diffs = &$days[$date]['diffs'];
 
-          $end_time_as_int =
-            intval( preg_replace( '/[^0-9]/', '',
-              substr( $db_availability->end_time, 0, -3 ) ) );
-          if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[ $end_time_as_int ] = 0;
-          $diffs[ $end_time_as_int ] -= 1;
+          if( $db_availability->$day['dow'] )
+          {
+            $start_time_as_int =
+              intval( preg_replace( '/[^0-9]/', '',
+                substr( $db_availability->start_time, 0, -3 ) ) );
+            if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
+            $diffs[ $start_time_as_int ] += 1;
+
+            $end_time_as_int =
+              intval( preg_replace( '/[^0-9]/', '',
+                substr( $db_availability->end_time, 0, -3 ) ) );
+            if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[ $end_time_as_int ] = 0;
+            $diffs[ $end_time_as_int ] -= 1;
+          }
+
+          // unset diffs since it is a reference
+          unset( $diffs );
         }
-
-        // unset diffs since it is a reference
-        unset( $diffs );
       }
     }
 
@@ -147,4 +149,3 @@ class availability_feed extends \cenozo\ui\pull\base_feed
     }
   }
 }
-?>

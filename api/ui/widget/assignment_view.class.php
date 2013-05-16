@@ -130,4 +130,3 @@ class assignment_view extends \cenozo\ui\widget\base_view
    */
   protected $phone_call_list = NULL;
 }
-?>
