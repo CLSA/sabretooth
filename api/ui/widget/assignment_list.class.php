@@ -105,9 +105,7 @@ class assignment_list extends \cenozo\ui\widget\site_restricted_list
                'status' => $status,
                // allow_spy and user_id aren't columns, they are used for voip spying
                'allow_spy' => $allow_spy,
-               'user_id' => $db_user->id,
-               // note_count isn't a column, it's used for the note button
-               'note_count' => $record->get_note_count() ) );
+               'user_id' => $db_user->id ) );
     }
   }
 

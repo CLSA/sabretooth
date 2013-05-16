@@ -12,4 +12,4 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * assignment: record
  */
-class assignment extends \cenozo\database\has_note {}
+class assignment extends \cenozo\database\record {}

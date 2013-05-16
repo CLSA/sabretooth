@@ -95,6 +95,12 @@ VALUES( "pull", "consent_form", "report", true, "Download a consent form report.
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "consent_form", "report", true, "Set up a consent form report." );
 
+-- consent_form
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "consent_required", "report", true, "Download a consent required report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "consent_required", "report", true, "Set up a consent required report." );
+
 -- interview
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "interview", "edit", true, "Edits the details of an interview." );
@@ -152,6 +158,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "tree", true, "Displays participants in a tree format, revealing which queue the belong to." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "withdraw", true, "Withdraws the participant (or cancels the withdraw).  This is meant to be used during an interview if the participant suddenly wishes to withdraw." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "withdraw", true, "Pseudo-assignment to handle participant withdraws." );
 
 -- participant_status
 INSERT INTO operation( type, subject, name, restricted, description )

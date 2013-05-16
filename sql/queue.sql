@@ -235,6 +235,19 @@ description = "Participants who are not eligible for answering questionnaires be
 unreachable even after sourcing attempts.";
 
 INSERT INTO queue SET
+name = "duplicate",
+title = "Duplicate participants",
+rank = NULL,
+qnaire_specific = false,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "ineligible" ) AS tmp ),
+description = "Participants who are not eligible for answering questionnaires because they are
+a duplicate of another participant record.";
+
+INSERT INTO queue SET
 name = "eligible",
 title = "Eligible to answer questionnaires",
 rank = NULL,
