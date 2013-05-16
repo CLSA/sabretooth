@@ -111,6 +111,6 @@ class appointment_add extends base_appointment_view
     $this->set_item( 'datetime', '', true, $datetime_limits );
     $this->set_item( 'type', key( $types ), true, $types );
 
-    $this->set_variable( 'is_mid_tier', 2 == $session->get_role()->tier );
+    $this->set_variable( 'allow_forced_appointment', 1 < $session->get_role()->tier );
   }
 }

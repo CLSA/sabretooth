@@ -38,9 +38,9 @@ class queue_restriction_delete extends \cenozo\ui\push\base_delete
 
     $session = lib::create( 'business\session' );
 
-    // make sure that only top tier roles can remove queue restrictions not belonging
+    // make sure that only all-site roles can remove queue restrictions not belonging
     // to the current site
-    if( 3 != $session->get_role()->tier &&
+    if( !$session->get_role()->all_sites &&
         $session->get_site()->id != $this->get_record()->site_id )
     {
       throw lib::create( 'exception\notice',

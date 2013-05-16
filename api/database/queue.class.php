@@ -266,6 +266,9 @@ class queue extends \cenozo\database\record
   public function set_site( $db_site = NULL )
   {
     $this->db_site = $db_site;
+
+    // reset the query list
+    self::$query_list = array();
   }
 
   /**
@@ -353,7 +356,7 @@ class queue extends \cenozo\database\record
     // join to the quota table based on site, region, gender and age group
     $quota_join =
       'LEFT JOIN quota '.
-      'ON quota.site_id = '.$participant_site_id.
+      'ON quota.site_id = primary_region_site_id '.
       'AND quota.region_id = primary_region_id '.
       'AND quota.gender = participant_gender '.
       'AND quota.age_group_id = participant_age_group_id '.
@@ -937,7 +940,7 @@ class queue extends \cenozo\database\record
     static::db()->execute( 'DROP TABLE IF EXISTS participant_for_queue_phone_count' );
     static::db()->execute( sprintf(
       'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue_phone_count '.
-      'SELECT participant.person_id, COUNT(*) phone_count '.
+      'SELECT participant.person_id, IF( phone.id IS NULL, 0, COUNT(*) ) phone_count '.
       'FROM participant '.
       'JOIN service_has_participant ON participant.id = service_has_participant.participant_id '.
       'AND service_has_participant.service_id = %s '.
@@ -1191,6 +1194,7 @@ next_event.datetime AS next_event_datetime
 FROM participant
 JOIN service_has_participant
 ON participant.id = service_has_participant.participant_id
+AND service_has_participant.datetime IS NOT NULL
 AND service_id = %s
 JOIN cohort ON cohort.id = participant.cohort_id
 JOIN participant_last_consent

@@ -40,6 +40,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
   {
     $this->report->set_orientation( 'landscape' );
 
+    $database_class_name = lib::get_class_name( 'database\database' );
     $record_class_name = lib::get_class_name( 'database\record' );
     $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
     $region_class_name = lib::get_class_name( 'database\region' );
@@ -145,7 +146,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       if( !$is_supervisor ) $this->category_totals_list['None'] = $category_totals;
 
       $this->base_sql =
-        'SELECT site.name AS category, DISTINCT temp_participant.id '.
+        'SELECT site.name AS category, temp_participant.id '.
         'FROM temp_participant '.
         'LEFT JOIN participant_site ON temp_participant.id = participant_site.participant_id '.
         'LEFT JOIN site ON participant_site.site_id = site.id ';
@@ -166,7 +167,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
         $this->category_totals_list['None'] = $category_totals;
 
       $this->base_sql =
-        'SELECT region.abbreviation AS category, DISTINCT temp_participant.id '.
+        'SELECT region.abbreviation AS category, temp_participant.id '.
         'FROM temp_participant '.
         'LEFT JOIN participant_primary_address '.
         'ON temp_participant.id = participant_primary_address.participant_id '.
@@ -189,7 +190,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       $this->base_sql =
         'SELECT '.
         'CONCAT( IF( temp_participant.gender = "female", "F", "M" ), age_group.lower ) AS category, '.
-        'DISTINCT temp_participant.id '.
+        'temp_participant.id '.
         'FROM temp_participant '.
         'JOIN age_group ON temp_participant.age_group_id = age_group.id ';
     }
@@ -197,9 +198,13 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     // we will need a table containing the most recent 
     // to avoid double-counting participants we create a temporary table with all participants,
     // then remove them as they fall into a category
-    $temp_table_sql = 
+    $temp_table_sql = sprintf(
       'CREATE TEMPORARY TABLE temp_participant SELECT participant.* '.
-      'FROM participant ';
+      'FROM participant '.
+      'JOIN service_has_cohort ON participant.cohort_id = service_has_cohort.cohort_id '.
+      'AND service_has_cohort.service_id = %s',
+      $database_class_name::format_string( $session->get_service()->id ) );
+
     if( 'Province' == $breakdown || $restrict_province_id ) $temp_table_sql .=
       'LEFT JOIN participant_primary_address '.
       'ON participant.id = participant_primary_address.participant_id '.

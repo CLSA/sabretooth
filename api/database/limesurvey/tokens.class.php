@@ -16,6 +16,8 @@ class tokens extends sid_record
 {
   /**
    * Updates the token attributes with current values from Mastodon
+   * TODO: this method contains many reference to CLSA-specific features which
+   *       should be made generic
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant The record of the participant linked to this token.
@@ -31,6 +33,7 @@ class tokens extends sid_record
     }
 
     $db_user = lib::create( 'business\session' )->get_user();
+    $db_cohort = $db_participant->get_cohort();
 
     // determine the first part of the token
     $token_part = substr( $this->token, 0, strpos( $this->token, '_' ) + 1 );
@@ -50,7 +53,11 @@ class tokens extends sid_record
         $matches = array(); // for pregs below
         
         // now get the info based on the attribute name
-        if( false !== strpos( $value, 'address' ) )
+        if( 'cohort' == $value )
+        {
+          $this->$key = $db_cohort->name;
+        }
+        else if( false !== strpos( $value, 'address' ) )
         {
           $db_address = $db_participant->get_primary_address();
           
@@ -81,10 +88,39 @@ class tokens extends sid_record
         }
         else if( 'age' == $value )
         {
+          // if this is the participant's first assignment copy the date of birth from Opal
+          // (if it exists)
+          $db_interview = lib::create( 'business\session')->get_current_assignment()->get_interview();
+          $phase_mod = lib::create( 'database\modifier' );
+          $phase_mod->where( 'rank', '=', 1 );
+          $phase_list = $db_interview->get_qnaire()->get_phase_list( $phase_mod );
+          
+          $db_phase = current( $phase_list );
+          if( $db_phase && 1 == $db_interview->get_assignment_count() )
+          {
+            $opal_manager = lib::create( 'business\opal_manager' );
+            
+            try
+            {
+              $datasource = 'comprehensive' == $db_cohort->name ? 'clsa-inhome' : 'clsa-cati';
+              $table = 'comprehensive' == $db_cohort->name
+                     ? 'InHome_Id'
+                     : '60 min Questionnaire (Tracking Main Wave & Injury)';
+              $variable = 'comprehensive' == $db_cohort->name ? 'AGE_DOB_AGE_COM' : 'AGE_DOB_TRM';
+              $dob = $opal_manager->get_value( $datasource, $table, $db_participant, $variable );
+              $db_participant->date_of_birth = $dob;
+              $db_participant->save();
+            }
+            catch( \cenozo\exception\runtime $e )
+            {
+              // ignore the error (don't bother warning)
+            }
+          }
+
           $this->$key = strlen( $db_participant->date_of_birth )
                       ? util::get_interval(
                           util::get_datetime_object( $db_participant->date_of_birth ) )->y
-                      : "";
+                      : '';
         }
         else if( 'written consent received' == $value )
         {
@@ -95,18 +131,128 @@ class tokens extends sid_record
         else if( 'consented to provide HIN' == $value )
         {
           $db_hin = $db_participant->get_hin();
-          $this->$key = is_null( $db_hin ) ? -1 : $get_hin->access;
+          $this->$key = is_null( $db_hin ) ? -1 : $db_hin->access;
         }
         else if( 'HIN recorded' == $value )
         {
           $db_hin = $db_participant->get_hin();
           $this->$key = !( is_null( $db_hin ) || is_null( $db_hin->code ) );
         }
+        else if( 'provided data' == $value )
+        {
+          $event_type_class_name = lib::get_class_name( 'database\event_type' );
+
+          if( 'comprehensive' == $db_cohort->name )
+          {
+            // comprehensive participants have provided data once their first interview is done
+            $event_mod = lib::create( 'database\modifier' );
+            $event_mod->where( 'event_type_id', '=',
+              $event_type_class_name::get_unique_record( 'name', 'completed (Baseline Home)' )->id );
+            
+            $event_list = $db_participant->get_event_list( $event_mod );
+            $provided_data = 0 < count( $event_list ) ? 'yes' : 'no';
+          }
+          else
+          {
+            $provided_data = 'no';
+
+            // start by seeing if the participant has completed the baseline interview
+            $event_mod = lib::create( 'database\modifier' );
+            $event_mod->where( 'event_type_id', '=',
+              $event_type_class_name::get_unique_record( 'name', 'completed (Baseline)' )->id );
+            
+            $event_list = $db_participant->get_event_list( $event_mod );
+            if( 0 < count( $event_list ) ) $provided_data = 'yes';
+            else
+            { // if the interview was never completed, see if it was partially completed
+              $interview_mod = lib::create( 'database\mofifier' );
+              $interview_mod->order( 'datetime' );
+              $interview_list = $db_participant->get_interview_list( $interview_mod );
+              if( 0 < count( $interview_list ) )
+              {
+                $phase_mod = lib::create( 'database\modifier' );
+                $phase_mod->where( 'repeated', '=', 0 );
+                $phase_mod->order( 'rank' );
+                $db_interview = current( $interview_list );
+                $phase_list = $db_interview->get_qnaire()->get_phase_list();
+                if( 0 < count( $phase_list ) )
+                {
+                  $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+
+                  // see if a survey exists for this phase
+                  // if one does then the participant has provided partial data
+                  $db_phase = current( $phase_list );
+                  $survey_class_name::set_sid( $db_phase->sid );
+                  $survey_mod = lib::create( 'database\modifier' );
+                  $survey_mod->where( 'token', 'LIKE',
+                    static::determine_token_string( $db_interview ) );
+                  $survey_list = $survey_class_name::select( $survey_mod );
+
+                  if( 0 < count( $survey_list ) ) $provided_data = 'partial';
+                }
+              }
+            }
+          }
+
+          $this->$key = $provided_data;
+        }
+        else if( 'DCS samples' == $value )
+        {
+          // get data from Opal
+          $opal_manager = lib::create( 'business\opal_manager' );
+          
+          $this->$key = 0;
+
+          if( 'comprehensive' == $db_cohort->name )
+          {
+            try
+            {
+              $blood = $opal_manager->get_value(
+                'clsa-dcs', 'Phlebotomy', $db_participant, 'AGREE_BS' );
+              $urine = $opal_manager->get_value(
+                'clsa-dcs', 'Phlebotomy', $db_participant, 'AGREE_URINE' );
+
+              $this->$key = 0 == strcasecmp( 'yes', $blood ) ||
+                            0 == strcasecmp( 'yes', $urine )
+                          ? 1 : 0;
+            }
+            catch( \cenozo\exception\runtime $e )
+            {
+              // ignore the error but warn about it
+              log::warning( sprintf( 
+                'Failed to get "%s" variable for %s from Opal.',
+                $value,
+                $db_participant->uid ) );
+            }
+          }
+        }
+        else if( 'parkinsonism' == $value )
+        {
+          // get data from Opal
+          $opal_manager = lib::create( 'business\opal_manager' );
+          
+          $this->$key = 'NO';
+          try
+          {
+            $datasource = 'comprehensive' == $db_cohort->name ? 'clsa-dcs' : 'clsa-cati';
+            $table = 'comprehensive' == $db_cohort->name
+                   ? 'DiseaseSymptoms'
+                   : '60 min Questionnaire (Tracking Main Wave & Injury)';
+            $variable = 'comprehensive' == $db_cohort->name ? 'CCC_PARK_DCS' : 'CCT_PARK_TRM';
+            $this->$key = $opal_manager->get_value(
+              $datasource, $table, $db_participant, $variable );
+          }
+          catch( \cenozo\exception\runtime $e )
+          {
+            // ignore the error but warn about it
+            log::warning( sprintf( 
+              'Failed to get "%s" variable for %s from Opal.',
+              $value,
+              $db_participant->uid ) );
+          }
+        }
         else if( 'INT_13a' == $value || 'INCL_2f' == $value )
         {
-          // TODO: This is a custom token attribute which refers to a specific question in the
-          // introduction survey.  This code is not generic and needs to eventually be made
-          // generic.
           $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
           $source_survey_class_name = lib::get_class_name( 'database\source_survey' );
           
@@ -167,6 +313,22 @@ class tokens extends sid_record
           $datetime_list = $db_participant->get_event_datetime_list(
             $event_type_class_name::get_unique_record( 'name', 'completed pilot interview' ) );
           $this->$key = 0 < count( $datetime_list ) ? current( $datetime_list ) : NULL;
+        }
+        else if( 'last interview date' == $value )
+        {
+          $event_type_class_name = lib::get_class_name( 'database\event_type' );
+          $event_mod = lib::create( 'database\modifier' );
+          $event_mod->order_desc( 'datetime' );
+          $event_mod->where( 'event_type_id', '=',
+            $event_type_class_name::get_unique_record( 'name', 'completed (Baseline)' )->id );
+          $event_mod->or_where( 'event_type_id', '=',
+            $event_type_class_name::get_unique_record( 'name', 'completed (Baseline Site)' )->id );
+          
+          $event_list = $db_participant->get_event_list( $event_mod );
+          $db_event = 0 < count( $event_list ) ? current( $event_list ) : NULL;
+          $this->$key = is_null( $db_event )
+                      ? 'DATE UNKNOWN'
+                      : util::get_formatted_date( $db_event->datetime );
         }
         else if( false !== strpos( $value, 'alternate' ) )
         {

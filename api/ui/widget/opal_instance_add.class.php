@@ -40,7 +40,6 @@ class opal_instance_add extends \cenozo\ui\widget\base_view
     
     // define all columns defining this record
 
-    $type = 3 == lib::create( 'business\session' )->get_role()->tier ? 'enum' : 'hidden';
     $this->add_item( 'username', 'string', 'Username' );
     $this->add_item( 'password', 'string', 'Password',
       'Passwords must be at least 6 characters long.' );

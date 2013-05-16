@@ -39,14 +39,14 @@ class queue_view extends \cenozo\ui\widget\base_view
     parent::prepare();
     
     $session = lib::create( 'business\session' );
-    if( 3 != $session->get_role()->tier )
-    {
-      $this->db_site = $session->get_site();
-    }
-    else
+    if( $session->get_role()->all_sites )
     {
       $site_id = $this->get_argument( 'site_id' );
       if( $site_id ) $this->db_site = lib::create( 'database\site', $site_id );
+    }
+    else
+    {
+      $this->db_site = $session->get_site();
     }
 
     $qnaire_id = $this->get_argument( 'qnaire_id' );
@@ -153,10 +153,15 @@ class queue_view extends \cenozo\ui\widget\base_view
 
       foreach( $modifier->get_order_columns() as $column )
       {
-        $modifier->change_order_column(
-          $column, preg_replace( '/^participant\./', 'participant_', $column ) );
-        $modifier->change_order_column(
-          $column, preg_replace( '/^cohort\./', 'cohort_', $column ) );
+        if( 'participant.id' == $column ) 
+          $modifier->change_order_column( 'participant.id', 'participant_for_queue.id' );
+        else
+        {
+          $modifier->change_order_column(
+            $column, preg_replace( '/^participant\./', 'participant_', $column ) );
+          $modifier->change_order_column(
+            $column, preg_replace( '/^cohort\./', 'cohort_', $column ) );
+        }
       }
     }
 

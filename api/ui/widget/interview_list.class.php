@@ -41,7 +41,7 @@ class interview_list extends \cenozo\ui\widget\site_restricted_list
     $this->add_column( 'participant.uid', 'string', 'UID', true );
     $this->add_column( 'qnaire.name', 'string', 'Questionnaire', true );
     $this->add_column( 'completed', 'boolean', 'Completed', true );
-    $this->add_column( 'rescored', 'boolean', 'Rescored', true );
+    $this->add_column( 'rescored', 'string', 'Rescored', true );
     $this->add_column( 'assignment.end_datetime', 'date', 'Date', true );
 
     $this->extended_site_selection = true;
