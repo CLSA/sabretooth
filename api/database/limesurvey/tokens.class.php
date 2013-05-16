@@ -140,53 +140,61 @@ class tokens extends sid_record
         }
         else if( 'provided data' == $value )
         {
+          $event_type_class_name = lib::get_class_name( 'database\event_type' );
+
           if( 'comprehensive' == $db_cohort->name )
           {
             // comprehensive participants have provided data once their first interview is done
-            $event_type_class_name = lib::get_class_name( 'database\event_type' );
             $event_mod = lib::create( 'database\modifier' );
             $event_mod->where( 'event_type_id', '=',
               $event_type_class_name::get_unique_record( 'name', 'completed (Baseline Home)' )->id );
             
             $event_list = $db_participant->get_event_list( $event_mod );
-            $db_event = 0 < count( $event_list ) ? current( $event_list ) : NULL;
-            $this->$key = 0 < count( $event_list ) ? 1 : 0;
+            $provided_data = 0 < count( $event_list ) ? 'yes' : 'no';
           }
           else
           {
-            $provided_data = 0;
+            $provided_data = 'no';
 
-            // tracking participants have provided data once at least one question from the first
-            // non-repeating phase of a qnaire has been provided
-            $interview_mod = lib::create( 'database\mofifier' );
-            $interview_mod->order( 'datetime' );
-            $interview_list = $db_participant->get_interview_list( $interview_mod );
-            if( 0 < count( $interview_list ) )
-            {
-              $phase_mod = lib::create( 'database\modifier' );
-              $phase_mod->where( 'repeated', '=', 0 );
-              $phase_mod->order( 'rank' );
-              $db_interview = current( $interview_list );
-              $phase_list = $db_interview->get_qnaire()->get_phase_list();
-              if( 0 < count( $phase_list ) )
+            // start by seeing if the participant has completed the baseline interview
+            $event_mod = lib::create( 'database\modifier' );
+            $event_mod->where( 'event_type_id', '=',
+              $event_type_class_name::get_unique_record( 'name', 'completed (Baseline)' )->id );
+            
+            $event_list = $db_participant->get_event_list( $event_mod );
+            if( 0 < count( $event_list ) ) $provided_data = 'yes';
+            else
+            { // if the interview was never completed, see if it was partially completed
+              $interview_mod = lib::create( 'database\mofifier' );
+              $interview_mod->order( 'datetime' );
+              $interview_list = $db_participant->get_interview_list( $interview_mod );
+              if( 0 < count( $interview_list ) )
               {
-                $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+                $phase_mod = lib::create( 'database\modifier' );
+                $phase_mod->where( 'repeated', '=', 0 );
+                $phase_mod->order( 'rank' );
+                $db_interview = current( $interview_list );
+                $phase_list = $db_interview->get_qnaire()->get_phase_list();
+                if( 0 < count( $phase_list ) )
+                {
+                  $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
 
-                // see if a survey exists for this phase
-                // if one does then the participant has provided data
-                $db_phase = current( $phase_list );
-                $survey_class_name::set_sid( $db_phase->sid );
-                $survey_mod = lib::create( 'database\modifier' );
-                $survey_mod->where( 'token', 'LIKE',
-                  static::determine_token_string( $db_interview ) );
-                $survey_list = $survey_class_name::select( $survey_mod );
+                  // see if a survey exists for this phase
+                  // if one does then the participant has provided partial data
+                  $db_phase = current( $phase_list );
+                  $survey_class_name::set_sid( $db_phase->sid );
+                  $survey_mod = lib::create( 'database\modifier' );
+                  $survey_mod->where( 'token', 'LIKE',
+                    static::determine_token_string( $db_interview ) );
+                  $survey_list = $survey_class_name::select( $survey_mod );
 
-                if( 0 < count( $survey_list ) ) $provided_data = 1;
+                  if( 0 < count( $survey_list ) ) $provided_data = 'partial';
+                }
               }
             }
-
-            $this->$key = $provided_data;
           }
+
+          $this->$key = $provided_data;
         }
         else if( 'DCS samples' == $value )
         {
