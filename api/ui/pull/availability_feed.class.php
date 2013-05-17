@@ -46,7 +46,7 @@ class availability_feed extends \cenozo\ui\pull\base_feed
 
     $days = array();
     $current_datetime_obj = clone $start_datetime_obj;
-    while( $current_datetime_obj->diff( $end_datetime_obj )->days )
+    while( !$current_datetime_obj->diff( $end_datetime_obj )->invert )
     {
       $days[ $current_datetime_obj->format( 'Y-m-d' ) ] = array(
         'dow' => strtolower( $current_datetime_obj->format( 'l' ) ),
