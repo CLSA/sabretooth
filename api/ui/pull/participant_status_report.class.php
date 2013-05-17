@@ -50,6 +50,8 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $setting_manager = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
     $is_supervisor = 'supervisor' == $session->get_role()->name;
+    $db_service = $session->get_service();
+    $db_site = $session->get_site();
 
     // get the report arguments
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
@@ -138,27 +140,29 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     {
       $site_mod = lib::create( 'database\modifier' );
       if( $is_supervisor )
-        $site_mod->where( 'id', '=', $session->get_site()->id );
-      foreach( $site_class_name::select( $site_mod ) as $db_site )
-        $this->category_totals_list[ $db_site->name ] = $category_totals;
+        $site_mod->where( 'id', '=', $db_site->id );
+      foreach( $site_class_name::select( $site_mod ) as $db_temp_site )
+        $this->category_totals_list[ $db_temp_site->name ] = $category_totals;
 
       // only include the "None" column if user isn't a supervisor
       if( !$is_supervisor ) $this->category_totals_list['None'] = $category_totals;
 
-      $this->base_sql =
+      $this->base_sql = sprintf(
         'SELECT site.name AS category, temp_participant.id '.
         'FROM temp_participant '.
         'LEFT JOIN participant_site ON temp_participant.id = participant_site.participant_id '.
-        'LEFT JOIN site ON participant_site.site_id = site.id ';
+        'AND participant_site.service_id = %s '.
+        'LEFT JOIN site ON participant_site.site_id = site.id ',
+        $database_class_name::format_string( $db_service->id ) );
     }
     else if( 'Province' == $breakdown )
     {
       $region_mod = lib::create( 'database\modifier' );
       $region_mod->order( 'country' );
       $region_mod->order( 'abbreviation' );
-      $region_mod->where( 'service_region_site.service_id', '=', $session->get_service()->id );
+      $region_mod->where( 'service_region_site.service_id', '=', $db_service->id );
       if( $is_supervisor )
-        $region_mod->where( 'service_region_site.site_id', '=', $session->get_site()->id );
+        $region_mod->where( 'service_region_site.site_id', '=', $db_site->id );
       foreach( $region_class_name::select( $region_mod ) as $db_region )
         $this->category_totals_list[ $db_region->abbreviation ] = $category_totals;
 
@@ -201,9 +205,10 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $temp_table_sql = sprintf(
       'CREATE TEMPORARY TABLE temp_participant SELECT participant.* '.
       'FROM participant '.
-      'JOIN service_has_cohort ON participant.cohort_id = service_has_cohort.cohort_id '.
-      'AND service_has_cohort.service_id = %s',
-      $database_class_name::format_string( $session->get_service()->id ) );
+      'JOIN service_has_participant ON participant.id = service_has_participant.participant_id '.
+      'AND service_has_cohort.service_id = %s '.
+      'AND service_has_cohort.datetime IS NOT NULL',
+      $database_class_name::format_string( $db_service->id ) );
 
     if( 'Province' == $breakdown || $restrict_province_id ) $temp_table_sql .=
       'LEFT JOIN participant_primary_address '.
@@ -218,8 +223,11 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $modifier = lib::create( 'database\modifier' );
     if( $is_supervisor )
     {
-      $temp_table_sql .= 'JOIN participant_site ON participant.id = participant_site.participant_id ';
-      $modifier->where( 'participant_site.site_id', '=', $session->get_site()->id );
+      $temp_table_sql .= sprintf(
+        'JOIN participant_site ON participant.id = participant_site.participant_id '.
+        'AND participant_site.service_id = %s',
+        $database_class_name::format_string( $db_service->id ) );
+      $modifier->where( 'participant_site.site_id', '=', $db_site->id );
     }
     if( $restrict_province_id ) $modifier->where( 'address.region_id', '=', $restrict_province_id );
     if( 0 < $restrict_source_id ) $modifier->where( 'source_id', '=', $restrict_source_id );
