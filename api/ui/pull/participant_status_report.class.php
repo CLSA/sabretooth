@@ -206,8 +206,8 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       'CREATE TEMPORARY TABLE temp_participant SELECT participant.* '.
       'FROM participant '.
       'JOIN service_has_participant ON participant.id = service_has_participant.participant_id '.
-      'AND service_has_cohort.service_id = %s '.
-      'AND service_has_cohort.datetime IS NOT NULL',
+      'AND service_has_participant.service_id = %s '.
+      'AND service_has_participant.datetime IS NOT NULL ',
       $database_class_name::format_string( $db_service->id ) );
 
     if( 'Province' == $breakdown || $restrict_province_id ) $temp_table_sql .=
