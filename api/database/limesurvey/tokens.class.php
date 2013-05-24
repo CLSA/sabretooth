@@ -98,22 +98,28 @@ class tokens extends sid_record
           $db_phase = current( $phase_list );
           if( $db_phase && 1 == $db_interview->get_assignment_count() )
           {
-            $opal_manager = lib::create( 'business\opal_manager' );
+            $setting_manager = lib::create( 'business\setting_manager' );
+            $opal_url = $setting_manager->get_setting( 'opal', 'server' );
+            $opal_manager = lib::create( 'business\opal_manager', $opal_url );
             
-            try
+            if( $opal_manager->get_enabled() )
             {
-              $datasource = 'comprehensive' == $db_cohort->name ? 'clsa-inhome' : 'clsa-cati';
-              $table = 'comprehensive' == $db_cohort->name
-                     ? 'InHome_Id'
-                     : '60 min Questionnaire (Tracking Main Wave & Injury)';
-              $variable = 'comprehensive' == $db_cohort->name ? 'AGE_DOB_AGE_COM' : 'AGE_DOB_TRM';
-              $dob = $opal_manager->get_value( $datasource, $table, $db_participant, $variable );
-              $db_participant->date_of_birth = $dob;
-              $db_participant->save();
-            }
-            catch( \cenozo\exception\runtime $e )
-            {
-              // ignore the error (don't bother warning)
+              try
+              {
+                $datasource = 'comprehensive' == $db_cohort->name ? 'clsa-inhome' : 'clsa-cati';
+                $table = 'comprehensive' == $db_cohort->name
+                       ? 'InHome_Id'
+                       : '60 min Questionnaire (Tracking Main Wave & Injury)';
+                $variable = 'comprehensive' == $db_cohort->name ? 'AGE_DOB_AGE_COM' : 'AGE_DOB_TRM';
+                $dob = $opal_manager->get_value( $datasource, $table, $db_participant, $variable );
+                $db_participant->date_of_birth = $dob;
+                $db_participant->save();
+              }
+              catch( \cenozo\exception\base_exception $e )
+              {
+                // ignore argument exceptions (data not found in Opal) and report the rest
+                if( 'argument' != $e->get_type() ) log::warning( $e->get_message() );
+              }
             }
           }
 
@@ -199,11 +205,13 @@ class tokens extends sid_record
         else if( 'DCS samples' == $value )
         {
           // get data from Opal
-          $opal_manager = lib::create( 'business\opal_manager' );
+          $setting_manager = lib::create( 'business\setting_manager' );
+          $opal_url = $setting_manager->get_setting( 'opal', 'server' );
+          $opal_manager = lib::create( 'business\opal_manager', $opal_url );
           
           $this->$key = 0;
 
-          if( 'comprehensive' == $db_cohort->name )
+          if( $opal_manager->get_enabled() && 'comprehensive' == $db_cohort->name )
           {
             try
             {
@@ -229,26 +237,32 @@ class tokens extends sid_record
         else if( 'parkinsonism' == $value )
         {
           // get data from Opal
-          $opal_manager = lib::create( 'business\opal_manager' );
+          $setting_manager = lib::create( 'business\setting_manager' );
+          $opal_url = $setting_manager->get_setting( 'opal', 'server' );
+          $opal_manager = lib::create( 'business\opal_manager', $opal_url );
           
           $this->$key = 'NO';
-          try
+
+          if( $opal_manager->get_enabled() )
           {
-            $datasource = 'comprehensive' == $db_cohort->name ? 'clsa-dcs' : 'clsa-cati';
-            $table = 'comprehensive' == $db_cohort->name
-                   ? 'DiseaseSymptoms'
-                   : '60 min Questionnaire (Tracking Main Wave & Injury)';
-            $variable = 'comprehensive' == $db_cohort->name ? 'CCC_PARK_DCS' : 'CCT_PARK_TRM';
-            $this->$key = $opal_manager->get_value(
-              $datasource, $table, $db_participant, $variable );
-          }
-          catch( \cenozo\exception\runtime $e )
-          {
-            // ignore the error but warn about it
-            log::warning( sprintf( 
-              'Failed to get "%s" variable for %s from Opal.',
-              $value,
-              $db_participant->uid ) );
+            try
+            {
+              $datasource = 'comprehensive' == $db_cohort->name ? 'clsa-dcs' : 'clsa-cati';
+              $table = 'comprehensive' == $db_cohort->name
+                     ? 'DiseaseSymptoms'
+                     : '60 min Questionnaire (Tracking Main Wave & Injury)';
+              $variable = 'comprehensive' == $db_cohort->name ? 'CCC_PARK_DCS' : 'CCT_PARK_TRM';
+              $this->$key = $opal_manager->get_value(
+                $datasource, $table, $db_participant, $variable );
+            }
+            catch( \cenozo\exception\runtime $e )
+            {
+              // ignore the error but warn about it
+              log::warning( sprintf( 
+                'Failed to get "%s" variable for %s from Opal.',
+                $value,
+                $db_participant->uid ) );
+            }
           }
         }
         else if( 'INT_13a' == $value || 'INCL_2f' == $value )
