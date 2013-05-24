@@ -171,7 +171,7 @@ class tokens extends sid_record
             if( 0 < count( $event_list ) ) $provided_data = 'yes';
             else
             { // if the interview was never completed, see if it was partially completed
-              $interview_mod = lib::create( 'database\mofifier' );
+              $interview_mod = lib::create( 'database\modifier' );
               $interview_mod->order( 'datetime' );
               $interview_list = $db_participant->get_interview_list( $interview_mod );
               if( 0 < count( $interview_list ) )
