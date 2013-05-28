@@ -172,7 +172,7 @@ class tokens extends sid_record
             else
             { // if the interview was never completed, see if it was partially completed
               $interview_mod = lib::create( 'database\modifier' );
-              $interview_mod->order( 'datetime' );
+              $interview_mod->order( 'qnaire.rank' );
               $interview_list = $db_participant->get_interview_list( $interview_mod );
               if( 0 < count( $interview_list ) )
               {
@@ -333,10 +333,12 @@ class tokens extends sid_record
           $event_type_class_name = lib::get_class_name( 'database\event_type' );
           $event_mod = lib::create( 'database\modifier' );
           $event_mod->order_desc( 'datetime' );
+          $event_mod->where_bracket( true );
           $event_mod->where( 'event_type_id', '=',
             $event_type_class_name::get_unique_record( 'name', 'completed (Baseline)' )->id );
           $event_mod->or_where( 'event_type_id', '=',
             $event_type_class_name::get_unique_record( 'name', 'completed (Baseline Site)' )->id );
+          $event_mod->where_bracket( false );
           
           $event_list = $db_participant->get_event_list( $event_mod );
           $db_event = 0 < count( $event_list ) ? current( $event_list ) : NULL;
