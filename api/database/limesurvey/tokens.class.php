@@ -224,13 +224,10 @@ class tokens extends sid_record
                             0 == strcasecmp( 'yes', $urine )
                           ? 1 : 0;
             }
-            catch( \cenozo\exception\runtime $e )
+            catch( \cenozo\exception\base_exception $e )
             {
-              // ignore the error but warn about it
-              log::warning( sprintf( 
-                'Failed to get "%s" variable for %s from Opal.',
-                $value,
-                $db_participant->uid ) );
+              // ignore argument exceptions (data not found in Opal) and report the rest
+              if( 'argument' != $e->get_type() ) log::warning( $e->get_message() );
             }
           }
         }
@@ -255,13 +252,10 @@ class tokens extends sid_record
               $this->$key = $opal_manager->get_value(
                 $datasource, $table, $db_participant, $variable );
             }
-            catch( \cenozo\exception\runtime $e )
+            catch( \cenozo\exception\base_exception $e )
             {
-              // ignore the error but warn about it
-              log::warning( sprintf( 
-                'Failed to get "%s" variable for %s from Opal.',
-                $value,
-                $db_participant->uid ) );
+              // ignore argument exceptions (data not found in Opal) and report the rest
+              if( 'argument' != $e->get_type() ) log::warning( $e->get_message() );
             }
           }
         }
