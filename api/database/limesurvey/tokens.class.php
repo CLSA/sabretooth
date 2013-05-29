@@ -172,7 +172,7 @@ class tokens extends sid_record
             else
             { // if the interview was never completed, see if it was partially completed
               $interview_mod = lib::create( 'database\modifier' );
-              $interview_mod->order( 'datetime' );
+              $interview_mod->order( 'qnaire.rank' );
               $interview_list = $db_participant->get_interview_list( $interview_mod );
               if( 0 < count( $interview_list ) )
               {
@@ -224,13 +224,10 @@ class tokens extends sid_record
                             0 == strcasecmp( 'yes', $urine )
                           ? 1 : 0;
             }
-            catch( \cenozo\exception\runtime $e )
+            catch( \cenozo\exception\base_exception $e )
             {
-              // ignore the error but warn about it
-              log::warning( sprintf( 
-                'Failed to get "%s" variable for %s from Opal.',
-                $value,
-                $db_participant->uid ) );
+              // ignore argument exceptions (data not found in Opal) and report the rest
+              if( 'argument' != $e->get_type() ) log::warning( $e->get_message() );
             }
           }
         }
@@ -255,13 +252,10 @@ class tokens extends sid_record
               $this->$key = $opal_manager->get_value(
                 $datasource, $table, $db_participant, $variable );
             }
-            catch( \cenozo\exception\runtime $e )
+            catch( \cenozo\exception\base_exception $e )
             {
-              // ignore the error but warn about it
-              log::warning( sprintf( 
-                'Failed to get "%s" variable for %s from Opal.',
-                $value,
-                $db_participant->uid ) );
+              // ignore argument exceptions (data not found in Opal) and report the rest
+              if( 'argument' != $e->get_type() ) log::warning( $e->get_message() );
             }
           }
         }
@@ -333,10 +327,12 @@ class tokens extends sid_record
           $event_type_class_name = lib::get_class_name( 'database\event_type' );
           $event_mod = lib::create( 'database\modifier' );
           $event_mod->order_desc( 'datetime' );
+          $event_mod->where_bracket( true );
           $event_mod->where( 'event_type_id', '=',
             $event_type_class_name::get_unique_record( 'name', 'completed (Baseline)' )->id );
           $event_mod->or_where( 'event_type_id', '=',
             $event_type_class_name::get_unique_record( 'name', 'completed (Baseline Site)' )->id );
+          $event_mod->where_bracket( false );
           
           $event_list = $db_participant->get_event_list( $event_mod );
           $db_event = 0 < count( $event_list ) ? current( $event_list ) : NULL;
