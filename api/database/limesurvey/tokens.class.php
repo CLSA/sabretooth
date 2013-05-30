@@ -180,7 +180,7 @@ class tokens extends sid_record
                 $phase_mod->where( 'repeated', '=', 0 );
                 $phase_mod->order( 'rank' );
                 $db_interview = current( $interview_list );
-                $phase_list = $db_interview->get_qnaire()->get_phase_list();
+                $phase_list = $db_interview->get_qnaire()->get_phase_list( $phase_mod );
                 if( 0 < count( $phase_list ) )
                 {
                   $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
@@ -190,11 +190,9 @@ class tokens extends sid_record
                   $db_phase = current( $phase_list );
                   $survey_class_name::set_sid( $db_phase->sid );
                   $survey_mod = lib::create( 'database\modifier' );
-                  $survey_mod->where( 'token', 'LIKE',
+                  $survey_mod->where( 'token', '=',
                     static::determine_token_string( $db_interview ) );
-                  $survey_list = $survey_class_name::select( $survey_mod );
-
-                  if( 0 < count( $survey_list ) ) $provided_data = 'partial';
+                  if( 0 < $survey_class_name::count( $survey_mod ) ) $provided_data = 'partial';
                 }
               }
             }
