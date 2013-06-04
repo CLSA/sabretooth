@@ -112,8 +112,20 @@ class tokens extends sid_record
                        : '60 min Questionnaire (Tracking Main Wave & Injury)';
                 $variable = 'comprehensive' == $db_cohort->name ? 'AGE_DOB_AGE_COM' : 'AGE_DOB_TRM';
                 $dob = $opal_manager->get_value( $datasource, $table, $db_participant, $variable );
-                $db_participant->date_of_birth = $dob;
-                $db_participant->save();
+                
+                if( $dob )
+                { // only write the date of birth if there is one
+                  try
+                  {
+                    $dob_obj = util::get_datetime_object( $dob );
+                    if( 1965 >= intval( $dob_obj->format( 'Y' ) ) )
+                    { // only accept dates of birth on or before 1965
+                      $db_participant->date_of_birth = $dob;
+                      $db_participant->save();
+                    }
+                  }
+                  catch( \Exception $e ) {} 
+                }
               }
               catch( \cenozo\exception\base_exception $e )
               {
