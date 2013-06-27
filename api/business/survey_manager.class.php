@@ -274,6 +274,7 @@ class survey_manager extends \cenozo\singleton
         array( $db_qnaire->id, $db_participant->source_id ) );
       $sid = is_null( $db_source_withdraw ) ? $db_qnaire->withdraw_sid : $db_source_withdraw->sid;
 
+      $survey_class_name::set_sid( $sid );
       $tokens_class_name::set_sid( $sid );
       $token = $db_participant->uid;
       $tokens_mod = lib::create( 'database\modifier' );
@@ -296,6 +297,94 @@ class survey_manager extends \cenozo\singleton
       {
         $this->current_sid = $sid;
         $this->current_token = $token;
+      }
+      else // token is complete, store the survey results
+      {
+        // figure out which token attributes are which
+        $db_surveys = lib::create( 'database\limesurvey\surveys', $sid );
+        $attributes = array();
+        foreach( explode( "\n", $db_surveys->attributedescriptions ) as $attribute )
+        {
+          if( 10 < strlen( $attribute ) )
+          {
+            $key = 'attribute_'.substr( $attribute, 10, strpos( $attribute, '=' ) - 10 );
+            $value = substr( $attribute, strpos( $attribute, '=' ) + 1 );
+            $attributes[$value] = $db_tokens->$key;
+          }
+        }
+
+        // only worry about participants who have provided data
+        if( 'no' != $attributes['provided data'] )
+        {
+          if( 0 == $attributes['written consent received'] )
+            $letter_type = 0 < $attributes['consented to provide HIN'] ? 'q' : 'r';
+          else // written consent was received, write the letter type to the database
+          {
+            if( 'partial' == $attributes['provided data'] )
+              $letter_type = 0 < $attributes['consented to provide HIN'] ? 's' : 't';
+            else // full data received
+            {
+              if( 'comprehensive' == $db_participant->get_cohort()->name && 
+                  $attributes['last interview date'] == 'DATE UNKNOWN' ) // in-home only
+                $letter_type = 0 < $attributes['consented to provide HIN'] ? 'o' : 'p';
+              else // not in-home only
+              {
+                // from here we need to know whether default was applied or not
+                $survey_mod = lib::create( 'database\modifier' );
+                $survey_mod->where( 'token', '=', $token );
+                $survey_list = $survey_class_name::select( $survey_mod );
+                $db_survey = current( $survey_list );
+                
+                // get the code for the def and opt responses
+                $code = 0 < $attributes['consented to provide HIN'] ? 'HIN' : 'NO_HIN';
+                $code .= 0 < $attributes['DCS samples'] ? '_SAMP' : '_NO_SAMP';
+
+                $response = array();
+                $response['start'] = $db_survey->get_response( 'WTD_START' );
+                $response['def'] = $db_survey->get_response( 'WTD_DEF_'.$code );
+                $response['opt'] = $db_survey->get_response( 'WTD_OPT_'.$code );
+
+                // the default option was applied if...
+                if( 'REFUSED' == $response['start'] ||
+                    'YES' == $response['def'] ||
+                    'REFUSED' == $response['def'] ||
+                    'REFUSED' == $response['opt'] )
+                {
+                  if( 1 == $attributes['DCS samples'] )
+                    $letter_type = 0 < $attributes['consented to provide HIN'] ? 'k' : 'm';
+                  else
+                    $letter_type = 0 < $attributes['consented to provide HIN'] ? 'l' : 'n';
+                }
+                else
+                {
+                  if( 'OPTION1' == $response['opt'] )
+                  {
+                    if( 1 == $attributes['DCS samples'] )
+                      $letter_type = 0 < $attributes['consented to provide HIN'] ? 'a' : 'c';
+                    else
+                      $letter_type = 0 < $attributes['consented to provide HIN'] ? 'b' : 'd';
+                  }
+                  else if( 'OPTION2' == $response['opt'] )
+                  {
+                    if( 1 == $attributes['DCS samples'] )
+                      $letter_type = 0 < $attributes['consented to provide HIN'] ? 'e' : 'g';
+                    else
+                      $letter_type = 0 < $attributes['consented to provide HIN'] ? 'f' : 'h';
+                  }
+                  else // must be OPTION3
+                  {
+                    // NOTE: to get option 3 participants must have provided HIN
+                    $letter_type = 1 == $attributes['DCS samples'] ? 'i' : 'j';
+                  }
+                }
+              }
+            }
+          }
+
+          // now write the letter type for future reference
+          $db_participant->withdraw_letter = $letter_type;
+          $db_participant->save();
+        }
       }
       // else do not set the current_sid or current_token members!
     }
