@@ -112,8 +112,20 @@ class tokens extends sid_record
                        : '60 min Questionnaire (Tracking Main Wave & Injury)';
                 $variable = 'comprehensive' == $db_cohort->name ? 'AGE_DOB_AGE_COM' : 'AGE_DOB_TRM';
                 $dob = $opal_manager->get_value( $datasource, $table, $db_participant, $variable );
-                $db_participant->date_of_birth = $dob;
-                $db_participant->save();
+                
+                if( $dob )
+                { // only write the date of birth if there is one
+                  try
+                  {
+                    $dob_obj = util::get_datetime_object( $dob );
+                    if( 1965 >= intval( $dob_obj->format( 'Y' ) ) )
+                    { // only accept dates of birth on or before 1965
+                      $db_participant->date_of_birth = $dob;
+                      $db_participant->save();
+                    }
+                  }
+                  catch( \Exception $e ) {} 
+                }
               }
               catch( \cenozo\exception\base_exception $e )
               {
@@ -180,7 +192,7 @@ class tokens extends sid_record
                 $phase_mod->where( 'repeated', '=', 0 );
                 $phase_mod->order( 'rank' );
                 $db_interview = current( $interview_list );
-                $phase_list = $db_interview->get_qnaire()->get_phase_list();
+                $phase_list = $db_interview->get_qnaire()->get_phase_list( $phase_mod );
                 if( 0 < count( $phase_list ) )
                 {
                   $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
@@ -190,11 +202,9 @@ class tokens extends sid_record
                   $db_phase = current( $phase_list );
                   $survey_class_name::set_sid( $db_phase->sid );
                   $survey_mod = lib::create( 'database\modifier' );
-                  $survey_mod->where( 'token', 'LIKE',
+                  $survey_mod->where( 'token', '=',
                     static::determine_token_string( $db_interview ) );
-                  $survey_list = $survey_class_name::select( $survey_mod );
-
-                  if( 0 < count( $survey_list ) ) $provided_data = 'partial';
+                  if( 0 < $survey_class_name::count( $survey_mod ) ) $provided_data = 'partial';
                 }
               }
             }
