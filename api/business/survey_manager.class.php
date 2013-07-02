@@ -314,7 +314,8 @@ class survey_manager extends \cenozo\singleton
         }
 
         // only worry about participants who have provided data
-        if( 'no' != $attributes['provided data'] )
+        if( array_key_exists( 'provided data', $attributes ) &&
+            'no' != $attributes['provided data'] )
         {
           if( 0 == $attributes['written consent received'] )
             $letter_type = 0 < $attributes['consented to provide HIN'] ? 'q' : 'r';
