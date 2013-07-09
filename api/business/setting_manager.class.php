@@ -40,17 +40,44 @@ class setting_manager extends \cenozo\business\setting_manager
 
     // get the survey database settings from the limesurvey config file
     $file = LIMESURVEY_PATH.'/config.php';
-    if( !file_exists( $file ) )
-      throw lib::create( 'exception\runtime',
-        'Cannot find limesurvey config.php file.', __METHOD__ );
+    if( file_exists( $file ) )
+    {
+      include $file;
+      $this->static_settings['survey_db'] =
+        array( 'driver' => $databasetype,
+               'server' => $databaselocation,
+               'username' => $databaseuser,
+               'password' => $databasepass,
+               'database' => $databasename,
+               'prefix' => $dbprefix );
+    }
+    else // no version 1.92 of the config file, try version 2.0
+    {
+      $file = LIMESURVEY_PATH.'/application/config/config.php';
 
-    include $file;
-    $this->static_settings['survey_db'] =
-      array( 'driver' => $databasetype,
-             'server' => $databaselocation,
-             'username' => $databaseuser,
-             'password' => $databasepass,
-             'database' => $databasename,
-             'prefix' => $dbprefix );
+      if( file_exists( $file ) )
+      {
+        define( 'BASEPATH', '' ); // needed to read the config file
+        $config = require( $file );
+        $db = explode( ';', $config['components']['db']['connectionString'] );
+
+        $parts = explode( ':', $db[0], 2 );
+        $driver = current( $parts );
+        $parts = explode( '=', $db[0], 2 );
+        $server = next( $parts );
+        $parts = explode( '=', $db[2], 2 );
+        $database = next( $parts );
+
+        $this->static_settings['survey_db'] =
+          array( 'driver' => $driver,
+                 'server' => $server,
+                 'username' => $config['components']['db']['username'],
+                 'password' => $config['components']['db']['password'],
+                 'database' => $database,
+                 'prefix' => $config['components']['db']['tablePrefix'] );
+      }
+      else throw lib::create( 'exception\runtime',
+        'Cannot find limesurvey config.php file.', __METHOD__ );
+    }
   }
 }

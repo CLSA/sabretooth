@@ -1104,7 +1104,7 @@ AND role.name IN ( "administrator" );
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "widget" AND subject = "site" AND operation.name = "calendar"
-AND role.name IN( "administrator", "operator", "supervisor" );
+AND role.name IN( "administrator", "helpline", "operator", "supervisor" );
 
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
@@ -1119,7 +1119,7 @@ AND role.name IN ( "administrator" );
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "pull" AND subject = "site" AND operation.name = "feed"
-AND role.name IN( "administrator", "operator", "supervisor" );
+AND role.name IN( "administrator", "helpline", "operator", "supervisor" );
 
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation

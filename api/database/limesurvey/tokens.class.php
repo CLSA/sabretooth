@@ -98,22 +98,40 @@ class tokens extends sid_record
           $db_phase = current( $phase_list );
           if( $db_phase && 1 == $db_interview->get_assignment_count() )
           {
-            $opal_manager = lib::create( 'business\opal_manager' );
+            $setting_manager = lib::create( 'business\setting_manager' );
+            $opal_url = $setting_manager->get_setting( 'opal', 'server' );
+            $opal_manager = lib::create( 'business\opal_manager', $opal_url );
             
-            try
+            if( $opal_manager->get_enabled() )
             {
-              $datasource = 'comprehensive' == $db_cohort->name ? 'clsa-inhome' : 'clsa-cati';
-              $table = 'comprehensive' == $db_cohort->name
-                     ? 'InHome_Id'
-                     : '60 min Questionnaire (Tracking Main Wave & Injury)';
-              $variable = 'comprehensive' == $db_cohort->name ? 'AGE_DOB_AGE_COM' : 'AGE_DOB_TRM';
-              $dob = $opal_manager->get_value( $datasource, $table, $db_participant, $variable );
-              $db_participant->date_of_birth = $dob;
-              $db_participant->save();
-            }
-            catch( \cenozo\exception\runtime $e )
-            {
-              // ignore the error (don't bother warning)
+              try
+              {
+                $datasource = 'comprehensive' == $db_cohort->name ? 'clsa-inhome' : 'clsa-cati';
+                $table = 'comprehensive' == $db_cohort->name
+                       ? 'InHome_Id'
+                       : '60 min Questionnaire (Tracking Main Wave & Injury)';
+                $variable = 'comprehensive' == $db_cohort->name ? 'AGE_DOB_AGE_COM' : 'AGE_DOB_TRM';
+                $dob = $opal_manager->get_value( $datasource, $table, $db_participant, $variable );
+                
+                if( $dob )
+                { // only write the date of birth if there is one
+                  try
+                  {
+                    $dob_obj = util::get_datetime_object( $dob );
+                    if( 1965 >= intval( $dob_obj->format( 'Y' ) ) )
+                    { // only accept dates of birth on or before 1965
+                      $db_participant->date_of_birth = $dob;
+                      $db_participant->save();
+                    }
+                  }
+                  catch( \Exception $e ) {} 
+                }
+              }
+              catch( \cenozo\exception\base_exception $e )
+              {
+                // ignore argument exceptions (data not found in Opal) and report the rest
+                if( 'argument' != $e->get_type() ) log::warning( $e->get_message() );
+              }
             }
           }
 
@@ -165,8 +183,8 @@ class tokens extends sid_record
             if( 0 < count( $event_list ) ) $provided_data = 'yes';
             else
             { // if the interview was never completed, see if it was partially completed
-              $interview_mod = lib::create( 'database\mofifier' );
-              $interview_mod->order( 'datetime' );
+              $interview_mod = lib::create( 'database\modifier' );
+              $interview_mod->order( 'qnaire.rank' );
               $interview_list = $db_participant->get_interview_list( $interview_mod );
               if( 0 < count( $interview_list ) )
               {
@@ -174,7 +192,7 @@ class tokens extends sid_record
                 $phase_mod->where( 'repeated', '=', 0 );
                 $phase_mod->order( 'rank' );
                 $db_interview = current( $interview_list );
-                $phase_list = $db_interview->get_qnaire()->get_phase_list();
+                $phase_list = $db_interview->get_qnaire()->get_phase_list( $phase_mod );
                 if( 0 < count( $phase_list ) )
                 {
                   $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
@@ -184,11 +202,9 @@ class tokens extends sid_record
                   $db_phase = current( $phase_list );
                   $survey_class_name::set_sid( $db_phase->sid );
                   $survey_mod = lib::create( 'database\modifier' );
-                  $survey_mod->where( 'token', 'LIKE',
+                  $survey_mod->where( 'token', '=',
                     static::determine_token_string( $db_interview ) );
-                  $survey_list = $survey_class_name::select( $survey_mod );
-
-                  if( 0 < count( $survey_list ) ) $provided_data = 'partial';
+                  if( 0 < $survey_class_name::count( $survey_mod ) ) $provided_data = 'partial';
                 }
               }
             }
@@ -199,11 +215,13 @@ class tokens extends sid_record
         else if( 'DCS samples' == $value )
         {
           // get data from Opal
-          $opal_manager = lib::create( 'business\opal_manager' );
+          $setting_manager = lib::create( 'business\setting_manager' );
+          $opal_url = $setting_manager->get_setting( 'opal', 'server' );
+          $opal_manager = lib::create( 'business\opal_manager', $opal_url );
           
           $this->$key = 0;
 
-          if( 'comprehensive' == $db_cohort->name )
+          if( $opal_manager->get_enabled() && 'comprehensive' == $db_cohort->name )
           {
             try
             {
@@ -216,39 +234,39 @@ class tokens extends sid_record
                             0 == strcasecmp( 'yes', $urine )
                           ? 1 : 0;
             }
-            catch( \cenozo\exception\runtime $e )
+            catch( \cenozo\exception\base_exception $e )
             {
-              // ignore the error but warn about it
-              log::warning( sprintf( 
-                'Failed to get "%s" variable for %s from Opal.',
-                $value,
-                $db_participant->uid ) );
+              // ignore argument exceptions (data not found in Opal) and report the rest
+              if( 'argument' != $e->get_type() ) log::warning( $e->get_message() );
             }
           }
         }
         else if( 'parkinsonism' == $value )
         {
           // get data from Opal
-          $opal_manager = lib::create( 'business\opal_manager' );
+          $setting_manager = lib::create( 'business\setting_manager' );
+          $opal_url = $setting_manager->get_setting( 'opal', 'server' );
+          $opal_manager = lib::create( 'business\opal_manager', $opal_url );
           
           $this->$key = 'NO';
-          try
+
+          if( $opal_manager->get_enabled() )
           {
-            $datasource = 'comprehensive' == $db_cohort->name ? 'clsa-dcs' : 'clsa-cati';
-            $table = 'comprehensive' == $db_cohort->name
-                   ? 'DiseaseSymptoms'
-                   : '60 min Questionnaire (Tracking Main Wave & Injury)';
-            $variable = 'comprehensive' == $db_cohort->name ? 'CCC_PARK_DCS' : 'CCT_PARK_TRM';
-            $this->$key = $opal_manager->get_value(
-              $datasource, $table, $db_participant, $variable );
-          }
-          catch( \cenozo\exception\runtime $e )
-          {
-            // ignore the error but warn about it
-            log::warning( sprintf( 
-              'Failed to get "%s" variable for %s from Opal.',
-              $value,
-              $db_participant->uid ) );
+            try
+            {
+              $datasource = 'comprehensive' == $db_cohort->name ? 'clsa-dcs' : 'clsa-cati';
+              $table = 'comprehensive' == $db_cohort->name
+                     ? 'DiseaseSymptoms'
+                     : '60 min Questionnaire (Tracking Main Wave & Injury)';
+              $variable = 'comprehensive' == $db_cohort->name ? 'CCC_PARK_DCS' : 'CCT_PARK_TRM';
+              $this->$key = $opal_manager->get_value(
+                $datasource, $table, $db_participant, $variable );
+            }
+            catch( \cenozo\exception\base_exception $e )
+            {
+              // ignore argument exceptions (data not found in Opal) and report the rest
+              if( 'argument' != $e->get_type() ) log::warning( $e->get_message() );
+            }
           }
         }
         else if( 'INT_13a' == $value || 'INCL_2f' == $value )
@@ -319,10 +337,12 @@ class tokens extends sid_record
           $event_type_class_name = lib::get_class_name( 'database\event_type' );
           $event_mod = lib::create( 'database\modifier' );
           $event_mod->order_desc( 'datetime' );
+          $event_mod->where_bracket( true );
           $event_mod->where( 'event_type_id', '=',
             $event_type_class_name::get_unique_record( 'name', 'completed (Baseline)' )->id );
           $event_mod->or_where( 'event_type_id', '=',
             $event_type_class_name::get_unique_record( 'name', 'completed (Baseline Site)' )->id );
+          $event_mod->where_bracket( false );
           
           $event_list = $db_participant->get_event_list( $event_mod );
           $db_event = 0 < count( $event_list ) ? current( $event_list ) : NULL;
