@@ -18,13 +18,22 @@
     args.start = start.getFullYear() + "-" + ( start.getMonth() + 1 ) + "-" + start.getDate();
     args.end = end.getFullYear() + "-" + ( end.getMonth() + 1 ) + "-" + end.getDate();
 
-    var data = ajax_pull( "appointment", "feed", args );
-    if( undefined != data ) {
-      var events = new Array();
-      for( var index = 0; index < data.length; index++ ) {
-        events.push( data[index] );
+    // sometimes the start/end dates are invalid, check to make sure they are
+    if( "NaN-NaN-NaN" == args.start || "NaN-NaN-NaN" == args.end ) {
+      error_dialog(
+        "Error: Invalid date-span",
+        "<p>There was an error while getting calendar events from the server.<br>" +
+        "Please try again or contact support if this problem persists.</p>",
+        true );
+    } else {
+      var data = ajax_pull( "appointment", "feed", args );
+      if( undefined != data ) {
+        var events = new Array();
+        for( var index = 0; index < data.length; index++ ) {
+          events.push( data[index] );
+        }
+        callback( events );
       }
-      callback( events );
     }
   }
 
