@@ -259,7 +259,8 @@ class survey_manager extends \cenozo\singleton
         $db_assignment = $db_participant->get_last_finished_assignment();
         if( is_null( $db_assignment ) )
           throw lib::create( 'exception\runtime',
-                             'Trying to withdraw participant without a questionnaire.' );
+                             'Trying to withdraw participant without a questionnaire.',
+                             __METHOD__ );
 
         $qnaire_id = $db_assignment->get_interview()->qnaire_id;
       }
