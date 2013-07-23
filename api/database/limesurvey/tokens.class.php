@@ -176,7 +176,8 @@ class tokens extends sid_record
       else if( 'consented to provide HIN' == $value )
       {
         $db_hin = $db_participant->get_hin();
-        $this->$key = is_null( $db_hin ) ? -1 : $db_hin->access;
+        if( is_null( $db_hin ) ) $this->$key = -1;
+        else $this->$key = 1 == $db_hin->access ? 1 : 0;
       }
       else if( 'HIN recorded' == $value )
       {
