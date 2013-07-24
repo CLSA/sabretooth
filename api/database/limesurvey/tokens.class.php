@@ -44,38 +44,7 @@ class tokens extends sid_record
     // determine the attributes from the survey with the same ID
     $db_surveys = lib::create( 'database\limesurvey\surveys', static::get_sid() );
 
-    // attribute descriptions are storred differently in limesurvey 1 and 2
-    $attribute_list = array();
-    if( is_null( $db_surveys->attributedescriptions ) )
-    {
-      // there are no attributes...
-    }
-    else if( false !== strpos( $db_surveys->attributedescriptions, "\n" ) )
-    { // limesurvey 1 separates attributes with \n
-      foreach( explode( "\n", $db_surveys->attributedescriptions ) as $attribute )
-      {
-        if( 10 < strlen( $attribute ) )
-        {
-          $key = 'attribute_'.substr( $attribute, 10, strpos( $attribute, '=' ) - 10 );
-          $value = substr( $attribute, strpos( $attribute, '=' ) + 1 );
-          $attribute_list[$key] = $value;
-        }
-      }
-    }
-    else
-    { // limesurvey 2 serializes attributes
-      $attribute_descriptions = unserialize( $db_surveys->attributedescriptions );
-      if( false === $attribute_descriptions )
-      {
-        throw lib::create( 'exception\runtime',
-          'Unable to interpret limesurvey token attributes.', __METHOD__ );
-      }
-
-      foreach( $attribute_descriptions as $key => $attribute )
-        $attribute_list[$key] = $attribute['description'];
-    }
-
-    foreach( $attribute_list as $key => $value )
+    foreach( $db_surveys->get_token_attribute_names() as $key => $value )
     {
       $matches = array(); // for pregs below
       
