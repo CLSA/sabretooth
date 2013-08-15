@@ -99,11 +99,13 @@ class participant_withdraw extends \cenozo\ui\widget
     $this->set_variable( 'participant_uid', $db_participant->uid );
     $this->set_variable( 'participant_language', $language );
     
-    $this->set_variable( 'previous_assignment_id', $db_last_assignment->id );
-    $this->set_variable( 'previous_assignment_date',
-      util::get_formatted_date( $db_last_assignment->start_datetime ) );
-    $this->set_variable( 'previous_assignment_time',
-      util::get_formatted_time( $db_last_assignment->start_datetime ) );
+    if( !is_null( $db_last_assignment ) )
+    {
+      $this->set_variable( 'previous_assignment_date',
+        util::get_formatted_date( $db_last_assignment->start_datetime ) );
+      $this->set_variable( 'previous_assignment_time',
+        util::get_formatted_time( $db_last_assignment->start_datetime ) );
+    }
     $this->set_variable( 'previous_call_list', $previous_call_list );
     $this->set_variable( 'allow_call', $session->get_allow_call() );
     $this->set_variable( 'sip_enabled', $voip_manager->get_sip_enabled() );

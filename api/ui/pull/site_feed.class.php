@@ -57,7 +57,7 @@ class site_feed extends \cenozo\ui\pull\base_feed
 
     $days = array();
     $current_datetime_obj = clone $start_datetime_obj;
-    while( $current_datetime_obj->diff( $end_datetime_obj )->days )
+    while( !$current_datetime_obj->diff( $end_datetime_obj )->invert )
     {
       $days[ $current_datetime_obj->format( 'Y-m-d' ) ] = array(
         'template' => false,
@@ -201,11 +201,15 @@ class site_feed extends \cenozo\ui\pull\base_feed
     $start_time = false;
     $available = 0;
     $this->data = array();
+    $site_offset = $db_site->get_time_diff();
     foreach( $days as $date => $day )
     {
       foreach( $day['times'] as $time => $number )
       {
         if( $number == $available ) continue;
+
+        // convert the time to the user's site's timezone
+        $time -= ( 100 * $site_offset );
 
         $minutes = $time % 100;
         $hours = ( $time - $minutes ) / 100;
