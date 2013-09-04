@@ -43,6 +43,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $database_class_name = lib::get_class_name( 'database\database' );
     $record_class_name = lib::get_class_name( 'database\record' );
     $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
+    $participant_class_name = lib::get_class_name( 'database\participant' );
     $region_class_name = lib::get_class_name( 'database\region' );
     $site_class_name = lib::get_class_name( 'database\site' );
     $interview_class_name = lib::get_class_name( 'database\interview' );
@@ -115,19 +116,21 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       'Hard refusal' => 0,
       'Soft refusal' => 0,
       'Appointment' => 0,
-      'Appointment (missed)' => 0,
-      'Sourcing Required' => 0 );
+      'Appointment (missed)' => 0 );
 
     // add call results
-    $phone_call_status_start_index = count( $category_totals ) - 1; // includes "sourcing required" above
+    $phone_call_status_start_index = count( $category_totals ) - 1;
     foreach( $phone_call_class_name::get_enum_values( 'status' ) as $status )
       $category_totals[ ucfirst( $status ) ] = 0;
     $phone_call_status_count = count( $category_totals ) - $phone_call_status_start_index;
 
+    $category_totals['Not yet called'] = 0;
+
+    // add conditions
+    foreach( $participant_class_name::get_enum_values( 'status' ) as $status )
+      $category_totals[ ucfirst( $status ) ] = 0;
+
     $category_totals = array_merge( $category_totals, array(
-      'Not yet called' => 0,
-      'Deceased' => 0,
-      'Permanent condition (excl. deceased/source)' => 0,
       'Grand Total Attempted' => 0,
       'Total completed interviews' => 0,
       'Response rate (incl. soft refusals)' => 0,
@@ -264,23 +267,14 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       else $this->category_totals_list[$row['category']][$sub_cat] = $row['total'];
     }
 
-    // deceased
-    $sub_cat = 'Deceased';
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'temp_participant.status', '=', 'deceased' );
-    $this->set_category_totals( $sub_cat, '', $modifier );
-
-    // sourcing required (based on the participant status column)
-    $sub_cat = 'Sourcing Required';
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'temp_participant.status', '=', 'sourcing required' );
-    $this->set_category_totals( $sub_cat, '', $modifier );
-
     // final status not null
-    $sub_cat = 'Permanent condition (excl. deceased/source)';
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'temp_participant.status', '!=', NULL );
-    $this->set_category_totals( $sub_cat, '', $modifier );
+    foreach( $participant_class_name::get_enum_values( 'status' ) as $status )
+    {
+      $sub_cat = ucfirst( $status );
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'temp_participant.status', '=', $status );
+      $this->set_category_totals( $sub_cat, '', $modifier );
+    }
 
     // unassigned past appointment
     $sub_cat = 'Appointment (missed)';
