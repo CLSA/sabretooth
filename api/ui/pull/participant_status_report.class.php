@@ -392,7 +392,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
 
     // has an incomplete interview
     // failed call count >= max failed calls
-    $sub_cat = 'Sourcing Required';
+    $sub_cat = 'Sourcing required';
     // get the max failed calls setting and invoke the temporary table needed in the join
     $max_failed_calls =
       lib::create( 'business\setting_manager' )->get_setting( 'calling', 'max failed calls' );
