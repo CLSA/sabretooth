@@ -31,15 +31,16 @@ class participant_report extends \cenozo\ui\pull\participant_report
 
     if( 'any' != $last_call_result )
     {
-      $this->modifier->where(
-        'participant_last_interview.interview_id', '=',
-        'interview_last_assignment.interview_id', false );
-      $this->modifier->where(
-        'interview_last_assignment.assignment_id', '=',
-        'assignment_last_phone_call.assignment_id', false );
-      $this->modifier->where(
-        'assignment_last_phone_call.phone_call_id', '=',
-        'phone_call.id', false );
+      $this->sql_tables .=
+        'JOIN participant_last_interview '.
+        'ON participant.id = participant_last_interview.participant_id '.
+        'JOIN interview_last_assignment '.
+        'ON participant_last_interview.interview_id = interview_last_assignment.interview_id '.
+        'JOIN assignment_last_phone_call '.
+        'ON assignment_last_phone_call.assignment_id = interview_last_assignment.assignment_id '.
+        'JOIN phone_call '.
+        'ON interview_last_assignment.assignment_id = phone_call.assignment_id ';
+
       $this->modifier->where(
         'phone_call.status', '=', $last_call_result );
     }
