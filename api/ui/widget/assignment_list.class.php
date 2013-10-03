@@ -49,6 +49,10 @@ class assignment_list extends \cenozo\ui\widget\site_restricted_list
     $this->add_column( 'start_time', 'time', 'Start Time' );
     $this->add_column( 'end_time', 'time', 'End Time' );
     $this->add_column( 'status', 'string', 'Status' );
+
+    // if we have a parent then override the restricted site and show all sites
+    if( !is_null( $this->db_restrict_site ) && !is_null( $this->parent ) )
+      $this->db_restrict_site = NULL;
   }
   
   /**
