@@ -51,7 +51,9 @@ class assignment_list extends \cenozo\ui\widget\site_restricted_list
     $this->add_column( 'status', 'string', 'Status' );
 
     // if we have a parent then override the restricted site and show all sites
-    if( !is_null( $this->db_restrict_site ) && !is_null( $this->parent ) )
+    if( !is_null( $this->db_restrict_site ) &&
+        !is_null( $this->parent ) &&
+        'interview' == $this->parent->get_subject() )
       $this->db_restrict_site = NULL;
   }
   
