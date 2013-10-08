@@ -52,13 +52,8 @@ class queue extends \cenozo\database\record
       'finished',
       'ineligible',
       'inactive',
-      'refused consent' );
-
-    // add the participant final status types
-    $queue_list = array_merge( $queue_list, $participant_class_name::get_enum_values( 'status' ) );
-
-    // finish the queue list
-    $queue_list = array_merge( $queue_list, array(
+      'refused consent',
+      'condition',
       'eligible',
       'qnaire',
       'qnaire waiting',
@@ -76,7 +71,7 @@ class queue extends \cenozo\database\record
       'new participant',
       'new participant available',
       'new participant not available',
-      'old participant' ) );
+      'old participant' );
 
     foreach( $queue_list as $queue )
     {
@@ -326,7 +321,6 @@ class queue extends \cenozo\database\record
     }
 
     $participant_class_name = lib::get_class_name( 'database\participant' );
-    $participant_status_list = $participant_class_name::get_enum_values( 'status' );
 
     // an array containing all of the qnaire queue's direct children queues
     $qnaire_children = array(
@@ -552,7 +546,7 @@ class queue extends \cenozo\database\record
       $parts['where'][] = 'participant_active = true';
       $parts['where'][] = 'last_consent_accept = 0';
     }
-    else if( in_array( $queue, $participant_status_list ) )
+    else if( 'condition' == $queue )
     {
       $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
       $parts['where'][] = 'participant_active = true';
@@ -564,8 +558,8 @@ class queue extends \cenozo\database\record
 
       // add participants with no phone numbers to the sourcing required list
       $parts['where'][] = 'sourcing required' == $queue
-                        ? '( phone_count = 0 OR participant_status = "'.$queue.'" )'
-                        : 'participant_status = "'.$queue.'"';
+                        ? '( phone_count = 0 OR participant_status IS NOT NULL )'
+                        : 'participant_status IS NOT NULL';
     }
     else if( 'eligible' == $queue )
     {
