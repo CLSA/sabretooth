@@ -555,11 +555,7 @@ class queue extends \cenozo\database\record
           'last_consent_accept IS NULL '.
           'OR last_consent_accept = 1 '.
         ')';
-
-      // add participants with no phone numbers to the sourcing required list
-      $parts['where'][] = 'sourcing required' == $queue
-                        ? '( phone_count = 0 OR participant_status IS NOT NULL )'
-                        : 'participant_status IS NOT NULL';
+      $parts['where'][] = 'participant_status IS NOT NULL';
     }
     else if( 'eligible' == $queue )
     {
