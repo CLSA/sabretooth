@@ -53,6 +53,18 @@ class tokens extends sid_record
       {
         $this->$key = $db_cohort->name;
       }
+      else if( 'override quota' == $value )
+      {
+        // override_quota is true if the participant's quota is disabled AND
+        // their override_quota is true
+        $override_quota = '0';
+        $db_quota = $db_participant->get_quota();
+        $this->$key = !is_null( $db_quota ) && 
+                      $db_quota->state_disabled &&
+                      $db_participant->override_quota
+                    ? '1' 
+                    : '0';
+      }
       else if( false !== strpos( $value, 'address' ) )
       {
         $db_address = $db_participant->get_primary_address();

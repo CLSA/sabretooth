@@ -1,4 +1,16 @@
 ====================================================================================================
+1.2.2
+====================================================================================================
+
+* Adding new participant multiedit operations
+  - Certain roles may now edit multiple participants in a single operation
+
+* Adding new feature to override quota restrictions
+  - Every participant how has an "Override Quota" setting
+  - Setting this setting to true will allow the participant to override quota restrictions
+  - A new token attribute, "override quota" which reports the participant's value as 1 or 0
+
+====================================================================================================
 1.2.1
 ====================================================================================================
 
