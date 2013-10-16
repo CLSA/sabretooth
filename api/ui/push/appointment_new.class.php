@@ -44,7 +44,15 @@ class appointment_new extends \cenozo\ui\push\base_new
     if( !array_key_exists( 'datetime', $columns ) || 0 == strlen( $columns['datetime'] ) )
       throw lib::create( 'exception\notice', 'The date/time cannot be left blank.', __METHOD__ );
     
-    if( !$this->get_argument( 'force', false ) )
+    // make sure the participant has a qnaire to answer
+    $db_participant = lib::create( 'database\participant', $columns['participant_id'] );
+    if( is_null( $db_participant->current_qnaire_id ) )
+    {
+      throw lib::create( 'exception\notice',
+        'Unable to create an appointment because the participant has completed all questionnaires.',
+        __METHOD__ );
+    }
+    else if( !$this->get_argument( 'force', false ) )
     {
       // validate the appointment time
       $this->get_record()->participant_id = $columns['participant_id'];
@@ -52,7 +60,6 @@ class appointment_new extends \cenozo\ui\push\base_new
       $this->get_record()->type = $columns['type'];
       if( !$this->get_record()->validate_date() )
       {
-        $db_participant = lib::create( 'database\participant', $this->get_record()->participant_id );
         $db_site = $db_participant->get_effective_site();
 
         // determine the full and half appointment intervals

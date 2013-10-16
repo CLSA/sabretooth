@@ -15,37 +15,37 @@ DROP PROCEDURE IF EXISTS patch_queue;
 DELIMITER //
 CREATE PROCEDURE patch_queue()
   BEGIN
-    -- add the "duplicate" queue
-    SELECT "Adding 'duplicate' entry to queue" AS "";
+    -- reducing all participant conditions to a single category
+    SELECT "Reducing all participant conditions to a single category" AS "";
 
-    SET @test = ( SELECT COUNT(*) FROM queue WHERE name = "duplicate" );
+    SET @test = ( SELECT COUNT(*) FROM queue WHERE name = "condition" );
     IF @test = 0 THEN
       SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
       SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
       SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='';
 
-      -- increment all queue ids by 1 for id >= 19
-      SET @id = ( SELECT MAX( id ) FROM queue );
-      REPEAT
-        CALL set_queue_id( @id, @id + 1 );
-        SET @id = @id - 1;
-      UNTIL @id < 19 END REPEAT;
-            
-      -- now add the new "duplicate" queue with id = 19
-      INSERT INTO queue SET
-      id = 19,
-      name = "duplicate",
-      title = "Duplicate participants",
-      rank = NULL,
-      qnaire_specific = false,
-      parent_queue_id = (
-        SELECT id FROM(
-          SELECT id
-          FROM queue
-          WHERE name = "ineligible" ) AS tmp ),
-      description = "Participants who are not eligible for answering questionnaires because they are a duplicate of another participant record.";
+      -- change "deceased" queue to "condition"
+      UPDATE queue SET
+        name = "condition",
+        title = "Permanent Condition",
+        description = "Participants who are not eligible for answering questionnaires because they have a permanent condition."
+      WHERE name = "deceased";
 
+      -- delete all other condition-based queues
+      DELETE FROM queue
+      WHERE parent_queue_id = ( SELECT id FROM ( SELECT id FROM queue WHERE name = "ineligible" ) AS t )
+      AND name NOT IN ( "inactive", "refused consent", "condition" );
+
+      -- decrement all queue ids by 14 for id >= 21
+      SET @max_id = ( SELECT MAX( id ) FROM queue );
+      SET @id = 21;
+      WHILE @id <= @max_id DO
+        CALL set_queue_id( @id, @id - 14 );
+        SET @id = @id + 1;
+      END WHILE;
+            
     END IF;
+
   END //
 DELIMITER ;
 
