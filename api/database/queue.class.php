@@ -953,15 +953,15 @@ class queue extends \cenozo\database\record
       'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue_primary_region '.
       'SELECT person_primary_address.person_id, '.
              'region.id AS primary_region_id, '.
-             'service_region_site.site_id primary_region_site_id, '.
-             'service_region_site.service_id primary_region_service_id '.
+             'region_site.site_id primary_region_site_id, '.
+             'region_site.service_id primary_region_service_id '.
       'FROM person_primary_address '.
       'LEFT JOIN address '.
       'ON person_primary_address.address_id = address.id '.
       'LEFT JOIN region '.
       'ON address.region_id = region.id '.
-      'LEFT JOIN service_region_site '.
-      'ON region.id = service_region_site.region_id' );
+      'LEFT JOIN region_site '.
+      'ON region.id = region_site.region_id' );
     static::db()->execute(
       'ALTER TABLE participant_for_queue_primary_region '.
       'ADD INDEX dk_person_id ( person_id ), '.
