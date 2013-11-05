@@ -34,25 +34,4 @@ class util extends \cenozo\util
     if( 'source survey' == $word ) return 'source surveys';
     return parent::pluralize( $word );
   }
-
-  /**
-   * Cache for pull_mode method.
-   * @var bool
-   * @access private
-   */
-  private static $pull_mode = NULL;
-
-  /**
-   * Cache for push_mode method.
-   * @var bool
-   * @access private
-   */
-  private static $push_mode = NULL;
-
-  /**
-   * Cache for widget_mode method.
-   * @var bool
-   * @access private
-   */
-  private static $widget_mode = NULL;
 }
