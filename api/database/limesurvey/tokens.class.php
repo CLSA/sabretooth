@@ -278,7 +278,7 @@ class tokens extends sid_record
           }
         }
       }
-      else if( 'INT_13a' == $value || 'INCL_2f' == $value )
+      else if( 1 == preg_match( '/^(INT|INCL)_/', $value ) )
       {
         $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
         $source_survey_class_name = lib::get_class_name( 'database\source_survey' );
