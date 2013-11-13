@@ -117,7 +117,7 @@ class tokens extends sid_record
               $datasource = 'comprehensive' == $db_cohort->name ? 'clsa-inhome' : 'clsa-cati';
               $table = 'comprehensive' == $db_cohort->name
                      ? 'InHome_Id'
-                     : '60 min Questionnaire (Tracking Main Wave & Injury)';
+                     : 'Tracking Baseline Main Script';
               $variable = 'comprehensive' == $db_cohort->name ? 'AGE_DOB_AGE_COM' : 'AGE_DOB_TRM';
               $dob = $opal_manager->get_value( $datasource, $table, $db_participant, $variable );
               
@@ -250,6 +250,34 @@ class tokens extends sid_record
           }
         }
       }
+      else if( 'marital status' == $value )
+      {
+        // get data from Opal
+        $setting_manager = lib::create( 'business\setting_manager' );
+        $opal_url = $setting_manager->get_setting( 'opal', 'server' );
+        $opal_manager = lib::create( 'business\opal_manager', $opal_url );
+        
+        $this->$key = 'MISSING';
+
+        if( $opal_manager->get_enabled() )
+        {
+          try
+          {
+            $datasource = 'comprehensive' == $db_cohort->name ? 'clsa-inhome' : 'clsa-cati';
+            $table = 'comprehensive' == $db_cohort->name
+                   ? 'InHome_1'
+                   : 'Tracking Baseline Main Script';
+            $variable = 'comprehensive' == $db_cohort->name ? 'SDC_MRTL_COM' : 'SDC_MRTL_TRM';
+            $this->$key = $opal_manager->get_value(
+              $datasource, $table, $db_participant, $variable );
+          }
+          catch( \cenozo\exception\base_exception $e )
+          {
+            // ignore argument exceptions (data not found in Opal) and report the rest
+            if( 'argument' != $e->get_type() ) log::warning( $e->get_message() );
+          }
+        }
+      }
       else if( 'parkinsonism' == $value )
       {
         // get data from Opal
@@ -266,7 +294,7 @@ class tokens extends sid_record
             $datasource = 'comprehensive' == $db_cohort->name ? 'clsa-dcs' : 'clsa-cati';
             $table = 'comprehensive' == $db_cohort->name
                    ? 'DiseaseSymptoms'
-                   : '60 min Questionnaire (Tracking Main Wave & Injury)';
+                   : 'Tracking Baseline Main Script';
             $variable = 'comprehensive' == $db_cohort->name ? 'CCC_PARK_DCS' : 'CCT_PARK_TRM';
             $this->$key = $opal_manager->get_value(
               $datasource, $table, $db_participant, $variable );
