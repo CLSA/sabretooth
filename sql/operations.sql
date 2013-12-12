@@ -199,6 +199,12 @@ VALUES( "push", "phone_call", "end", true, "Ends the current phone call." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "phone_call", "list", true, "Lists phone calls." );
 
+-- prerecruit
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "prerecruit", "select", true, "Sets pre-recruit populations by quota." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "prerecruit", "select", true, "Provides a list of quotas for entering pre-recruit populations." );
+
 -- productivity
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "productivity", "report", true, "Download a productivity report." );

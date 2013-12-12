@@ -97,4 +97,10 @@ VALUES( "callback timing", "soft refusal", "integer", "525600",
 "Number of minutes to wait before calling back a participant where the previous call was a fax
 machine." );
 
+-- prerecruit
+INSERT INTO setting( category, name, type, value, description )
+VALUES( "prerecruit", "enabled", "boolean", "false",
+"Whether to enable the prerecruitment functionality which is used for the random selection of an
+individual from a household." );
+
 COMMIT;
