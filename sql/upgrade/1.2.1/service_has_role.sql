@@ -4,8 +4,7 @@ CREATE PROCEDURE patch_service_has_role()
   BEGIN
 
     -- determine the @cenozo database name
-    SET @cenozo = CONCAT( SUBSTRING( DATABASE(), 1, LOCATE( 'sabretooth', DATABASE() ) - 1 ),
-                          'cenozo' );
+    SET @cenozo = REPLACE( DATABASE(), 'sabretooth', 'cenozo' );
 
     SELECT "Adding typist role to Sabretooth services" AS "";
     SET @sql = CONCAT(

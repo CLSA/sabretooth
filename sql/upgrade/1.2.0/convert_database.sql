@@ -20,8 +20,7 @@ CREATE PROCEDURE convert_database()
       SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='';
 
       -- determine the @cenozo database name
-      SET @cenozo = CONCAT( SUBSTRING( DATABASE(), 1, LOCATE( 'sabretooth', DATABASE() ) - 1 ),
-                            'cenozo' );
+      SET @cenozo = REPLACE( DATABASE(), 'sabretooth', 'cenozo' );
 
       -- qnaire ------------------------------------------------------------------------------------
       SELECT "Processing qnaire" AS "";

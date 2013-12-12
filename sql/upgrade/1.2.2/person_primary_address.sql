@@ -4,8 +4,7 @@ CREATE PROCEDURE patch_person_primary_address()
   BEGIN
 
     -- determine the @cenozo database name
-    SET @cenozo = CONCAT( SUBSTRING( DATABASE(), 1, LOCATE( 'sabretooth', DATABASE() ) - 1 ),
-                          'cenozo' );
+    SET @cenozo = REPLACE( DATABASE(), 'sabretooth', 'cenozo' );
 
     SELECT "Recreating person_primary_address view" AS "";
 
