@@ -7,12 +7,14 @@ CREATE PROCEDURE patch_role_has_operation()
     SET @cenozo = CONCAT( SUBSTRING( DATABASE(), 1, LOCATE( 'sabretooth', DATABASE() ) - 1 ),
                           'cenozo' );
 
+    SELECT "Adding new operations to roles" AS "";
+
     SET @sql = CONCAT(
       "INSERT IGNORE INTO role_has_operation( role_id, operation_id ) ",
       "SELECT role.id, operation.id FROM ", @cenozo, ".role, operation ",
-      "WHERE subject = 'prerecruit' ",
+      "WHERE subject = 'participant' AND operation.name = 'search' ",
       "AND operation.restricted = true ",
-      "AND role.name IN( 'operator' )" );
+      "AND role.name IN( 'administrator', 'curator', 'helpline', 'supervisor' )" );
     PREPARE statement FROM @sql;
     EXECUTE statement;
     DEALLOCATE PREPARE statement;

@@ -6,6 +6,9 @@
   - This feature provides functionality to randomly select one individual in a household
   - Individuals are grouped into quotas and randomly selected
 
+* Adding new search participant utility
+  - Allows for complex search of participant based on address, phone, participant and note details
+
 ====================================================================================================
 1.2.2
 ====================================================================================================

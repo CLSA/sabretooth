@@ -11,6 +11,9 @@ CREATE PROCEDURE patch_operation()
     INSERT IGNORE INTO operation( type, subject, name, restricted, description )
     VALUES( "widget", "prerecruit", "select", true,
             "Provides a list of quotas for entering pre-recruit populations." );
+    INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+    VALUES( "widget", "participant", "search", true,
+            "Search for participants based on partial information." );
   END //
 DELIMITER ;
 
