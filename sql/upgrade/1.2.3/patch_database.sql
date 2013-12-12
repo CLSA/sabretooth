@@ -6,5 +6,6 @@ SOURCE operation.sql
 SOURCE role_has_operation.sql
 SOURCE prerecruit.sql
 SOURCE setting.sql
+SOURCE service.sql
 
 COMMIT;
