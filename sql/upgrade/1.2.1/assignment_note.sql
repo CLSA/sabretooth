@@ -4,8 +4,7 @@ CREATE PROCEDURE patch_assignment_note()
   BEGIN
 
     -- determine the @cenozo database name
-    SET @cenozo = CONCAT( SUBSTRING( DATABASE(), 1, LOCATE( 'sabretooth', DATABASE() ) - 1 ),
-                          'cenozo' );
+    SET @cenozo = REPLACE( DATABASE(), 'sabretooth', 'cenozo' );
 
     -- transfer assignment notes to person notes and remove the assignment_note table
     SELECT "Transfering assignment notes to person notes" AS "";

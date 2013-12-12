@@ -4,8 +4,7 @@ CREATE PROCEDURE patch_role()
   BEGIN
 
     -- determine the @cenozo database name
-    SET @cenozo = CONCAT( SUBSTRING( DATABASE(), 1, LOCATE( 'sabretooth', DATABASE() ) - 1 ),
-                          'cenozo' );
+    SET @cenozo = REPLACE( DATABASE(), 'sabretooth', 'cenozo' );
 
     -- add the all_sites column if it is missing
     SELECT "Making sure role table has all_sites column" AS "";

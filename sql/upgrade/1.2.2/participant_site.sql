@@ -4,8 +4,7 @@ CREATE PROCEDURE patch_participant_site()
   BEGIN
 
     -- determine the @cenozo database name
-    SET @cenozo = CONCAT( SUBSTRING( DATABASE(), 1, LOCATE( 'sabretooth', DATABASE() ) - 1 ),
-                          'cenozo' );
+    SET @cenozo = REPLACE( DATABASE(), 'sabretooth', 'cenozo' );
 
     SELECT "Recreating participant_site view" AS "";
 

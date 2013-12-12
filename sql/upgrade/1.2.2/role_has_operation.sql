@@ -4,8 +4,7 @@ CREATE PROCEDURE patch_role_has_operation()
   BEGIN
 
     -- determine the @cenozo database name
-    SET @cenozo = CONCAT( SUBSTRING( DATABASE(), 1, LOCATE( 'sabretooth', DATABASE() ) - 1 ),
-                          'cenozo' );
+    SET @cenozo = REPLACE( DATABASE(), 'sabretooth', 'cenozo' );
 
     SET @sql = CONCAT(
       "INSERT IGNORE INTO role_has_operation( role_id, operation_id ) ",
