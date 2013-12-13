@@ -6,7 +6,6 @@ CREATE PROCEDURE patch_service()
     -- determine the @cenozo database name
     SET @cenozo = REPLACE( DATABASE(), 'sabretooth', 'cenozo' );
 
-    SELECT @cenozo;
     SELECT "Adding new service.release_based column" AS "";
 
     SET @test = (
