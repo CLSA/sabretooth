@@ -93,12 +93,13 @@ class prerecruit_select extends \cenozo\ui\widget
       }
     }
 
+    $identifier = 0 == $total ? '' : $this->get_argument( 'identifier', '' );
+
     $this->set_variable( 'participant_id', $db_participant->id );
     $this->set_variable( 'quota_list', $quota_list );
     $this->set_variable( 'selection', $selection );
     $this->set_variable( 'selected_index', $selected_index );
     $this->set_variable( 'total', $total );
-    
-    $this->set_variable( 'identifier', $this->get_argument( 'identifier', '' ) );
+    $this->set_variable( 'identifier', $identifier );
   }
 }
