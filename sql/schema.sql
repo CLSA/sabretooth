@@ -777,6 +777,36 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `sabretooth`.`prerecruit`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`prerecruit` ;
+
+CREATE  TABLE IF NOT EXISTS `sabretooth`.`prerecruit` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `update_timestamp` TIMESTAMP NOT NULL ,
+  `create_timestamp` TIMESTAMP NOT NULL ,
+  `participant_id` INT UNSIGNED NOT NULL ,
+  `quota_id` INT UNSIGNED NOT NULL ,
+  `total` INT UNSIGNED NOT NULL DEFAULT 0 ,
+  `selected` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'If selected this will be a number between 1 and total.' ,
+  PRIMARY KEY (`id`) ,
+  INDEX `fk_participant_id` (`participant_id` ASC) ,
+  INDEX `fk_quota_id` (`quota_id` ASC) ,
+  UNIQUE INDEX `uq_participant_id_quota_id` (`participant_id` ASC, `quota_id` ASC) ,
+  CONSTRAINT `fk_prerecruit_participant_id`
+    FOREIGN KEY (`participant_id` )
+    REFERENCES `cenozo`.`participant` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_prerecruit_quota_id`
+    FOREIGN KEY (`quota_id` )
+    REFERENCES `cenozo`.`quota` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Placeholder table for view `sabretooth`.`assignment_last_phone_call`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `sabretooth`.`assignment_last_phone_call` (`assignment_id` INT, `phone_call_id` INT);

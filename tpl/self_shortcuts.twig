@@ -56,6 +56,26 @@
         } ).parent().buttonset();
       {% endif %}
       
+      {% if prerecruit and participant_id %}
+        $( "#{{ widget.full }}_prerecruit" ).button( {
+          text: false,
+          icons: {
+            primary: "ui-icon-flag"
+          }
+        } ).click( function() {
+          // open the prerecruit dialog
+          $( "#prerecruit_slot" ).dialog( {
+            title: "Pre-Recruit",
+            modal: false,
+            width: 400,
+            height: 400,
+            autoOpen: true,
+            beforeClose: function( event, ui ) { $(this).html( "" ); }
+          } );
+          slot_load( "prerecruit", "prerecruit", "select", { participant_id: {{ participant_id }} } );
+        } ).parent().buttonset();
+      {% endif %}
+      
       {% if timer %}
         $( "#{{ widget.full }}_timer" ).button( {
           text: false,
@@ -63,7 +83,7 @@
             primary: "ui-icon-clock"
           }
         } ).click( function() {
-          // open the timber dialog
+          // open the timer dialog
           $( "#timer_slot" ).dialog( {
             title: "Timer and Recording",
             modal: false,
@@ -176,6 +196,9 @@
       {% endif %}
     </span>
     <span>
+      {% if prerecruit %}
+        <button id="{{ widget.full }}_prerecruit">pre-recruit selection</button>
+      {% endif %}
       {% if timer %}
         <button id="{{ widget.full }}_timer">timer</button>
       {% endif %}

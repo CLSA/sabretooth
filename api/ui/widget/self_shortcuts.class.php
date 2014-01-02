@@ -52,10 +52,28 @@ class self_shortcuts extends \cenozo\ui\widget\self_shortcuts
     $this->set_variable( 'webphone',
       $voip_enabled && !$voip_manager->get_sip_enabled() );
     $this->set_variable( 'dialpad', !is_null( $voip_manager->get_call() ) );
+
+    $this->set_variable( 'participant_id', 0 );
+    $this->set_variable( 'prerecruit', false );
+    $this->set_variable( 'timer', false );
+
     if( $is_operator )
-      $this->set_variable( 'timer', !is_null( $session->get_current_phone_call() ) );
+    {
+      $db_assignment = $session->get_current_assignment();
+      $this->set_variable( 'participant_id',
+        is_null( $db_assignment ) ? 0 : $db_assignment->get_interview()->get_participant()->id );
+
+      if( !is_null( $session->get_current_phone_call() ) );
+      {
+        $this->set_variable(
+          'prerecruit', $setting_manager->get_setting( 'prerecruit', 'enabled' ) );
+        $this->set_variable( 'timer', true );
+      }
+    }
     else
+    {
       $this->set_variable( 'timer', $survey_manager->get_survey_url() );
+    }
       
     $this->set_variable( 'calculator', true );
     $this->set_variable( 'timezone_calculator', true );

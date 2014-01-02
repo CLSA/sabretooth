@@ -666,6 +666,11 @@ AND role.name IN ( "administrator", "curator" );
 
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "participant" AND operation.name = "search"
+AND role.name IN( "administrator", "curator", "helpline", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "widget" AND subject = "participant" AND operation.name = "secondary"
 AND role.name IN( "administrator", "curator", "helpline", "operator", "supervisor" );
 
