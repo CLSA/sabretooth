@@ -4,7 +4,11 @@ CREATE PROCEDURE patch_prerecruit()
   BEGIN
 
     -- determine the @cenozo database name
-    SET @cenozo = REPLACE( DATABASE(), 'sabretooth', 'cenozo' );
+    SET @cenozo = (
+      SELECT unique_constraint_schema
+      FROM information_schema.referential_constraints
+      WHERE constraint_schema = DATABASE()
+      AND constraint_name = "fk_role_has_operation_role_id" );
 
     SELECT "Adding new prerecruit table" AS "";
 
