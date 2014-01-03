@@ -4,7 +4,11 @@ CREATE PROCEDURE patch_role_has_operation()
   BEGIN
 
     -- determine the @cenozo database name
-    SET @cenozo = REPLACE( DATABASE(), 'sabretooth', 'cenozo' );
+    SET @cenozo = (
+      SELECT unique_constraint_schema
+      FROM information_schema.referential_constraints
+      WHERE constraint_schema = DATABASE()
+      AND constraint_name = "fk_role_has_operation_role_id" );
 
     SET @sql = CONCAT(
       "INSERT IGNORE INTO role_has_operation( role_id, operation_id ) ",

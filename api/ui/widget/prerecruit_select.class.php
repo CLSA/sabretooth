@@ -81,23 +81,25 @@ class prerecruit_select extends \cenozo\ui\widget
       $quota_list[] = array(
         'id' => $db_quota->id,
         'gender' => $db_quota->gender,
-        'age_group' => $db_age_group->to_string(),
+        'age_group' => sprintf( '%d to %d', $db_age_group->lower, $db_age_group->upper - 1 ),
         'total' => is_null( $db_prerecruit ) ? 0 : $db_prerecruit->total );
 
       if( !is_null( $db_prerecruit ) && 0 < $db_prerecruit->selected )
       {
-        $selection = sprintf( '%s %s', $db_quota->gender, $db_age_group->to_string() );
+        $selection =
+          sprintf( '%s %d to %d', $db_quota->gender, $db_age_group->lower, $db_age_group->upper - 1 );
         $selected_index = $db_prerecruit->selected;
         $total = $db_prerecruit->total;
       }
     }
+
+    $identifier = 0 == $total ? '' : $this->get_argument( 'identifier', '' );
 
     $this->set_variable( 'participant_id', $db_participant->id );
     $this->set_variable( 'quota_list', $quota_list );
     $this->set_variable( 'selection', $selection );
     $this->set_variable( 'selected_index', $selected_index );
     $this->set_variable( 'total', $total );
-    
-    $this->set_variable( 'identifier', $this->get_argument( 'identifier', '' ) );
+    $this->set_variable( 'identifier', $identifier );
   }
 }
