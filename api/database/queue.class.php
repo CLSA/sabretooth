@@ -523,14 +523,14 @@ class queue extends \cenozo\database\record
     {
       // current_qnaire_id is the either the next qnaire to work on or the one in progress
       $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
-      // ineligible means either inactive or with a "final" status
+      // ineligible means either inactive or with a "final" state
       $parts['join'][] = 
         'JOIN participant_for_queue_phone_count '.
         'ON participant_for_queue_phone_count.person_id = participant_person_id';
       $parts['where'][] =
         '( '.
           'participant_active = false '.
-          'OR participant_status IS NOT NULL '.
+          'OR participant_state_id IS NOT NULL '.
           'OR phone_count = 0 '.
           'OR last_consent_accept = 0 '.
         ')';
@@ -555,18 +555,18 @@ class queue extends \cenozo\database\record
           'last_consent_accept IS NULL '.
           'OR last_consent_accept = 1 '.
         ')';
-      $parts['where'][] = 'participant_status IS NOT NULL';
+      $parts['where'][] = 'participant_state_id IS NOT NULL';
     }
     else if( 'eligible' == $queue )
     {
       // current_qnaire_id is the either the next qnaire to work on or the one in progress
       $parts['where'][] = $current_qnaire_id.' IS NOT NULL';
-      // active participant who does not have a "final" status and has at least one phone number
+      // active participant who does not have a "final" state and has at least one phone number
       $parts['join'][] = 
         'JOIN participant_for_queue_phone_count '.
         'ON participant_for_queue_phone_count.person_id = participant_person_id';
       $parts['where'][] = 'participant_active = true';
-      $parts['where'][] = 'participant_status IS NULL';
+      $parts['where'][] = 'participant_state_id IS NULL';
       $parts['where'][] = 'phone_count > 0';
       $parts['where'][] =
         '( '.
@@ -924,7 +924,7 @@ class queue extends \cenozo\database\record
       'ADD INDEX fk_participant_gender ( participant_gender ), '.
       'ADD INDEX fk_participant_age_group_id ( participant_age_group_id ), '.
       'ADD INDEX fk_participant_active ( participant_active ), '.
-      'ADD INDEX fk_participant_status ( participant_status ), '.
+      'ADD INDEX fk_participant_state_id ( participant_state_id ), '.
       'ADD INDEX fk_service_has_participant_preferred_site_id ( service_has_participant_preferred_site_id ), '.
       'ADD INDEX fk_current_interview_completed ( current_interview_completed ), '.
       'ADD INDEX fk_current_qnaire_id ( current_qnaire_id ), '.
@@ -1111,7 +1111,7 @@ participant.last_name AS participant_last_name,
 participant.gender AS participant_gender,
 participant.date_of_birth AS participant_date_of_birth,
 participant.age_group_id AS participant_age_group_id,
-participant.status AS participant_status,
+participant.state_id AS participant_state_id,
 participant.language AS participant_language,
 participant.use_informant AS participant_use_informant,
 participant.override_quota AS participant_override_quota,

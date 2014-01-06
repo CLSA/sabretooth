@@ -68,7 +68,7 @@ class queue_view extends \cenozo\ui\widget\base_view
     $this->participant_list = lib::create( 'ui\widget\participant_list', $this->arguments );
     $this->participant_list->set_parent( $this );
     $this->participant_list->set_heading( 'Queue participant list' );
-    $this->participant_list->set_allow_restrict_condition( false );
+    $this->participant_list->set_allow_restrict_state( false );
   }
 
   /**
