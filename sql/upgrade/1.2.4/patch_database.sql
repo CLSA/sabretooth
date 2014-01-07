@@ -5,5 +5,7 @@ SET AUTOCOMMIT=0;
 SOURCE state.sql
 SOURCE role_has_state.sql
 SOURCE participant.sql
+SOURCE operation.sql
+SOURCE role_has_operation.sql
 
 COMMIT;
