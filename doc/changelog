@@ -2,8 +2,13 @@
 1.2.4
 ====================================================================================================
 
-* Replacing participant.status with new state table
+* Tracking changes to participant email addresses
+  - email addresses are now validated using simple word@word.word validation
+  - any change to a participant's email address is tracked by date and time
+  - a new email report has been created which provides a list of all participants with new email
+    addresses
 
+* Replacing participant.status with new state table
   - Participant conditions (states) can now be managed by administrators
   - Each role can be restricted to only setting certain states
 

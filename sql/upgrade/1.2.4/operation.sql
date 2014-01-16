@@ -30,6 +30,10 @@ CREATE PROCEDURE patch_operation()
     VALUES( "push", "state", "new_role", true, "Add a role to a state." );
     INSERT IGNORE INTO operation( type, subject, name, restricted, description )
     VALUES( "widget", "state", "view", true, "View a state's details." );
+    INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+    VALUES( "pull", "email", "report", true, "Download a email report." );
+    INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+    VALUES( "widget", "email", "report", true, "Set up a email report." );
 
   END //
 DELIMITER ;

@@ -10,6 +10,31 @@ CREATE PROCEDURE patch_participant()
       WHERE constraint_schema = DATABASE()
       AND constraint_name = "fk_role_has_operation_role_id" );
 
+    SELECT "Adding the new email_datetime column to the participant table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = @cenozo
+      AND TABLE_NAME = "participant"
+      AND COLUMN_NAME = "email_datetime" );
+    IF @test = 0 THEN
+      SET @sql = CONCAT(
+        "ALTER TABLE ", @cenozo, ".participant ",
+        "ADD COLUMN email_datetime DATETIME NULL DEFAULT NULL ",
+        "AFTER email" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
+      SET @sql = CONCAT(
+        "ALTER TABLE ", @cenozo, ".participant ",
+        "ADD INDEX dk_email_datetime( email_datetime ASC )" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+    END IF;
+
     SELECT "Replacing participant.status column with reference to state table" AS "";
 
     SET @test = (
