@@ -56,7 +56,7 @@
       
         // end assignment button
         $( "#{{ widget.full }}__end_assignment" ).click( function() {
-          if( ajax_push( "assignment", "end" ) ) slot_refresh( {{ slot }} );
+          if( ajax_push( "assignment", "end" ) ) window.location.reload();
         } );
         
         {% if allow_withdraw %}
@@ -98,7 +98,7 @@
             label: "Working..."
           } );
           if( ajax_push( "assignment", "begin" ) ) {
-            slot_refresh( {{ slot }} ); } else {
+            window.location.reload(); } else {
             $(this).button( {
               disabled: false,
               label: "Request assignment"
