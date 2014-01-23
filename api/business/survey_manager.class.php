@@ -253,8 +253,8 @@ class survey_manager extends \cenozo\singleton
         return false;
       }
 
-      $qnaire_id = $db_participant->current_qnaire_id;
-      if( is_null( $qnaire_id ) )
+      $db_qnaire = $db_participant->get_effective_qnaire();
+      if( is_null( $db_qnaire ) )
       { // finished all qnaires, find the last one completed
         $db_assignment = $db_participant->get_last_finished_assignment();
         if( is_null( $db_assignment ) )
@@ -262,10 +262,8 @@ class survey_manager extends \cenozo\singleton
                              'Trying to withdraw participant without a questionnaire.',
                              __METHOD__ );
 
-        $qnaire_id = $db_assignment->get_interview()->qnaire_id;
+        $db_qnaire = $db_assignment->get_interview()->get_qnaire();
       }
-
-      $db_qnaire = lib::create( 'database\qnaire', $qnaire_id );
 
       // let the tokens record class know which SID we are dealing with by checking if
       // there is a source-specific survey for the participant, and if not falling back

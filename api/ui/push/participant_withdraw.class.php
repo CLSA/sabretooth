@@ -66,5 +66,8 @@ class participant_withdraw extends \cenozo\ui\push\base_record
       $db_consent->note = 'Automatically added by the "withdraw" button.';
       $db_consent->save();
     }
+
+    // update this participant's queue status
+    $this->get_record()->update_queue_status();
   }
 }

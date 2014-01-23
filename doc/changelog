@@ -1,4 +1,21 @@
 ====================================================================================================
+1.3.0
+====================================================================================================
+
+* Redesigning queueing system to improve performance
+  - Removed queue restrictions
+  - Participants who are currently "available" are no longer assigned before those who are not
+  - Changes to the system which affect queues done through services other than Sabretooth may take
+    up to an hour to come into effect (eg: participant release, editing participants, etc)
+  - Calling time restrictions are now only reflected on or near the hour
+  - Merged "available" and "not available" queues
+  - Queue operations take a fraction of the time compared to before at the cost of operations which
+    edit a participant's details being slighly longer (processing load is now distributed)
+  - Administrators can force-update queues to reflect all changes made across the system (including
+    those made from another application, changes to call time restrictions, released participant,
+    etc)
+
+====================================================================================================
 1.2.4
 ====================================================================================================
 

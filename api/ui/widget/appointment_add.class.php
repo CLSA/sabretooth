@@ -100,9 +100,9 @@ class appointment_add extends base_appointment_view
     $types = array_combine( $types, $types );
     
     // create the min datetime array
-    $start_qnaire_date = $this->parent->get_record()->start_qnaire_date;
+    $start_qnaire_date = $this->parent->get_record()->get_start_qnaire_date();
     $datetime_limits = !is_null( $start_qnaire_date )
-                     ? array( 'min_date' => substr( $start_qnaire_date, 0, -9 ) )
+                     ? array( 'min_date' => $start_qnaire_date->format( 'Y-m-d' ) )
                      : NULL;
 
     // set the view's items

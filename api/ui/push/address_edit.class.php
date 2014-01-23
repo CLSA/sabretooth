@@ -1,6 +1,6 @@
 <?php
 /**
- * callback_edit.class.php
+ * address_edit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,23 +10,12 @@ namespace sabretooth\ui\push;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
- * push: callback edit
+ * push: address edit
  *
- * Edit a callback.
+ * Create a edit address.
  */
-class callback_edit extends \cenozo\ui\push\base_edit
+class address_edit extends \cenozo\ui\push\address_edit
 {
-  /**
-   * Constructor.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param array $args Push arguments
-   * @access public
-   */
-  public function __construct( $args )
-  {
-    parent::__construct( 'callback', $args );
-  }
-
   /**
    * This method executes the operation's purpose.
    * 
@@ -38,6 +27,7 @@ class callback_edit extends \cenozo\ui\push\base_edit
     parent::execute();
 
     // if the owner is a participant then update their queue status
-    $this->get_record()->get_participant()->update_queue_status();
+    $db_participant = $this->get_record()->get_person()->get_participant();
+    if( !is_null( $db_participant ) ) $db_participant->update_queue_status();
   }
 }

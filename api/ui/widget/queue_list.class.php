@@ -115,13 +115,18 @@ class queue_list extends \cenozo\ui\widget\base_list
       else if( !is_null( $db_restrict_site ) ) $record->set_site( $db_restrict_site );
       
       // restrict to the current qnaire
-      $record->set_qnaire( $db_restrict_qnaire );
+      $modifier = NULL;
+      if( !is_null( $db_restrict_qnaire ) )
+      {
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'qnaire_id', '=', $db_restrict_qnaire->id );
+      }
 
       $this->add_row( $record->id,
         array( 'rank' => $record->rank,
                'enabled' => $setting_manager->get_setting(
                  'queue state', $record->name, $db_restrict_site ),
-               'participant_count' => $record->get_participant_count(),
+               'participant_count' => $record->get_participant_count( $modifier ),
                // I hate to put html here, but the alternative is to implement code in the
                // parent class for this ONLY instance of where we need this functionality.
                'description' => '<div class="title">'.$record->title.'</div>'.

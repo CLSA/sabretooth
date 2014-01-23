@@ -106,6 +106,7 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`queue` (
   `title` VARCHAR(255) NOT NULL,
   `rank` INT UNSIGNED NULL DEFAULT NULL,
   `qnaire_specific` TINYINT(1) NOT NULL,
+  `time_specific` TINYINT(1) NOT NULL,
   `parent_queue_id` INT UNSIGNED NULL DEFAULT NULL,
   `description` TEXT NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -337,37 +338,6 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`shift_template` (
   INDEX `dk_start_date` (`start_date` ASC),
   INDEX `dk_end_date` (`end_date` ASC),
   CONSTRAINT `fk_shift_template_site_id`
-    FOREIGN KEY (`site_id`)
-    REFERENCES `cenozo`.`site` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `sabretooth`.`queue_restriction`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`queue_restriction` ;
-
-CREATE TABLE IF NOT EXISTS `sabretooth`.`queue_restriction` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `update_timestamp` TIMESTAMP NOT NULL,
-  `create_timestamp` TIMESTAMP NOT NULL,
-  `site_id` INT UNSIGNED NULL DEFAULT NULL,
-  `city` VARCHAR(100) NULL DEFAULT NULL,
-  `region_id` INT UNSIGNED NULL DEFAULT NULL,
-  `postcode` VARCHAR(10) NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_region_id` (`region_id` ASC),
-  INDEX `fk_site_id` (`site_id` ASC),
-  INDEX `dk_city` (`city` ASC),
-  INDEX `dk_postcode` (`postcode` ASC),
-  CONSTRAINT `fk_queue_restriction_region_id`
-    FOREIGN KEY (`region_id`)
-    REFERENCES `cenozo`.`region` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_queue_restriction_site_id`
     FOREIGN KEY (`site_id`)
     REFERENCES `cenozo`.`site` (`id`)
     ON DELETE NO ACTION
@@ -801,6 +771,47 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`prerecruit` (
   CONSTRAINT `fk_prerecruit_quota_id`
     FOREIGN KEY (`quota_id`)
     REFERENCES `cenozo`.`quota` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `sabretooth`.`queue_has_participant`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`queue_has_participant` ;
+
+CREATE TABLE IF NOT EXISTS `sabretooth`.`queue_has_participant` (
+  `queue_id` INT UNSIGNED NOT NULL,
+  `participant_id` INT UNSIGNED NOT NULL,
+  `update_timestamp` TIMESTAMP NOT NULL,
+  `create_timestamp` TIMESTAMP NOT NULL,
+  `site_id` INT UNSIGNED NULL,
+  `qnaire_id` INT UNSIGNED NULL,
+  `start_qnaire_date` DATE NULL,
+  PRIMARY KEY (`queue_id`, `participant_id`),
+  INDEX `fk_participant_id` (`participant_id` ASC),
+  INDEX `fk_queue_id` (`queue_id` ASC),
+  INDEX `fk_qnaire_id` (`qnaire_id` ASC),
+  INDEX `fk_site_id` (`site_id` ASC),
+  CONSTRAINT `fk_queue_has_participant_queue_id`
+    FOREIGN KEY (`queue_id`)
+    REFERENCES `sabretooth`.`queue` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_queue_has_participant_participant_id`
+    FOREIGN KEY (`participant_id`)
+    REFERENCES `cenozo`.`participant` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_queue_has_participant_qnaire_id`
+    FOREIGN KEY (`qnaire_id`)
+    REFERENCES `sabretooth`.`qnaire` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_queue_has_participant_site_id`
+    FOREIGN KEY (`site_id`)
+    REFERENCES `cenozo`.`site` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

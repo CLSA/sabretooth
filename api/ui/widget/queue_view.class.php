@@ -110,22 +110,11 @@ class queue_view extends \cenozo\ui\widget\base_view
    */
   public function determine_participant_count( $modifier = NULL )
   {
-    // replace participant. with participant_ and cohort. with cohort_ in the where columns
-    // of the modifier (see queue record's participant_for_queue for details)
-    if( !is_null( $modifier ) )
-    {
-      foreach( $modifier->get_where_columns() as $column )
-      {
-        $modifier->change_where_column(
-          $column, preg_replace( '/^participant\./', 'participant_', $column ) );
-        $modifier->change_where_column(
-          $column, preg_replace( '/^cohort\./', 'cohort_', $column ) );
-      }
-    }
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    if( !is_null( $this->db_qnaire ) ) $modifier->where( 'qnaire_id', '=', $this->db_qnaire->id );
 
     $db_queue = $this->get_record();
     $db_queue->set_site( $this->db_site );
-    $db_queue->set_qnaire( $this->db_qnaire );
     return $db_queue->get_participant_count( $modifier );
   }
 
@@ -139,35 +128,11 @@ class queue_view extends \cenozo\ui\widget\base_view
    */
   public function determine_participant_list( $modifier = NULL )
   {
-    // replace participant. with participant_ and cohort. with cohort_ in the where and order
-    // columns of the modifier (see queue record's participant_for_queue for details)
-    if( !is_null( $modifier ) )
-    {
-      foreach( $modifier->get_where_columns() as $column )
-      {
-        $modifier->change_where_column(
-          $column, preg_replace( '/^participant\./', 'participant_', $column ) );
-        $modifier->change_where_column(
-          $column, preg_replace( '/^cohort\./', 'cohort_', $column ) );
-      }
-
-      foreach( $modifier->get_order_columns() as $column )
-      {
-        if( 'participant.id' == $column ) 
-          $modifier->change_order_column( 'participant.id', 'participant_for_queue.id' );
-        else
-        {
-          $modifier->change_order_column(
-            $column, preg_replace( '/^participant\./', 'participant_', $column ) );
-          $modifier->change_order_column(
-            $column, preg_replace( '/^cohort\./', 'cohort_', $column ) );
-        }
-      }
-    }
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    if( !is_null( $this->db_qnaire ) ) $modifier->where( 'qnaire_id', '=', $this->db_qnaire->id );
 
     $db_queue = $this->get_record();
     $db_queue->set_site( $this->db_site );
-    $db_queue->set_qnaire( $this->db_qnaire );
     return $db_queue->get_participant_list( $modifier );
   }
 

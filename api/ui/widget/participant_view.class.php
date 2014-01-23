@@ -26,8 +26,8 @@ class participant_view extends \cenozo\ui\widget\participant_view
     parent::prepare();
     
     $this->add_item( 'quota_state', 'constant', 'Quota State' );
-    $this->add_item( 'current_qnaire_name', 'constant', 'Current Questionnaire' );
-    $this->add_item( 'start_qnaire_date', 'constant', 'Delay Questionnaire Until' );
+    $this->add_item( 'qnaire_name', 'constant', 'Current Questionnaire' );
+    $this->add_item( 'qnaire_date', 'constant', 'Delay Questionnaire Until' );
     
     // create the appointment sub-list widget
     $this->appointment_list = lib::create( 'ui\widget\appointment_list', $this->arguments );
@@ -58,17 +58,19 @@ class participant_view extends \cenozo\ui\widget\participant_view
     $operation_class_name = lib::get_class_name( 'database\operation' );
     $record = $this->get_record();
 
-    $start_qnaire_date = $record->start_qnaire_date;
-    if( is_null( $record->current_qnaire_id ) )
+    $db_effective_qnaire = $record->get_effective_qnaire();
+    if( is_null( $db_effective_qnaire ) )
     {
-      $current_qnaire_name = '(none)';
-      $start_qnaire_date = '(not applicable)';
+      $qnaire_name = '(none)';
+      $qnaire_date = '(not applicable)';
     }
     else
     {
-      $db_current_qnaire = lib::create( 'database\qnaire', $record->current_qnaire_id );
-      $current_qnaire_name = $db_current_qnaire->name;
-      $start_qnaire_date = util::get_formatted_date( $start_qnaire_date, 'immediately' );
+      $qnaire_name = $db_effective_qnaire->name;
+      $start_qnaire_date = $record->get_start_qnaire_date();
+      $qnaire_date = is_null( $start_qnaire_date )
+                   ? 'immediately'
+                   : util::get_formatted_date( $start_qnaire_date );
     }
 
     // set the view's items
@@ -76,8 +78,8 @@ class participant_view extends \cenozo\ui\widget\participant_view
     $this->set_item( 'quota_state',
       is_null( $db_quota ) ? '(no quota)' :
         ( $db_quota->state_disabled ? 'Disabled' : 'Enabled' ) );
-    $this->set_item( 'current_qnaire_name', $current_qnaire_name );
-    $this->set_item( 'start_qnaire_date', $start_qnaire_date );
+    $this->set_item( 'qnaire_name', $qnaire_name );
+    $this->set_item( 'qnaire_date', $qnaire_date );
 
     try
     {

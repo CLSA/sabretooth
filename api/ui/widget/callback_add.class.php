@@ -97,9 +97,9 @@ class callback_add extends \cenozo\ui\widget\base_view
     $callback_class_name = lib::get_class_name( 'database\callback' );
     
     // create the min datetime array
-    $start_qnaire_date = $this->parent->get_record()->start_qnaire_date;
+    $start_qnaire_date = $this->parent->get_record()->get_start_qnaire_date();
     $datetime_limits = !is_null( $start_qnaire_date )
-                     ? array( 'min_date' => substr( $start_qnaire_date, 0, -9 ) )
+                     ? array( 'min_date' => $start_qnaire_date->format( 'Y-m-d' ) )
                      : NULL;
 
     // set the view's items
