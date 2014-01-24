@@ -35,7 +35,7 @@ class participant_edit extends \cenozo\ui\push\participant_edit
       'gender',
       'state_id',
       'override_quota' );
-    foreach( $this->get_record()->get_cohort()->get_service_list() as $db_service )
+    foreach( $record->get_cohort()->get_service_list() as $db_service )
       $column_list[] = sprintf( '%s_site_id', $db_service->name );
 
     if( array_intersect_key( $columns, array_flip( $column_list ) ) )
