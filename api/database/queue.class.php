@@ -62,7 +62,7 @@ class queue extends \cenozo\database\record
    * Generates the query list.
    * 
    * This method is called internally by the {@link repopulate} method in order to generate
-   * the proper SQL to complete those methods.
+   * the proper SQL to complete the repopulate of queues.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    * @static
@@ -567,18 +567,15 @@ class queue extends \cenozo\database\record
       }
       else if( 'inactive' == $queue )
       {
-        $parts['where'][] = 'effective_qnaire_id IS NOT NULL';
         $parts['where'][] = 'participant_active = false';
       }
       else if( 'refused consent' == $queue )
       {
-        $parts['where'][] = 'effective_qnaire_id IS NOT NULL';
         $parts['where'][] = 'participant_active = true';
         $parts['where'][] = 'last_consent_accept = 0';
       }
       else if( 'condition' == $queue )
       {
-        $parts['where'][] = 'effective_qnaire_id IS NOT NULL';
         $parts['where'][] = 'participant_active = true';
         $parts['where'][] =
           '( '.
@@ -589,8 +586,6 @@ class queue extends \cenozo\database\record
       }
       else if( 'eligible' == $queue )
       {
-        // effective_qnaire_id is the either the next qnaire to work on or the one in progress
-        $parts['where'][] = 'effective_qnaire_id IS NOT NULL';
         // active participant who does not have a "final" state and has at least one phone number
         $parts['join'][] = 
           'JOIN participant_for_queue_phone_count '.
@@ -606,7 +601,7 @@ class queue extends \cenozo\database\record
       }
       else if( 'qnaire' == $queue )
       {
-        $parts['where'][] = 'effective_qnaire_id IS NOT NULL';
+        // no additional parts needed
       }
       // we must process all of the qnaire queue's direct children as a whole
       else if( in_array( $queue, $qnaire_children ) )
@@ -615,7 +610,7 @@ class queue extends \cenozo\database\record
         {
           // the current qnaire cannot start before start_qnaire_date
           $parts['where'][] = 'start_qnaire_date IS NOT NULL';
-          $parts['where'][] = sprintf( 'DATE( start_qnaire_date ) > DATE( %s )',
+          $parts['where'][] = sprintf( 'start_qnaire_date > DATE( %s )',
                                        $viewing_date );
         }
         else
@@ -624,19 +619,19 @@ class queue extends \cenozo\database\record
           $parts['where'][] = sprintf(
             '( '.
               'start_qnaire_date IS NULL OR '.
-              'DATE( start_qnaire_date ) <= DATE( %s ) '.
+              'start_qnaire_date <= DATE( %s ) '.
             ')',
             $viewing_date );
 
           if( 'assigned' == $queue )
           {
-            // assigned
+            // participants who are currently assigned
             $parts['where'][] =
               '( last_assignment_id IS NOT NULL AND last_assignment_end_datetime IS NULL )';
           }
           else
           {
-            // unassigned
+            // participants who are NOT currently assigned
             $parts['where'][] =
               '( last_assignment_id IS NULL OR last_assignment_end_datetime IS NOT NULL )';
 
@@ -716,8 +711,8 @@ class queue extends \cenozo\database\record
                       // started, the exception is for participants who have never been assigned
                       $parts['where'][] =
                         '('.
-                        '  start_qnaire_date IS NOT NULL OR'.
-                        '  last_assignment_id IS NULL'.
+                          'start_qnaire_date IS NOT NULL OR '.
+                          'last_assignment_id IS NULL '.
                         ')';
                     }
                     else // old participant
@@ -775,45 +770,23 @@ class queue extends \cenozo\database\record
     // start by making sure the query list has been generated
     if( 0 == count( self::$query_list ) ) self::generate_query_list();
 
-    $site_test = is_null( $this->db_site )
-               ? 'true'
-               : sprintf( 'IFNULL( service_has_participant_preferred_site_id, '.
-                          'primary_region_site_id ) = %s',
-                          $database_class_name::format_string( $db_site->id ) );
+    $site_test_sql = is_null( $this->db_site )
+                   ? 'true'
+                   : sprintf( 'IFNULL( service_has_participant_preferred_site_id, '.
+                              'primary_region_site_id ) = %s',
+                              $database_class_name::format_string( $db_site->id ) );
     $sql = self::$query_list[ $this->name ];
     $sql = preg_replace( '/\<SELECT_PARTICIPANT\>/', $select_participant_sql, $sql, 1 );
     $sql = str_replace( '<SELECT_PARTICIPANT>', 'participant_for_queue.id', $sql );
-    $sql = str_replace( '<SITE_TEST>', $site_test, $sql );
+    $sql = str_replace( '<SITE_TEST>', $site_test_sql, $sql );
 
     // fill in the settings
     $setting_manager = lib::create( 'business\setting_manager' );
-/*
-    $setting = $setting_manager->get_setting( 'appointment', 'call pre-window', $this->db_site );
-    $sql = str_replace( '<APPOINTMENT_PRE_WINDOW>', $setting, $sql );
-    $setting = $setting_manager->get_setting( 'appointment', 'call post-window', $this->db_site );
-    $sql = str_replace( '<APPOINTMENT_POST_WINDOW>', $setting, $sql );
-    $setting = $setting_manager->get_setting( 'callback', 'call pre-window', $this->db_site );
-    $sql = str_replace( '<CALLBACK_PRE_WINDOW>', $setting, $sql );
-*/
     $setting = $setting_manager->get_setting( 'calling', 'start time', $this->db_site );
     $sql = str_replace( '<CALLING_START_TIME>', $setting, $sql );
     $setting = $setting_manager->get_setting( 'calling', 'end time', $this->db_site );
     $sql = str_replace( '<CALLING_END_TIME>', $setting, $sql );
 
-    // fill in all callback timing settings
-    /*
-    $setting_mod = lib::create( 'database\modifier' );
-    $setting_mod->where( 'category', '=', 'callback timing' );
-    $setting_class_name = lib::get_class_name( 'database\setting' );
-    foreach( $setting_class_name::select( $setting_mod ) as $db_setting )
-    {
-      $setting = $setting_manager->get_setting(
-        'callback timing', $db_setting->name, $this->db_site );
-      $template = sprintf( '<CALLBACK_%s>',
-                           str_replace( ' ', '_', strtoupper( $db_setting->name ) ) );
-      $sql = str_replace( $template, $setting, $sql );
-    }
-    */
     return $sql;
   }
 
@@ -872,15 +845,11 @@ class queue extends \cenozo\database\record
         'ADD INDEX fk_participant_state_id ( participant_state_id ), '.
         'ADD INDEX fk_service_has_participant_preferred_site_id ( '.
           'service_has_participant_preferred_site_id ), '.
-        'ADD INDEX fk_current_interview_completed ( current_interview_completed ), '.
-        'ADD INDEX fk_current_qnaire_id ( current_qnaire_id ), '.
-        'ADD INDEX fk_next_qnaire_id ( next_qnaire_id ), '.
         'ADD INDEX fk_effective_qnaire_id ( effective_qnaire_id ), '.
         'ADD INDEX fk_last_consent_accept ( last_consent_accept ), '.
         'ADD INDEX fk_last_assignment_id ( last_assignment_id ), '.
         'ADD INDEX dk_primary_region_id ( primary_region_id ), '.
-        'ADD INDEX dk_primary_region_site_id ( primary_region_site_id ), '.
-        'ADD INDEX dk_primary_region_service_id ( primary_region_service_id )' );
+        'ADD INDEX dk_primary_region_site_id ( primary_region_site_id )' );
 
     // build participant_for_queue_phone_count table
     $sql = sprintf(
@@ -1029,93 +998,16 @@ class queue extends \cenozo\database\record
 SELECT participant.id,
 participant.person_id AS participant_person_id,
 participant.active AS participant_active,
-participant.uid AS participant_uid,
-participant.source_id AS participant_source_id,
-participant.cohort_id AS participant_cohort_id,
-participant.first_name AS participant_first_name,
-participant.last_name AS participant_last_name,
 participant.gender AS participant_gender,
-participant.date_of_birth AS participant_date_of_birth,
 participant.age_group_id AS participant_age_group_id,
 participant.state_id AS participant_state_id,
-participant.language AS participant_language,
-participant.use_informant AS participant_use_informant,
 participant.override_quota AS participant_override_quota,
-participant.email AS participant_email,
-service_has_participant.service_id AS service_has_participant_service_id,
-service_has_participant.participant_id AS service_has_participant_participant_id,
 service_has_participant.preferred_site_id AS service_has_participant_preferred_site_id,
-service_has_participant.datetime AS service_has_participant_datetime,
-cohort.name AS cohort_name,
 primary_region.id AS primary_region_id,
 primary_region_site.site_id primary_region_site_id,
-primary_region_site.service_id primary_region_service_id,
-last_consent.id AS last_consent_id,
-last_consent.participant_id AS last_consent_participant_id,
 last_consent.accept AS last_consent_accept,
-last_consent.written AS last_consent_written,
-last_consent.date AS last_consent_date,
-last_consent.note AS last_consent_note,
-current_interview.id AS current_interview_id,
-current_interview.qnaire_id AS current_interview_qnaire_id,
-current_interview.participant_id AS current_interview_participant_id,
-current_interview.require_supervisor AS current_interview_require_supervisor,
-current_interview.completed AS current_interview_completed,
-current_interview.rescored AS current_interview_rescored,
 last_assignment.id AS last_assignment_id,
-last_assignment.user_id AS last_assignment_user_id,
-last_assignment.site_id AS last_assignment_site_id,
-last_assignment.interview_id AS last_assignment_interview_id,
-last_assignment.queue_id AS last_assignment_queue_id,
-last_assignment.start_datetime AS last_assignment_start_datetime,
 last_assignment.end_datetime AS last_assignment_end_datetime,
-current_qnaire.id AS current_qnaire_id,
-current_qnaire.name AS current_qnaire_name,
-current_qnaire.rank AS current_qnaire_rank,
-current_qnaire.prev_qnaire_id AS current_qnaire_prev_qnaire_id,
-current_qnaire.delay AS current_qnaire_delay,
-current_qnaire.withdraw_sid AS current_qnaire_withdraw_sid,
-current_qnaire.rescore_sid AS current_qnaire_rescore_sid,
-current_qnaire.description AS current_qnaire_description,
-next_qnaire.id AS next_qnaire_id,
-next_qnaire.name AS next_qnaire_name,
-next_qnaire.rank AS next_qnaire_rank,
-next_qnaire.prev_qnaire_id AS next_qnaire_prev_qnaire_id,
-next_qnaire.delay AS next_qnaire_delay,
-next_qnaire.withdraw_sid AS next_qnaire_withdraw_sid,
-next_qnaire.rescore_sid AS next_qnaire_rescore_sid,
-next_qnaire.description AS next_qnaire_description,
-next_prev_qnaire.id AS next_prev_qnaire_id,
-next_prev_qnaire.name AS next_prev_qnaire_name,
-next_prev_qnaire.rank AS next_prev_qnaire_rank,
-next_prev_qnaire.prev_qnaire_id AS next_prev_qnaire_prev_qnaire_id,
-next_prev_qnaire.delay AS next_prev_qnaire_delay,
-next_prev_qnaire.withdraw_sid AS next_prev_qnaire_withdraw_sid,
-next_prev_qnaire.rescore_sid AS next_prev_qnaire_rescore_sid,
-next_prev_qnaire.description AS next_prev_qnaire_description,
-next_prev_interview.id AS next_prev_interview_id,
-next_prev_interview.qnaire_id AS next_prev_interview_qnaire_id,
-next_prev_interview.participant_id AS next_prev_interview_participant_id,
-next_prev_interview.require_supervisor AS next_prev_interview_require_supervisor,
-next_prev_interview.completed AS next_prev_interview_completed,
-next_prev_interview.rescored AS next_prev_interview_rescored,
-next_prev_assignment.id AS next_prev_assignment_id,
-next_prev_assignment.user_id AS next_prev_assignment_user_id,
-next_prev_assignment.site_id AS next_prev_assignment_site_id,
-next_prev_assignment.interview_id AS next_prev_assignment_interview_id,
-next_prev_assignment.queue_id AS next_prev_assignment_queue_id,
-next_prev_assignment.start_datetime AS next_prev_assignment_start_datetime,
-next_prev_assignment.end_datetime AS next_prev_assignment_end_datetime,
-first_qnaire.id AS first_qnaire_id,
-first_qnaire.name AS first_qnaire_name,
-first_qnaire.rank AS first_qnaire_rank,
-first_qnaire.prev_qnaire_id AS first_qnaire_prev_qnaire_id,
-first_qnaire.delay AS first_qnaire_delay,
-first_qnaire.withdraw_sid AS first_qnaire_withdraw_sid,
-first_qnaire.rescore_sid AS first_qnaire_rescore_sid,
-first_qnaire.description AS first_qnaire_description,
-first_event.datetime AS first_event_datetime,
-next_event.datetime AS next_event_datetime,
 IF
 (
   current_interview.id IS NULL,
@@ -1128,7 +1020,7 @@ IF
     current_interview.id IS NULL,
     IF
     (
-      ( SELECT COUNT(*) FROM qnaire_has_event_type WHERE qnaire_id = first_qnaire_id ),
+      ( SELECT COUNT(*) FROM qnaire_has_event_type WHERE qnaire_id = first_qnaire.id ),
       IFNULL( first_event.datetime, UTC_TIMESTAMP() ) + INTERVAL first_qnaire.delay WEEK,
       NULL
     ),
@@ -1149,7 +1041,6 @@ JOIN service_has_participant
 ON participant.id = service_has_participant.participant_id
 AND service_has_participant.datetime IS NOT NULL
 AND service_id = %s
-JOIN cohort ON cohort.id = participant.cohort_id
 LEFT JOIN person_primary_address
 ON participant.person_id = person_primary_address.person_id
 LEFT JOIN address AS primary_address
