@@ -158,13 +158,12 @@ class participant extends \cenozo\database\participant
       'LIMIT 1',
       $database_class_name::format_string( $this->id ) ) );
 
-    if( 0 == count( $row ) )
-      throw lib::create( 'exception\runtime',
-        sprintf( 'Participant %s is not in any queue!', $this->uid ),
-        __METHOD__ );
+    if( count( $row ) )
+    {
+      $this->effective_qnaire_id = $row['qnaire_id'];
+      $this->start_qnaire_date = $row['start_qnaire_date'];
+    }
 
-    $this->effective_qnaire_id = $row['qnaire_id'];
-    $this->start_qnaire_date = $row['start_qnaire_date'];
     $this->queue_data_loaded = true;
   }
 
