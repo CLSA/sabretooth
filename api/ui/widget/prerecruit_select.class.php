@@ -63,13 +63,9 @@ class prerecruit_select extends \cenozo\ui\widget
     $db_participant = $db_assignment->get_interview()->get_participant();
 
     // get a list of all quotas for the current participant's region
-    $db_region_site = $region_site_class_name::get_unique_record(
-      array( 'service_id', 'region_id' ),
-      array( $session->get_service()->id, $db_participant->get_primary_address()->region_id ) );
-    log::debug( $db_region_site );
     $quota_mod = lib::create( 'database\modifier' );
-    $quota_mod->where( 'quota.site_id', '=', $db_region_site->site_id );
-    $quota_mod->where( 'quota.region_id', '=', $db_region_site->region_id );
+    $quota_mod->where( 'quota.site_id', '=', $db_participant->get_default_site()->id );
+    $quota_mod->where( 'quota.region_id', '=', $db_participant->get_primary_address()->region_id );
     $quota_mod->order( 'age_group.lower' );
     $quota_mod->order( 'quota.gender' );
 
