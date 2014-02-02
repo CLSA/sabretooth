@@ -76,7 +76,7 @@ class consent_required_report extends \cenozo\ui\pull\base_report
     // loop through all participant who have completed an interview and have no written consent
     $participant_mod = lib::create( 'database\modifier' );
     $participant_mod->where( 'participant.active', '=', true );
-    $participant_mod->where( 'participant.status', '=', NULL );
+    $participant_mod->where( 'participant.state_id', '=', NULL );
     $participant_mod->where( 'participant_last_written_consent.accept', '=', NULL );
     $participant_mod->where( 'interview.completed', '=', true );
     $participant_mod->where( 'interview.completed', '=', true );

@@ -26,4 +26,18 @@ class callback_edit extends \cenozo\ui\push\base_edit
   {
     parent::__construct( 'callback', $args );
   }
+
+  /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
+
+    // if the owner is a participant then update their queue status
+    $this->get_record()->get_participant()->update_queue_status();
+  }
 }

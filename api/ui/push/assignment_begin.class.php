@@ -104,14 +104,14 @@ class assignment_begin extends \cenozo\ui\push
           if( $setting_manager->get_setting( 'queue state', $db_queue->name ) )
           {
             $participant_mod = lib::create( 'database\modifier' );
+            $participant_mod->where( 'qnaire_id', '=', $db_qnaire->id );
             // on a weekday sort the queue by age, the order defined by the reverse sort time setting
             if( $weekday ) $participant_mod->order(
-              'DATEDIFF( DATE( NOW() ), participant_date_of_birth ) < 65 * 365', $age_desc );
-            $participant_mod->order( 'participant_source_id' );
+              'DATEDIFF( DATE( NOW() ), participant.date_of_birth ) < 65 * 365', $age_desc );
+            $participant_mod->order( 'participant.source_id' );
             $participant_mod->limit( 1 );
 
             $db_queue->set_site( $session->get_site() );
-            $db_queue->set_qnaire( $db_qnaire );
             $participant_list = $db_queue->get_participant_list( $participant_mod );
             if( 1 == count( $participant_list ) )
             {
@@ -142,17 +142,22 @@ class assignment_begin extends \cenozo\ui\push
           __METHOD__ );
       
       // get this participant's interview or create a new one if none exists yet
-      $interview_mod = lib::create( 'database\modifier' );
-      $interview_mod->where( 'participant_id', '=', $db_participant->id );
-      $interview_mod->where( 'qnaire_id', '=', $db_participant->current_qnaire_id );
+      $db_effective_qnaire = $db_participant->get_effective_qnaire();
+      if( is_null( $db_effective_qnaire ) )
+        throw lib::create( 'exception\runtime',
+          sprintf( 'Trying to assign participant %s who has already completed all qnaires.',
+                   $db_participant->uid ),
+          __METHOD__ );
 
-      $db_interview_list = $interview_class_name::select( $interview_mod );
+      $db_interview = $interview_class_name::get_unique_record(
+        array( 'qnaire_id', 'participant_id' ),
+        array( $db_effective_qnaire->id, $db_participant->id ) );
       
-      if( 0 == count( $db_interview_list ) )
+      if( is_null( $db_interview ) )
       {
         $db_interview = lib::create( 'database\interview' );
         $db_interview->participant_id = $db_participant->id;
-        $db_interview->qnaire_id = $db_participant->current_qnaire_id;
+        $db_interview->qnaire_id = $db_effective_qnaire->id;
 
         // Even though we have made sure this interview isn't a duplicate, it seems to happen from
         // time to time anyway, so catch it and tell the operator to try requesting the assignment
@@ -174,10 +179,6 @@ class assignment_begin extends \cenozo\ui\push
 
           throw $e;
         }
-      }
-      else
-      {
-        $db_interview = $db_interview_list[0];
       }
 
       // create an assignment for this user
@@ -230,6 +231,9 @@ class assignment_begin extends \cenozo\ui\push
           $db_callback->save();
         }
       }
+
+      // update this participant's queue status
+      $db_participant->update_queue_status();
     }
 
     // release the semaphore

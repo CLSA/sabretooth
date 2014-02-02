@@ -43,7 +43,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $database_class_name = lib::get_class_name( 'database\database' );
     $record_class_name = lib::get_class_name( 'database\record' );
     $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
-    $participant_class_name = lib::get_class_name( 'database\participant' );
+    $state_class_name = lib::get_class_name( 'database\state' );
     $region_class_name = lib::get_class_name( 'database\region' );
     $site_class_name = lib::get_class_name( 'database\site' );
     $interview_class_name = lib::get_class_name( 'database\interview' );
@@ -126,9 +126,11 @@ class participant_status_report extends \cenozo\ui\pull\base_report
 
     $category_totals['Not yet called'] = 0;
 
-    // add conditions
-    foreach( $participant_class_name::get_enum_values( 'status' ) as $status )
-      $category_totals[ ucfirst( $status ) ] = 0;
+    // add states
+    $state_mod = lib::create( 'database\modifier' );
+    $state_mod->order( 'rank' );
+    foreach( $state_class_name::select( $state_mod ) as $db_state )
+      $category_totals[ ucfirst( $db_state->name ) ] = 0;
 
     $category_totals = array_merge( $category_totals, array(
       'Grand Total Attempted' => 0,
@@ -267,12 +269,14 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       else $this->category_totals_list[$row['category']][$sub_cat] = $row['total'];
     }
 
-    // final status not null
-    foreach( $participant_class_name::get_enum_values( 'status' ) as $status )
+    // final state not null
+    $state_mod = lib::create( 'database\modifier' );
+    $state_mod->order( 'rank' );
+    foreach( $state_class_name::select( $state_mod ) as $db_state )
     {
-      $sub_cat = ucfirst( $status );
+      $sub_cat = ucfirst( $db_state->name );
       $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'temp_participant.status', '=', $status );
+      $modifier->where( 'temp_participant.state_id', '=', $db_state->id );
       $this->set_category_totals( $sub_cat, '', $modifier );
     }
 

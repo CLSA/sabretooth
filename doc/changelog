@@ -1,4 +1,35 @@
 ====================================================================================================
+1.3.0
+====================================================================================================
+
+* Redesigning queueing system to improve performance
+  - Removed queue restrictions
+  - Participants who are currently "available" are no longer assigned before those who are not
+  - Changes to the system which affect queues done through services other than Sabretooth may take
+    up to an hour to come into effect (eg: participant release, editing participants, etc)
+  - Calling time restrictions are now only reflected on or near the hour
+  - Merged "available" and "not available" queues
+  - Queue operations take a fraction of the time compared to before at the cost of operations which
+    edit a participant's details being slighly longer (processing load is now distributed)
+  - Administrators can force-update queues to reflect all changes made across the system (including
+    those made from another application, changes to call time restrictions, released participant,
+    etc)
+
+====================================================================================================
+1.2.4
+====================================================================================================
+
+* Tracking changes to participant email addresses
+  - email addresses are now validated using simple word@word.word validation
+  - any change to a participant's email address is tracked by date and time
+  - a new email report has been created which provides a list of all participants with new email
+    addresses
+
+* Replacing participant.status with new state table
+  - Participant conditions (states) can now be managed by administrators
+  - Each role can be restricted to only setting certain states
+
+====================================================================================================
 1.2.3
 ====================================================================================================
 

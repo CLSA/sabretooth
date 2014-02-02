@@ -72,9 +72,10 @@ class participant_tree extends \cenozo\ui\pull
       {
         foreach( $qnaire_class_name::select() as $db_qnaire )
         {
-          $db_queue->set_qnaire( $db_qnaire );
+          $queue_mod = lib::create( 'database\modifier' );
+          $queue_mod->where( 'qnaire_id', '=', $db_qnaire->id );
           $index = sprintf( '%d_%d', $db_qnaire->id, $db_queue->id );
-          $this->data[$index] = $db_queue->get_participant_count();
+          $this->data[$index] = $db_queue->get_participant_count( $queue_mod );
         }
       }
     }

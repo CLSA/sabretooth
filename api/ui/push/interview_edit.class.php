@@ -47,6 +47,9 @@ class interview_edit extends \cenozo\ui\push\base_edit
       if( 1 == $columns['completed'] )
       {
         $this->get_record()->force_complete();
+
+        // now update the queue
+        $this->get_record()->get_participant()->update_queue_status();
       }
       else throw lib::create( 'exception\notice',
         'Interviews cannot be un-completed.', __METHOD__ );

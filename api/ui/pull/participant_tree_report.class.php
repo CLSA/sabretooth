@@ -64,9 +64,9 @@ class participant_tree_report extends \cenozo\ui\pull\base_report
         // they are modified in the process of getting the participant count
         $participant_mod = lib::create( 'database\modifier' );
         if( 0 < $restrict_source_id )
-          $participant_mod->where( 'participant_source_id', '=', $restrict_source_id );
+          $participant_mod->where( 'participant.source_id', '=', $restrict_source_id );
+        $participant_mod->where( 'qnaire_id', '=', $db_qnaire->id );
         $db_queue->set_site( $db_site );
-        $db_queue->set_qnaire( $db_qnaire );
         $row[] = $db_queue->get_participant_count( $participant_mod );
       }
 

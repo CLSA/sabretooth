@@ -46,7 +46,7 @@ class appointment_new extends \cenozo\ui\push\base_new
     
     // make sure the participant has a qnaire to answer
     $db_participant = lib::create( 'database\participant', $columns['participant_id'] );
-    if( is_null( $db_participant->current_qnaire_id ) )
+    if( is_null( $db_participant->get_effective_qnaire() ) )
     {
       throw lib::create( 'exception\notice',
         'Unable to create an appointment because the participant has completed all questionnaires.',
@@ -82,5 +82,19 @@ class appointment_new extends \cenozo\ui\push\base_new
           __METHOD__ );
       }
     }
+  }
+
+  /**
+   * This method executes the operation's purpose.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function execute()
+  {
+    parent::execute();
+
+    // if the owner is a participant then update their queue status
+    $this->get_record()->get_participant()->update_queue_status();
   }
 }
