@@ -186,7 +186,6 @@ class queue extends \cenozo\database\record
     $db_user = $session->get_user();
 
     // block with a semaphore
-    $session->set_use_transaction( false );
     $semaphore = sem_get( getmyinode() );
     if( !sem_acquire( $semaphore ) )
     {
@@ -257,7 +256,6 @@ class queue extends \cenozo\database\record
     $db_user = $session->get_user();
 
     // block with a semaphore
-    $session->set_use_transaction( false );
     $semaphore = sem_get( getmyinode() );
     if( !sem_acquire( $semaphore ) )
     {
