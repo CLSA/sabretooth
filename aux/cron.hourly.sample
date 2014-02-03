@@ -18,7 +18,7 @@ $user = $SETTINGS['general']['machine_user'];
 $pass = $SETTINGS['general']['machine_password'];
 $log = $SETTINGS['path']['LOG_FILE'];
 
-$date = '%Y-%m-%d (%a) %H:%I:%S';
+$date = '%Y-%m-%d (%a) %H:%M:%S';
 exec( sprintf( 'date +"%s  [cron] <%s:administrator@McMaster> '.
                'Re-populating queue participant lists" >> %s',
                $date,
