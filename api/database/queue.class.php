@@ -772,6 +772,9 @@ class queue extends \cenozo\database\record
                         'assignment_last_phone_call.assignment_id = last_assignment_id';
                       $parts['where'][] =
                         'phone_call.id = assignment_last_phone_call.phone_call_id';
+                      // make sure the current interview's qnaire matches the effective qnaire,
+                      // otherwise this participant has never been assigned
+                      $parts['where'][] = 'current_interview_qnaire_id = effective_qnaire_id';
                     }
                   }
                 }
@@ -1052,6 +1055,7 @@ service_has_participant.preferred_site_id AS service_has_participant_preferred_s
 primary_region.id AS primary_region_id,
 primary_region_site.site_id primary_region_site_id,
 last_consent.accept AS last_consent_accept,
+current_interview.qnaire_id AS current_interview_qnaire_id,
 last_assignment.id AS last_assignment_id,
 last_assignment.end_datetime AS last_assignment_end_datetime,
 IF
