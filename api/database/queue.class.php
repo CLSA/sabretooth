@@ -302,7 +302,7 @@ class queue extends \cenozo\database\record
       $sql = sprintf(
         'INSERT INTO queue_has_participant( '.
           'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) '.
-        'SELECT queue_has_participant.participant_id, %s, site_id, qnaire_id, start_qnaire_date '.
+        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, qnaire_id, start_qnaire_date '.
         'FROM queue_has_participant '.
         'JOIN appointment ON queue_has_participant.participant_id = appointment.participant_id '.
         'AND appointment.assignment_id IS NULL '.
@@ -349,7 +349,7 @@ class queue extends \cenozo\database\record
       $sql = sprintf(
         'INSERT INTO queue_has_participant( '.
           'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) '.
-        'SELECT queue_has_participant.participant_id, %s, site_id, qnaire_id, start_qnaire_date '.
+        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, qnaire_id, start_qnaire_date '.
         'FROM queue_has_participant '.
         'JOIN callback ON queue_has_participant.participant_id = callback.participant_id '.
         'AND callback.assignment_id IS NULL '.
@@ -388,7 +388,7 @@ class queue extends \cenozo\database\record
       $sql = sprintf(
         'INSERT INTO queue_has_participant( '.
           'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) '.
-        'SELECT queue_has_participant.participant_id, %s, site_id, qnaire_id, start_qnaire_date '.
+        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, qnaire_id, start_qnaire_date '.
         'FROM queue_has_participant '.
         'JOIN participant_last_interview '.
         'ON queue_has_participant.participant_id = participant_last_interview.participant_id '.
