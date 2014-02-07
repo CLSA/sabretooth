@@ -44,7 +44,6 @@ class interview_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'qnaire', 'constant', 'Questionnaire' );
     $this->add_item( 'completed', 'boolean', 'Completed',
       'Warning: force-completing an interview cannot be undone!' );
-    $this->add_item( 'rescored', 'constant', 'Rescored' );
 
     // create the assignment sub-list widget      
     $this->assignment_list = lib::create( 'ui\widget\assignment_list', $this->arguments );
@@ -76,31 +75,6 @@ class interview_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'participant', $participant );
     $this->set_item( 'qnaire', $db_interview->get_qnaire()->name );
     $this->set_item( 'completed', $db_interview->completed, true );
-    $this->set_item( 'rescored', $db_interview->rescored );
-
-    // only rescore if there is a rescore sid set
-    $allow_rescore = false;
-    if( $db_interview->get_qnaire()->rescore_sid )
-    {
-      $db_operation = $operation_class_name::get_operation( 'widget', 'interview', 'rescore' );
-      $allow_rescore =
-        // the user is allowed to rescore interviews
-        lib::create( 'business\session' )->is_allowed( $db_operation ) &&
-        // the participant consented to be recorded
-        0 == strcasecmp( 'yes', $cog_consent );
-    }
-
-    // if we can rescore and the rescore is set to N/A change it to No
-    if( $allow_rescore && 'N/A' == $db_interview->rescored )
-    {
-      $db_interview->rescored = 'No';
-      $db_interview->save();
-    }
-      
-    $this->set_variable( 'allow_rescore', $allow_rescore );
-    if( $allow_rescore )
-      $this->add_action( 'rescore', 'Rescore', NULL,
-        'Listen to the recordings made during the interview for rescoring purposes' );
 
     // process the child widgets
     try

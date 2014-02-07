@@ -20,7 +20,6 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`qnaire` (
   `prev_qnaire_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The qnaire which must be completed before this one begins.',
   `delay` INT NOT NULL DEFAULT 0 COMMENT 'How many weeks after then end of the previous qnaire before starting.',
   `withdraw_sid` INT NULL DEFAULT NULL,
-  `rescore_sid` INT NULL DEFAULT NULL,
   `description` TEXT NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uq_name` (`name` ASC),
@@ -72,13 +71,11 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`interview` (
   `participant_id` INT UNSIGNED NOT NULL,
   `require_supervisor` TINYINT(1) NOT NULL DEFAULT 0,
   `completed` TINYINT(1) NOT NULL DEFAULT 0,
-  `rescored` ENUM('Yes','No','N/A') NOT NULL DEFAULT 'N/A',
   PRIMARY KEY (`id`),
   INDEX `fk_participant_id` (`participant_id` ASC),
   INDEX `fk_qnaire_id` (`qnaire_id` ASC),
   INDEX `dk_completed` (`completed` ASC),
   UNIQUE INDEX `uq_participant_id_qnaire_id` (`participant_id` ASC, `qnaire_id` ASC),
-  INDEX `dk_rescored` (`rescored` ASC),
   CONSTRAINT `fk_interview_participant_id`
     FOREIGN KEY (`participant_id`)
     REFERENCES `cenozo`.`participant` (`id`)

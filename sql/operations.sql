@@ -109,8 +109,6 @@ VALUES( "pull", "interview", "list", true, "Retrieves base information for a lis
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "interview", "list", true, "Lists interviews." );
 INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "interview", "rescore", true, "Provides an interface to rescore interview based on recordings." );
-INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "interview", "view", true, "View interview details." );
 
 -- mailout_required

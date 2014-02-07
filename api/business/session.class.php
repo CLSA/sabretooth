@@ -235,8 +235,7 @@ class session extends \cenozo\business\session
       $_SESSION['slot'][$slot]['stack']['widgets'] = array();
     }
 
-    // kill the rescore, withdraw and secondary contact cookies in case they exist
-    setcookie( 'rescoring_interview', NULL, time() - 3600, COOKIE_PATH );
+    // kill the withdraw and secondary contact cookies in case they exist
     setcookie( 'withdrawing_participant', NULL, time() - 3600, COOKIE_PATH );
     setcookie( 'secondary_id', NULL, time() - 3600, COOKIE_PATH );
     setcookie( 'secondary_participant_id', NULL, time() - 3600, COOKIE_PATH );

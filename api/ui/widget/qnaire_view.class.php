@@ -47,7 +47,6 @@ class qnaire_view extends \cenozo\ui\widget\base_view
       'How many weeks after the previous questionnaire or event is completed '.
       'before this questionnaire may begin.' );
     $this->add_item( 'withdraw_sid', 'enum', 'Withdraw Survey' );
-    $this->add_item( 'rescore_sid', 'enum', 'Rescore Survey' );
     $this->add_item( 'phases', 'constant', 'Number of phases' );
     $this->add_item( 'description', 'text', 'Description' );
 
@@ -104,7 +103,6 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'prev_qnaire_id', $this->get_record()->prev_qnaire_id, false, $qnaires );
     $this->set_item( 'delay', $this->get_record()->delay, true );
     $this->set_item( 'withdraw_sid', $this->get_record()->withdraw_sid, false, $surveys );
-    $this->set_item( 'rescore_sid', $this->get_record()->rescore_sid, false, $surveys );
     $this->set_item( 'phases', $this->get_record()->get_phase_count() );
     $this->set_item( 'description', $this->get_record()->description );
     $this->set_item( 'phases', $this->get_record()->get_phase_count() );
