@@ -40,6 +40,7 @@ class recording_list extends \cenozo\ui\pull\base_list
     parent::prepare();
 
     $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
+    $interview_class_name = lib::get_class_name( 'database\interview' );
 
     // get the qnaire if one was provided
     $qnaire_rank = $this->get_argument( 'qnaire_rank', NULL );
@@ -98,6 +99,20 @@ class recording_list extends \cenozo\ui\pull\base_list
     if( is_null( $this->modifier ) ) $this->modifier = lib::create( 'database\modifier' );
     $this->modifier->where( 'interview_id', '=', $this->db_interview->id );
     $this->modifier->order( 'rank' );
+  }
+
+  /**
+   * Extending the parent record to add the recording's url
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\record $record
+   * @return array
+   * @access protected
+   */
+  protected function process_record( $record )
+  {
+    $item = parent::process_record( $record );
+    $item['url'] = sprintf( '%s/%s-out.wav', VOIP_MONITOR_URL, $record->get_filename() );
+    return $item;
   }
 
   /**

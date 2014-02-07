@@ -6,6 +6,7 @@ SET AUTOCOMMIT=0;
 -- make sure all roles exist
 INSERT IGNORE INTO cenozo.role( name, tier, all_sites ) VALUES
 ( "administrator", 3, true ),
+( "cedar", 1, true ),
 ( "curator", 2, true ),
 ( "helpline", 2, true ),
 ( "opal", 1, true ),
@@ -361,6 +362,38 @@ INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "widget" AND subject = "call_history" AND operation.name = "report"
 AND role.name IN( "administrator", "supervisor" );
+
+-- cedar_instance
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "cedar_instance" AND operation.name = "add"
+AND role.name IN ( "administrator" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "push" AND subject = "cedar_instance" AND operation.name = "delete"
+AND role.name IN ( "administrator" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "push" AND subject = "cedar_instance" AND operation.name = "edit"
+AND role.name IN ( "administrator" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "cedar_instance" AND operation.name = "list"
+AND role.name IN ( "administrator" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "push" AND subject = "cedar_instance" AND operation.name = "new"
+AND role.name IN ( "administrator" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "cedar_instance" AND operation.name = "view"
+AND role.name IN ( "administrator" );
 
 -- consent
 
@@ -988,6 +1021,11 @@ WHERE type = "widget" AND subject = "quota" AND operation.name = "view"
 AND role.name IN( "administrator", "supervisor" );
 
 -- recording
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "pull" AND subject = "recording" AND operation.name = "list"
+AND role.name IN( "cedar" );
 
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation

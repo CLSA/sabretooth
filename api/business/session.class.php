@@ -26,7 +26,8 @@ class session extends \cenozo\business\session
   {
     parent::__construct( $arguments );
 
-    // add the opal_instance new operation to the censored list
+    // add the cedar and opal_instance new operations to the censored list
+    $this->censored_operation_list[] = 'cedar_instance_new';
     $this->censored_operation_list[] = 'opal_instance_new';
   }
 

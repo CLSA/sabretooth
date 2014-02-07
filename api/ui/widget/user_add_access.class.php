@@ -25,7 +25,7 @@ class user_add_access extends \cenozo\ui\widget\user_add_access
   public function determine_role_count( $modifier = NULL )
   {
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'name', '!=', 'opal' );
+    $modifier->where( 'name', 'NOT IN', array( 'cedar', 'opal' ) );
     return parent::determine_role_count( $modifier );
   }
 
@@ -40,7 +40,7 @@ class user_add_access extends \cenozo\ui\widget\user_add_access
   public function determine_role_list( $modifier = NULL )
   {
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'name', '!=', 'opal' );
+    $modifier->where( 'name', 'NOT IN', array( 'cedar', 'opal' ) );
     return parent::determine_role_list( $modifier );
   }
 }

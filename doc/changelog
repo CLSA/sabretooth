@@ -4,6 +4,10 @@
 
 * Removing defunct interview rescoring
 
+* Cedar integration completed
+  - There is now an option to add a "Cedar Instance" to Sabretooth
+  - Cedar instances gain access to all interview recordings
+
 ====================================================================================================
 1.3.0
 ====================================================================================================
