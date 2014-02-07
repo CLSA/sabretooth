@@ -42,6 +42,7 @@ class interview_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'uid', 'constant', 'UID' );
     $this->add_item( 'participant', 'constant', 'Participant' );
     $this->add_item( 'qnaire', 'constant', 'Questionnaire' );
+    $this->add_item( 'interview_method_id', 'enum', 'Interview Method' );
     $this->add_item( 'completed', 'boolean', 'Completed',
       'Warning: force-completing an interview cannot be undone!' );
 
@@ -60,7 +61,8 @@ class interview_view extends \cenozo\ui\widget\base_view
   protected function setup()
   {
     parent::setup();
-       
+
+    $interview_method_class_name = lib::get_class_name( 'database\interview_method' );
     $operation_class_name = lib::get_class_name( 'database\operation' );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
@@ -70,10 +72,16 @@ class interview_view extends \cenozo\ui\widget\base_view
     $participant = sprintf( '%s, %s', $db_participant->last_name, $db_participant->first_name );
     $cog_consent = $db_interview->get_cognitive_consent();
 
+    $interview_methods = array();
+    foreach( $interview_method_class_name::select() as $db_interview_method )
+      $interview_methods[$db_interview_method->id] = $db_interview_method->name;
+
     // set the view's items
     $this->set_item( 'uid', $db_participant->uid );
     $this->set_item( 'participant', $participant );
     $this->set_item( 'qnaire', $db_interview->get_qnaire()->name );
+    $this->set_item(
+      'interview_method_id', $db_interview->interview_method_id, true, $interview_methods );
     $this->set_item( 'completed', $db_interview->completed, true );
 
     // process the child widgets

@@ -35,14 +35,14 @@ class interview_edit extends \cenozo\ui\push\base_edit
    */
   protected function execute()
   {
-    // skip the parent method
-    $grand_parent = get_parent_class( get_parent_class( get_class() ) );
-    $grand_parent::execute();
-
     $columns = $this->get_argument( 'columns', array() );
 
     if( array_key_exists( 'completed', $columns ) )
     {
+      // skip the parent method
+      $grand_parent = get_parent_class( get_parent_class( get_class() ) );
+      $grand_parent::execute();
+
       // force complete the interview or throw a notice (we cannot un-complete)
       if( 1 == $columns['completed'] )
       {
@@ -54,7 +54,9 @@ class interview_edit extends \cenozo\ui\push\base_edit
       else throw lib::create( 'exception\notice',
         'Interviews cannot be un-completed.', __METHOD__ );
     }
-    else throw lib::create( 'exception\notice',
-      'Only the "completed" state of an interview may be edited.', __METHOD__ );
+    else
+    {
+      parent::execute();
+    }
   }
 }

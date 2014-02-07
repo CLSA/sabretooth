@@ -41,6 +41,7 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     // create an associative array with everything we want to display about the qnaire
     $this->add_item( 'name', 'string', 'Name' );
     $this->add_item( 'rank', 'enum', 'Rank' );
+    $this->add_item( 'interview_method_id', 'enum', 'Default Interview method' );
     $this->add_item( 'prev_qnaire_id', 'enum', 'Previous Questionnaire',
       'The questionnaire which must be finished before this one begins.' );
     $this->add_item( 'delay', 'number', 'Delay (weeks)',
@@ -77,17 +78,24 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     parent::setup();
 
     $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
+    $interview_method_class_name = lib::get_class_name( 'database\interview_method' );
     $surveys_class_name = lib::get_class_name( 'database\limesurvey\surveys' );
+
+    $record = $this->get_record();
 
     // create enum arrays
     $qnaires = array();
     foreach( $qnaire_class_name::select() as $db_qnaire )
-      if( $db_qnaire->id != $this->get_record()->id )
+      if( $db_qnaire->id != $record->id )
         $qnaires[$db_qnaire->id] = $db_qnaire->name;
     $num_ranks = $qnaire_class_name::count();
     $ranks = array();
     for( $rank = 1; $rank <= ( $num_ranks + 1 ); $rank++ ) $ranks[] = $rank;
     $ranks = array_combine( $ranks, $ranks );
+
+    $interview_methods = array();
+    foreach( $interview_method_class_name::select() as $db_interview_method )
+      $interview_methods[$db_interview_method->id] = $db_interview_method->name;
 
     $surveys = array();
     $modifier = lib::create( 'database\modifier' );
@@ -98,15 +106,17 @@ class qnaire_view extends \cenozo\ui\widget\base_view
       $surveys[$db_survey->sid] = $db_survey->get_title();
 
     // set the view's items
-    $this->set_item( 'name', $this->get_record()->name, true );
-    $this->set_item( 'rank', $this->get_record()->rank, true, $ranks );
-    $this->set_item( 'prev_qnaire_id', $this->get_record()->prev_qnaire_id, false, $qnaires );
-    $this->set_item( 'delay', $this->get_record()->delay, true );
-    $this->set_item( 'withdraw_sid', $this->get_record()->withdraw_sid, false, $surveys );
-    $this->set_item( 'phases', $this->get_record()->get_phase_count() );
-    $this->set_item( 'description', $this->get_record()->description );
-    $this->set_item( 'phases', $this->get_record()->get_phase_count() );
-    $this->set_item( 'description', $this->get_record()->description );
+    $this->set_item( 'name', $record->name, true );
+    $this->set_item( 'rank', $record->rank, true, $ranks );
+    $this->set_item(
+      'interview_method_id', $record->interview_method_id, true, $interview_methods );
+    $this->set_item( 'prev_qnaire_id', $record->prev_qnaire_id, false, $qnaires );
+    $this->set_item( 'delay', $record->delay, true );
+    $this->set_item( 'withdraw_sid', $record->withdraw_sid, false, $surveys );
+    $this->set_item( 'phases', $record->get_phase_count() );
+    $this->set_item( 'description', $record->description );
+    $this->set_item( 'phases', $record->get_phase_count() );
+    $this->set_item( 'description', $record->description );
     
     try
     {
