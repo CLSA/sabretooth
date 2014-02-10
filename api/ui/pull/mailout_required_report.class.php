@@ -124,7 +124,7 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
     foreach( $participant_class_name::select( $participant_mod ) as $db_participant )
     {
       // make sure the participant's quota is active (or overridden)
-      if( !$db_participant->override_quota )
+      if( !$db_participant->override_quota && !$db_participant->get_source()->override_quota )
       {
         $db_quota = $db_participant->get_quota();
         if( !is_null( $db_quota ) && $db_quota->state_disabled ) continue;

@@ -61,7 +61,8 @@ class tokens extends sid_record
         $db_quota = $db_participant->get_quota();
         $this->$key = !is_null( $db_quota ) && 
                       $db_quota->state_disabled &&
-                      $db_participant->override_quota
+                      ( $db_participant->override_quota ||
+                        $db_participant->get_source()->override_quota )
                     ? '1' 
                     : '0';
       }
