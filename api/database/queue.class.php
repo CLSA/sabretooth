@@ -187,16 +187,7 @@ class queue extends \cenozo\database\record
     $db_user = $session->get_user();
 
     // block with a semaphore
-    $semaphore = sem_get( getmyinode() );
-    if( !sem_acquire( $semaphore ) )
-    {
-      log::err(
-        sprintf( 'Unable to aquire semaphore during repopulate for user "%s"',
-                 $db_user()->name ) );
-      throw lib::create( 'exception\notice',
-        'The server is busy, please wait a few seconds then click the refresh button.',
-        __METHOD__ );
-    }
+    $session->acquire_semaphore();
 
     // make sure the temporary table exists
     static::create_participant_for_queue( $db_participant );
@@ -231,11 +222,7 @@ class queue extends \cenozo\database\record
           $db_queue->get_sql( $columns ) ) );
     }
 
-    // release the semaphore
-    if( !sem_release( $semaphore ) )
-      log::err(
-        sprintf( 'Unable to release semaphore during repopulate for user %s',
-                 $db_user->name ) );
+    $session->release_semaphore();
   }
 
   /**
@@ -257,16 +244,7 @@ class queue extends \cenozo\database\record
     $db_user = $session->get_user();
 
     // block with a semaphore
-    $semaphore = sem_get( getmyinode() );
-    if( !sem_acquire( $semaphore ) )
-    {
-      log::err(
-        sprintf( 'Unable to aquire semaphore during repopulate for user "%s"',
-                 $db_user()->name ) );
-      throw lib::create( 'exception\notice',
-        'The server is busy, please wait a few seconds then click the refresh button.',
-        __METHOD__ );
-    }
+    $session->acquire_semaphore();
 
     // make sure the queue list cache exists and get the queue's parent
     static::create_queue_list_cache();
@@ -423,22 +401,14 @@ class queue extends \cenozo\database\record
     }
     else
     {
-      // release the semaphore
-      if( !sem_release( $semaphore ) )
-        log::err(
-          sprintf( 'Unable to release semaphore during repopulate for user %s',
-                   $db_user->name ) );
+      $session->release_semaphore();
 
       throw lib::create( 'exception\runtime',
         sprintf( 'No rules to populate time-specific queue "%s"', $this->name ),
         __METHOD__ );
     }
 
-    // release the semaphore
-    if( !sem_release( $semaphore ) )
-      log::err(
-        sprintf( 'Unable to release semaphore during repopulate for user %s',
-                 $db_user->name ) );
+    $session->release_semaphore();
   }
 
   /**

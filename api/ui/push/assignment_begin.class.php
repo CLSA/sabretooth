@@ -25,9 +25,6 @@ class assignment_begin extends \cenozo\ui\push
   public function __construct( $args )
   {
     parent::__construct( 'assignment', 'begin', $args );
-
-    // we can't use a transaction, otherwise the semaphores in the queue record won't work
-    lib::create( 'business\session' )->set_use_transaction( false );
   }
 
   /**
