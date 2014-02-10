@@ -679,7 +679,7 @@ class queue extends \cenozo\database\record
                 // who belong to a quota which is disabled
                 $parts['where'][] = 'quota_state.disabled = true';
                 // and who are not marked to override quota
-                $parts['where'][] = 'participant_override_quota = true';
+                $parts['where'][] = 'participant_override_quota = false';
               }
               else
               {
