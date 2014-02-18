@@ -37,11 +37,12 @@ class queue extends \cenozo\database\record
    * @param modifier $modifier A modifier to apply to the list or count.
    * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
    * @param boolean $count If true then this method returns the count instead of list of records.
+   * @param boolean $distinct Whether to use the DISTINCT sql keyword
    * @return array( record ) | int
    * @access protected
    */
   public function get_record_list(
-    $record_type, $modifier = NULL, $inverted = false, $count = false )
+    $record_type, $modifier = NULL, $inverted = false, $count = false, $distinct = true )
   {
     // if we're getting a participant list/count for a time-specific column, populate it first
     if( 'participant' == $record_type ) $this->populate_time_specific();
@@ -55,7 +56,7 @@ class queue extends \cenozo\database\record
     }
 
     // now call the parent method as usual
-    return parent::get_record_list( $record_type, $modifier, $inverted, $count );
+    return parent::get_record_list( $record_type, $modifier, $inverted, $count, $distinct );
   }
 
   /**
@@ -186,16 +187,7 @@ class queue extends \cenozo\database\record
     $db_user = $session->get_user();
 
     // block with a semaphore
-    $semaphore = sem_get( getmyinode() );
-    if( !sem_acquire( $semaphore ) )
-    {
-      log::err(
-        sprintf( 'Unable to aquire semaphore during repopulate for user "%s"',
-                 $db_user()->name ) );
-      throw lib::create( 'exception\notice',
-        'The server is busy, please wait a few seconds then click the refresh button.',
-        __METHOD__ );
-    }
+    $session->acquire_semaphore();
 
     // make sure the temporary table exists
     static::create_participant_for_queue( $db_participant );
@@ -230,11 +222,7 @@ class queue extends \cenozo\database\record
           $db_queue->get_sql( $columns ) ) );
     }
 
-    // release the semaphore
-    if( !sem_release( $semaphore ) )
-      log::err(
-        sprintf( 'Unable to release semaphore during repopulate for user %s',
-                 $db_user->name ) );
+    $session->release_semaphore();
   }
 
   /**
@@ -256,16 +244,7 @@ class queue extends \cenozo\database\record
     $db_user = $session->get_user();
 
     // block with a semaphore
-    $semaphore = sem_get( getmyinode() );
-    if( !sem_acquire( $semaphore ) )
-    {
-      log::err(
-        sprintf( 'Unable to aquire semaphore during repopulate for user "%s"',
-                 $db_user()->name ) );
-      throw lib::create( 'exception\notice',
-        'The server is busy, please wait a few seconds then click the refresh button.',
-        __METHOD__ );
-    }
+    $session->acquire_semaphore();
 
     // make sure the queue list cache exists and get the queue's parent
     static::create_queue_list_cache();
@@ -422,22 +401,14 @@ class queue extends \cenozo\database\record
     }
     else
     {
-      // release the semaphore
-      if( !sem_release( $semaphore ) )
-        log::err(
-          sprintf( 'Unable to release semaphore during repopulate for user %s',
-                   $db_user->name ) );
+      $session->release_semaphore();
 
       throw lib::create( 'exception\runtime',
         sprintf( 'No rules to populate time-specific queue "%s"', $this->name ),
         __METHOD__ );
     }
 
-    // release the semaphore
-    if( !sem_release( $semaphore ) )
-      log::err(
-        sprintf( 'Unable to release semaphore during repopulate for user %s',
-                 $db_user->name ) );
+    $session->release_semaphore();
   }
 
   /**
@@ -555,8 +526,8 @@ class queue extends \cenozo\database\record
               : 'first_address_timezone_offset';
       $calling_time_sql = sprintf(
         '( '.
-          'TIME( %s + INTERVAL %s HOUR ) >= "<CALLING_START_TIME>" AND '.
-          'TIME( %s + INTERVAL %s HOUR ) < "<CALLING_END_TIME>" '.
+          'TIME( %s + INTERVAL %s*60 MINUTE ) >= "<CALLING_START_TIME>" AND '.
+          'TIME( %s + INTERVAL %s*60 MINUTE ) < "<CALLING_END_TIME>" '.
         ')',
         $viewing_date,
         $offset,
@@ -834,9 +805,9 @@ class queue extends \cenozo\database\record
     // fill in the settings
     $setting_manager = lib::create( 'business\setting_manager' );
     $setting = $setting_manager->get_setting( 'calling', 'start time', $this->db_site );
-    $sql = str_replace( '<CALLING_START_TIME>', $setting, $sql );
+    $sql = str_replace( '<CALLING_START_TIME>', $setting.':00', $sql );
     $setting = $setting_manager->get_setting( 'calling', 'end time', $this->db_site );
-    $sql = str_replace( '<CALLING_END_TIME>', $setting, $sql );
+    $sql = str_replace( '<CALLING_END_TIME>', $setting.':00', $sql );
 
     return $sql;
   }
