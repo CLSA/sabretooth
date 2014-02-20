@@ -27,3 +27,7 @@ VALUES( "push", "cedar_instance", "new", true,
 INSERT IGNORE INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "cedar_instance", "view", true,
 "View a cedar instance's details." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "self", "temporary_file", false,
+"Upload a temporary file to the server." );
