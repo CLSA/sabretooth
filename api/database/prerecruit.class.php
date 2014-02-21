@@ -1,6 +1,6 @@
 <?php
 /**
- * assignment_note.class.php
+ * prerecruit.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,6 +10,6 @@ namespace sabretooth\database;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
- * assignment_note: record
+ * prerecruit: record
  */
-class assignment_note extends \cenozo\database\base_note {}
+class prerecruit extends \cenozo\database\record {}

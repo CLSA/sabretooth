@@ -95,6 +95,12 @@ VALUES( "pull", "consent_form", "report", true, "Download a consent form report.
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "consent_form", "report", true, "Set up a consent form report." );
 
+-- consent_form
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "consent_required", "report", true, "Download a consent required report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "consent_required", "report", true, "Set up a consent required report." );
+
 -- interview
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "interview", "edit", true, "Edits the details of an interview." );
@@ -152,6 +158,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "tree", true, "Displays participants in a tree format, revealing which queue the belong to." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "withdraw", true, "Withdraws the participant (or cancels the withdraw).  This is meant to be used during an interview if the participant suddenly wishes to withdraw." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "withdraw", true, "Pseudo-assignment to handle participant withdraws." );
 
 -- participant_status
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -191,6 +199,12 @@ VALUES( "push", "phone_call", "end", true, "Ends the current phone call." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "phone_call", "list", true, "Lists phone calls." );
 
+-- prerecruit
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "prerecruit", "select", true, "Sets pre-recruit populations by quota." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "prerecruit", "select", true, "Provides a list of quotas for entering pre-recruit populations." );
+
 -- productivity
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "productivity", "report", true, "Download a productivity report." );
@@ -229,21 +243,9 @@ VALUES( "widget", "qnaire", "view", true, "View a questionnaire's details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "queue", "list", true, "List queues in the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "queue", "repopulate", true, "Repopulate all queue participant lists." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "queue", "view", true, "View a queue's details and list of participants." );
-
--- queue_restriction
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "queue_restriction", "add", true, "View a form for creating a new queue restriction." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "queue_restriction", "delete", true, "Removes a queue restriction from the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "queue_restriction", "edit", true, "Edits a queue restriction's details." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "queue_restriction", "list", true, "List queue restrictions in the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "queue_restriction", "new", true, "Add a new queue restriction to the system." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "queue_restriction", "view", true, "View a queue restriction's details." );
 
 -- recording
 INSERT INTO operation( type, subject, name, restricted, description )

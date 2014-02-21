@@ -52,26 +52,36 @@ class site_calendar extends \cenozo\ui\widget\base_calendar
   {
     parent::setup();
 
-    // get the referred participant's site and make id a variable
+    // determine which site's calendar should be displayed
+    $db_site = NULL;
     if( !is_null( $this->parent ) &&
-        'appointment_add' == $this->parent->get_class_name() &&
-        !is_null( $this->parent->parent ) &&
-        'participant_add_appointment' == $this->parent->parent->get_class_name() )
+        'appointment_view' == $this->parent->get_class_name() )
+    {
+      $db_site = $this->parent->get_record()->get_participant()->get_effective_site();
+    }
+    else if( !is_null( $this->parent ) &&
+             'appointment_add' == $this->parent->get_class_name() &&
+             !is_null( $this->parent->parent ) &&
+             'participant_add_appointment' == $this->parent->parent->get_class_name() )
     {
       $db_site = $this->parent->parent->get_record()->get_effective_site();
-
-      if( is_null( $db_site ) )
-      {
-        $this->set_variable( 'site_id', 0 );
-        $this->set_heading( 'WARNING! Participant does not belong to any site, showing blank calendar' );
-      }
-      else
-      {
-        $this->set_variable( 'site_id', $db_site->id );
-        $this->set_heading( 'Open appointment slots for '.$db_site->name );
-      }
     }
-    else $this->set_variable( 'site_id', lib::create( 'business\session' )->get_site()->id );
+    else
+    {
+      $db_site = lib::create( 'business\session' )->get_site();
+    }
+
+    // display the site's calendar (or a warning if there is no site)
+    if( is_null( $db_site ) )
+    {
+      $this->set_variable( 'site_id', 0 );
+      $this->set_heading( 'WARNING! Participant does not belong to any site, showing blank calendar' );
+    }
+    else
+    {
+      $this->set_variable( 'site_id', $db_site->id );
+      $this->set_heading( 'Open appointment slots for '.$db_site->name );
+    }
 
     $this->set_variable( 'allow_all_day', false );
     $this->set_variable( 'editable', false );

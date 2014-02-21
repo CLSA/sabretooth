@@ -7,8 +7,6 @@
  #}
 {% extends "site_restricted_list.twig" %}
 
-{% from 'macros.twig' import note_widget %}
-
 {% block javascript %}
 
   {{ parent() }}
@@ -38,7 +36,6 @@
 
 {% block header_button_columns %}
   {% if allow_spy %}<th width="1%"></th>{% endif %}
-  <th width="1%"></th>
 {% endblock header_button_columns %}
 
 {% block button_columns %}
@@ -49,9 +46,4 @@
               id="{{ widget.full }}_voip_spy_{{ row.columns['assignment.user_id'] }}">listen</button>
     </td>
   {% endif %}
-  <td>{{ note_widget( widget.full,
-                      "assignment",
-                      row.id,
-                      false,
-                      row.columns['assignment.note_count'] ) }}</td>
 {% endblock button_columns %}

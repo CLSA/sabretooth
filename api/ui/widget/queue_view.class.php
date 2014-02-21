@@ -39,14 +39,14 @@ class queue_view extends \cenozo\ui\widget\base_view
     parent::prepare();
     
     $session = lib::create( 'business\session' );
-    if( 3 != $session->get_role()->tier )
-    {
-      $this->db_site = $session->get_site();
-    }
-    else
+    if( $session->get_role()->all_sites )
     {
       $site_id = $this->get_argument( 'site_id' );
       if( $site_id ) $this->db_site = lib::create( 'database\site', $site_id );
+    }
+    else
+    {
+      $this->db_site = $session->get_site();
     }
 
     $qnaire_id = $this->get_argument( 'qnaire_id' );
@@ -68,7 +68,7 @@ class queue_view extends \cenozo\ui\widget\base_view
     $this->participant_list = lib::create( 'ui\widget\participant_list', $this->arguments );
     $this->participant_list->set_parent( $this );
     $this->participant_list->set_heading( 'Queue participant list' );
-    $this->participant_list->set_allow_restrict_condition( false );
+    $this->participant_list->set_allow_restrict_state( false );
   }
 
   /**
@@ -110,22 +110,11 @@ class queue_view extends \cenozo\ui\widget\base_view
    */
   public function determine_participant_count( $modifier = NULL )
   {
-    // replace participant. with participant_ and cohort. with cohort_ in the where columns
-    // of the modifier (see queue record's participant_for_queue for details)
-    if( !is_null( $modifier ) )
-    {
-      foreach( $modifier->get_where_columns() as $column )
-      {
-        $modifier->change_where_column(
-          $column, preg_replace( '/^participant\./', 'participant_', $column ) );
-        $modifier->change_where_column(
-          $column, preg_replace( '/^cohort\./', 'cohort_', $column ) );
-      }
-    }
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    if( !is_null( $this->db_qnaire ) ) $modifier->where( 'qnaire_id', '=', $this->db_qnaire->id );
 
     $db_queue = $this->get_record();
     $db_queue->set_site( $this->db_site );
-    $db_queue->set_qnaire( $this->db_qnaire );
     return $db_queue->get_participant_count( $modifier );
   }
 
@@ -139,35 +128,11 @@ class queue_view extends \cenozo\ui\widget\base_view
    */
   public function determine_participant_list( $modifier = NULL )
   {
-    // replace participant. with participant_ and cohort. with cohort_ in the where and order
-    // columns of the modifier (see queue record's participant_for_queue for details)
-    if( !is_null( $modifier ) )
-    {
-      foreach( $modifier->get_where_columns() as $column )
-      {
-        $modifier->change_where_column(
-          $column, preg_replace( '/^participant\./', 'participant_', $column ) );
-        $modifier->change_where_column(
-          $column, preg_replace( '/^cohort\./', 'cohort_', $column ) );
-      }
-
-      foreach( $modifier->get_order_columns() as $column )
-      {
-        if( 'participant.id' == $column ) 
-          $modifier->change_order_column( 'participant.id', 'participant_for_queue.id' );
-        else
-        {
-          $modifier->change_order_column(
-            $column, preg_replace( '/^participant\./', 'participant_', $column ) );
-          $modifier->change_order_column(
-            $column, preg_replace( '/^cohort\./', 'cohort_', $column ) );
-        }
-      }
-    }
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    if( !is_null( $this->db_qnaire ) ) $modifier->where( 'qnaire_id', '=', $this->db_qnaire->id );
 
     $db_queue = $this->get_record();
     $db_queue->set_site( $this->db_site );
-    $db_queue->set_qnaire( $this->db_qnaire );
     return $db_queue->get_participant_list( $modifier );
   }
 

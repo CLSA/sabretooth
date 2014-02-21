@@ -49,6 +49,12 @@ class assignment_list extends \cenozo\ui\widget\site_restricted_list
     $this->add_column( 'start_time', 'time', 'Start Time' );
     $this->add_column( 'end_time', 'time', 'End Time' );
     $this->add_column( 'status', 'string', 'Status' );
+
+    // if we have a parent then override the restricted site and show all sites
+    if( !is_null( $this->db_restrict_site ) &&
+        !is_null( $this->parent ) &&
+        'interview' == $this->parent->get_subject() )
+      $this->db_restrict_site = NULL;
   }
   
   /**
@@ -105,9 +111,7 @@ class assignment_list extends \cenozo\ui\widget\site_restricted_list
                'status' => $status,
                // allow_spy and user_id aren't columns, they are used for voip spying
                'allow_spy' => $allow_spy,
-               'user_id' => $db_user->id,
-               // note_count isn't a column, it's used for the note button
-               'note_count' => $record->get_note_count() ) );
+               'user_id' => $db_user->id ) );
     }
   }
 

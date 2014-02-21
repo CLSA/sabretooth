@@ -10,12 +10,46 @@
 {% block javascript %}
   
   <script type="text/javascript">
+
+    function update_tree() {
+      var args = new Object();
+
+      // get the viewing date
+      var viewing_date = $( "#{{ widget.full }}__viewing_date" ).val();
+      if( "{{ current_date }}" == viewing_date ) viewing_date = "current";
+      args.viewing_date = viewing_date;
+
+      // get the site
+      {% if sites is defined %}
+        args.site_id = $( "#{{ widget.full }}__restrict_site option:selected" ).val();
+      {% else %}
+        args.site_id = 0;
+      {% endif %}
+
+      var data = ajax_pull( "participant", "tree", args );
+      for( var index in data )
+        $( "#{{ widget.full }}_nodespot__" + index + " span" ).html( data[index] );
+      $( this ).find( "span" ).html( 'Update Tree' );
+    }
+    
     $( function() {
+      // tree widget
+      $( "#{{ widget.full }}_tree" ).jstree( {
+        plugins: [ "html_data", "themeroller" ],
+        core: {
+          animation: 200,
+          html_titles: true
+        },
+        themeroller: {
+          opened: "ui-icon-circle-triangle-s",
+          closed: "ui-icon-circle-triangle-e",
+          item_icon: "ui-icon-radio-on"
+        }
+      } );
+
       {% if sites is defined %}
         // reload page if site selector is changed
-        $( "#{{ widget.full }}__restrict_site" ).change( function() {
-          $( "#{{ widget.full }}__update" ).click();
-        } );
+        $( "#{{ widget.full }}__restrict_site" ).change( update_tree );
       {% endif %}
       
       // create the datepicker UI for the viewing date
@@ -23,7 +57,7 @@
         dateFormat: 'yy-mm-dd',
         showAnim: 'slideDown',
         defaultDate: 'current',
-        onClose: function( dateText, inst ) { $( "#{{ widget.full }}__update" ).click(); }
+        onClose: update_tree
       } );
       
       // make the queue participant counts buttons which pop up the queue view widget
@@ -49,44 +83,23 @@
         slot_load( {{ slot }}, "queue", "view", args );
       } );
 
-      // tree widget
-      $( "#{{ widget.full }}_tree" ).jstree( {
-        plugins: [ "html_data", "themeroller" ],
-        core: {
-          animation: 200,
-          html_titles: true
-        },
-        themeroller: {
-          opened: "ui-icon-circle-triangle-s",
-          closed: "ui-icon-circle-triangle-e",
-          item_icon: "ui-icon-radio-on"
-        }
+      // repopulate button
+      $( "#{{ widget.full }}__repopulate" ).button().click( function() {
+        confirm_dialog(
+          "Re-populate Queues",
+          "<p>Are you sure you wish to re-populate the tree populations? " +
+          "WARNING: This should only be done when participant information appears to be out of date!",
+          function() {
+            $button = $( "#{{ widget.full }}__repopulate" );
+            $button.find( "span" ).html( 'Update in progress...' );
+            if( ajax_push( "queue", "repopulate" ) ) update_tree();
+            $button.find( "span" ).html( 'Re-populate Tree' );
+          }
+        );
       } );
 
-      // update button
-      $( "#{{ widget.full }}__update" ).button().click( function() {
-        $( this ).find( "span" ).html( 'Update in progress...' );
-
-        var args = new Object();
-
-        // get the viewing date
-        var viewing_date = $( "#{{ widget.full }}__viewing_date" ).val();
-        if( "{{ current_date }}" == viewing_date ) viewing_date = "current";
-        args.viewing_date = viewing_date;
-
-        // get the site
-        {% if sites is defined %}
-          args.site_id = $( "#{{ widget.full }}__restrict_site option:selected" ).val();
-        {% else %}
-          args.site_id = 0;
-        {% endif %}
-
-        var data = ajax_pull( "participant", "tree", args );
-        for( var index in data )
-          $( "#{{ widget.full }}_nodespot__" + index + " span" ).html( data[index] );
-        $( this ).find( "span" ).html( 'Update Tree Population' );
-      } );
-      
+      // update the tree when the page is first loaded
+      update_tree();
     } );
   </script>
 
@@ -95,7 +108,9 @@
 {% block widget %}
   
   <div style="padding-top: 8px; padding-bottom: 8px;">
-    <button id="{{ widget.full }}__update" style="float:right">Update Tree Population</button>
+    {% if allow_repopulate %}
+      <button id="{{ widget.full }}__repopulate" style="float:right">Re-populate Tree</button>
+    {% endif %}
     {% if sites is defined %}
       {% set restrict_site_id = restrict_site_id|default(0) %}
       Restrict to site:

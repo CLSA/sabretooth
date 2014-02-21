@@ -43,6 +43,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $database_class_name = lib::get_class_name( 'database\database' );
     $record_class_name = lib::get_class_name( 'database\record' );
     $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
+    $state_class_name = lib::get_class_name( 'database\state' );
     $region_class_name = lib::get_class_name( 'database\region' );
     $site_class_name = lib::get_class_name( 'database\site' );
     $interview_class_name = lib::get_class_name( 'database\interview' );
@@ -50,6 +51,8 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $setting_manager = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
     $is_supervisor = 'supervisor' == $session->get_role()->name;
+    $db_service = $session->get_service();
+    $db_site = $session->get_site();
 
     // get the report arguments
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
@@ -113,19 +116,23 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       'Hard refusal' => 0,
       'Soft refusal' => 0,
       'Appointment' => 0,
-      'Appointment (missed)' => 0,
-      'Sourcing Required' => 0 );
+      'Appointment (missed)' => 0 );
 
     // add call results
-    $phone_call_status_start_index = count( $category_totals ) - 1; // includes "sourcing required" above
+    $phone_call_status_start_index = count( $category_totals ) - 1;
     foreach( $phone_call_class_name::get_enum_values( 'status' ) as $status )
       $category_totals[ ucfirst( $status ) ] = 0;
     $phone_call_status_count = count( $category_totals ) - $phone_call_status_start_index;
 
+    $category_totals['Not yet called'] = 0;
+
+    // add states
+    $state_mod = lib::create( 'database\modifier' );
+    $state_mod->order( 'rank' );
+    foreach( $state_class_name::select( $state_mod ) as $db_state )
+      $category_totals[ ucfirst( $db_state->name ) ] = 0;
+
     $category_totals = array_merge( $category_totals, array(
-      'Not yet called' => 0,
-      'Deceased' => 0,
-      'Permanent condition (excl. deceased/source)' => 0,
       'Grand Total Attempted' => 0,
       'Total completed interviews' => 0,
       'Response rate (incl. soft refusals)' => 0,
@@ -138,27 +145,29 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     {
       $site_mod = lib::create( 'database\modifier' );
       if( $is_supervisor )
-        $site_mod->where( 'id', '=', $session->get_site()->id );
-      foreach( $site_class_name::select( $site_mod ) as $db_site )
-        $this->category_totals_list[ $db_site->name ] = $category_totals;
+        $site_mod->where( 'id', '=', $db_site->id );
+      foreach( $site_class_name::select( $site_mod ) as $db_temp_site )
+        $this->category_totals_list[ $db_temp_site->name ] = $category_totals;
 
       // only include the "None" column if user isn't a supervisor
       if( !$is_supervisor ) $this->category_totals_list['None'] = $category_totals;
 
-      $this->base_sql =
+      $this->base_sql = sprintf(
         'SELECT site.name AS category, temp_participant.id '.
         'FROM temp_participant '.
         'LEFT JOIN participant_site ON temp_participant.id = participant_site.participant_id '.
-        'LEFT JOIN site ON participant_site.site_id = site.id ';
+        'AND participant_site.service_id = %s '.
+        'LEFT JOIN site ON participant_site.site_id = site.id ',
+        $database_class_name::format_string( $db_service->id ) );
     }
     else if( 'Province' == $breakdown )
     {
       $region_mod = lib::create( 'database\modifier' );
       $region_mod->order( 'country' );
       $region_mod->order( 'abbreviation' );
-      $region_mod->where( 'service_region_site.service_id', '=', $session->get_service()->id );
+      $region_mod->where( 'region_site.service_id', '=', $db_service->id );
       if( $is_supervisor )
-        $region_mod->where( 'service_region_site.site_id', '=', $session->get_site()->id );
+        $region_mod->where( 'region_site.site_id', '=', $db_site->id );
       foreach( $region_class_name::select( $region_mod ) as $db_region )
         $this->category_totals_list[ $db_region->abbreviation ] = $category_totals;
 
@@ -201,9 +210,10 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $temp_table_sql = sprintf(
       'CREATE TEMPORARY TABLE temp_participant SELECT participant.* '.
       'FROM participant '.
-      'JOIN service_has_cohort ON participant.cohort_id = service_has_cohort.cohort_id '.
-      'AND service_has_cohort.service_id = %s',
-      $database_class_name::format_string( $session->get_service()->id ) );
+      'JOIN service_has_participant ON participant.id = service_has_participant.participant_id '.
+      'AND service_has_participant.service_id = %s '.
+      'AND service_has_participant.datetime IS NOT NULL ',
+      $database_class_name::format_string( $db_service->id ) );
 
     if( 'Province' == $breakdown || $restrict_province_id ) $temp_table_sql .=
       'LEFT JOIN participant_primary_address '.
@@ -218,8 +228,11 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $modifier = lib::create( 'database\modifier' );
     if( $is_supervisor )
     {
-      $temp_table_sql .= 'JOIN participant_site ON participant.id = participant_site.participant_id ';
-      $modifier->where( 'participant_site.site_id', '=', $session->get_site()->id );
+      $temp_table_sql .= sprintf(
+        'JOIN participant_site ON participant.id = participant_site.participant_id '.
+        'AND participant_site.service_id = %s',
+        $database_class_name::format_string( $db_service->id ) );
+      $modifier->where( 'participant_site.site_id', '=', $db_site->id );
     }
     if( $restrict_province_id ) $modifier->where( 'address.region_id', '=', $restrict_province_id );
     if( 0 < $restrict_source_id ) $modifier->where( 'source_id', '=', $restrict_source_id );
@@ -256,23 +269,16 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       else $this->category_totals_list[$row['category']][$sub_cat] = $row['total'];
     }
 
-    // deceased
-    $sub_cat = 'Deceased';
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'temp_participant.status', '=', 'deceased' );
-    $this->set_category_totals( $sub_cat, '', $modifier );
-
-    // sourcing required (based on the participant status column)
-    $sub_cat = 'Sourcing Required';
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'temp_participant.status', '=', 'sourcing required' );
-    $this->set_category_totals( $sub_cat, '', $modifier );
-
-    // final status not null
-    $sub_cat = 'Permanent condition (excl. deceased/source)';
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'temp_participant.status', '!=', NULL );
-    $this->set_category_totals( $sub_cat, '', $modifier );
+    // final state not null
+    $state_mod = lib::create( 'database\modifier' );
+    $state_mod->order( 'rank' );
+    foreach( $state_class_name::select( $state_mod ) as $db_state )
+    {
+      $sub_cat = ucfirst( $db_state->name );
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'temp_participant.state_id', '=', $db_state->id );
+      $this->set_category_totals( $sub_cat, '', $modifier );
+    }
 
     // unassigned past appointment
     $sub_cat = 'Appointment (missed)';
@@ -390,7 +396,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
 
     // has an incomplete interview
     // failed call count >= max failed calls
-    $sub_cat = 'Sourcing Required';
+    $sub_cat = 'Sourcing required';
     // get the max failed calls setting and invoke the temporary table needed in the join
     $max_failed_calls =
       lib::create( 'business\setting_manager' )->get_setting( 'calling', 'max failed calls' );

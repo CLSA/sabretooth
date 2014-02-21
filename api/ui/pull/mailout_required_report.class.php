@@ -90,7 +90,7 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
       'DATE_SUB( NOW(), INTERVAL 70 YEAR )', false );
     if( $restrict_source_id ) $participant_mod->where( 'source_id', '=', $restrict_source_id );
     $participant_mod->where( 'source_id', '!=', $db_statscan_source->id );
-    $participant_mod->where( 'status', '=', NULL );
+    $participant_mod->where( 'state_id', '=', NULL );
     $participant_mod->where( 'interview.qnaire_id', '=', $db_qnaire->id );
     $participant_mod->where_bracket( true );
     $participant_mod->where( 'participant_last_consent.consent_id', '=', NULL );
@@ -123,6 +123,13 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
 
     foreach( $participant_class_name::select( $participant_mod ) as $db_participant )
     {
+      // make sure the participant's quota is active (or overridden)
+      if( !$db_participant->override_quota )
+      {
+        $db_quota = $db_participant->get_quota();
+        if( !is_null( $db_quota ) && $db_quota->state_disabled ) continue;
+      }
+
       $interview_mod = lib::create( 'database\modifier' );
       $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
       $db_participant->get_interview_list( $interview_mod );
@@ -171,7 +178,7 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
           $db_address->postcode,
           $report_date,
           $answer_date );
-        }
+      }
     }// end participant loop 
 
     $header = array(

@@ -38,26 +38,26 @@ class participant_withdraw extends \cenozo\ui\push\base_record
     parent::execute();
 
     if( $this->get_argument( 'cancel', false ) )
-    { // if the most recent consent is the event, remove it
+    { // if the most recent consent is a verbal negative, remove it
       $consent_mod = lib::create( 'database\modifier' );
       $consent_mod->order_desc( 'date' );
       $consent_mod->limit( 1 );
       $db_consent = current( $this->get_record()->get_consent_list( $consent_mod ) );
-      if( $db_consent && false == $db_consent->accept )
+      if( $db_consent && !$db_consent->accept && !$db_consent->written )
       {
-        // apply the change using an operation (so that Mastodon is also updated)
-        $operation = lib::create( 'ui\push\consent_delete', array( 'id' => $db_consent->id ) );
-        $operation->process();
+        $db_consent->delete();
       }
-      else throw lib::create( 'exception\runtime',
-        sprintf( 'Trying to cancel withdraw for participant id %d but '.
-                 'most recent consent is not negative.',
-                 $this->get_record()->id ),
-        __METHOD__ );
+      else
+      {
+        throw lib::create( 'exception\runtime',
+          sprintf( 'Trying to cancel withdraw for participant id %d but '.
+                   'most recent consent is not a verbal negative.',
+                   $this->get_record()->id ),
+          __METHOD__ );
+      }
     }
     else
     { // add a new consent to the participant
-      // apply the change using an operation (so that Mastodon is also updated)
       $db_consent = lib::create( 'database\consent' );
       $db_consent->participant_id = $this->get_record()->id;
       $db_consent->accept = false;
@@ -66,5 +66,8 @@ class participant_withdraw extends \cenozo\ui\push\base_record
       $db_consent->note = 'Automatically added by the "withdraw" button.';
       $db_consent->save();
     }
+
+    // update this participant's queue status
+    $this->get_record()->update_queue_status();
   }
 }

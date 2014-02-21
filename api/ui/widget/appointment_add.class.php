@@ -100,9 +100,9 @@ class appointment_add extends base_appointment_view
     $types = array_combine( $types, $types );
     
     // create the min datetime array
-    $start_qnaire_date = $this->parent->get_record()->start_qnaire_date;
+    $start_qnaire_date = $this->parent->get_record()->get_start_qnaire_date();
     $datetime_limits = !is_null( $start_qnaire_date )
-                     ? array( 'min_date' => substr( $start_qnaire_date, 0, -9 ) )
+                     ? array( 'min_date' => $start_qnaire_date->format( 'Y-m-d' ) )
                      : NULL;
 
     // set the view's items
@@ -111,6 +111,6 @@ class appointment_add extends base_appointment_view
     $this->set_item( 'datetime', '', true, $datetime_limits );
     $this->set_item( 'type', key( $types ), true, $types );
 
-    $this->set_variable( 'is_mid_tier', 2 == $session->get_role()->tier );
+    $this->set_variable( 'allow_forced_appointment', 1 < $session->get_role()->tier );
   }
 }

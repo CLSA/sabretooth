@@ -1,0 +1,31 @@
+#!/usr/bin/php
+<?php
+
+/**
+ * A script which must be run as an hourly cron job
+ * Author: Patrick Emond <emondpd@mcmaster.ca>
+ */
+
+$url = 'https://localhost:443/web/path/to/sabretooth';
+$path = dirname( __FILE__ ).'/../web';
+
+chdir( $path );
+require_once 'settings.ini.php';
+require_once 'settings.local.ini.php';
+require_once $SETTINGS['path']['CENOZO'].'/app/service.class.php';
+
+$user = $SETTINGS['general']['machine_user'];
+$pass = $SETTINGS['general']['machine_password'];
+$log = $SETTINGS['path']['LOG_FILE'];
+
+$date = '%Y-%m-%d (%a) %H:%M:%S';
+exec( sprintf( 'date +"%s  [cron] <%s:administrator@McMaster> '.
+               'Re-populating queue participant lists" >> %s',
+               $date,
+               $user,
+               $log ) );
+exec( sprintf( 'curl -s -S -u %s:%s -k -XPOST %s/queue/repopulate 2>> %s',
+               $user,
+               $pass,
+               $url,
+               $log ) );

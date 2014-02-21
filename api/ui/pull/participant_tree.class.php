@@ -37,9 +37,9 @@ class participant_tree extends \cenozo\ui\pull
     parent::execute();
 
     $session = lib::create( 'business\session' );
-    $is_top_tier = 3 == $session->get_role()->tier;
+    $all_sites = $session->get_role()->all_sites;
     
-    if( $is_top_tier )
+    if( $all_sites )
     {
       $site_id = $this->get_argument( "site_id", 0 );
       $db_site = $site_id ? lib::create( 'database\site', $site_id ) : NULL;
@@ -59,7 +59,7 @@ class participant_tree extends \cenozo\ui\pull
     foreach( $queue_class_name::select() as $db_queue )
     {
       // restrict queue based on user's role
-      if( !$is_top_tier ) $db_queue->set_site( $session->get_site() );
+      if( !$all_sites ) $db_queue->set_site( $session->get_site() );
       else if( !is_null( $db_site ) ) $db_queue->set_site( $db_site );
       
       // handle queues which are not qnaire specific
@@ -72,9 +72,10 @@ class participant_tree extends \cenozo\ui\pull
       {
         foreach( $qnaire_class_name::select() as $db_qnaire )
         {
-          $db_queue->set_qnaire( $db_qnaire );
+          $queue_mod = lib::create( 'database\modifier' );
+          $queue_mod->where( 'qnaire_id', '=', $db_qnaire->id );
           $index = sprintf( '%d_%d', $db_qnaire->id, $db_queue->id );
-          $this->data[$index] = $db_queue->get_participant_count();
+          $this->data[$index] = $db_queue->get_participant_count( $queue_mod );
         }
       }
     }

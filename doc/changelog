@@ -1,4 +1,89 @@
 ====================================================================================================
+1.3.0
+====================================================================================================
+
+* Redesigning queueing system to improve performance
+  - Removed queue restrictions
+  - Participants who are currently "available" are no longer assigned before those who are not
+  - Changes to the system which affect queues done through services other than Sabretooth may take
+    up to an hour to come into effect (eg: participant release, editing participants, etc)
+  - Calling time restrictions are now only reflected on or near the hour
+  - Merged "available" and "not available" queues
+  - Queue operations take a fraction of the time compared to before at the cost of operations which
+    edit a participant's details being slighly longer (processing load is now distributed)
+  - Administrators can force-update queues to reflect all changes made across the system (including
+    those made from another application, changes to call time restrictions, released participant,
+    etc)
+
+====================================================================================================
+1.2.4
+====================================================================================================
+
+* Tracking changes to participant email addresses
+  - email addresses are now validated using simple word@word.word validation
+  - any change to a participant's email address is tracked by date and time
+  - a new email report has been created which provides a list of all participants with new email
+    addresses
+
+* Replacing participant.status with new state table
+  - Participant conditions (states) can now be managed by administrators
+  - Each role can be restricted to only setting certain states
+
+====================================================================================================
+1.2.3
+====================================================================================================
+
+* Adding new pre-recruit feature
+  - This feature provides functionality to randomly select one individual in a household
+  - Individuals are grouped into quotas and randomly selected
+
+* Adding new search participant utility
+  - Allows for complex search of participant based on address, phone, participant and note details
+
+====================================================================================================
+1.2.2
+====================================================================================================
+
+* Adding new participant multiedit operations
+  - Certain roles may now edit multiple participants in a single operation
+
+* Adding new feature to override quota restrictions
+  - Every participant how has an "Override Quota" setting
+  - Setting this setting to true will allow the participant to override quota restrictions
+  - A new token attribute, "override quota" which reports the participant's value as 1 or 0
+
+====================================================================================================
+1.2.1
+====================================================================================================
+
+* Making changes to cognitive rescoring
+  - typists can now rescore interviews
+  - navigation buttons removed when rescoring
+  - interviews can be rescored even after rescoring is complete
+
+* Adding new role.all_sites column
+
+  - Used to determine whether a role should be restricted to a single site or not
+  - Many old references to "tier" have been replaced 
+
+* Replacing assignment notes with participant notes
+  - All existing assignment notes are converted to participant notes
+  - Assignment notes no longer exist
+
+* Adding new withdraw button in participant actions
+  - Participants can now be withdrawn by clicking the "withdraw" button when viewing their file
+  - Operators can still withdraw a participant during an assignment the same way as before
+
+* Adding "duplicate" to possible participant condition list
+
+* Adding new Consent Required report
+  - Report lists all participants who have completed an interview and have not provided signed
+    consent
+  - May be restricted by interview complete date
+
+* Adding "last call result" to participant report parameters
+
+====================================================================================================
 1.2.0
 ====================================================================================================
 
