@@ -63,7 +63,7 @@ class self_shortcuts extends \cenozo\ui\widget\self_shortcuts
       $this->set_variable( 'participant_id',
         is_null( $db_assignment ) ? 0 : $db_assignment->get_interview()->get_participant()->id );
 
-      if( !is_null( $session->get_current_phone_call() ) );
+      if( !is_null( $session->get_current_phone_call() ) )
       {
         $this->set_variable(
           'prerecruit', $setting_manager->get_setting( 'prerecruit', 'enabled' ) );

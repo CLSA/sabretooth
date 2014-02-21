@@ -89,6 +89,20 @@ VALUES( "widget", "callback", "report", true, "Set up a callback report." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "callback", "view", true, "View the details of a participant's particular callback." );
 
+-- cedar_instance
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "cedar_instance", "add", true, "View a form for creating a new cedar instance." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "cedar_instance", "delete", true, "Removes a cedar instance from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "cedar_instance", "edit", true, "Edits a cedar instance's details." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "cedar_instance", "list", true, "List cedar instances in the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "cedar_instance", "new", true, "Add a new cedar instance to the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "cedar_instance", "view", true, "View a cedar instance's details." );
+
 -- consent_form
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "consent_form", "report", true, "Download a consent form report." );
@@ -108,8 +122,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "interview", "list", true, "Retrieves base information for a list of interviews." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "interview", "list", true, "Lists interviews." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "interview", "rescore", true, "Provides an interface to rescore interview based on recordings." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "interview", "view", true, "View interview details." );
 
@@ -248,6 +260,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "queue", "view", true, "View a queue's details and list of participants." );
 
 -- recording
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "recording", "list", true, "Provides a list of recordings for a particular participant and qnaire." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "recording", "list", true, "Lists recordings." );
 

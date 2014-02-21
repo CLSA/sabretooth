@@ -7,6 +7,21 @@ CREATE SCHEMA IF NOT EXISTS `sabretooth` ;
 USE `sabretooth` ;
 
 -- -----------------------------------------------------
+-- Table `sabretooth`.`interview_method`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`interview_method` ;
+
+CREATE TABLE IF NOT EXISTS `sabretooth`.`interview_method` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `update_timestamp` TIMESTAMP NOT NULL,
+  `create_timestamp` TIMESTAMP NOT NULL,
+  `name` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `uq_name` (`name` ASC))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `sabretooth`.`qnaire`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `sabretooth`.`qnaire` ;
@@ -17,18 +32,24 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`qnaire` (
   `create_timestamp` TIMESTAMP NOT NULL,
   `name` VARCHAR(255) NOT NULL,
   `rank` INT NOT NULL,
+  `interview_method_id` INT UNSIGNED NOT NULL,
   `prev_qnaire_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The qnaire which must be completed before this one begins.',
   `delay` INT NOT NULL DEFAULT 0 COMMENT 'How many weeks after then end of the previous qnaire before starting.',
   `withdraw_sid` INT NULL DEFAULT NULL,
-  `rescore_sid` INT NULL DEFAULT NULL,
   `description` TEXT NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `uq_name` (`name` ASC),
   UNIQUE INDEX `uq_rank` (`rank` ASC),
   INDEX `fk_prev_qnaire_id` (`prev_qnaire_id` ASC),
+  INDEX `fk_interview_method_id` (`interview_method_id` ASC),
   CONSTRAINT `fk_qnaire_prev_qnaire_id`
     FOREIGN KEY (`prev_qnaire_id`)
     REFERENCES `sabretooth`.`qnaire` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_qnaire_interview_method_id`
+    FOREIGN KEY (`interview_method_id`)
+    REFERENCES `sabretooth`.`interview_method` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -70,15 +91,15 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`interview` (
   `create_timestamp` TIMESTAMP NOT NULL,
   `qnaire_id` INT UNSIGNED NOT NULL,
   `participant_id` INT UNSIGNED NOT NULL,
+  `interview_method_id` INT UNSIGNED NOT NULL,
   `require_supervisor` TINYINT(1) NOT NULL DEFAULT 0,
   `completed` TINYINT(1) NOT NULL DEFAULT 0,
-  `rescored` ENUM('Yes','No','N/A') NOT NULL DEFAULT 'N/A',
   PRIMARY KEY (`id`),
   INDEX `fk_participant_id` (`participant_id` ASC),
   INDEX `fk_qnaire_id` (`qnaire_id` ASC),
   INDEX `dk_completed` (`completed` ASC),
   UNIQUE INDEX `uq_participant_id_qnaire_id` (`participant_id` ASC, `qnaire_id` ASC),
-  INDEX `dk_rescored` (`rescored` ASC),
+  INDEX `fk_interview_method_id` (`interview_method_id` ASC),
   CONSTRAINT `fk_interview_participant_id`
     FOREIGN KEY (`participant_id`)
     REFERENCES `cenozo`.`participant` (`id`)
@@ -87,6 +108,11 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`interview` (
   CONSTRAINT `fk_interview_qnaire_id`
     FOREIGN KEY (`qnaire_id`)
     REFERENCES `sabretooth`.`qnaire` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_interview_interview_method_id`
+    FOREIGN KEY (`interview_method_id`)
+    REFERENCES `sabretooth`.`interview_method` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
@@ -812,6 +838,27 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`queue_has_participant` (
   CONSTRAINT `fk_queue_has_participant_site_id`
     FOREIGN KEY (`site_id`)
     REFERENCES `cenozo`.`site` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `sabretooth`.`cedar_instance`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`cedar_instance` ;
+
+CREATE TABLE IF NOT EXISTS `sabretooth`.`cedar_instance` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `update_timestamp` TIMESTAMP NOT NULL,
+  `create_timestamp` TIMESTAMP NOT NULL,
+  `user_id` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_user_id` (`user_id` ASC),
+  UNIQUE INDEX `uq_user_id` (`user_id` ASC),
+  CONSTRAINT `fk_cedar_instance_user_id`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `cenozo`.`user` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

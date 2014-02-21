@@ -40,6 +40,7 @@ class qnaire_list extends \cenozo\ui\widget\base_list
     
     $this->add_column( 'name', 'string', 'Name', true );
     $this->add_column( 'rank', 'number', 'Rank', true );
+    $this->add_column( 'interview_method.name', 'string', 'Method', true );
     $this->add_column( 'prev_qnaire', 'string', 'Previous', false );
     $this->add_column( 'delay', 'number', 'Delay (weeks)', false );
     $this->add_column( 'phases', 'number', 'Stages', false );
@@ -68,6 +69,7 @@ class qnaire_list extends \cenozo\ui\widget\base_list
       $this->add_row( $record->id,
         array( 'name' => $record->name,
                'rank' => $record->rank,
+               'interview_method.name' => $record->get_interview_method()->name,
                'prev_qnaire' => $prev_qnaire,
                'delay' => $record->delay,
                'phases' => $record->get_phase_count() ) );

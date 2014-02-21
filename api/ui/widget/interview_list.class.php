@@ -40,8 +40,8 @@ class interview_list extends \cenozo\ui\widget\site_restricted_list
     
     $this->add_column( 'participant.uid', 'string', 'UID', true );
     $this->add_column( 'qnaire.name', 'string', 'Questionnaire', true );
+    $this->add_column( 'interview_method.name', 'string', 'Method', true );
     $this->add_column( 'completed', 'boolean', 'Completed', true );
-    $this->add_column( 'rescored', 'string', 'Rescored', true );
     $this->add_column( 'assignment.end_datetime', 'date', 'Date', true );
 
     $this->extended_site_selection = true;
@@ -63,8 +63,8 @@ class interview_list extends \cenozo\ui\widget\site_restricted_list
       $this->add_row( $record->id,
         array( 'participant.uid' => $record->get_participant()->uid,
                'qnaire.name' => $record->get_qnaire()->name,
+               'interview_method.name' => $record->get_interview_method()->name,
                'completed' => $record->completed,
-               'rescored' => $record->rescored,
                'assignment.end_datetime' => $record->get_last_assignment()->end_datetime ) );
     }
   }

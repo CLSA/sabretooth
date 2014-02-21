@@ -37,11 +37,12 @@ class queue extends \cenozo\database\record
    * @param modifier $modifier A modifier to apply to the list or count.
    * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
    * @param boolean $count If true then this method returns the count instead of list of records.
+   * @param boolean $distinct Whether to use the DISTINCT sql keyword
    * @return array( record ) | int
    * @access protected
    */
   public function get_record_list(
-    $record_type, $modifier = NULL, $inverted = false, $count = false )
+    $record_type, $modifier = NULL, $inverted = false, $count = false, $distinct = true )
   {
     // if we're getting a participant list/count for a time-specific column, populate it first
     if( 'participant' == $record_type ) $this->populate_time_specific();
@@ -55,7 +56,7 @@ class queue extends \cenozo\database\record
     }
 
     // now call the parent method as usual
-    return parent::get_record_list( $record_type, $modifier, $inverted, $count );
+    return parent::get_record_list( $record_type, $modifier, $inverted, $count, $distinct );
   }
 
   /**
@@ -182,6 +183,11 @@ class queue extends \cenozo\database\record
   static public function repopulate( $db_participant = NULL )
   {
     $database_class_name = lib::get_class_name( 'database\database' );
+    $session = lib::create( 'business\session' );
+    $db_user = $session->get_user();
+
+    // block with a semaphore
+    $session->acquire_semaphore();
 
     // make sure the temporary table exists
     static::create_participant_for_queue( $db_participant );
@@ -215,6 +221,8 @@ class queue extends \cenozo\database\record
             'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) %s',
           $db_queue->get_sql( $columns ) ) );
     }
+
+    $session->release_semaphore();
   }
 
   /**
@@ -232,6 +240,11 @@ class queue extends \cenozo\database\record
     if( !$this->time_specific ) return;
 
     $database_class_name = lib::get_class_name( 'database\database' );
+    $session = lib::create( 'business\session' );
+    $db_user = $session->get_user();
+
+    // block with a semaphore
+    $session->acquire_semaphore();
 
     // make sure the queue list cache exists and get the queue's parent
     static::create_queue_list_cache();
@@ -268,7 +281,7 @@ class queue extends \cenozo\database\record
       $sql = sprintf(
         'INSERT INTO queue_has_participant( '.
           'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) '.
-        'SELECT queue_has_participant.participant_id, %s, site_id, qnaire_id, start_qnaire_date '.
+        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, qnaire_id, start_qnaire_date '.
         'FROM queue_has_participant '.
         'JOIN appointment ON queue_has_participant.participant_id = appointment.participant_id '.
         'AND appointment.assignment_id IS NULL '.
@@ -315,7 +328,7 @@ class queue extends \cenozo\database\record
       $sql = sprintf(
         'INSERT INTO queue_has_participant( '.
           'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) '.
-        'SELECT queue_has_participant.participant_id, %s, site_id, qnaire_id, start_qnaire_date '.
+        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, qnaire_id, start_qnaire_date '.
         'FROM queue_has_participant '.
         'JOIN callback ON queue_has_participant.participant_id = callback.participant_id '.
         'AND callback.assignment_id IS NULL '.
@@ -354,7 +367,7 @@ class queue extends \cenozo\database\record
       $sql = sprintf(
         'INSERT INTO queue_has_participant( '.
           'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) '.
-        'SELECT queue_has_participant.participant_id, %s, site_id, qnaire_id, start_qnaire_date '.
+        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, qnaire_id, start_qnaire_date '.
         'FROM queue_has_participant '.
         'JOIN participant_last_interview '.
         'ON queue_has_participant.participant_id = participant_last_interview.participant_id '.
@@ -388,10 +401,14 @@ class queue extends \cenozo\database\record
     }
     else
     {
+      $session->release_semaphore();
+
       throw lib::create( 'exception\runtime',
         sprintf( 'No rules to populate time-specific queue "%s"', $this->name ),
         __METHOD__ );
     }
+
+    $session->release_semaphore();
   }
 
   /**
@@ -509,8 +526,8 @@ class queue extends \cenozo\database\record
               : 'first_address_timezone_offset';
       $calling_time_sql = sprintf(
         '( '.
-          'TIME( %s + INTERVAL %s HOUR ) >= "<CALLING_START_TIME>" AND '.
-          'TIME( %s + INTERVAL %s HOUR ) < "<CALLING_END_TIME>" '.
+          'TIME( %s + INTERVAL %s*60 MINUTE ) >= "<CALLING_START_TIME>" AND '.
+          'TIME( %s + INTERVAL %s*60 MINUTE ) < "<CALLING_END_TIME>" '.
         ')',
         $viewing_date,
         $offset,
@@ -645,8 +662,8 @@ class queue extends \cenozo\database\record
             }
             else
             {
-              // Make sure there is no unassigned appointment.  By design there can only be one of per
-              // participant, so if the appointment is null then the participant has no pending
+              // Make sure there is no unassigned appointment.  By design there can only be one of
+              // per participant, so if the appointment is null then the participant has no pending
               // appointments.
               $parts['join'][] =
                 'LEFT JOIN appointment '.
@@ -662,7 +679,8 @@ class queue extends \cenozo\database\record
                 // who belong to a quota which is disabled
                 $parts['where'][] = 'quota_state.disabled = true';
                 // and who are not marked to override quota
-                $parts['where'][] = 'participant_override_quota = true';
+                $parts['where'][] = 'participant_override_quota = false';
+                $parts['where'][] = 'source_override_quota = false';
               }
               else
               {
@@ -670,7 +688,8 @@ class queue extends \cenozo\database\record
                 $parts['where'][] =
                   '( quota_state.disabled IS NULL OR '.
                     'quota_state.disabled = false OR '.
-                    'participant_override_quota = true )';
+                    'participant_override_quota = true OR '.
+                    'source_override_quota = true )';
                 
                 if( 'outside calling time' == $queue )
                 {
@@ -726,6 +745,9 @@ class queue extends \cenozo\database\record
                         'assignment_last_phone_call.assignment_id = last_assignment_id';
                       $parts['where'][] =
                         'phone_call.id = assignment_last_phone_call.phone_call_id';
+                      // make sure the current interview's qnaire matches the effective qnaire,
+                      // otherwise this participant has never been assigned
+                      $parts['where'][] = 'current_interview_qnaire_id = effective_qnaire_id';
                     }
                   }
                 }
@@ -783,9 +805,9 @@ class queue extends \cenozo\database\record
     // fill in the settings
     $setting_manager = lib::create( 'business\setting_manager' );
     $setting = $setting_manager->get_setting( 'calling', 'start time', $this->db_site );
-    $sql = str_replace( '<CALLING_START_TIME>', $setting, $sql );
+    $sql = str_replace( '<CALLING_START_TIME>', $setting.':00', $sql );
     $setting = $setting_manager->get_setting( 'calling', 'end time', $this->db_site );
-    $sql = str_replace( '<CALLING_END_TIME>', $setting, $sql );
+    $sql = str_replace( '<CALLING_END_TIME>', $setting.':00', $sql );
 
     return $sql;
   }
@@ -1002,10 +1024,12 @@ participant.gender AS participant_gender,
 participant.age_group_id AS participant_age_group_id,
 participant.state_id AS participant_state_id,
 participant.override_quota AS participant_override_quota,
+source.override_quota AS source_override_quota,
 service_has_participant.preferred_site_id AS service_has_participant_preferred_site_id,
 primary_region.id AS primary_region_id,
 primary_region_site.site_id primary_region_site_id,
 last_consent.accept AS last_consent_accept,
+current_interview.qnaire_id AS current_interview_qnaire_id,
 last_assignment.id AS last_assignment_id,
 last_assignment.end_datetime AS last_assignment_end_datetime,
 IF
@@ -1041,6 +1065,8 @@ JOIN service_has_participant
 ON participant.id = service_has_participant.participant_id
 AND service_has_participant.datetime IS NOT NULL
 AND service_id = %s
+JOIN source
+ON participant.source_id = source.id
 LEFT JOIN person_primary_address
 ON participant.person_id = person_primary_address.person_id
 LEFT JOIN address AS primary_address

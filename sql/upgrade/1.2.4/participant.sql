@@ -35,6 +35,24 @@ CREATE PROCEDURE patch_participant()
       DEALLOCATE PREPARE statement;
     END IF;
 
+    SELECT "Adding the new email_old column to the participant table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = @cenozo
+      AND TABLE_NAME = "participant"
+      AND COLUMN_NAME = "email_old" );
+    IF @test = 0 THEN
+      SET @sql = CONCAT(
+        "ALTER TABLE ", @cenozo, ".participant ",
+        "ADD COLUMN email_old VARCHAR(255) NULL DEFAULT NULL ",
+        "AFTER email_datetime" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+    END IF;
+
     SELECT "Replacing participant.status column with reference to state table" AS "";
 
     SET @test = (

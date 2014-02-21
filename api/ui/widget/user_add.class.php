@@ -29,7 +29,7 @@ class user_add extends \cenozo\ui\widget\user_add
 
     // create enum arrays
     $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'name', '!=', 'opal' );
+    $modifier->where( 'name', 'NOT IN', array( 'cedar', 'opal' ) );
     $modifier->where( 'tier', '<=', $session->get_role()->tier );
     $roles = array();
     foreach( $role_class_name::select( $modifier ) as $db_role )
