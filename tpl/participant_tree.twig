@@ -33,19 +33,6 @@
     }
     
     $( function() {
-      // tree widget
-      $( "#{{ widget.full }}_tree" ).jstree( {
-        plugins: [ "html_data", "themeroller" ],
-        core: {
-          animation: 200,
-          html_titles: true
-        },
-        themeroller: {
-          opened: "ui-icon-circle-triangle-s",
-          closed: "ui-icon-circle-triangle-e",
-          item_icon: "ui-icon-radio-on"
-        }
-      } );
 
       {% if sites is defined %}
         // reload page if site selector is changed
