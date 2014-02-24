@@ -49,8 +49,8 @@
       
       // make the queue participant counts buttons which pop up the queue view widget
       $( "span[id^='{{ widget.full }}_nodespot__']" ).button().click( function() {
-        // extracting the qnaire and queue id from the id attribute
-        var id_string = $(this).attr( "id" );
+        // extracting the qnaire and queue id from the id propibute
+        var id_string = $(this).prop( "id" );
         var pos1 = id_string.lastIndexOf('__') + 2;
         var pos2 = id_string.lastIndexOf('_') + 1;
         var qnaire_id = id_string.substring( pos1, pos2 - 1 );

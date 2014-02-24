@@ -17,9 +17,9 @@
         var args = new Object();
         var columns = new Object();
         $( "#{{ widget.full }}_add_form :input" ).each( function() {
-          var id_string = $(this).attr( "id" );
+          var id_string = $(this).prop( "id" );
           var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
-          if( "checkbox" != $(this).attr( "type" ) )
+          if( "checkbox" != $(this).prop( "type" ) )
             columns[column_name] = $(this).val();
           else args.force = $(this).is( ":checked" ) ? 1 : 0;
         } );

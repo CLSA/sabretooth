@@ -32,15 +32,15 @@
         var args = new Object();
         var columns = new Object();
         $( "#{{ widget.full }}_add_form :input" ).each( function() {
-          var id_string = $(this).attr( 'id' );
+          var id_string = $(this).prop( 'id' );
           var column_name = id_string.substring( id_string.lastIndexOf('__') + 2 );
           columns[column_name] = $(this).val();
         } );
 
         // set all checkbox values
         $( "input.{{ widget.full }}__repeat_on" ).each( function() {
-          var column_name = $(this).attr( "name" );
-          columns[column_name] = $(this).attr( "checked" ) ? 1 : 0;
+          var column_name = $(this).prop( "name" );
+          columns[column_name] = $(this).prop( "checked" ) ? 1 : 0;
         } );
 
         // define the repeat type

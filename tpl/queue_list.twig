@@ -47,7 +47,7 @@
       // override the view button callback
       $( ".{{ widget.full }}_view" ).unbind( 'click' );
       $( ".{{ widget.full }}_view" ).click( function() {
-        var id_string = $(this).attr( 'id' );
+        var id_string = $(this).prop( 'id' );
         var args = new Object();
         args.id = parseInt( id_string.substring( id_string.lastIndexOf('_') + 1 ) );
         args.site_id = $( "#{{ widget.full }}__restrict_site option:selected" ).val();

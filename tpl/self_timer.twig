@@ -63,9 +63,9 @@
           $time.html( "up" == $type.val() ? 0 : $duration.val() );
 
           // disable the timer settings
-          $type.attr( "disabled", "disabled" );
-          $duration.attr( "disabled", "disabled" );
-          $beep.attr( "disabled", "disabled" );
+          $type.prop( "disabled", "disabled" );
+          $duration.prop( "disabled", "disabled" );
+          $beep.prop( "disabled", "disabled" );
 
           // start the timer
           $time.everyTime( "1s", "{{ widget.full }}", function( iteration ) {
