@@ -12,5 +12,6 @@ SOURCE interview_method.sql
 SOURCE qnaire.sql
 SOURCE interview.sql
 SOURCE cedar_instance.sql
+SOURCE source.sql
 
 COMMIT;
