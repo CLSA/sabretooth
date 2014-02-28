@@ -26,7 +26,8 @@ class session extends \cenozo\business\session
   {
     parent::__construct( $arguments );
 
-    // add the opal_instance new operation to the censored list
+    // add the cedar and opal_instance new operations to the censored list
+    $this->censored_operation_list[] = 'cedar_instance_new';
     $this->censored_operation_list[] = 'opal_instance_new';
   }
 
@@ -235,8 +236,7 @@ class session extends \cenozo\business\session
       $_SESSION['slot'][$slot]['stack']['widgets'] = array();
     }
 
-    // kill the rescore, withdraw and secondary contact cookies in case they exist
-    setcookie( 'rescoring_interview', NULL, time() - 3600, COOKIE_PATH );
+    // kill the withdraw and secondary contact cookies in case they exist
     setcookie( 'withdrawing_participant', NULL, time() - 3600, COOKIE_PATH );
     setcookie( 'secondary_id', NULL, time() - 3600, COOKIE_PATH );
     setcookie( 'secondary_participant_id', NULL, time() - 3600, COOKIE_PATH );

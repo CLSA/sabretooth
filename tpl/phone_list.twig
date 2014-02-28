@@ -19,7 +19,7 @@
           icons: { primary: "ui-icon-person" }
         } ).click( function() {
           var args = new Object();
-          var id_string = $(this).attr( "id" );
+          var id_string = $(this).prop( "id" );
           args.phone_id = parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) );
           // place the call and refresh the status widget
           if( ajax_push( "phone_call", "begin", args ) )

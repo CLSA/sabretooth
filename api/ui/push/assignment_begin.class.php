@@ -145,6 +145,7 @@ class assignment_begin extends \cenozo\ui\push
         $db_interview = lib::create( 'database\interview' );
         $db_interview->participant_id = $db_participant->id;
         $db_interview->qnaire_id = $db_effective_qnaire->id;
+        $db_interview->interview_method_id = $db_effective_qnaire->get_interview_method()->id;
 
         // Even though we have made sure this interview isn't a duplicate, it seems to happen from
         // time to time anyway, so catch it and tell the operator to try requesting the assignment

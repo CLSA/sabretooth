@@ -14,7 +14,7 @@
     $( function() {
       // make button icons
       {% if webphone %}
-        $( "#{{ widget.full }}_webphone" ).button( {
+        $( "#{{ widget.full }}__webphone" ).button( {
           text: false,
           icons: {
             primary: "ui-icon-power"
@@ -37,7 +37,7 @@
       {% endif %}
       
       {% if dialpad %}
-        $( "#{{ widget.full }}_dialpad" ).button( {
+        $( "#{{ widget.full }}__dialpad" ).button( {
           text: false,
           icons: {
             primary: "ui-icon-person"
@@ -57,7 +57,7 @@
       {% endif %}
       
       {% if prerecruit and participant_id %}
-        $( "#{{ widget.full }}_prerecruit" ).button( {
+        $( "#{{ widget.full }}__prerecruit" ).button( {
           text: false,
           icons: {
             primary: "ui-icon-flag"
@@ -77,7 +77,7 @@
       {% endif %}
       
       {% if timer %}
-        $( "#{{ widget.full }}_timer" ).button( {
+        $( "#{{ widget.full }}__timer" ).button( {
           text: false,
           icons: {
             primary: "ui-icon-clock"
@@ -97,7 +97,7 @@
       {% endif %}
       
       {% if calculator %}
-        $( "#{{ widget.full }}_calculator" ).button( {
+        $( "#{{ widget.full }}__calculator" ).button( {
           text: false,
           icons: {
             primary: "ui-icon-calculator"
@@ -116,7 +116,7 @@
       {% endif %}
       
       {% if timezone_calculator %}
-        $( "#{{ widget.full }}_timezone_calculator" ).button( {
+        $( "#{{ widget.full }}__timezone_calculator" ).button( {
           text: false,
           icons: {
             primary: "ui-icon-contact"
@@ -135,14 +135,14 @@
       {% endif %}
       
       {% if navigation %}
-        $( "#{{ widget.full }}_prev" ).button( {
+        $( "#{{ widget.full }}__prev" ).button( {
           text: false,
           icons: {
             primary: "ui-icon-arrowthick-1-w" }
         } ).click( function() {
           slot_prev( "main" );
         } );
-        $( "#{{ widget.full }}_next" ).button( {
+        $( "#{{ widget.full }}__next" ).button( {
           text: false,
           icons: {
             primary: "ui-icon-arrowthick-1-e"
@@ -153,7 +153,7 @@
       {% endif %}
       
       {% if home %}
-        $( "#{{ widget.full }}_home" ).button( {
+        $( "#{{ widget.full }}__home" ).button( {
           text: false,
           icons: {
             primary: "ui-icon-home"
@@ -163,7 +163,7 @@
         } );
       {% endif %}
 
-      $( "#{{ widget.full }}_font_down" ).button( {
+      $( "#{{ widget.full }}__font_down" ).button( {
         text: false,
         icons: {
           primary: "ui-icon-minus"
@@ -171,7 +171,7 @@
       } ).click( function() {
       } ).fontscale( "body", "down" );
 
-      $( "#{{ widget.full }}_font_up" ).button( {
+      $( "#{{ widget.full }}__font_up" ).button( {
         text: false,
         icons: {
           primary: "ui-icon-plus"
@@ -189,36 +189,36 @@
   <span>
     <span>
       {% if webphone %}
-        <button id="{{ widget.full }}_webphone">start web phone</button>
+        <button id="{{ widget.full }}__webphone">start web phone</button>
       {% endif %}
       {% if dialpad %}
-        <button id="{{ widget.full }}_dialpad">dialing pad</button>
+        <button id="{{ widget.full }}__dialpad">dialing pad</button>
       {% endif %}
     </span>
     <span>
       {% if prerecruit and participant_id %}
-        <button id="{{ widget.full }}_prerecruit">pre-recruit selection</button>
+        <button id="{{ widget.full }}__prerecruit">pre-recruit selection</button>
       {% endif %}
       {% if timer %}
-        <button id="{{ widget.full }}_timer">timer</button>
+        <button id="{{ widget.full }}__timer">timer</button>
       {% endif %}
       {% if calculator %}
-        <button id="{{ widget.full }}_calculator">calculator</button>
+        <button id="{{ widget.full }}__calculator">calculator</button>
       {% endif %}
       {% if timezone_calculator %}
-        <button id="{{ widget.full }}_timezone_calculator">timezone calculator</button>
+        <button id="{{ widget.full }}__timezone_calculator">timezone calculator</button>
       {% endif %}
     </span>
     {% if navigation %}
       <span>
-        <button id="{{ widget.full }}_prev">back</button>
-        <button id="{{ widget.full }}_next">forward</button>
+        <button id="{{ widget.full }}__prev">back</button>
+        <button id="{{ widget.full }}__next">forward</button>
       </span>
     {% endif %}
-    {% if home %}<button id="{{ widget.full }}_home">home</button>{% endif %}
+    {% if home %}<button id="{{ widget.full }}__home">home</button>{% endif %}
     <span>
-      <button id="{{ widget.full }}_font_down">smaller font</button>
-      <button id="{{ widget.full }}_font_up">larger font</button>
+      <button id="{{ widget.full }}__font_down">smaller font</button>
+      <button id="{{ widget.full }}__font_up">larger font</button>
     </span>
   </span>
 

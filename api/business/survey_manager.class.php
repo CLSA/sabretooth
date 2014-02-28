@@ -35,24 +35,7 @@ class survey_manager extends \cenozo\singleton
   {
     $session = lib::create( 'business\session' );
 
-    if( array_key_exists( 'rescoring_interview', $_COOKIE ) )
-    {
-      // get the interview being rescored
-      $db_interview = lib::create( 'database\interview', $_COOKIE['rescoring_interview'] );
-      if( is_null( $db_interview ) ) return false;
-
-      // determine the current sid and token
-      $sid = $this->get_current_sid();
-      $token = $this->get_current_token();
-      if( false === $sid || false == $token ) return false;
-      
-      // determine which language to use
-      $lang = $db_interview->get_participant()->language;
-      if( !$lang ) $lang = 'en';
-      
-      return LIMESURVEY_URL.sprintf( '/index.php?sid=%s&lang=%s&token=%s&newtest=Y', $sid, $lang, $token );
-    }
-    else if( array_key_exists( 'secondary_id', $_COOKIE ) )
+    if( array_key_exists( 'secondary_id', $_COOKIE ) )
     {
       // get the participant being sourced
       $db_participant = lib::create( 'database\participant', $_COOKIE['secondary_participant_id'] );
@@ -163,51 +146,7 @@ class survey_manager extends \cenozo\singleton
     $session = lib::create( 'business\session' );
     $setting_manager = lib::create( 'business\setting_manager' );
 
-    if( array_key_exists( 'rescoring_interview', $_COOKIE ) &&
-        'operator' != $session->get_role()->name )
-    {
-      // get the interview being rescored
-      $db_interview = lib::create( 'database\interview', $_COOKIE['rescoring_interview'] );
-      if( is_null( $db_interview ) )
-      {
-        log::warning( 'Tried to determine survey information for an invalid interview.' );
-        return false;
-      }
-
-      $db_participant = $db_interview->get_participant();
-
-      $sid = $db_interview->get_qnaire()->rescore_sid;
-      $token = $tokens_class_name::determine_token_string( $db_interview );
-
-      // now add the token if it doesn't exist yet
-      $tokens_class_name::set_sid( $sid );
-
-      $tokens_mod = lib::create( 'database\modifier' );
-      $tokens_mod->where( 'token', '=', $token );
-      $db_tokens = current( $tokens_class_name::select( $tokens_mod ) );
-
-      if( false === $db_tokens )
-      { // token not found, create it
-        $db_tokens = lib::create( 'database\limesurvey\tokens' );
-        $db_tokens->token = $token;
-        $db_tokens->firstname = $db_participant->first_name;
-        $db_tokens->lastname = $db_participant->last_name;
-        $db_tokens->update_attributes( $db_participant );
-        $db_tokens->save();
-      }
-      else if( 'N' != $db_tokens->completed )
-      { // rescoring is complete
-        $db_interview->rescored = 'Yes';
-      }
-
-      // save whatever rescoring state we set above
-      $db_interview->save();
-
-      // the rescoring survey can be brought back up after it is complete, so always set these
-      $this->current_sid = $sid;
-      $this->current_token = $token;
-    }
-    else if( array_key_exists( 'secondary_id', $_COOKIE ) )
+    if( array_key_exists( 'secondary_id', $_COOKIE ) )
     {
       // get the participant being sourced
       $db_participant = lib::create( 'database\participant', $_COOKIE['secondary_participant_id'] );

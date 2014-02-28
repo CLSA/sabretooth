@@ -10,17 +10,6 @@
 {% block javascript %}
   {{ parent() }}
   <script type="text/javascript">
-    {% if allow_rescore %}
-      $( function() {
-        // rescore button
-        $( "#{{ widget.full }}__rescore" ).click( function() {
-          $.cookie( "rescoring_interview", "{{ id }}" );
-          window.location.reload();
-          slot_load( {{ slot }}, 'interview', 'rescore', { id: {{ id }} } );
-        } );
-      } );
-    {% endif %}
-  
     $( function() {
       // view participant details
       $( "#{{ widget.full }}__view_participant" ).click( function() {

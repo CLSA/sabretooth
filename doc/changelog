@@ -1,4 +1,21 @@
 ====================================================================================================
+1.3.1
+====================================================================================================
+
+* Removing defunct interview rescoring
+
+* Cedar integration completed
+  - There is now an option to add a "Cedar Instance" to Sabretooth
+  - Cedar instances gain access to all interview recordings
+
+* Adding source management
+  - added additional option for source's participants to override quota restrictions
+
+* Greatly improved performance of CSV report output type
+  - replaced internal library for generating CSV files with native code
+  - reports generation time no longer scales linearly with the number of rows
+
+====================================================================================================
 1.3.0
 ====================================================================================================
 

@@ -662,8 +662,8 @@ class queue extends \cenozo\database\record
             }
             else
             {
-              // Make sure there is no unassigned appointment.  By design there can only be one of per
-              // participant, so if the appointment is null then the participant has no pending
+              // Make sure there is no unassigned appointment.  By design there can only be one of
+              // per participant, so if the appointment is null then the participant has no pending
               // appointments.
               $parts['join'][] =
                 'LEFT JOIN appointment '.
@@ -680,6 +680,7 @@ class queue extends \cenozo\database\record
                 $parts['where'][] = 'quota_state.disabled = true';
                 // and who are not marked to override quota
                 $parts['where'][] = 'participant_override_quota = false';
+                $parts['where'][] = 'source_override_quota = false';
               }
               else
               {
@@ -687,7 +688,8 @@ class queue extends \cenozo\database\record
                 $parts['where'][] =
                   '( quota_state.disabled IS NULL OR '.
                     'quota_state.disabled = false OR '.
-                    'participant_override_quota = true )';
+                    'participant_override_quota = true OR '.
+                    'source_override_quota = true )';
                 
                 if( 'outside calling time' == $queue )
                 {
@@ -1022,6 +1024,7 @@ participant.gender AS participant_gender,
 participant.age_group_id AS participant_age_group_id,
 participant.state_id AS participant_state_id,
 participant.override_quota AS participant_override_quota,
+source.override_quota AS source_override_quota,
 service_has_participant.preferred_site_id AS service_has_participant_preferred_site_id,
 primary_region.id AS primary_region_id,
 primary_region_site.site_id primary_region_site_id,
@@ -1062,6 +1065,8 @@ JOIN service_has_participant
 ON participant.id = service_has_participant.participant_id
 AND service_has_participant.datetime IS NOT NULL
 AND service_id = %s
+JOIN source
+ON participant.source_id = source.id
 LEFT JOIN person_primary_address
 ON participant.person_id = person_primary_address.person_id
 LEFT JOIN address AS primary_address
