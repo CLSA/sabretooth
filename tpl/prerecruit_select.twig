@@ -45,7 +45,7 @@
         args.totals = new Object();
         args.identifier = "";
         $( "#{{ widget.full }}__form :input" ).each( function() {
-          var id_string = $(this).attr( "id" );
+          var id_string = $(this).prop( "id" );
           var quota_id = id_string.substring( id_string.lastIndexOf('__') + 2 );
           args.totals['quota'+quota_id] = $(this).val();
         } );

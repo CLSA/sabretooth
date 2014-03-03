@@ -32,7 +32,7 @@
             $( "tr.{{ widget.full }}__repeat_weekly" ).hide();
             $( "tr.{{ widget.full }}__repeat_monthly" ).show();
           } else { // put back the drop-down
-            $(this).val( "weekly" ).attr( "selected", true );
+            $(this).val( "weekly" ).prop( "selected", true );
           }
         }
         else { // put back the old markup
@@ -43,7 +43,7 @@
             $( "tr.{{ widget.full }}__repeat_monthly" ).hide();
             $( "tr.{{ widget.full }}__repeat_weekly" ).show();
           } else { // put back the drop-down
-            $(this).val( "monthly" ).attr( "selected", true );
+            $(this).val( "monthly" ).prop( "selected", true );
           }
         }
       } );
@@ -60,8 +60,8 @@
 
       // day of week checkbox changed
       $( "input.{{ widget.full }}__repeat_on" ).change( function() {
-        var day = $(this).attr( "name" );
-        var checked = $(this).attr( "checked" ) ? 1 : 0;
+        var day = $(this).prop( "name" );
+        var checked = $(this).prop( "checked" ) ? 1 : 0;
         var args = new Object();
         args.id = {{ id }};
         var columns = new Object();

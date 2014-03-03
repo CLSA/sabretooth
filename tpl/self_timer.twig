@@ -53,9 +53,9 @@
 
         if( "Stop" == $(this).html() ) {
           // re-enable controls and rename button
-          $type.removeAttr( "disabled" );
-          $duration.removeAttr( "disabled" );
-          $beep.removeAttr( "disabled" );
+          $type.prop( "disabled", false );
+          $duration.prop( "disabled", false );
+          $beep.prop( "disabled", false );
           $time.stopTime( "{{ widget.full }}" );
           $(this).html( "Start" );
         } else {
@@ -63,9 +63,9 @@
           $time.html( "up" == $type.val() ? 0 : $duration.val() );
 
           // disable the timer settings
-          $type.attr( "disabled", "disabled" );
-          $duration.attr( "disabled", "disabled" );
-          $beep.attr( "disabled", "disabled" );
+          $type.prop( "disabled", true );
+          $duration.prop( "disabled", true );
+          $beep.prop( "disabled", true );
 
           // start the timer
           $time.everyTime( "1s", "{{ widget.full }}", function( iteration ) {
@@ -81,10 +81,10 @@
                 "volume": $( "#{{ widget.full }}__volume" ).val() } );
 
             // re-enable controls and rename button
-            $type.removeAttr( "disabled" );
-            $duration.removeAttr( "disabled" );
-            $beep.removeAttr( "disabled" );
-            $time.stopTime( "{{ widget.full }}" );
+            $type.prop( "disabled", false );
+            $duration.prop( "disabled", false );
+            $beep.prop( "disabled", false );
+            $time.stopTime( "{widget.full}" );
             $( "#{{ widget.full }}__start" ).html( "Start" );
           } );
         }

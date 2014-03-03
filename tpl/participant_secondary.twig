@@ -25,13 +25,13 @@
         } );
 
         // on a call, so disable the "done" button
-        $( "#{{ widget.full }}_back" ).attr( "disabled", "true" );
+        $( "#{{ widget.full }}_back" ).prop( "disabled", "true" );
       {% endif %}
 
       // phone call buttons
       $( "button.{{ widget.full }}__connect" ).click( function() {
         var args = new Object();
-        var id_string = $(this).attr( "id" );
+        var id_string = $(this).prop( "id" );
         var id = parseInt( id_string.substring( id_string.lastIndexOf("_") + 1 ) );
         var first_name = $( "#{{ widget.full }}__first_name_" + id ).val();
         var last_name = $( "#{{ widget.full }}__last_name_" + id ).val();

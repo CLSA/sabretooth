@@ -4,7 +4,7 @@
  # A recursive template which builds a tree widget.
  # @author Patrick Emond <emondpd@mcmaster.ca>
  #}
-<li id="{{ widget.full }}__{{ node.id }}" {{ node.open ? 'class="jstree-open"' : '' }}>
+<li id="{{ widget.full }}__{{ node.id }}">
   {% if node.rank is defined %}
     <span class="title">Q{{ node.rank }}: {{ node.title }}
   {% else %}

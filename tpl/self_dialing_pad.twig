@@ -11,7 +11,7 @@
   <script type="text/javascript">
     $( function() {
       $( "#{{ widget.full }}_widget" ).find( "button" ).click( function() {
-        var id = $(this).attr( "id" );
+        var id = $(this).prop( "id" );
         
         if( "hangup" == id ) {
           if( ajax_push( "phone_call", "end" ) )
