@@ -44,15 +44,11 @@ class interview_edit extends \cenozo\ui\push\base_edit
       $grand_parent::execute();
 
       // force complete the interview or throw a notice (we cannot un-complete)
-      if( 1 == $columns['completed'] )
-      {
-        $this->get_record()->force_complete();
+      if( 1 == $columns['completed'] ) $this->get_record()->force_complete();
+      else $this->get_record()->force_uncomplete();
 
-        // now update the queue
-        $this->get_record()->get_participant()->update_queue_status();
-      }
-      else throw lib::create( 'exception\notice',
-        'Interviews cannot be un-completed.', __METHOD__ );
+      // now update the queue
+      $this->get_record()->get_participant()->update_queue_status();
     }
     else
     {

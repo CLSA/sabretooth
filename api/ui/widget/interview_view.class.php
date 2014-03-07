@@ -44,7 +44,7 @@ class interview_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'qnaire', 'constant', 'Questionnaire' );
     $this->add_item( 'interview_method_id', 'enum', 'Interview Method' );
     $this->add_item( 'completed', 'boolean', 'Completed',
-      'Warning: force-completing an interview cannot be undone!' );
+      'Warning: changing this cannot be undone!' );
 
     // create the assignment sub-list widget      
     $this->assignment_list = lib::create( 'ui\widget\assignment_list', $this->arguments );
