@@ -41,7 +41,7 @@ class qnaire_add extends \cenozo\ui\widget\base_view
     // define all columns defining this record
     $this->add_item( 'name', 'string', 'Name' );
     $this->add_item( 'rank', 'enum', 'Rank' );
-    $this->add_item( 'interview_method_id', 'enum', 'Default Interview Method' );
+    $this->add_item( 'default_interview_method_id', 'enum', 'Default Interview Method' );
     $this->add_item( 'prev_qnaire_id', 'enum', 'Previous Questionnaire',
       'The questionnaire which must be finished before this one begins.' );
     $this->add_item( 'delay', 'number', 'Delay (weeks)',
@@ -92,8 +92,8 @@ class qnaire_add extends \cenozo\ui\widget\base_view
     // set the view's items
     $this->set_item( 'name', '', true );
     $this->set_item( 'rank', $last_rank_key, true, $ranks );
-    $this->set_item(
-      'interview_method_id', key( $interview_methods ), true, $interview_methods );
+    $this->set_item( 'default_interview_method_id',
+      key( $interview_methods ), true, $interview_methods );
     $this->set_item( 'prev_qnaire_id', NULL, false, $qnaires );
     $this->set_item( 'delay', 52, true );
     $this->set_item( 'withdraw_sid', key( $surveys ), true, $surveys );

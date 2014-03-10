@@ -512,6 +512,13 @@ SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "widget" AND subject = "interview" AND operation.name = "view"
 AND role.name IN( "administrator", "curator", "helpline", "supervisor", "typist" );
 
+-- interview_method
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "interview_method" AND operation.name = "list"
+AND role.name IN( "administrator" );
+
 -- mailout_required
 
 INSERT INTO role_has_operation( role_id, operation_id )
@@ -913,6 +920,11 @@ AND role.name IN ( "administrator" );
 
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "qnaire" AND operation.name = "add_interview_method"
+AND role.name IN ( "administrator" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "widget" AND subject = "qnaire" AND operation.name = "add_phase"
 AND role.name IN ( "administrator" );
 
@@ -929,6 +941,11 @@ AND role.name IN ( "administrator" );
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "push" AND subject = "qnaire" AND operation.name = "delete_event_type"
+AND role.name IN ( "administrator" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "push" AND subject = "qnaire" AND operation.name = "delete_interview_method"
 AND role.name IN ( "administrator" );
 
 INSERT INTO role_has_operation( role_id, operation_id )
@@ -959,6 +976,11 @@ AND role.name IN ( "administrator" );
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "push" AND subject = "qnaire" AND operation.name = "new_event_type"
+AND role.name IN ( "administrator" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "push" AND subject = "qnaire" AND operation.name = "new_interview_method"
 AND role.name IN ( "administrator" );
 
 INSERT INTO role_has_operation( role_id, operation_id )

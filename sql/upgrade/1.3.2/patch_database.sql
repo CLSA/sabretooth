@@ -5,5 +5,7 @@ SET AUTOCOMMIT=0;
 SOURCE operation.sql
 SOURCE role_has_operation.sql
 SOURCE jurisdiction.sql
+SOURCE qnaire.sql
+SOURCE qnaire_has_interview_method.sql
 
 COMMIT;

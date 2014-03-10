@@ -44,4 +44,19 @@ class qnaire_new extends \cenozo\ui\push\base_new
       throw lib::create( 'exception\notice',
         'The questionnaire\'s name cannot be left blank.', __METHOD__ );
   }
+
+  /**
+   * Finishes the operation with any post-execution instructions that may be necessary.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function finish()
+  {
+    parent::finish();
+
+    // add default interview method to the qnaire
+    $this->get_record()->add_interview_method(
+      array( $this->get_record()->default_interview_method_id ) );
+  }
 }

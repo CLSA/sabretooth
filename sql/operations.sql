@@ -125,6 +125,10 @@ VALUES( "widget", "interview", "list", true, "Lists interviews." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "interview", "view", true, "View interview details." );
 
+-- interview_method
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "interview_method", "list", true, "Lists interviews." );
+
 -- mailout_required
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "mailout_required", "report", true, "Download a new mailout required report." );
@@ -229,6 +233,8 @@ VALUES( "widget", "qnaire", "add", true, "View a form for creating a new questio
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "qnaire", "add_event_type", true, "A form to add an event type to a qnaire." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "qnaire", "add_interview_method", true, "A form to add new interview methods to a qnaire." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "qnaire", "add_phase", true, "View surveys to add as a new phase to a questionnaire." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "qnaire", "add_source_withdraw", true, "A form to add a new source-specific withdraw survey to the questionnaire." );
@@ -236,6 +242,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "qnaire", "delete", true, "Removes a questionnaire from the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "qnaire", "delete_event_type", true, "Remove a qnaire's event type." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "qnaire", "delete_interview_method", true, "Remove interview methods from a questionnaire." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "qnaire", "delete_phase", true, "Remove phases from a questionnaire." );
 INSERT INTO operation( type, subject, name, restricted, description )
@@ -248,6 +256,8 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "qnaire", "new", true, "Add a new questionnaire to the system." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "qnaire", "new_event_type", true, "Add an event type to a qnaire." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "qnaire", "new_interview_method", true, "Add an interview method to a qnaire." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "qnaire", "view", true, "View a questionnaire's details." );
 

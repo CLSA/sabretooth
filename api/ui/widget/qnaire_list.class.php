@@ -69,7 +69,7 @@ class qnaire_list extends \cenozo\ui\widget\base_list
       $this->add_row( $record->id,
         array( 'name' => $record->name,
                'rank' => $record->rank,
-               'interview_method.name' => $record->get_interview_method()->name,
+               'interview_method.name' => $record->get_default_interview_method()->name,
                'prev_qnaire' => $prev_qnaire,
                'delay' => $record->delay,
                'phases' => $record->get_phase_count() ) );

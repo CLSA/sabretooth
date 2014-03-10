@@ -47,3 +47,19 @@ VALUES( "push", "jurisdiction", "new", true,
 INSERT IGNORE INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "jurisdiction", "view", true,
 "View an association between a postcode and a site." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "interview_method", "list", true,
+"Lists interviews." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "qnaire", "add_interview_method", true,
+"A form to add new interview methods to a qnaire." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "qnaire", "delete_interview_method", true,
+"Remove interview methods from a questionnaire." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "qnaire", "new_interview_method", true,
+"Add an interview method to a qnaire." );
