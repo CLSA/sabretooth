@@ -44,9 +44,15 @@ class appointment_new extends \cenozo\ui\push\base_new
     if( !array_key_exists( 'datetime', $columns ) || 0 == strlen( $columns['datetime'] ) )
       throw lib::create( 'exception\notice', 'The date/time cannot be left blank.', __METHOD__ );
     
-    // make sure the participant has a qnaire to answer
     $db_participant = lib::create( 'database\participant', $columns['participant_id'] );
-    if( is_null( $db_participant->get_effective_qnaire() ) )
+    $db_qnaire = $db_participant->get_effective_qnaire();
+    $db_interview = $interview_class_name::get_unique_record(
+      array( 'participant_id', 'qnaire_id' ),
+      array( $db_participant->id, $db_qnaire->id ) );
+    $this->db_interview_method = $db_interview->get_interview_method();
+
+    // make sure the participant has a qnaire to answer
+    if( is_null( $db_qnaire ) )
     {
       throw lib::create( 'exception\notice',
         'Unable to create an appointment because the participant has completed all questionnaires.',
@@ -54,32 +60,35 @@ class appointment_new extends \cenozo\ui\push\base_new
     }
     else if( !$this->get_argument( 'force', false ) )
     {
-      // validate the appointment time
-      $this->get_record()->participant_id = $columns['participant_id'];
-      $this->get_record()->datetime = $columns['datetime'];
-      $this->get_record()->type = $columns['type'];
-      if( !$this->get_record()->validate_date() )
+      // validate the appointment time if the interview is operator-based
+      if( 'operator' == $this->db_interview_method->name )
       {
-        $db_site = $db_participant->get_effective_site();
+        $this->get_record()->participant_id = $columns['participant_id'];
+        $this->get_record()->datetime = $columns['datetime'];
+        $this->get_record()->type = $columns['type'];
+        if( !$this->get_record()->validate_date() )
+        {
+          $db_site = $db_participant->get_effective_site();
 
-        // determine the full and half appointment intervals
-        $setting_manager = lib::create( 'business\setting_manager' );
-        $half_duration = $setting_manager->get_setting( 'appointment', 'half duration', $db_site );
-        $full_duration = $setting_manager->get_setting( 'appointment', 'full duration', $db_site );
-        $duration = 'full' == $this->get_record()->type ? $full_duration : $half_duration;
+          // determine the full and half appointment intervals
+          $setting_manager = lib::create( 'business\setting_manager' );
+          $half_duration = $setting_manager->get_setting( 'appointment', 'half duration', $db_site );
+          $full_duration = $setting_manager->get_setting( 'appointment', 'full duration', $db_site );
+          $duration = 'full' == $this->get_record()->type ? $full_duration : $half_duration;
 
-        $start_datetime_obj = util::get_datetime_object( $this->get_record()->datetime );
-        $end_datetime_obj = clone $start_datetime_obj;
-        $end_datetime_obj->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
-        throw lib::create( 'exception\notice',
-          sprintf(
-            'Unable to create a %s appointment (%d minutes) since there is not '.
-            'at least 1 slot available from %s and %s.',
-            $this->get_record()->type,
-            $duration,
-            $start_datetime_obj->format( 'H:i' ),
-            $end_datetime_obj->format( 'H:i' ) ),
-          __METHOD__ );
+          $start_datetime_obj = util::get_datetime_object( $this->get_record()->datetime );
+          $end_datetime_obj = clone $start_datetime_obj;
+          $end_datetime_obj->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
+          throw lib::create( 'exception\notice',
+            sprintf(
+              'Unable to create a %s appointment (%d minutes) since there is not '.
+              'at least 1 slot available from %s and %s.',
+              $this->get_record()->type,
+              $duration,
+              $start_datetime_obj->format( 'H:i' ),
+              $end_datetime_obj->format( 'H:i' ) ),
+            __METHOD__ );
+        }
       }
     }
   }
@@ -97,4 +106,11 @@ class appointment_new extends \cenozo\ui\push\base_new
     // if the owner is a participant then update their queue status
     $this->get_record()->get_participant()->update_queue_status();
   }
+
+  /**
+   * The participant's current interview's interview method (cached)
+   * @var database\interview_method
+   * @access private
+   */
+  private $db_interview_method = NULL;
 }

@@ -43,10 +43,21 @@ class appointment_edit extends \cenozo\ui\push\base_edit
 
     if( array_key_exists( 'datetime', $columns ) )
     {
-      $this->get_record()->datetime = $columns['datetime'];
-      if( !$this->get_record()->validate_date() )
-        throw lib::create( 'exception\notice',
-          'There are no operators available during that time.', __METHOD__ );
+      $db_participant = $this->get_record()->get_participant();
+      $db_qnaire = $db_participant->get_effective_qnaire();
+      $db_interview = $interview_class_name::get_unique_record(
+        array( 'participant_id', 'qnaire_id' ),
+        array( $db_participant->id, $db_qnaire->id ) );
+      $this->db_interview_method = $db_interview->get_interview_method();
+
+      // validate the appointment time if the interview is operator-based
+      if( 'operator' == $this->db_interview_method->name )
+      {
+        $this->get_record()->datetime = $columns['datetime'];
+        if( !$this->get_record()->validate_date() )
+          throw lib::create( 'exception\notice',
+            'There are no operators available during that time.', __METHOD__ );
+      }
     }
   }
 
@@ -63,4 +74,11 @@ class appointment_edit extends \cenozo\ui\push\base_edit
     // if the owner is a participant then update their queue status
     $this->get_record()->get_participant()->update_queue_status();
   }
+
+  /**
+   * The participant's current interview's interview method (cached)
+   * @var database\interview_method
+   * @access private
+   */
+  private $db_interview_method = NULL;
 }
