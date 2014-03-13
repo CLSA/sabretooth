@@ -46,7 +46,7 @@ class cedar_instance_view extends \cenozo\ui\widget\base_view
     // create the activity sub-list widget
     $this->activity_list = lib::create( 'ui\widget\activity_list', $this->arguments );
     $this->activity_list->set_parent( $this );
-    $this->activity_list->set_heading( 'Onyx instance activity' );
+    $this->activity_list->set_heading( 'Cedar instance activity' );
   }
 
   /**
