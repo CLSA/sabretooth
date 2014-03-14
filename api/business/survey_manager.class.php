@@ -142,6 +142,7 @@ class survey_manager extends \cenozo\singleton
     $source_withdraw_class_name = lib::get_class_name( 'database\source_withdraw' );
     $source_survey_class_name = lib::get_class_name( 'database\source_survey' );
     $event_type_class_name = lib::get_class_name( 'database\event_type' );
+    $interview_class_name = lib::get_class_name( 'database\interview' );
 
     $session = lib::create( 'business\session' );
     $setting_manager = lib::create( 'business\setting_manager' );
@@ -155,6 +156,11 @@ class survey_manager extends \cenozo\singleton
         log::warning( 'Tried to determine survey information for an invalid participant.' );
         return false;
       }
+
+      $db_assignment = $db_participant->get_current_assignment();
+      if( is_null( $db_assignment ) )
+        $db_assignment = $db_participant->get_last_finished_assignment();
+      $db_interview = is_null( $db_assignment ) ? NULL : $db_assignment->get_interview();
 
       $sid = $setting_manager->get_setting( 'general', 'secondary_survey' );
       $token = $_COOKIE['secondary_id'];
@@ -179,7 +185,7 @@ class survey_manager extends \cenozo\singleton
       // fill in the attributes
       $db_surveys = lib::create( 'database\limesurvey\surveys', $sid );
       foreach( $db_surveys->get_token_attribute_names() as $key => $value )
-        $db_tokens->$key = static::get_attribute( $db_participant, $value );
+        $db_tokens->$key = static::get_attribute( $db_participant, $db_interview, $value );
 
       $db_tokens->save();
 
@@ -198,8 +204,17 @@ class survey_manager extends \cenozo\singleton
         return false;
       }
 
+      // get the current qnaire and interview
       $db_qnaire = $db_participant->get_effective_qnaire();
-      if( is_null( $db_qnaire ) )
+      $db_interview = NULL;
+      if( !is_null( $db_qnaire ) )
+      {
+        $db_interview = $interview_class_name::get_unique_record(
+          array( 'participant_id', 'qnaire_id' ),
+          array( $db_participant->id, $db_qnaire->id )
+        );
+      }
+      else
       { // finished all qnaires, find the last one completed
         $db_assignment = $db_participant->get_last_finished_assignment();
         if( is_null( $db_assignment ) )
@@ -207,7 +222,8 @@ class survey_manager extends \cenozo\singleton
                              'Trying to withdraw participant without a questionnaire.',
                              __METHOD__ );
 
-        $db_qnaire = $db_assignment->get_interview()->get_qnaire();
+        $db_interview = $db_assignment->get_interview();
+        $db_qnaire = $db_interview->get_qnaire();
       }
 
       // let the tokens record class know which SID we are dealing with by checking if
@@ -236,7 +252,7 @@ class survey_manager extends \cenozo\singleton
 
         // fill in the attributes
         foreach( $db_surveys->get_token_attribute_names() as $key => $value )
-          $db_tokens->$key = static::get_attribute( $db_participant, $value );
+          $db_tokens->$key = static::get_attribute( $db_participant, $db_interview, $value );
 
         $db_tokens->save();
 
@@ -374,7 +390,7 @@ class survey_manager extends \cenozo\singleton
           // fill in the attributes
           $db_surveys = lib::create( 'database\limesurvey\surveys', $sid );
           foreach( $db_surveys->get_token_attribute_names() as $key => $value )
-            $db_tokens->$key = static::get_attribute( $db_participant, $value );
+            $db_tokens->$key = static::get_attribute( $db_participant, $db_interview, $value );
 
           $db_tokens->save();
 
@@ -430,7 +446,7 @@ class survey_manager extends \cenozo\singleton
               // fill in the attributes
               $db_surveys = lib::create( 'database\limesurvey\surveys', $sid );
               foreach( $db_surveys->get_token_attribute_names() as $key => $value )
-                $db_tokens->$key = static::get_attribute( $db_participant, $value );
+                $db_tokens->$key = static::get_attribute( $db_participant, $db_interview, $value );
 
               // TODO: this is temporary code to fix the TOKEN != "NO" problem in limesurvey
               //       for survey 72154
@@ -482,11 +498,12 @@ class survey_manager extends \cenozo\singleton
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant
+   * @param database\interview $db_interview The participant's current interview (may be set to null)
    * @param string $key The name of the attribute to return.
    * @return mixed
    * @access public
    */
-  public static function get_attribute( $db_participant, $key )
+  public static function get_attribute( $db_participant, $db_interview, $key )
   {
     $value = NULL;
 
@@ -544,7 +561,11 @@ class survey_manager extends \cenozo\singleton
     {
       // if this is the participant's first assignment copy the date of birth from Opal
       // (if it exists)
-      $db_interview = lib::create( 'business\session')->get_current_assignment()->get_interview();
+      if( is_null( $db_interview ) )
+        throw lib::create( 'exception\runtime',
+          sprintf( 'Can\'t provide survey attribute "%s" without an interview record', $key ),
+          __METHOD__ );
+
       $phase_mod = lib::create( 'database\modifier' );
       $phase_mod->where( 'rank', '=', 1 );
       $phase_list = $db_interview->get_qnaire()->get_phase_list( $phase_mod );
@@ -761,7 +782,11 @@ class survey_manager extends \cenozo\singleton
       $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
       $source_survey_class_name = lib::get_class_name( 'database\source_survey' );
       
-      $db_interview = lib::create( 'business\session')->get_current_assignment()->get_interview();
+      if( is_null( $db_interview ) )
+        throw lib::create( 'exception\runtime',
+          sprintf( 'Can\'t provide survey attribute "%s" without an interview record', $key ),
+          __METHOD__ );
+
       $phase_mod = lib::create( 'database\modifier' );
       $phase_mod->where( 'rank', '=', 1 );
       $phase_list = $db_interview->get_qnaire()->get_phase_list( $phase_mod );
@@ -879,12 +904,16 @@ class survey_manager extends \cenozo\singleton
     }
     else if( 'previously completed' == $key )
     {
+      if( is_null( $db_interview ) )
+        throw lib::create( 'exception\runtime',
+          sprintf( 'Can\'t provide survey attribute "%s" without an interview record', $key ),
+          __METHOD__ );
+
       $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-      $interview_id = lib::create( 'business\session')->get_current_assignment()->interview_id;
 
       // no need to set the token sid since it should already be set before calling this method
       $tokens_mod = lib::create( 'database\modifier' );
-      $tokens_mod->where( 'token', 'like', $interview_id.'_%' );
+      $tokens_mod->where( 'token', 'like', $db_interview->id.'_%' );
       $tokens_mod->where( 'completed', '!=', 'N' );
       $value = $tokens_class_name::count( $tokens_mod );
     }

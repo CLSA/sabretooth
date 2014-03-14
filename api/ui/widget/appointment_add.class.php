@@ -38,6 +38,13 @@ class appointment_add extends base_appointment_view
   {
     parent::prepare();
     
+    // this widget must have a parent, and it's subject must be a participant
+    if( is_null( $this->parent ) || 'participant' != $this->parent->get_subject() )
+      throw lib::create( 'exception\runtime',
+        'Appointment widget must have a parent with participant as the subject.', __METHOD__ );
+
+    $this->db_participant = lib::create( 'database\participant', $this->parent->get_record()->id );
+    
     // add items to the view
     $this->add_item( 'participant_id', 'hidden' );
     $this->add_item( 'phone_id', 'enum', 'Phone Number',
@@ -57,15 +64,8 @@ class appointment_add extends base_appointment_view
   {
     parent::setup();
     
-    // this widget must have a parent, and it's subject must be a participant
-    if( is_null( $this->parent ) || 'participant' != $this->parent->get_subject() )
-      throw lib::create( 'exception\runtime',
-        'Appointment widget must have a parent with participant as the subject.', __METHOD__ );
-
-    $db_participant = lib::create( 'database\participant', $this->parent->get_record()->id );
-    
     // determine the time difference
-    $db_address = $db_participant->get_first_address();
+    $db_address = $this->db_participant->get_first_address();
     $time_diff = is_null( $db_address ) ? NULL : $db_address->get_time_diff();
 
     // need to add the participant's timezone information as information to the date item
@@ -92,7 +92,7 @@ class appointment_add extends base_appointment_view
     $modifier->where( 'active', '=', true );
     $modifier->order( 'rank' );
     $phones = array();
-    foreach( $db_participant->get_phone_list( $modifier ) as $db_phone )
+    foreach( $this->db_participant->get_phone_list( $modifier ) as $db_phone )
       $phones[$db_phone->id] = $db_phone->rank.". ".$db_phone->number;
     
     $appointment_class_name = lib::get_class_name( 'database\appointment' );

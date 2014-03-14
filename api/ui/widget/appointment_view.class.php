@@ -38,6 +38,9 @@ class appointment_view extends base_appointment_view
   {
     parent::prepare();
     
+    $this->db_participant =
+      lib::create( 'database\participant', $this->get_record()->participant_id );
+
     // add items to the view
     $this->add_item( 'uid', 'constant', 'UID' );
     $this->add_item( 'phone_id', 'enum', 'Phone Number',
@@ -68,13 +71,11 @@ class appointment_view extends base_appointment_view
 
     parent::setup();
 
-    $db_participant = lib::create( 'database\participant', $this->get_record()->participant_id );
-  
     // determine the time difference: use the first address unless there is a phone number with
     // an address
     $db_phone = $this->get_record()->get_phone();
     $db_address = is_null( $db_phone ) ? NULL : $db_phone->get_address();
-    if( is_null( $db_address ) ) $db_address = $db_participant->get_first_address();
+    if( is_null( $db_address ) ) $db_address = $this->db_participant->get_first_address();
     $time_diff = is_null( $db_address ) ? NULL : $db_address->get_time_diff();
 
     // need to add the participant's timezone information as information to the date item
@@ -100,7 +101,7 @@ class appointment_view extends base_appointment_view
     $modifier->where( 'active', '=', true );
     $modifier->order( 'rank' );
     $phones = array();
-    foreach( $db_participant->get_phone_list( $modifier ) as $db_phone )
+    foreach( $this->db_participant->get_phone_list( $modifier ) as $db_phone )
       $phones[$db_phone->id] = $db_phone->rank.". ".$db_phone->number;
     
     if( !is_null( $db_assignment ) )
@@ -125,7 +126,7 @@ class appointment_view extends base_appointment_view
     $types = array_combine( $types, $types );
 
     // set the view's items
-    $this->set_item( 'uid', $db_participant->uid );
+    $this->set_item( 'uid', $this->db_participant->uid );
     $this->set_item( 'phone_id', $this->get_record()->phone_id, false, $phones );
     $this->set_item( 'datetime', $this->get_record()->datetime, true );
     $this->set_item( 'state', $this->get_record()->get_state(), false );
@@ -133,7 +134,7 @@ class appointment_view extends base_appointment_view
 
     // hide the calendar if requested to
     $this->set_variable( 'hide_calendar', $this->get_argument( 'hide_calendar', false ) );
-    $this->set_variable( 'participant_id', $db_participant->id );
+    $this->set_variable( 'participant_id', $this->db_participant->id );
 
     // add an action to view the participant's details
     $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'view' );

@@ -54,9 +54,26 @@ abstract class base_appointment_view extends \cenozo\ui\widget\base_view
   protected function setup()
   {
     parent::setup();
+
+    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
     
-    // set up the site calendar if editing is enabled
-    if( $this->get_editable() || 'add' == $this->get_name() )
+    // get the interview method, start by trying to get an interview
+    $db_interview_method = NULL;
+    $db_interview = NULL;
+    $db_assignment = $this->db_participant->get_current_assignment();
+      $db_assignment = $this->db_participant->get_last_finished_assignment();
+    if( !is_null( $db_assignment ) )
+    {
+      $db_interview_method = $db_assignment->get_interview()->get_interview_method();
+    }
+    else // otherwise get the default method for the first interview
+    {
+      $db_qnaire = $qnaire_class_name::get_unique_record( 'rank', 1 );
+      $db_interview_method = $db_qnaire->get_default_interview_method();
+    }
+
+    if( ( $this->get_editable() || 'add' == $this->get_name() ) &&
+        'operator' == $db_interview_method->name )
     {
       try
       {
@@ -73,4 +90,11 @@ abstract class base_appointment_view extends \cenozo\ui\widget\base_view
    * @access protected
    */
   protected $site_calendar = NULL;
+
+  /**
+   * The participant that the appointment belongs to (set by implementing classes)
+   * @var database\participant $db_participant
+   * @access protected
+   */
+  protected $db_participant = NULL;
 }
