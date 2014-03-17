@@ -55,7 +55,11 @@ class ivr_manager extends \cenozo\singleton
 
   public function set_appointment( $db_participant, $db_phone, $datetime )
   {
-    if( !$this->enabled ) return;
+    if( !$this->enabled )
+      throw lib::create( 'exception\runtime',
+        'Tried to invoke IVR method but it is not enabled.',
+        __METHOD__ );
+
     if( is_null( $this->client ) ) $this->initialize();
 
     $survey_manager = lib::create( 'business\survey_manager' );
@@ -82,6 +86,13 @@ class ivr_manager extends \cenozo\singleton
       $db_assignment = $db_participant->get_last_finished_assignment();
     $db_interview = is_null( $db_assignment ) ? NULL : $db_assignment->get_interview();
 
+    $last_datetime = util::get_datetime_object(
+      $survey_manager::get_attribute( $db_participant, $db_interview, 'last interview date' ) );
+
+    $marital_status =
+      $survey_manager::get_attribute( $db_participant, $db_interview, 'marital status' );
+    if( is_null( $marital_status ) ) $marital_status = 'UNKNOWN';
+
     // build the parameter array for the operation
     $parameters = array(
       'Id' => $db_participant->uid,
@@ -89,26 +100,41 @@ class ivr_manager extends \cenozo\singleton
       'Call_DateTime' => $datetime->format( \DateTime::ISO8601 ),
       'First_Initial' => substr( $db_participant->first_name, 0, 1 ),
       'Last_Initial' => substr( $db_participant->last_name, 0, 1 ),
-      'Last_Interview_Date' =>
-        $survey_manager::get_attribute( $db_participant, $db_interview, 'last interview date' ),
-      'CCT_PARK_TRM' => 
-        $survey_manager::get_attribute( $db_participant, $db_interview, 'CCT_PARK_TRM' ),
+      'Last_Interview_Date' => $last_datetime->format( 'Y-m-d' ),
+      'Parkinsonism' => 
+        $survey_manager::get_attribute( $db_participant, $db_interview, 'Parkinsonism' ),
       'Participant_Type' => 
         $survey_manager::get_attribute( $db_participant, $db_interview, 'cohort' ),
-      'SDC_MRTL_TRM' => 
-        $survey_manager::get_attribute( $db_participant, $db_interview, 'SDC_MRTL_TRM' ),
-      'Age' =>
-        $survey_manager::get_attribute( $db_participant, $db_interview, 'age' ),
-      'Language' =>  $db_participant->language
+      'Marital_Status' => $marital_status,
+      'Age' => $survey_manager::get_attribute( $db_participant, $db_interview, 'age' ),
+      'Language' => $db_participant->language ? $db_participant->language : 'en'
     );
 
-    // TODO: handle result
+    $header = new \SoapHeader(
+      $this->host,
+      'CustomCredentials',
+      array( 'Username' => $this->username, 'Password' => $this->password ),
+      false );
+    $this->client->__setSoapHeaders( array( $header ) );
     $result = $this->client->InsertParticipant( $parameters );
+
+    // throw an exception if there was a problem
+    $return_code = static::get_return_code( 'InsertParticipant', $result );
+    if( 0 != $return_code )
+      throw lib::create( 'exception\runtime',
+        sprintf( 'IVR service returned error code %d (%s)',
+                 $return_code,
+                 static::get_return_code_name( $return_code ) ),
+        __METHOD__ );
   }
 
   public function remove_appointment( $db_participant )
   {
-    if( !$this->enabled ) return;
+    if( !$this->enabled )
+      throw lib::create( 'exception\runtime',
+        'Tried to invoke IVR method but it is not enabled.',
+        __METHOD__ );
+
     if( is_null( $this->client ) ) $this->initialize();
 
     // build the parameter array for the operation
@@ -116,8 +142,108 @@ class ivr_manager extends \cenozo\singleton
       'Id' => $db_participant->uid
     );
 
-    // TODO: handle result
+    $header = new \SoapHeader(
+      $this->host,
+      'CustomCredentials',
+      array( 'Username' => $this->username, 'Password' => $this->password ),
+      false );
+    $this->client->__setSoapHeaders( array( $header ) );
     $result = $this->client->DeleteParticipant( $parameters );
+
+    // throw an exception if there was a problem
+    $return_code = static::get_return_code( 'DeleteParticipant', $result );
+    if( 0 != $return_code )
+      throw lib::create( 'exception\runtime',
+        sprintf( 'IVR service returned error code %d (%s)',
+                 $return_code,
+                 static::get_return_code_name( $return_code ) ),
+        __METHOD__ );
+  }
+
+  /**
+   * Get the return code from the result returned from a call to the IVR service
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $service_name
+   * @param \stdClass $result
+   * @access protected
+   * @static
+   */
+  static protected function get_return_code( $service_name, $result )
+  {
+    $result_name = $service_name.'Result';
+
+    // validate the result
+    if( !is_object( $result ) ||
+        !property_exists( $result, $result_name ) ||
+        !is_object( $result->$result_name ) ||
+        !property_exists( $result->$result_name, 'ReturnCode' ) )
+      throw lib::create( 'exception\runtime',
+        'Unexpected result from the IVR server.',
+        __METHOD__ );
+
+    return $result->$result_name->ReturnCode;
+  }
+
+  /**
+   * Returns the user-friendly name of a return code
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param integer $return_code
+   * @access protected
+   * @static
+   */
+  static protected function get_return_code_name( $return_code )
+  {
+    if( 0 == $return_code )
+      return 'Success';
+    else if( 100 == $return_code )
+      return 'General Error';
+    else if( 201 == $return_code )
+      return 'Null Credentials';
+    else if( 202 == $return_code )
+      return 'Invalid Username';
+    else if( 203 == $return_code )
+      return 'Invalid Password';
+    else if( 300 == $return_code )
+      return 'Invalid Participant Data';
+    else if( 301 == $return_code )
+      return 'Invalid Participant Id';
+    else if( 303 == $return_code )
+      return 'Invalid Participant Phone';
+    else if( 304 == $return_code )
+      return 'Invalid Participant Call Date';
+    else if( 305 == $return_code )
+      return 'Invalid Participant Start Date';
+    else if( 306 == $return_code )
+      return 'Invalid Participant End Date';
+    else if( 307 == $return_code )
+      return 'Invalid Participant Parkinson’s Flag';
+    else if( 308 == $return_code )
+      return 'Invalid Participant Participant Type';
+    else if( 309 == $return_code )
+      return 'Invalid Participant First Initial';
+    else if( 310 == $return_code )
+      return 'Invalid Participant Last Initial';
+    else if( 311 == $return_code )
+      return 'Invalid Participant Last Interview Date';
+    else if( 312 == $return_code )
+      return 'Invalid Participant Marital Status';
+    else if( 313 == $return_code )
+      return 'Invalid Participant Language';
+    else if( 315 == $return_code )
+      return 'Invalid Participant Age';
+    else if( 400 == $return_code )
+      return 'Data Access';
+    else if( 501 == $return_code )
+      return 'Invalid Export Start Date';
+    else if( 502 == $return_code )
+      return 'Invalid Export End Date';
+    else if( 504 == $return_code )
+      return 'Invalid Export Call Id Format';
+    else if( 505 == $return_code )
+      return 'Invalid Export Participant Id';
+    else if( 601 == $return_code )
+      return 'Participant Not Found';
+    else return 'Unknown';
   }
 
   /**
