@@ -273,35 +273,6 @@ class interview extends \cenozo\database\has_note
   }
 
   /**
-   * Returns the participant's response for consenting to the cognitive section of the interview
-   * TODO: this method is qnaire-specific, future development needs to make this more generic
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access public
-   */
-  public function get_cognitive_consent()
-  {
-    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
-    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-
-    try
-    {
-      $survey_class_name::set_sid( 27345 ); // TODO: make dynamic
-      $survey_mod = lib::create( 'database\modifier' );
-      $survey_mod->where( 'token', '=', $tokens_class_name::determine_token_string( $this ) );
-      $survey_list = $survey_class_name::select( $survey_mod );
-      $db_survey = current( $survey_list );
-      $response = $db_survey ? $db_survey->get_response( 'COG_REC_TRM' ) : 'NULL';
-    }
-    catch( \cenozo\exception\database $e )
-    { // ignore the error and return null
-      $response = NULL;
-    }
-
-    return $response;
-  }
-
-  /**
    * Builds the recording list based on recording files found in the monitor path (if set)
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

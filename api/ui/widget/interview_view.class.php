@@ -70,7 +70,6 @@ class interview_view extends \cenozo\ui\widget\base_view
     $db_interview = $this->get_record();
     $db_participant = $db_interview->get_participant();
     $participant = sprintf( '%s, %s', $db_participant->last_name, $db_participant->first_name );
-    $cog_consent = $db_interview->get_cognitive_consent();
 
     $interview_methods = array();
     foreach( $interview_method_class_name::select() as $db_interview_method )
