@@ -719,7 +719,7 @@ class survey_manager extends \cenozo\singleton
         }
       }
     }
-    else if( 'marital status' == $key )
+    else if( false !== strpos( $key, 'marital status' ) )
     {
       // get data from Opal
       $setting_manager = lib::create( 'business\setting_manager' );
@@ -738,8 +738,12 @@ class survey_manager extends \cenozo\singleton
                  ? 'InHome_1'
                  : 'Tracking Baseline Main Script';
           $variable = 'comprehensive' == $db_cohort->name ? 'SDC_MRTL_COM' : 'SDC_MRTL_TRM';
-          $value = $opal_manager->get_value(
-            $datasource, $table, $db_participant, $variable );
+          $value = $opal_manager->get_value( $datasource, $table, $db_participant, $variable );
+
+          // return the label instead of the value, if requested
+          if( 'marital status label' == $key )
+            $value = $opal_manager->get_label(
+              $datasource, $table, $variable, $value, $db_participant->language );
         }
         catch( \cenozo\exception\base_exception $e )
         {
