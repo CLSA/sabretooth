@@ -34,6 +34,7 @@ class self_menu extends \cenozo\ui\widget\self_menu
       'callback',
       'event_type',
       'interview_method',
+      'ivr_appointment',
       'phase',
       'phone_call',
       'recording',

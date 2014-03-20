@@ -24,15 +24,28 @@ class participant_view extends \cenozo\ui\widget\participant_view
   protected function prepare()
   {
     parent::prepare();
-    
+
     $this->add_item( 'quota_state', 'constant', 'Quota State' );
     $this->add_item( 'qnaire_name', 'constant', 'Current Questionnaire' );
     $this->add_item( 'qnaire_date', 'constant', 'Delay Questionnaire Until' );
-    
+
+    // get the effective
+    $record = $this->get_record();
+    $this->db_effective_qnaire = $record->get_effective_qnaire();
+    $this->db_interview_method = $record->get_effective_interview_method();
+
     // create the appointment sub-list widget
     $this->appointment_list = lib::create( 'ui\widget\appointment_list', $this->arguments );
     $this->appointment_list->set_parent( $this );
     $this->appointment_list->set_heading( 'Appointments' );
+
+    // create the IVR appointment sub-list widget
+    if( 'ivr' == $this->db_interview_method->name )
+    {
+      $this->ivr_appointment_list = lib::create( 'ui\widget\ivr_appointment_list', $this->arguments );
+      $this->ivr_appointment_list->set_parent( $this );
+      $this->ivr_appointment_list->set_heading( 'IVR Appointments' );
+    }
 
     // create the callback sub-list widget
     $this->callback_list = lib::create( 'ui\widget\callback_list', $this->arguments );
@@ -58,15 +71,14 @@ class participant_view extends \cenozo\ui\widget\participant_view
     $operation_class_name = lib::get_class_name( 'database\operation' );
     $record = $this->get_record();
 
-    $db_effective_qnaire = $record->get_effective_qnaire();
-    if( is_null( $db_effective_qnaire ) )
+    if( is_null( $this->db_effective_qnaire ) )
     {
       $qnaire_name = '(none)';
       $qnaire_date = '(not applicable)';
     }
     else
     {
-      $qnaire_name = $db_effective_qnaire->name;
+      $qnaire_name = $this->db_effective_qnaire->name;
       $start_qnaire_date = $record->get_start_qnaire_date();
       $qnaire_date = is_null( $start_qnaire_date )
                    ? 'immediately'
@@ -88,6 +100,16 @@ class participant_view extends \cenozo\ui\widget\participant_view
     }
     catch( \cenozo\exception\permission $e ) {}
 
+    if( 'ivr' == $this->db_interview_method->name )
+    {
+      try
+      {
+        $this->ivr_appointment_list->process();
+        $this->set_variable( 'ivr_appointment_list', $this->ivr_appointment_list->get_variables() );
+      }
+      catch( \cenozo\exception\permission $e ) {}
+    }
+
     try
     {
       $this->callback_list->process();
@@ -108,7 +130,7 @@ class participant_view extends \cenozo\ui\widget\participant_view
     $interview_mod = lib::create( 'database\modifier' );
     $interview_mod->where( 'completed', '=', false );
     $interview_list = $this->get_record()->get_interview_list( $interview_mod );
-    
+
     $phone_mod = lib::create( 'database\modifier' );
     $phone_mod->where( 'active', '=', true );
     if( 0 == $this->get_record()->get_phone_count( $phone_mod ) )
@@ -150,7 +172,7 @@ class participant_view extends \cenozo\ui\widget\participant_view
         'in order to process the participant\'s withdraw preferences.' );
     }
   }
-  
+
   /**
    * Overrides the interview list widget's method.
    * 
@@ -184,19 +206,40 @@ class participant_view extends \cenozo\ui\widget\participant_view
   }
 
   /**
+   * The participant's effective qnaire (cached)
+   * @var database\qnaire
+   * @access protected
+   */
+  protected $db_effective_qnaire = NULL;
+
+  /**
+   * The participant's current interview's interview method (cached)
+   * @var database\interview_method
+   * @access protected
+   */
+  protected $db_interview_method = NULL;
+
+  /**
    * The participant list widget.
-   * @var appointment_list
+   * @var appointment_list or ivr_appointment_list
    * @access protected
    */
   protected $appointment_list = NULL;
-  
+
+  /**
+   * The participant list widget.
+   * @var ivr_appointment_list or ivr_ivr_appointment_list
+   * @access protected
+   */
+  protected $ivr_appointment_list = NULL;
+
   /**
    * The participant list widget.
    * @var callback_list
    * @access protected
    */
   protected $callback_list = NULL;
-  
+
   /**
    * The participant list widget.
    * @var interview_list

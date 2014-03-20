@@ -1,7 +1,7 @@
 {##
- # appointment_add.twig
+ # ivr_appointment_add.twig
  # 
- # Form for creating new appointments.
+ # Form for creating new IVR appointments.
  # @author Patrick Emond <emondpd@mcmaster.ca>
  # @see base_add.twig for parameters
  #}
@@ -32,22 +32,10 @@
 
 {% endblock javascript %}
 
-{% block record_extra_post_items %}
-  {% if allow_forced_appointment %}
-    <tr><td></td><td><hr class="ui-widget ui-widget-content" /></td></tr>
-    <tr id="{{widget.full }}__force_row">
-      <td class="heading">Force appointment:</td>
-      <td class="content">
-        <input id="{{ widget.full }}__force" type="checkbox" />
-      </td>  
-    </tr>
-  {% endif %}  
-{% endblock record_extra_post_items %}
-
 {% block record %}
   
   {{ parent() }}
   {% from 'macros.twig' import include_calendar %}
-  {{ include_calendar( 'site', calendar|default(false), true ) }}
+  {{ include_calendar( 'ivr_appointment', calendar|default(false), true ) }}
 
 {% endblock record %}

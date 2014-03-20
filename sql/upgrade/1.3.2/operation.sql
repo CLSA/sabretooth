@@ -63,3 +63,51 @@ VALUES( "push", "qnaire", "delete_interview_method", true,
 INSERT IGNORE INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "qnaire", "new_interview_method", true,
 "Add an interview method to a qnaire." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "ivr_appointment", "add", true,
+"View a form for creating new IVR appointments for a participant." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "ivr_appointment", "calendar", true,
+"Shows IVR appointments in a calendar format." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "ivr_appointment", "delete", true,
+"Removes a participant's IVR appointment from the system." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "ivr_appointment", "edit", true,
+"Edits the details of a participant's IVR appointment." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "ivr_appointment", "feed", true,
+"Retrieves a list of IVR appointments for a given time-span." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "ivr_appointment", "list", true,
+"Lists a participant's IVR appointments." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "ivr_appointment", "new", true,
+"Creates new IVR appointment entry for a participant." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "ivr_appointment", "report", true,
+"Download a IVR appointment report." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "ivr_appointment", "report", true,
+"Set up a IVR appointment report." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "ivr_appointment", "view", true,
+"View the details of a participant's particular IVR appointment." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "add_ivr_appointment", true,
+"A form to create a new IVR appointment to add to a participant." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "participant", "delete_ivr_appointment", true,
+"Remove a participant's IVR appointment." );

@@ -1,6 +1,6 @@
 <?php
 /**
- * appointment_delete.class.php
+ * ivr_appointment_delete.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,9 +10,9 @@ namespace sabretooth\ui\push;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
- * push: appointment delete
+ * push: ivr_appointment delete
  */
-class appointment_delete extends \cenozo\ui\push\base_delete
+class ivr_appointment_delete extends \cenozo\ui\push\base_delete
 {
   /**
    * Constructor.
@@ -22,7 +22,7 @@ class appointment_delete extends \cenozo\ui\push\base_delete
    */
   public function __construct( $args )
   {
-    parent::__construct( 'appointment', $args );
+    parent::__construct( 'ivr_appointment', $args );
   }
 
   /**
@@ -35,6 +35,11 @@ class appointment_delete extends \cenozo\ui\push\base_delete
   {
     parent::execute();
 
+    // send message to IVR
+    $ivr_manager = lib::create( 'business\ivr_manager' );
+    $ivr_manager->remove_appointment( $this->get_record()->get_participant() );
+
+    // if the owner is a participant then update their queue status
     $this->get_record()->get_participant()->update_queue_status();
   }
 }

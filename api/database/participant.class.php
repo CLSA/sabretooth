@@ -111,6 +111,55 @@ class participant extends \cenozo\database\participant
   }
 
   /**
+   * Returns the participant's interview method
+   * 
+   * The interview is either:
+   * 1. the method used by the interview from the effective qnaire
+   * 2. if no interview then the effective qnaire's default interview method
+   * 3. if no effective qnaire then the the method used by the interview from the last assignment
+   * 4. if there was no last assignment then the default method used by the first qnaire
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\interview_method
+   * @access public
+   */
+  public function get_effective_interview_method()
+  {
+    $interview_class_name = lib::get_class_name( 'database\interview' );
+    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
+
+    $db_interview_method = NULL;
+    $db_effective_qnaire = $this->get_effective_qnaire();
+    if( !is_null( $db_effective_qnaire ) )
+    {
+      $db_interview = $interview_class_name::get_unique_record(
+        array( 'participant_id', 'qnaire_id' ),
+        array( $this->id, $db_effective_qnaire->id ) );
+      $db_interview_method = !is_null( $db_interview )
+                           ? $db_interview->get_interview_method()
+                           : $db_effective_qnaire->get_default_interview_method();
+    }
+    else
+    {
+      $db_assignment = $this->get_last_finished_assignment();
+      if( !is_null( $db_assignment ) )
+      {
+        $db_interview_method = $db_assignment->get_interview()->get_interview_method();
+      }
+      else
+      {
+        $db_first_qnaire = $qnaire_class_name::get_unique_record( 'rank', 1 );
+        if( is_null( $db_first_qnaire ) )
+          throw lib::create( 'exception\notice',
+            'At least one questionnaire must be set up before completing your request.',
+            __METHOD__ );
+        $db_interview_method = $db_first_qnaire->get_default_interview_method();
+      }
+    }
+
+    return $db_interview_method;
+  }
+
+  /**
    * Returns the participant's qnaire start date.
    * 
    * The qnaire start date is determined based on the following rules:

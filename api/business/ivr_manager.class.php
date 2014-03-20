@@ -53,6 +53,15 @@ class ivr_manager extends \cenozo\singleton
    */
   public function get_enabled() { return $this->enabled; }
 
+  /**
+   * Sends a request to the IVR system to create or update an appointment
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\participant $db_participant
+   * @param database\phone $db_phone
+   * @param string or \DateTime $datetime
+   * @access public
+   */
   public function set_appointment( $db_participant, $db_phone, $datetime )
   {
     if( !$this->enabled )
@@ -91,7 +100,7 @@ class ivr_manager extends \cenozo\singleton
 
     $marital_status =
       $survey_manager::get_attribute( $db_participant, $db_interview, 'marital status' );
-    if( is_null( $marital_status ) ) $marital_status = 'UNKNOWN';
+    if( is_null( $marital_status ) ) $marital_status = 'MISSING';
 
     // build the parameter array for the operation
     $parameters = array(
@@ -128,6 +137,13 @@ class ivr_manager extends \cenozo\singleton
         __METHOD__ );
   }
 
+  /**
+   * Sends a request to the IVR system to remove an appointment
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\participant $db_participant
+   * @access public
+   */
   public function remove_appointment( $db_participant )
   {
     if( !$this->enabled )

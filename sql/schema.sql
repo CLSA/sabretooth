@@ -889,6 +889,37 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`qnaire_has_interview_method` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+
+-- -----------------------------------------------------
+-- Table `sabretooth`.`ivr_appointment`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`ivr_appointment` ;
+
+CREATE TABLE IF NOT EXISTS `sabretooth`.`ivr_appointment` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `update_timestamp` TIMESTAMP NOT NULL,
+  `create_timestamp` TIMESTAMP NOT NULL,
+  `participant_id` INT UNSIGNED NOT NULL,
+  `phone_id` INT UNSIGNED NOT NULL,
+  `datetime` DATETIME NOT NULL,
+  `completed` TINYINT(1) NULL DEFAULT NULL COMMENT 'If the interview was completed by the appointment.',
+  PRIMARY KEY (`id`),
+  INDEX `fk_participant_id` (`participant_id` ASC),
+  INDEX `dk_completed` (`completed` ASC),
+  INDEX `fk_phone_id` (`phone_id` ASC),
+  INDEX `dk_datetime` (`datetime` ASC),
+  CONSTRAINT `fk_ivr_appointment_participant_id`
+    FOREIGN KEY (`participant_id`)
+    REFERENCES `cenozo`.`participant` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_ivr_appointment_phone_id`
+    FOREIGN KEY (`phone_id`)
+    REFERENCES `cenozo`.`phone` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
 USE `sabretooth` ;
 
 -- -----------------------------------------------------

@@ -85,6 +85,7 @@ class queue extends \cenozo\database\record
       'qnaire',
       'qnaire waiting',
       'assigned',
+      'ivr_appointment',
       'appointment',
       'upcoming appointment',
       'assignable appointment',
@@ -499,7 +500,7 @@ class queue extends \cenozo\database\record
 
     // an array containing all of the qnaire queue's direct children queues
     $qnaire_children = array(
-      'qnaire waiting', 'assigned', 'appointment', 'quota disabled',
+      'qnaire waiting', 'assigned', 'ivr_appointment', 'appointment', 'quota disabled',
       'outside calling time', 'callback', 'new participant', 'old participant' );
 
     // join to the queue_restriction table based on site, city, region or postcode
@@ -652,10 +653,19 @@ class queue extends \cenozo\database\record
             $parts['where'][] =
               '( last_assignment_id IS NULL OR last_assignment_end_datetime IS NOT NULL )';
 
-            if( 'appointment' == $queue )
+            if( 'ivr_appointment' == $queue )
+            {
+              // link to ivr_appointment table and make sure the ivr_appointment completed status
+              // hasn't been set (by design, there can only ever be one unset ivr_appointment per
+              // participant)
+              $parts['from'][] = 'ivr_appointment';
+              $parts['where'][] = 'ivr_appointment.participant_id = participant_for_queue.id';
+              $parts['where'][] = 'ivr_appointment.completed IS NULL';
+            }
+            else if( 'appointment' == $queue )
             {
               // link to appointment table and make sure the appointment hasn't been assigned
-              // (by design, there can only ever one unassigned appointment per participant)
+              // (by design, there can only ever be one unassigned appointment per participant)
               $parts['from'][] = 'appointment';
               $parts['where'][] = 'appointment.participant_id = participant_for_queue.id';
               $parts['where'][] = 'appointment.assignment_id IS NULL';

@@ -1,7 +1,7 @@
 {##
- # appointment_view.twig
+ # ivr_appointment_view.twig
  # 
- # View appointment details.
+ # View IVR appointment details.
  # @author Patrick Emond <emondpd@mcmaster.ca>
  # @see base_view.twig for parameters
  #}
@@ -26,7 +26,7 @@
   {{ parent() }}
   {% if not hide_calendar %}
     {% from 'macros.twig' import include_calendar %}
-    {{ include_calendar( 'site', calendar|default(false), true ) }}
+    {{ include_calendar( 'ivr_appointment', calendar|default(false), true ) }}
   {% endif %}
 
 {% endblock record %}

@@ -28,28 +28,6 @@ class appointment_edit extends \cenozo\ui\push\base_edit
   }
   
   /**
-   * Validate the operation.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\notice
-   * @access protected
-   */
-  protected function validate()
-  {
-    parent::validate();
-
-    // make sure there is a slot available for the appointment
-    $columns = $this->get_argument( 'columns', array() );
-    if( array_key_exists( 'datetime', $columns ) )
-    {
-      $this->get_record()->datetime = $columns['datetime'];
-      if( !$this->get_record()->validate_date() )
-        throw lib::create( 'exception\notice',
-          'There are no operators available during that time.', __METHOD__ );
-    }
-  }
-
-  /**
    * This method executes the operation's purpose.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -58,6 +36,14 @@ class appointment_edit extends \cenozo\ui\push\base_edit
   protected function execute()
   {
     parent::execute();
+
+    // send message to IVR
+    $record = $this->get_record();
+    $ivr_manager = lib::create( 'business\ivr_manager' );
+    $ivr_manager->set_appointment(
+      $record->get_participant(),
+      $record->get_phone(),
+      $record->datetime );
 
     $this->get_record()->get_participant()->update_queue_status();
   }

@@ -1,6 +1,6 @@
 <?php
 /**
- * appointment_add.class.php
+ * ivr_appointment_add.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -10,9 +10,9 @@ namespace sabretooth\ui\widget;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
- * widget appointment add
+ * widget ivr_appointment add
  */
-class appointment_add extends base_appointment_view
+class ivr_appointment_add extends base_appointment_view
 {
   /**
    * Constructor
@@ -24,7 +24,7 @@ class appointment_add extends base_appointment_view
    */
   public function __construct( $args )
   {
-    parent::__construct( 'appointment', 'add', $args );
+    parent::__construct( 'ivr_appointment', 'add', $args );
   }
 
   /**
@@ -38,19 +38,22 @@ class appointment_add extends base_appointment_view
   {
     parent::prepare();
     
+    // override the base calendar type
+    $this->calendar = lib::create( 'ui\widget\ivr_appointment_calendar', $this->arguments );
+    $this->calendar->set_parent( $this );
+    $this->calendar->set_variable( 'default_view', 'basicWeek' );
+    
     // this widget must have a parent, and it's subject must be a participant
     if( is_null( $this->parent ) || 'participant' != $this->parent->get_subject() )
       throw lib::create( 'exception\runtime',
-        'Appointment widget must have a parent with participant as the subject.', __METHOD__ );
+        'IVR appointment widget must have a parent with participant as the subject.', __METHOD__ );
 
     $this->db_participant = lib::create( 'database\participant', $this->parent->get_record()->id );
     
     // add items to the view
     $this->add_item( 'participant_id', 'hidden' );
     $this->add_item( 'phone_id', 'enum', 'Phone Number',
-      'Select a specific phone number to call for the appointment, or leave this field blank if '.
-      'any of the participant\'s phone numbers can be called.' );
-    $this->add_item( 'type', 'enum', 'Type' );
+      'Select which phone number to call from the IVR system.' );
   }
 
   /**
@@ -71,9 +74,7 @@ class appointment_add extends base_appointment_view
     foreach( $this->db_participant->get_phone_list( $modifier ) as $db_phone )
       $phones[$db_phone->id] = $db_phone->rank.". ".$db_phone->number;
     
-    $appointment_class_name = lib::get_class_name( 'database\appointment' );
-    $types = $appointment_class_name::get_enum_values( 'type' );
-    $types = array_combine( $types, $types );
+    $ivr_appointment_class_name = lib::get_class_name( 'database\ivr_appointment' );
     
     // create the min datetime array
     $start_qnaire_date = $this->parent->get_record()->get_start_qnaire_date();
@@ -83,10 +84,7 @@ class appointment_add extends base_appointment_view
 
     // set the view's items
     $this->set_item( 'participant_id', $this->parent->get_record()->id );
-    $this->set_item( 'phone_id', '', false, $phones );
+    $this->set_item( 'phone_id', '', true, $phones );
     $this->set_item( 'datetime', '', true, $datetime_limits );
-    $this->set_item( 'type', key( $types ), true, $types );
-
-    $this->set_variable( 'allow_forced_appointment', 1 < $session->get_role()->tier );
   }
 }

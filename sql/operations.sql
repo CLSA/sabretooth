@@ -129,6 +129,28 @@ VALUES( "widget", "interview", "view", true, "View interview details." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "interview_method", "list", true, "Lists interviews." );
 
+-- ivr_appointment
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "ivr_appointment", "add", true, "View a form for creating new IVR appointments for a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "ivr_appointment", "calendar", true, "Shows IVR appointments in a calendar format." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "ivr_appointment", "delete", true, "Removes a participant's IVR appointment from the system." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "ivr_appointment", "edit", true, "Edits the details of a participant's IVR appointment." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "ivr_appointment", "feed", true, "Retrieves a list of IVR appointments for a given time-span." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "ivr_appointment", "list", true, "Lists a participant's IVR appointments." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "ivr_appointment", "new", true, "Creates new IVR appointment entry for a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "ivr_appointment", "report", true, "Download a IVR appointment report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "ivr_appointment", "report", true, "Set up a IVR appointment report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "ivr_appointment", "view", true, "View the details of a participant's particular IVR appointment." );
+
 -- mailout_required
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "mailout_required", "report", true, "Download a new mailout required report." );
@@ -163,9 +185,13 @@ VALUES( "widget", "participant", "add_appointment", true, "A form to create a ne
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "add_callback", true, "A form to create a new callback to add to a participant." );
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "participant", "add_ivr_appointment", true, "A form to create a new IVR appointment to add to a participant." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "delete_appointment", true, "Remove a participant's appointment." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "delete_callback", true, "Remove a participant's callback." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "participant", "delete_ivr_appointment", true, "Remove a participant's IVR appointment." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "secondary", true, "Lists a participant's alternates for sourcing purposes." );
 INSERT INTO operation( type, subject, name, restricted, description )
