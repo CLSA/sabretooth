@@ -8,6 +8,7 @@ SOURCE jurisdiction.sql
 SOURCE qnaire.sql
 SOURCE qnaire_has_interview_method.sql
 SOURCE queue.sql
+SOURCE queue_has_participant.sql
 SOURCE ivr_appointment.sql
 
 COMMIT;

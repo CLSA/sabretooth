@@ -815,11 +815,13 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`queue_has_participant` (
   `site_id` INT UNSIGNED NULL,
   `qnaire_id` INT UNSIGNED NULL,
   `start_qnaire_date` DATE NULL,
+  `interview_method_id` INT UNSIGNED NOT NULL,
   PRIMARY KEY (`queue_id`, `participant_id`),
   INDEX `fk_participant_id` (`participant_id` ASC),
   INDEX `fk_queue_id` (`queue_id` ASC),
   INDEX `fk_qnaire_id` (`qnaire_id` ASC),
   INDEX `fk_site_id` (`site_id` ASC),
+  INDEX `fk_interview_method_id` (`interview_method_id` ASC),
   CONSTRAINT `fk_queue_has_participant_queue_id`
     FOREIGN KEY (`queue_id`)
     REFERENCES `sabretooth`.`queue` (`id`)
@@ -838,6 +840,11 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`queue_has_participant` (
   CONSTRAINT `fk_queue_has_participant_site_id`
     FOREIGN KEY (`site_id`)
     REFERENCES `cenozo`.`site` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_queue_has_participant_interview_method_id`
+    FOREIGN KEY (`interview_method_id`)
+    REFERENCES `sabretooth`.`interview_method` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

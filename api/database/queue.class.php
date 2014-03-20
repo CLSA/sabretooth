@@ -204,7 +204,8 @@ class queue extends \cenozo\database\record
         'DISTINCT participant_for_queue.id, %s, '.
         'IFNULL( service_has_participant_preferred_site_id, primary_region_site_id ), '.
         'effective_qnaire_id, '.
-        'start_qnaire_date',
+        'start_qnaire_date, '.
+        'effective_interview_method_id ',
         $database_class_name::format_string( $db_queue->id ) );
   
       $sql = sprintf(
@@ -219,7 +220,8 @@ class queue extends \cenozo\database\record
       if( !$db_queue->time_specific )
         static::db()->execute( sprintf(
           'INSERT INTO queue_has_participant( '.
-            'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) %s',
+            'participant_id, queue_id, site_id, qnaire_id, '.
+            'start_qnaire_date, interview_method_id ) %s',
           $db_queue->get_sql( $columns ) ) );
     }
 
@@ -281,8 +283,9 @@ class queue extends \cenozo\database\record
 
       $sql = sprintf(
         'INSERT INTO queue_has_participant( '.
-          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) '.
-        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, qnaire_id, start_qnaire_date '.
+          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date, interview_method_id ) '.
+        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, '.
+        'qnaire_id, start_qnaire_date, interview_method_id '.
         'FROM queue_has_participant '.
         'JOIN appointment ON queue_has_participant.participant_id = appointment.participant_id '.
         'AND appointment.assignment_id IS NULL '.
@@ -328,8 +331,9 @@ class queue extends \cenozo\database\record
     
       $sql = sprintf(
         'INSERT INTO queue_has_participant( '.
-          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) '.
-        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, qnaire_id, start_qnaire_date '.
+          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date, interview_method_id ) '.
+        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, '.
+        'qnaire_id, start_qnaire_date, interview_method_id '.
         'FROM queue_has_participant '.
         'JOIN callback ON queue_has_participant.participant_id = callback.participant_id '.
         'AND callback.assignment_id IS NULL '.
@@ -367,8 +371,9 @@ class queue extends \cenozo\database\record
 
       $sql = sprintf(
         'INSERT INTO queue_has_participant( '.
-          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) '.
-        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, qnaire_id, start_qnaire_date '.
+          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date, interview_method_id ) '.
+        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, '.
+        'qnaire_id, start_qnaire_date, interview_method_id '.
         'FROM queue_has_participant '.
         'JOIN participant_last_interview '.
         'ON queue_has_participant.participant_id = participant_last_interview.participant_id '.
@@ -658,6 +663,9 @@ class queue extends \cenozo\database\record
               // link to ivr_appointment table and make sure the ivr_appointment completed status
               // hasn't been set (by design, there can only ever be one unset ivr_appointment per
               // participant)
+              $parts['from'][] = 'interview_method';
+              $parts['where'][] = 'effective_interview_method_id = interview_method.id';
+              $parts['where'][] = 'interview_method.name = "ivr"';
               $parts['from'][] = 'ivr_appointment';
               $parts['where'][] = 'ivr_appointment.participant_id = participant_for_queue.id';
               $parts['where'][] = 'ivr_appointment.completed IS NULL';
@@ -666,6 +674,9 @@ class queue extends \cenozo\database\record
             {
               // link to appointment table and make sure the appointment hasn't been assigned
               // (by design, there can only ever be one unassigned appointment per participant)
+              $parts['from'][] = 'interview_method';
+              $parts['where'][] = 'effective_interview_method_id = interview_method.id';
+              $parts['where'][] = 'interview_method.name = "operator"';
               $parts['from'][] = 'appointment';
               $parts['where'][] = 'appointment.participant_id = participant_for_queue.id';
               $parts['where'][] = 'appointment.assignment_id IS NULL';
@@ -1047,7 +1058,19 @@ IF
   current_interview.id IS NULL,
   ( SELECT id FROM qnaire WHERE rank = 1 ),
   IF( current_interview.completed, next_qnaire.id, current_qnaire.id )
-) as effective_qnaire_id,
+) AS effective_qnaire_id,
+IF
+(
+  current_interview.id IS NULL,
+  ( SELECT default_interview_method_id FROM qnaire WHERE rank = 1 ),
+  IF( current_interview.completed,
+      IF( next_qnaire.id IS NULL,
+          last_interview.interview_method_id,
+          next_qnaire.default_interview_method_id
+      ),
+      current_interview.interview_method_id
+  )
+) AS effective_interview_method_id,
 (
   IF
   (
@@ -1090,6 +1113,10 @@ JOIN participant_last_consent
 ON participant.id = participant_last_consent.participant_id
 LEFT JOIN consent AS last_consent
 ON last_consent.id = participant_last_consent.consent_id
+JOIN participant_last_interview
+ON participant.id = participant_last_interview.participant_id
+JOIN interview AS last_interview
+ON participant_last_interview.interview_id = last_interview.id
 LEFT JOIN interview AS current_interview
 ON current_interview.participant_id = participant.id
 LEFT JOIN interview_last_assignment

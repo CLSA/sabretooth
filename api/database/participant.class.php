@@ -114,49 +114,20 @@ class participant extends \cenozo\database\participant
    * Returns the participant's interview method
    * 
    * The interview is either:
-   * 1. the method used by the interview from the effective qnaire
-   * 2. if no interview then the effective qnaire's default interview method
-   * 3. if no effective qnaire then the the method used by the interview from the last assignment
-   * 4. if there was no last assignment then the default method used by the first qnaire
+   * 1. if the participant hasn't started an interview then the first qnaire's default interview
+   *    method
+   * 2. if the current interview is not complete then that interview's interview method
+   * 3. if all interviews are complete then the last interview's interview method
+   * 4. otherwise, the next qnaire's default interview method
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\interview_method
    * @access public
    */
   public function get_effective_interview_method()
   {
-    $interview_class_name = lib::get_class_name( 'database\interview' );
-    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
-
-    $db_interview_method = NULL;
-    $db_effective_qnaire = $this->get_effective_qnaire();
-    if( !is_null( $db_effective_qnaire ) )
-    {
-      $db_interview = $interview_class_name::get_unique_record(
-        array( 'participant_id', 'qnaire_id' ),
-        array( $this->id, $db_effective_qnaire->id ) );
-      $db_interview_method = !is_null( $db_interview )
-                           ? $db_interview->get_interview_method()
-                           : $db_effective_qnaire->get_default_interview_method();
-    }
-    else
-    {
-      $db_assignment = $this->get_last_finished_assignment();
-      if( !is_null( $db_assignment ) )
-      {
-        $db_interview_method = $db_assignment->get_interview()->get_interview_method();
-      }
-      else
-      {
-        $db_first_qnaire = $qnaire_class_name::get_unique_record( 'rank', 1 );
-        if( is_null( $db_first_qnaire ) )
-          throw lib::create( 'exception\notice',
-            'At least one questionnaire must be set up before completing your request.',
-            __METHOD__ );
-        $db_interview_method = $db_first_qnaire->get_default_interview_method();
-      }
-    }
-
-    return $db_interview_method;
+    $this->load_queue_data();
+    return is_null( $this->effective_interview_method_id ) ?
+      NULL : lib::create( 'database\interview_method', $this->effective_interview_method_id );
   }
 
   /**
@@ -182,7 +153,7 @@ class participant extends \cenozo\database\participant
   }
 
   /**
-   * Fills in the effective qnaire id and start qnaire date
+   * Fills in the effective qnaire id, effective interview method id and start qnaire date
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access private
    */
@@ -210,6 +181,7 @@ class participant extends \cenozo\database\participant
     if( count( $row ) )
     {
       $this->effective_qnaire_id = $row['qnaire_id'];
+      $this->effective_interview_method_id = $row['interview_method_id'];
       $this->start_qnaire_date = $row['start_qnaire_date'];
     }
 
@@ -229,6 +201,13 @@ class participant extends \cenozo\database\participant
    * @access private
    */
   private $effective_qnaire_id = NULL;
+
+  /**
+   * The participant's current interview method id (from a custom query)
+   * @var int
+   * @access private
+   */
+  private $effective_interview_method_id = NULL;
 
   /**
    * The date that the current questionnaire is to begin (from a custom query)
