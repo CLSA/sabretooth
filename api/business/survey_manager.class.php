@@ -137,6 +137,7 @@ class survey_manager extends \cenozo\singleton
     $this->current_sid = false;
     $this->current_token = false;
 
+    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
     $source_withdraw_class_name = lib::get_class_name( 'database\source_withdraw' );
@@ -217,13 +218,20 @@ class survey_manager extends \cenozo\singleton
       else
       { // finished all qnaires, find the last one completed
         $db_assignment = $db_participant->get_last_finished_assignment();
-        if( is_null( $db_assignment ) )
-          throw lib::create( 'exception\runtime',
-                             'Trying to withdraw participant without a questionnaire.',
-                             __METHOD__ );
 
-        $db_interview = $db_assignment->get_interview();
-        $db_qnaire = $db_interview->get_qnaire();
+        if( !is_null( $db_assignment ) )
+        {
+          $db_qnaire = $db_assignment->get_interview()->get_qnaire();
+        }
+        else
+        { // no interview means we'll just use the first qnaire
+          $db_qnaire = $qnaire_class_name::get_unique_record( 'rank', 1 );
+
+          if( is_null( $db_qnaire ) )
+            throw lib::create( 'exception\runtime',
+                               'Trying to withdraw participant without a questionnaire.',
+                               __METHOD__ );
+        }
       }
 
       // let the tokens record class know which SID we are dealing with by checking if

@@ -175,6 +175,72 @@ class interview extends \cenozo\database\has_note
   }
 
   /**
+   * Forces an interview to become completed.
+   * 
+   * This method will update an interview's status to be incomplete.  It will also delete the
+   * correspinding limesurvey data.  This action cannot be undone.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function force_uncomplete()
+  {
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to force uncomplete interview with no id.' );
+      return;
+    }
+    
+    // delete all tokens and surveys associated with this interview which are
+    // associated with phases which are not repeated (tokens should not include assignments)
+    $phase_mod = lib::create( 'database\modifier' );
+    $phase_mod->where( 'repeated', '!=', true );
+    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+    $event_type_class_name = lib::get_class_name( 'database\event_type' );
+    foreach( $this->get_qnaire()->get_phase_list( $phase_mod ) as $db_phase )
+    {
+      // delete tokens
+      $tokens_class_name::set_sid( $db_phase->sid );
+      $tokens_mod = lib::create( 'database\modifier' );
+      $tokens_mod->where( 'token', '=',
+        $tokens_class_name::determine_token_string( $this ) );
+      foreach( $tokens_class_name::select( $tokens_mod ) as $db_tokens )
+      {
+        $db_tokens->completed = 'N';
+        $db_tokens->usesleft = 1;
+        $db_tokens->save();
+      }
+
+      // delete surveys
+      $survey_class_name::set_sid( $db_phase->sid );
+      $survey_mod = lib::create( 'database\modifier' );
+      $survey_mod->where( 'token', '=',
+        $tokens_class_name::determine_token_string( $this ) );
+
+      foreach( $survey_class_name::select( $survey_mod ) as $db_survey )
+      {
+        $db_survey->submitdate = NULL;
+        $db_survey->save();
+      }
+    }
+
+    // finally, update the record
+    $this->completed = false;
+    $this->save();
+
+    // remove completed events (if any exist)
+    $event_type_name = sprintf( 'completed (%s)', $this->get_qnaire()->name );
+    $db_event_type = $event_type_class_name::get_unique_record( 'name', $event_type_name );
+    if( !is_null( $db_event_type ) )
+    {
+      $event_mod = lib::create( 'database\modifier' );
+      $event_mod->where( 'event_type_id', '=', $db_event_type->id );
+      foreach( $this->get_participant()->get_event_list( $event_mod ) as $db_event )
+        $db_event->delete();
+    }
+  }
+
+  /**
    * Overrides the parent method in order to synchronize the recordings on file with those in
    * the database.
    * 
@@ -204,35 +270,6 @@ class interview extends \cenozo\database\has_note
   {
     $this->update_recording_list();
     return parent::get_recording_count( $modifier );
-  }
-
-  /**
-   * Returns the participant's response for consenting to the cognitive section of the interview
-   * TODO: this method is qnaire-specific, future development needs to make this more generic
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return string
-   * @access public
-   */
-  public function get_cognitive_consent()
-  {
-    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
-    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-
-    try
-    {
-      $survey_class_name::set_sid( 27345 ); // TODO: make dynamic
-      $survey_mod = lib::create( 'database\modifier' );
-      $survey_mod->where( 'token', '=', $tokens_class_name::determine_token_string( $this ) );
-      $survey_list = $survey_class_name::select( $survey_mod );
-      $db_survey = current( $survey_list );
-      $response = $db_survey ? $db_survey->get_response( 'COG_REC_TRM' ) : 'NULL';
-    }
-    catch( \cenozo\exception\database $e )
-    { // ignore the error and return null
-      $response = NULL;
-    }
-
-    return $response;
   }
 
   /**

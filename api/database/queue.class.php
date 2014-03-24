@@ -532,8 +532,8 @@ class queue extends \cenozo\database\record
               : 'first_address_timezone_offset';
       $calling_time_sql = sprintf(
         '( '.
-          'TIME( %s + INTERVAL %s*60 MINUTE ) >= "<CALLING_START_TIME>" AND '.
-          'TIME( %s + INTERVAL %s*60 MINUTE ) < "<CALLING_END_TIME>" '.
+          'TIME( %s + INTERVAL ( %s )*60 MINUTE ) >= "<CALLING_START_TIME>" AND '.
+          'TIME( %s + INTERVAL ( %s )*60 MINUTE ) < "<CALLING_END_TIME>" '.
         ')',
         $viewing_date,
         $offset,

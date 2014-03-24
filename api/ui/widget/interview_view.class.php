@@ -44,7 +44,7 @@ class interview_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'qnaire', 'constant', 'Questionnaire' );
     $this->add_item( 'interview_method_id', 'enum', 'Interview Method' );
     $this->add_item( 'completed', 'boolean', 'Completed',
-      'Warning: force-completing an interview cannot be undone!' );
+      'Warning: changing this cannot be undone!' );
 
     // create the assignment sub-list widget      
     $this->assignment_list = lib::create( 'ui\widget\assignment_list', $this->arguments );
@@ -71,7 +71,6 @@ class interview_view extends \cenozo\ui\widget\base_view
     $db_participant = $db_interview->get_participant();
     $db_qnaire = $db_interview->get_qnaire();
     $participant = sprintf( '%s, %s', $db_participant->last_name, $db_participant->first_name );
-    $cog_consent = $db_interview->get_cognitive_consent();
 
     $interview_methods = array();
     foreach( $db_qnaire->get_interview_method_list() as $db_interview_method )
