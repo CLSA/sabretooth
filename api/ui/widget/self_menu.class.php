@@ -25,9 +25,17 @@ class self_menu extends \cenozo\ui\widget\self_menu
   {
     parent::prepare();
     
+    $interview_method_class_name = lib::get_class_name( 'database\interview_method' );
+    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
+
     // remove the site calendar from the admin role
     $role = lib::create( 'business\session' )->get_role()->name;
     if( 'administrator' == $role ) $this->exclude_calendar( 'site' );
+
+    // remove the IVR calendar if no qnaires use the IVR interview method
+    $db_interview_method = $interview_method_class_name::get_unique_record( 'name', 'ivr' );
+    if( !$qnaire_class_name::is_interview_method_in_use( $db_interview_method ) )
+      $this->exclude_calendar( 'ivr_appointment' );
 
     $this->exclude_list( array(
       'appointment',
