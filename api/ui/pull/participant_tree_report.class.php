@@ -36,6 +36,11 @@ class participant_tree_report extends \cenozo\ui\pull\base_report
    */
   protected function build()
   {
+    $interview_method_class_name = lib::get_class_name( 'database\interview_method' );
+    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
+    $queue_class_name = lib::get_class_name( 'database\queue' );
+    $site_class_name  = lib::get_class_name( 'database\site' );
+
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
     $restrict_source_id = $this->get_argument( 'restrict_source_id', 0 );
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
@@ -47,12 +52,14 @@ class participant_tree_report extends \cenozo\ui\pull\base_report
 
     $contents = array();
 
+    $db_interview_method = $interview_method_class_name::get_unique_record( 'name', 'ivr' );
+
     // The following code is very similar to the participant_tree widget
     // We loop through every queue to get the number of participants waiting in it
-    $queue_class_name = lib::get_class_name( 'database\queue' );
-    $site_class_name  = lib::get_class_name( 'database\site' );
     $queue_mod = lib::create( 'database\modifier' );
     $queue_mod->order( 'id' );
+    if( !$qnaire_class_name::is_interview_method_in_use( $db_interview_method ) )
+      $queue_mod->where( 'name', '!=', 'ivr_appointment' ); // remove IVR if not in use
     foreach( $queue_class_name::select( $queue_mod ) as $db_queue )
     {
       $row = array( $db_queue->title );

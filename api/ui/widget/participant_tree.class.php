@@ -40,6 +40,7 @@ class participant_tree extends \cenozo\ui\widget
     $site_class_name = lib::get_class_name( 'database\site' );
     $queue_class_name = lib::get_class_name( 'database\queue' );
     $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
+    $interview_method_class_name = lib::get_class_name( 'database\interview_method' );
     $operation_class_name = lib::get_class_name( 'database\operation' );
 
     $session = lib::create( 'business\session' );
@@ -83,11 +84,15 @@ class participant_tree extends \cenozo\ui\widget
       $db_show_queue = lib::create( 'database\queue', $parts[1] );
     }
 
+    $db_interview_method = $interview_method_class_name::get_unique_record( 'name', 'ivr' );
+
     // build the tree from the root
     $nodes = array();
     $tree = array(); // NOTE: holds references to the nodes array
     $modifier = lib::create( 'database\modifier' );
     $modifier->order( 'parent_queue_id' );
+    if( !$qnaire_class_name::is_interview_method_in_use( $db_interview_method ) )
+      $modifier->where( 'name', '!=', 'ivr_appointment' ); // remove IVR if not in use
     foreach( $queue_class_name::select( $modifier ) as $db_queue )
     {
       // restrict queue based on user's role
