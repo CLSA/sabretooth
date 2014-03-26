@@ -11,4 +11,6 @@ SOURCE queue.sql
 SOURCE queue_has_participant.sql
 SOURCE ivr_appointment.sql
 
+SOURCE update_version_number.sql
+
 COMMIT;

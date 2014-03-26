@@ -10,4 +10,6 @@ SOURCE person_primary_address.sql
 SOURCE participant_default_site.sql
 SOURCE participant_site.sql
 
+SOURCE update_version_number.sql
+
 COMMIT;

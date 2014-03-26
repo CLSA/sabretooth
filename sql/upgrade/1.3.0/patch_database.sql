@@ -10,4 +10,6 @@ SOURCE queue_restriction.sql;
 SOURCE setting_value.sql;
 SOURCE setting.sql;
 
+SOURCE update_version_number.sql
+
 COMMIT;

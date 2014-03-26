@@ -11,4 +11,6 @@ SOURCE participant.sql
 SOURCE queue.sql
 SOURCE participant_last_interview.sql
 
+SOURCE update_version_number.sql
+
 COMMIT;
