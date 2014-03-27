@@ -45,8 +45,8 @@ $SETTINGS['voip']['xor_key'] = '';
 
 // IVR setup
 $SETTINGS['ivr']['enabled'] = false;
-$SETTINGS['ivr']['host'] = 'https://localhost';
-$SETTINGS['ivr']['service'] = '/service_path.asmx?wsdl';
+$SETTINGS['ivr']['host'] = 'https://localhost/'; // must end in a /
+$SETTINGS['ivr']['service'] = 'service_path.asmx?wsdl'; // must NOT begin with a /
 $SETTINGS['ivr']['username'] = '';
 $SETTINGS['ivr']['password'] = '';
 

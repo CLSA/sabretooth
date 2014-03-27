@@ -45,8 +45,8 @@ $SETTINGS['voip']['prefix'] = '00';
 
 // IVR setup
 $SETTINGS['ivr']['enabled'] = false;
-$SETTINGS['ivr']['host'] = 'https://localhost';
-$SETTINGS['ivr']['service'] = '/path/to/service';
+$SETTINGS['ivr']['host'] = 'https://localhost/'; // must end in a /
+$SETTINGS['ivr']['service'] = 'relative/path/to/service'; // must NOT begin with a /
 $SETTINGS['ivr']['username'] = 'put your ivr username here';
 $SETTINGS['ivr']['password'] = 'put your ivr password here';
 

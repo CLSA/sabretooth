@@ -41,7 +41,7 @@ class ivr_manager extends \cenozo\singleton
   {
     if( !$this->enabled ) return;
 
-    $this->client = new \SoapClient( sprintf( '%s/%s', $this->host, $this->service ) );
+    $this->client = new \SoapClient( sprintf( '%s%s', $this->host, $this->service ) );
   }
 
   /**
