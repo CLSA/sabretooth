@@ -111,7 +111,7 @@ class ivr_manager extends \cenozo\singleton
       'Last_Initial' => substr( $db_participant->last_name, 0, 1 ),
       'Last_Interview_Date' => $last_datetime->format( 'Y-m-d' ),
       'Parkinsonism' => 
-        $survey_manager::get_attribute( $db_participant, $db_interview, 'Parkinsonism' ),
+        $survey_manager::get_attribute( $db_participant, $db_interview, 'parkinsonism' ),
       'Participant_Type' => 
         $survey_manager::get_attribute( $db_participant, $db_interview, 'cohort' ),
       'Marital_Status' => $marital_status,
@@ -119,22 +119,7 @@ class ivr_manager extends \cenozo\singleton
       'Language' => $db_participant->language ? $db_participant->language : 'en'
     );
 
-    $header = new \SoapHeader(
-      $this->host,
-      'CustomCredentials',
-      array( 'Username' => $this->username, 'Password' => $this->password ),
-      false );
-    $this->client->__setSoapHeaders( array( $header ) );
-    $result = $this->client->InsertParticipant( $parameters );
-
-    // throw an exception if there was a problem
-    $return_code = static::get_return_code( 'InsertParticipant', $result );
-    if( 0 != $return_code )
-      throw lib::create( 'exception\runtime',
-        sprintf( 'IVR service returned error code %d (%s)',
-                 $return_code,
-                 static::get_return_code_name( $return_code ) ),
-        __METHOD__ );
+    $this->send( 'InsertParticipant', $parameters );
   }
 
   /**
@@ -158,16 +143,57 @@ class ivr_manager extends \cenozo\singleton
       'Id' => $db_participant->uid
     );
 
+    $this->send( 'DeleteParticipant', $parameters );
+  }
+
+  /**
+   * Sends a request to the IVR system to get a participant's status
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\participant $db_participant
+   * @access public
+   */
+  public function get_status( $db_participant )
+  {
+    if( !$this->enabled )
+      throw lib::create( 'exception\runtime',
+        'Tried to invoke IVR method but it is not enabled.',
+        __METHOD__ );
+
+    if( is_null( $this->client ) ) $this->initialize();
+
+    // build the parameter array for the operation
+    $parameters = array(
+      'Id' => $db_participant->uid
+    );
+
+    $this->send( 'GetParticipantCallStatus', $parameters );
+  }
+
+  /**
+   * Send a request to the IVR service.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $function The name of the function to call
+   * @param array $parameters The parameters to send to the function call
+   * @return int
+   * @throws exception\runtime
+   * @access protected
+   */
+  protected function send( $function, $parameters )
+  {
+    // create a header containing the credentials
     $header = new \SoapHeader(
       $this->host,
       'CustomCredentials',
       array( 'Username' => $this->username, 'Password' => $this->password ),
       false );
     $this->client->__setSoapHeaders( array( $header ) );
-    $result = $this->client->DeleteParticipant( $parameters );
 
-    // throw an exception if there was a problem
-    $return_code = static::get_return_code( 'DeleteParticipant', $result );
+    // call the function and get the return code
+    $result = $this->client->$function( $parameters );
+    $return_code = static::get_return_code( $function, $result );
+
+    // if the return code is anything other than 0 throw an exception
     if( 0 != $return_code )
       throw lib::create( 'exception\runtime',
         sprintf( 'IVR service returned error code %d (%s)',
@@ -260,6 +286,29 @@ class ivr_manager extends \cenozo\singleton
     else if( 601 == $return_code )
       return 'Participant Not Found';
     else return 'Unknown';
+  }
+
+  /**
+   * Returns the user-friendly name of a status code
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param integer $status_code
+   * @access protected
+   * @static
+   */
+  static protected function get_status_code_name( $status_code )
+  {
+    if( 0 == $status_code )
+      return 'No Appointment';
+    else if( 1 == $status_code )
+      return 'Future Appointment Scheduled';
+    else if( 2 == $status_code )
+      return 'Calling in Progress';
+    else if( 3 == $status_code )
+      return 'Calling Complete, Interview Complete';
+    else if( 4 == $status_code )
+      return 'Calling Complete, Interview Not Complete';
+    else if( -1 == $status_code )
+      return 'Error';
   }
 
   /**
