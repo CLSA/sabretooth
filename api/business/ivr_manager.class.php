@@ -1,6 +1,6 @@
 <?php
 /**
- * ivr_client.class.php
+ * ivr_manager.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -149,6 +149,8 @@ class ivr_manager extends \cenozo\singleton
   /**
    * Sends a request to the IVR system to get a participant's status
    * 
+   * This method returns an ivr status type (see ivr_status class for details)
+   * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant
    * @access public
@@ -167,7 +169,7 @@ class ivr_manager extends \cenozo\singleton
       'Id' => $db_participant->uid
     );
 
-    $this->send( 'GetParticipantCallStatus', $parameters );
+    return $this->send( 'GetParticipantCallStatus', $parameters );
   }
 
   /**
@@ -175,7 +177,7 @@ class ivr_manager extends \cenozo\singleton
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $function The name of the function to call
    * @param array $parameters The parameters to send to the function call
-   * @return int
+   * @return mixed
    * @throws exception\runtime
    * @access protected
    */
@@ -200,6 +202,9 @@ class ivr_manager extends \cenozo\singleton
                  $return_code,
                  static::get_return_code_name( $return_code ) ),
         __METHOD__ );
+
+    // return the data (if any is provided)
+    return static::get_data( $function, $result );
   }
 
   /**
@@ -207,6 +212,7 @@ class ivr_manager extends \cenozo\singleton
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $service_name
    * @param \stdClass $result
+   * @return int
    * @access protected
    * @static
    */
@@ -224,6 +230,30 @@ class ivr_manager extends \cenozo\singleton
         __METHOD__ );
 
     return $result->$result_name->ReturnCode;
+  }
+
+  /**
+   * Get the data from the result returned from a call to the IVR service
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $service_name
+   * @param \stdClass $result
+   * @return mixed
+   * @access protected
+   * @static
+   */
+  static protected function get_data( $service_name, $result )
+  {
+    $result_name = $service_name.'Result';
+
+    // validate the result
+    if( !is_object( $result ) ||
+        !property_exists( $result, $result_name ) ||
+        !is_object( $result->$result_name ) )
+      throw lib::create( 'exception\runtime',
+        'Unexpected result from the IVR server.',
+        __METHOD__ );
+    
+    return property_exists( $result->$result_name, 'Data' ) ? $result->$result_name->Data : NULL;
   }
 
   /**
@@ -286,29 +316,6 @@ class ivr_manager extends \cenozo\singleton
     else if( 601 == $return_code )
       return 'Participant Not Found';
     else return 'Unknown';
-  }
-
-  /**
-   * Returns the user-friendly name of a status code
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param integer $status_code
-   * @access protected
-   * @static
-   */
-  static protected function get_status_code_name( $status_code )
-  {
-    if( 0 == $status_code )
-      return 'No Appointment';
-    else if( 1 == $status_code )
-      return 'Future Appointment Scheduled';
-    else if( 2 == $status_code )
-      return 'Calling in Progress';
-    else if( 3 == $status_code )
-      return 'Calling Complete, Interview Complete';
-    else if( 4 == $status_code )
-      return 'Calling Complete, Interview Not Complete';
-    else if( -1 == $status_code )
-      return 'Error';
   }
 
   /**
