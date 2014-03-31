@@ -88,6 +88,7 @@ class operator_assignment extends \cenozo\ui\widget
       $callback_class_name = lib::get_class_name( 'database\callback' );
       $operation_class_name = lib::get_class_name( 'database\operation' );
 
+      $setting_manager = lib::create( 'business\setting_manager' );
       $db_interview = $db_current_assignment->get_interview();
       $db_participant = $db_interview->get_participant();
       $db_current_phone_call = $session->get_current_phone_call();
@@ -164,7 +165,7 @@ class operator_assignment extends \cenozo\ui\widget
       
       // determine whether we want to show a warning before ending a call
       $warn_before_ending_call = false;
-      if( $current_sid )
+      if( $setting_manager->get_setting( 'calling', 'end call warning' ) && $current_sid )
       {
         $warn_before_ending_call = true;
         if( !$withdrawing )
@@ -272,8 +273,7 @@ class operator_assignment extends \cenozo\ui\widget
         !$on_call && ( 0 < $current_calls || $db_interview->completed ) );
 
       $allow_secondary = false;
-      $max_failed_calls =
-        lib::create( 'business\setting_manager' )->get_setting( 'calling', 'max failed calls' );
+      $max_failed_calls = $setting_manager->get_setting( 'calling', 'max failed calls' );
       if( $max_failed_calls <= $db_interview->get_failed_call_count() )
       {
         $db_operation =
