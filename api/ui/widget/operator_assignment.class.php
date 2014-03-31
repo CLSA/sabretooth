@@ -91,12 +91,14 @@ class operator_assignment extends \cenozo\ui\widget
       $db_interview = $db_current_assignment->get_interview();
       $db_participant = $db_interview->get_participant();
       $db_current_phone_call = $session->get_current_phone_call();
+      $current_sid = lib::create( 'business\survey_manager' )->get_current_sid();
       
       $language = 'none';
       if( 'en' == $db_participant->language ) $language = 'english';
       else if( 'fr' == $db_participant->language ) $language = 'french';
 
       $db_last_consent = $db_participant->get_last_consent();
+      $withdrawing = !is_null( $db_last_consent ) && false == $db_last_consent->accept;
       
       $previous_call_list = array();
       $db_last_assignment = $db_participant->get_last_finished_assignment();
@@ -156,10 +158,26 @@ class operator_assignment extends \cenozo\ui\widget
       $this->set_variable( 'participant_language', $language );
       $this->set_variable(
         'participant_consent', is_null( $db_last_consent ) ? 'none' : $db_last_consent->to_string() );
-      $this->set_variable(
-        'withdrawing', !is_null( $db_last_consent ) && false == $db_last_consent->accept );
+      $this->set_variable( 'withdrawing', $withdrawing );
       $this->set_variable(
         'allow_withdraw', !is_null( $db_interview->get_qnaire()->withdraw_sid ) );
+      
+      // determine whether we want to show a warning before ending a call
+      $warn_before_ending_call = false;
+      if( $current_sid )
+      {
+        $warn_before_ending_call = true;
+        if( !$withdrawing )
+        { // if we're not withdrawing then make sure we're not on a repeating survey
+          $phase_mod = lib::create( 'database\modifier' );
+          $phase_mod->where( 'sid', '=', $current_sid );
+          $phase_mod->order( 'rank' );
+          $phase_mod->limit( 1 );
+          $db_phase = current( $db_interview->get_qnaire()->get_phase_list( $phase_mod ) );
+          if( is_null( $db_phase ) || $db_phase->repeated ) $warn_before_ending_call = false;
+        }
+      }
+      $this->set_variable( 'warn_before_ending_call', $warn_before_ending_call );
       
       // set the appointment and callback variables
       $this->set_variable( 'appointment', false );

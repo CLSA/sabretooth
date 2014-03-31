@@ -81,7 +81,25 @@
           args = new Object();
           {% if on_call %}
             args.status = $( "#{{ widget.full }}__parameter" ).val();
-            if( ajax_push( "phone_call", "end", args ) ) window.location.reload();
+            {% if warn_before_ending_call %}
+              // show a warning if the interview is not complete
+              confirm_dialog(
+                "End Call",
+                "<p>Are you sure you wish to end the call?</p>" +
+                {% if withdrawing %}
+                  "<p>WARNING: The withdraw questionnaire must be completed before the participant is " +
+                  "fully removed from the study.</p>",
+                {% else %}
+                  "<p>WARNING: Since are not finished the questionnaire this participant's interview " +
+                  "will not be marked as fully complete and they will be returned to the calling " +
+                  "queue.</p>",
+                {% endif %}
+                function() {
+                  if( ajax_push( "phone_call", "end", args ) ) window.location.reload();
+                } );
+            {% else %}
+              if( ajax_push( "phone_call", "end", args ) ) window.location.reload();
+            {% endif %}
           {% else %}
             args.phone_id = $( "#{{ widget.full }}__parameter" ).val();
             if( ajax_push( "phone_call", "begin", args ) ) window.location.reload();
