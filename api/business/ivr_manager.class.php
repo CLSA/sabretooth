@@ -34,7 +34,6 @@ class ivr_manager extends \cenozo\singleton
    * Initializes the ivr manager
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\runtime, exception\ivr
    * @access public
    */
   public function initialize()
@@ -60,6 +59,7 @@ class ivr_manager extends \cenozo\singleton
    * @param database\participant $db_participant
    * @param database\phone $db_phone
    * @param string or \DateTime $datetime
+   * @throws exception\runtime, exception\argument
    * @access public
    */
   public function set_appointment( $db_participant, $db_phone, $datetime )
@@ -127,6 +127,7 @@ class ivr_manager extends \cenozo\singleton
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant
+   * @throws exception\runtime
    * @access public
    */
   public function remove_appointment( $db_participant )
@@ -153,6 +154,7 @@ class ivr_manager extends \cenozo\singleton
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant
+   * @throws exception\runtime
    * @access public
    */
   public function get_status( $db_participant )
@@ -213,6 +215,7 @@ class ivr_manager extends \cenozo\singleton
    * @param string $service_name
    * @param \stdClass $result
    * @return int
+   * @throws exception\runtime
    * @access protected
    * @static
    */
@@ -238,6 +241,7 @@ class ivr_manager extends \cenozo\singleton
    * @param string $service_name
    * @param \stdClass $result
    * @return mixed
+   * @throws exception\runtime
    * @access protected
    * @static
    */
@@ -315,6 +319,8 @@ class ivr_manager extends \cenozo\singleton
       return 'Invalid Export Participant Id';
     else if( 601 == $return_code )
       return 'Participant Not Found';
+    else if( 701 == $return_code )
+      return 'Invalid Connection Type';
     else return 'Unknown';
   }
 

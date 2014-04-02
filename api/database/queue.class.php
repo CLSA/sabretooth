@@ -184,8 +184,81 @@ class queue extends \cenozo\database\record
   static public function repopulate( $db_participant = NULL )
   {
     $database_class_name = lib::get_class_name( 'database\database' );
+    $ivr_appointment_class_name = lib::get_class_name( 'database\ivr_appointment' );
+    $ivr_status_class_name = lib::get_class_name( 'business\ivr_status' );
+
+    $setting_manager = lib::create( 'business\setting_manager' );
+    $ivr_manager = lib::create( 'business\ivr_manager' );
     $session = lib::create( 'business\session' );
     $db_user = $session->get_user();
+
+    // get the status of all IVR appointments which have passed and do not have a completed status
+    $duration = $setting_manager->get_setting( 'appointment', 'full duration' );
+    $now_datetime_obj = util::get_datetime_object();
+    $appointment_datetime_obj = clone $now_datetime_obj;
+    $appointment_datetime_obj->sub( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
+    $ivr_appointment_mod = lib::create( 'database\modifier' );
+    $ivr_appointment_mod->where(
+      'datetime', '<=', $appointment_datetime_obj->format( 'Y-m-d H:i:s' ) );
+    $ivr_appointment_mod->where( 'completed', '=', NULL );
+
+    foreach( $ivr_appointment_class_name::select( $ivr_appointment_mod ) as $db_ivr_appointment )
+    {
+      $db_participant = $db_ivr_appointment->get_participant();
+
+      try
+      {
+        $status = $ivr_manager->get_status( $db_participant );
+      }
+      // ignore errors
+      catch( \cenozo\exception\runtime $e )
+      {
+        $status = $ivr_status_class_name::ERROR;
+      }
+
+      if( $ivr_status_class_name::CALLING_COMPLETE_INTERVIEW_COMPLETE == $status )
+      {
+        $db_ivr_appointment->complete = true;
+        $db_ivr_appointment->save();
+      }
+      else if( $ivr_status_class_name::CALLING_COMPLETE_INTERVIEW_NOT_COMPLETE == $status )
+      {
+        $db_ivr_appointment->complete = false;
+        $db_ivr_appointment->save();
+      }
+      else if( $ivr_status_class_name::NO_APPOINTMENT == $status )
+      {
+        // the appointment is missing from the IVR, so add it in now
+        $db_ivr_appointment->datetime = $now_datetime_obj->format( 'Y-m-d H:i:s' );
+        $db_ivr_appointment->save();
+
+        try
+        {
+          $ivr_manager->set_appointment(
+            $db_participant,
+            $db_ivr_appointment->get_phone(),
+            $db_ivr_appointment->datetime );
+        }
+        catch( \cenozo\exception\runtime $e )
+        {
+          log::err( sprintf(
+            'IVR service was unable to add replacement appointment for %s.',
+            $db_participant->uid ) );
+        }
+      }
+      else if( $ivr_status_class_name::FUTURE_APPOINTMENT_SCHEDULED == $status )
+      {
+        log::warning( sprintf(
+          'IVR service reporting appointment time mismatch for %s.',
+          $db_participant->uid ) );
+      }
+      else if( $ivr_status_class_name::ERROR == $status )
+      {
+        log::crit( sprintf(
+          'Unable to get status for %s from IVR service.',
+          $db_participant->uid ) );
+      }
+    }
 
     // block with a semaphore
     $session->acquire_semaphore();
