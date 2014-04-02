@@ -35,7 +35,6 @@ class appointment_delete extends \cenozo\ui\push\base_delete
   {
     parent::execute();
 
-    // if the owner is a participant then update their queue status
     $this->get_record()->get_participant()->update_queue_status();
   }
 }

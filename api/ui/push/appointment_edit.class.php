@@ -40,7 +40,6 @@ class appointment_edit extends \cenozo\ui\push\base_edit
 
     // make sure there is a slot available for the appointment
     $columns = $this->get_argument( 'columns', array() );
-
     if( array_key_exists( 'datetime', $columns ) )
     {
       $this->get_record()->datetime = $columns['datetime'];
@@ -60,7 +59,6 @@ class appointment_edit extends \cenozo\ui\push\base_edit
   {
     parent::execute();
 
-    // if the owner is a participant then update their queue status
     $this->get_record()->get_participant()->update_queue_status();
   }
 }

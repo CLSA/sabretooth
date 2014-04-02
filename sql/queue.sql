@@ -137,6 +137,19 @@ parent_queue_id = (
 description = "Eligible participants who are currently assigned to an operator.";
 
 INSERT INTO queue SET
+name = "ivr_appointment",
+title = "Participants scheduled for an IVR-based interview",
+rank = NULL,
+qnaire_specific = true,
+time_specific = false,
+parent_queue_id = (
+  SELECT id FROM(
+    SELECT id
+    FROM queue
+    WHERE name = "qnaire" ) AS tmp ),
+description = "Participants who are scheduled for an IVR-based interview.";
+
+INSERT INTO queue SET
 name = "appointment",
 title = "Participants with appointments",
 rank = NULL,

@@ -55,13 +55,26 @@ class appointment_list extends \cenozo\ui\widget\site_restricted_list
   {
     // don't add appointments if this list isn't parented
     if( is_null( $this->parent ) ) $this->set_addable( false );
-    else // don't add appointments if the parent already has an unassigned appointment
+    else
     {
+      $appointment_class_name = lib::get_class_name( 'database\appointment' );
+      $db_participant = $this->parent->get_record();
+
+      // don't add appointments if the parent already has an unassigned appointment
       $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'participant_id', '=', $this->parent->get_record()->id );
+      $modifier->where( 'participant_id', '=', $db_participant->id );
       $modifier->where( 'assignment_id', '=', NULL );
-      $class_name = lib::get_class_name( 'database\appointment' );
-      $this->set_addable( 0 == $class_name::count( $modifier ) );
+      $addable = 0 == $appointment_class_name::count( $modifier );
+
+      // don't add appointments if the participant's interview method is ivr
+      if( $addable && 'ivr' == $db_participant->get_effective_interview_method()->name )
+        $addable = false;
+
+      // don't add appointments if the participant has no effective qnaire
+      if( $addable && is_null( $db_participant->get_effective_qnaire() ) )
+        $addable = false;
+
+      $this->set_addable( $addable );
     }
 
     parent::setup();

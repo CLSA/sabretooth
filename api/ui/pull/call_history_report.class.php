@@ -90,6 +90,7 @@ class call_history_report extends \cenozo\ui\pull\base_report
     foreach( $assignment_class_name::select( $assignment_mod ) as $db_assignment )
     {
       $db_participant = $db_assignment->get_interview()->get_participant();
+      $db_age_group = $db_participant->get_age_group();
       if( 0 == $restrict_source_id || $restrict_source_id == $db_participant->get_source()->id )
       {
         $db_user = $db_assignment->get_user();
@@ -101,6 +102,8 @@ class call_history_report extends \cenozo\ui\pull\base_report
           $contents[] = array(
             $db_assignment->get_site()->name,
             $db_participant->uid,
+            $db_participant->gender,
+            is_null( $db_age_group ) ? 'unknown' : $db_age_group->to_string(),
             $db_user->first_name.' '.$db_user->last_name,
             $db_assignment->id,
             substr( $db_assignment->start_datetime,
@@ -118,6 +121,8 @@ class call_history_report extends \cenozo\ui\pull\base_report
     $header = array(
       'Site',
       'UID',
+      'Sex',
+      'Age Group',
       'Operator',
       'Assignment ID',
       'Date',

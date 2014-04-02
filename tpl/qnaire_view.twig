@@ -11,6 +11,7 @@
 
   {{ parent() }}
   {% from 'macros.twig' import include_list %}
+  {{ include_list( 'interview_method', interview_method_list|default(false), true ) }}
   {{ include_list( 'phase', phase_list|default(false), true ) }}
   {{ include_list( 'source_withdraw', source_withdraw_list|default(false), true ) }}
   {{ include_list( 'event_type', event_type_list|default(false), true ) }}

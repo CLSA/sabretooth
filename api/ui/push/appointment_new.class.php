@@ -44,9 +44,11 @@ class appointment_new extends \cenozo\ui\push\base_new
     if( !array_key_exists( 'datetime', $columns ) || 0 == strlen( $columns['datetime'] ) )
       throw lib::create( 'exception\notice', 'The date/time cannot be left blank.', __METHOD__ );
     
-    // make sure the participant has a qnaire to answer
     $db_participant = lib::create( 'database\participant', $columns['participant_id'] );
-    if( is_null( $db_participant->get_effective_qnaire() ) )
+    $db_qnaire = $db_participant->get_effective_qnaire();
+
+    // make sure the participant has a qnaire to answer
+    if( is_null( $db_qnaire ) )
     {
       throw lib::create( 'exception\notice',
         'Unable to create an appointment because the participant has completed all questionnaires.',
@@ -54,7 +56,6 @@ class appointment_new extends \cenozo\ui\push\base_new
     }
     else if( !$this->get_argument( 'force', false ) )
     {
-      // validate the appointment time
       $this->get_record()->participant_id = $columns['participant_id'];
       $this->get_record()->datetime = $columns['datetime'];
       $this->get_record()->type = $columns['type'];
@@ -94,7 +95,6 @@ class appointment_new extends \cenozo\ui\push\base_new
   {
     parent::execute();
 
-    // if the owner is a participant then update their queue status
     $this->get_record()->get_participant()->update_queue_status();
   }
 }

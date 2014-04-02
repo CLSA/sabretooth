@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`qnaire` (
   `create_timestamp` TIMESTAMP NOT NULL,
   `name` VARCHAR(255) NOT NULL,
   `rank` INT NOT NULL,
-  `interview_method_id` INT UNSIGNED NOT NULL,
+  `default_interview_method_id` INT UNSIGNED NOT NULL,
   `prev_qnaire_id` INT UNSIGNED NULL DEFAULT NULL COMMENT 'The qnaire which must be completed before this one begins.',
   `delay` INT NOT NULL DEFAULT 0 COMMENT 'How many weeks after then end of the previous qnaire before starting.',
   `withdraw_sid` INT NULL DEFAULT NULL,
@@ -41,14 +41,14 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`qnaire` (
   UNIQUE INDEX `uq_name` (`name` ASC),
   UNIQUE INDEX `uq_rank` (`rank` ASC),
   INDEX `fk_prev_qnaire_id` (`prev_qnaire_id` ASC),
-  INDEX `fk_interview_method_id` (`interview_method_id` ASC),
+  INDEX `fk_default_interview_method_id` (`default_interview_method_id` ASC),
   CONSTRAINT `fk_qnaire_prev_qnaire_id`
     FOREIGN KEY (`prev_qnaire_id`)
     REFERENCES `sabretooth`.`qnaire` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_qnaire_interview_method_id`
-    FOREIGN KEY (`interview_method_id`)
+  CONSTRAINT `fk_qnaire_default_interview_method_id`
+    FOREIGN KEY (`default_interview_method_id`)
     REFERENCES `sabretooth`.`interview_method` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
@@ -815,11 +815,13 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`queue_has_participant` (
   `site_id` INT UNSIGNED NULL,
   `qnaire_id` INT UNSIGNED NULL,
   `start_qnaire_date` DATE NULL,
+  `interview_method_id` INT UNSIGNED NOT NULL,
   PRIMARY KEY (`queue_id`, `participant_id`),
   INDEX `fk_participant_id` (`participant_id` ASC),
   INDEX `fk_queue_id` (`queue_id` ASC),
   INDEX `fk_qnaire_id` (`qnaire_id` ASC),
   INDEX `fk_site_id` (`site_id` ASC),
+  INDEX `fk_interview_method_id` (`interview_method_id` ASC),
   CONSTRAINT `fk_queue_has_participant_queue_id`
     FOREIGN KEY (`queue_id`)
     REFERENCES `sabretooth`.`queue` (`id`)
@@ -838,6 +840,11 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`queue_has_participant` (
   CONSTRAINT `fk_queue_has_participant_site_id`
     FOREIGN KEY (`site_id`)
     REFERENCES `cenozo`.`site` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_queue_has_participant_interview_method_id`
+    FOREIGN KEY (`interview_method_id`)
+    REFERENCES `sabretooth`.`interview_method` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -859,6 +866,63 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`cedar_instance` (
   CONSTRAINT `fk_cedar_instance_user_id`
     FOREIGN KEY (`user_id`)
     REFERENCES `cenozo`.`user` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `sabretooth`.`qnaire_has_interview_method`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`qnaire_has_interview_method` ;
+
+CREATE TABLE IF NOT EXISTS `sabretooth`.`qnaire_has_interview_method` (
+  `qnaire_id` INT UNSIGNED NOT NULL,
+  `interview_method_id` INT UNSIGNED NOT NULL,
+  `update_timestamp` TIMESTAMP NOT NULL,
+  `create_timestamp` TIMESTAMP NOT NULL,
+  PRIMARY KEY (`qnaire_id`, `interview_method_id`),
+  INDEX `fk_interview_method_id` (`interview_method_id` ASC),
+  INDEX `fk_qnaire_id` (`qnaire_id` ASC),
+  CONSTRAINT `fk_qnaire_has_interview_method_qnaire_id`
+    FOREIGN KEY (`qnaire_id`)
+    REFERENCES `sabretooth`.`qnaire` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_qnaire_has_interview_method_interview_method_id`
+    FOREIGN KEY (`interview_method_id`)
+    REFERENCES `sabretooth`.`interview_method` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `sabretooth`.`ivr_appointment`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`ivr_appointment` ;
+
+CREATE TABLE IF NOT EXISTS `sabretooth`.`ivr_appointment` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `update_timestamp` TIMESTAMP NOT NULL,
+  `create_timestamp` TIMESTAMP NOT NULL,
+  `participant_id` INT UNSIGNED NOT NULL,
+  `phone_id` INT UNSIGNED NOT NULL,
+  `datetime` DATETIME NOT NULL,
+  `completed` TINYINT(1) NULL DEFAULT NULL COMMENT 'If the interview was completed by the appointment.',
+  PRIMARY KEY (`id`),
+  INDEX `fk_participant_id` (`participant_id` ASC),
+  INDEX `dk_completed` (`completed` ASC),
+  INDEX `fk_phone_id` (`phone_id` ASC),
+  INDEX `dk_datetime` (`datetime` ASC),
+  CONSTRAINT `fk_ivr_appointment_participant_id`
+    FOREIGN KEY (`participant_id`)
+    REFERENCES `cenozo`.`participant` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_ivr_appointment_phone_id`
+    FOREIGN KEY (`phone_id`)
+    REFERENCES `cenozo`.`phone` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
