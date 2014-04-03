@@ -9,6 +9,8 @@
   - IVR (interactive voice recognition) interviewing can now be used instead of operator-based
     calling
 
+* Event system now tracks when participants are released to services
+
 ====================================================================================================
 1.3.1
 ====================================================================================================
