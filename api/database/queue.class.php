@@ -218,12 +218,32 @@ class queue extends \cenozo\database\record
 
       if( $ivr_status_class_name::CALLING_COMPLETE_INTERVIEW_COMPLETE == $status )
       {
-        $db_ivr_appointment->complete = true;
+        $db_ivr_appointment->completed = true;
         $db_ivr_appointment->save();
+        
+        // now mark the interview as complete
+        $interview_mod = lib::create( 'database\modifier' );
+        $interview_mod->where( 'completed', '=', false );
+        $interview_mod->order_desc( 'qnaire.rank' );
+        $interview_mod->limit( 1 );
+        $db_interview = current(
+          $db_ivr_appointment->get_participant()->get_interview_list( $interview_mod ) );
+        if( is_null( $db_interview ) )
+        {
+          log::warning( sprintf(
+            'Cannot find incomplete interview which matches completed IVR appointment reported '.
+            'by IVR service for %s.',
+            $db_participant->uid ) );
+        }
+        else
+        {
+          $db_interview->completed = true;
+          $db_interview->save();
+        }
       }
       else if( $ivr_status_class_name::CALLING_COMPLETE_INTERVIEW_NOT_COMPLETE == $status )
       {
-        $db_ivr_appointment->complete = false;
+        $db_ivr_appointment->completed = false;
         $db_ivr_appointment->save();
       }
       else if( $ivr_status_class_name::NO_APPOINTMENT == $status )

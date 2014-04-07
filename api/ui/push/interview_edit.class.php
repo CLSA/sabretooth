@@ -54,5 +54,8 @@ class interview_edit extends \cenozo\ui\push\base_edit
     {
       parent::execute();
     }
+
+    if( array_key_exists( 'interview_method_id', $columns ) )
+      $this->get_record()->get_participant()->update_queue_status();
   }
 }
