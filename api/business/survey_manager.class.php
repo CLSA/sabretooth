@@ -142,7 +142,6 @@ class survey_manager extends \cenozo\singleton
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
     $source_withdraw_class_name = lib::get_class_name( 'database\source_withdraw' );
     $source_survey_class_name = lib::get_class_name( 'database\source_survey' );
-    $event_type_class_name = lib::get_class_name( 'database\event_type' );
     $interview_class_name = lib::get_class_name( 'database\interview' );
 
     $session = lib::create( 'business\session' );
@@ -484,8 +483,7 @@ class survey_manager extends \cenozo\singleton
           $db_interview->save();
 
           // record the event (if one exists)
-          $event_type_name = sprintf( 'completed (%s)', $db_qnaire->name );
-          $db_event_type = $event_type_class_name::get_unique_record( 'name', $event_type_name );
+          $db_event_type = $db_qnaire->get_completed_event_type();
           if( !is_null( $db_event_type ) )
           {
             $db_event = lib::create( 'database\event' );
