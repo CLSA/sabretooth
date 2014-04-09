@@ -36,6 +36,7 @@ class call_history_report extends \cenozo\ui\pull\base_report
    */
   protected function build()
   {
+    $interview_completed = $this->get_argument( 'interview_completed' );
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
     $restrict_source_id = $this->get_argument( 'restrict_source_id' );
       
@@ -67,6 +68,18 @@ class call_history_report extends \cenozo\ui\pull\base_report
     $assignment_mod = lib::create( 'database\modifier' );
     if( $restrict_site_id ) $assignment_mod->where( 'site_id', '=', $restrict_site_id );
     $assignment_mod->order( 'start_datetime' );
+
+    if( 'Yes' == $interview_completed )
+    {
+      $assignment_mod->where( 'interview.completed', '=', true );
+      $this->add_title( 'Restricted to interviews which are complete' );
+    }
+    else if( 'No' == $interview_completed )
+    {
+      $assignment_mod->where( 'interview.completed', '=', false );
+      $this->add_title( 'Restricted to interviews which are not complete' );
+    }
+
     if( $restrict_start_date && $restrict_end_date )
     {
       $assignment_mod->where( 'start_datetime', '>=',
