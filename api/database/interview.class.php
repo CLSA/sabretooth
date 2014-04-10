@@ -171,7 +171,7 @@ class interview extends \cenozo\database\has_note
       $event_type_mod->order_desc( 'datetime' );
       $event_type_mod->limit( 1 );
       $db_last_event = current( $this->get_participant()->get_event_list( $event_type_mod ) );
-      if( $db_last_event->event_type_id != $db_event_type->id )
+      if( !$db_last_event || $db_last_event->event_type_id != $db_event_type->id )
       {
         $db_event = lib::create( 'database\event' );
         $db_event->participant_id = $this->participant_id;

@@ -456,7 +456,7 @@ class survey_manager extends \cenozo\singleton
             $event_type_mod->order_desc( 'datetime' );
             $event_type_mod->limit( 1 );
             $db_last_event = current( $db_participant->get_event_list( $event_type_mod ) );
-            if( $db_last_event->event_type_id != $db_event_type->id )
+            if( !$db_last_event || $db_last_event->event_type_id != $db_event_type->id )
             {
               $db_event = lib::create( 'database\event' );
               $db_event->participant_id = $db_participant->id;

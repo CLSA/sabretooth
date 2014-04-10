@@ -175,7 +175,7 @@ class operator_assignment extends \cenozo\ui\widget
           $phase_mod->order( 'rank' );
           $phase_mod->limit( 1 );
           $db_phase = current( $db_interview->get_qnaire()->get_phase_list( $phase_mod ) );
-          if( is_null( $db_phase ) || $db_phase->repeated ) $warn_before_ending_call = false;
+          if( !$db_phase || $db_phase->repeated ) $warn_before_ending_call = false;
         }
       }
       $this->set_variable( 'warn_before_ending_call', $warn_before_ending_call );
