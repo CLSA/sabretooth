@@ -452,7 +452,7 @@ class survey_manager extends \cenozo\singleton
           if( !is_null( $db_event_type ) )
           {
             // make sure the event doesn't already exist
-            $event_mod = lib::create::create( 'database\modifier' );
+            $event_mod = lib::create( 'database\modifier' );
             $event_mod->where( 'event_type_id', '=', $db_event_type->id );
             if( 0 == $db_participant->get_event_count( $event_mod ) )
             {

@@ -167,7 +167,7 @@ class interview extends \cenozo\database\has_note
     if( !is_null( $db_event_type ) )
     {
       // make sure the event doesn't already exist
-      $event_mod = lib::create::create( 'database\modifier' );
+      $event_mod = lib::create( 'database\modifier' );
       $event_mod->where( 'event_type_id', '=', $db_event_type->id );
       if( 0 == $this->get_participant()->get_event_count( $event_mod ) )
       {
