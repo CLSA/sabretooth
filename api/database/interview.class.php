@@ -166,12 +166,10 @@ class interview extends \cenozo\database\has_note
     $db_event_type = $event_type_class_name::get_unique_record( 'name', $event_type_name );
     if( !is_null( $db_event_type ) )
     {
-      // don't add the event if it is already there
-      $event_type_mod = lib::create( 'database\modifier' );
-      $event_type_mod->order_desc( 'datetime' );
-      $event_type_mod->limit( 1 );
-      $db_last_event = current( $this->get_participant()->get_event_list( $event_type_mod ) );
-      if( !$db_last_event || $db_last_event->event_type_id != $db_event_type->id )
+      // make sure the event doesn't already exist
+      $event_mod = lib::create::create( 'database\modifier' );
+      $event_mod->where( 'event_type_id', '=', $db_event_type->id );
+      if( 0 == $this->get_participant()->get_event_count( $event_mod ) )
       {
         $db_event = lib::create( 'database\event' );
         $db_event->participant_id = $this->participant_id;
