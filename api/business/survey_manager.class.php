@@ -451,11 +451,19 @@ class survey_manager extends \cenozo\singleton
           $db_event_type = $event_type_class_name::get_unique_record( 'name', $event_type_name );
           if( !is_null( $db_event_type ) )
           {
-            $db_event = lib::create( 'database\event' );
-            $db_event->participant_id = $db_participant->id;
-            $db_event->event_type_id = $db_event_type->id;
-            $db_event->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
-            $db_event->save();
+            // don't add the event if it is already there
+            $event_type_mod = lib::create( 'database\modifier' );
+            $event_type_mod->order_desc( 'datetime' );
+            $event_type_mod->limit( 1 );
+            $db_last_event = current( $db_participant->get_event_list( $event_type_mod ) );
+            if( $db_last_event->event_type_id != $db_event_type->id )
+            {
+              $db_event = lib::create( 'database\event' );
+              $db_event->participant_id = $db_participant->id;
+              $db_event->event_type_id = $db_event_type->id;
+              $db_event->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+              $db_event->save();
+            }
           }
         }
       }
