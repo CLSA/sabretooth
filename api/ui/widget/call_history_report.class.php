@@ -42,6 +42,8 @@ class call_history_report extends base_report
       'Whether to restrict the report to interviews that are complete or incomplete.' );
     $this->add_restriction( 'site' );
     $this->add_restriction( 'source' );
+    $this->add_parameter( 'last_only', 'boolean', 'Last Call Only',
+      'Only include the last call made to the participant.' );
     $this->add_restriction( 'dates' );
 
     $this->set_variable( 'description',
@@ -63,5 +65,6 @@ class call_history_report extends base_report
     $complete_list = array_combine( $complete_list, $complete_list );
 
     $this->set_parameter( 'interview_completed', key( $complete_list ), true, $complete_list );
+    $this->set_parameter( 'last_only', false, true );
   }
 }
