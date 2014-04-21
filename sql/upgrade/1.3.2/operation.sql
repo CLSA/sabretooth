@@ -111,3 +111,15 @@ VALUES( "widget", "participant", "add_ivr_appointment", true,
 INSERT IGNORE INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "delete_ivr_appointment", true,
 "Remove a participant's IVR appointment." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "quota", "add_qnaire", true,
+"A form to disable a quota for a particular qnaire." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "quota", "delete_qnaire", true,
+"Re-enable quotas for a particular qnaire." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "quota", "new_qnaire", true,
+"Disable a quota for a particular qnaire." );

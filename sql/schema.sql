@@ -948,6 +948,33 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`ivr_appointment` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+
+-- -----------------------------------------------------
+-- Table `sabretooth`.`qnaire_has_quota`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`qnaire_has_quota` ;
+
+CREATE TABLE IF NOT EXISTS `sabretooth`.`qnaire_has_quota` (
+  `qnaire_id` INT UNSIGNED NOT NULL,
+  `quota_id` INT UNSIGNED NOT NULL,
+  `update_timestamp` TIMESTAMP NOT NULL,
+  `create_timestamp` TIMESTAMP NOT NULL,
+  PRIMARY KEY (`qnaire_id`, `quota_id`),
+  INDEX `fk_quota_id` (`quota_id` ASC),
+  INDEX `fk_qnaire_id` (`qnaire_id` ASC),
+  CONSTRAINT `fk_qnaire_has_quota_qnaire_id`
+    FOREIGN KEY (`qnaire_id`)
+    REFERENCES `sabretooth`.`qnaire` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_qnaire_has_quota_quota_id`
+    FOREIGN KEY (`quota_id`)
+    REFERENCES `cenozo`.`quota` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+COMMENT = 'Record means that quota is disabled for qnaire';
+
 USE `sabretooth` ;
 
 -- -----------------------------------------------------

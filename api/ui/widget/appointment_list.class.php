@@ -67,7 +67,8 @@ class appointment_list extends \cenozo\ui\widget\site_restricted_list
       $addable = 0 == $appointment_class_name::count( $modifier );
 
       // don't add appointments if the participant's interview method is ivr
-      if( $addable && 'ivr' == $db_participant->get_effective_interview_method()->name )
+      $db_interview_method = $db_participant->get_effective_interview_method();
+      if( $addable && !is_null( $db_interview_method ) && 'ivr' == $db_interview_method->name )
         $addable = false;
 
       // don't add appointments if the participant has no effective qnaire

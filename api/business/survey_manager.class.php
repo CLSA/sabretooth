@@ -523,16 +523,12 @@ class survey_manager extends \cenozo\singleton
     }
     else if( 'override quota' == $key )
     {
-      // override_quota is true if the participant's quota is disabled AND
-      // their override_quota is true
+      // override_quota is true if the participant's quota is disabled AND override_quota is true
       $override_quota = '0';
-      $db_quota = $db_participant->get_quota();
-      $value = !is_null( $db_quota ) && 
-                    $db_quota->state_disabled &&
-                    ( $db_participant->override_quota ||
-                      $db_participant->get_source()->override_quota )
-                  ? '1' 
-                  : '0';
+      $value = false === $db_participant->get_quota_enabled() &&
+               ( $db_participant->override_quota || $db_participant->get_source()->override_quota )
+             ? '1' 
+             : '0';
     }
     else if( false !== strpos( $key, 'address' ) )
     {

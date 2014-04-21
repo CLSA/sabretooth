@@ -25,7 +25,7 @@ class participant_view extends \cenozo\ui\widget\participant_view
   {
     parent::prepare();
 
-    $this->add_item( 'quota_state', 'constant', 'Quota State' );
+    $this->add_item( 'qnaire_quota', 'constant', 'Questionnaire Quota State' );
     $this->add_item( 'qnaire_name', 'constant', 'Current Questionnaire' );
     $this->add_item( 'qnaire_date', 'constant', 'Delay Questionnaire Until' );
 
@@ -40,7 +40,7 @@ class participant_view extends \cenozo\ui\widget\participant_view
     $this->appointment_list->set_heading( 'Appointments' );
 
     // create the IVR appointment sub-list widget
-    if( 'ivr' == $this->db_interview_method->name )
+    if( !is_null( $this->db_interview_method ) && 'ivr' == $this->db_interview_method->name )
     {
       $this->ivr_appointment_list = lib::create( 'ui\widget\ivr_appointment_list', $this->arguments );
       $this->ivr_appointment_list->set_parent( $this );
@@ -86,10 +86,9 @@ class participant_view extends \cenozo\ui\widget\participant_view
     }
 
     // set the view's items
-    $db_quota = $record->get_quota();
-    $this->set_item( 'quota_state',
-      is_null( $db_quota ) ? '(no quota)' :
-        ( $db_quota->state_disabled ? 'Disabled' : 'Enabled' ) );
+    $enabled = $record->get_quota_enabled();
+    $this->set_item( 'qnaire_quota',
+      is_null( $enabled ) ? '(not applicable)' : ( $enabled ? 'Enabled' : 'Disabled' ) );
     $this->set_item( 'qnaire_name', $qnaire_name );
     $this->set_item( 'qnaire_date', $qnaire_date );
 
@@ -100,7 +99,7 @@ class participant_view extends \cenozo\ui\widget\participant_view
     }
     catch( \cenozo\exception\permission $e ) {}
 
-    if( 'ivr' == $this->db_interview_method->name )
+    if( !is_null( $this->db_interview_method ) && 'ivr' == $this->db_interview_method->name )
     {
       try
       {

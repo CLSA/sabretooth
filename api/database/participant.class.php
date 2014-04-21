@@ -111,6 +111,25 @@ class participant extends \cenozo\database\participant
   }
 
   /**
+   * Returns whether the participant's quota is enabled or not.
+   * 
+   * This is determined by cross-referencing the participant's quota and their effective qnaire
+   * since quotas can be enabled/disabled by qnaire.  If the participant does not belong to any
+   * quota then NULL is returned instead.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function get_quota_enabled()
+  {
+    $this->load_queue_data();
+    $qnaire_mod = lib::create( 'database\modifier' );
+    $qnaire_mod->where( 'qnaire_id', '=', $this->effective_qnaire_id );
+    $db_quota = $this->get_quota();
+    return is_null( $db_quota ) ? NULL : 0 == $db_quota->get_qnaire_count( $qnaire_mod );
+  }
+
+  /**
    * Returns the participant's interview method
    * 
    * The interview is either:

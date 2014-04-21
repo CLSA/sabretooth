@@ -11,6 +11,8 @@ SOURCE queue.sql
 SOURCE queue_has_participant.sql
 SOURCE ivr_appointment.sql
 SOURCE service.sql
+SOURCE qnaire_has_quota.sql
+SOURCE quota_state.sql
 
 SOURCE update_version_number.sql
 

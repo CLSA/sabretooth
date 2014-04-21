@@ -61,8 +61,9 @@ class prerecruit_select extends \cenozo\ui\push
     $count = 0;
     foreach( $this->totals as $quota_id => $total )
     {
+      // for the purpose of determining prerecruitment, test any qnaire is disabled for this quota
       $db_quota = lib::create( 'database\quota', $quota_id );
-      if( !$db_quota->state_disabled ) $count += $total;
+      if( 0 == $db_quota->get_qnaire_count() ) $count += $total;
 
       $db_prerecruit = $prerecruit_class_name::get_unique_record(
         array( 'participant_id', 'quota_id' ),
@@ -86,8 +87,9 @@ class prerecruit_select extends \cenozo\ui\push
     $count = 0;
     foreach( $this->totals as $quota_id => $total )
     {
+      // for the purpose of determining prerecruitment, test any qnaire is disabled for this quota
       $db_quota = lib::create( 'database\quota', $quota_id );
-      if( !$db_quota->state_disabled )
+      if( 0 == $db_quota->get_qnaire_count() )
       {
         $count += $total;
         if( $count >= $selection )
