@@ -25,12 +25,11 @@ class user_add extends \cenozo\ui\widget\user_add
     parent::setup();
     
     $role_class_name = lib::get_class_name( 'database\role' );
-    $session = lib::create( 'business\session' );
 
     // create enum arrays
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'name', 'NOT IN', array( 'cedar', 'opal' ) );
-    $modifier->where( 'tier', '<=', $session->get_role()->tier );
+    $modifier->where( 'tier', '<=', lib::create( 'business\session' )->get_role()->tier );
     $roles = array();
     foreach( $role_class_name::select( $modifier ) as $db_role )
       $roles[$db_role->id] = $db_role->name;

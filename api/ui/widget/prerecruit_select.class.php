@@ -55,8 +55,7 @@ class prerecruit_select extends \cenozo\ui\widget
     $quota_class_name = lib::get_class_name( 'database\quota' );
     $prerecruit_class_name = lib::get_class_name( 'database\prerecruit' );
 
-    $session = lib::create( 'business\session' );
-    $db_assignment = $session->get_current_assignment();
+    $db_assignment = lib::create( 'business\session' )->get_current_assignment();
     if( is_null( $db_assignment ) )
       throw lib::create( 'exception\notice',
         'You cannot run pre-recruit selection while not in an assignment.', __METHOD__ );
