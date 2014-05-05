@@ -23,7 +23,7 @@
       setInterval( 'update_clock()', 60000 ); // add the clock
 
       {% if home %}
-        $( "#{{ widget.full }}_home" ).button( {
+        $( "#{{ widget.full }}__home" ).button( {
           text: false,
           icons: {
             primary: "ui-icon-home"
@@ -39,7 +39,7 @@
 
 {% block widget %}
 
-  {% if home %}<button id="{{ widget.full }}_home">home</button>{% endif %}
+  {% if home %}<button id="{{ widget.full }}__home">home</button>{% endif %}
   <span id="{{ widget.full }}_icons" class="status_icons ui-widget ui-state-default ui-corner-all">
     <span id="{{ widget.full }}_sip"
           title="VoIP is {{ sip_enabled ? 'enabled' : 'disabled' }}"
