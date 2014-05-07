@@ -28,7 +28,7 @@ class setting_manager extends \cenozo\business\setting_manager
     $static_settings = $arguments[0];
 
     // add a few categories to the manager
-    foreach( array( 'voip' ) as $category )
+    foreach( array( 'ivr', 'voip' ) as $category )
     {
       // make sure the category exists
       if( !array_key_exists( $category, $static_settings ) )

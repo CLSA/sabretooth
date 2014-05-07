@@ -15,4 +15,6 @@ SOURCE cedar_instance.sql
 SOURCE source.sql
 SOURCE setting.sql
 
+SOURCE update_version_number.sql
+
 COMMIT;

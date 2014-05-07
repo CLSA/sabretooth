@@ -12,7 +12,7 @@ global $SETTINGS;
 // tagged version
 $SETTINGS['general']['application_name'] = 'sabretooth';
 $SETTINGS['general']['service_name'] = $SETTINGS['general']['application_name'];
-$SETTINGS['general']['version'] = '1.3.1';
+$SETTINGS['general']['version'] = '1.3.2';
 
 // always leave as false when running as production server
 $SETTINGS['general']['development_mode'] = false;
@@ -42,6 +42,13 @@ $SETTINGS['voip']['username'] = '';
 $SETTINGS['voip']['password'] = '';
 $SETTINGS['voip']['prefix'] = '';
 $SETTINGS['voip']['xor_key'] = '';
+
+// IVR setup
+$SETTINGS['ivr']['enabled'] = false;
+$SETTINGS['ivr']['host'] = 'https://localhost/'; // must end in a /
+$SETTINGS['ivr']['service'] = 'service_path.asmx?wsdl'; // must NOT begin with a /
+$SETTINGS['ivr']['username'] = '';
+$SETTINGS['ivr']['password'] = '';
 
 // the directory to write recorded calls
 // (must be an absolute path that the asterisk server's user has access to)

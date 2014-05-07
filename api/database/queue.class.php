@@ -85,6 +85,7 @@ class queue extends \cenozo\database\record
       'qnaire',
       'qnaire waiting',
       'assigned',
+      'ivr_appointment',
       'appointment',
       'upcoming appointment',
       'assignable appointment',
@@ -183,8 +184,101 @@ class queue extends \cenozo\database\record
   static public function repopulate( $db_participant = NULL )
   {
     $database_class_name = lib::get_class_name( 'database\database' );
+    $ivr_appointment_class_name = lib::get_class_name( 'database\ivr_appointment' );
+    $ivr_status_class_name = lib::get_class_name( 'business\ivr_status' );
+
+    $setting_manager = lib::create( 'business\setting_manager' );
+    $ivr_manager = lib::create( 'business\ivr_manager' );
     $session = lib::create( 'business\session' );
     $db_user = $session->get_user();
+
+    // get the status of all IVR appointments which have passed and do not have a completed status
+    $duration = $setting_manager->get_setting( 'appointment', 'full duration' );
+    $now_datetime_obj = util::get_datetime_object();
+    $appointment_datetime_obj = clone $now_datetime_obj;
+    $appointment_datetime_obj->sub( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
+    $ivr_appointment_mod = lib::create( 'database\modifier' );
+    $ivr_appointment_mod->where(
+      'datetime', '<=', $appointment_datetime_obj->format( 'Y-m-d H:i:s' ) );
+    $ivr_appointment_mod->where( 'completed', '=', NULL );
+
+    foreach( $ivr_appointment_class_name::select( $ivr_appointment_mod ) as $db_ivr_appointment )
+    {
+      $db_participant = $db_ivr_appointment->get_participant();
+
+      try
+      {
+        $status = $ivr_manager->get_status( $db_participant );
+      }
+      // ignore errors
+      catch( \cenozo\exception\runtime $e )
+      {
+        $status = $ivr_status_class_name::ERROR;
+      }
+
+      if( $ivr_status_class_name::CALLING_COMPLETE_INTERVIEW_COMPLETE == $status )
+      {
+        $db_ivr_appointment->completed = true;
+        $db_ivr_appointment->save();
+        
+        // now mark the interview as complete
+        $interview_mod = lib::create( 'database\modifier' );
+        $interview_mod->where( 'completed', '=', false );
+        $interview_mod->order_desc( 'qnaire.rank' );
+        $interview_mod->limit( 1 );
+        $db_interview = current(
+          $db_ivr_appointment->get_participant()->get_interview_list( $interview_mod ) );
+        if( is_null( $db_interview ) )
+        {
+          log::warning( sprintf(
+            'Cannot find incomplete interview which matches completed IVR appointment reported '.
+            'by IVR service for %s.',
+            $db_participant->uid ) );
+        }
+        else
+        {
+          $db_interview->completed = true;
+          $db_interview->save();
+        }
+      }
+      else if( $ivr_status_class_name::CALLING_COMPLETE_INTERVIEW_NOT_COMPLETE == $status )
+      {
+        $db_ivr_appointment->completed = false;
+        $db_ivr_appointment->save();
+      }
+      else if( $ivr_status_class_name::NO_APPOINTMENT == $status )
+      {
+        // the appointment is missing from the IVR, so add it in now
+        $db_ivr_appointment->datetime = $now_datetime_obj->format( 'Y-m-d H:i:s' );
+        $db_ivr_appointment->save();
+
+        try
+        {
+          $ivr_manager->set_appointment(
+            $db_participant,
+            $db_ivr_appointment->get_phone(),
+            $db_ivr_appointment->datetime );
+        }
+        catch( \cenozo\exception\runtime $e )
+        {
+          log::err( sprintf(
+            'IVR service was unable to add replacement appointment for %s.',
+            $db_participant->uid ) );
+        }
+      }
+      else if( $ivr_status_class_name::FUTURE_APPOINTMENT_SCHEDULED == $status )
+      {
+        log::warning( sprintf(
+          'IVR service reporting appointment time mismatch for %s.',
+          $db_participant->uid ) );
+      }
+      else if( $ivr_status_class_name::ERROR == $status )
+      {
+        log::crit( sprintf(
+          'Unable to get status for %s from IVR service.',
+          $db_participant->uid ) );
+      }
+    }
 
     // block with a semaphore
     $session->acquire_semaphore();
@@ -203,7 +297,8 @@ class queue extends \cenozo\database\record
         'DISTINCT participant_for_queue.id, %s, '.
         'IFNULL( service_has_participant_preferred_site_id, primary_region_site_id ), '.
         'effective_qnaire_id, '.
-        'start_qnaire_date',
+        'start_qnaire_date, '.
+        'effective_interview_method_id ',
         $database_class_name::format_string( $db_queue->id ) );
   
       $sql = sprintf(
@@ -218,7 +313,8 @@ class queue extends \cenozo\database\record
       if( !$db_queue->time_specific )
         static::db()->execute( sprintf(
           'INSERT INTO queue_has_participant( '.
-            'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) %s',
+            'participant_id, queue_id, site_id, qnaire_id, '.
+            'start_qnaire_date, interview_method_id ) %s',
           $db_queue->get_sql( $columns ) ) );
     }
 
@@ -280,8 +376,9 @@ class queue extends \cenozo\database\record
 
       $sql = sprintf(
         'INSERT INTO queue_has_participant( '.
-          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) '.
-        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, qnaire_id, start_qnaire_date '.
+          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date, interview_method_id ) '.
+        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, '.
+        'qnaire_id, start_qnaire_date, interview_method_id '.
         'FROM queue_has_participant '.
         'JOIN appointment ON queue_has_participant.participant_id = appointment.participant_id '.
         'AND appointment.assignment_id IS NULL '.
@@ -327,8 +424,9 @@ class queue extends \cenozo\database\record
     
       $sql = sprintf(
         'INSERT INTO queue_has_participant( '.
-          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) '.
-        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, qnaire_id, start_qnaire_date '.
+          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date, interview_method_id ) '.
+        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, '.
+        'qnaire_id, start_qnaire_date, interview_method_id '.
         'FROM queue_has_participant '.
         'JOIN callback ON queue_has_participant.participant_id = callback.participant_id '.
         'AND callback.assignment_id IS NULL '.
@@ -366,8 +464,9 @@ class queue extends \cenozo\database\record
 
       $sql = sprintf(
         'INSERT INTO queue_has_participant( '.
-          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) '.
-        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, qnaire_id, start_qnaire_date '.
+          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date, interview_method_id ) '.
+        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, '.
+        'qnaire_id, start_qnaire_date, interview_method_id '.
         'FROM queue_has_participant '.
         'JOIN participant_last_interview '.
         'ON queue_has_participant.participant_id = participant_last_interview.participant_id '.
@@ -499,7 +598,7 @@ class queue extends \cenozo\database\record
 
     // an array containing all of the qnaire queue's direct children queues
     $qnaire_children = array(
-      'qnaire waiting', 'assigned', 'appointment', 'quota disabled',
+      'qnaire waiting', 'assigned', 'ivr_appointment', 'appointment', 'quota disabled',
       'outside calling time', 'callback', 'new participant', 'old participant' );
 
     // join to the queue_restriction table based on site, city, region or postcode
@@ -514,8 +613,9 @@ class queue extends \cenozo\database\record
       'AND quota.region_id = primary_region_id '.
       'AND quota.gender = participant_gender '.
       'AND quota.age_group_id = participant_age_group_id '.
-      'LEFT JOIN quota_state '.
-      'ON quota.id = quota_state.quota_id';
+      'LEFT JOIN qnaire_has_quota '.
+      'ON quota.id = qnaire_has_quota.quota_id '.
+      'AND effective_qnaire_id = qnaire_has_quota.qnaire_id';
 
     // checks to make sure a participant is within calling time hours
     if( $check_time )
@@ -652,10 +752,25 @@ class queue extends \cenozo\database\record
             $parts['where'][] =
               '( last_assignment_id IS NULL OR last_assignment_end_datetime IS NOT NULL )';
 
-            if( 'appointment' == $queue )
+            if( 'ivr_appointment' == $queue )
+            {
+              // link to ivr_appointment table and make sure the ivr_appointment completed status
+              // hasn't been set (by design, there can only ever be one unset ivr_appointment per
+              // participant)
+              $parts['from'][] = 'interview_method';
+              $parts['where'][] = 'effective_interview_method_id = interview_method.id';
+              $parts['where'][] = 'interview_method.name = "ivr"';
+              $parts['from'][] = 'ivr_appointment';
+              $parts['where'][] = 'ivr_appointment.participant_id = participant_for_queue.id';
+              $parts['where'][] = 'ivr_appointment.completed IS NULL';
+            }
+            else if( 'appointment' == $queue )
             {
               // link to appointment table and make sure the appointment hasn't been assigned
-              // (by design, there can only ever one unassigned appointment per participant)
+              // (by design, there can only ever be one unassigned appointment per participant)
+              $parts['from'][] = 'interview_method';
+              $parts['where'][] = 'effective_interview_method_id = interview_method.id';
+              $parts['where'][] = 'interview_method.name = "operator"';
               $parts['from'][] = 'appointment';
               $parts['where'][] = 'appointment.participant_id = participant_for_queue.id';
               $parts['where'][] = 'appointment.assignment_id IS NULL';
@@ -676,8 +791,8 @@ class queue extends \cenozo\database\record
 
               if( 'quota disabled' == $queue )
               {
-                // who belong to a quota which is disabled
-                $parts['where'][] = 'quota_state.disabled = true';
+                // who belong to a quota which is disabled (row in qnaire_has_quota found)
+                $parts['where'][] = 'qnaire_has_quota.quota_id IS NOT NULL';
                 // and who are not marked to override quota
                 $parts['where'][] = 'participant_override_quota = false';
                 $parts['where'][] = 'source_override_quota = false';
@@ -686,8 +801,7 @@ class queue extends \cenozo\database\record
               {
                 // who belong to a quota which is not disabled or doesn't exist or is overridden
                 $parts['where'][] =
-                  '( quota_state.disabled IS NULL OR '.
-                    'quota_state.disabled = false OR '.
+                  '( qnaire_has_quota.quota_id IS NULL OR '.
                     'participant_override_quota = true OR '.
                     'source_override_quota = true )';
                 
@@ -1037,7 +1151,19 @@ IF
   current_interview.id IS NULL,
   ( SELECT id FROM qnaire WHERE rank = 1 ),
   IF( current_interview.completed, next_qnaire.id, current_qnaire.id )
-) as effective_qnaire_id,
+) AS effective_qnaire_id,
+IF
+(
+  current_interview.id IS NULL,
+  ( SELECT default_interview_method_id FROM qnaire WHERE rank = 1 ),
+  IF( current_interview.completed,
+      IF( next_qnaire.id IS NULL,
+          last_interview.interview_method_id,
+          next_qnaire.default_interview_method_id
+      ),
+      current_interview.interview_method_id
+  )
+) AS effective_interview_method_id,
 (
   IF
   (
@@ -1080,6 +1206,10 @@ JOIN participant_last_consent
 ON participant.id = participant_last_consent.participant_id
 LEFT JOIN consent AS last_consent
 ON last_consent.id = participant_last_consent.consent_id
+JOIN participant_last_interview
+ON participant.id = participant_last_interview.participant_id
+JOIN interview AS last_interview
+ON participant_last_interview.interview_id = last_interview.id
 LEFT JOIN interview AS current_interview
 ON current_interview.participant_id = participant.id
 LEFT JOIN interview_last_assignment

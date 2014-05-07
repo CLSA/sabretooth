@@ -22,6 +22,31 @@
 
     $( function() {
       {% if participant_id|default(false) %}
+        // track the participant's current interview method
+        $interview_method = $( "#{{ widget.full }}__interview_method_id" );
+        $interview_method.data(
+          "old_value", $( "#{{ widget.full }}__interview_method_id option:selected" ).val() );
+
+        // interview method dropdown
+        $interview_method.change( function() {
+          var args = {
+            id: {{ interview_id }},
+            columns: {
+              interview_method_id: 
+                $( "#{{ widget.full }}__interview_method_id option:selected" ).val()
+            }
+          };
+
+          if( ajax_push( "interview", "edit", args ) ) {
+            // update the old value
+            $(this).data(
+              "old_value", $( "#{{ widget.full }}__interview_method_id option:selected" ).val() );
+          } else {
+            // put back the old value
+            $(this).val( $(this).data( "old_value" ) );
+          }
+        } );
+
         {% if allow_secondary %}
           // secondary contact button
           $( "#{{ widget.full }}__secondary" ).click( function() {
@@ -165,6 +190,16 @@
             {{ participant_name }} ({{ participant_uid }})
             {{ note_widget( [widget.full,"icon"]|join, "participant", participant_id,
                             true, participant_note_count ) }}
+          </td>
+        </tr>
+        <tr>
+          <td class="heading">Interview Method:</td>
+          <td class="content">
+            <select class="ui-state-default" id="{{ widget.full }}__interview_method_id">
+              {% for id, method in interview_method_list %}
+                <option {{ interview_method_id == id ? "selected" : "" }} value="{{ id }}">{{ method }}</option>
+              {% endfor %}
+            </select>
           </td>
         </tr>
         <tr>

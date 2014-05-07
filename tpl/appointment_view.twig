@@ -26,7 +26,7 @@
   {{ parent() }}
   {% if not hide_calendar %}
     {% from 'macros.twig' import include_calendar %}
-    {{ include_calendar( 'site', site_calendar|default(false), true ) }}
+    {{ include_calendar( 'site', calendar|default(false), true ) }}
   {% endif %}
 
 {% endblock record %}

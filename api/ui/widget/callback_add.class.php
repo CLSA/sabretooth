@@ -68,8 +68,7 @@ class callback_add extends \cenozo\ui\widget\base_view
     $time_diff = is_null( $db_address ) ? NULL : $db_address->get_time_diff();
 
     // need to add the participant's timezone information as information to the date item
-    $session = lib::create( 'business\session' );
-    $site_name = $session->get_site()->name;
+    $site_name = lib::create( 'business\session' )->get_site()->name;
     if( is_null( $time_diff ) )
       $note = 'The participant\'s time zone is not known.';
     else if( 0 == $time_diff )

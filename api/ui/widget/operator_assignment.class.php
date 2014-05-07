@@ -90,6 +90,7 @@ class operator_assignment extends \cenozo\ui\widget
 
       $setting_manager = lib::create( 'business\setting_manager' );
       $db_interview = $db_current_assignment->get_interview();
+      $db_qnaire = $db_interview->get_qnaire();
       $db_participant = $db_interview->get_participant();
       $db_current_phone_call = $session->get_current_phone_call();
       $current_sid = lib::create( 'business\survey_manager' )->get_current_sid();
@@ -149,6 +150,13 @@ class operator_assignment extends \cenozo\ui\widget
                    $db_participant->id ) );
       }
 
+      // create the interview method list
+      $interview_method_list = array();
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->order( 'interview_method.name' );
+      foreach( $db_qnaire->get_interview_method_list( $modifier ) as $db_interview_method )
+        $interview_method_list[$db_interview_method->id] = $db_interview_method->name;
+
       $this->set_variable( 'assignment_id', $db_current_assignment->id );
       $this->set_variable( 'participant_id', $db_participant->id );
       $this->set_variable( 'interview_id', $db_interview->id );
@@ -156,12 +164,14 @@ class operator_assignment extends \cenozo\ui\widget
       $this->set_variable( 'participant_name',
         sprintf( $db_participant->first_name.' '.$db_participant->last_name ) );
       $this->set_variable( 'participant_uid', $db_participant->uid );
+      $this->set_variable( 'interview_method_id', $db_interview->interview_method_id );
+      $this->set_variable( 'interview_method_list', $interview_method_list );
       $this->set_variable( 'participant_language', $language );
       $this->set_variable(
         'participant_consent', is_null( $db_last_consent ) ? 'none' : $db_last_consent->to_string() );
       $this->set_variable( 'withdrawing', $withdrawing );
       $this->set_variable(
-        'allow_withdraw', !is_null( $db_interview->get_qnaire()->withdraw_sid ) );
+        'allow_withdraw', !is_null( $db_qnaire->withdraw_sid ) );
       
       // determine whether we want to show a warning before ending a call
       $warn_before_ending_call = false;

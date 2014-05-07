@@ -1,4 +1,22 @@
 ====================================================================================================
+1.3.2
+====================================================================================================
+
+* Adding management of a service's jurisdiction and region-site associations
+  - adminstrators can now add/edit/delete which sites a postcode or region is assigned to
+
+* Integrating IVR support as a new interview method type
+  - IVR (interactive voice recognition) interviewing can now be used instead of operator-based
+    calling
+
+* Quotas can now be disabled by questionnaire instead of globally
+  - quotas now have a list of disabled questionnaires
+  - there is no longer a way to disable all questionnaires for a quota (they must all be disabled
+    individually)
+
+* Event system now tracks when participants are released to services
+
+====================================================================================================
 1.3.1
 ====================================================================================================
 

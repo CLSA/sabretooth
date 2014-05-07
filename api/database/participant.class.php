@@ -111,6 +111,45 @@ class participant extends \cenozo\database\participant
   }
 
   /**
+   * Returns whether the participant's quota is enabled or not.
+   * 
+   * This is determined by cross-referencing the participant's quota and their effective qnaire
+   * since quotas can be enabled/disabled by qnaire.  If the participant does not belong to any
+   * quota then NULL is returned instead.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function get_quota_enabled()
+  {
+    $this->load_queue_data();
+    $qnaire_mod = lib::create( 'database\modifier' );
+    $qnaire_mod->where( 'qnaire_id', '=', $this->effective_qnaire_id );
+    $db_quota = $this->get_quota();
+    return is_null( $db_quota ) ? NULL : 0 == $db_quota->get_qnaire_count( $qnaire_mod );
+  }
+
+  /**
+   * Returns the participant's interview method
+   * 
+   * The interview is either:
+   * 1. if the participant hasn't started an interview then the first qnaire's default interview
+   *    method
+   * 2. if the current interview is not complete then that interview's interview method
+   * 3. if all interviews are complete then the last interview's interview method
+   * 4. otherwise, the next qnaire's default interview method
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\interview_method
+   * @access public
+   */
+  public function get_effective_interview_method()
+  {
+    $this->load_queue_data();
+    return is_null( $this->effective_interview_method_id ) ?
+      NULL : lib::create( 'database\interview_method', $this->effective_interview_method_id );
+  }
+
+  /**
    * Returns the participant's qnaire start date.
    * 
    * The qnaire start date is determined based on the following rules:
@@ -133,7 +172,7 @@ class participant extends \cenozo\database\participant
   }
 
   /**
-   * Fills in the effective qnaire id and start qnaire date
+   * Fills in the effective qnaire id, effective interview method id and start qnaire date
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access private
    */
@@ -161,6 +200,7 @@ class participant extends \cenozo\database\participant
     if( count( $row ) )
     {
       $this->effective_qnaire_id = $row['qnaire_id'];
+      $this->effective_interview_method_id = $row['interview_method_id'];
       $this->start_qnaire_date = $row['start_qnaire_date'];
     }
 
@@ -180,6 +220,13 @@ class participant extends \cenozo\database\participant
    * @access private
    */
   private $effective_qnaire_id = NULL;
+
+  /**
+   * The participant's current interview method id (from a custom query)
+   * @var int
+   * @access private
+   */
+  private $effective_interview_method_id = NULL;
 
   /**
    * The date that the current questionnaire is to begin (from a custom query)

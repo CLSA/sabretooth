@@ -24,7 +24,7 @@ class appointment_view extends base_appointment_view
    */
   public function __construct( $args )
   {
-    parent::__construct( 'view', $args );
+    parent::__construct( 'appointment', 'view', $args );
   }
 
   /**
@@ -38,12 +38,14 @@ class appointment_view extends base_appointment_view
   {
     parent::prepare();
     
+    $this->db_participant =
+      lib::create( 'database\participant', $this->get_record()->participant_id );
+
     // add items to the view
     $this->add_item( 'uid', 'constant', 'UID' );
     $this->add_item( 'phone_id', 'enum', 'Phone Number',
       'Select a specific phone number to call for the appointment, or leave this field blank if '.
       'any of the participant\'s phone numbers can be called.' );
-    $this->add_item( 'datetime', 'datetime', 'Date' );
     $this->add_item( 'assignment.user', 'constant', 'Assigned to' );
     $this->add_item( 'state', 'constant', 'State',
       '(One of reached, not reached, upcoming, assignable, missed, incomplete, assigned '.
@@ -68,39 +70,16 @@ class appointment_view extends base_appointment_view
 
     parent::setup();
 
-    $db_participant = lib::create( 'database\participant', $this->get_record()->participant_id );
-  
     // determine the time difference: use the first address unless there is a phone number with
     // an address
     $db_phone = $this->get_record()->get_phone();
-    $db_address = is_null( $db_phone ) ? NULL : $db_phone->get_address();
-    if( is_null( $db_address ) ) $db_address = $db_participant->get_first_address();
-    $time_diff = is_null( $db_address ) ? NULL : $db_address->get_time_diff();
 
-    // need to add the participant's timezone information as information to the date item
-    $site_name = lib::create( 'business\session' )->get_site()->name;
-    if( is_null( $time_diff ) )
-      $note = 'The participant\'s time zone is not known.';
-    else if( 0 == $time_diff )
-      $note = sprintf( 'The participant is in the same time zone as the %s site.',
-                       $site_name );
-    else if( 0 < $time_diff )
-      $note = sprintf( 'The participant\'s time zone is %s hours ahead of %s\'s time.',
-                       $time_diff,
-                       $site_name );
-    else if( 0 > $time_diff )
-      $note = sprintf( 'The participant\'s time zone is %s hours behind of %s\'s time.',
-                       abs( $time_diff ),
-                       $site_name );
-
-    $this->add_item( 'datetime', 'datetime', 'Date', $note );
-    
     // create enum arrays
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'active', '=', true );
     $modifier->order( 'rank' );
     $phones = array();
-    foreach( $db_participant->get_phone_list( $modifier ) as $db_phone )
+    foreach( $this->db_participant->get_phone_list( $modifier ) as $db_phone )
       $phones[$db_phone->id] = $db_phone->rank.". ".$db_phone->number;
     
     if( !is_null( $db_assignment ) )
@@ -125,7 +104,7 @@ class appointment_view extends base_appointment_view
     $types = array_combine( $types, $types );
 
     // set the view's items
-    $this->set_item( 'uid', $db_participant->uid );
+    $this->set_item( 'uid', $this->db_participant->uid );
     $this->set_item( 'phone_id', $this->get_record()->phone_id, false, $phones );
     $this->set_item( 'datetime', $this->get_record()->datetime, true );
     $this->set_item( 'state', $this->get_record()->get_state(), false );
@@ -133,7 +112,7 @@ class appointment_view extends base_appointment_view
 
     // hide the calendar if requested to
     $this->set_variable( 'hide_calendar', $this->get_argument( 'hide_calendar', false ) );
-    $this->set_variable( 'participant_id', $db_participant->id );
+    $this->set_variable( 'participant_id', $this->db_participant->id );
 
     // add an action to view the participant's details
     $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'view' );

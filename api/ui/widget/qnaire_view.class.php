@@ -41,7 +41,7 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     // create an associative array with everything we want to display about the qnaire
     $this->add_item( 'name', 'string', 'Name' );
     $this->add_item( 'rank', 'enum', 'Rank' );
-    $this->add_item( 'interview_method_id', 'enum', 'Default Interview method' );
+    $this->add_item( 'default_interview_method_id', 'enum', 'Default Interview method' );
     $this->add_item( 'prev_qnaire_id', 'enum', 'Previous Questionnaire',
       'The questionnaire which must be finished before this one begins.' );
     $this->add_item( 'delay', 'number', 'Delay (weeks)',
@@ -50,6 +50,11 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'withdraw_sid', 'enum', 'Withdraw Survey' );
     $this->add_item( 'phases', 'constant', 'Number of phases' );
     $this->add_item( 'description', 'text', 'Description' );
+
+    // create the interview_method sub-list widget
+    $this->interview_method_list = lib::create( 'ui\widget\interview_method_list', $this->arguments );
+    $this->interview_method_list->set_parent( $this );
+    $this->interview_method_list->set_heading( 'Available interview methods' );
 
     // create the phase sub-list widget
     $this->phase_list = lib::create( 'ui\widget\phase_list', $this->arguments );
@@ -94,7 +99,9 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     $ranks = array_combine( $ranks, $ranks );
 
     $interview_methods = array();
-    foreach( $interview_method_class_name::select() as $db_interview_method )
+    $interview_mod = lib::create( 'database\modifier' );
+    $interview_mod->order( 'interview_method.name' );
+    foreach( $record->get_interview_method_list( $interview_mod ) as $db_interview_method )
       $interview_methods[$db_interview_method->id] = $db_interview_method->name;
 
     $surveys = array();
@@ -108,8 +115,8 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     // set the view's items
     $this->set_item( 'name', $record->name, true );
     $this->set_item( 'rank', $record->rank, true, $ranks );
-    $this->set_item(
-      'interview_method_id', $record->interview_method_id, true, $interview_methods );
+    $this->set_item( 'default_interview_method_id',
+      $record->default_interview_method_id, true, $interview_methods );
     $this->set_item( 'prev_qnaire_id', $record->prev_qnaire_id, false, $qnaires );
     $this->set_item( 'delay', $record->delay, true );
     $this->set_item( 'withdraw_sid', $record->withdraw_sid, false, $surveys );
@@ -117,6 +124,13 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     $this->set_item( 'description', $record->description );
     $this->set_item( 'phases', $record->get_phase_count() );
     $this->set_item( 'description', $record->description );
+    
+    try
+    {
+      $this->interview_method_list->process();
+      $this->set_variable( 'interview_method_list', $this->interview_method_list->get_variables() );
+    }
+    catch( \cenozo\exception\permission $e ) {}
     
     try
     {
@@ -139,6 +153,13 @@ class qnaire_view extends \cenozo\ui\widget\base_view
     }
     catch( \cenozo\exception\permission $e ) {}
   }
+  
+  /**
+   * The qnaire list widget.
+   * @var interview_method_list
+   * @access protected
+   */
+  protected $interview_method_list = NULL;
   
   /**
    * The qnaire list widget.
