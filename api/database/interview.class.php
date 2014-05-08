@@ -121,7 +121,6 @@ class interview extends \cenozo\database\has_note
     $phase_mod->where( 'repeated', '!=', true );
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
-    $event_type_class_name = lib::get_class_name( 'database\event_type' );
     foreach( $this->get_qnaire()->get_phase_list( $phase_mod ) as $db_phase )
     {
       // update tokens
@@ -162,15 +161,20 @@ class interview extends \cenozo\database\has_note
     $this->save();
 
     // record the event (if one exists)
-    $event_type_name = sprintf( 'completed (%s)', $this->get_qnaire()->name );
-    $db_event_type = $event_type_class_name::get_unique_record( 'name', $event_type_name );
+    $db_event_type = $this->get_qnaire()->get_completed_event_type();
     if( !is_null( $db_event_type ) )
     {
-      $db_event = lib::create( 'database\event' );
-      $db_event->participant_id = $this->participant_id;
-      $db_event->event_type_id = $db_event_type->id;
-      $db_event->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
-      $db_event->save();
+      // make sure the event doesn't already exist
+      $event_mod = lib::create( 'database\modifier' );
+      $event_mod->where( 'event_type_id', '=', $db_event_type->id );
+      if( 0 == $this->get_participant()->get_event_count( $event_mod ) )
+      {
+        $db_event = lib::create( 'database\event' );
+        $db_event->participant_id = $this->participant_id;
+        $db_event->event_type_id = $db_event_type->id;
+        $db_event->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+        $db_event->save();
+      }
     }
   }
 
@@ -196,7 +200,6 @@ class interview extends \cenozo\database\has_note
     $phase_mod->where( 'repeated', '!=', true );
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
-    $event_type_class_name = lib::get_class_name( 'database\event_type' );
     foreach( $this->get_qnaire()->get_phase_list( $phase_mod ) as $db_phase )
     {
       // delete tokens
@@ -229,8 +232,7 @@ class interview extends \cenozo\database\has_note
     $this->save();
 
     // remove completed events (if any exist)
-    $event_type_name = sprintf( 'completed (%s)', $this->get_qnaire()->name );
-    $db_event_type = $event_type_class_name::get_unique_record( 'name', $event_type_name );
+    $db_event_type = $this->get_qnaire()->get_completed_event_type();
     if( !is_null( $db_event_type ) )
     {
       $event_mod = lib::create( 'database\modifier' );

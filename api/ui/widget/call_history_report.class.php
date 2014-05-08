@@ -38,13 +38,33 @@ class call_history_report extends base_report
   {
     parent::prepare();
 
+    $this->add_parameter( 'interview_completed', 'enum', 'Interview Complete',
+      'Whether to restrict the report to interviews that are complete or incomplete.' );
     $this->add_restriction( 'site' );
     $this->add_restriction( 'source' );
+    $this->add_parameter( 'last_only', 'boolean', 'Last Call Only',
+      'Only include the last call made to the participant.' );
     $this->add_restriction( 'dates' );
 
     $this->set_variable( 'description',
       'This report chronologically lists assignment call attempts.  The report includes the '.
       "participant's UID, operator's name, date of the assignment, result, start and end time ".
       'of each call.' );
+  }
+
+  /**
+   * Sets up the operation with any pre-execution instructions that may be necessary.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access protected
+   */
+  protected function setup()
+  {
+    parent::setup();
+
+    $complete_list = array( 'Either', 'Yes', 'No' );
+    $complete_list = array_combine( $complete_list, $complete_list );
+
+    $this->set_parameter( 'interview_completed', key( $complete_list ), true, $complete_list );
+    $this->set_parameter( 'last_only', false, true );
   }
 }

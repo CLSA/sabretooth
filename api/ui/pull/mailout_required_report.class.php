@@ -57,9 +57,6 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
     // prepare the date items
     $report_date = util::get_datetime_object()->format( 'Y-m-d' );
 
-    // add a list of all questions which we need to check
-    $question_code_list = array( 'INT_5', 'INT_8' );
-
     if( $restrict_source_id )
     {
       $db_source = lib::create( 'database\source', $restrict_source_id );
@@ -81,8 +78,9 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
 
     // filtering participants according to widget
     $participant_mod = lib::create( 'database\modifier' );
+    $participant_mod->where( 'active', '=', true );
     if( $restrict_site_id )
-    $participant_mod->where( 'participant_site.site_id', '=', $restrict_site_id );
+      $participant_mod->where( 'participant_site.site_id', '=', $restrict_site_id );
     // mailout type refers to proxy information packages which require certain age groups
     $participant_mod->where(
       'date_of_birth',
@@ -103,12 +101,16 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
     $participant_mod->group( 'participant.id' );
 
     // get the survey id for all sources (used by the report before the participant loop
-    // (to save processing time)
+    // (to save processing time)), also build the question code and response list used
+    // to determine whether participants are included in the report or not
+    $question_code_list = array();
+    $question_response_list = array();
     $survey_list = array();
     $source_mod = lib::create( 'database\modifier' );
     if( $restrict_source_id ) $source_mod->where( 'id', '=', $restrict_source_id );
     foreach( $source_class_name::select( $source_mod ) as $db_source )
     {
+      // create the map between source and survey SID
       $db_phase = $phase_class_name::get_unique_record(
         array( 'qnaire_id', 'rank' ),
         array( $db_qnaire->id, 1 ) );
@@ -119,16 +121,21 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
 
       $survey_list[$db_source->id] =
         is_null( $db_source_survey ) ? $db_phase->sid : $db_source_survey->sid;
+
+      // create the map between source and question code and response
+      $db_clsapr_source = $source_class_name::get_unique_record( 'name', 'clsapr' );
+      $question_code_list[$db_source->id] =
+        'clsapr' == $db_source->name ? array( 'INT_3' ) : array( 'INT_5', 'INT_8' );
+      $question_response_list[$db_source->id] =
+        'clsapr' == $db_source->name ? array( 'NO', 'UNSURE' ) : array( 'YES', 'NO' );
     }
 
     foreach( $participant_class_name::select( $participant_mod ) as $db_participant )
     {
-      // make sure the participant's quota is active (or overridden)
-      if( !$db_participant->override_quota && !$db_participant->get_source()->override_quota )
-      {
-        $db_quota = $db_participant->get_quota();
-        if( !is_null( $db_quota ) && $db_quota->state_disabled ) continue;
-      }
+      // make sure the participant's quota is not disabled (or overridden)
+      if( !$db_participant->override_quota &&
+          !$db_participant->get_source()->override_quota &&
+          false === $db_participant->get_quota_enabled() ) continue;
 
       $interview_mod = lib::create( 'database\modifier' );
       $interview_mod->where( 'qnaire_id', '=', $db_qnaire->id );
@@ -141,20 +148,24 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
       $survey_mod->where( 'token', 'LIKE', $db_interview->id.'_%' );
       $survey_mod->order_desc( 'startdate' );
 
-      // go through each survey response and check to see if the question code has been set
+      // go through each survey response and check to see if any of the question codes
+      // has any of the questions responses
       $include_participant = false;
       $answer_date = "";
       foreach( $survey_class_name::select( $survey_mod ) as $db_survey )
       {
-        foreach( $question_code_list as $question_code )
+        foreach( $question_code_list[$db_participant->source_id] as $question_code )
         {
-          if( 'YES' == $db_survey->get_response( $question_code ) ||
-              'NO'  == $db_survey->get_response( $question_code ) )
-          { // question was answered, include the participant (no need to keep searching)
-            $include_participant = true;
-            $answer_date = util::from_server_datetime( $db_survey->startdate, 'Y-m-d' );
-            break;
+          foreach( $question_response_list[$db_participant->source_id] as $question_response )
+          {
+            if( $question_response == $db_survey->get_response( $question_code ) )
+            {
+              $include_participant = true;
+              $answer_date = util::from_server_datetime( $db_survey->startdate, 'Y-m-d' );
+            }
+            if( $include_participant ) break;
           }
+          if( $include_participant ) break;
         }
         if( $include_participant ) break;
       }

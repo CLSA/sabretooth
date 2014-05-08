@@ -142,7 +142,6 @@ class survey_manager extends \cenozo\singleton
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
     $source_withdraw_class_name = lib::get_class_name( 'database\source_withdraw' );
     $source_survey_class_name = lib::get_class_name( 'database\source_survey' );
-    $event_type_class_name = lib::get_class_name( 'database\event_type' );
     $interview_class_name = lib::get_class_name( 'database\interview' );
 
     $session = lib::create( 'business\session' );
@@ -484,15 +483,20 @@ class survey_manager extends \cenozo\singleton
           $db_interview->save();
 
           // record the event (if one exists)
-          $event_type_name = sprintf( 'completed (%s)', $db_qnaire->name );
-          $db_event_type = $event_type_class_name::get_unique_record( 'name', $event_type_name );
+          $db_event_type = $db_qnaire->get_completed_event_type();
           if( !is_null( $db_event_type ) )
           {
-            $db_event = lib::create( 'database\event' );
-            $db_event->participant_id = $db_participant->id;
-            $db_event->event_type_id = $db_event_type->id;
-            $db_event->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
-            $db_event->save();
+            // make sure the event doesn't already exist
+            $event_mod = lib::create( 'database\modifier' );
+            $event_mod->where( 'event_type_id', '=', $db_event_type->id );
+            if( 0 == $db_participant->get_event_count( $event_mod ) )
+            {
+              $db_event = lib::create( 'database\event' );
+              $db_event->participant_id = $db_participant->id;
+              $db_event->event_type_id = $db_event_type->id;
+              $db_event->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+              $db_event->save();
+            }
           }
         }
       }
@@ -525,16 +529,12 @@ class survey_manager extends \cenozo\singleton
     }
     else if( 'override quota' == $key )
     {
-      // override_quota is true if the participant's quota is disabled AND
-      // their override_quota is true
+      // override_quota is true if the participant's quota is disabled AND override_quota is true
       $override_quota = '0';
-      $db_quota = $db_participant->get_quota();
-      $value = !is_null( $db_quota ) && 
-                    $db_quota->state_disabled &&
-                    ( $db_participant->override_quota ||
-                      $db_participant->get_source()->override_quota )
-                  ? '1' 
-                  : '0';
+      $value = false === $db_participant->get_quota_enabled() &&
+               ( $db_participant->override_quota || $db_participant->get_source()->override_quota )
+             ? '1' 
+             : '0';
     }
     else if( false !== strpos( $key, 'address' ) )
     {

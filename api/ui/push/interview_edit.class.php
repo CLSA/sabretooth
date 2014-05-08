@@ -45,7 +45,19 @@ class interview_edit extends \cenozo\ui\push\base_edit
 
       // force complete the interview or throw a notice (we cannot un-complete)
       if( 1 == $columns['completed'] ) $this->get_record()->force_complete();
-      else $this->get_record()->force_uncomplete();
+      else
+      {
+        // only allow admins to uncomplete an interview
+        if( 2 < lib::create( 'business\session' )->get_role()->tier )
+        {
+          $this->get_record()->force_uncomplete();
+        }
+        else
+        {
+          throw lib::create( 'exception\notice',
+            'Only administrators can un-complete an interview.', __METHOD__ );
+        }
+      }
 
       // now update the queue
       $this->get_record()->get_participant()->update_queue_status();
@@ -54,5 +66,8 @@ class interview_edit extends \cenozo\ui\push\base_edit
     {
       parent::execute();
     }
+
+    if( array_key_exists( 'interview_method_id', $columns ) )
+      $this->get_record()->get_participant()->update_queue_status();
   }
 }

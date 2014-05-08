@@ -295,6 +295,14 @@ VALUES( "push", "queue", "repopulate", true, "Repopulate all queue participant l
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "queue", "view", true, "View a queue's details and list of participants." );
 
+-- quota
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "quota", "add_qnaire", true, "A form to disable a quota for a particular qnaire." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "quota", "delete_qnaire", true, "Re-enable quotas for a particular qnaire." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "quota", "new_qnaire", true, "Disable a quota for a particular qnaire." );
+
 -- recording
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "recording", "list", true, "Provides a list of recordings for a particular participant and qnaire." );

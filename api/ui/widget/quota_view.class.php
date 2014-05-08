@@ -25,8 +25,10 @@ class quota_view extends \cenozo\ui\widget\quota_view
   {
     parent::prepare();
 
-    // add in the voip details
-    $this->add_item( 'state_disabled', 'boolean', 'Disabled' );
+    // create the qnaire sub-list widget
+    $this->qnaire_list = lib::create( 'ui\widget\qnaire_list', $this->arguments );
+    $this->qnaire_list->set_parent( $this );
+    $this->qnaire_list->set_heading( 'Disabled Questionnaires' );
   }
 
   /**
@@ -39,7 +41,18 @@ class quota_view extends \cenozo\ui\widget\quota_view
   {
     parent::setup();
 
-    // set the view's items
-    $this->set_item( 'state_disabled', $this->get_record()->state_disabled, true );
+    try
+    {
+      $this->qnaire_list->process();
+      $this->set_variable( 'qnaire_list', $this->qnaire_list->get_variables() );
+    }
+    catch( \cenozo\exception\permission $e ) {}
   }
+
+  /**
+   * The qnaire list widget.
+   * @var qnaire_list
+   * @access protected
+   */
+  protected $qnaire_list = NULL;
 }

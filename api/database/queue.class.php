@@ -218,12 +218,32 @@ class queue extends \cenozo\database\record
 
       if( $ivr_status_class_name::CALLING_COMPLETE_INTERVIEW_COMPLETE == $status )
       {
-        $db_ivr_appointment->complete = true;
+        $db_ivr_appointment->completed = true;
         $db_ivr_appointment->save();
+        
+        // now mark the interview as complete
+        $interview_mod = lib::create( 'database\modifier' );
+        $interview_mod->where( 'completed', '=', false );
+        $interview_mod->order_desc( 'qnaire.rank' );
+        $interview_mod->limit( 1 );
+        $db_interview = current(
+          $db_ivr_appointment->get_participant()->get_interview_list( $interview_mod ) );
+        if( is_null( $db_interview ) )
+        {
+          log::warning( sprintf(
+            'Cannot find incomplete interview which matches completed IVR appointment reported '.
+            'by IVR service for %s.',
+            $db_participant->uid ) );
+        }
+        else
+        {
+          $db_interview->completed = true;
+          $db_interview->save();
+        }
       }
       else if( $ivr_status_class_name::CALLING_COMPLETE_INTERVIEW_NOT_COMPLETE == $status )
       {
-        $db_ivr_appointment->complete = false;
+        $db_ivr_appointment->completed = false;
         $db_ivr_appointment->save();
       }
       else if( $ivr_status_class_name::NO_APPOINTMENT == $status )
@@ -593,8 +613,9 @@ class queue extends \cenozo\database\record
       'AND quota.region_id = primary_region_id '.
       'AND quota.gender = participant_gender '.
       'AND quota.age_group_id = participant_age_group_id '.
-      'LEFT JOIN quota_state '.
-      'ON quota.id = quota_state.quota_id';
+      'LEFT JOIN qnaire_has_quota '.
+      'ON quota.id = qnaire_has_quota.quota_id '.
+      'AND effective_qnaire_id = qnaire_has_quota.qnaire_id';
 
     // checks to make sure a participant is within calling time hours
     if( $check_time )
@@ -770,8 +791,8 @@ class queue extends \cenozo\database\record
 
               if( 'quota disabled' == $queue )
               {
-                // who belong to a quota which is disabled
-                $parts['where'][] = 'quota_state.disabled = true';
+                // who belong to a quota which is disabled (row in qnaire_has_quota found)
+                $parts['where'][] = 'qnaire_has_quota.quota_id IS NOT NULL';
                 // and who are not marked to override quota
                 $parts['where'][] = 'participant_override_quota = false';
                 $parts['where'][] = 'source_override_quota = false';
@@ -780,8 +801,7 @@ class queue extends \cenozo\database\record
               {
                 // who belong to a quota which is not disabled or doesn't exist or is overridden
                 $parts['where'][] =
-                  '( quota_state.disabled IS NULL OR '.
-                    'quota_state.disabled = false OR '.
+                  '( qnaire_has_quota.quota_id IS NULL OR '.
                     'participant_override_quota = true OR '.
                     'source_override_quota = true )';
                 

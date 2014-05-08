@@ -140,6 +140,33 @@ CREATE PROCEDURE patch_role_has_operation()
     EXECUTE statement;
     DEALLOCATE PREPARE statement;
 
+    SET @sql = CONCAT(
+      "INSERT IGNORE INTO role_has_operation( role_id, operation_id ) ",
+      "SELECT role.id, operation.id FROM ", @cenozo, ".role, operation ",
+      "WHERE type = 'widget' AND subject = 'quota' AND operation.name = 'add_qnaire' ",
+      "AND role.name IN ( 'administrator' )" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement;
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "INSERT IGNORE INTO role_has_operation( role_id, operation_id ) ",
+      "SELECT role.id, operation.id FROM ", @cenozo, ".role, operation ",
+      "WHERE type = 'push' AND subject = 'quota' AND operation.name = 'delete_qnaire' ",
+      "AND role.name IN ( 'administrator' )" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement;
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "INSERT IGNORE INTO role_has_operation( role_id, operation_id ) ",
+      "SELECT role.id, operation.id FROM ", @cenozo, ".role, operation ",
+      "WHERE type = 'push' AND subject = 'quota' AND operation.name = 'new_qnaire' ",
+      "AND role.name IN ( 'administrator' )" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement;
+    DEALLOCATE PREPARE statement;
+
   END //
 DELIMITER ;
 

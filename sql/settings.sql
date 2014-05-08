@@ -60,6 +60,11 @@ VALUES( "calling", "max failed calls", "integer", "10",
 "Number of consecutive failed calls before the participant is considered unreachable and sourcing
 is required." );
 
+INSERT INTO setting( category, name, type, value, description )
+VALUES( "calling", "end call warning", "boolean", "false",
+"Whether to show a warning when an operator ends a call with a participant who's current
+questionnaire is non-repeating and incomplete." );
+
 -- callback timing
 INSERT INTO setting( category, name, type, value, description )
 VALUES( "callback timing", "contacted", "integer", "10080",
