@@ -927,6 +927,37 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`ivr_appointment` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+
+-- -----------------------------------------------------
+-- Table `sabretooth`.`queue_restriction`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`queue_restriction` ;
+
+CREATE TABLE IF NOT EXISTS `sabretooth`.`queue_restriction` (
+  `id` INT NOT NULL,
+  `update_timestamp` TIMESTAMP NOT NULL,
+  `create_timestamp` TIMESTAMP NOT NULL,
+  `site_id` INT UNSIGNED NULL,
+  `city` VARCHAR(100) NULL,
+  `region_id` INT UNSIGNED NULL,
+  `postcode` VARCHAR(10) NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_site_id` (`site_id` ASC),
+  INDEX `fk_region_id` (`region_id` ASC),
+  INDEX `dk_city` (`city` ASC),
+  INDEX `dk_postcode` (`postcode` ASC),
+  CONSTRAINT `fk_queue_restriction_site_id`
+    FOREIGN KEY (`site_id`)
+    REFERENCES `cenozo`.`site` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_queue_restriction_region_id`
+    FOREIGN KEY (`region_id`)
+    REFERENCES `cenozo`.`region` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
 USE `sabretooth` ;
 
 -- -----------------------------------------------------
