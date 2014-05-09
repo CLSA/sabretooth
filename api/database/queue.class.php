@@ -309,7 +309,6 @@ class queue extends \cenozo\database\record
                          $database_class_name::format_string( $db_participant->id ) );
       static::db()->execute( $sql );
       
-          if( $db_queue->id == 1 ) log::debug( $db_queue->get_sql( $columns ) );
       // only populate queues which are not time-specific
       if( !$db_queue->time_specific )
         static::db()->execute( sprintf(
@@ -969,9 +968,7 @@ class queue extends \cenozo\database\record
                        $database_class_name::format_string( $db_participant->id ) );
 
     static::db()->execute( 'DROP TABLE IF EXISTS participant_for_queue' );
-    \cenozo\database\database::$debug = true;
     static::db()->execute( $sql );
-    \cenozo\database\database::$debug = false;
 
     if( is_null( $db_participant ) )
       static::db()->execute(
