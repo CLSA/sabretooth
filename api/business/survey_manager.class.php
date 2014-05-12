@@ -476,11 +476,12 @@ class survey_manager extends \cenozo\singleton
           }
         }
 
-        // complete the interview if all phases are complete
+        // complete the interview and update the recording list if all phases are complete
         if( false === $this->current_sid )
         {
           $db_interview->completed = true;
           $db_interview->save();
+          $db_interview->update_recording_list();
 
           // record the event (if one exists)
           $db_event_type = $db_qnaire->get_completed_event_type();
