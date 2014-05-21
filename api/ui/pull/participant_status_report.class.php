@@ -312,38 +312,6 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       $db_qnaire->id );
     $this->set_category_totals( $sub_cat, $extra_sql );
 
-    // unassigned past appointment
-    $sub_cat = 'Appointment (missed)';
-    $extra_sql = sprintf(
-      'JOIN interview ON temp_participant.id = interview.participant_id '.
-      'AND interview.qnaire_id = %s '.
-      'JOIN interview_method ON interview.interview_method_id = interview_method.id '.
-      'AND interview_method.name = "operator" '.
-      'JOIN participant_last_appointment '.
-      'ON temp_participant.id = participant_last_appointment.participant_id '.
-      'JOIN appointment '.
-      'ON participant_last_appointment.appointment_id = appointment.id '.
-      'AND appointment.assignment_id IS NULL '.
-      'AND UTC_TIMESTAMP() > appointment.datetime + INTERVAL %s MINUTE ',
-      $db_qnaire->id,
-      $setting_manager->get_setting( 'appointment', 'call post-window' ) );
-    $this->set_category_totals( $sub_cat, $extra_sql );
-
-    // unassigned future appointment (all remaining unassigned appointments
-    $sub_cat = 'Appointment';
-    $extra_sql = sprintf(
-      'JOIN interview ON temp_participant.id = interview.participant_id '.
-      'AND interview.qnaire_id = %s '.
-      'JOIN interview_method ON interview.interview_method_id = interview_method.id '.
-      'AND interview_method.name = "operator" '.
-      'JOIN participant_last_appointment '.
-      'ON temp_participant.id = participant_last_appointment.participant_id '.
-      'JOIN appointment '.
-      'ON participant_last_appointment.appointment_id = appointment.id '.
-      'AND appointment.assignment_id IS NULL ',
-      $db_qnaire->id );
-    $this->set_category_totals( $sub_cat, $extra_sql );
-
     // last consent withdraw
     $sub_cat = 'Withdrawn from study';
     $extra_sql =
