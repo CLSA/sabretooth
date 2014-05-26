@@ -42,6 +42,7 @@
   {% if view_shifts %}
     <div id="{{ widget.full }}_slot" />
   {% endif %}
+  {{ include_list( 'language', language_list|default(false), true ) }}
   {{ include_list( 'access', access_list|default(false), true ) }}
   {{ include_list( 'activity', activity_list|default(false), true ) }}
 
