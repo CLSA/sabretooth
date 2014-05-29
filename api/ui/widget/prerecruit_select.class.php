@@ -51,7 +51,6 @@ class prerecruit_select extends \cenozo\ui\widget
   {
     parent::setup();
 
-    $region_site_class_name = lib::get_class_name( 'database\region_site' );
     $quota_class_name = lib::get_class_name( 'database\quota' );
     $prerecruit_class_name = lib::get_class_name( 'database\prerecruit' );
 
