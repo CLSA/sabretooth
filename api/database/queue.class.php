@@ -1012,7 +1012,7 @@ class queue extends \cenozo\database\record
     // build participant_for_queue_first_address table
     $sql = 
       'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue_first_address '.
-      'SELECT participant_first_address.id, '.
+      'SELECT participant_first_address.participant_id AS id, '.
              'address.city AS first_address_city, '.
              'address.region_id AS first_address_region_id, '.
              'address.postcode AS first_address_postcode, '.
@@ -1031,6 +1031,7 @@ class queue extends \cenozo\database\record
     if( is_null( $db_participant ) )
       static::db()->execute(
         'ALTER TABLE participant_for_queue_first_address '.
+        'ADD INDEX dk_id ( id ), '.
         'ADD INDEX dk_first_address_city ( first_address_city ), '.
         'ADD INDEX dk_first_address_region_id ( first_address_region_id ), '.
         'ADD INDEX dk_first_address_postcode ( first_address_postcode ), '.
@@ -1186,7 +1187,9 @@ FROM participant
 JOIN service_has_participant
 ON participant.id = service_has_participant.participant_id
 AND service_has_participant.datetime IS NOT NULL
-AND service_id = %s
+JOIN service
+ON service_has_participant.service_id = service.id
+AND service.id = %s
 JOIN source
 ON participant.source_id = source.id
 LEFT JOIN participant_primary_address
