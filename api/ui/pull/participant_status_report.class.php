@@ -162,9 +162,12 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     }
     else if( 'Province' == $breakdown )
     {
+      // create a list of all regions which have a site assigned to them
+      // (no matter what the language)
       $region_mod = lib::create( 'database\modifier' );
-      $region_mod->order( 'country' );
-      $region_mod->order( 'abbreviation' );
+      $region_mod->group( 'region_site.region_id' );
+      $region_mod->order( 'region.country' );
+      $region_mod->order( 'region.abbreviation' );
       $region_mod->where( 'region_site.service_id', '=', $db_service->id );
       if( $is_supervisor )
         $region_mod->where( 'region_site.site_id', '=', $db_site->id );

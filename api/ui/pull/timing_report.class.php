@@ -67,7 +67,8 @@ class timing_report extends \cenozo\ui\pull\base_report
         {
           $groups_mod = lib::create( 'database\modifier' );
           $groups_mod->where( 'sid', '=', $db_phase->sid );
-          $groups_mod->where( 'language', '=', 'en' );
+          $groups_mod->where( 'language', '=',
+            lib::create( 'business\session' )->get_service()->get_language()->code );
           $groups_mod->order( 'group_order' );
           foreach( $groups_class_name::get_data( $groups_mod ) as $group_data )
           {
