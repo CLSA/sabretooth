@@ -1022,7 +1022,7 @@ class queue extends \cenozo\database\record
       'LEFT JOIN address '.
       'ON participant_first_address.address_id = address.id ';
     if( !is_null( $db_participant ) )
-      $sql .= sprintf( 'WHERE participant_first_address.id = %s ',
+      $sql .= sprintf( 'WHERE participant_first_address.participant_id = %s ',
                        $database_class_name::format_string( $db_participant->id ) );
 
     static::db()->execute( 'DROP TABLE IF EXISTS participant_for_queue_first_address' );
