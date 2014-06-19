@@ -373,6 +373,10 @@ class interview extends \cenozo\database\has_note
     $sql = 'CREATE TEMPORARY TABLE IF NOT EXISTS interview_failed_call_count '.
            static::$interview_failed_call_count_sql;
     static::db()->execute( $sql );
+    static::db()->execute(
+      'ALTER TABLE interview_failed_call_count '.
+      'ADD INDEX dk_interview_id ( interview_id ), '.
+      'ADD INDEX dk_total ( total )' );
     static::$interview_failed_call_count_created = true;
   }
   
