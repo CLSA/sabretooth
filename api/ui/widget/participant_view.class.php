@@ -170,6 +170,19 @@ class participant_view extends \cenozo\ui\widget\participant_view
         'Marks the participant as denying consent and brings up the withdraw script '.
         'in order to process the participant\'s withdraw preferences.' );
     }
+
+    // add an action to reverse-withdraw the participant
+    $db_operation =
+      $operation_class_name::get_operation( 'push', 'participant', 'reverse_withdraw' );
+    $db_last_consent = $this->get_record()->get_last_consent();
+    if( lib::create( 'business\session' )->is_allowed( $db_operation ) &&
+        !is_null( $db_last_consent ) &&
+        false == $db_last_consent->accept )
+    {
+      $this->add_action( 'reverse_withdraw', 'Reverse Withdraw', NULL,
+        'Reverses an the participant\'s choice to withdraw and deletes the participant\'s '.
+        'withdraw preferences.' );
+    }
   }
 
   /**

@@ -168,10 +168,10 @@ class operator_assignment extends \cenozo\ui\widget
       $this->set_variable( 'interview_method_list', $interview_method_list );
       $this->set_variable( 'participant_language', $language );
       $this->set_variable(
-        'participant_consent', is_null( $db_last_consent ) ? 'none' : $db_last_consent->to_string() );
+        'current_consent', is_null( $db_last_consent ) ? 'none' : $db_last_consent->to_string() );
       $this->set_variable( 'withdrawing', $withdrawing );
-      $this->set_variable(
-        'allow_withdraw', !is_null( $db_qnaire->withdraw_sid ) );
+      $this->set_variable( 'allow_withdraw', !is_null( $db_qnaire->withdraw_sid ) );
+      $this->set_variable( 'survey_complete', !$current_sid );
       
       // determine whether we want to show a warning before ending a call
       $warn_before_ending_call = false;
@@ -184,7 +184,7 @@ class operator_assignment extends \cenozo\ui\widget
           $phase_mod->where( 'sid', '=', $current_sid );
           $phase_mod->order( 'rank' );
           $phase_mod->limit( 1 );
-          $db_phase = current( $db_interview->get_qnaire()->get_phase_list( $phase_mod ) );
+          $db_phase = current( $db_qnaire->get_phase_list( $phase_mod ) );
           if( !$db_phase || $db_phase->repeated ) $warn_before_ending_call = false;
         }
       }

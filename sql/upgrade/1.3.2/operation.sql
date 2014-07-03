@@ -123,3 +123,7 @@ VALUES( "push", "quota", "delete_qnaire", true,
 INSERT IGNORE INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "quota", "new_qnaire", true,
 "Disable a quota for a particular qnaire." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "push", "participant", "reverse_withdraw", true,
+"Removes the last negative verbal consent from the participant and deletes all withdraw survey data." );

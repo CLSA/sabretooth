@@ -16,6 +16,10 @@
 
 * Event system now tracks when participants are released to services
 
+* Participant withdraws can now be reversed
+  - only administrators have this functionality
+  - withdraw responses are deleted when a withdraw is reversed
+
 ====================================================================================================
 1.3.1
 ====================================================================================================

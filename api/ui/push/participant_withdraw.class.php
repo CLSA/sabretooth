@@ -37,29 +37,33 @@ class participant_withdraw extends \cenozo\ui\push\base_record
   {
     parent::execute();
 
+    $db_participant = $this->get_record();
+
     if( $this->get_argument( 'cancel', false ) )
     { // if the most recent consent is a verbal negative, remove it
       $consent_mod = lib::create( 'database\modifier' );
       $consent_mod->order_desc( 'date' );
       $consent_mod->limit( 1 );
-      $db_consent = current( $this->get_record()->get_consent_list( $consent_mod ) );
+      $db_consent = current( $db_participant->get_consent_list( $consent_mod ) );
       if( $db_consent && !$db_consent->accept && !$db_consent->written )
       {
         $db_consent->delete();
+        $withdraw_manager = lib::create( 'business\withdraw_manager' );
+        $withdraw_manager->remove_withdraw( $db_participant );
       }
       else
       {
         throw lib::create( 'exception\runtime',
-          sprintf( 'Trying to cancel withdraw for participant id %d but '.
+          sprintf( 'Trying to cancel withdraw for participant uid %s but '.
                    'most recent consent is not a verbal negative.',
-                   $this->get_record()->id ),
+                   $db_participant->uid ),
           __METHOD__ );
       }
     }
     else
     { // add a new consent to the participant
       $db_consent = lib::create( 'database\consent' );
-      $db_consent->participant_id = $this->get_record()->id;
+      $db_consent->participant_id = $db_participant->id;
       $db_consent->accept = false;
       $db_consent->written = false;
       $db_consent->date = util::get_datetime_object()->format( 'Y-m-d' );
@@ -68,6 +72,6 @@ class participant_withdraw extends \cenozo\ui\push\base_record
     }
 
     // update this participant's queue status
-    $this->get_record()->update_queue_status();
+    $db_participant->update_queue_status();
   }
 }
