@@ -23,7 +23,7 @@ INSERT IGNORE INTO cenozo.role_has_state( role_id, state_id )
 SELECT role.id, state.id
 FROM role, state
 WHERE state.name = "unreachable"
-AND role.name IN ( "administrator", "curator", "supervisor" );
+AND role.name IN ( "administrator", "curator" );
 
 INSERT IGNORE INTO cenozo.role_has_state( role_id, state_id )
 SELECT role.id, state.id
@@ -394,6 +394,68 @@ INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "widget" AND subject = "cedar_instance" AND operation.name = "view"
 AND role.name IN ( "administrator" );
+
+-- collection
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "collection" AND operation.name = "add"
+AND role.name IN ( "administrator", "curator", "helpline", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "collection" AND operation.name = "add_participant"
+AND role.name IN ( "administrator", "curator", "helpline", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "collection" AND operation.name = "add_user"
+AND role.name IN ( "administrator", "curator", "helpline", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "push" AND subject = "collection" AND operation.name = "delete"
+AND role.name IN ( "administrator", "curator", "helpline", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "push" AND subject = "collection" AND operation.name = "delete_participant"
+AND role.name IN ( "administrator", "curator", "helpline", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "push" AND subject = "collection" AND operation.name = "delete_user"
+AND role.name IN ( "administrator", "curator", "helpline", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "push" AND subject = "collection" AND operation.name = "edit"
+AND role.name IN ( "administrator", "curator", "helpline", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "collection" AND operation.name = "list"
+AND role.name IN ( "administrator", "curator", "helpline", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "push" AND subject = "collection" AND operation.name = "new"
+AND role.name IN ( "administrator", "curator", "helpline", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "push" AND subject = "collection" AND operation.name = "new_participant"
+AND role.name IN ( "administrator", "curator", "helpline", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "push" AND subject = "collection" AND operation.name = "new_user"
+AND role.name IN ( "administrator", "curator", "helpline", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "collection" AND operation.name = "view"
+AND role.name IN ( "administrator", "curator", "helpline", "supervisor" );
 
 -- consent
 
