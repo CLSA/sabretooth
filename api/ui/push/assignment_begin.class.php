@@ -84,6 +84,9 @@ class assignment_begin extends \cenozo\ui\push
       $queue_mod->where( 'rank', '!=', NULL );
       $queue_mod->order( 'rank' );
       
+      // make sure only one participant is assigned at a time
+      $session->acquire_semaphore();
+
       foreach( $qnaire_class_name::select( $qnaire_mod ) as $db_qnaire )
       {
         foreach( $queue_class_name::select( $queue_mod ) as $db_queue )
@@ -176,6 +179,8 @@ class assignment_begin extends \cenozo\ui\push
       $db_assignment->interview_id = $db_interview->id;
       $db_assignment->queue_id = $db_origin_queue->id;
       $db_assignment->save();
+
+      $session->release_semaphore();
 
       if( $db_origin_queue->from_appointment() )
       { // if this is an appointment queue, mark the appointment now associated with the assignment

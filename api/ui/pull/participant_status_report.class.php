@@ -246,6 +246,11 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       $modifier->where(
         'participant.create_timestamp', '<=', $end_datetime_obj->format( 'Y-m-d' ) );
     $record_class_name::db()->execute( sprintf( '%s %s', $temp_table_sql, $modifier->get_sql() ) );
+    $record_class_name::db()->execute(
+      'ALTER TABLE temp_participant ADD INDEX dk_id ( id ), '.
+                                   'ADD INDEX dk_gender ( gender ), '.
+                                   'ADD INDEX dk_age_group_id ( age_group_id ), '.
+                                   'ADD INDEX dk_state_id ( state_id )' );
 
     // total of all phone calls
     $sub_cat = 'Total number of calls';

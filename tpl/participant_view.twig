@@ -31,6 +31,21 @@
           slot_load( 'main', 'participant', 'withdraw', { id: {{ id }} } );
         }
       } );
+
+      // reverse-withdraw button
+      $( "#{{ widget.full }}__reverse_withdraw" ).click( function() {
+        confirm_dialog(
+          "Reverse Withdraw",
+          "<p>Are you sure you wish to reverse this participant's withdraw?</p>" +
+          "<p>WARNING: By proceeding you will be deleting all information which was recorded " +
+          "during the withdraw process including withdraw options and participant feedback.</p>",
+          function() {
+            // cancel the withdraw and end the phone call
+            if( ajax_push( "participant", "reverse_withdraw", { "id": {{ id }} } ) )
+              window.location.reload();
+          }
+        );
+      } );
     } );
   </script>
 {% endblock javascript %}
