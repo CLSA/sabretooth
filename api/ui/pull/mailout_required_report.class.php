@@ -175,9 +175,12 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
         $db_address = $db_participant->get_first_address();
         if( is_null( $db_address ) ) continue;
         $db_region = $db_address->get_region();
+        $db_language = $db_participant->get_language();
+        if( is_null( $db_language ) )
+          $db_language = lib::create( 'business\session' )->get_service()->get_language();
 
         $contents[] = array(
-          $db_participant->language,
+          $db_language->code,
           $db_participant->uid,
           $db_participant->first_name,
           $db_participant->last_name,

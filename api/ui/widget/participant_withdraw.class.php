@@ -56,11 +56,7 @@ class participant_withdraw extends \cenozo\ui\widget
 
     // fill out the participant's details
     $db_participant = lib::create( 'database\participant', $this->get_argument( 'id' ) );
-    
-    $language = 'none';
-    if( 'en' == $db_participant->language ) $language = 'english';
-    else if( 'fr' == $db_participant->language ) $language = 'french';
-
+    $db_language = $db_participant->get_language();
     $db_last_consent = $db_participant->get_last_consent();
     
     $previous_call_list = array();
@@ -97,7 +93,8 @@ class participant_withdraw extends \cenozo\ui\widget
     $this->set_variable( 'participant_name',
       sprintf( $db_participant->first_name.' '.$db_participant->last_name ) );
     $this->set_variable( 'participant_uid', $db_participant->uid );
-    $this->set_variable( 'participant_language', $language );
+    $this->set_variable( 'participant_language',
+      is_null( $db_language ) ? 'none' : $db_language->name );
     
     if( !is_null( $db_last_assignment ) )
     {

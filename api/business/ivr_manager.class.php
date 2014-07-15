@@ -102,6 +102,10 @@ class ivr_manager extends \cenozo\singleton
       $survey_manager::get_attribute( $db_participant, $db_interview, 'marital status' );
     if( is_null( $marital_status ) ) $marital_status = 'MISSING';
 
+    $db_language = $db_participant->get_language();
+    if( is_null( $db_language ) )
+      $db_language = lib::create( 'business\session' )->get_service()->get_language();
+
     // build the parameter array for the operation
     $parameters = array(
       'Id' => $db_participant->uid,
@@ -116,7 +120,7 @@ class ivr_manager extends \cenozo\singleton
         $survey_manager::get_attribute( $db_participant, $db_interview, 'cohort' ),
       'Marital_Status' => $marital_status,
       'Age' => $survey_manager::get_attribute( $db_participant, $db_interview, 'age' ),
-      'Language' => $db_participant->language ? $db_participant->language : 'en'
+      'Language' => $db_language->code
     );
 
     $this->send( 'InsertParticipant', $parameters );
