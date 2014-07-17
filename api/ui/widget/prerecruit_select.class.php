@@ -53,16 +53,30 @@ class prerecruit_select extends \cenozo\ui\widget
 
     $quota_class_name = lib::get_class_name( 'database\quota' );
     $prerecruit_class_name = lib::get_class_name( 'database\prerecruit' );
+    $session = lib::create( 'business\session' );
 
-    $db_assignment = lib::create( 'business\session' )->get_current_assignment();
+    $db_assignment = $session->get_current_assignment();
     if( is_null( $db_assignment ) )
       throw lib::create( 'exception\notice',
         'You cannot run pre-recruit selection while not in an assignment.', __METHOD__ );
     $db_participant = $db_assignment->get_interview()->get_participant();
 
+    // get the grouping from this participant's cohort
+    $db_service = $session->get_service();
+    $grouping = $db_service->get_cohort_grouping( $db_participant->get_cohort() );
+
     // get a list of all quotas for the current participant's region
     $quota_mod = lib::create( 'database\modifier' );
-    $quota_mod->where( 'quota.region_id', '=', $db_participant->get_primary_address()->region_id );
+    if( 'region' == $grouping )
+    {
+      $quota_mod->where(
+        'quota.region_id', '=', $db_participant->get_primary_address()->region_id );
+    }
+    else
+    {
+      $quota_mod->where(
+        'quota.site_id', '=', $db_participant->get_effective_site()->id );
+    }
     $quota_mod->order( 'age_group.lower' );
     $quota_mod->order( 'quota.gender' );
 
