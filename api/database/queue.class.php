@@ -295,7 +295,7 @@ class queue extends \cenozo\database\record
     {
       $columns = sprintf(
         'DISTINCT participant_for_queue.id, %s, '.
-        'IFNULL( service_has_participant_preferred_site_id, primary_region_site_id ), '.
+        'participant_site_id, '.
         'effective_qnaire_id, '.
         'start_qnaire_date, '.
         'effective_interview_method_id ',
@@ -578,7 +578,9 @@ class queue extends \cenozo\database\record
     if( $db_queue->time_specific )
       return array(
         'from' => array( 'participant_for_queue' ),
-        'join' => array(),
+        'join' => array( // always join to the participant site table
+          'LEFT JOIN participant_for_queue_participant_site '.
+          'ON participant_for_queue_participant_site.id = participant_for_queue.id ' ),
         'where' => array( 'false' ) );
 
     // determine what date/time to view the queues
@@ -601,7 +603,7 @@ class queue extends \cenozo\database\record
       'qnaire waiting', 'assigned', 'ivr_appointment', 'appointment', 'quota disabled',
       'outside calling time', 'callback', 'new participant', 'old participant' );
 
-    // join to the queue_restriction table based on site, city, region or postcode
+    // join to the first_address table based on participant id
     $first_address_join =
       'LEFT JOIN participant_for_queue_first_address '.
       'ON participant_for_queue_first_address.id = participant_for_queue.id ';
@@ -609,7 +611,7 @@ class queue extends \cenozo\database\record
     // join to the quota table based on site, region, gender and age group
     $quota_join =
       'LEFT JOIN quota '.
-      'ON quota.site_id = primary_region_site_id '.
+      'ON quota.site_id = participant_site_id '.
       'AND quota.region_id = primary_region_id '.
       'AND quota.gender = participant_gender '.
       'AND quota.age_group_id = participant_age_group_id '.
@@ -656,7 +658,9 @@ class queue extends \cenozo\database\record
       //       should also be updated as it performs a very similar query
       $parts = array(
         'from' => array( 'participant_for_queue' ),
-        'join' => array(),
+        'join' => array( // always join to the participant site table
+          'LEFT JOIN participant_for_queue_participant_site '.
+          'ON participant_for_queue_participant_site.id = participant_for_queue.id ' ),
         'where' => array( '<SITE_TEST>' ) );
     }
     else if( 'finished' == $queue )
@@ -908,8 +912,7 @@ class queue extends \cenozo\database\record
 
     $site_test_sql = is_null( $this->db_site )
                    ? 'true'
-                   : sprintf( 'IFNULL( service_has_participant_preferred_site_id, '.
-                              'primary_region_site_id ) = %s',
+                   : sprintf( 'participant_site_id = %s',
                               $database_class_name::format_string( $db_site->id ) );
     $sql = self::$query_list[ $this->name ];
     $sql = preg_replace( '/\<SELECT_PARTICIPANT\>/', $select_participant_sql, $sql, 1 );
@@ -978,13 +981,29 @@ class queue extends \cenozo\database\record
         'ADD INDEX fk_participant_age_group_id ( participant_age_group_id ), '.
         'ADD INDEX fk_participant_active ( participant_active ), '.
         'ADD INDEX fk_participant_state_id ( participant_state_id ), '.
-        'ADD INDEX fk_service_has_participant_preferred_site_id ( '.
-          'service_has_participant_preferred_site_id ), '.
         'ADD INDEX fk_effective_qnaire_id ( effective_qnaire_id ), '.
         'ADD INDEX fk_last_consent_accept ( last_consent_accept ), '.
         'ADD INDEX fk_last_assignment_id ( last_assignment_id ), '.
-        'ADD INDEX dk_primary_region_id ( primary_region_id ), '.
-        'ADD INDEX dk_primary_region_site_id ( primary_region_site_id )' );
+        'ADD INDEX dk_primary_region_id ( primary_region_id )' );
+
+    // build participant_for_queue_participant_site
+    $sql = sprintf(
+      'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue_participant_site '.
+      'SELECT participant_id AS id, site_id AS participant_site_id '.
+      'FROM participant_site '.
+      'WHERE service_id = %s ',
+      $database_class_name::format_string( $service_id ) );
+    if( !is_null( $db_participant ) )
+      $sql .= sprintf( 'AND participant_id = %s ',
+                       $database_class_name::format_string( $db_participant->id ) );
+
+    static::db()->execute( 'DROP TABLE IF EXISTS participant_for_queue_participant_site' );
+    static::db()->execute( $sql );
+
+    if( is_null( $db_participant ) )
+      static::db()->execute(
+        'ALTER TABLE participant_for_queue_participant_site '.
+        'ADD INDEX dk_participant_id_site_id ( id, participant_site_id )' );
 
     // build participant_for_queue_phone_count table
     $sql = sprintf(
@@ -1136,9 +1155,7 @@ participant.age_group_id AS participant_age_group_id,
 participant.state_id AS participant_state_id,
 participant.override_quota AS participant_override_quota,
 source.override_quota AS source_override_quota,
-service_has_participant.preferred_site_id AS service_has_participant_preferred_site_id,
 primary_region.id AS primary_region_id,
-primary_region_site.site_id primary_region_site_id,
 last_consent.accept AS last_consent_accept,
 current_interview.qnaire_id AS current_interview_qnaire_id,
 last_assignment.id AS last_assignment_id,
@@ -1198,10 +1215,6 @@ LEFT JOIN address AS primary_address
 ON participant_primary_address.address_id = primary_address.id
 LEFT JOIN region AS primary_region
 ON primary_address.region_id = primary_region.id
-LEFT JOIN region_site AS primary_region_site
-ON primary_region.id = primary_region_site.region_id
-AND primary_region_site.service_id = service_has_participant.service_id
-AND primary_region_site.language_id = IFNULL( participant.language_id, service.language_id )
 JOIN participant_last_consent
 ON participant.id = participant_last_consent.participant_id
 LEFT JOIN consent AS last_consent
