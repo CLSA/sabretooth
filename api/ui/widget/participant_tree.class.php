@@ -91,6 +91,7 @@ class participant_tree extends \cenozo\ui\widget
     $tree = array(); // NOTE: holds references to the nodes array
     $modifier = lib::create( 'database\modifier' );
     $modifier->order( 'parent_queue_id' );
+    $modifier->order( 'id' );
     if( !$qnaire_class_name::is_interview_method_in_use( $db_interview_method ) )
       $modifier->where( 'name', '!=', 'ivr_appointment' ); // remove IVR if not in use
     foreach( $queue_class_name::select( $modifier ) as $db_queue )
