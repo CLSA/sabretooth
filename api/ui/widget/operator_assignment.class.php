@@ -163,10 +163,10 @@ class operator_assignment extends \cenozo\ui\widget
       $this->set_variable( 'participant_uid', $db_participant->uid );
       $this->set_variable( 'interview_method_id', $db_interview->interview_method_id );
       $this->set_variable( 'interview_method_list', $interview_method_list );
-      $this->set_variable( 'participant_language', $language );
+      $this->set_variable( 'participant_language',
         is_null( $db_language ) ? 'none' : $db_language->name );
-      $this->set_variable(
-        'current_consent', is_null( $db_last_consent ) ? 'none' : $db_last_consent->to_string() );
+      $this->set_variable( 'current_consent',
+        is_null( $db_last_consent ) ? 'none' : $db_last_consent->to_string() );
       $this->set_variable( 'withdrawing', $withdrawing );
       $this->set_variable( 'allow_withdraw', !is_null( $db_qnaire->withdraw_sid ) );
       $this->set_variable( 'survey_complete', !$current_sid );

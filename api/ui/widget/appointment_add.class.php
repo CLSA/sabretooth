@@ -76,10 +76,15 @@ class appointment_add extends base_appointment_view
     $types = array_combine( $types, $types );
     
     // create the min datetime array
+    $datetime_limits = NULL;
+
+    // add one day to the start date to avoid qnaire-wait datetime problems in the queue
     $start_qnaire_date = $this->parent->get_record()->get_start_qnaire_date();
-    $datetime_limits = !is_null( $start_qnaire_date )
-                     ? array( 'min_date' => $start_qnaire_date->format( 'Y-m-d' ) )
-                     : NULL;
+    if( !is_null( $start_qnaire_date ) )
+    {
+      $start_qnaire_date->add( new \DateInterval( 'P1D' ) );
+      $datetime_limits = array( 'min_date' => $start_qnaire_date->format( 'Y-m-d' ) );
+    }
 
     // set the view's items
     $this->set_item( 'participant_id', $this->parent->get_record()->id );

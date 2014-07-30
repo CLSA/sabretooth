@@ -385,6 +385,11 @@ class survey_manager extends \cenozo\singleton
     {
       $value = $db_participant->uid;
     }
+    else if( 'site' == $key )
+    {
+      $db_site = $db_participant->get_effective_site();
+      $value = is_null( $db_site ) ? 'none' : $db_site->name;
+    }
     else if( 'override quota' == $key )
     {
       // override_quota is true if the participant's quota is disabled AND override_quota is true

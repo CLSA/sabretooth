@@ -248,7 +248,7 @@ class interview extends \cenozo\database\has_note
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
-  protected function update_recording_list()
+  public function update_recording_list()
   {
     // make sure that all recordings on disk have a corresponding database record
     if( is_dir( VOIP_MONITOR_PATH ) )

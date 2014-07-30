@@ -80,7 +80,7 @@ class appointment extends \cenozo\database\record
 
     $start_datetime_obj = util::get_datetime_object( $this->datetime );
     $next_day_datetime_obj = clone $start_datetime_obj;
-    $next_day_datetime_obj->add( new\DateInterval( 'P1D' ) );
+    $next_day_datetime_obj->add( new \DateInterval( 'P1D' ) );
     $end_datetime_obj = clone $start_datetime_obj;
     $duration = 'full' == $this->type ? $full_duration : $half_duration;
     $end_datetime_obj->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
