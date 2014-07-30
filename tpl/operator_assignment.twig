@@ -106,41 +106,47 @@
           args = new Object();
           {% if on_call %}
             args.status = $( "#{{ widget.full }}__parameter" ).val();
-            {% if warn_before_ending_call %}
-              // show a warning if the interview is not complete
-              confirm_dialog(
-                "End Call",
-                "<p>Are you sure you wish to end the call?</p>" +
-                {% if withdrawing %}
-                  "<p>WARNING: The withdraw questionnaire must be completed before the participant is " +
-                  "fully removed from the study. Click \"Ok\" if you wish to cancel the withdraw and end " +
-                  "the call or click \"Cancel\" to proceed with the withdraw.</p>",
-                  function() {
-                    // cancel the withdraw and end the phone call
-                    if( ajax_push( "participant", "withdraw",
-                                   { "id": {{ participant_id }}, "cancel": 1 } ) &&
-                        ajax_push( "phone_call", "end", args ) ) window.location.reload();
-                  }
-                {% else %}
-                  "<p>WARNING: Since are not finished the questionnaire this participant's interview " +
-                  "will not be marked as fully complete and they will be returned to the calling " +
-                  "queue.</p>",
-                  function() {
-                    if( ajax_push( "phone_call", "end", args ) ) window.location.reload();
-                  }
-                {% endif %}
-              );
-            {% else %}
-              {# if we are withdrawing but the survey isn't complete yet then delete it since
-                 the call is ending so we have to assume the withdraw has been cancelled #}
-              {% if withdrawing and not survey_complete %}
-                if( ajax_push( "participant", "withdraw",
-                               { "id": {{ participant_id }}, "cancel": 1 } ) &&
-                    ajax_push( "phone_call", "end", args ) ) window.location.reload();
+
+            // make sure a result has been chosen
+            if( 0 == args.status.length ) {
+              alert( "You must select a call result before ending the call." );
+            } else {
+              {% if warn_before_ending_call %}
+                // show a warning if the interview is not complete
+                confirm_dialog(
+                  "End Call",
+                  "<p>Are you sure you wish to end the call?</p>" +
+                  {% if withdrawing %}
+                    "<p>WARNING: The withdraw questionnaire must be completed before the participant is " +
+                    "fully removed from the study. Click \"Ok\" if you wish to cancel the withdraw and end " +
+                    "the call or click \"Cancel\" to proceed with the withdraw.</p>",
+                    function() {
+                      // cancel the withdraw and end the phone call
+                      if( ajax_push( "participant", "withdraw",
+                                     { "id": {{ participant_id }}, "cancel": 1 } ) &&
+                          ajax_push( "phone_call", "end", args ) ) window.location.reload();
+                    }
+                  {% else %}
+                    "<p>WARNING: Since are not finished the questionnaire this participant's interview " +
+                    "will not be marked as fully complete and they will be returned to the calling " +
+                    "queue.</p>",
+                    function() {
+                      if( ajax_push( "phone_call", "end", args ) ) window.location.reload();
+                    }
+                  {% endif %}
+                );
               {% else %}
-                if( ajax_push( "phone_call", "end", args ) ) window.location.reload();
+                {# if we are withdrawing but the survey isn't complete yet then delete it since
+                   the call is ending so we have to assume the withdraw has been cancelled #}
+                {% if withdrawing and not survey_complete %}
+                  if( ajax_push( "participant", "withdraw",
+                                 { "id": {{ participant_id }}, "cancel": 1 } ) &&
+                      ajax_push( "phone_call", "end", args ) ) window.location.reload();
+                {% else %}
+                  if( ajax_push( "phone_call", "end", args ) ) window.location.reload();
+                {% endif %}
               {% endif %}
-            {% endif %}
+            }
           {% else %}
             args.phone_id = $( "#{{ widget.full }}__parameter" ).val();
             if( ajax_push( "phone_call", "begin", args ) ) window.location.reload();
@@ -297,6 +303,7 @@
             {% if phone_list|default( false ) %}
               <select class="ui-state-default" id="{{ widget.full }}__parameter">
                 {% if on_call %}
+                  <option value="" selected>select call result...</option>
                   {% for status in status_list %}
                     <option value="{{ status }}">{{ status }}</option>
                   {% endfor %}
