@@ -68,7 +68,7 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
       'Participant Information Package Required Report For '.strtoupper( $source_title ) :
       'Proxy Information Package Required Report For '.strtoupper( $source_title ) );
     if( !is_null( $db_collection ) )
-      $this->add_title( 'restricted to the collection "'.$db_collection->name.'"' );
+      $this->add_title( 'restricted to the "'.$db_collection->name.'" collection' );
 
     $this->add_title(
       sprintf( 'Listing of those who requested a new information package during '.
