@@ -48,28 +48,28 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
     $db_statscan_source = $source_class_name::get_unique_record( 'name', 'statscan' );
 
     // get the report arguments
+    $restrict_collection_id =   $this->get_argument( 'restrict_collection_id', 0 );
+    $db_collection = $restrict_collection_id
+                   ? lib::create( 'database\collection', $restrict_collection_id )
+                   : NULL;
     $mailout_type =       $this->get_argument( 'mailout_type' );
     $restrict_site_id =   $this->get_argument( 'restrict_site_id', 0 );
     $restrict_source_id = $this->get_argument( 'restrict_source_id' );
+    $db_source = $restrict_source_id
+               ? lib::create( 'database\source', $restrict_source_id )
+               : NULL;
 
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
 
     // prepare the date items
     $report_date = util::get_datetime_object()->format( 'Y-m-d' );
-
-    if( $restrict_source_id )
-    {
-      $db_source = lib::create( 'database\source', $restrict_source_id );
-      $source_title = $db_source->name;
-    }
-    else
-    {
-      $source_title = "All Sources";
-    }
-
+    $source_title = is_null( $db_source ) ? "All Sources" : $db_source->name;
     $this->add_title( $mailout_type == 'Participant information package' ?
       'Participant Information Package Required Report For '.strtoupper( $source_title ) :
       'Proxy Information Package Required Report For '.strtoupper( $source_title ) );
+    if( !is_null( $db_collection ) )
+      $this->add_title( 'restricted to the collection "'.$db_collection->name.'"' );
+
     $this->add_title(
       sprintf( 'Listing of those who requested a new information package during '.
                'the %s interview', $db_qnaire->name ) ) ;
@@ -79,6 +79,9 @@ class mailout_required_report extends \cenozo\ui\pull\base_report
     // filtering participants according to widget
     $participant_mod = lib::create( 'database\modifier' );
     $participant_mod->where( 'active', '=', true );
+    if( !is_null( $db_collection ) )
+      $participant_mod->where(
+        'collection_has_participant.collection_id', '=', $db_collection->id );
     if( $restrict_site_id )
       $participant_mod->where( 'participant_site.site_id', '=', $restrict_site_id );
     // mailout type refers to proxy information packages which require certain age groups
