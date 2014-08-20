@@ -26,8 +26,7 @@ class productivity_report extends \cenozo\ui\pull\base_report
    */
   public function __construct( $args )
   {
-die();
-parent::__construct( 'productivity', $args );
+    parent::__construct( 'productivity', $args );
   }
 
   /**
