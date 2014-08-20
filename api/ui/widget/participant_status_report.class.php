@@ -38,6 +38,8 @@ class participant_status_report extends base_report
   {
     parent::prepare();
 
+    $this->add_restriction( 'collection' );
+    $this->add_restriction( 'cohort' );
     $this->add_restriction( 'qnaire' );
     $this->add_parameter( 'breakdown', 'enum', 'Breakdown by' );
     $this->add_restriction( 'province' );

@@ -59,16 +59,29 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $breakdown = $this->get_argument( 'breakdown' );
     $restrict_source_id = $this->get_argument( 'restrict_source_id' );
 
-    $this->add_title(
-      sprintf( 'Listing of categorical totals pertaining to '.
-               'the %s interview', $db_qnaire->name ) ) ;
-
+    $restrict_collection_id = $this->get_argument( 'restrict_collection_id', 0 );
+    $db_collection = $restrict_collection_id
+                   ? lib::create( 'database\collection', $restrict_collection_id )
+                   : NULL;
+    $restrict_cohort_id = $this->get_argument( 'restrict_cohort_id', 0 );
+    $db_cohort = $restrict_cohort_id
+               ? lib::create( 'database\cohort', $restrict_cohort_id )
+               : NULL;
     $restrict_province_id = $this->get_argument( 'restrict_province_id' );
     $restrict_start_date = $this->get_argument( 'restrict_start_date' );
     $restrict_end_date = $this->get_argument( 'restrict_end_date' );
     $now_datetime_obj = util::get_datetime_object();
     $start_datetime_obj = NULL;
     $end_datetime_obj = NULL;
+
+    $this->add_title(
+      sprintf( 'Listing of categorical totals pertaining to '.
+               'the %s interview', $db_qnaire->name ) ) ;
+
+    if( !is_null( $db_collection ) )
+      $this->add_title( 'restricted to the "'.$db_collection->name.'" collection' );
+    if( !is_null( $db_collection ) )
+      $this->add_title( 'restricted to the "'.$db_cohort->name.'" cohort' );
 
     if( $restrict_province_id || $restrict_source_id )
     {
@@ -233,12 +246,26 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     {
       $temp_table_sql .= sprintf(
         'JOIN participant_site ON participant.id = participant_site.participant_id '.
-        'AND participant_site.service_id = %s',
+        'AND participant_site.service_id = %s ',
         $database_class_name::format_string( $db_service->id ) );
       $modifier->where( 'participant_site.site_id', '=', $db_site->id );
     }
-    if( $restrict_province_id ) $modifier->where( 'address.region_id', '=', $restrict_province_id );
-    if( 0 < $restrict_source_id ) $modifier->where( 'source_id', '=', $restrict_source_id );
+    if( !is_null( $db_collection ) )
+    {
+      $temp_table_sql .=
+        'JOIN collection_has_participant '.
+        'ON collection_has_participant.participant_id = participant.id ';
+      $modifier->where(
+        'collection_has_participant.collection_id', '=', $db_collection->id );
+    }
+    if( !is_null( $db_cohort ) )
+      $modifier->where( 'participant.cohort_id', '=', $db_cohort->id );
+    if( $restrict_province_id )
+      $modifier->where( 'participant.region_id', '=', $restrict_province_id );
+    if( $restrict_province_id )
+      $modifier->where( 'address.region_id', '=', $restrict_province_id );
+    if( 0 < $restrict_source_id )
+      $modifier->where( 'source_id', '=', $restrict_source_id );
     if( $restrict_start_date )
       $modifier->where(
         'participant.create_timestamp', '>=', $start_datetime_obj->format( 'Y-m-d' ) );
