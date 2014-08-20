@@ -125,3 +125,11 @@ DELIMITER ;
 
 CALL patch_role_has_operation();
 DROP PROCEDURE IF EXISTS patch_role_has_operation;
+
+
+SELECT "Removing defunct call attempts report" AS "";
+
+DELETE FROM role_has_operation
+WHERE operation_id IN (
+  SELECT id FROM operation WHERE subject = "call_attempts"
+);
