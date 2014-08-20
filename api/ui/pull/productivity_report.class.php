@@ -154,7 +154,8 @@ class productivity_report extends \cenozo\ui\pull\base_report
 
         // Determine the number of phone calls, completed interviews and interview times
         $calls = $db_user->get_phone_call_count( $db_qnaire, $phone_call_mod );
-        $interview_details = $db_user->get_interview_count_and_time( $db_qnaire, $interview_mod );
+        $interview_details =
+          $db_user->get_interview_count_and_time( $db_qnaire, $db_site, $interview_mod );
         $completes = $interview_details['count'];
         $interview_time = $interview_details['time'];
 
