@@ -41,15 +41,13 @@ class participant_status_report extends base_report
     $this->add_restriction( 'collection' );
     $this->add_restriction( 'cohort' );
     $this->add_restriction( 'qnaire' );
-    $this->add_parameter( 'breakdown', 'enum', 'Breakdown by' );
     $this->add_restriction( 'province' );
     $this->add_restriction( 'source' );
-    $this->add_restriction( 'dates' );
+    $this->add_parameter( 'breakdown', 'enum', 'Breakdown by' );
 
     $this->set_variable( 'description',
-      'This report provides totals of various status types.  Populations are broken down '.
-      'by province, site or quota.  If set, the start and end dates will restrict the report '.
-      'to participants who were released between the dates provided, inclusive.' );
+      'This report provides an overview of participant status throughout the interview process. '.
+      'Populations can be broken down by site, province or quota.' );
   }
 
   /**

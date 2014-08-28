@@ -68,11 +68,6 @@ class participant_status_report extends \cenozo\ui\pull\base_report
                ? lib::create( 'database\cohort', $restrict_cohort_id )
                : NULL;
     $restrict_province_id = $this->get_argument( 'restrict_province_id' );
-    $restrict_start_date = $this->get_argument( 'restrict_start_date' );
-    $restrict_end_date = $this->get_argument( 'restrict_end_date' );
-    $now_datetime_obj = util::get_datetime_object();
-    $start_datetime_obj = NULL;
-    $end_datetime_obj = NULL;
 
     $this->add_title(
       sprintf( 'Listing of categorical totals pertaining to '.
@@ -102,32 +97,9 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       $this->add_title( $title );
     }
 
-    if( $restrict_start_date )
-    {
-      $start_datetime_obj = util::get_datetime_object( $restrict_start_date );
-      if( $start_datetime_obj > $now_datetime_obj )
-        $start_datetime_obj = clone $now_datetime_obj;
-    }
-    if( $restrict_end_date )
-    {
-      $end_datetime_obj = util::get_datetime_object( $restrict_end_date );
-      if( $end_datetime_obj > $now_datetime_obj )
-        $end_datetime_obj = clone $now_datetime_obj;
-    }
-    if( $restrict_start_date && $restrict_end_date && $end_datetime_obj < $start_datetime_obj )
-    {
-      $temp_datetime_obj = clone $start_datetime_obj;
-      $start_datetime_obj = clone $end_datetime_obj;
-      $end_datetime_obj = clone $temp_datetime_obj;
-    }
-
     $category_totals = array(
-      'Completed interview - Consent not received' => 0,
-      'Completed interview - Consent received' => 0,
-      'Completed interview - No consent information' => 0,
-      'Withdrawn from study' => 0,
-      'Hard refusal' => 0,
-      'Soft refusal' => 0,
+      'Completed interview' => 0,
+      'Completed interview (negative consent)' => 0,
       'Appointment' => 0,
       'Appointment (missed)' => 0 );
 
@@ -138,6 +110,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $phone_call_status_count = count( $category_totals ) - $phone_call_status_start_index;
 
     $category_totals['Not yet called'] = 0;
+    $category_totals['Call in progress'] = 0;
 
     // add states
     $state_mod = lib::create( 'database\modifier' );
@@ -145,13 +118,9 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     foreach( $state_class_name::select( $state_mod ) as $db_state )
       $category_totals[ ucfirst( $db_state->name ) ] = 0;
 
-    $category_totals = array_merge( $category_totals, array(
-      'Grand Total Attempted' => 0,
-      'Total completed interviews' => 0,
-      'Response rate (incl. soft refusals)' => 0,
-      'Response rate (excl. soft refusals)' => 0,
-      'Total number of calls' => 0,
-      'Completed interviews / total number of calls' => 0 ) );
+    // add total number of calls
+    $category_totals['Response rate'] = 'TBD';
+    $category_totals['Total number of calls'] = 0;
 
     $this->category_totals_list = array();
     if( 'Site' == $breakdown )
@@ -164,14 +133,6 @@ class participant_status_report extends \cenozo\ui\pull\base_report
 
       // only include the "None" column if user isn't a supervisor
       if( !$is_supervisor ) $this->category_totals_list['None'] = $category_totals;
-
-      $this->base_sql = sprintf(
-        'SELECT site.name AS category, temp_participant.id '.
-        'FROM temp_participant '.
-        'LEFT JOIN participant_site ON temp_participant.id = participant_site.participant_id '.
-        'AND participant_site.service_id = %s '.
-        'LEFT JOIN site ON participant_site.site_id = site.id ',
-        $database_class_name::format_string( $db_service->id ) );
     }
     else if( 'Province' == $breakdown )
     {
@@ -190,16 +151,6 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       // only include the "None" column if user isn't a supervisor and province isn't restricted
       if( !$is_supervisor && !$restrict_province_id )
         $this->category_totals_list['None'] = $category_totals;
-
-      $this->base_sql =
-        'SELECT region.abbreviation AS category, temp_participant.id '.
-        'FROM temp_participant '.
-        'LEFT JOIN participant_primary_address '.
-        'ON temp_participant.id = participant_primary_address.participant_id '.
-        'LEFT JOIN address '.
-        'ON participant_primary_address.address_id = address.id '.
-        'LEFT JOIN region ON address.region_id = region.id '.
-        'AND region.country = "Canada" ';
     }
     else // if( 'Quota' == $breakdown )
     {
@@ -211,48 +162,69 @@ class participant_status_report extends \cenozo\ui\pull\base_report
         $this->category_totals_list[ 'M'.$db_age_group->lower ] = $category_totals;
         $this->category_totals_list[ 'F'.$db_age_group->lower ] = $category_totals;
       }
-
-      $this->base_sql =
-        'SELECT '.
-        'CONCAT( IF( temp_participant.gender = "female", "F", "M" ), age_group.lower ) AS category, '.
-        'temp_participant.id '.
-        'FROM temp_participant '.
-        'JOIN age_group ON temp_participant.age_group_id = age_group.id ';
     }
 
     // we will need a table containing the most recent 
     // to avoid double-counting participants we create a temporary table with all participants,
     // then remove them as they fall into a category
-    $temp_table_sql = sprintf(
-      'CREATE TEMPORARY TABLE temp_participant SELECT participant.* '.
+    $temp_select_sql = 'SELECT participant.*, participant_last_consent.accept, ';
+    $temp_from_sql = sprintf(
       'FROM participant '.
-      'JOIN service_has_participant ON participant.id = service_has_participant.participant_id '.
+      'JOIN participant_last_consent '.
+      'ON participant.id = participant_last_consent.participant_id '.
+      'JOIN service_has_participant '.
+      'ON participant.id = service_has_participant.participant_id '.
       'AND service_has_participant.service_id = %s '.
-      'AND service_has_participant.datetime IS NOT NULL ',
+      'AND service_has_participant.datetime IS NOT NULL '.
+      'LEFT JOIN participant_site '.
+      'ON participant.id = participant_site.participant_id '.
+      'AND service_has_participant.service_id = participant_site.service_id '.
+      'LEFT JOIN site '.
+      'ON participant_site.site_id = site.id ',
       $database_class_name::format_string( $db_service->id ) );
 
-    if( 'Province' == $breakdown || $restrict_province_id ) $temp_table_sql .=
-      'LEFT JOIN participant_primary_address '.
-      'ON participant.id = participant_primary_address.participant_id '.
-      'LEFT JOIN address '.
-      'ON participant_primary_address.address_id = address.id ';
-    if( 'Province' == $breakdown ) $temp_table_sql .=
-      'LEFT JOIN region ON address.region_id = region.id '.
-      'AND region.country = "Canada" ';
+    if( 'Province' == $breakdown || $restrict_province_id )
+    {
+      $temp_from_sql .=
+        'LEFT JOIN participant_primary_address '.
+        'ON participant.id = participant_primary_address.participant_id '.
+        'LEFT JOIN address '.
+        'ON participant_primary_address.address_id = address.id '.
+        'LEFT JOIN region '.
+        'ON address.region_id = region.id '.
+        'AND region.country = "Canada" ';
+    }
+
+    // define the category based on the breakdown type requested
+    if( 'Site' == $breakdown )
+    {
+      $temp_select_sql .= 'site.name AS category ';
+    }
+    else if( 'Province' == $breakdown )
+    {
+      $temp_select_sql .= 'region.abbreviation AS category ';
+    }
+    else // 'Quota' == breakdown
+    {
+      $temp_select_sql .=
+        'IF( age_group.id IS NULL OR participant.gender IS NULL, '.
+            'NULL, '.
+            'CONCAT( IF( participant.gender = "female", "F", "M" ), age_group.lower ) '.
+        ') AS category ';
+      $temp_from_sql .=
+        'LEFT JOIN age_group ON participant.age_group_id = age_group.id ';
+    }
 
     // add restrictions based on input parameters
     $modifier = lib::create( 'database\modifier' );
     if( $is_supervisor )
     {
-      $temp_table_sql .= sprintf(
-        'JOIN participant_site ON participant.id = participant_site.participant_id '.
-        'AND participant_site.service_id = %s ',
-        $database_class_name::format_string( $db_service->id ) );
       $modifier->where( 'participant_site.site_id', '=', $db_site->id );
     }
+
     if( !is_null( $db_collection ) )
     {
-      $temp_table_sql .=
+      $temp_from_sql .=
         'JOIN collection_has_participant '.
         'ON collection_has_participant.participant_id = participant.id ';
       $modifier->where(
@@ -266,15 +238,14 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       $modifier->where( 'address.region_id', '=', $restrict_province_id );
     if( 0 < $restrict_source_id )
       $modifier->where( 'source_id', '=', $restrict_source_id );
-    if( $restrict_start_date )
-      $modifier->where(
-        'participant.create_timestamp', '>=', $start_datetime_obj->format( 'Y-m-d' ) );
-    if( $restrict_end_date )
-      $modifier->where(
-        'participant.create_timestamp', '<=', $end_datetime_obj->format( 'Y-m-d' ) );
-    $record_class_name::db()->execute( sprintf( '%s %s', $temp_table_sql, $modifier->get_sql() ) );
+    $record_class_name::db()->execute(
+      sprintf( 'CREATE TEMPORARY TABLE temp_participant %s %s %s',
+               $temp_select_sql,
+               $temp_from_sql,
+               $modifier->get_sql() ) );
     $record_class_name::db()->execute(
       'ALTER TABLE temp_participant ADD INDEX dk_id ( id ), '.
+                                   'ADD INDEX dk_category ( category ), '.
                                    'ADD INDEX dk_gender ( gender ), '.
                                    'ADD INDEX dk_age_group_id ( age_group_id ), '.
                                    'ADD INDEX dk_state_id ( state_id )' );
@@ -287,13 +258,16 @@ class participant_status_report extends \cenozo\ui\pull\base_report
                           'JOIN phone_call ON assignment.id = phone_call.assignment_id ',
                           $db_qnaire->id );
 
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->group( 'category' );
     $rows = $record_class_name::db()->get_all(
-      sprintf( '%s %s %s',
-               preg_replace( '/temp_participant\.id/', 'COUNT(*) AS total', $this->base_sql, 1 ),
-               $extra_sql,
-               $modifier->get_sql() ) );
+      sprintf( 'SELECT temp_participant.category, COUNT(*) AS total '.
+               'FROM temp_participant '.
+               'JOIN interview ON temp_participant.id = interview.participant_id '.
+               'AND interview.qnaire_id = %s '.
+               'JOIN assignment ON interview.id = assignment.interview_id '.
+               'JOIN phone_call ON assignment.id = phone_call.assignment_id '.
+               'GROUP BY category',
+               $database_class_name::format_string( $db_qnaire->id ) ) );
+
     foreach( $rows as $row )
     {
       if( is_null( $row['category'] ) )
@@ -303,6 +277,29 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       }
       else $this->category_totals_list[$row['category']][$sub_cat] = $row['total'];
     }
+
+    // has a complete interview (negative consent)
+    $sub_cat = 'Completed interview (negative consent)';
+    $extra_sql = sprintf(
+      'JOIN interview '.
+      'ON temp_participant.id = interview.participant_id '.
+      'AND interview.qnaire_id = %s ',
+      $db_qnaire->id );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'interview.completed', '=', true );
+    $modifier->where( 'accept', '=', false );
+    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
+
+    // has a complete interview
+    $sub_cat = 'Completed interview';
+    $extra_sql = sprintf(
+      'JOIN interview '.
+      'ON temp_participant.id = interview.participant_id '.
+      'AND interview.qnaire_id = %s ',
+      $db_qnaire->id );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'interview.completed', '=', true );
+    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
 
     // final state not null
     $state_mod = lib::create( 'database\modifier' );
@@ -314,6 +311,20 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       $modifier->where( 'temp_participant.state_id', '=', $db_state->id );
       $this->set_category_totals( $sub_cat, '', $modifier );
     }
+
+    // currently assigned
+    $sub_cat = 'Call in progress';
+    $extra_sql = sprintf(
+      'JOIN interview '.
+      'ON temp_participant.id = interview.participant_id '.
+      'AND interview.qnaire_id = %s '.
+      'JOIN assignment '.
+      'ON interview.id = assignment.interview_id '.
+      'AND assignment.end_datetime IS NULL ',
+      $db_qnaire->id );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'interview.id', '=', NULL );
+    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
 
     // unassigned past appointment
     $sub_cat = 'Appointment (missed)';
@@ -347,96 +358,15 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       $db_qnaire->id );
     $this->set_category_totals( $sub_cat, $extra_sql );
 
-    // last consent withdraw
-    $sub_cat = 'Withdrawn from study';
-    $extra_sql =
-      'JOIN consent consent_accept '.
-      'ON temp_participant.id = consent_accept.participant_id '.
-      'AND consent_accept.accept = 1 AND consent_accept.written = 1 '.
-      'JOIN participant_last_consent '.
-      'ON temp_participant.id = participant_last_consent.participant_id '.
-      'JOIN consent '.
-      'ON participant_last_consent.consent_id = consent.id '.
-      'AND consent.accept = 0 ';
-    $this->set_category_totals( $sub_cat, $extra_sql );
-
     // no interviews
     $sub_cat = 'Not yet called';
     $extra_sql = sprintf(
-      'LEFT JOIN interview '.
+      'JOIN interview '.
       'ON temp_participant.id = interview.participant_id '.
       'AND interview.qnaire_id = %s ',
       $db_qnaire->id );
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'interview.id', '=', NULL );
-    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
-
-    // has a complete interview
-    // last consent: none
-    $sub_cat = 'Completed interview - No consent information';
-    $extra_sql = sprintf(
-      'JOIN participant_last_consent '.
-      'ON temp_participant.id = participant_last_consent.participant_id '.
-      'LEFT JOIN interview '.
-      'ON temp_participant.id = interview.participant_id '.
-      'AND interview.qnaire_id = %s ',
-      $db_qnaire->id );
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'interview.completed', '=', true );
-    $modifier->where( 'participant_last_consent.consent_id', '=', NULL );
-    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
-
-    // has a complete interview
-    // last consent: written accept
-    $sub_cat = 'Completed interview - Consent received';
-    $extra_sql = sprintf(
-      'JOIN participant_last_consent '.
-      'ON temp_participant.id = participant_last_consent.participant_id '.
-      'JOIN consent '.
-      'ON participant_last_consent.consent_id = consent.id '.
-      'LEFT JOIN interview '.
-      'ON temp_participant.id = interview.participant_id '.
-      'AND interview.qnaire_id = %s ',
-      $db_qnaire->id );
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'interview.completed', '=', true );
-    $modifier->where( 'consent.accept', '=', true );
-    $modifier->where( 'consent.written', '=', true );
-    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
-
-    // has a complete interview
-    // last consent: verbal deny, verbal accept or written deny
-    $sub_cat = 'Completed interview - Consent not received';
-    $extra_sql = sprintf(
-      'JOIN participant_last_consent '.
-      'ON temp_participant.id = participant_last_consent.participant_id '.
-      'JOIN consent '.
-      'ON participant_last_consent.consent_id = consent.id '.
-      'LEFT JOIN interview '.
-      'ON temp_participant.id = interview.participant_id '.
-      'AND interview.qnaire_id = %s ',
-      $db_qnaire->id );
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'interview.completed', '=', true );
-    $modifier->where( 'consent.accept', '!=', 1 );
-    $modifier->where( 'consent.written', '!=', 1 );
-    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
-
-    // has an incomplete interview
-    // last consent: verbal or written deny
-    $sub_cat = 'Hard refusal';
-    $extra_sql = sprintf(
-      'JOIN participant_last_consent '.
-      'ON temp_participant.id = participant_last_consent.participant_id '.
-      'JOIN consent '.
-      'ON participant_last_consent.consent_id = consent.id '.
-      'LEFT JOIN interview '.
-      'ON temp_participant.id = interview.participant_id '.
-      'AND interview.qnaire_id = %s ',
-      $db_qnaire->id );
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'interview.completed', '=', false );
-    $modifier->where( 'consent.accept', '=', 0 );
     $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
 
     // has an incomplete interview
@@ -447,7 +377,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       lib::create( 'business\setting_manager' )->get_setting( 'calling', 'max failed calls' );
     $interview_class_name::create_interview_failed_call_count();
     $extra_sql = sprintf(
-      'LEFT JOIN interview '.
+      'JOIN interview '.
       'ON temp_participant.id = interview.participant_id '.
       'AND interview.qnaire_id = %s '.
       'JOIN interview_failed_call_count '.
@@ -464,7 +394,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     {
       $sub_cat = ucfirst( $status );
       $extra_sql = sprintf( 
-        'LEFT JOIN interview '.
+        'JOIN interview '.
         'ON temp_participant.id = interview.participant_id '.
         'AND interview.qnaire_id = %s '.
         'JOIN interview_last_assignment '.
@@ -480,84 +410,86 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
     }
 
-    $header = array( 'Current Outcome' );
+    // build the header and footer for all tables
+    $header = array( '' );
+    $header = array_merge( $header, array_keys( $this->category_totals_list ) );
+    $header[] = 'Total';
+    $footer = array_fill( 0, count( $header ), 'SUM()' );
+    $footer[0] = '';
 
-    //calculate a grand total column if we have more than one totals column
-    if( 1 < count( $this->category_totals_list ) )
-      $this->category_totals_list['Grand Total'] = $category_totals;
-
-    foreach( $this->category_totals_list as $category => $totals )
-    {
-      $header[] = $category;
-      if( 'Grand Total' != $category )
-      {
-        $this->category_totals_list[$category]['Grand Total Attempted'] =
-          array_sum( array_slice(
-            $totals, $phone_call_status_start_index, $phone_call_status_count ) );
-
-        $tci = array_sum( array_slice( $totals, 0, 4 ) );
-
-        $this->category_totals_list[$category]['Total completed interviews'] = $tci;
-        $denom = $tci + $totals['Hard refusal']
-                      + $totals['Soft refusal']
-                      + $totals['Withdrawn from study'];
-
-        $this->category_totals_list[$category]['Response rate (incl. soft refusals)'] =
-          $denom ? sprintf( '%0.2f', $tci / $denom ) : 'NA';
-
-        $denom = $tci + $totals['Withdrawn from study']
-                      + $totals['Hard refusal'];
-
-        $this->category_totals_list[$category]['Response rate (excl. soft refusals)'] =
-          $denom ? sprintf( '%0.2f', $tci / $denom ) : 'NA';
-
-        if( array_key_exists( 'Grand Total', $this->category_totals_list ) )
-          foreach( array_keys( $totals ) as $column )
-            $this->category_totals_list['Grand Total'][ $column ] +=
-              $this->category_totals_list[$category][ $column ];
-
-        $tc = $this->category_totals_list[$category]['Total number of calls'];
-        $this->category_totals_list[$category]['Completed interviews / total number of calls'] =
-          0 < $tc ? sprintf( '%0.2f', $tci / $tc ) : 'NA';
-      }
-    }
-
-    if( array_key_exists( 'Grand Total', $this->category_totals_list ) )
-    {
-      $gtci = $this->category_totals_list['Grand Total']['Total completed interviews'];
-
-      $denom =
-            $gtci +
-            $this->category_totals_list['Grand Total']['Hard refusal'] +
-            $this->category_totals_list['Grand Total']['Soft refusal'];
-
-      $this->category_totals_list['Grand Total']['Response rate (incl. soft refusals)'] =
-        $denom ? sprintf( '%0.2f', $gtci / $denom ) : 'NA';
-
-      $denom =
-            $gtci +
-            $this->category_totals_list['Grand Total']['Withdrawn from study'] +
-            $this->category_totals_list['Grand Total']['Hard refusal'];
-
-      $this->category_totals_list['Grand Total']['Response rate (excl. soft refusals)'] =
-        $denom ? sprintf( '%0.2f', $gtci / $denom ) : 'NA';
-
-      $gtc = $this->category_totals_list['Grand Total']['Total number of calls'];
-      $this->category_totals_list['Grand Total']['Completed interviews / total number of calls'] =
-        0 < $gtc ? sprintf( '%0.2f', $gtci / $gtc ) : 'NA';
-    }
-
-    // build the final 2D content array
-    $temp_content = array( array_keys( $category_totals ) );
-    foreach( $this->category_totals_list as $totals ) $temp_content[] = array_values( $totals );
-
-    // transpose from column-wise to row-wise
+    // create the first table
     $content = array();
-    foreach( $temp_content as $key => $subarr )
-      foreach( $subarr as $subkey => $subvalue )
-        $content[ $subkey ][ $key ] = $subvalue;
+    $category_list = array(
+      'Completed interview',
+      'Completed interview (negative consent)',
+      'Appointment',
+      'Appointment (missed)' );
+    foreach( $category_list as $category )
+    {
+      $row = array( $category );
+      foreach( $this->category_totals_list as $site => $totals )
+        $row[] = $totals[$category];
+      $row[] = array_sum( $row );
+      $content[] = $row;     
+    }
+    
+    $this->add_table(
+      'Completed Interviews and Appointments', $header, $content, $footer, NULL, array( 'A' ) );
 
-    $this->add_table( NULL, $header, $content, NULL, NULL, array( 'A' ) );
+    // create the second table (call results)
+    $content = array();
+    $category_list = array( 'Not yet called', 'Call in progress' );
+    foreach( $phone_call_class_name::get_enum_values( 'status' ) as $status )
+      $category_list[] = ucfirst( $status );
+    foreach( $category_list as $category )
+    {
+      $row = array( $category );
+      foreach( $this->category_totals_list as $site => $totals )
+        $row[] = $totals[$category];
+      $row[] = array_sum( $row );
+      $content[] = $row;     
+    }
+
+    $this->add_table( 'Interviews in Progress', $header, $content, $footer, NULL, array( 'A' ) );
+
+    // create the third table (permanent conditions)
+    $content = array();
+    $category_list = array();
+    $state_mod = lib::create( 'database\modifier' );
+    $state_mod->order( 'rank' );
+    foreach( $state_class_name::select( $state_mod ) as $db_state )
+      $category_list[] = ucfirst( $db_state->name );
+    foreach( $category_list as $category )
+    {
+      $row = array( $category );
+      foreach( $this->category_totals_list as $site => $totals )
+        $row[] = $totals[$category];
+      $row[] = array_sum( $row );
+      $content[] = $row;     
+    }
+
+    $this->add_table( 'Permanent Conditions', $header, $content, $footer, NULL, array( 'A' ) );
+
+    // create the fourth table (additional information)
+    $content = array();
+    $category_list = array(
+      'Response rate', 
+      'Total number of calls', 
+      );
+    foreach( $category_list as $category )
+    {
+      $row = array( $category );
+      foreach( $this->category_totals_list as $site => $totals )
+        $row[] = $totals[$category];
+      $row[] = array_sum( $row );
+      $content[] = $row;     
+    }
+
+    // total response rate is avergage, not sum
+    $sum = array_pop( $content[0] );
+    $content[0][] = $sum / count( current( $this->category_totals_list ) );
+    
+    $this->add_table( 'Additional Information', $header, $content, NULL, NULL, array( 'A' ) );
   }
 
   /**
@@ -574,8 +506,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
 
     // get the count for each category
     $rows = $record_class_name::db()->get_all(
-      sprintf( '%s %s %s',
-               $this->base_sql,
+      sprintf( 'SELECT temp_participant.category, temp_participant.id FROM temp_participant %s %s',
                $extra_sql,
                is_null( $modifier ) ? '' : $modifier->get_sql() ) );
     $id_list = array();
@@ -605,11 +536,4 @@ class participant_status_report extends \cenozo\ui\pull\base_report
    * @access protected
    */
   private $category_totals_list = array();
-
-  /**
-   * Base query used to gather category totals
-   * @var string
-   * @access private
-   */
-  private $base_sql = '';
 }
