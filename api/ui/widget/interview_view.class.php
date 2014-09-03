@@ -93,6 +93,7 @@ class interview_view extends \cenozo\ui\widget\base_view
     {
       $this->assignment_list->process();
       $this->assignment_list->remove_column( 'uid' );
+      $this->assignment_list->remove_column( 'interview.completed' );
       $this->assignment_list->execute();
       $this->set_variable( 'assignment_list', $this->assignment_list->get_variables() );
     }

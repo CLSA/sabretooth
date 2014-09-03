@@ -59,6 +59,7 @@ class self_home extends \cenozo\ui\widget\self_home
         $this->assignment_list->remove_column( 'site.name' );
         $this->assignment_list->remove_column( 'end_time' );
         $this->assignment_list->remove_column( 'status' );
+        $this->assignment_list->remove_column( 'interview.completed' );
         $this->assignment_list->execute();
         $this->set_variable( 'assignment_list', $this->assignment_list->get_variables() );
       }
