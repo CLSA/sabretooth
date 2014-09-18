@@ -218,6 +218,7 @@ class queue extends \cenozo\database\record
 
       if( $ivr_status_class_name::CALLING_COMPLETE_INTERVIEW_COMPLETE == $status )
       {
+        // mark the appointment as completed
         $db_ivr_appointment->completed = true;
         $db_ivr_appointment->save();
         
@@ -243,7 +244,8 @@ class queue extends \cenozo\database\record
       }
       else if( $ivr_status_class_name::CALLING_COMPLETE_INTERVIEW_NOT_COMPLETE == $status )
       {
-        $db_ivr_appointment->completed = false;
+        // mark the appointment as completed, but not the interview
+        $db_ivr_appointment->completed = true;
         $db_ivr_appointment->save();
       }
       else if( $ivr_status_class_name::NO_APPOINTMENT == $status )
