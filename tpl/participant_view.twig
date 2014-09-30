@@ -41,7 +41,7 @@
           "during the withdraw process including withdraw options and participant feedback.</p>",
           function() {
             // cancel the withdraw and end the phone call
-            if( ajax_push( "participant", "reverse_withdraw", { "id": {{ id }} } ) )
+            if( ajax_push( "participant", "withdraw", { "id": {{ id }}, "cancel": 1 } ) )
               window.location.reload();
           }
         );

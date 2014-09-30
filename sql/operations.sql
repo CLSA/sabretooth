@@ -55,12 +55,6 @@ VALUES( "push", "away_time", "new", true, "Add a new away time to the system." )
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "away_time", "view", true, "View a away time's details." );
 
--- call_attempts
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "pull", "call_attempts", "report", true, "Download a call attempts report." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "widget", "call_attempts", "report", true, "Set up a call attempts report." );
-
 -- call_history
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "call_history", "report", true, "Download a call history report." );
@@ -192,8 +186,6 @@ INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "delete_callback", true, "Remove a participant's callback." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "participant", "delete_ivr_appointment", true, "Remove a participant's IVR appointment." );
-INSERT INTO operation( type, subject, name, restricted, description )
-VALUES( "push", "participant", "reverse_withdraw", true, "Removes the last negative verbal consent from the participant and deletes all withdraw survey data." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "participant", "secondary", true, "Lists a participant's alternates for sourcing purposes." );
 INSERT INTO operation( type, subject, name, restricted, description )

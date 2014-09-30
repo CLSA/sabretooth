@@ -101,7 +101,6 @@ class withdraw_manager extends \cenozo\singleton
       foreach( $survey_class_name::select( $scripts_mod ) as $db_survey ) $db_survey->delete();
     }   
 
-    log::err( 'removing withdraw_letter' );
     $db_participant->withdraw_letter = NULL;
     $db_participant->save();
   }

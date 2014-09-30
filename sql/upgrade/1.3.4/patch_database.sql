@@ -4,6 +4,8 @@ SET AUTOCOMMIT=0;
 
 SOURCE operation.sql
 SOURCE role_has_operation.sql
+SOURCE activity.sql
+SOURCE operation2.sql
 
 SOURCE update_version_number.sql
 

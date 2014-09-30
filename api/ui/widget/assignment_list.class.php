@@ -49,6 +49,7 @@ class assignment_list extends \cenozo\ui\widget\site_restricted_list
     $this->add_column( 'start_time', 'time', 'Start Time' );
     $this->add_column( 'end_time', 'time', 'End Time' );
     $this->add_column( 'status', 'string', 'Status' );
+    $this->add_column( 'interview.completed', 'boolean', 'Complete', true );
 
     // if we have a parent then override the restricted site and show all sites
     if( !is_null( $this->db_restrict_site ) &&
@@ -76,6 +77,8 @@ class assignment_list extends \cenozo\ui\widget\site_restricted_list
     foreach( $this->get_record_list() as $record )
     {
       $db_user = $record->get_user();
+      $db_interview = $record->get_interview();
+      $db_participant = $db_interview->get_participant();
 
       // get the status of the last phone call for this assignment
       $modifier = lib::create( 'database\modifier' );
@@ -103,12 +106,13 @@ class assignment_list extends \cenozo\ui\widget\site_restricted_list
       $this->add_row( $record->id,
         array( 'user.name' => $db_user->name,
                'site.name' => $record->get_site()->name,
-               'uid' => $record->get_interview()->get_participant()->uid,
+               'uid' => $db_participant->uid,
                'calls' => $record->get_phone_call_count(),
                'start_datetime' => $record->start_datetime,
                'start_time' => $record->start_datetime,
                'end_time' => $record->end_datetime,
                'status' => $status,
+               'interview.completed' => $db_interview->completed,
                // allow_spy and user_id aren't columns, they are used for voip spying
                'allow_spy' => $allow_spy,
                'user_id' => $db_user->id ) );

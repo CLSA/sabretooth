@@ -62,10 +62,7 @@ class interview_view extends \cenozo\ui\widget\base_view
   {
     parent::setup();
 
-    $interview_method_class_name = lib::get_class_name( 'database\interview_method' );
     $operation_class_name = lib::get_class_name( 'database\operation' );
-    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
-    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
 
     $db_interview = $this->get_record();
     $db_participant = $db_interview->get_participant();
@@ -96,6 +93,7 @@ class interview_view extends \cenozo\ui\widget\base_view
     {
       $this->assignment_list->process();
       $this->assignment_list->remove_column( 'uid' );
+      $this->assignment_list->remove_column( 'interview.completed' );
       $this->assignment_list->execute();
       $this->set_variable( 'assignment_list', $this->assignment_list->get_variables() );
     }

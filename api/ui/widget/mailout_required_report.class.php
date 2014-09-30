@@ -38,6 +38,7 @@ class mailout_required_report extends base_report
   {
     parent::prepare();
 
+    $this->add_restriction( 'collection' );
     $this->add_restriction( 'site' );
     $this->add_restriction( 'qnaire' );
     $this->add_restriction( 'source' );

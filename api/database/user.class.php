@@ -48,11 +48,13 @@ class user extends \cenozo\database\user
    * as the sum of all time spent on those interviews, in seconds.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\qnaire $db_qnaire
+   * @param database\site $db_site
    * @param database\modifier $modifier
    * @return array( int, float )
    * @access public
    */
-  public function get_interview_count_and_time( $db_qnaire, $modifier = NULL )
+  public function get_interview_count_and_time( $db_qnaire, $db_site, $modifier = NULL )
   {
     // check the primary key value
     if( is_null( $this->id ) )
@@ -64,16 +66,17 @@ class user extends \cenozo\database\user
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
 
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'interview.id', '=', 'assignment.interview_id', false );
-    $sub_select_sql =
-      '( SELECT MAX( start_datetime ) FROM assignment WHERE interview_id = interview.id )';
-    $modifier->where( 'assignment.start_datetime', '=', $sub_select_sql, false );
     $modifier->where( 'assignment.user_id', '=', $this->id );
+    $modifier->where( 'assignment.site_id', '=', $db_site->id );
     $modifier->where( 'interview.qnaire_id', '=', $db_qnaire->id );
 
     // get the list of all interviews related to this user
     $interview_id_list = static::db()->get_col(
-      sprintf( 'SELECT interview.id FROM assignment, interview %s', $modifier->get_sql() ) );
+      'SELECT interview.id '.
+      'FROM interview '.
+      'JOIN interview_last_assignment ON interview.id = interview_last_assignment.interview_id '.
+      'JOIN assignment ON interview_last_assignment.assignment_id = assignment.id '.
+      $modifier->get_sql() );
 
     // determine the time for all interviews in the list
     $time = 0;

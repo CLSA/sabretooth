@@ -43,7 +43,7 @@ class interview_edit extends \cenozo\ui\push\base_edit
       $grand_parent = get_parent_class( get_parent_class( get_class() ) );
       $grand_parent::execute();
 
-      // force complete the interview or throw a notice (we cannot un-complete)
+      // force complete the interview
       if( 1 == $columns['completed'] ) $this->get_record()->force_complete();
       else
       {
