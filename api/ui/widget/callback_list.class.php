@@ -76,8 +76,7 @@ class callback_list extends \cenozo\ui\widget\site_restricted_list
                         $db_phone->type,
                         $db_phone->number );
       $this->add_row( $record->id,
-        array( 'participant.first_name' => $record->get_participant()->first_name,
-               'participant.last_name' => $record->get_participant()->last_name,
+        array( 'participant.uid' => $record->get_participant()->uid,
                'phone' => $phone,
                'datetime' => $record->datetime,
                'state' => $record->get_state() ) );
