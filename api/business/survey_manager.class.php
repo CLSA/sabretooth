@@ -166,6 +166,9 @@ class survey_manager extends \cenozo\singleton
       $db_tokens->lastname = $db_participant->last_name;
       $db_tokens->email = $db_participant->email;
 
+      if( 0 < strlen( $db_participant->other_name ) )
+        $db_tokens->firstname .= sprintf( ' (%s)', $db_participant->other_name );
+
       // fill in the attributes
       $db_surveys = lib::create( 'database\limesurvey\surveys', $sid );
       foreach( $db_surveys->get_token_attribute_names() as $key => $value )
@@ -249,6 +252,9 @@ class survey_manager extends \cenozo\singleton
               $db_tokens->firstname = $db_participant->first_name;
               $db_tokens->lastname = $db_participant->last_name;
               $db_tokens->email = $db_participant->email;
+
+              if( 0 < strlen( $db_participant->other_name ) )
+                $db_tokens->firstname .= sprintf( ' (%s)', $db_participant->other_name );
 
               // fill in the attributes
               $db_surveys = lib::create( 'database\limesurvey\surveys', $sid );
@@ -340,6 +346,9 @@ class survey_manager extends \cenozo\singleton
       $db_tokens->firstname = $db_participant->first_name;
       $db_tokens->lastname = $db_participant->last_name;
       $db_tokens->email = $db_participant->email;
+
+      if( 0 < strlen( $db_participant->other_name ) )
+        $db_tokens->firstname .= sprintf( ' (%s)', $db_participant->other_name );
 
       // fill in the attributes
       foreach( $db_surveys->get_token_attribute_names() as $key => $value )

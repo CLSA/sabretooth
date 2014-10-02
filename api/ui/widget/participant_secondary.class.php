@@ -50,8 +50,10 @@ class participant_secondary extends \cenozo\ui\widget\base_record
   {
     parent::setup();
 
+    $db_participant = $this->get_record();
+
     $alternate_list = array();
-    foreach( $this->get_record()->get_alternate_list() as $db_alternate )
+    foreach( $db_participant->get_alternate_list() as $db_alternate )
     {
       if( $db_alternate->alternate )
       { // only add alternates (not proxies or informants)
@@ -81,8 +83,7 @@ class participant_secondary extends \cenozo\ui\widget\base_record
     }
 
     $this->set_variable( 'alternate_list', $alternate_list );
-    $this->set_variable( 'participant_name',
-      sprintf( $this->get_record()->first_name.' '.$this->get_record()->last_name ) );
+    $this->set_variable( 'participant_name', $db_participant->get_full_name() );
     $this->set_variable( 'secondary_id',
       array_key_exists( 'secondary_id', $_COOKIE ) ?  $_COOKIE['secondary_id'] : 0 );
   }

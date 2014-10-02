@@ -90,8 +90,7 @@ class participant_withdraw extends \cenozo\ui\widget
 
     $this->set_variable( 'participant_id', $db_participant->id );
     $this->set_variable( 'participant_note_count', $db_participant->get_note_count() );
-    $this->set_variable( 'participant_name',
-      sprintf( $db_participant->first_name.' '.$db_participant->last_name ) );
+    $this->set_variable( 'participant_name', $db_participant->get_full_name() );
     $this->set_variable( 'participant_uid', $db_participant->uid );
     $this->set_variable( 'participant_language',
       is_null( $db_language ) ? 'none' : $db_language->name );
