@@ -121,7 +121,7 @@ CREATE PROCEDURE patch_role_has_operation()
     DEALLOCATE PREPARE statement;
 
     SET @sql = CONCAT(
-      "INSERT INTO role_has_operation( role_id, operation_id ) ",
+      "INSERT IGNORE INTO role_has_operation( role_id, operation_id ) ",
       "SELECT role.id, operation.id FROM ", @cenozo, ".role, operation ",
       "WHERE type = 'pull' AND subject = 'sample' AND operation.name = 'report' ",
       "AND role.name IN( 'administrator', 'supervisor' )" );
@@ -130,7 +130,7 @@ CREATE PROCEDURE patch_role_has_operation()
     DEALLOCATE PREPARE statement;
 
     SET @sql = CONCAT(
-      "INSERT INTO role_has_operation( role_id, operation_id ) ",
+      "INSERT IGNORE INTO role_has_operation( role_id, operation_id ) ",
       "SELECT role.id, operation.id FROM ", @cenozo, ".role, operation ",
       "WHERE type = 'widget' AND subject = 'sample' AND operation.name = 'report' ",
       "AND role.name IN( 'administrator', 'supervisor' )" );
