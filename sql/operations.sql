@@ -303,6 +303,12 @@ VALUES( "pull", "recording", "list", true, "Provides a list of recordings for a 
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "recording", "list", true, "Lists recordings." );
 
+-- sample
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "sample", "report", true, "Download a sample report." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "sample", "report", true, "Set up a sample report." );
+
 -- self
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "self", "dialing_pad", false, "A telephone dialing pad widget." );

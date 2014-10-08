@@ -47,3 +47,11 @@ VALUES( "push", "collection", "new_user", true,
 INSERT IGNORE INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "collection", "view", true,
 "View a collection's details." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "sample", "report", true,
+"Download a sample report." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "sample", "report", true,
+"Set up a sample report." );
