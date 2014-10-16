@@ -54,13 +54,13 @@ class assignment_begin extends \cenozo\ui\push
   {
     parent::execute();
     
+    $database_class_name = lib::get_class_name( 'database\database' );
     $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
     $queue_class_name = lib::get_class_name( 'database\queue' );
     $interview_class_name = lib::get_class_name( 'database\interview' );
 
     $session = lib::create( 'business\session' );
     $setting_manager = lib::create( 'business\setting_manager' );
-    $db_user = $session->get_user();
 
     // make sure another thread didn't pick up an assignment while waiting
     if( is_null( lib::create( 'business\session' )->get_current_assignment() ) )
@@ -83,6 +83,12 @@ class assignment_begin extends \cenozo\ui\push
       $queue_mod = lib::create( 'database\modifier' );
       $queue_mod->where( 'rank', '!=', NULL );
       $queue_mod->order( 'rank' );
+
+      // prepare a language string to be used in the participant mod
+      $language_column = sprintf(
+        'IFNULL( participant.language_id, %s )',
+        $database_class_name::format_string( $session->get_service()->language_id ) );
+      $user_langauge_id_list = $session->get_user()->get_language_idlist();
       
       // make sure only one participant is assigned at a time
       $session->acquire_semaphore();
@@ -95,6 +101,8 @@ class assignment_begin extends \cenozo\ui\push
           {
             $participant_mod = lib::create( 'database\modifier' );
             $participant_mod->where( 'qnaire_id', '=', $db_qnaire->id );
+            $participant_mod->where( $language_column, 'IN', $user_language_id_list );
+
             // on a weekday sort the queue by age, the order defined by the reverse sort time setting
             if( $weekday ) $participant_mod->order(
               'DATEDIFF( DATE( NOW() ), participant.date_of_birth ) < 65 * 365', $age_desc );
