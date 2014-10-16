@@ -101,7 +101,8 @@ class assignment_begin extends \cenozo\ui\push
           {
             $participant_mod = lib::create( 'database\modifier' );
             $participant_mod->where( 'qnaire_id', '=', $db_qnaire->id );
-            $participant_mod->where( $language_column, 'IN', $user_language_id_list );
+            if( 0 < count( $user_language_id_list ) )
+              $participant_mod->where( $language_column, 'IN', $user_language_id_list );
 
             // on a weekday sort the queue by age, the order defined by the reverse sort time setting
             if( $weekday ) $participant_mod->order(
