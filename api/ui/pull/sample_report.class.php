@@ -53,7 +53,7 @@ class sample_report extends \cenozo\ui\pull\base_report
     $this->add_title( sprintf( 'For the %s interview', $db_qnaire->name ) ) ;
     $this->add_title( is_null( $db_site ) ?
       'for all sites' : sprintf( 'restricted to the %s site', $db_site->name ) );
-    if( !is_null( $db_site ) )
+    if( !is_null( $db_collection ) )
       $this->add_title( sprintf( 'restricted to the %s collection', $db_collection->name ) );
     
     // create a temporary participant site table
