@@ -1,2 +1,9 @@
-settings.local.ini.php
-.htaccess
+# ignore everything
+*
+
+# except the standard web files
+img
+index.php
+settings.ini.php
+settings.local.ini.php.sample
+.htaccess.sample
