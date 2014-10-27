@@ -120,7 +120,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       $category_totals[ ucfirst( $db_state->name ) ] = 0;
 
     // add total number of calls
-    $category_totals['Response rate'] = 'TBD';
+    $category_totals['Response rate'] = '0';
     $category_totals['Total number of calls'] = 0;
 
     $this->category_totals_list = array();
@@ -302,7 +302,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $modifier->where( 'interview.completed', '=', true );
     $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
 
-    // has a complete interview (negative consent)
+    // has an incomplete interview (negative consent)
     $sub_cat = 'Incomplete interview (negative consent)';
     $extra_sql = sprintf(
       'JOIN interview '.
@@ -313,6 +313,18 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $modifier->where( 'interview.completed', '=', false );
     $modifier->where( 'accept', '=', false );
     $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
+
+    // response rate
+    foreach( $this->category_totals_list as $category => $totals )
+    {
+      $num = $totals['Completed interview'];
+      $denom = $totals['Completed interview'] +
+               $totals['Completed interview (negative consent)'] +
+               $totals['Incomplete interview (negative consent)'];
+      $this->category_totals_list[$category]['Response rate'] = 0 == $denom
+                                                              ? 'n/a'
+                                                              : $num / $denom;
+    }
 
     // final state not null
     $state_mod = lib::create( 'database\modifier' );
@@ -501,8 +513,10 @@ class participant_status_report extends \cenozo\ui\pull\base_report
 
     // total response rate is avergage, not sum
     $sum = array_pop( $content[0] );
-    $content[0][] = $sum / count( current( $this->category_totals_list ) );
-    
+    // count all but the first and last
+    $total = 0;
+    for( $i = 1; $i < count( $content[0] ); $i++ ) if( 0 < $content[0][$i] ) $total++;
+    $content[0][] = $sum / $total;
     $this->add_table( 'Additional Information', $header, $content, NULL, NULL, array( 'A' ) );
   }
 
