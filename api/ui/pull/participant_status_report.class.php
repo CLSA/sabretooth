@@ -100,6 +100,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $category_totals = array(
       'Completed interview' => 0,
       'Completed interview (negative consent)' => 0,
+      'Incomplete interview (negative consent)' => 0,
       'Appointment' => 0,
       'Appointment (missed)' => 0 );
 
@@ -301,6 +302,18 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $modifier->where( 'interview.completed', '=', true );
     $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
 
+    // has a complete interview (negative consent)
+    $sub_cat = 'Incomplete interview (negative consent)';
+    $extra_sql = sprintf(
+      'JOIN interview '.
+      'ON temp_participant.id = interview.participant_id '.
+      'AND interview.qnaire_id = %s ',
+      $db_qnaire->id );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'interview.completed', '=', false );
+    $modifier->where( 'accept', '=', false );
+    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
+
     // final state not null
     $state_mod = lib::create( 'database\modifier' );
     $state_mod->order( 'rank' );
@@ -422,6 +435,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $category_list = array(
       'Completed interview',
       'Completed interview (negative consent)',
+      'Incomplete interview (negative consent)',
       'Appointment',
       'Appointment (missed)' );
     foreach( $category_list as $category )
