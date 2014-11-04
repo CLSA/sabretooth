@@ -36,19 +36,26 @@ class participant_tree_report extends \cenozo\ui\pull\base_report
    */
   protected function build()
   {
+    $database_class_name = lib::get_class_name( 'database\database' );
     $interview_method_class_name = lib::get_class_name( 'database\interview_method' );
     $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
     $queue_class_name = lib::get_class_name( 'database\queue' );
-    $site_class_name  = lib::get_class_name( 'database\site' );
+    $site_class_name = lib::get_class_name( 'database\site' );
 
     $restrict_site_id = $this->get_argument( 'restrict_site_id', 0 );
     $restrict_source_id = $this->get_argument( 'restrict_source_id', 0 );
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
-    
+    $restrict_language_id = $this->get_argument( 'restrict_language_id' );
+    $db_language = $restrict_language_id
+                 ? lib::create( 'database\language', $restrict_language_id )
+                 : NULL;
+
     $site_mod = lib::create( 'database\modifier' );
     if( $restrict_site_id ) $site_mod->where( 'id', '=', $restrict_site_id );
-    
+
     $this->add_title( 'for the '.$db_qnaire->name.' questionnaire' );
+    $this->add_title( is_null( $db_language ) ?
+      'for all languages' : sprintf( 'restricted to %s participants', $db_language->name ) );
 
     $contents = array();
 
@@ -70,9 +77,19 @@ class participant_tree_report extends \cenozo\ui\pull\base_report
         // Note that queue modifiers have to be created for each iteration of the loop since
         // they are modified in the process of getting the participant count
         $participant_mod = lib::create( 'database\modifier' );
+        $participant_mod->where( 'qnaire_id', '=', $db_qnaire->id );
         if( 0 < $restrict_source_id )
           $participant_mod->where( 'participant.source_id', '=', $restrict_source_id );
-        $participant_mod->where( 'qnaire_id', '=', $db_qnaire->id );
+
+        // restrict by language
+        if( !is_null( $db_language ) )
+        {
+          $column = sprintf( 'IFNULL( participant.language_id, %s )',
+                             $database_class_name::format_string(
+                               lib::create( 'business\session' )->get_service()->language_id ) );
+          $participant_mod->where( $column, '=', $db_language->id );
+        }
+
         $db_queue->set_site( $db_site );
         $row[] = $db_queue->get_participant_count( $participant_mod );
       }
@@ -85,14 +102,24 @@ class participant_tree_report extends \cenozo\ui\pull\base_report
         // they are modified in the process of getting the participant count
         $participant_mod = lib::create( 'database\modifier' );
         if( 0 < $restrict_source_id )
-          $participant_mod->where( 'participant_source_id', '=', $restrict_source_id );
+          $participant_mod->where( 'participant.source_id', '=', $restrict_source_id );
+
+        // restrict by language
+        if( !is_null( $db_language ) )
+        {
+          $column = sprintf( 'IFNULL( participant.language_id, %s )',
+                             $database_class_name::format_string(
+                               lib::create( 'business\session' )->get_service()->language_id ) );
+          $participant_mod->where( $column, '=', $db_language->id );
+        }
+
         $db_queue->set_site( NULL );
         $row[] = $db_queue->get_participant_count( $participant_mod );
       }
 
       $contents[] = $row;
     }
-    
+
     if( $restrict_site_id )
     {
       $header = array( 'Queue', 'Total' );

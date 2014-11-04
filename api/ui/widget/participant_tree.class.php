@@ -28,7 +28,7 @@ class participant_tree extends \cenozo\ui\widget
   }
 
   /**
-   * Finish setting the variables in a widget.
+   * Sets up the operation with any pre-execution instructions that may be necessary.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
@@ -38,6 +38,7 @@ class participant_tree extends \cenozo\ui\widget
     parent::setup();
     
     $site_class_name = lib::get_class_name( 'database\site' );
+    $language_class_name = lib::get_class_name( 'database\language' );
     $queue_class_name = lib::get_class_name( 'database\queue' );
     $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
     $interview_method_class_name = lib::get_class_name( 'database\interview_method' );
@@ -62,6 +63,16 @@ class participant_tree extends \cenozo\ui\widget
     $this->set_variable( 'site_id', $site_id );
     $db_site = $site_id ? lib::create( 'database\site', $site_id ) : NULL;
     
+    $language_mod = lib::create( 'database\modifier' );
+    $language_mod->where( 'active', '=', true );
+    $languages = array( 'any' => 'any' );
+    foreach( $language_class_name::select( $language_mod ) as $db_language )
+      $languages[$db_language->id] = $db_language->name;
+    $this->set_variable( 'languages', $languages );
+
+    $restrict_language_id = $this->get_argument( 'restrict_language_id', 'any' );
+    $this->set_variable( 'restrict_language_id', $restrict_language_id );
+
     $current_date = util::get_datetime_object()->format( 'Y-m-d' );
     $this->set_variable( 'current_date', $current_date );
     $viewing_date = $this->get_argument( 'viewing_date', 'current' );

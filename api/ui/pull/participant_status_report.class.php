@@ -100,6 +100,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $category_totals = array(
       'Completed interview' => 0,
       'Completed interview (negative consent)' => 0,
+      'Incomplete interview (negative consent)' => 0,
       'Appointment' => 0,
       'Appointment (missed)' => 0 );
 
@@ -119,7 +120,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       $category_totals[ ucfirst( $db_state->name ) ] = 0;
 
     // add total number of calls
-    $category_totals['Response rate'] = 'TBD';
+    $category_totals['Response rate'] = '0';
     $category_totals['Total number of calls'] = 0;
 
     $this->category_totals_list = array();
@@ -301,6 +302,30 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $modifier->where( 'interview.completed', '=', true );
     $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
 
+    // has an incomplete interview (negative consent)
+    $sub_cat = 'Incomplete interview (negative consent)';
+    $extra_sql = sprintf(
+      'JOIN interview '.
+      'ON temp_participant.id = interview.participant_id '.
+      'AND interview.qnaire_id = %s ',
+      $db_qnaire->id );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'interview.completed', '=', false );
+    $modifier->where( 'accept', '=', false );
+    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
+
+    // response rate
+    foreach( $this->category_totals_list as $category => $totals )
+    {
+      $num = $totals['Completed interview'];
+      $denom = $totals['Completed interview'] +
+               $totals['Completed interview (negative consent)'] +
+               $totals['Incomplete interview (negative consent)'];
+      $this->category_totals_list[$category]['Response rate'] = 0 == $denom
+                                                              ? 'n/a'
+                                                              : $num / $denom;
+    }
+
     // final state not null
     $state_mod = lib::create( 'database\modifier' );
     $state_mod->order( 'rank' );
@@ -422,6 +447,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $category_list = array(
       'Completed interview',
       'Completed interview (negative consent)',
+      'Incomplete interview (negative consent)',
       'Appointment',
       'Appointment (missed)' );
     foreach( $category_list as $category )
@@ -487,8 +513,10 @@ class participant_status_report extends \cenozo\ui\pull\base_report
 
     // total response rate is avergage, not sum
     $sum = array_pop( $content[0] );
-    $content[0][] = $sum / count( current( $this->category_totals_list ) );
-    
+    // count all but the first and last
+    $total = 0;
+    for( $i = 1; $i < count( $content[0] ); $i++ ) if( 0 < $content[0][$i] ) $total++;
+    $content[0][] = $sum / $total;
     $this->add_table( 'Additional Information', $header, $content, NULL, NULL, array( 'A' ) );
   }
 

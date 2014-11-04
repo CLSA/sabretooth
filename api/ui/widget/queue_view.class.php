@@ -37,11 +37,11 @@ class queue_view extends \cenozo\ui\widget\base_view
   protected function prepare()
   {
     parent::prepare();
-    
+
     $session = lib::create( 'business\session' );
     if( $session->get_role()->all_sites )
     {
-      $site_id = $this->get_argument( 'site_id' );
+      $site_id = $this->get_argument( 'site_id', 0 );
       if( $site_id ) $this->db_site = lib::create( 'database\site', $site_id );
     }
     else
@@ -49,8 +49,13 @@ class queue_view extends \cenozo\ui\widget\base_view
       $this->db_site = $session->get_site();
     }
 
-    $qnaire_id = $this->get_argument( 'qnaire_id' );
+    $qnaire_id = $this->get_argument( 'qnaire_id', 0 );
     if( $qnaire_id ) $this->db_qnaire = lib::create( 'database\qnaire', $qnaire_id );
+
+    $language_id = $this->get_argument( 'language_id', 'any' );
+    $this->db_language = 'any' == $language_id
+                       ? NULL
+                       : lib::create( 'database\language', $language_id );
 
     $current_date = util::get_datetime_object()->format( 'Y-m-d' );
     $viewing_date = $this->get_argument( 'viewing_date', 'current' );
@@ -62,6 +67,7 @@ class queue_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'description', 'constant', 'Description' );
     $this->add_item( 'site', 'constant', 'Site' );
     $this->add_item( 'qnaire', 'constant', 'Questionnaire' );
+    $this->add_item( 'language', 'constant', 'Language' );
     $this->add_item( 'viewing_date', 'constant', 'Viewing date' );
 
     // create the participant sub-list widget
@@ -72,7 +78,7 @@ class queue_view extends \cenozo\ui\widget\base_view
   }
 
   /**
-   * Finish setting the variables in a widget.
+   * Sets up the operation with any pre-execution instructions that may be necessary.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
@@ -80,13 +86,16 @@ class queue_view extends \cenozo\ui\widget\base_view
   protected function setup()
   {
     parent::setup();
-    
+
     // set the view's items
     $this->set_item( 'title', $this->get_record()->title, true );
     $this->set_item( 'description', $this->get_record()->description );
     $this->set_item( 'site', $this->db_site ? $this->db_site->name : 'All sites' );
     $this->set_item( 'qnaire', $this->db_qnaire ? $this->db_qnaire->name : 'All questionnaires' );
+    $this->set_item(
+      'language', is_null( $this->db_language ) ? 'Any Language' : $this->db_language->name );
     $this->set_item( 'viewing_date', $this->viewing_date );
+
 
     // process the child widgets
     try
@@ -110,11 +119,24 @@ class queue_view extends \cenozo\ui\widget\base_view
    */
   public function determine_participant_count( $modifier = NULL )
   {
+    $database_class_name = lib::get_class_name( 'database\database' );
+
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     if( !is_null( $this->db_qnaire ) ) $modifier->where( 'qnaire_id', '=', $this->db_qnaire->id );
 
     $db_queue = $this->get_record();
     $db_queue->set_site( $this->db_site );
+
+    if( !is_null( $this->db_language ) )
+    {
+      // if the language isn't set, assume it is the service's default language
+      $column = sprintf(
+        'IFNULL( participant.language_id, %s )',
+        $database_class_name::format_string(
+          lib::create( 'business\session' )->get_service()->language_id ) );
+      $modifier->where( $column, '=', $this->db_language->id );
+    }
+
     return $db_queue->get_participant_count( $modifier );
   }
 
@@ -128,11 +150,24 @@ class queue_view extends \cenozo\ui\widget\base_view
    */
   public function determine_participant_list( $modifier = NULL )
   {
+    $database_class_name = lib::get_class_name( 'database\database' );
+
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     if( !is_null( $this->db_qnaire ) ) $modifier->where( 'qnaire_id', '=', $this->db_qnaire->id );
 
     $db_queue = $this->get_record();
     $db_queue->set_site( $this->db_site );
+
+    if( !is_null( $this->db_language ) )
+    {
+      // if the language isn't set, assume it is the service's default language
+      $column = sprintf(
+        'IFNULL( participant.language_id, %s )',
+        $database_class_name::format_string(
+          lib::create( 'business\session' )->get_service()->language_id ) );
+      $modifier->where( $column, '=', $this->db_language->id );
+    }
+
     return $db_queue->get_participant_list( $modifier );
   }
 
@@ -156,6 +191,13 @@ class queue_view extends \cenozo\ui\widget\base_view
    * @access protected
    */
   protected $db_qnaire = NULL;
+
+  /**
+   * The language to restrict the queue to (may be NULL)
+   * @var database\language
+   * @access protected
+   */
+  protected $db_language = NULL;
 
   /**
    * The viewing date to restrict the queue to
