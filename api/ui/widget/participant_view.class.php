@@ -31,7 +31,6 @@ class participant_view extends \cenozo\ui\widget\participant_view
 
     // get the effective
     $db_participant = $this->get_record();
-    $this->db_effective_qnaire = $db_participant->get_effective_qnaire();
     $this->db_interview_method = $db_participant->get_effective_interview_method();
 
     // create the appointment sub-list widget
@@ -73,14 +72,15 @@ class participant_view extends \cenozo\ui\widget\participant_view
     $operation_class_name = lib::get_class_name( 'database\operation' );
     $db_participant = $this->get_record();
 
-    if( is_null( $this->db_effective_qnaire ) )
+    $db_effective_qnaire = $db_participant->get_effective_qnaire();
+    if( is_null( $db_effective_qnaire ) )
     {
       $qnaire_name = '(none)';
       $qnaire_date = '(not applicable)';
     }
     else
     {
-      $qnaire_name = $this->db_effective_qnaire->name;
+      $qnaire_name = $db_effective_qnaire->name;
       $start_qnaire_date = $db_participant->get_start_qnaire_date();
       $qnaire_date = is_null( $start_qnaire_date )
                    ? 'immediately'
@@ -163,7 +163,6 @@ class participant_view extends \cenozo\ui\widget\participant_view
     $this->set_variable( 'allow_secondary', $allow_secondary );
 
     // add a withdraw button if there is a withdraw script set up
-    $withdraw_manager = lib::create( 'business\withdraw_manager' );
     if( !is_null( $withdraw_manager->get_withdraw_sid( $db_participant ) ) )
     {
       $db_last_consent = $db_participant->get_last_consent();
@@ -224,13 +223,6 @@ class participant_view extends \cenozo\ui\widget\participant_view
   }
 
   /**
-   * The participant's effective qnaire (cached)
-   * @var database\qnaire
-   * @access protected
-   */
-  protected $db_effective_qnaire = NULL;
-
-  /**
    * The participant's current interview's interview method (cached)
    * @var database\interview_method
    * @access protected
@@ -239,14 +231,14 @@ class participant_view extends \cenozo\ui\widget\participant_view
 
   /**
    * The participant list widget.
-   * @var appointment_list or ivr_appointment_list
+   * @var appointment_list
    * @access protected
    */
   protected $appointment_list = NULL;
 
   /**
    * The participant list widget.
-   * @var ivr_appointment_list or ivr_ivr_appointment_list
+   * @var ivr_appointment_list
    * @access protected
    */
   protected $ivr_appointment_list = NULL;

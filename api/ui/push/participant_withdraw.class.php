@@ -62,10 +62,8 @@ class participant_withdraw extends \cenozo\ui\push\base_record
         }
         else
         {
-          throw lib::create( 'exception\runtime',
-            sprintf( 'Trying to cancel withdraw for participant uid %s but '.
-                     'most recent consent is not a verbal negative.',
-                     $db_participant->uid ),
+          throw lib::create( 'exception\notice',
+            'Cannot reverse withdraw unless the most recent consent is a verbal negative.',
             __METHOD__ );
         }
       }
