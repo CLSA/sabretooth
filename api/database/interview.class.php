@@ -97,6 +97,42 @@ class interview extends \cenozo\database\has_note
   }
 
   /**
+   * Performes all necessary steps when completing an interview.
+   * 
+   * This method encapsulates all processing required when an interview is completed.
+   * If you wish to "force" the completion or uncompletion of an interview please use
+   * the force_complete() and force_uncomplete() methods intead.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
+  public function complete()
+  {
+    // update the record
+    $this->completed = true;
+    $this->save();
+
+    // update the recording list
+    $this->update_recording_list();
+
+    // record the event (if one exists)
+    $db_event_type = $this->get_qnaire()->get_completed_event_type();
+    if( !is_null( $db_event_type ) )
+    {
+      // make sure the event doesn't already exist
+      $event_mod = lib::create( 'database\modifier' );
+      $event_mod->where( 'event_type_id', '=', $db_event_type->id );
+      if( 0 == $this->get_participant()->get_event_count( $event_mod ) )
+      {
+        $db_event = lib::create( 'database\event' );
+        $db_event->participant_id = $this->participant_id;
+        $db_event->event_type_id = $db_event_type->id;
+        $db_event->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+        $db_event->save();
+      }
+    }
+  }
+
+  /**
    * Forces an interview to become completed.
    * 
    * This method will update an interview's status to be complete.  It will also update the
@@ -157,26 +193,7 @@ class interview extends \cenozo\database\has_note
     }
 
     // finally, update the record
-    $this->completed = true;
-    $this->save();
-    $this->update_recording_list();
-
-    // record the event (if one exists)
-    $db_event_type = $this->get_qnaire()->get_completed_event_type();
-    if( !is_null( $db_event_type ) )
-    {
-      // make sure the event doesn't already exist
-      $event_mod = lib::create( 'database\modifier' );
-      $event_mod->where( 'event_type_id', '=', $db_event_type->id );
-      if( 0 == $this->get_participant()->get_event_count( $event_mod ) )
-      {
-        $db_event = lib::create( 'database\event' );
-        $db_event->participant_id = $this->participant_id;
-        $db_event->event_type_id = $db_event_type->id;
-        $db_event->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
-        $db_event->save();
-      }
-    }
+    $this->complete();
   }
 
   /**
@@ -231,6 +248,7 @@ class interview extends \cenozo\database\has_note
     // finally, update the record
     $this->completed = false;
     $this->save();
+    $this->update_recording_list();
 
     // remove completed events (if any exist)
     $db_event_type = $this->get_qnaire()->get_completed_event_type();

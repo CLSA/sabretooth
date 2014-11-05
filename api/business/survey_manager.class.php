@@ -166,9 +166,6 @@ class survey_manager extends \cenozo\singleton
       $db_tokens->lastname = $db_participant->last_name;
       $db_tokens->email = $db_participant->email;
 
-      if( 0 < strlen( $db_participant->other_name ) )
-        $db_tokens->firstname .= sprintf( ' (%s)', $db_participant->other_name );
-
       // fill in the attributes
       $db_surveys = lib::create( 'database\limesurvey\surveys', $sid );
       foreach( $db_surveys->get_token_attribute_names() as $key => $value )
@@ -253,9 +250,6 @@ class survey_manager extends \cenozo\singleton
               $db_tokens->lastname = $db_participant->last_name;
               $db_tokens->email = $db_participant->email;
 
-              if( 0 < strlen( $db_participant->other_name ) )
-                $db_tokens->firstname .= sprintf( ' (%s)', $db_participant->other_name );
-
               // fill in the attributes
               $db_surveys = lib::create( 'database\limesurvey\surveys', $sid );
               foreach( $db_surveys->get_token_attribute_names() as $key => $value )
@@ -283,29 +277,7 @@ class survey_manager extends \cenozo\singleton
         }
 
         // complete the interview and update the recording list if all phases are complete
-        if( false === $this->current_sid )
-        {
-          $db_interview->completed = true;
-          $db_interview->save();
-          $db_interview->update_recording_list();
-
-          // record the event (if one exists)
-          $db_event_type = $db_qnaire->get_completed_event_type();
-          if( !is_null( $db_event_type ) )
-          {
-            // make sure the event doesn't already exist
-            $event_mod = lib::create( 'database\modifier' );
-            $event_mod->where( 'event_type_id', '=', $db_event_type->id );
-            if( 0 == $db_participant->get_event_count( $event_mod ) )
-            {
-              $db_event = lib::create( 'database\event' );
-              $db_event->participant_id = $db_participant->id;
-              $db_event->event_type_id = $db_event_type->id;
-              $db_event->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
-              $db_event->save();
-            }
-          }
-        }
+        if( false === $this->current_sid ) $db_interview->complete();
       }
     }
   }
@@ -346,9 +318,6 @@ class survey_manager extends \cenozo\singleton
       $db_tokens->firstname = $db_participant->first_name;
       $db_tokens->lastname = $db_participant->last_name;
       $db_tokens->email = $db_participant->email;
-
-      if( 0 < strlen( $db_participant->other_name ) )
-        $db_tokens->firstname .= sprintf( ' (%s)', $db_participant->other_name );
 
       // fill in the attributes
       foreach( $db_surveys->get_token_attribute_names() as $key => $value )

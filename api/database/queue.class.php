@@ -203,7 +203,7 @@ class queue extends \cenozo\database\record
     $duration = $setting_manager->get_setting( 'appointment', 'full duration' );
     $now_datetime_obj = util::get_datetime_object();
     $appointment_datetime_obj = clone $now_datetime_obj;
-    $appointment_datetime_obj->sub( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
+    $appointment_datetime_obj->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
     $ivr_appointment_mod = lib::create( 'database\modifier' );
     $ivr_appointment_mod->where(
       'datetime', '<=', $appointment_datetime_obj->format( 'Y-m-d H:i:s' ) );
@@ -223,12 +223,13 @@ class queue extends \cenozo\database\record
         $status = $ivr_status_class_name::ERROR;
       }
 
+      log::debug( array( $db_participant->uid, $status ) );
       if( $ivr_status_class_name::CALLING_COMPLETE_INTERVIEW_COMPLETE == $status )
       {
         // mark the appointment as completed
         $db_ivr_appointment->completed = true;
         $db_ivr_appointment->save();
-        
+
         // now mark the interview as complete
         $interview_mod = lib::create( 'database\modifier' );
         $interview_mod->where( 'completed', '=', false );
@@ -247,6 +248,23 @@ class queue extends \cenozo\database\record
         {
           $db_interview->completed = true;
           $db_interview->save();
+
+          // record the event (if one exists)
+          $db_event_type = $db_interview->get_qnaire()->get_completed_event_type();
+          if( !is_null( $db_event_type ) )
+          {
+            // make sure the event doesn't already exist
+            $event_mod = lib::create( 'database\modifier' );
+            $event_mod->where( 'event_type_id', '=', $db_event_type->id );
+            if( 0 == $db_participant->get_event_count( $event_mod ) )
+            {
+              $db_event = lib::create( 'database\event' );
+              $db_event->participant_id = $db_participant->id;
+              $db_event->event_type_id = $db_event_type->id;
+              $db_event->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+              $db_event->save();
+            }
+          }
         }
       }
       else if( $ivr_status_class_name::CALLING_COMPLETE_INTERVIEW_NOT_COMPLETE == $status )
