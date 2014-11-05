@@ -159,6 +159,7 @@ class interview extends \cenozo\database\has_note
     // finally, update the record
     $this->completed = true;
     $this->save();
+    $this->update_recording_list();
 
     // record the event (if one exists)
     $db_event_type = $this->get_qnaire()->get_completed_event_type();
