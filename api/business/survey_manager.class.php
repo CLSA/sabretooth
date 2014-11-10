@@ -368,6 +368,17 @@ class survey_manager extends \cenozo\singleton
     {
       $value = $db_participant->get_cohort()->name;
     }
+    else if( 1 == preg_match( '/^collection./', $key ) )
+    {
+      $parts = explode( '.', $key );
+      if( 2 != count( $parts ) )
+        throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+
+      $collection_name = $parts[1];
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'collection.name', '=', $collection_name );
+      $value = 0 < $db_participant->get_collection_count( $modifier );
+    }
     else if( 'uid' == $key )
     {
       $value = $db_participant->uid;
