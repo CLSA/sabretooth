@@ -214,9 +214,6 @@ class site_feed extends \cenozo\ui\pull\base_feed
         $minutes = $time % 100;
         $hours = ( $time - $minutes ) / 100;
         $time_string = sprintf( '%02d:%02d', $hours, $minutes );
-        log::debug( $date );
-        log::debug( $hours );
-        log::debug( $time_string );
 
         if( $start_time )
         {

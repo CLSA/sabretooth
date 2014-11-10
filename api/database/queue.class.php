@@ -223,7 +223,6 @@ class queue extends \cenozo\database\record
         $status = $ivr_status_class_name::ERROR;
       }
 
-      log::debug( array( $db_participant->uid, $status ) );
       if( $ivr_status_class_name::CALLING_COMPLETE_INTERVIEW_COMPLETE == $status )
       {
         // mark the appointment as completed
