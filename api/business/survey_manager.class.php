@@ -377,7 +377,7 @@ class survey_manager extends \cenozo\singleton
       $collection_name = $parts[1];
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'collection.name', '=', $collection_name );
-      $value = 0 < $db_participant->get_collection_count( $modifier );
+      $value = 0 < $db_participant->get_collection_count( $modifier ) ? 1 : 0;
     }
     else if( 'uid' == $key )
     {
