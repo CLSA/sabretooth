@@ -48,11 +48,6 @@ class withdraw_manager extends \cenozo\singleton
         else
         { // no interview means we'll just use the first qnaire
           $db_qnaire = $qnaire_class_name::get_unique_record( 'rank', 1 );
-     
-          if( is_null( $db_qnaire ) )
-            throw lib::create( 'exception\runtime',
-                               'Trying to withdraw participant without a questionnaire.',
-                               __METHOD__ );
         }   
       }
 
