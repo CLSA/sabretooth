@@ -44,6 +44,46 @@ class survey extends sid_record
   }
 
   /**
+   * Returns a participant's response to a particular question.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param string $question_code
+   * @return string
+   * @access public
+   */
+  public static function get_responses( $token, $question_code )
+  {
+    $database_class_name = lib::get_class_name( 'database\database' );
+
+    // the questions table has more than one column in its primary key so custom sql is needed
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'sid', '=', static::get_sid() );
+    $modifier->where( 'title', '=', $question_code );
+    $modifier->group( 'sid' );
+    $modifier->group( 'gid' );
+    $modifier->group( 'qid' );
+    $sql = sprintf( 'SELECT gid, qid FROM %s %s',
+                    static::db()->get_prefix().'questions',
+                    $modifier->get_sql() );
+    
+    $row = static::db()->get_row( $sql );
+    if( 0 == count( $row ) )
+      throw lib::create( 'exception\runtime', 'Question code not found in survey.', __METHOD__ );
+
+    $sql = sprintf(
+      'SELECT %sX%sX%s '.
+      'FROM %s '.
+      'WHERE token LIKE %s',
+      static::get_sid(),
+      $row['gid'],
+      $row['qid'],
+      static::get_table_name(),
+      $database_class_name::format_string( $token ) );
+
+    return static::db()->get_col( $sql );
+  }
+
+  /**
    * Returns the total time in seconds spent on this survey (by all participants)
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>

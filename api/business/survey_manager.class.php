@@ -386,7 +386,14 @@ class survey_manager extends \cenozo\singleton
   {
     $value = NULL;
 
-    if( 'cohort' == $key )
+    if( false !== strpos( $key, '.' ) )
+    { // key contains a '.', use new style attribute
+      $data_manager = lib::create( 'business\data_manager' );
+      $value = 0 === strpos( $key, 'participant\.' )
+             ? $data_manager->get_participant_value( $db_participant, $key )
+             : $data_manager->get_value( $key );
+    }
+    else if( 'cohort' == $key )
     {
       $value = $db_participant->get_cohort()->name;
     }
@@ -398,15 +405,6 @@ class survey_manager extends \cenozo\singleton
     {
       $db_site = $db_participant->get_effective_site();
       $value = is_null( $db_site ) ? 'none' : $db_site->name;
-    }
-    else if( 'override quota' == $key )
-    {
-      // override_quota is true if the participant's quota is disabled AND override_quota is true
-      $override_quota = '0';
-      $value = false === $db_participant->get_quota_enabled() &&
-               ( $db_participant->override_quota || $db_participant->get_source()->override_quota )
-             ? '1' 
-             : '0';
     }
     else if( false !== strpos( $key, 'address' ) )
     {
@@ -507,11 +505,6 @@ class survey_manager extends \cenozo\singleton
       $db_hin = $db_participant->get_hin();
       if( is_null( $db_hin ) ) $value = -1;
       else $value = 1 == $db_hin->access ? 1 : 0;
-    }
-    else if( 'HIN recorded' == $key )
-    {
-      $db_hin = $db_participant->get_hin();
-      $value = !( is_null( $db_hin ) || is_null( $db_hin->code ) );
     }
     else if( 'provided data' == $key )
     {
@@ -661,53 +654,6 @@ class survey_manager extends \cenozo\singleton
         }
       }
     }
-    else if( 1 == preg_match( '/^(INT|INCL)_/', $key ) )
-    {
-      $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
-      $source_survey_class_name = lib::get_class_name( 'database\source_survey' );
-      
-      if( is_null( $db_interview ) )
-        throw lib::create( 'exception\runtime',
-          sprintf( 'Can\'t provide survey attribute "%s" without an interview record', $key ),
-          __METHOD__ );
-
-      $phase_mod = lib::create( 'database\modifier' );
-      $phase_mod->where( 'rank', '=', 1 );
-      $phase_list = $db_interview->get_qnaire()->get_phase_list( $phase_mod );
-
-      // determine the SID of the first phase of the questionnaire (where the question is asked)
-      if( 1 == count( $phase_list ) )
-      {
-        $db_phase = current( $phase_list );
-        $db_source_survey = $source_survey_class_name::get_unique_record(
-          array( 'phase_id', 'source_id' ),
-          array( $db_phase->id, $db_participant->source_id ) );
-        $survey_class_name::set_sid(
-          is_null( $db_source_survey ) ? $db_phase->sid : $db_source_survey->sid );
-
-        $survey_mod = lib::create( 'database\modifier' );
-        $survey_mod->where( 'token', 'LIKE', $db_interview->id.'_%' );
-        $survey_mod->order_desc( 'datestamp' );
-        $survey_list = $survey_class_name::select( $survey_mod );
-
-        $found = false;
-        foreach( $survey_list as $db_survey )
-        { // loop through all surveys until an answer is found
-          try
-          {
-            $value = $db_survey->get_response( $key );
-            // INT_13a matches any survey response, others match any NON NULL response
-            if( 'INT_13a' == $key || !is_null( $value ) ) $found = true;
-          }
-          catch( \cenozo\exception\runtime $e )
-          {
-            // ignore the error and continue without setting the attribute
-          }
-          
-          if( $found ) break;
-        }
-      }
-    }
     else if( 'operator first_name' == $key )
     {
       $db_user = lib::create( 'business\session' )->get_user();
@@ -722,13 +668,6 @@ class survey_manager extends \cenozo\singleton
     {
       $db_source = $db_participant->get_source();
       $value = is_null( $db_source ) ? '(none)' : $db_source->name;
-    }
-    else if( 'previous CCHS contact date' == $key )
-    {
-      $event_type_class_name = lib::get_class_name( 'database\event_type' );
-      $datetime_list = $db_participant->get_event_datetime_list(
-        $event_type_class_name::get_unique_record( 'name', 'completed pilot interview' ) );
-      $value = 0 < count( $datetime_list ) ? current( $datetime_list ) : NULL;
     }
     else if( 'last interview date' == $key )
     {
@@ -748,58 +687,10 @@ class survey_manager extends \cenozo\singleton
                   ? 'DATE UNKNOWN'
                   : util::get_formatted_date( $db_event->datetime );
     }
-    else if( false !== strpos( $key, 'alternate' ) )
-    {
-      $alternate_list = $db_participant->get_alternate_list();
-
-      $matches = array(); // for pregs below
-      if( 'number of alternate contacts' == $key )
-      {
-        $value = count( $alternate_list );
-      }
-      else if(
-        preg_match( '/alternate([0-9]+) (first_name|last_name|phone)/', $key, $matches ) )
-      {
-        $alt_number = intval( $matches[1] );
-        $aspect = $matches[2];
-
-        if( count( $alternate_list ) < $alt_number )
-        {
-          $value = '';
-        }
-        else
-        {
-          if( 'phone' == $aspect )
-          {
-            $phone_list = $alternate_list[$alt_number - 1]->get_phone_list();
-            $value = is_array( $phone_list ) ? $phone_list[0]->number : '';
-          }
-          else
-          {
-            $value = $alternate_list[$alt_number - 1]->$aspect;
-          }
-        }
-      }
-    }
     else if( preg_match( '/secondary (first_name|last_name)/', $key ) )
     {
       $aspect = str_replace( ' ', '_', $key );
       if( array_key_exists( $aspect, $_COOKIE ) ) $value = $_COOKIE[$aspect];
-    }
-    else if( 'previously completed' == $key )
-    {
-      if( is_null( $db_interview ) )
-        throw lib::create( 'exception\runtime',
-          sprintf( 'Can\'t provide survey attribute "%s" without an interview record', $key ),
-          __METHOD__ );
-
-      $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-
-      // no need to set the token sid since it should already be set before calling this method
-      $tokens_mod = lib::create( 'database\modifier' );
-      $tokens_mod->where( 'token', 'like', $db_interview->id.'_%' );
-      $tokens_mod->where( 'completed', '!=', 'N' );
-      $value = $tokens_class_name::count( $tokens_mod );
     }
 
     return $value;

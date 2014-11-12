@@ -163,19 +163,15 @@ class withdraw_manager extends \cenozo\singleton
           else // not in-home only
           {   
             // from here we need to know whether default was applied or not
-            $survey_mod = lib::create( 'database\modifier' );
-            $survey_mod->where( 'token', '=', $token );
-            $survey_list = $survey_class_name::select( $survey_mod );
-            $db_survey = current( $survey_list );
  
             // get the code for the def and opt responses
             $code = 0 < $attributes['consented to provide HIN'] ? 'HIN' : 'NO_HIN';
             $code .= 0 < $attributes['DCS samples'] ? '_SAMP' : '_NO_SAMP';
 
             $response = array();
-            $response['start'] = $db_survey->get_response( 'WTD_START' );
-            $response['def'] = $db_survey->get_response( 'WTD_DEF_'.$code );
-            $response['opt'] = $db_survey->get_response( 'WTD_OPT_'.$code );
+            $response['start'] = current( $survey_class_name::get_responses( $token, 'WTD_START' ) );
+            $response['def'] = current( $survey_class_name::get_responses( $token, 'WTD_DEF_'.$code ) );
+            $response['opt'] = current( $survey_class_name::get_responses( $token, 'WTD_OPT_'.$code ) );
 
             // the default option was applied if...
             if( 'REFUSED' == $response['start'] ||
