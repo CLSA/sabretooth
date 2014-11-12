@@ -133,7 +133,7 @@ class availability_feed extends \cenozo\ui\pull\base_feed
               sprintf( '%s%s%s',
                        $hours > 12 ? $hours - 12 : $hours,
                        $minutes ? ':'.sprintf( '%02d', $minutes ) : '', 
-                       $hours > 12 ? 'p' : 'a' );
+                       $hours >= 12 ? 'p' : 'a' );
             $this->data[] = array(
               'title' => sprintf( ' to %s: %d', $end_time_for_title, $available ),
               'allDay' => false,

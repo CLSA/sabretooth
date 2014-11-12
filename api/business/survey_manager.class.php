@@ -283,29 +283,7 @@ class survey_manager extends \cenozo\singleton
         }
 
         // complete the interview and update the recording list if all phases are complete
-        if( false === $this->current_sid )
-        {
-          $db_interview->completed = true;
-          $db_interview->save();
-          $db_interview->update_recording_list();
-
-          // record the event (if one exists)
-          $db_event_type = $db_qnaire->get_completed_event_type();
-          if( !is_null( $db_event_type ) )
-          {
-            // make sure the event doesn't already exist
-            $event_mod = lib::create( 'database\modifier' );
-            $event_mod->where( 'event_type_id', '=', $db_event_type->id );
-            if( 0 == $db_participant->get_event_count( $event_mod ) )
-            {
-              $db_event = lib::create( 'database\event' );
-              $db_event->participant_id = $db_participant->id;
-              $db_event->event_type_id = $db_event_type->id;
-              $db_event->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
-              $db_event->save();
-            }
-          }
-        }
+        if( false === $this->current_sid ) $db_interview->complete();
       }
     }
   }
@@ -396,6 +374,17 @@ class survey_manager extends \cenozo\singleton
     else if( 'cohort' == $key )
     {
       $value = $db_participant->get_cohort()->name;
+    }
+    else if( 1 == preg_match( '/^collection./', $key ) )
+    {
+      $parts = explode( '.', $key );
+      if( 2 != count( $parts ) )
+        throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
+
+      $collection_name = $parts[1];
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'collection.name', '=', $collection_name );
+      $value = 0 < $db_participant->get_collection_count( $modifier ) ? 1 : 0;
     }
     else if( 'uid' == $key )
     {

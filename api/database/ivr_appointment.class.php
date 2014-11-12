@@ -51,8 +51,7 @@ class ivr_appointment extends \cenozo\database\record
   
   /**
    * Get the state of the IVR appointment as a string:
-   *   complete: the IVR appointment is done and the interview was completed
-   *   incomplete: the IVR appointment is done but the interview was not completed
+   *   complete: the IVR appointment is done (the interview is not necessarily complete)
    *   upcoming: the IVR appointment hasn't yet been performed
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
@@ -66,8 +65,7 @@ class ivr_appointment extends \cenozo\database\record
       return NULL;
     } 
     
-    return is_null( $this->completed ) ?
-      'upcoming' : ( $this->completed ? 'complete' : 'incomplete' );
+    return is_null( $this->completed ) ?  'upcoming' : 'complete';
   }
 }
 
