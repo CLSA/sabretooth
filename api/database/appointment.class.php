@@ -294,6 +294,8 @@ class appointment extends \cenozo\database\record
 
 // define the join to the participant_site table
 $participant_site_mod = lib::create( 'database\modifier' );
-$participant_site_mod->where(
-  'appointment.participant_id', '=', 'participant_site.participant_id', false );
+$participant_site_mod->join(
+  'participant_site',
+  'appointment.participant_id',
+  'participant_site.participant_id' );
 appointment::customize_join( 'participant_site', $participant_site_mod );

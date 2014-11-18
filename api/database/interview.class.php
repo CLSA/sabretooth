@@ -408,12 +408,20 @@ SQL;
 
 // define the join to the participant_site table
 $participant_site_mod = lib::create( 'database\modifier' );
-$participant_site_mod->where(
-  'interview.participant_id', '=', 'participant_site.participant_id', false );
+$participant_site_mod->join(
+  'participant_site',
+  'interview.participant_id',
+  'participant_site.participant_id' );
 interview::customize_join( 'participant_site', $participant_site_mod );
 
 // define the join to the last assignment
 $assignment_mod = lib::create( 'database\modifier' );
-$assignment_mod->where( 'interview.id', '=', 'interview_last_assignment.interview_id', false );
-$assignment_mod->where( 'interview_last_assignment.assignment_id', '=', 'assignment.id', false );
+$assignment_mod->join(
+  'interview_last_assignment',
+  'interview.id',
+  'interview_last_assignment.interview_id' );
+$assignment_mod->join(
+  'assignment',
+  'interview_last_assignment.assignment_id',
+  'assignment.id' );
 interview::customize_join( 'assignment', $assignment_mod );

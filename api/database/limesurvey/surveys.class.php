@@ -23,13 +23,12 @@ class surveys extends record
   public function get_title()
   {
     $modifier = lib::create( 'database\modifier' );
+    $modifier->join( 'surveys_languagesettings', $join_mod );
     $modifier->where( 'sid', '=', $this->sid );
-    $modifier->where( 'sid', '=', 'surveyls_survey_id', false );
-    $modifier->where( 'language', '=', 'surveyls_language', false );
 
     // get the title from the survey's main language
     return static::db()->get_one(
-      sprintf( 'SELECT surveyls_title FROM surveys_languagesettings, %s %s',
+      sprintf( 'SELECT surveyls_title FROM %s %s',
                static::get_table_name(),
                $modifier->get_sql() ) );
   }

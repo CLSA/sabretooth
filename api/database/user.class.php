@@ -32,14 +32,14 @@ class user extends \cenozo\database\user
     }
 
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'phone_call.assignment_id', '=', 'assignment.id', false );
-    $modifier->where( 'assignment.interview_id', '=', 'interview.id', false );
+    $modifier->join( 'assignment', 'phone_call.assignment_id', 'assignment.id' );
+    $modifier->join( 'interview', 'assignment.interview_id', 'interview.id' );
     $modifier->where( 'interview.qnaire_id', '=', $db_qnaire->id );
     $modifier->where( 'assignment.user_id', '=', $this->id );
 
     // custom SQL is required for this method
     return static::db()->get_one( sprintf(
-      'SELECT COUNT(*) FROM phone_call, assignment, interview %s',
+      'SELECT COUNT(*) FROM phone_call %s',
       $modifier->get_sql() ) );
   }
 
