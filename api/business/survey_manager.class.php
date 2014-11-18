@@ -371,59 +371,6 @@ class survey_manager extends \cenozo\singleton
              ? $data_manager->get_participant_value( $db_participant, $key )
              : $data_manager->get_value( $key );
     }
-    else if( 'cohort' == $key )
-    {
-      $value = $db_participant->get_cohort()->name;
-    }
-    else if( 1 == preg_match( '/^collection./', $key ) )
-    {
-      $parts = explode( '.', $key );
-      if( 2 != count( $parts ) )
-        throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
-
-      $collection_name = $parts[1];
-      $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'collection.name', '=', $collection_name );
-      $value = 0 < $db_participant->get_collection_count( $modifier ) ? 1 : 0;
-    }
-    else if( 'uid' == $key )
-    {
-      $value = $db_participant->uid;
-    }
-    else if( 'site' == $key )
-    {
-      $db_site = $db_participant->get_effective_site();
-      $value = is_null( $db_site ) ? 'none' : $db_site->name;
-    }
-    else if( false !== strpos( $key, 'address' ) )
-    {
-      $db_address = $db_participant->get_primary_address();
-      
-      if( 'address street' == $key )
-      {
-        if( $db_address )
-        {
-          $value = $db_address->address1;
-          if( !is_null( $db_address->address2 ) ) $value .= ' '.$db_address->address2;
-        }
-        else
-        {
-          $value = '';
-        }
-      }
-      else if( 'address city' == $key )
-      {
-        $value = $db_address ? $db_address->city : '';
-      }
-      else if( 'address province' == $key )
-      {
-        $value = $db_address ? $db_address->get_region()->name : '';
-      }
-      else if( 'address postal code' == $key )
-      {
-        $value = $db_address ? $db_address->postcode : '';
-      }
-    }
     else if( 'age' == $key )
     {
       // if this is the participant's first assignment copy the date of birth from Opal
@@ -482,18 +429,6 @@ class survey_manager extends \cenozo\singleton
                   ? util::get_interval(
                       util::get_datetime_object( $db_participant->date_of_birth ) )->y
                   : '';
-    }
-    else if( 'written consent received' == $key )
-    {
-      $consent_mod = lib::create( 'database\modifier' );
-      $consent_mod->where( 'written', '=', true );
-      $value = 0 < $db_participant->get_consent_count( $consent_mod ) ? '1' : '0';
-    }
-    else if( 'consented to provide HIN' == $key )
-    {
-      $db_hin = $db_participant->get_hin();
-      if( is_null( $db_hin ) ) $value = -1;
-      else $value = 1 == $db_hin->access ? 1 : 0;
     }
     else if( 'provided data' == $key )
     {
@@ -580,106 +515,6 @@ class survey_manager extends \cenozo\singleton
           if( 'argument' != $e->get_type() ) log::warning( $e->get_message() );
         }
       }
-    }
-    else if( false !== strpos( $key, 'marital status' ) )
-    {
-      // get data from Opal
-      $setting_manager = lib::create( 'business\setting_manager' );
-      $opal_url = $setting_manager->get_setting( 'opal', 'server' );
-      $opal_manager = lib::create( 'business\opal_manager', $opal_url );
-      
-      $value = 'MISSING';
-
-      if( $opal_manager->get_enabled() )
-      {
-        try
-        {
-          $db_cohort = $db_participant->get_cohort();
-          $datasource = 'comprehensive' == $db_cohort->name ? 'clsa-inhome' : 'clsa-cati';
-          $table = 'comprehensive' == $db_cohort->name
-                 ? 'InHome_1'
-                 : 'Tracking Baseline Main Script';
-          $variable = 'comprehensive' == $db_cohort->name ? 'SDC_MRTL_COM' : 'SDC_MRTL_TRM';
-          $value = $opal_manager->get_value( $datasource, $table, $db_participant, $variable );
-
-          // return the label instead of the value, if requested
-          if( 'marital status label' == $key )
-            $value = $opal_manager->get_label(
-              $datasource, $table, $variable, $value, $db_participant->get_language() );
-        }
-        catch( \cenozo\exception\base_exception $e )
-        {
-          // ignore argument exceptions (data not found in Opal) and report the rest
-          if( 'argument' != $e->get_type() ) log::warning( $e->get_message() );
-        }
-      }
-    }
-    else if( 'parkinsonism' == $key )
-    {
-      // get data from Opal
-      $setting_manager = lib::create( 'business\setting_manager' );
-      $opal_url = $setting_manager->get_setting( 'opal', 'server' );
-      $opal_manager = lib::create( 'business\opal_manager', $opal_url );
-      
-      $value = 'NO';
-
-      if( $opal_manager->get_enabled() )
-      {
-        try
-        {
-          $db_cohort = $db_participant->get_cohort();
-          $datasource = 'comprehensive' == $db_cohort->name ? 'clsa-dcs' : 'clsa-cati';
-          $table = 'comprehensive' == $db_cohort->name
-                 ? 'DiseaseSymptoms'
-                 : 'Tracking Baseline Main Script';
-          $variable = 'comprehensive' == $db_cohort->name ? 'CCC_PARK_DCS' : 'CCT_PARK_TRM';
-          $value = $opal_manager->get_value(
-            $datasource, $table, $db_participant, $variable );
-        }
-        catch( \cenozo\exception\base_exception $e )
-        {
-          // ignore argument exceptions (data not found in Opal) and report the rest
-          if( 'argument' != $e->get_type() ) log::warning( $e->get_message() );
-        }
-      }
-    }
-    else if( 'operator first_name' == $key )
-    {
-      $db_user = lib::create( 'business\session' )->get_user();
-      $value = $db_user->first_name;
-    }
-    else if( 'operator last_name' == $key )
-    {
-      $db_user = lib::create( 'business\session' )->get_user();
-      $value = $db_user->last_name;
-    }
-    else if( 'participant_source' == $key )
-    {
-      $db_source = $db_participant->get_source();
-      $value = is_null( $db_source ) ? '(none)' : $db_source->name;
-    }
-    else if( 'last interview date' == $key )
-    {
-      $event_type_class_name = lib::get_class_name( 'database\event_type' );
-      $event_mod = lib::create( 'database\modifier' );
-      $event_mod->order_desc( 'datetime' );
-      $event_mod->where_bracket( true );
-      $event_mod->where( 'event_type_id', '=',
-        $event_type_class_name::get_unique_record( 'name', 'completed (Baseline)' )->id );
-      $event_mod->or_where( 'event_type_id', '=',
-        $event_type_class_name::get_unique_record( 'name', 'completed (Baseline Site)' )->id );
-      $event_mod->where_bracket( false );
-      
-      $event_list = $db_participant->get_event_list( $event_mod );
-      $db_event = 0 < count( $event_list ) ? current( $event_list ) : NULL;
-      $value = is_null( $db_event )
-                  ? 'DATE UNKNOWN'
-                  : util::get_formatted_date( $db_event->datetime );
-    }
-    else if( preg_match( '/secondary (first_name|last_name)/', $key ) )
-    {
-      $aspect = str_replace( ' ', '_', $key );
-      if( array_key_exists( $aspect, $_COOKIE ) ) $value = $_COOKIE[$aspect];
     }
 
     return $value;
