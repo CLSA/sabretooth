@@ -112,6 +112,7 @@ class appointment extends \cenozo\database\record
           $end_time_as_int =
             intval( preg_replace( '/[^0-9]/', '',
               substr( $db_shift_template->end_time, 0, -3 ) ) );
+          if( 0 == $end_time_as_int ) $end_time_as_int = 2400;
           if( $daylight_savings ) $end_time_as_int -= 100; // adjust for daylight savings
           if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[$end_time_as_int] = 0;
           $diffs[$end_time_as_int] -= $db_shift_template->operators;
@@ -132,6 +133,7 @@ class appointment extends \cenozo\database\record
         $end_time_as_int =
           intval( preg_replace( '/[^0-9]/', '',
             substr( $db_shift->end_datetime, -8, -3 ) ) );
+        if( 0 == $end_time_as_int ) $end_time_as_int = 2400;
 
         if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[$start_time_as_int] = 0;
         $diffs[$start_time_as_int]++;
@@ -159,6 +161,7 @@ class appointment extends \cenozo\database\record
         $duration = 'full' == $db_appointment->type ? $full_duration : $half_duration;
         $appointment_datetime_obj->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
         $end_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
+        if( 0 == $end_time_as_int ) $end_time_as_int = 2400;
   
         if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
         $diffs[ $start_time_as_int ]--;
@@ -187,6 +190,7 @@ class appointment extends \cenozo\database\record
     // NOTE: we need to include the time immediately prior to the appointment start time
     $start_time_as_int = intval( $start_datetime_obj->format( 'Gi' ) );
     $end_time_as_int = intval( $end_datetime_obj->format( 'Gi' ) );
+    if( 0 == $end_time_as_int ) $end_time_as_int = 2400;
     $match = false;
     $last_slots = 0;
     $last_time = 0;

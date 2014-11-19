@@ -208,14 +208,16 @@ class queue extends \cenozo\database\record
     $ivr_appointment_mod->where(
       'datetime', '<=', $appointment_datetime_obj->format( 'Y-m-d H:i:s' ) );
     $ivr_appointment_mod->where( 'completed', '=', NULL );
+    if( !is_null( $db_participant ) )
+      $ivr_appointment_mod->where( 'participant_id', '=', $db_participant->id );
 
     foreach( $ivr_appointment_class_name::select( $ivr_appointment_mod ) as $db_ivr_appointment )
     {
-      $db_participant = $db_ivr_appointment->get_participant();
+      $db_ivr_participant = $db_ivr_appointment->get_participant();
 
       try
       {
-        $status = $ivr_manager->get_status( $db_participant );
+        $status = $ivr_manager->get_status( $db_ivr_participant );
       }
       // ignore errors
       catch( \cenozo\exception\runtime $e )
@@ -241,7 +243,7 @@ class queue extends \cenozo\database\record
           log::warning( sprintf(
             'Cannot find incomplete interview which matches completed IVR appointment reported '.
             'by IVR service for %s.',
-            $db_participant->uid ) );
+            $db_ivr_participant->uid ) );
         }
         else
         {
@@ -255,10 +257,10 @@ class queue extends \cenozo\database\record
             // make sure the event doesn't already exist
             $event_mod = lib::create( 'database\modifier' );
             $event_mod->where( 'event_type_id', '=', $db_event_type->id );
-            if( 0 == $db_participant->get_event_count( $event_mod ) )
+            if( 0 == $db_ivr_participant->get_event_count( $event_mod ) )
             {
               $db_event = lib::create( 'database\event' );
-              $db_event->participant_id = $db_participant->id;
+              $db_event->participant_id = $db_ivr_participant->id;
               $db_event->event_type_id = $db_event_type->id;
               $db_event->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
               $db_event->save();
@@ -281,7 +283,7 @@ class queue extends \cenozo\database\record
         try
         {
           $ivr_manager->set_appointment(
-            $db_participant,
+            $db_ivr_participant,
             $db_ivr_appointment->get_phone(),
             $db_ivr_appointment->datetime );
         }
@@ -289,20 +291,20 @@ class queue extends \cenozo\database\record
         {
           log::err( sprintf(
             'IVR service was unable to add replacement appointment for %s.',
-            $db_participant->uid ) );
+            $db_ivr_participant->uid ) );
         }
       }
       else if( $ivr_status_class_name::FUTURE_APPOINTMENT_SCHEDULED == $status )
       {
         log::warning( sprintf(
           'IVR service reporting appointment time mismatch for %s.',
-          $db_participant->uid ) );
+          $db_ivr_participant->uid ) );
       }
       else if( $ivr_status_class_name::ERROR == $status )
       {
         log::crit( sprintf(
           'Unable to get status for %s from IVR service.',
-          $db_participant->uid ) );
+          $db_ivr_participant->uid ) );
       }
     }
 

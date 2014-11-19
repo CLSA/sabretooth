@@ -77,6 +77,7 @@ class availability_feed extends \cenozo\ui\pull\base_feed
             $end_time_as_int =
               intval( preg_replace( '/[^0-9]/', '',
                 substr( $db_availability->end_time, 0, -3 ) ) );
+            if( 0 == $end_time_as_int ) $end_time_as_int = 2400;
             if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[ $end_time_as_int ] = 0;
             $diffs[ $end_time_as_int ] -= 1;
           }
@@ -133,7 +134,7 @@ class availability_feed extends \cenozo\ui\pull\base_feed
               sprintf( '%s%s%s',
                        $hours > 12 ? $hours - 12 : $hours,
                        $minutes ? ':'.sprintf( '%02d', $minutes ) : '', 
-                       $hours >= 12 ? 'p' : 'a' );
+                       $hours < 12 || 24 == $hours ? 'a' : 'p' );
             $this->data[] = array(
               'title' => sprintf( ' to %s: %d', $end_time_for_title, $available ),
               'allDay' => false,

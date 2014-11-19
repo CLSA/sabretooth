@@ -91,6 +91,7 @@ class site_feed extends \cenozo\ui\pull\base_feed
           $end_time_as_int =
             intval( preg_replace( '/[^0-9]/', '',
               substr( $db_shift_template->end_time, 0, -3 ) ) );
+          if( 0 == $end_time_as_int ) $end_time_as_int = 2400;
           if( $daylight_savings ) $end_time_as_int -= 100; // adjust for daylight savings
           if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[ $end_time_as_int ] = 0;
           $diffs[ $end_time_as_int ] -= $db_shift_template->operators;
@@ -129,6 +130,7 @@ class site_feed extends \cenozo\ui\pull\base_feed
       
       $start_time_as_int = intval( $start_datetime_obj->format( 'Gi' ) );
       $end_time_as_int   = intval( $end_datetime_obj->format( 'Gi' ) );
+      if( 0 == $end_time_as_int ) $end_time_as_int = 2400;
       
       if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
       $diffs[ $start_time_as_int ]++;
@@ -164,6 +166,7 @@ class site_feed extends \cenozo\ui\pull\base_feed
       // increment slot one hour later
       $appointment_datetime_obj->add( new \DateInterval( $interval ) );
       $end_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
+      if( 0 == $end_time_as_int ) $end_time_as_int = 2400;
 
       if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
       $diffs[ $start_time_as_int ]--;
@@ -225,7 +228,7 @@ class site_feed extends \cenozo\ui\pull\base_feed
               sprintf( '%s%s%s',
                        $hours > 12 ? $hours - 12 : $hours,
                        $minutes ? ':'.sprintf( '%02d', $minutes ) : '',
-                       $hours >= 12 ? 'p' : 'a' );
+                       $hours < 12 || 24 == $hours ? 'a' : 'p' );
             $this->data[] = array(
               'title' => sprintf( ' to %s: %d slots', $end_time_for_title, $available ),
               'allDay' => false,
