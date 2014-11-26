@@ -379,6 +379,14 @@ class survey_manager extends \cenozo\singleton
       $modifier->where( 'collection.name', '=', $collection_name );
       $value = 0 < $db_participant->get_collection_count( $modifier ) ? 1 : 0;
     }
+    else if( 'phone.1.number' == $key )
+    {
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'rank', '=', 1 );
+      $phone_list = $db_participant->get_phone_list( $modifier );
+      $db_phone = current( $phone_list );
+      $value = is_null( $db_phone ) ? '' : $db_phone->number;
+    }
     else if( 'uid' == $key )
     {
       $value = $db_participant->uid;
