@@ -56,13 +56,13 @@ class ivr_manager extends \cenozo\singleton
    * Sends a request to the IVR system to create or update an appointment
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\participant $db_participant
+   * @param database\interview $db_interview
    * @param database\phone $db_phone
    * @param string or \DateTime $datetime
    * @throws exception\runtime, exception\argument
    * @access public
    */
-  public function set_appointment( $db_participant, $db_phone, $datetime )
+  public function set_appointment( $db_interview, $db_phone, $datetime )
   {
     if( !$this->enabled )
       throw lib::create( 'exception\runtime',
@@ -71,11 +71,11 @@ class ivr_manager extends \cenozo\singleton
 
     if( is_null( $this->client ) ) $this->initialize();
 
-    $survey_manager = lib::create( 'business\survey_manager' );
+    $data_manager = lib::create( 'business\data_manager' );
 
     // sanity checks
-    if( is_null( $db_participant ) )
-      throw lib::create( 'exception\argument', 'db_participant', $db_participant, __METHOD__ );
+    if( is_null( $db_interview ) )
+      throw lib::create( 'exception\argument', 'db_interview', $db_interview, __METHOD__ );
     if( is_null( $db_phone ) )
       throw lib::create( 'exception\argument', 'db_phone', $db_phone, __METHOD__ );
 
@@ -88,19 +88,28 @@ class ivr_manager extends \cenozo\singleton
            ( is_object( $datetime ) && 'DateTime' == get_class( $datetime ) ) ) )
       throw lib::create( 'exception\argument', 'datetime', $datetime, __METHOD__ );
 
-    // get the participant's current interview
-    $db_interview = NULL;
-    $db_assignment = $db_participant->get_current_assignment();
-    if( is_null( $db_assignment ) )
-      $db_assignment = $db_participant->get_last_finished_assignment();
-    $db_interview = is_null( $db_assignment ) ? NULL : $db_assignment->get_interview();
+    $db_participant = $db_interview->get_participant();
+    $cohort_name = $db_participant->get_cohort()->name;
 
+    $data_key = sprintf( 
+      'event.completed (%s).datetime.last',
+      'tracking' == $cohort_name ? 'Baseline' : 'Baseline Site' );
     $last_datetime = util::get_datetime_object(
-      $survey_manager::get_attribute( $db_participant, $db_interview, 'last interview date' ) );
+      $data_manager->get_participant_value( $db_participant, $data_key ) );
 
+    $data_key = 'tracking' == $cohort_name
+              ? 'opal.clsa-cati.Tracking Baseline Main Script.SDC_MRTL_TRM'
+              : 'opal.clsa-inhome.InHome_1.SDC_MRTL_COM';
     $marital_status =
-      $survey_manager::get_attribute( $db_participant, $db_interview, 'marital status' );
+      $data_manager->get_participant_value( $db_participant, $data_key );
     if( is_null( $marital_status ) ) $marital_status = 'MISSING';
+
+    $data_key = 'tracking' == $cohort_name
+              ? 'opal.clsa-cati.Tracking Baseline Main Script.CCT_PARK_TRM'
+              : 'opal.clsa-dcs.DiseaseSymptoms.CCC_PARK_DCS';
+    $parkinsonism =
+      $data_manager->get_participant_value( $db_participant, $data_key );
+    if( is_null( $marital_status ) ) $parkinsonism = 'NO';
 
     $db_language = $db_participant->get_language();
     if( is_null( $db_language ) )
@@ -114,12 +123,10 @@ class ivr_manager extends \cenozo\singleton
       'First_Initial' => substr( $db_participant->first_name, 0, 1 ),
       'Last_Initial' => substr( $db_participant->last_name, 0, 1 ),
       'Last_Interview_Date' => $last_datetime->format( 'Y-m-d' ),
-      'Parkinsonism' => 
-        $survey_manager::get_attribute( $db_participant, $db_interview, 'parkinsonism' ),
-      'Participant_Type' => 
-        $survey_manager::get_attribute( $db_participant, $db_interview, 'cohort' ),
+      'Parkinsonism' => $parkinsonism,
+      'Participant_Type' => $data_manager::get_participant_value( $db_participant, 'cohort.name' ),
       'Marital_Status' => $marital_status,
-      'Age' => $survey_manager::get_attribute( $db_participant, $db_interview, 'age' ),
+      'Age' => $data_manager::get_participant_value( $db_participant, 'participant.age()' ),
       'Language' => $db_language->code
     );
 
@@ -130,11 +137,11 @@ class ivr_manager extends \cenozo\singleton
    * Sends a request to the IVR system to remove an appointment
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\participant $db_participant
+   * @param database\interview $db_interview
    * @throws exception\runtime
    * @access public
    */
-  public function remove_appointment( $db_participant )
+  public function remove_appointment( $db_interview )
   {
     if( !$this->enabled )
       throw lib::create( 'exception\runtime',
@@ -145,23 +152,23 @@ class ivr_manager extends \cenozo\singleton
 
     // build the parameter array for the operation
     $parameters = array(
-      'Id' => $db_participant->uid
+      'Id' => $db_interview->get_participant()->uid
     );
 
     $this->send( 'DeleteParticipant', $parameters );
   }
 
   /**
-   * Sends a request to the IVR system to get a participant's status
+   * Sends a request to the IVR system to get a interview's status
    * 
    * This method returns an ivr status type (see ivr_status class for details)
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param database\participant $db_participant
+   * @param database\interview $db_interview
    * @throws exception\runtime
    * @access public
    */
-  public function get_status( $db_participant )
+  public function get_status( $db_interview )
   {
     if( !$this->enabled )
       throw lib::create( 'exception\runtime',
@@ -172,7 +179,7 @@ class ivr_manager extends \cenozo\singleton
 
     // build the parameter array for the operation
     $parameters = array(
-      'Id' => $db_participant->uid
+      'Id' => $db_interview->get_participant()->uid
     );
 
     return $this->send( 'GetParticipantCallStatus', $parameters );

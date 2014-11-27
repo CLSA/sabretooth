@@ -61,8 +61,9 @@ class site_calendar extends \cenozo\ui\widget\base_calendar
     }
     else if( !is_null( $this->parent ) &&
              'appointment_add' == $this->parent->get_class_name() &&
-             !is_null( $this->parent->parent ) &&
-             'participant_add_appointment' == $this->parent->parent->get_class_name() )
+             !is_null( $this->parent->parent ) && (
+               'interview_add_appointment' == $this->parent->parent->get_class_name() ||
+               'participant_add_appointment' == $this->parent->parent->get_class_name() ) )
     {
       $db_site = $this->parent->parent->get_record()->get_effective_site();
     }

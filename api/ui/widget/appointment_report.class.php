@@ -38,6 +38,7 @@ class appointment_report extends base_report
   {
     parent::prepare();
 
+    $this->add_restriction( 'qnaire' );
     $this->add_parameter( 'date', 'date', 'Date' );
 
     $this->set_variable( 'description',

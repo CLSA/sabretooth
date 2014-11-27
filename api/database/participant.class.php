@@ -111,6 +111,28 @@ class participant extends \cenozo\database\participant
   }
 
   /**
+   * Returns the participant's effective qnaire.
+   * 
+   * The "effective" qnaire is determined based on the participant's current interview.
+   * If they have not yet started an interview then the first qnaire is returned.
+   * If they current have an incomplete interview then that interview's qnaire is returned.
+   * If their current interview is complete then the next qnaire is returned, and if there
+   * is no next qnaire then NULL is returned (ie: the participant has completed all qnaires).
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\qnaire
+   * @access public
+   */
+  public function get_effective_interview()
+  {
+    $interview_class_name = lib::get_class_name( 'database\interview' );
+    $this->load_queue_data();
+    return is_null( $this->effective_qnaire_id ) ?
+      NULL : $interview_class_name::get_unique_record(
+        array( 'participant_id', 'qnaire_id' ),
+        array( $this->id, $this->effective_qnaire_id ) );
+  }
+
+  /**
    * Returns whether the participant's quota is enabled or not.
    * 
    * This is determined by cross-referencing the participant's quota and their effective qnaire

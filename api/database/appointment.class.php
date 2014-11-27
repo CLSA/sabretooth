@@ -34,16 +34,16 @@ class appointment extends \cenozo\database\record
    */
   public function save()
   {
-    // make sure there is a maximum of 1 unassigned appointment
+    // make sure there is a maximum of 1 unassigned appointment per interview
     if( is_null( $this->assignment_id ) )
     {
       $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'participant_id', '=', $this->participant_id );
+      $modifier->where( 'interview_id', '=', $this->interview_id );
       $modifier->where( 'assignment_id', '=', NULL );
       if( !is_null( $this->id ) ) $modifier->where( 'id', '!=', $this->id );
       if( 0 < static::count( $modifier ) )
         throw lib::create( 'exception\runtime',
-          'Cannot have more than one unassigned appointment per participant.', __METHOD__ );
+          'Cannot have more than one unassigned appointment per interview.', __METHOD__ );
     }
 
     parent::save();
@@ -59,12 +59,12 @@ class appointment extends \cenozo\database\record
    */
   public function validate_date()
   {
-    if( is_null( $this->participant_id ) )
+    if( is_null( $this->interview_id ) )
       throw lib::create( 'exception\runtime',
-        'Cannot validate appointment date, participant id is not set.', __METHOD__ );
+        'Cannot validate appointment date, interview id is not set.', __METHOD__ );
 
     $daylight_savings = '1' == util::get_datetime_object()->format( 'I' );
-    $db_participant = lib::create( 'database\participant', $this->participant_id );
+    $db_participant = lib::create( 'database\participant', $this->get_interview()->participant_id );
     $db_site = $db_participant->get_effective_site();
     if( is_null( $db_site ) )
       throw lib::create( 'exception\notice',
@@ -144,6 +144,9 @@ class appointment extends \cenozo\database\record
     
     // and how many appointments are during this time?
     $modifier = lib::create( 'database\modifier' );
+    $modifier->join( 'interview', 'appointment.interview_id', 'interview.id' );
+    $modifier->join(
+      'participant_site', 'interview.participant_id', 'participant_site.participant_id' );
     $modifier->where( 'participant_site.site_id', '=', $db_site->id );
     $modifier->where( 'datetime', '>=', $start_datetime_obj->format( 'Y-m-d' ) );
     $modifier->where( 'datetime', '<', $next_day_datetime_obj->format( 'Y-m-d' ) );
@@ -239,7 +242,7 @@ class appointment extends \cenozo\database\record
     // if the appointment's reached column is set, nothing else matters
     if( !is_null( $this->reached ) ) return $this->reached ? 'reached' : 'not reached';
 
-    $db_participant = lib::create( 'database\participant', $this->participant_id );
+    $db_participant = lib::create( 'database\participant', $this->get_interview()->participant_id );
     $db_site = $db_participant->get_effective_site();
 
     $status = 'unknown';
@@ -295,11 +298,3 @@ class appointment extends \cenozo\database\record
     return $status;
   }
 }
-
-// define the join to the participant_site table
-$participant_site_mod = lib::create( 'database\modifier' );
-$participant_site_mod->join(
-  'participant_site',
-  'appointment.participant_id',
-  'participant_site.participant_id' );
-appointment::customize_join( 'participant_site', $participant_site_mod );

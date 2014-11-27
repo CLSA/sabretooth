@@ -556,6 +556,16 @@ AND role.name IN( "administrator" );
 
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "interview" AND operation.name = "add_appointment"
+AND role.name IN( "administrator", "curator", "helpline", "operator", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "interview" AND operation.name = "add_ivr_appointment"
+AND role.name IN( "administrator", "curator", "helpline", "operator", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "push" AND subject = "interview" AND operation.name = "edit"
 AND role.name IN ( "administrator", "curator", "helpline", "supervisor" );
 

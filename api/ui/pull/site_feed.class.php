@@ -143,6 +143,9 @@ class site_feed extends \cenozo\ui\pull\base_feed
 
     // fill in the appointments which have not been completed
     $modifier = lib::create( 'database\modifier' );
+    $modifier->join( 'interview', 'appointment.interview_id', 'interview.id' );
+    $modifier->join(
+      'participant_site', 'interview.participant_id', 'participant_site.participant_id' );
     $modifier->where( 'participant_site.site_id', '=', $db_site->id );
     $modifier->where( 'reached', '=', NULL );
     $modifier->where( 'datetime', '>=', $this->start_datetime );

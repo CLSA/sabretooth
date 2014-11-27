@@ -39,6 +39,8 @@ class callback_feed extends \cenozo\ui\pull\base_feed
 
     // create a list of callbacks between the feed's start and end time
     $modifier = lib::create( 'database\modifier' );
+    $callback_mod->join(
+      'participant_site', 'callback.participant_id', 'participant_site.participant_id' );
     $modifier->where(
       'participant_site.site_id', '=', lib::create( 'business\session' )->get_site()->id );
     $modifier->where( 'datetime', '>=', $this->start_datetime );

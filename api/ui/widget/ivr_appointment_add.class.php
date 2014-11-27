@@ -43,15 +43,8 @@ class ivr_appointment_add extends base_appointment_view
     $this->calendar->set_parent( $this );
     $this->calendar->set_variable( 'default_view', 'basicWeek' );
     
-    // this widget must have a parent, and it's subject must be a participant
-    if( is_null( $this->parent ) || 'participant' != $this->parent->get_subject() )
-      throw lib::create( 'exception\runtime',
-        'IVR appointment widget must have a parent with participant as the subject.', __METHOD__ );
-
-    $this->db_participant = lib::create( 'database\participant', $this->parent->get_record()->id );
-    
     // add items to the view
-    $this->add_item( 'participant_id', 'hidden' );
+    $this->add_item( 'interview_id', 'hidden' );
     $this->add_item( 'phone_id', 'enum', 'Phone Number',
       'Select which phone number to call from the IVR system.' );
   }
@@ -83,7 +76,7 @@ class ivr_appointment_add extends base_appointment_view
                      : NULL;
 
     // set the view's items
-    $this->set_item( 'participant_id', $this->parent->get_record()->id );
+    $this->set_item( 'interview_id', $this->db_interview->id );
     $this->set_item( 'phone_id', '', true, $phones );
     $this->set_item( 'datetime', '', true, $datetime_limits );
   }

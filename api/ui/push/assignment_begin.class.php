@@ -198,7 +198,7 @@ class assignment_begin extends \cenozo\ui\push
         $appointment_mod->where( 'assignment_id', '=', NULL );
         $appointment_mod->order( 'datetime' );
         $appointment_mod->limit( 1 );
-        $appointment_list = $db_participant->get_appointment_list( $appointment_mod );
+        $appointment_list = $db_interview->get_appointment_list( $appointment_mod );
 
         if( 0 == count( $appointment_list ) )
         {

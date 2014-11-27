@@ -38,9 +38,6 @@ class appointment_view extends base_appointment_view
   {
     parent::prepare();
     
-    $this->db_participant =
-      lib::create( 'database\participant', $this->get_record()->participant_id );
-
     // add items to the view
     $this->add_item( 'uid', 'constant', 'UID' );
     $this->add_item( 'phone_id', 'enum', 'Phone Number',
@@ -112,9 +109,17 @@ class appointment_view extends base_appointment_view
 
     // hide the calendar if requested to
     $this->set_variable( 'hide_calendar', $this->get_argument( 'hide_calendar', false ) );
+    $this->set_variable( 'interview_id', $this->db_interview->id );
     $this->set_variable( 'participant_id', $this->db_participant->id );
 
-    // add an action to view the participant's details
+    // add actions to view the interview and participant's details
+    $db_operation = $operation_class_name::get_operation( 'widget', 'interview', 'view' );
+    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+      $this->add_action(
+        'view_interview',
+        'View Interview',
+        NULL,
+        'View the interview\'s details' );
     $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'view' );
     if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
       $this->add_action(

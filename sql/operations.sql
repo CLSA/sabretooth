@@ -111,6 +111,10 @@ VALUES( "widget", "consent_required", "report", true, "Set up a consent required
 
 -- interview
 INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "interview", "add_appointment", true, "A form to create a new appointment to add to an interview." );
+INSERT INTO operation( type, subject, name, restricted, description )
+VALUES( "widget", "interview", "add_ivr_appointment", true, "A form to create a new IVR appointment to add to an interview." );
+INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "push", "interview", "edit", true, "Edits the details of an interview." );
 INSERT INTO operation( type, subject, name, restricted, description )
 VALUES( "pull", "interview", "list", true, "Retrieves base information for a list of interviews." );

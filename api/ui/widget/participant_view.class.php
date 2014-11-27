@@ -29,21 +29,20 @@ class participant_view extends \cenozo\ui\widget\participant_view
     $this->add_item( 'qnaire_name', 'constant', 'Current Questionnaire' );
     $this->add_item( 'qnaire_date', 'constant', 'Delay Questionnaire Until' );
 
-    // get the effective
-    $db_participant = $this->get_record();
-    $this->db_interview_method = $db_participant->get_effective_interview_method();
+    // get the effective interview method
+    $this->db_interview_method = $this->get_record()->get_effective_interview_method();
 
     // create the appointment sub-list widget
     $this->appointment_list = lib::create( 'ui\widget\appointment_list', $this->arguments );
     $this->appointment_list->set_parent( $this );
-    $this->appointment_list->set_heading( 'Appointments' );
+    $this->appointment_list->set_heading( 'Appointments for current interview' );
 
     // create the IVR appointment sub-list widget
     if( !is_null( $this->db_interview_method ) && 'ivr' == $this->db_interview_method->name )
     {
       $this->ivr_appointment_list = lib::create( 'ui\widget\ivr_appointment_list', $this->arguments );
       $this->ivr_appointment_list->set_parent( $this );
-      $this->ivr_appointment_list->set_heading( 'IVR Appointments' );
+      $this->ivr_appointment_list->set_heading( 'IVR Appointments for current interview' );
     }
 
     // create the callback sub-list widget
@@ -188,6 +187,90 @@ class participant_view extends \cenozo\ui\widget\participant_view
         }
       }
     }
+  }
+
+  /**
+   * Overrides the appointment list widget's method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return int
+   * @appointment protected
+   */
+  public function determine_appointment_count( $modifier = NULL )
+  {
+    $db_participant = $this->get_record();
+    $db_interview = $db_participant->get_effective_interview();
+
+    if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where(
+      'appointment.interview_id', '=', is_null( $db_interview ) ? NULL : $db_interview->id );
+    $modifier->where( 'interview.participant_id', '=', $db_participant->id );
+    $appointment_class_name = lib::get_class_name( 'database\appointment' );
+    return $appointment_class_name::count( $modifier );
+  }
+
+  /**
+   * Overrides the appointment list widget's method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return array( record )
+   * @appointment protected
+   */
+  public function determine_appointment_list( $modifier = NULL )
+  {
+    $db_participant = $this->get_record();
+    $db_interview = $db_participant->get_effective_interview();
+
+    if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where(
+      'appointment.interview_id', '=', is_null( $db_interview ) ? NULL : $db_interview->id );
+    $modifier->where( 'interview.participant_id', '=', $this->get_record()->id );
+    $appointment_class_name = lib::get_class_name( 'database\appointment' );
+    return $appointment_class_name::select( $modifier );
+  }
+
+  /**
+   * Overrides the ivr_appointment list widget's method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return int
+   * @ivr_appointment protected
+   */
+  public function determine_ivr_appointment_count( $modifier = NULL )
+  {
+    $db_participant = $this->get_record();
+    $db_interview = $db_participant->get_effective_interview();
+
+    if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where(
+      'ivr_appointment.interview_id', '=', is_null( $db_interview ) ? NULL : $db_interview->id );
+    $modifier->where( 'interview.participant_id', '=', $this->get_record()->id );
+    $ivr_appointment_class_name = lib::get_class_name( 'database\ivr_appointment' );
+    return $ivr_appointment_class_name::count( $modifier );
+  }
+
+  /**
+   * Overrides the ivr_appointment list widget's method.
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return array( record )
+   * @ivr_appointment protected
+   */
+  public function determine_ivr_appointment_list( $modifier = NULL )
+  {
+    $db_participant = $this->get_record();
+    $db_interview = $db_participant->get_effective_interview();
+
+    if( NULL == $modifier ) $modifier = lib::create( 'database\modifier' );
+    $modifier->where(
+      'ivr_appointment.interview_id', '=', is_null( $db_interview ) ? NULL : $db_interview->id );
+    $modifier->where( 'interview.participant_id', '=', $this->get_record()->id );
+    $ivr_appointment_class_name = lib::get_class_name( 'database\ivr_appointment' );
+    return $ivr_appointment_class_name::select( $modifier );
   }
 
   /**

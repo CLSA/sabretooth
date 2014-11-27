@@ -37,14 +37,16 @@ class appointment_edit extends \cenozo\ui\push\base_edit
   {
     parent::execute();
 
+    $ivr_manager = lib::create( 'business\ivr_manager' );
+
     // send message to IVR
     $record = $this->get_record();
-    $ivr_manager = lib::create( 'business\ivr_manager' );
+    $db_interview = $record->get_interview();
     $ivr_manager->set_appointment(
-      $record->get_participant(),
+      $db_interview,
       $record->get_phone(),
       $record->datetime );
 
-    $this->get_record()->get_participant()->update_queue_status();
+    $db_interview->get_participant()->update_queue_status();
   }
 }

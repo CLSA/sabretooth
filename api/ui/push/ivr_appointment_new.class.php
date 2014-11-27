@@ -58,18 +58,6 @@ class ivr_appointment_new extends \cenozo\ui\push\base_new
     if( !array_key_exists( 'datetime', $columns ) || 0 == strlen( $columns['datetime'] ) )
       throw lib::create( 'exception\notice', 'The date/time cannot be left blank.', __METHOD__ );
     
-    $db_participant = lib::create( 'database\participant', $columns['participant_id'] );
-    $db_qnaire = $db_participant->get_effective_qnaire();
-
-    // make sure the participant has a qnaire to answer
-    if( is_null( $db_qnaire ) )
-    {
-      throw lib::create( 'exception\notice',
-        'Unable to create an IVR appointment because the participant has completed all '.
-        'questionnaires.',
-        __METHOD__ );
-    }
-
     // make sure that IVR_appointments have a phone number
     if( array_key_exists( 'phone_id', $columns ) )
     {
@@ -91,15 +79,17 @@ class ivr_appointment_new extends \cenozo\ui\push\base_new
   {
     parent::execute();
 
+    $ivr_manager = lib::create( 'business\ivr_manager' );
+
     // send message to IVR
     $record = $this->get_record();
-    $ivr_manager = lib::create( 'business\ivr_manager' );
+    $db_interview = $record->get_interview();
     $ivr_manager->set_appointment(
-      $record->get_participant(),
+      $db_interview,
       $record->get_phone(),
       $record->datetime );
 
     // if the owner is a participant then update their queue status
-    $this->get_record()->get_participant()->update_queue_status();
+    $db_interview->get_participant()->update_queue_status();
   }
 }

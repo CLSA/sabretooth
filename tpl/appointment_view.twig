@@ -16,6 +16,10 @@
       $( "#{{ widget.full }}__view_participant" ).click( function() {
         slot_load( {{ slot }}, "participant", "view", { id: {{ participant_id }} } );
       } );
+      // view interview button
+      $( "#{{ widget.full }}__view_interview" ).click( function() {
+        slot_load( {{ slot }}, "interview", "view", { id: {{ interview_id }} } );
+      } );
     } );
   </script>
 

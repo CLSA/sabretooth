@@ -59,6 +59,6 @@ class appointment_edit extends \cenozo\ui\push\base_edit
   {
     parent::execute();
 
-    $this->get_record()->get_participant()->update_queue_status();
+    $this->get_record()->get_interview()->get_participant()->update_queue_status();
   }
 }

@@ -44,44 +44,33 @@ class appointment_new extends \cenozo\ui\push\base_new
     if( !array_key_exists( 'datetime', $columns ) || 0 == strlen( $columns['datetime'] ) )
       throw lib::create( 'exception\notice', 'The date/time cannot be left blank.', __METHOD__ );
     
-    $db_participant = lib::create( 'database\participant', $columns['participant_id'] );
-    $db_qnaire = $db_participant->get_effective_qnaire();
+    $db_interview = lib::create( 'database\interview', $columns['interview_id'] );
 
-    // make sure the participant has a qnaire to answer
-    if( is_null( $db_qnaire ) )
+    $this->get_record()->participant_id = $db_interview->participant_id;
+    $this->get_record()->datetime = $columns['datetime'];
+    $this->get_record()->type = $columns['type'];
+    if( !$this->get_record()->validate_date() )
     {
+      $db_site = $db_interview->get_participant()->get_effective_site();
+
+      // determine the full and half appointment intervals
+      $setting_manager = lib::create( 'business\setting_manager' );
+      $half_duration = $setting_manager->get_setting( 'appointment', 'half duration', $db_site );
+      $full_duration = $setting_manager->get_setting( 'appointment', 'full duration', $db_site );
+      $duration = 'full' == $this->get_record()->type ? $full_duration : $half_duration;
+
+      $start_datetime_obj = util::get_datetime_object( $this->get_record()->datetime );
+      $end_datetime_obj = clone $start_datetime_obj;
+      $end_datetime_obj->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
       throw lib::create( 'exception\notice',
-        'Unable to create an appointment because the participant has completed all questionnaires.',
+        sprintf(
+          'Unable to create a %s appointment (%d minutes) since there is not '.
+          'at least 1 slot available from %s and %s.',
+          $this->get_record()->type,
+          $duration,
+          $start_datetime_obj->format( 'H:i' ),
+          $end_datetime_obj->format( 'H:i' ) ),
         __METHOD__ );
-    }
-    else if( !$this->get_argument( 'force', false ) )
-    {
-      $this->get_record()->participant_id = $columns['participant_id'];
-      $this->get_record()->datetime = $columns['datetime'];
-      $this->get_record()->type = $columns['type'];
-      if( !$this->get_record()->validate_date() )
-      {
-        $db_site = $db_participant->get_effective_site();
-
-        // determine the full and half appointment intervals
-        $setting_manager = lib::create( 'business\setting_manager' );
-        $half_duration = $setting_manager->get_setting( 'appointment', 'half duration', $db_site );
-        $full_duration = $setting_manager->get_setting( 'appointment', 'full duration', $db_site );
-        $duration = 'full' == $this->get_record()->type ? $full_duration : $half_duration;
-
-        $start_datetime_obj = util::get_datetime_object( $this->get_record()->datetime );
-        $end_datetime_obj = clone $start_datetime_obj;
-        $end_datetime_obj->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
-        throw lib::create( 'exception\notice',
-          sprintf(
-            'Unable to create a %s appointment (%d minutes) since there is not '.
-            'at least 1 slot available from %s and %s.',
-            $this->get_record()->type,
-            $duration,
-            $start_datetime_obj->format( 'H:i' ),
-            $end_datetime_obj->format( 'H:i' ) ),
-          __METHOD__ );
-      }
     }
   }
 
@@ -95,6 +84,6 @@ class appointment_new extends \cenozo\ui\push\base_new
   {
     parent::execute();
 
-    $this->get_record()->get_participant()->update_queue_status();
+    $this->get_record()->get_interview()->get_participant()->update_queue_status();
   }
 }

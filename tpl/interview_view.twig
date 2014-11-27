@@ -26,6 +26,8 @@
 
   {{ parent() }}
   {{ include_list( 'assignment', assignment_list|default(false), true ) }}
+  {{ include_list( 'appointment', appointment_list|default(false), true ) }}
+  {{ include_list( 'ivr_appointment', ivr_appointment_list|default(false), true ) }}
 
 {% endblock record %}
 

@@ -34,16 +34,16 @@ class ivr_appointment extends \cenozo\database\record
    */
   public function save()
   {
-    // make sure there is a maximum of 1 IVR appointment without a completed status
+    // make sure there is a maximum of 1 IVR appointment without a completed status per interview
     if( is_null( $this->completed ) )
     {
       $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'participant_id', '=', $this->participant_id );
+      $modifier->where( 'interview_id', '=', $this->interview_id );
       $modifier->where( 'completed', '=', NULL );
       if( !is_null( $this->id ) ) $modifier->where( 'id', '!=', $this->id );
       if( 0 < static::count( $modifier ) )
         throw lib::create( 'exception\runtime',
-          'Cannot have more than one incomplete IVR appointment per participant.', __METHOD__ );
+          'Cannot have more than one incomplete IVR appointment per interview.', __METHOD__ );
     }
 
     parent::save();
@@ -68,11 +68,3 @@ class ivr_appointment extends \cenozo\database\record
     return is_null( $this->completed ) ?  'upcoming' : 'complete';
   }
 }
-
-// define the join to the participant_site table
-$participant_site_mod = lib::create( 'database\modifier' );
-$participant_site_mod->join(
-  'participant_site',
-  'ivr_appointment.participant_id',
-  'participant_site.participant_id' );
-ivr_appointment::customize_join( 'participant_site', $participant_site_mod );

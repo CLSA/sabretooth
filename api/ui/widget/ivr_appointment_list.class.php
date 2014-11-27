@@ -38,11 +38,12 @@ class ivr_appointment_list extends \cenozo\ui\widget\base_list
   {
     parent::prepare();
     $this->add_column( 'participant.uid', 'string', 'UID', true );
+    $this->add_column( 'qnaire.name', 'string', 'Questionnaire', true );
     $this->add_column( 'phone', 'string', 'Phone number', false );
     $this->add_column( 'datetime', 'datetime', 'Date', true );
     $this->add_column( 'state', 'string', 'State', false );
   }
-  
+
   /**
    * Set the rows array needed by the template.
    * 
@@ -57,10 +58,20 @@ class ivr_appointment_list extends \cenozo\ui\widget\base_list
          //a completed state
     {
       $ivr_appointment_class_name = lib::get_class_name( 'database\ivr_appointment' );
-      $db_participant = $this->parent->get_record();
+      $subject = $this->parent->get_subject();
+      if( 'interview' == $subject )
+      {
+        $db_interview = $this->parent->get_record();
+        $db_participant = $db_interview->get_participant();
+      }
+      else if( 'participant' == $subject )
+      {
+        $db_participant = $this->parent->get_record();
+        $db_interview = $db_participant->get_effective_interview();
+      }
 
       $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'participant_id', '=', $db_participant->id );
+      $modifier->where( 'interview_id', '=', $db_interview->id );
       $modifier->where( 'completed', '=', NULL );
       $addable = 0 == $ivr_appointment_class_name::count( $modifier );
 
@@ -74,17 +85,52 @@ class ivr_appointment_list extends \cenozo\ui\widget\base_list
 
     foreach( $this->get_record_list() as $record )
     {
+      $db_participant = $record->get_interview()->get_participant();
       $db_phone = $record->get_phone();
       $phone = sprintf( '(%d) %s: %s',
                         $db_phone->rank,
                         $db_phone->type,
                         $db_phone->number );
       $this->add_row( $record->id,
-        array( 'participant.first_name' => $record->get_participant()->first_name,
-               'participant.last_name' => $record->get_participant()->last_name,
+        array( 'participant.first_name' => $db_participant->first_name,
+               'participant.last_name' => $db_participant->last_name,
                'phone' => $phone,
                'datetime' => $record->datetime,
                'state' => $record->get_state() ) );
     }
+  }
+
+  /**
+   * Overrides the parent class method to restrict by interview id, if necessary
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return int
+   * @access protected
+   */
+  public function determine_record_count( $modifier = NULL )
+  {
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->join( 'interview', 'ivr_appointment.interview_id', 'interview.id' );
+    $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
+    $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
+    return parent::determine_record_count( $modifier );
+  }
+
+  /**
+   * Overrides the parent class method to restrict by interview id, if necessary
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return array( record )
+   * @access protected
+   */
+  public function determine_record_list( $modifier = NULL )
+  {
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    $modifier->join( 'interview', 'ivr_appointment.interview_id', 'interview.id' );
+    $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
+    $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
+    return parent::determine_record_list( $modifier );
   }
 }

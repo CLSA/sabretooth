@@ -52,7 +52,7 @@ class ivr_appointment_feed extends \cenozo\ui\pull\base_feed
       $duration = $setting_manager->get_setting( 'appointment', 'full duration' );
       $end_datetime_obj->modify(  sprintf( '+%d minute', $duration ) );
 
-      $db_participant = $db_ivr_appointment->get_participant();
+      $db_participant = $db_ivr_appointment->get_interview()->get_participant();
       $this->data[] = array(
         'id' => $db_ivr_appointment->id,
         'title' => is_null( $db_participant->uid ) || 0 == strlen( $db_participant->uid ) ?

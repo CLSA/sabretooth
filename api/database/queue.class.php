@@ -207,17 +207,24 @@ class queue extends \cenozo\database\record
     $ivr_appointment_mod = lib::create( 'database\modifier' );
     $ivr_appointment_mod->where(
       'datetime', '<=', $appointment_datetime_obj->format( 'Y-m-d H:i:s' ) );
-    $ivr_appointment_mod->where( 'completed', '=', NULL );
+    $ivr_appointment_mod->where( 'ivr_appointment.completed', '=', NULL );
     if( !is_null( $db_participant ) )
-      $ivr_appointment_mod->where( 'participant_id', '=', $db_participant->id );
+    {
+      $ivr_appointment_mod->join(
+        'interview',
+        'ivr_appointment.interview_id',
+        'interview.id' );
+      $ivr_appointment_mod->where( 'interview.participant_id', '=', $db_participant->id );
+    }
 
     foreach( $ivr_appointment_class_name::select( $ivr_appointment_mod ) as $db_ivr_appointment )
     {
-      $db_ivr_participant = $db_ivr_appointment->get_participant();
+      $db_interview = $db_ivr_appointment->get_interview();
+      $db_ivr_participant = $db_interview->get_participant();
 
       try
       {
-        $status = $ivr_manager->get_status( $db_ivr_participant );
+        $status = $ivr_manager->get_status( $db_interview );
       }
       // ignore errors
       catch( \cenozo\exception\runtime $e )
@@ -233,7 +240,7 @@ class queue extends \cenozo\database\record
 
         // now mark the interview as complete
         $interview_mod = lib::create( 'database\modifier' );
-        $interview_mod->where( 'completed', '=', false );
+        $interview_mod->where( 'interview.completed', '=', false );
         $interview_mod->order_desc( 'qnaire.rank' );
         $interview_mod->limit( 1 );
         $db_interview = current(
@@ -283,7 +290,7 @@ class queue extends \cenozo\database\record
         try
         {
           $ivr_manager->set_appointment(
-            $db_ivr_participant,
+            $db_interview,
             $db_ivr_appointment->get_phone(),
             $db_ivr_appointment->datetime );
         }
@@ -408,7 +415,9 @@ class queue extends \cenozo\database\record
         'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, '.
         'qnaire_id, start_qnaire_date, interview_method_id '.
         'FROM queue_has_participant '.
-        'JOIN appointment ON queue_has_participant.participant_id = appointment.participant_id '.
+        'JOIN interview ON queue_has_participant.participant_id = interview.participant_id '.
+        'AND queue_has_participant.queue_id = interview.queue_id '.
+        'JOIN appointment ON interview.id = appointment.interview_id '.
         'AND appointment.assignment_id IS NULL '.
         'WHERE queue_id = %s AND ',
         $database_class_name::format_string( $this->id ),
@@ -788,33 +797,35 @@ class queue extends \cenozo\database\record
             {
               // link to ivr_appointment table and make sure the ivr_appointment completed status
               // hasn't been set (by design, there can only ever be one unset ivr_appointment per
-              // participant)
+              // interview)
               $parts['from'][] = 'interview_method';
               $parts['where'][] = 'effective_interview_method_id = interview_method.id';
               $parts['where'][] = 'interview_method.name = "ivr"';
               $parts['from'][] = 'ivr_appointment';
-              $parts['where'][] = 'ivr_appointment.participant_id = participant_for_queue.id';
+              $parts['where'][] =
+                'ivr_appointment.interview_id = participant_for_queue.current_interview_id';
               $parts['where'][] = 'ivr_appointment.completed IS NULL';
             }
             else if( 'appointment' == $queue )
             {
               // link to appointment table and make sure the appointment hasn't been assigned
-              // (by design, there can only ever be one unassigned appointment per participant)
+              // (by design, there can only ever be one unassigned appointment per interview)
               $parts['from'][] = 'interview_method';
               $parts['where'][] = 'effective_interview_method_id = interview_method.id';
               $parts['where'][] = 'interview_method.name = "operator"';
               $parts['from'][] = 'appointment';
-              $parts['where'][] = 'appointment.participant_id = participant_for_queue.id';
+              $parts['where'][] =
+                'appointment.interview_id = participant_for_queue.current_interview_id';
               $parts['where'][] = 'appointment.assignment_id IS NULL';
             }
             else
             {
               // Make sure there is no unassigned appointment.  By design there can only be one of
-              // per participant, so if the appointment is null then the participant has no pending
+              // per interview, so if the appointment is null then the interview has no pending
               // appointments.
               $parts['join'][] =
                 'LEFT JOIN appointment '.
-                'ON appointment.participant_id = participant_for_queue.id '.
+                'ON appointment.interview_id = participant_for_queue.current_interview_id '.
                 'AND appointment.assignment_id IS NULL';
               $parts['where'][] = 'appointment.id IS NULL';
 
@@ -1187,6 +1198,7 @@ participant.override_quota AS participant_override_quota,
 source.override_quota AS source_override_quota,
 primary_region.id AS primary_region_id,
 last_consent.accept AS last_consent_accept,
+current_interview.id AS current_interview_id,
 current_interview.qnaire_id AS current_interview_qnaire_id,
 last_assignment.id AS last_assignment_id,
 last_assignment.end_datetime AS last_assignment_end_datetime,

@@ -36,6 +36,7 @@ class appointment_report extends \cenozo\ui\pull\base_report
    */
   protected function build()
   {
+    $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
     $db_site = lib::create( 'business\session' )->get_site();
     $date = $this->get_argument( 'date' );
    
@@ -49,6 +50,10 @@ class appointment_report extends \cenozo\ui\pull\base_report
     
     $appointment_class_name = lib::get_class_name( 'database\appointment' );
     $appointment_mod = lib::create( 'database\modifier' );
+    $appointment_mod->join( 'interview', 'appointment.interview_id', 'interview.id' );
+    $appointment_mod->join(
+      'participant_site', 'interview.participant_id', 'participant_site.participant_id' );
+    $appointment_mod->where( 'interview.qnaire_id', '=', $db_qnaire->id );
     $appointment_mod->where( 'participant_site.site_id', '=', $db_site->id );
     $appointment_mod->where( 'datetime', '>=', $date.' 00:00:00' );
     $appointment_mod->where( 'datetime', '<=', $date.' 23:59:59' );
@@ -57,7 +62,7 @@ class appointment_report extends \cenozo\ui\pull\base_report
     {
       $db_assignment = $db_appointment->get_assignment();
       $contents[] = array(
-        $db_appointment->get_participant()->uid,
+        $db_appointment->get_interview()->get_participant()->uid,
         util::get_formatted_time( $db_appointment->datetime, false ),
         $db_appointment->type,
         $db_appointment->reached ? 'Yes' : 'No',

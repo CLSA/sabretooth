@@ -286,23 +286,18 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`appointment` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `update_timestamp` TIMESTAMP NOT NULL,
   `create_timestamp` TIMESTAMP NOT NULL,
-  `participant_id` INT UNSIGNED NOT NULL,
+  `interview_id` INT UNSIGNED NOT NULL,
   `phone_id` INT UNSIGNED NULL DEFAULT NULL,
   `assignment_id` INT UNSIGNED NULL DEFAULT NULL,
   `datetime` DATETIME NOT NULL,
   `type` ENUM('full','half') NOT NULL DEFAULT 'full',
   `reached` TINYINT(1) NULL DEFAULT NULL COMMENT 'If the appointment was met, whether the participant was reached.',
   PRIMARY KEY (`id`),
-  INDEX `fk_participant_id` (`participant_id` ASC),
   INDEX `fk_assignment_id` (`assignment_id` ASC),
   INDEX `dk_reached` (`reached` ASC),
   INDEX `fk_phone_id` (`phone_id` ASC),
   INDEX `dk_datetime` (`datetime` ASC),
-  CONSTRAINT `fk_appointment_participant_id`
-    FOREIGN KEY (`participant_id`)
-    REFERENCES `cenozo`.`participant` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+  INDEX `fk_interview_id` (`interview_id` ASC),
   CONSTRAINT `fk_appointment_assignment_id`
     FOREIGN KEY (`assignment_id`)
     REFERENCES `sabretooth`.`assignment` (`id`)
@@ -311,6 +306,11 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`appointment` (
   CONSTRAINT `fk_appointment_phone_id`
     FOREIGN KEY (`phone_id`)
     REFERENCES `cenozo`.`phone` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_appointment_interview_id`
+    FOREIGN KEY (`interview_id`)
+    REFERENCES `sabretooth`.`interview` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -927,23 +927,23 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`ivr_appointment` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `update_timestamp` TIMESTAMP NOT NULL,
   `create_timestamp` TIMESTAMP NOT NULL,
-  `participant_id` INT UNSIGNED NOT NULL,
+  `interview_id` INT UNSIGNED NOT NULL,
   `phone_id` INT UNSIGNED NOT NULL,
   `datetime` DATETIME NOT NULL,
   `completed` TINYINT(1) NULL DEFAULT NULL COMMENT 'If the interview was completed by the appointment.',
   PRIMARY KEY (`id`),
-  INDEX `fk_participant_id` (`participant_id` ASC),
   INDEX `dk_completed` (`completed` ASC),
   INDEX `fk_phone_id` (`phone_id` ASC),
   INDEX `dk_datetime` (`datetime` ASC),
-  CONSTRAINT `fk_ivr_appointment_participant_id`
-    FOREIGN KEY (`participant_id`)
-    REFERENCES `cenozo`.`participant` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+  INDEX `fk_interview_id` (`interview_id` ASC),
   CONSTRAINT `fk_ivr_appointment_phone_id`
     FOREIGN KEY (`phone_id`)
     REFERENCES `cenozo`.`phone` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_ivr_appointment_interview_id`
+    FOREIGN KEY (`interview_id`)
+    REFERENCES `sabretooth`.`interview` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

@@ -406,14 +406,6 @@ GROUP BY interview_id
 SQL;
 }
 
-// define the join to the participant_site table
-$participant_site_mod = lib::create( 'database\modifier' );
-$participant_site_mod->join(
-  'participant_site',
-  'interview.participant_id',
-  'participant_site.participant_id' );
-interview::customize_join( 'participant_site', $participant_site_mod );
-
 // define the join to the last assignment
 $assignment_mod = lib::create( 'database\modifier' );
 $assignment_mod->join(
