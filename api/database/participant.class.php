@@ -94,7 +94,7 @@ class participant extends \cenozo\database\participant
   /**
    * Returns the participant's effective qnaire.
    * 
-   * The "effective" qnaire is determined based on the participant's current interview.
+   * The "effective" qnaire is determined by the queue.
    * If they have not yet started an interview then the first qnaire is returned.
    * If they current have an incomplete interview then that interview's qnaire is returned.
    * If their current interview is complete then the next qnaire is returned, and if there
@@ -111,9 +111,9 @@ class participant extends \cenozo\database\participant
   }
 
   /**
-   * Returns the participant's effective qnaire.
+   * Returns the participant's effective interview.
    * 
-   * The "effective" qnaire is determined based on the participant's current interview.
+   * The "effective" interview is determined by the queue.
    * If they have not yet started an interview then the first qnaire is returned.
    * If they current have an incomplete interview then that interview's qnaire is returned.
    * If their current interview is complete then the next qnaire is returned, and if there
