@@ -144,6 +144,7 @@ class sample_report extends \cenozo\ui\pull\base_report
 
     $sql .= sprintf(
       'WHERE participant.active = true '.
+      'AND IFNULL( temp_last_consent.accept, true ) != false '.
       'AND IFNULL( interview.completed, 0 ) = 0 '.
       'AND qnaire.id = %s '.
       'AND ( '.
