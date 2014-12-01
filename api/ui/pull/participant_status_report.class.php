@@ -40,7 +40,6 @@ class participant_status_report extends \cenozo\ui\pull\base_report
   {
     $this->report->set_orientation( 'landscape' );
 
-    $database_class_name = lib::get_class_name( 'database\database' );
     $record_class_name = lib::get_class_name( 'database\record' );
     $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
     $state_class_name = lib::get_class_name( 'database\state' );
@@ -168,56 +167,53 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     // we will need a table containing the most recent 
     // to avoid double-counting participants we create a temporary table with all participants,
     // then remove them as they fall into a category
-    $temp_select_sql = 'SELECT participant.*, participant_last_consent.accept, ';
-    $temp_from_sql = sprintf(
-      'FROM participant '.
-      'JOIN participant_last_consent '.
-      'ON participant.id = participant_last_consent.participant_id '.
-      'JOIN service_has_participant '.
-      'ON participant.id = service_has_participant.participant_id '.
-      'AND service_has_participant.service_id = %s '.
-      'AND service_has_participant.datetime IS NOT NULL '.
-      'LEFT JOIN participant_site '.
-      'ON participant.id = participant_site.participant_id '.
-      'AND service_has_participant.service_id = participant_site.service_id '.
-      'LEFT JOIN site '.
-      'ON participant_site.site_id = site.id ',
-      $database_class_name::format_string( $db_service->id ) );
+    $select_sql = 'SELECT participant.*, participant_last_consent.accept, ';
+
+    $modifier = lib::create( 'database\modifier' );
+    $modfier->join( 'participant_last_consent',
+      'participant.id', 'participant_last_consent.participant_id' );
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'participant.id', '=', 'service_has_participant.participant_id', false );
+    $join_mod->where( 'service_has_participant.service_id', '=', $db_service->id );
+    $join_mod->where( 'service_has_participant.datetime', '!=', NULL );
+    $modifier->join_modifier( 'service_has_participant', $join_mod );
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
+    $join_mod->where( 'service_has_participant.service_id', '=', 'participant_site.service_id', false );
+    $modifier->left_join_modifier( 'participant_site', $join_mod );
+    $modifier->left_join( 'site', 'participant_site.site_id', 'site.id' );
 
     if( 'Province' == $breakdown || $restrict_province_id )
     {
-      $temp_from_sql .=
-        'LEFT JOIN participant_primary_address '.
-        'ON participant.id = participant_primary_address.participant_id '.
-        'LEFT JOIN address '.
-        'ON participant_primary_address.address_id = address.id '.
-        'LEFT JOIN region '.
-        'ON address.region_id = region.id '.
-        'AND region.country = "Canada" ';
+      $modifier->left_join( 'participant_primary_address',
+        'participant.id', 'participant_primary_address.participant_id' );
+      $modifier->left_join( 'address',
+        'participant_primary_address.address_id', 'address.id' );
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'address.region_id', '=', 'region.id', false );
+      $join_mod->where( 'region.country', '=', 'Canada' );
+      $modifier->left_join_modifier( 'region', $join_mod );
     }
 
     // define the category based on the breakdown type requested
     if( 'Site' == $breakdown )
     {
-      $temp_select_sql .= 'site.name AS category ';
+      $select_sql .= 'site.name AS category ';
     }
     else if( 'Province' == $breakdown )
     {
-      $temp_select_sql .= 'region.abbreviation AS category ';
+      $select_sql .= 'region.abbreviation AS category ';
     }
     else // 'Quota' == breakdown
     {
-      $temp_select_sql .=
+      $select_sql .=
         'IF( age_group.id IS NULL OR participant.gender IS NULL, '.
             'NULL, '.
             'CONCAT( IF( participant.gender = "female", "F", "M" ), age_group.lower ) '.
         ') AS category ';
-      $temp_from_sql .=
-        'LEFT JOIN age_group ON participant.age_group_id = age_group.id ';
+      $modifier->left_join( 'age_group', 'participant.age_group_id', 'age_group.id' );
     }
 
-    // add restrictions based on input parameters
-    $modifier = lib::create( 'database\modifier' );
     if( $is_supervisor )
     {
       $modifier->where( 'participant_site.site_id', '=', $db_site->id );
@@ -225,11 +221,9 @@ class participant_status_report extends \cenozo\ui\pull\base_report
 
     if( !is_null( $db_collection ) )
     {
-      $temp_from_sql .=
-        'JOIN collection_has_participant '.
-        'ON collection_has_participant.participant_id = participant.id ';
-      $modifier->where(
-        'collection_has_participant.collection_id', '=', $db_collection->id );
+      $modifier->join( 'collection_has_participant',
+        'collection_has_participant.participant_id', 'participant.id' );
+      $modifier->where( 'collection_has_participant.collection_id', '=', $db_collection->id );
     }
     if( !is_null( $db_cohort ) )
       $modifier->where( 'participant.cohort_id', '=', $db_cohort->id );
@@ -240,9 +234,8 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     if( 0 < $restrict_source_id )
       $modifier->where( 'source_id', '=', $restrict_source_id );
     $record_class_name::db()->execute(
-      sprintf( 'CREATE TEMPORARY TABLE temp_participant %s %s %s',
-               $temp_select_sql,
-               $temp_from_sql,
+      sprintf( 'CREATE TEMPORARY TABLE temp_participant %s FROM participant %s',
+               $select_sql,
                $modifier->get_sql() ) );
     $record_class_name::db()->execute(
       'ALTER TABLE temp_participant ADD INDEX dk_id ( id ), '.
@@ -253,21 +246,18 @@ class participant_status_report extends \cenozo\ui\pull\base_report
 
     // total of all phone calls
     $sub_cat = 'Total number of calls';
-    $extra_sql = sprintf( 'JOIN interview ON temp_participant.id = interview.participant_id '.
-                          'AND interview.qnaire_id = %s '.
-                          'JOIN assignment ON interview.id = assignment.interview_id '.
-                          'JOIN phone_call ON assignment.id = phone_call.assignment_id ',
-                          $db_qnaire->id );
-
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'temp_participant.id', '=', 'interview.participant_id', false );
+    $join_mod->where( 'interview.qnaire_id', '=', $db_qnaire->id );
+    $temp_mod = lib::create( 'database\modifier' );
+    $temp_mod->join_modifier( 'interview', $join_mod );
+    $temp_mod->join( 'assignment', 'interview.id', 'assignment.interview_id' );
+    $temp_mod->join( 'phone_call', 'assignment.id', 'phone_call.assignment_id' );
+    $temp_mod->group( 'temp_participant.category' );
     $rows = $record_class_name::db()->get_all(
       sprintf( 'SELECT temp_participant.category, COUNT(*) AS total '.
-               'FROM temp_participant '.
-               'JOIN interview ON temp_participant.id = interview.participant_id '.
-               'AND interview.qnaire_id = %s '.
-               'JOIN assignment ON interview.id = assignment.interview_id '.
-               'JOIN phone_call ON assignment.id = phone_call.assignment_id '.
-               'GROUP BY category',
-               $database_class_name::format_string( $db_qnaire->id ) ) );
+               'FROM temp_participant %s',
+               $temp_mod->get_sql() ) );
 
     foreach( $rows as $row )
     {
@@ -279,40 +269,32 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       else $this->category_totals_list[$row['category']][$sub_cat] = $row['total'];
     }
 
+    $base_mod = lib::create( 'database\modifier' );
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'temp_participant.id', '=', 'interview.participant_id', false );
+    $join_mod->where( 'interview.qnaire_id', '=', $db_qnaire->id );
+    $base_mod->join_modifier( 'interview', $join_mod );
+
     // has a complete interview (negative consent)
     $sub_cat = 'Completed interview (negative consent)';
-    $extra_sql = sprintf(
-      'JOIN interview '.
-      'ON temp_participant.id = interview.participant_id '.
-      'AND interview.qnaire_id = %s ',
-      $db_qnaire->id );
-    $modifier = lib::create( 'database\modifier' );
+    $modifier = clone $base_mod;
     $modifier->where( 'interview.completed', '=', true );
     $modifier->where( 'accept', '=', false );
-    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
+    $this->set_category_totals( $sub_cat, $modifier );
 
     // has a complete interview
     $sub_cat = 'Completed interview';
-    $extra_sql = sprintf(
-      'JOIN interview '.
-      'ON temp_participant.id = interview.participant_id '.
-      'AND interview.qnaire_id = %s ',
-      $db_qnaire->id );
-    $modifier = lib::create( 'database\modifier' );
+    $modifier = clone $base_mod;
+    $modifier->join_modifier( 'interview', $join_mod );
     $modifier->where( 'interview.completed', '=', true );
-    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
+    $this->set_category_totals( $sub_cat, $modifier );
 
     // has an incomplete interview (negative consent)
     $sub_cat = 'Incomplete interview (negative consent)';
-    $extra_sql = sprintf(
-      'JOIN interview '.
-      'ON temp_participant.id = interview.participant_id '.
-      'AND interview.qnaire_id = %s ',
-      $db_qnaire->id );
-    $modifier = lib::create( 'database\modifier' );
+    $modifier = clone $base_mod;
     $modifier->where( 'interview.completed', '=', false );
     $modifier->where( 'accept', '=', false );
-    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
+    $this->set_category_totals( $sub_cat, $modifier );
 
     // response rate
     foreach( $this->category_totals_list as $category => $totals )
@@ -334,105 +316,87 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       $sub_cat = ucfirst( $db_state->name );
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'temp_participant.state_id', '=', $db_state->id );
-      $this->set_category_totals( $sub_cat, '', $modifier );
+      $this->set_category_totals( $sub_cat, $modifier );
     }
 
     // currently assigned
     $sub_cat = 'Call in progress';
-    $extra_sql = sprintf(
-      'JOIN interview '.
-      'ON temp_participant.id = interview.participant_id '.
-      'AND interview.qnaire_id = %s '.
-      'JOIN assignment '.
-      'ON interview.id = assignment.interview_id '.
-      'AND assignment.end_datetime IS NULL ',
-      $db_qnaire->id );
-    $modifier = lib::create( 'database\modifier' );
+    $modifier = clone $base_mod;
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'interview.id','=','assignment.interview_id', false );
+    $join_mod->where( 'assignment.end_datetime', '=', NULL );
+    $modifier->join_modifier( 'assignment', $modifier );
     $modifier->where( 'interview.id', '=', NULL );
-    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
+    $this->set_category_totals( $sub_cat, $modifier );
+
+    // create the base appointment modifier
+    $appointment_base_mod = clone $base_mod;
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'interview.interview_method_id','=','interview_method.id', false );
+    $join_mod->where( 'interview_method.name', '=', 'operator' );
+    $appointment_base_mod->join_modifier( 'interview_method', $join_mod );
+    $appointment_base_mod->join( 'participant_last_appointment',
+      'temp_participant.id', 'participant_last_appointment.participant_id' );
 
     // unassigned past appointment
     $sub_cat = 'Appointment (missed)';
-    $extra_sql = sprintf(
-      'JOIN interview ON temp_participant.id = interview.participant_id '.
-      'AND interview.qnaire_id = %s '.
-      'JOIN interview_method ON interview.interview_method_id = interview_method.id '.
-      'AND interview_method.name = "operator" '.
-      'JOIN participant_last_appointment '.
-      'ON temp_participant.id = participant_last_appointment.participant_id '.
-      'JOIN appointment '.
-      'ON participant_last_appointment.appointment_id = appointment.id '.
-      'AND appointment.assignment_id IS NULL '.
-      'AND UTC_TIMESTAMP() > appointment.datetime + INTERVAL %s MINUTE ',
-      $db_qnaire->id,
-      $setting_manager->get_setting( 'appointment', 'call post-window' ) );
-    $this->set_category_totals( $sub_cat, $extra_sql );
+    $modifier = clone $appointment_base_mod;
+    $join_mod->where(
+      'participant_last_appointment.appointment_id', '=', 'appointment.id', false );
+    $join_mod->where( 'participant_last_appointment.appointment_id', '=', 'appointment.id' );
+    $join_mod->where( 'appointment.assignment_id', '=', NULL );
+    $datetime = sprintf( 'appointment.datetime + INTERVAL %s MINUTE',
+                         $setting_manager->get_setting( 'appointment', 'call post-window' ) );
+    $join_mod->where( 'UTC_TIMESTAMP()', '>', $datetime, false );
+    $modifier->join_modifier( 'appointment', $join_mod );
+
+    $this->set_category_totals( $sub_cat, $modifier );
 
     // unassigned future appointment (all remaining unassigned appointments
     $sub_cat = 'Appointment';
-    $extra_sql = sprintf(
-      'JOIN interview ON temp_participant.id = interview.participant_id '.
-      'AND interview.qnaire_id = %s '.
-      'JOIN interview_method ON interview.interview_method_id = interview_method.id '.
-      'AND interview_method.name = "operator" '.
-      'JOIN participant_last_appointment '.
-      'ON temp_participant.id = participant_last_appointment.participant_id '.
-      'JOIN appointment '.
-      'ON participant_last_appointment.appointment_id = appointment.id '.
-      'AND appointment.assignment_id IS NULL ',
-      $db_qnaire->id );
-    $this->set_category_totals( $sub_cat, $extra_sql );
+    $modifier = clone $appointment_base_mod;
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where(
+      'participant_last_appointment.appointment_id', '=', 'appointment.id', false );
+    $join_mod->where( 'participant_last_appointment.appointment_id', '=', 'appointment.id' );
+    $join_mod->where( 'appointment.assignment_id', '=', NULL );
+    $modifier->join_modifier( 'appointment', $join_mod );
+    $this->set_category_totals( $sub_cat, $modifier );
 
     // no interviews
     $sub_cat = 'Not yet called';
-    $extra_sql = sprintf(
-      'JOIN interview '.
-      'ON temp_participant.id = interview.participant_id '.
-      'AND interview.qnaire_id = %s ',
-      $db_qnaire->id );
-    $modifier = lib::create( 'database\modifier' );
+    $modifier = clone $base_mod;
     $modifier->where( 'interview.id', '=', NULL );
-    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
+    $this->set_category_totals( $sub_cat, $modifier );
 
     // has an incomplete interview
     // failed call count >= max failed calls
     $sub_cat = 'Sourcing required';
+    $modifier = clone $base_mod;
     // get the max failed calls setting and invoke the temporary table needed in the join
     $max_failed_calls =
       lib::create( 'business\setting_manager' )->get_setting( 'calling', 'max failed calls' );
     $interview_class_name::create_interview_failed_call_count();
-    $extra_sql = sprintf(
-      'JOIN interview '.
-      'ON temp_participant.id = interview.participant_id '.
-      'AND interview.qnaire_id = %s '.
-      'JOIN interview_failed_call_count '.
-      'ON interview.id = interview_failed_call_count.interview_id ',
-      $db_qnaire->id );
-    $modifier = lib::create( 'database\modifier' );
+    $modifier->join( 'interview_failed_call_count',
+      'interview.id', '=', 'interview_failed_call_count.interview_id' );
     $modifier->where( 'interview.completed', '=', false );
     $modifier->where( 'interview_failed_call_count.total', '>=', $max_failed_calls );
-    $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
+    $this->set_category_totals( $sub_cat, $modifier );
 
     // has an incomplete interview
     // last phone call status
     foreach( $phone_call_class_name::get_enum_values( 'status' ) as $status )
     {
       $sub_cat = ucfirst( $status );
-      $extra_sql = sprintf( 
-        'JOIN interview '.
-        'ON temp_participant.id = interview.participant_id '.
-        'AND interview.qnaire_id = %s '.
-        'JOIN interview_last_assignment '.
-        'ON interview.id = interview_last_assignment.interview_id '.
-        'JOIN assignment_last_phone_call '.
-        'ON interview_last_assignment.assignment_id = assignment_last_phone_call.assignment_id '.
-        'JOIN phone_call '.
-        'ON assignment_last_phone_call.phone_call_id = phone_call.id ',
-        $db_qnaire->id );
-      $modifier = lib::create( 'database\modifier' );
+      $modifier = clone $base_mod;
+      $modifier->join( 'interview_last_assignment',
+        'interview.id', 'interview_last_assignment.interview_id ' );
+      $modifier->join( 'assignment_last_phone_call',
+        'interview_last_assignment.assignment_id', 'assignment_last_phone_call.assignment_id' );
+      $modifier->join( 'phone_call', 'assignment_last_phone_call.phone_call_id', 'phone_call.id' );
       $modifier->where( 'interview.completed', '=', false );
       $modifier->where( 'phone_call.status', '=', $status );
-      $this->set_category_totals( $sub_cat, $extra_sql, $modifier );
+      $this->set_category_totals( $sub_cat, $modifier );
     }
 
     // build the header and footer for all tables
@@ -524,18 +488,16 @@ class participant_status_report extends \cenozo\ui\pull\base_report
    * Internal function for setting the category totals for this report.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $sub_category The name of the sub-category to set
-   * @param string $extra_sql Extra sql to add to the base query
    * @param database\modifier $modifier The modifier to apply to the query
    * @access private
    */
-  private function set_category_totals( $sub_category, $extra_sql = '', $modifier = NULL )
+  private function set_category_totals( $sub_category, $modifier = NULL )
   {
     $record_class_name = lib::get_class_name( 'database\record' );
 
     // get the count for each category
     $rows = $record_class_name::db()->get_all(
-      sprintf( 'SELECT temp_participant.category, temp_participant.id FROM temp_participant %s %s',
-               $extra_sql,
+      sprintf( 'SELECT temp_participant.category, temp_participant.id FROM temp_participant %s',
                is_null( $modifier ) ? '' : $modifier->get_sql() ) );
     $id_list = array();
     foreach( $rows as $row )

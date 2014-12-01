@@ -49,6 +49,8 @@ class callback_report extends \cenozo\ui\pull\base_report
     
     $callback_class_name = lib::get_class_name( 'database\callback' );
     $callback_mod = lib::create( 'database\modifier' );
+    $callback_mod->join(
+      'participant_site', 'callback.participant_id', 'participant_site.participant_id' );
     $callback_mod->where( 'participant_site.site_id', '=', $db_site->id );
     $callback_mod->where( 'datetime', '>=', $date.' 00:00:00' );
     $callback_mod->where( 'datetime', '<=', $date.' 23:59:59' );

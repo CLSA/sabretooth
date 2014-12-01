@@ -85,7 +85,7 @@ class sample_report extends \cenozo\ui\pull\base_report
       'ALTER TABLE temp_last_consent '.
       'ADD INDEX dk_participant_id ( participant_id )' );
 
-    $sql =
+    $select_sql =
       'SELECT uid, '.
         'cohort.name AS Cohort, '.
         ( is_null( $db_site ) ? 'site.name AS Site, ' : '' ).
@@ -103,64 +103,62 @@ class sample_report extends \cenozo\ui\pull\base_report
         'IFNULL( DATE( appointment.datetime ), "" ) AS "Appointment", '.
         'IF( participant.email IS NULL, "no", "yes" ) AS "Email" ';
 
-    $sql .= sprintf(
-      'FROM qnaire '.
-      'CROSS JOIN participant '.
-      'JOIN service_has_participant ON participant.id = service_has_participant.participant_id '.
-      'AND service_has_participant.datetime IS NOT NULL '.
-      'AND service_has_participant.service_id = %s '.
-      'JOIN cohort ON participant.cohort_id = cohort.id '.
-      'JOIN temp_site ON participant.id = temp_site.participant_id '.
-      'JOIN site ON temp_site.site_id = site.id '.
-      'LEFT JOIN temp_primary_address ON temp_primary_address.participant_id = participant.id '.
-      'LEFT JOIN address ON temp_primary_address.address_id = address.id '.
-      'LEFT JOIN region ON address.region_id = region.id '.
-      'LEFT JOIN state ON participant.state_id = state.id '.
-      'LEFT JOIN event ON participant.id = event.participant_id '.
-      'AND event.event_type_id = qnaire.completed_event_type_id '.
-      'LEFT JOIN event AS require_event ON participant.id = require_event.participant_id '.
-      'AND require_event.event_type_id IN ( '.
-        'SELECT event_type_id '.
-        'FROM qnaire_has_event_type '.
-        'WHERE qnaire_id = qnaire.id '.
-      ') '.
-      'LEFT JOIN interview ON participant.id = interview.participant_id '.
-      'LEFT JOIN assignment ON interview.id = assignment.interview_id '.
-      'LEFT JOIN phone_call ON assignment.id = phone_call.assignment_id '.
-      'LEFT JOIN appointment ON participant.id = appointment.participant_id '.
-      'AND appointment.assignment_id IS NULL '.
-      'JOIN temp_last_consent ON temp_last_consent.participant_id = participant.id '.
-      'LEFT JOIN language ON participant.language_id = language.id ',
-      $database_class_name::format_string( $service_id ) );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->cross_join( 'participant' );
+    $join_mod = lib::create( 'database\modifier' );
+    $modifier->join_modifier( 'service_has_participant', $join_mod );
+    $join_mod->where( 'participant.id', '=', 'service_has_participant.participant_id', false );
+    $join_mod->where( 'service_has_participant.datetime', '!=', NULL );
+    $join_mod->where( 'service_has_participant.service_id', '=', $service_id );
+    $modifier->join( 'cohort', 'participant.cohort_id', 'cohort.id' );
+    $modifier->join( 'temp_site', 'participant.id', 'temp_site.participant_id' );
+    $modifier->join( 'site', 'temp_site.site_id', 'site.id' );
+    $modifier->left_join( 'temp_primary_address', 'temp_primary_address.participant_id', 'participant.id' );
+    $modifier->left_join( 'address', 'temp_primary_address.address_id', 'address.id' );
+    $modifier->left_join( 'region', 'address.region_id', 'region.id' );
+    $modifier->left_join( 'state', 'participant.state_id', 'state.id' );
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'participant.id', '=', 'event.participant_id', false );
+    $join_mod->where( 'event.event_type_id', '=', 'qnaire.completed_event_type_id', false );
+    $modifier->left_join_modifier( 'event', $join_mod );
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'participant.id', '=', 'require_event.participant_id', false );
+    $join_mod->where( 'require_event.event_type_id', 'IN',
+      'SELECT event_type_id FROM qnaire_has_event_type WHERE qnaire_id = qnaire.id', false );
+    $modifier->left_join_modifier( 'event AS require_event', $join_mod );
+    $modifier->left_join( 'interview', 'participant.id', 'interview.participant_id' );
+    $modifier->left_join( 'assignment', 'interview.id', 'assignment.interview_id' );
+    $modifier->left_join( 'phone_call', 'assignment.id', 'phone_call.assignment_id' );
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'interview.id', '=', 'appointment.interview_id', false );
+    $join_mod->where( 'appointment.assignment_id', '=', NULL );
+    $modifier->left_join_modifier( 'appointment', $join_mod );
+    $modifier->join( 'temp_last_consent', 'temp_last_consent.participant_id', 'participant.id' );
+    $modifier->left_join( 'language', 'participant.language_id', 'language.id' );
 
     if( !is_null( $db_collection ) )
     {
-      $sql .= sprintf(
-        'JOIN collection_has_participant '.
-        'ON participant.id = collection_has_participant.participant_id '.
-        'AND collection_has_participant.collection_id = %s',
-        $database_class_name::format_string( $db_collection->id ) );
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'participant.id', '=', 'collection_has_participant.participant_id', false );
+      $join_mod->where( 'collection_has_participant.collection_id', '=', $db_collection->id );
+      $modifier->join_modifier( 'collection_has_participant', $join_mod );
     }
 
-    $sql .= sprintf(
-      'WHERE participant.active = true '.
-      'AND IFNULL( interview.completed, 0 ) = 0 '.
-      'AND qnaire.id = %s '.
-      'AND ( '.
-        'require_event.id IS NOT NULL OR ( '.
-          'SELECT COUNT(*) '.
-          'FROM qnaire_has_event_type '.
-          'WHERE qnaire_id = qnaire.id '.
-        ') = 0 '.
-      ') ',
-      $database_class_name::format_string( $db_qnaire->id ) );
+    $modifier->where( 'participant.active', '=', true );
+    $modifier->where( 'IFNULL( interview.completed, 0 )', '=', 0 );
+    $modifier->where( 'qnaire.id', '=', $db_qnaire->id );
+    $modifier->where_bracket( true );
+    $modifier->where( 'require_event.id', '!=', NULL );
+    $modifier->or_where(
+      '( SELECT COUNT(*) FROM qnaire_has_event_type WHERE qnaire_id = qnaire.id )', '=', 0 );
+    $modifier->where_bracket( false );
+    if( !is_null( $db_site ) ) $modifier->where( 'site.id', '=', $db_site->id );
+    $modifier->group( 'participant.uid' );
 
-    if( !is_null( $db_site ) )
-      $sql .= sprintf( 'AND site.id = %s ', $database_class_name::format_string( $db_site->id ) );
-
-    $sql .= 'GROUP BY participant.uid';
-
-    $rows = $participant_class_name::db()->get_all( $sql );
+    $rows = $participant_class_name::db()->get_all(
+      sprintf( '%s FROM qnaire %s',
+               $select_sql,
+               $modifier->get_sql() ) );
 
     $header = array();
     $content = array();
