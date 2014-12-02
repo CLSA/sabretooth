@@ -413,10 +413,10 @@ class queue extends \cenozo\database\record
         'INSERT INTO queue_has_participant( '.
           'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date, interview_method_id ) '.
         'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, '.
-        'qnaire_id, start_qnaire_date, interview_method_id '.
+        'interview.qnaire_id, start_qnaire_date, interview.interview_method_id '.
         'FROM queue_has_participant '.
         'JOIN interview ON queue_has_participant.participant_id = interview.participant_id '.
-        'AND queue_has_participant.queue_id = interview.queue_id '.
+        'AND queue_has_participant.qnaire_id = interview.qnaire_id '.
         'JOIN appointment ON interview.id = appointment.interview_id '.
         'AND appointment.assignment_id IS NULL '.
         'WHERE queue_id = %s AND ',
