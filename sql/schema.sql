@@ -1024,9 +1024,9 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`interview_last_assignment` (`interview_
 CREATE TABLE IF NOT EXISTS `sabretooth`.`interview_phone_call_status_count` (`interview_id` INT, `status` INT, `total` INT);
 
 -- -----------------------------------------------------
--- Placeholder table for view `sabretooth`.`participant_last_appointment`
+-- Placeholder table for view `sabretooth`.`interview_last_appointment`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `sabretooth`.`participant_last_appointment` (`participant_id` INT, `appointment_id` INT, `reached` INT);
+CREATE TABLE IF NOT EXISTS `sabretooth`.`interview_last_appointment` (`interview_id` INT, `appointment_id` INT, `reached` INT);
 
 -- -----------------------------------------------------
 -- Placeholder table for view `sabretooth`.`participant_last_interview`
@@ -1085,20 +1085,20 @@ JOIN phone_call ON assignment.id = phone_call.assignment_id
 GROUP BY interview.id, phone_call.status;
 
 -- -----------------------------------------------------
--- View `sabretooth`.`participant_last_appointment`
+-- View `sabretooth`.`interview_last_appointment`
 -- -----------------------------------------------------
-DROP VIEW IF EXISTS `sabretooth`.`participant_last_appointment` ;
-DROP TABLE IF EXISTS `sabretooth`.`participant_last_appointment`;
+DROP VIEW IF EXISTS `sabretooth`.`interview_last_appointment` ;
+DROP TABLE IF EXISTS `sabretooth`.`interview_last_appointment`;
 USE `sabretooth`;
-CREATE OR REPLACE VIEW `sabretooth`.`participant_last_appointment` AS
-SELECT participant.id AS participant_id, t1.id AS appointment_id, t1.reached
-FROM cenozo.participant
+CREATE OR REPLACE VIEW `sabretooth`.`interview_last_appointment` AS
+SELECT interview.id AS interview_id, t1.id AS appointment_id, t1.reached
+FROM interview
 LEFT JOIN appointment t1
-ON participant.id = t1.participant_id
+ON interview.id = t1.interview_id
 AND t1.datetime = (
   SELECT MAX( t2.datetime ) FROM appointment t2
-  WHERE t1.participant_id = t2.participant_id )
-GROUP BY participant.id;
+  WHERE t1.interview_id = t2.interview_id )
+GROUP BY interview.id;
 
 -- -----------------------------------------------------
 -- View `sabretooth`.`participant_last_interview`

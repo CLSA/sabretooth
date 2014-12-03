@@ -37,6 +37,9 @@ class appointment_feed extends \cenozo\ui\pull\base_feed
   {
     parent::execute();
 
+    $setting_manager = lib::create( 'business\setting_manager');
+    $appointment_class_name = lib::get_class_name( 'database\appointment' );
+
     // create a list of appointments between the feed's start and end time
     $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'interview', 'appointment.interview_id', 'interview.id' );
@@ -48,8 +51,6 @@ class appointment_feed extends \cenozo\ui\pull\base_feed
     $modifier->where( 'datetime', '<', $this->end_datetime );
 
     $this->data = array();
-    $appointment_class_name = lib::get_class_name( 'database\appointment' );
-    $setting_manager = lib::create( 'business\setting_manager');
     foreach( $appointment_class_name::select( $modifier ) as $db_appointment )
     {
       $start_datetime_obj = util::get_datetime_object( $db_appointment->datetime );

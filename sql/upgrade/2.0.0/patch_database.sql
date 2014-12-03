@@ -7,6 +7,8 @@ SOURCE appointment.sql
 SOURCE ivr_appointment.sql
 SOURCE operation.sql
 SOURCE role_has_operation.sql
+SOURCE participant_last_appointment.sql
+SOURCE interview_last_appointment.sql
 
 SOURCE update_version_number.sql
 

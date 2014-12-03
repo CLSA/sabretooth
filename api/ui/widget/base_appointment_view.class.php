@@ -52,24 +52,18 @@ abstract class base_appointment_view extends \cenozo\ui\widget\base_view
     $subject = $this->parent->get_subject();
     if( 'appointment' == $subject || 'ivr_appointment' == $subject )
     {
-      $this->db_interview =
-        $this->get_record()->get_interview();
-      $this->db_participant =
-        $this->db_interview->get_participant();
+      $this->db_interview = $this->get_record()->get_interview();
+      $this->db_participant = $this->db_interview->get_participant();
     }
     else if( 'interview' == $subject )
     {
-      $this->db_interview =
-        $this->parent->get_record();
-      $this->db_participant =
-        $this->db_interview->get_participant();
+      $this->db_interview = $this->parent->get_record();
+      $this->db_participant = $this->db_interview->get_participant();
     }
     else if( 'participant' == $subject )
     {
-      $this->db_participant =
-        $this->parent->get_record();
-      $this->db_interview =
-        $this->db_participant->get_effective_interview();
+      $this->db_participant = $this->parent->get_record();
+      $this->db_interview = $this->db_participant->get_effective_interview();
     }
   }
 
@@ -85,7 +79,7 @@ abstract class base_appointment_view extends \cenozo\ui\widget\base_view
     parent::validate();
 
     // make sure the subject is either participant or interview
-    $subject = $this->participant->get_subject();
+    $subject = $this->parent->get_subject();
     if( 'appointment' != $subject &&
         'ivr_appointment' != $subject &&
         'interview' != $subject &&

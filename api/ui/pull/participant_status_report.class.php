@@ -335,15 +335,15 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $join_mod->where( 'interview.interview_method_id','=','interview_method.id', false );
     $join_mod->where( 'interview_method.name', '=', 'operator' );
     $appointment_base_mod->join_modifier( 'interview_method', $join_mod );
-    $appointment_base_mod->join( 'participant_last_appointment',
-      'temp_participant.id', 'participant_last_appointment.participant_id' );
+    $appointment_base_mod->join( 'interview_last_appointment',
+      'interview.id', 'interview_last_appointment.interview_id' );
 
     // unassigned past appointment
     $sub_cat = 'Appointment (missed)';
     $modifier = clone $appointment_base_mod;
     $join_mod->where(
-      'participant_last_appointment.appointment_id', '=', 'appointment.id', false );
-    $join_mod->where( 'participant_last_appointment.appointment_id', '=', 'appointment.id' );
+      'interview_last_appointment.appointment_id', '=', 'appointment.id', false );
+    $join_mod->where( 'interview_last_appointment.appointment_id', '=', 'appointment.id' );
     $join_mod->where( 'appointment.assignment_id', '=', NULL );
     $datetime = sprintf( 'appointment.datetime + INTERVAL %s MINUTE',
                          $setting_manager->get_setting( 'appointment', 'call post-window' ) );
@@ -357,8 +357,8 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $modifier = clone $appointment_base_mod;
     $join_mod = lib::create( 'database\modifier' );
     $join_mod->where(
-      'participant_last_appointment.appointment_id', '=', 'appointment.id', false );
-    $join_mod->where( 'participant_last_appointment.appointment_id', '=', 'appointment.id' );
+      'interview_last_appointment.appointment_id', '=', 'appointment.id', false );
+    $join_mod->where( 'interview_last_appointment.appointment_id', '=', 'appointment.id' );
     $join_mod->where( 'appointment.assignment_id', '=', NULL );
     $modifier->join_modifier( 'appointment', $join_mod );
     $this->set_category_totals( $sub_cat, $modifier );
