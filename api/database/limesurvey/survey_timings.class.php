@@ -66,30 +66,27 @@ class survey_timings extends sid_record
                        $column );
       if( $first ) $first = false;
     }
+    $survey_timings = static::get_table_name();
+    $sql .= sprintf( ' FROM %s ', $survey_timings );
 
     if( !is_null( $db_region ) )
-    {
+    { // restrict to a particular region
       $db = lib::create( 'business\session' )->get_database();
+      $prefix = sprintf( '%s.%s', $db->get_name(), $db->get_prefix() );
+      $survey = str_replace( '_timings', '', static::get_table_name() );
+      $interview = sprintf( '%s.%sinterview', $db->get_name(), $db->get_prefix() );
 
-      $sql .= sprintf( ' '.
-        'FROM %s t '.
-        'JOIN %s s ON t.id = s.id '.
-        'JOIN %s.%sinterview i ON s.token LIKE CONCAT( i.id, "_%%" ) '.
-        'JOIN %sparticipant_primary_address p ON i.participant_id = p.participant_id '.
-        'JOIN %saddress a ON p.address_id = a.id '.
-        'JOIN %sregion r ON a.region_id = r.id AND r.id = %s',
-        static::get_table_name(),
-        str_replace( '_timings', '', static::get_table_name() ),
-        $db->get_name(),
-        $db->get_prefix(),
-        $db->get_prefix(),
-        $db->get_prefix(),
-        $db->get_prefix(),
-        $database_class_name::format_string( $db_region->id ) );
-    }
-    else
-    {
-      $sql .= ' FROM '.static::get_table_name();
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->join( $survey, $survey_timings.'.id', $survey.'.id' );
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( $survey.'.token', 'LIKE', 'CONCAT( interview.id, "_%" )', false );
+      $modifier->join_modifier( $interview, $join_mod );
+      $modifier->join( $db->get_prefix().'participant_primary_address',
+        'interview.participant_id', 'participant_primary_address.participant_id' );
+      $modifier->join( $db->get_prefix().'address',
+        'participant_primary_address.address_id', 'address.id' );
+      $modifier->where( 'address.region_id', '=', $db_region->id );
+      $sql .= $modifier->get_sql();
     }
 
     return static::db()->get_row( $sql );
