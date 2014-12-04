@@ -54,12 +54,12 @@ class participant_report extends \cenozo\ui\pull\participant_report
       $join_mod->where( 'participant.id', '=', 'queue_has_participant.participant_id', false );
       $join_mod->where( 'queue_has_participant.start_qnaire_date', '!=', NULL );
       if( $qnaire_id ) $join_mod->where( 'queue_has_participant.qnaire_id', '=', $qnaire_id );
-      $this->modifier->join( 'queue_has_participant', $join_mod );
+      $this->modifier->join_modifier( 'queue_has_participant', $join_mod );
 
       $join_mod = lib::create( 'database\modifier' );
       $join_mod->where( 'queue_has_participant.queue_id', '=', 'queue.id', false );
       $join_mod->where( 'queue.name', '=', 'qnaire' );
-      $this->modifier->join( 'queue', $join_mod );
+      $this->modifier->join_modifier( 'queue', $join_mod );
 
       if( $start_date )
         $this->modifier->where( 'queue_has_participant.start_qnaire_date', '>=', $start_date );
