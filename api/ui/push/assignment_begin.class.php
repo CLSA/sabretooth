@@ -84,7 +84,6 @@ class assignment_begin extends \cenozo\ui\push
       $qnaire_mod->order( 'rank' );
 
       $queue_mod = lib::create( 'database\modifier' );
-      $queue_mod->where( 'IFNULL( queue_state.enabled, true )', '=', true );
       $queue_mod->where( 'rank', '!=', NULL );
       $queue_mod->order( 'rank' );
 
