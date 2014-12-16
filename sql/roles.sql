@@ -1160,6 +1160,21 @@ AND role.name IN ( "administrator" );
 
 INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "queue" AND operation.name = "add_queue_state"
+AND role.name IN( "administrator", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "queue" AND operation.name = "delete_queue_state"
+AND role.name IN( "administrator", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "push" AND subject = "queue" AND operation.name = "edit"
+AND role.name IN( "administrator", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "widget" AND subject = "queue" AND operation.name = "list"
 AND role.name IN( "administrator", "supervisor" );
 
@@ -1172,6 +1187,38 @@ INSERT INTO role_has_operation( role_id, operation_id )
 SELECT role.id, operation.id FROM cenozo.role, operation
 WHERE type = "widget" AND subject = "queue" AND operation.name = "view"
 AND role.name IN( "administrator", "supervisor" );
+
+-- queue_state
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "queue_state" AND operation.name = "add"
+AND role.name IN ( "administrator", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "push" AND subject = "queue_state" AND operation.name = "delete"
+AND role.name IN ( "administrator", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "push" AND subject = "queue_state" AND operation.name = "edit"
+AND role.name IN ( "administrator", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "queue_state" AND operation.name = "list"
+AND role.name IN ( "administrator", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "push" AND subject = "queue_state" AND operation.name = "new"
+AND role.name IN ( "administrator", "supervisor" );
+
+INSERT INTO role_has_operation( role_id, operation_id )
+SELECT role.id, operation.id FROM cenozo.role, operation
+WHERE type = "widget" AND subject = "queue_state" AND operation.name = "view"
+AND role.name IN ( "administrator", "supervisor" );
 
 -- quota
 

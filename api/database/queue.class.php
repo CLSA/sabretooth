@@ -67,6 +67,21 @@ class queue extends \cenozo\database\record
   }
 
   /**
+   * Returns whether a queue is enabled or not for a given site and qnaire.
+   * @auther Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   * @return boolean
+   */
+  public function get_enabled( $db_site, $db_qnaire )
+  {
+    $queue_state_class_name = lib::get_class_name( 'database\queue_state' );
+    $db_queue_state = $queue_state_class_name::get_unique_record(
+      array( 'queue_id', 'site_id', 'qnaire_id' ),
+      array( $this->id, $db_site->id, $db_qnaire->id ) );
+    return is_null( $db_queue_state ) ? true : $db_queue_state->enabled;
+  }
+
+  /**
    * Generates the query list.
    * 
    * This method is called internally by the {@link repopulate} method in order to generate
@@ -958,7 +973,7 @@ class queue extends \cenozo\database\record
   }
 
   /**
-   * The date (YYYY-MM-DD) with respect to check all queue states.
+   * The date (YYYY-MM-DD) with respect to check all queues
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $date
    * @access public
@@ -1139,7 +1154,7 @@ class queue extends \cenozo\database\record
   protected $db_site = NULL;
 
   /**
-   * The date (YYYY-MM-DD) with respect to check all queue states.
+   * The date (YYYY-MM-DD) with respect to check all queues
    * @var string
    * @access protected
    * @static

@@ -65,6 +65,9 @@ class assignment_begin extends \cenozo\ui\push
     // make sure another thread didn't pick up an assignment while waiting
     if( is_null( lib::create( 'business\session' )->get_current_assignment() ) )
     {
+      $db_user = $session->get_user();
+      $db_site = $session->get_site();
+
       // determine which way to order the queues
       $reverse_sort_time = $setting_manager->get_setting( 'queue', 'reverse sort time' );
       $now_datetime_obj = util::get_datetime_object();
@@ -81,6 +84,7 @@ class assignment_begin extends \cenozo\ui\push
       $qnaire_mod->order( 'rank' );
 
       $queue_mod = lib::create( 'database\modifier' );
+      $queue_mod->where( 'IFNULL( queue_state.enabled, true )', '=', true );
       $queue_mod->where( 'rank', '!=', NULL );
       $queue_mod->order( 'rank' );
 
@@ -88,7 +92,7 @@ class assignment_begin extends \cenozo\ui\push
       $language_column = sprintf(
         'IFNULL( participant.language_id, %s )',
         $database_class_name::format_string( $session->get_service()->language_id ) );
-      $user_language_id_list = $session->get_user()->get_language_idlist();
+      $user_language_id_list = $db_user->get_language_idlist();
       
       // make sure only one participant is assigned at a time
       $session->acquire_semaphore();
@@ -97,7 +101,7 @@ class assignment_begin extends \cenozo\ui\push
       {
         foreach( $queue_class_name::select( $queue_mod ) as $db_queue )
         {
-          if( $setting_manager->get_setting( 'queue state', $db_queue->name ) )
+          if( $db_queue->get_enabled( $db_site, $db_qnaire ) ) // TODO: in v2.0 put in modifier instead
           {
             $participant_mod = lib::create( 'database\modifier' );
             $participant_mod->where( 'qnaire_id', '=', $db_qnaire->id );
@@ -110,7 +114,7 @@ class assignment_begin extends \cenozo\ui\push
             $participant_mod->order( 'participant.source_id' );
             $participant_mod->limit( 1 );
 
-            $db_queue->set_site( $session->get_site() );
+            $db_queue->set_site( $db_site );
             $participant_list = $db_queue->get_participant_list( $participant_mod );
             if( 1 == count( $participant_list ) )
             {
@@ -183,8 +187,8 @@ class assignment_begin extends \cenozo\ui\push
 
       // create an assignment for this user
       $db_assignment = lib::create( 'database\assignment' );
-      $db_assignment->user_id = $session->get_user()->id;
-      $db_assignment->site_id = $session->get_site()->id;
+      $db_assignment->user_id = $db_user->id;
+      $db_assignment->site_id = $db_site->id;
       $db_assignment->interview_id = $db_interview->id;
       $db_assignment->queue_id = $db_origin_queue->id;
       $db_assignment->save();

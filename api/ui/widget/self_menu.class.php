@@ -45,6 +45,7 @@ class self_menu extends \cenozo\ui\widget\self_menu
       'ivr_appointment',
       'phase',
       'phone_call',
+      'queue_state',
       'recording',
       'service',
       'source_survey',

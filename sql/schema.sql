@@ -1006,6 +1006,41 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`qnaire_has_quota` (
 ENGINE = InnoDB
 COMMENT = 'Record means that quota is disabled for qnaire';
 
+
+-- -----------------------------------------------------
+-- Table `sabretooth`.`queue_state`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`queue_state` ;
+
+CREATE TABLE IF NOT EXISTS `sabretooth`.`queue_state` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `create_timestamp` TIMESTAMP NOT NULL,
+  `update_timestamp` TIMESTAMP NOT NULL,
+  `queue_id` INT UNSIGNED NOT NULL,
+  `site_id` INT UNSIGNED NOT NULL,
+  `qnaire_id` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_queue_id` (`queue_id` ASC),
+  INDEX `fk_site_id` (`site_id` ASC),
+  INDEX `fk_qnaire_id` (`qnaire_id` ASC),
+  UNIQUE INDEX `uq_queue_id_site_id_qnaire_id` (`queue_id` ASC, `site_id` ASC, `qnaire_id` ASC),
+  CONSTRAINT `fk_queue_state_queue_id`
+    FOREIGN KEY (`queue_id`)
+    REFERENCES `sabretooth`.`queue` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_queue_state_site_id`
+    FOREIGN KEY (`site_id`)
+    REFERENCES `cenozo`.`site` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_queue_state_qnaire_id`
+    FOREIGN KEY (`qnaire_id`)
+    REFERENCES `sabretooth`.`qnaire` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
 USE `sabretooth` ;
 
 -- -----------------------------------------------------
