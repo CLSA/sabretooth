@@ -39,9 +39,24 @@ class queue_list extends \cenozo\ui\widget\base_list
     parent::prepare();
 
     $session = lib::create( 'business\session' );
+    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
 
     // make sure to display all queues on the same page
     $this->set_items_per_page( 1000 );
+
+    // if there is only one qnaire then restrict to it automatically
+    $restrict_qnaire_id = $this->get_argument( 'restrict_qnaire_id', false );
+    if( false === $restrict_qnaire_id && 1 == $qnaire_class_name::count() )
+    {
+      $widget_name = $this->get_full_name();
+      $qnaire_list = $qnaire_class_name::select();
+      $db_qnaire = current( $qnaire_list );
+      $args = array_key_exists( $widget_name, $this->arguments )
+            ? $this->arguments[$widget_name]
+            : array();
+      $args['restrict_qnaire_id'] = $db_qnaire->id;
+      $this->arguments[$widget_name] = $args;
+    }
 
     $this->add_column( 'rank', 'number', 'Rank', true );
     if( ( !$session->get_role()->all_sites ||
