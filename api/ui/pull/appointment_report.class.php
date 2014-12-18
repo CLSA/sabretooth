@@ -45,7 +45,7 @@ class appointment_report extends \cenozo\ui\pull\base_report
                util::get_formatted_date( $date ) ) );
 
     $contents = array();
-    $header = array( 'UID', 'Time', 'Type', 'Reached', 'Operator' );
+    $header = array( 'UID', 'Time', 'Type', 'Reached', 'Operator', 'Interview Completed' );
     
     $appointment_class_name = lib::get_class_name( 'database\appointment' );
     $appointment_mod = lib::create( 'database\modifier' );
@@ -56,12 +56,14 @@ class appointment_report extends \cenozo\ui\pull\base_report
     foreach( $appointment_class_name::select( $appointment_mod ) as $db_appointment )
     {
       $db_assignment = $db_appointment->get_assignment();
+      $db_last_assignment = $db_assignment->get_interview()->get_last_assignment();
       $contents[] = array(
         $db_appointment->get_participant()->uid,
         util::get_formatted_time( $db_appointment->datetime, false ),
         $db_appointment->type,
         $db_appointment->reached ? 'Yes' : 'No',
-        is_null( $db_assignment ) ? 'none' : $db_assignment->get_user()->name );
+        is_null( $db_assignment ) ? 'none' : $db_assignment->get_user()->name,
+        $db_assignment->id == $db_last_assignment->id ? 'Yes' : 'No' );
     }
 
     $this->add_table( NULL, $header, $contents, NULL );
