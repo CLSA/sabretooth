@@ -55,15 +55,22 @@ class appointment_report extends \cenozo\ui\pull\base_report
     $appointment_mod->order( 'datetime' );
     foreach( $appointment_class_name::select( $appointment_mod ) as $db_appointment )
     {
+      // determine whether this appointment completed the interview
+      $completed = false;
       $db_assignment = $db_appointment->get_assignment();
-      $db_last_assignment = $db_assignment->get_interview()->get_last_assignment();
+      if( !is_null( $db_assignment ) )
+      {
+        $db_last_assignment = $db_assignment->get_interview()->get_last_assignment();
+        $completed = $db_assignment->id == $db_last_assignment->id;
+      }
+
       $contents[] = array(
         $db_appointment->get_participant()->uid,
         util::get_formatted_time( $db_appointment->datetime, false ),
         $db_appointment->type,
         $db_appointment->reached ? 'Yes' : 'No',
         is_null( $db_assignment ) ? 'none' : $db_assignment->get_user()->name,
-        $db_assignment->id == $db_last_assignment->id ? 'Yes' : 'No' );
+        $completed ? 'Yes' : 'No' );
     }
 
     $this->add_table( NULL, $header, $contents, NULL );
