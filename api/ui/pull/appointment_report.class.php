@@ -60,8 +60,9 @@ class appointment_report extends \cenozo\ui\pull\base_report
       $db_assignment = $db_appointment->get_assignment();
       if( !is_null( $db_assignment ) )
       {
-        $db_last_assignment = $db_assignment->get_interview()->get_last_assignment();
-        $completed = $db_assignment->id == $db_last_assignment->id;
+        $db_interview = $db_assignment->get_interview();
+        $completed = $db_interview->completed &&
+                     $db_assignment->id == $db_interview->get_last_assignment()->id;
       }
 
       $contents[] = array(
