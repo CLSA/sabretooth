@@ -7,3 +7,7 @@ VALUES( "widget", "interview", "add_appointment", true,
 INSERT IGNORE INTO operation( type, subject, name, restricted, description )
 VALUES( "widget", "interview", "add_ivr_appointment", true,
 "A form to create a new IVR appointment to add to an interview." );
+
+INSERT IGNORE INTO operation( type, subject, name, restricted, description )
+VALUES( "pull", "self", "semaphore_count", false,
+"Provides the total number of active and pending semaphores." );

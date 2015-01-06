@@ -91,7 +91,8 @@ class assignment_begin extends \cenozo\ui\push
       $user_language_id_list = $session->get_user()->get_language_idlist();
       
       // make sure only one participant is assigned at a time
-      $session->acquire_semaphore();
+      $semaphore = lib::create( 'business\semaphore' );
+      $semaphore->acquire();
 
       foreach( $qnaire_class_name::select( $qnaire_mod ) as $db_qnaire )
       {
@@ -189,8 +190,6 @@ class assignment_begin extends \cenozo\ui\push
       $db_assignment->queue_id = $db_origin_queue->id;
       $db_assignment->save();
 
-      $session->release_semaphore();
-
       if( $db_origin_queue->from_appointment() )
       { // if this is an appointment queue, mark the appointment now associated with the assignment
         // (this should always be the appointment with the earliest date)
@@ -236,6 +235,8 @@ class assignment_begin extends \cenozo\ui\push
 
       // update this participant's queue status
       $db_participant->update_queue_status();
+
+      $semaphore->release();
     }
   }
 }

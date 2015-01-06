@@ -158,17 +158,37 @@
         // begin assignment button
         $( "#{{ widget.full }}__assignment" ).click( function() {
           // disable the button to prevent button-mashing
-          $(this).button( {
-            disabled: true,
-            label: "Working..."
-          } );
-          if( ajax_push( "assignment", "begin" ) ) {
-            window.location.reload(); } else {
-            $(this).button( {
-              disabled: false,
-              label: "Request assignment"
-            } );
-          }
+          $button = $(this);
+          $button.button( { disabled: true } );
+
+          // get the number of pending assignment requests
+          args = new Object();
+          args.type = "push";
+          args.subject = "assignment";
+          args.name = "begin";
+          var count = ajax_pull( "self", "semaphore_count", args );
+
+          if( null != count )
+            confirm_dialog(
+              "Assignment Queue",
+              "There are currently " + count + " other operators requesting an assignment.\n" +
+              "Do you still wish to proceed?",
+              function() {
+                $button.button( {
+                  disabled: true,
+                  label: "Working..."
+                } );
+                if( ajax_push( "assignment", "begin" ) ) {
+                  window.location.reload(); } else {
+                  $button.button( {
+                    disabled: false,
+                    label: "Request assignment"
+                  } );
+                }
+              } );
+
+          // put the button back
+          $button.button( { disabled: false } );
         } );
 
         // view schedule button

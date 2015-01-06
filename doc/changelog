@@ -1,4 +1,20 @@
 ====================================================================================================
+2.0.0
+====================================================================================================
+
+* Making appointments and callbacks interview-specific
+  - appointments and callbacks now reference the interview instead of the participant table
+
+* Overhauling token attribute system
+  - token attributes are no longer ad-hoc
+  - new business\data_manager class can be used to get data dynamically (without predefining
+    attribute names)
+
+* Reports the number of assignments being processed
+  - before beginning an assignment operators are warned of how many other operators are already
+    waiting for a new assignment
+
+====================================================================================================
 1.3.4
 ====================================================================================================
 
