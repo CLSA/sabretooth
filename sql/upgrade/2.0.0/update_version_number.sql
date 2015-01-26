@@ -1,6 +1,6 @@
-DROP PROCEDURE IF EXISTS upgrade_service_number;
+DROP PROCEDURE IF EXISTS upgrade_application_number;
 DELIMITER //
-CREATE PROCEDURE upgrade_service_number()
+CREATE PROCEDURE upgrade_application_number()
   BEGIN
 
     -- determine the @cenozo database name
@@ -10,10 +10,10 @@ CREATE PROCEDURE upgrade_service_number()
       WHERE constraint_schema = DATABASE()
       AND constraint_name = "fk_role_has_operation_role_id" );
 
-    SELECT "Upgrading service version number" AS "";
+    SELECT "Upgrading application version number" AS "";
 
     SET @sql = CONCAT(
-      "UPDATE ", @cenozo, ".service ",
+      "UPDATE ", @cenozo, ".application ",
       "SET version = '2.0.0' ",
       "WHERE '", DATABASE(), "' LIKE CONCAT( '%_', name )" );
     PREPARE statement FROM @sql;
@@ -23,5 +23,5 @@ CREATE PROCEDURE upgrade_service_number()
   END //
 DELIMITER ;
 
-CALL upgrade_service_number();
-DROP PROCEDURE IF EXISTS upgrade_service_number;
+CALL upgrade_application_number();
+DROP PROCEDURE IF EXISTS upgrade_application_number;
