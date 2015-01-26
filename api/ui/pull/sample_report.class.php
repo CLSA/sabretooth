@@ -48,7 +48,7 @@ class sample_report extends \cenozo\ui\pull\base_report
     $db_collection = $restrict_collection_id
                    ? lib::create( 'database\collection', $restrict_collection_id )
                    : NULL;
-    $service_id = lib::create( 'business\session' )->get_service()->id;
+    $application_id = lib::create( 'business\session' )->get_application()->id;
     
     $this->add_title( sprintf( 'For the %s interview', $db_qnaire->name ) ) ;
     $this->add_title( is_null( $db_site ) ?
@@ -58,7 +58,7 @@ class sample_report extends \cenozo\ui\pull\base_report
     
     // create a temporary participant site table
     $temp_site_mod = lib::create( 'database\modifier' );
-    $temp_site_mod->where( 'service_id', '=', $service_id );
+    $temp_site_mod->where( 'application_id', '=', $application_id );
     $participant_class_name::db()->execute(
       'CREATE TEMPORARY TABLE temp_site '.
       'SELECT * FROM participant_site '.
@@ -106,10 +106,10 @@ class sample_report extends \cenozo\ui\pull\base_report
     $modifier = lib::create( 'database\modifier' );
     $modifier->cross_join( 'participant' );
     $join_mod = lib::create( 'database\modifier' );
-    $modifier->join_modifier( 'service_has_participant', $join_mod );
-    $join_mod->where( 'participant.id', '=', 'service_has_participant.participant_id', false );
-    $join_mod->where( 'service_has_participant.datetime', '!=', NULL );
-    $join_mod->where( 'service_has_participant.service_id', '=', $service_id );
+    $modifier->join_modifier( 'application_has_participant', $join_mod );
+    $join_mod->where( 'participant.id', '=', 'application_has_participant.participant_id', false );
+    $join_mod->where( 'application_has_participant.datetime', '!=', NULL );
+    $join_mod->where( 'application_has_participant.application_id', '=', $application_id );
     $modifier->join( 'cohort', 'participant.cohort_id', 'cohort.id' );
     $modifier->join( 'temp_site', 'participant.id', 'temp_site.participant_id' );
     $modifier->join( 'site', 'temp_site.site_id', 'site.id' );

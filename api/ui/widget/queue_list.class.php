@@ -135,7 +135,7 @@ class queue_list extends \cenozo\ui\widget\base_list
       {
         $column = sprintf( 'IFNULL( participant.language_id, %s )',
                            $database_class_name::format_string(
-                             $session->get_service()->language_id ) );
+                             $session->get_application()->language_id ) );
         $modifier->where( $column, '=', $restrict_language_id );
       }
 

@@ -68,7 +68,7 @@ class survey_manager extends \cenozo\singleton
       {
         // determine which language to use
         $db_language = $db_participant->get_language();
-        if( is_null( $db_language ) ) $db_language = $session->get_service()->get_language();
+        if( is_null( $db_language ) ) $db_language = $session->get_application()->get_language();
         return sprintf( '%s/index.php?sid=%s&lang=%s&token=%s&newtest=Y',
                         LIMESURVEY_URL,
                         $sid,

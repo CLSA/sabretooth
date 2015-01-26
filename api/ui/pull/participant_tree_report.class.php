@@ -86,7 +86,7 @@ class participant_tree_report extends \cenozo\ui\pull\base_report
         {
           $column = sprintf( 'IFNULL( participant.language_id, %s )',
                              $database_class_name::format_string(
-                               lib::create( 'business\session' )->get_service()->language_id ) );
+                               lib::create( 'business\session' )->get_application()->language_id ) );
           $participant_mod->where( $column, '=', $db_language->id );
         }
 
@@ -109,7 +109,7 @@ class participant_tree_report extends \cenozo\ui\pull\base_report
         {
           $column = sprintf( 'IFNULL( participant.language_id, %s )',
                              $database_class_name::format_string(
-                               lib::create( 'business\session' )->get_service()->language_id ) );
+                               lib::create( 'business\session' )->get_application()->language_id ) );
           $participant_mod->where( $column, '=', $db_language->id );
         }
 

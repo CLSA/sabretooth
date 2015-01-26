@@ -62,8 +62,8 @@ class prerecruit_select extends \cenozo\ui\widget
     $db_participant = $db_assignment->get_interview()->get_participant();
 
     // get the grouping from this participant's cohort
-    $db_service = $session->get_service();
-    $grouping = $db_service->get_cohort_grouping( $db_participant->get_cohort() );
+    $db_application = $session->get_application();
+    $grouping = $db_application->get_cohort_grouping( $db_participant->get_cohort() );
 
     // get a list of all quotas for the current participant's region
     $quota_mod = lib::create( 'database\modifier' );

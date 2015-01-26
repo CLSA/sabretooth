@@ -24,7 +24,7 @@ class site_view extends \cenozo\ui\widget\site_view
   {
     parent::setup();
 
-    // remove the service item
-    $this->remove_item( 'service_id' );
+    // remove the application item
+    $this->remove_item( 'application_id' );
   }
 }

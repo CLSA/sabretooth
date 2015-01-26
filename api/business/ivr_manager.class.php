@@ -113,7 +113,7 @@ class ivr_manager extends \cenozo\singleton
 
     $db_language = $db_participant->get_language();
     if( is_null( $db_language ) )
-      $db_language = lib::create( 'business\session' )->get_service()->get_language();
+      $db_language = lib::create( 'business\session' )->get_application()->get_language();
 
     // build the parameter array for the operation
     $parameters = array(

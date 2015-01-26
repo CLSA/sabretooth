@@ -50,7 +50,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $setting_manager = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
     $is_supervisor = 'supervisor' == $session->get_role()->name;
-    $db_service = $session->get_service();
+    $db_application = $session->get_application();
     $db_site = $session->get_site();
 
     // get the report arguments
@@ -142,7 +142,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
       $region_mod->group( 'region_site.region_id' );
       $region_mod->order( 'region.country' );
       $region_mod->order( 'region.abbreviation' );
-      $region_mod->where( 'region_site.service_id', '=', $db_service->id );
+      $region_mod->where( 'region_site.application_id', '=', $db_application->id );
       if( $is_supervisor )
         $region_mod->where( 'region_site.site_id', '=', $db_site->id );
       foreach( $region_class_name::select( $region_mod ) as $db_region )
@@ -173,13 +173,13 @@ class participant_status_report extends \cenozo\ui\pull\base_report
     $modfier->join( 'participant_last_consent',
       'participant.id', 'participant_last_consent.participant_id' );
     $join_mod = lib::create( 'database\modifier' );
-    $join_mod->where( 'participant.id', '=', 'service_has_participant.participant_id', false );
-    $join_mod->where( 'service_has_participant.service_id', '=', $db_service->id );
-    $join_mod->where( 'service_has_participant.datetime', '!=', NULL );
-    $modifier->join_modifier( 'service_has_participant', $join_mod );
+    $join_mod->where( 'participant.id', '=', 'application_has_participant.participant_id', false );
+    $join_mod->where( 'application_has_participant.application_id', '=', $db_application->id );
+    $join_mod->where( 'application_has_participant.datetime', '!=', NULL );
+    $modifier->join_modifier( 'application_has_participant', $join_mod );
     $join_mod = lib::create( 'database\modifier' );
     $join_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
-    $join_mod->where( 'service_has_participant.service_id', '=', 'participant_site.service_id', false );
+    $join_mod->where( 'application_has_participant.application_id', '=', 'participant_site.application_id', false );
     $modifier->left_join_modifier( 'participant_site', $join_mod );
     $modifier->left_join( 'site', 'participant_site.site_id', 'site.id' );
 

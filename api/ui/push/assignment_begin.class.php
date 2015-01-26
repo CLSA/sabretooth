@@ -87,7 +87,7 @@ class assignment_begin extends \cenozo\ui\push
       // prepare a language string to be used in the participant mod
       $language_column = sprintf(
         'IFNULL( participant.language_id, %s )',
-        $database_class_name::format_string( $session->get_service()->language_id ) );
+        $database_class_name::format_string( $session->get_application()->language_id ) );
       $user_language_id_list = $session->get_user()->get_language_idlist();
       
       // make sure only one participant is assigned at a time

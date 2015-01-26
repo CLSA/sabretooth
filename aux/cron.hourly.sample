@@ -12,7 +12,7 @@ $path = dirname( __FILE__ ).'/../web';
 chdir( $path );
 require_once 'settings.ini.php';
 require_once 'settings.local.ini.php';
-require_once $SETTINGS['path']['CENOZO'].'/app/service.class.php';
+require_once $SETTINGS['path']['CENOZO'].'/app/application.class.php';
 
 $user = $SETTINGS['general']['machine_user'];
 $pass = $SETTINGS['general']['machine_password'];

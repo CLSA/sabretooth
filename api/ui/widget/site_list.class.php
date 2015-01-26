@@ -24,6 +24,6 @@ class site_list extends \cenozo\ui\widget\site_list
   protected function prepare()
   {
     parent::prepare();
-    $this->remove_column( 'service.name' );
+    $this->remove_column( 'application.name' );
   }
 }

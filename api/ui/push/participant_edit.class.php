@@ -36,8 +36,8 @@ class participant_edit extends \cenozo\ui\push\participant_edit
       'state_id',
       'override_quota',
       'age_group_id' );
-    foreach( $record->get_cohort()->get_service_list() as $db_service )
-      $column_list[] = sprintf( '%s_site_id', $db_service->name );
+    foreach( $record->get_cohort()->get_application_list() as $db_application )
+      $column_list[] = sprintf( '%s_site_id', $db_application->name );
 
     if( array_intersect_key( $columns, array_flip( $column_list ) ) )
       $record->update_queue_status();

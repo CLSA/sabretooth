@@ -69,7 +69,7 @@ class participant_tree extends \cenozo\ui\pull
       {
         $column = sprintf( 'IFNULL( participant.language_id, %s )',
                            $database_class_name::format_string(
-                             $session->get_service()->language_id ) );
+                             $session->get_application()->language_id ) );
         $queue_mod->where( $column, '=', $restrict_language_id );
       }
 
