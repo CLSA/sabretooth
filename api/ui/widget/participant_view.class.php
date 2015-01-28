@@ -150,7 +150,7 @@ class participant_view extends \cenozo\ui\widget\participant_view
     if( $allow_secondary )
     {
       $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'secondary' );
-      if( $session->is_allowed( $db_operation ) )
+      if( $session->is_operation_allowed( $db_operation ) )
       {
         $this->add_action( 'secondary', 'Secondary Contacts', NULL,
           'A list of alternate contacts which can be called to update a '.
@@ -168,7 +168,7 @@ class participant_view extends \cenozo\ui\widget\participant_view
       if( is_null( $db_last_consent ) || true == $db_last_consent->accept )
       { // add an action to withdraw the participant
         $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'withdraw' );
-        if( $session->is_allowed( $db_operation ) )
+        if( $session->is_operation_allowed( $db_operation ) )
         {
           $this->add_action( 'withdraw', 'Withdraw', NULL,
             'Marks the participant as denying consent and brings up the withdraw script '.
@@ -179,7 +179,7 @@ class participant_view extends \cenozo\ui\widget\participant_view
       { // add an action to reverse-withdraw the participant (but only for administrators)
         $db_operation = $operation_class_name::get_operation( 'push', 'participant', 'withdraw' );
         if( 'administrator' == $session->get_role()->name &&
-            $session->is_allowed( $db_operation ) )
+            $session->is_operation_allowed( $db_operation ) )
         {
           $this->add_action( 'reverse_withdraw', 'Reverse Withdraw', NULL,
             'Reverses an the participant\'s choice to withdraw and deletes the participant\'s '.

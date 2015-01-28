@@ -628,24 +628,20 @@ COMMENT = 'Site-specific setting overriding the default.';
 
 
 -- -----------------------------------------------------
--- Table `sabretooth`.`operation`
+-- Table `sabretooth`.`service`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`operation` ;
+DROP TABLE IF EXISTS `sabretooth`.`service` ;
 
-CREATE TABLE IF NOT EXISTS `sabretooth`.`operation` (
+CREATE TABLE IF NOT EXISTS `sabretooth`.`service` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `update_timestamp` TIMESTAMP NOT NULL,
   `create_timestamp` TIMESTAMP NOT NULL,
-  `type` ENUM('push','pull','widget') NOT NULL,
+  `method` ENUM('DELETE','GET','PATCH','POST','PUT') NOT NULL,
   `subject` VARCHAR(45) NOT NULL,
-  `name` VARCHAR(45) NOT NULL,
+  `resource` TINYINT(1) NOT NULL DEFAULT 1,
   `restricted` TINYINT(1) NOT NULL DEFAULT 1,
-  `description` TEXT NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `uq_type_subject_name` (`type` ASC, `subject` ASC, `name` ASC),
-  INDEX `dk_type` (`type` ASC),
-  INDEX `dk_subject` (`subject` ASC),
-  INDEX `dk_name` (`name` ASC))
+  UNIQUE INDEX `uq_method_subject_resource` (`method` ASC, `subject` ASC, `resource` ASC))
 ENGINE = InnoDB;
 
 
@@ -661,7 +657,7 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`activity` (
   `user_id` INT UNSIGNED NOT NULL,
   `site_id` INT UNSIGNED NOT NULL,
   `role_id` INT UNSIGNED NOT NULL,
-  `operation_id` INT UNSIGNED NOT NULL,
+  `service_id` INT UNSIGNED NOT NULL,
   `query` VARCHAR(511) NOT NULL,
   `elapsed` FLOAT NOT NULL DEFAULT 0 COMMENT 'The total time to perform the operation in seconds.',
   `error_code` VARCHAR(20) NULL DEFAULT '(incomplete)' COMMENT 'NULL if no error occurred.',
@@ -670,8 +666,8 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`activity` (
   INDEX `fk_user_id` (`user_id` ASC),
   INDEX `fk_role_id` (`role_id` ASC),
   INDEX `fk_site_id` (`site_id` ASC),
-  INDEX `fk_operation_id` (`operation_id` ASC),
   INDEX `dk_datetime` (`datetime` ASC),
+  INDEX `fk_service_id` (`service_id` ASC),
   CONSTRAINT `fk_activity_user_id`
     FOREIGN KEY (`user_id`)
     REFERENCES `cenozo`.`user` (`id`)
@@ -687,35 +683,9 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`activity` (
     REFERENCES `cenozo`.`site` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_activity_operation_id`
-    FOREIGN KEY (`operation_id`)
-    REFERENCES `sabretooth`.`operation` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `sabretooth`.`role_has_operation`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `sabretooth`.`role_has_operation` ;
-
-CREATE TABLE IF NOT EXISTS `sabretooth`.`role_has_operation` (
-  `role_id` INT UNSIGNED NOT NULL,
-  `operation_id` INT UNSIGNED NOT NULL,
-  `update_timestamp` TIMESTAMP NOT NULL,
-  `create_timestamp` TIMESTAMP NOT NULL,
-  PRIMARY KEY (`role_id`, `operation_id`),
-  INDEX `fk_operation_id` (`operation_id` ASC),
-  INDEX `fk_role_id` (`role_id` ASC),
-  CONSTRAINT `fk_role_has_operation_role_id`
-    FOREIGN KEY (`role_id`)
-    REFERENCES `cenozo`.`role` (`id`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_role_has_operation_operation_id`
-    FOREIGN KEY (`operation_id`)
-    REFERENCES `sabretooth`.`operation` (`id`)
+  CONSTRAINT `fk_activity_service_id`
+    FOREIGN KEY (`service_id`)
+    REFERENCES `sabretooth`.`service` (`id`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -1005,6 +975,30 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`qnaire_has_quota` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 COMMENT = 'Record means that quota is disabled for qnaire';
+
+
+-- -----------------------------------------------------
+-- Table `sabretooth`.`role_has_service`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `sabretooth`.`role_has_service` ;
+
+CREATE TABLE IF NOT EXISTS `sabretooth`.`role_has_service` (
+  `role_id` INT UNSIGNED NOT NULL,
+  `service_id` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`role_id`, `service_id`),
+  INDEX `fk_role_id` (`role_id` ASC),
+  INDEX `fk_service_id` (`service_id` ASC),
+  CONSTRAINT `fk_role_has_service_service_id`
+    FOREIGN KEY (`service_id`)
+    REFERENCES `sabretooth`.`service` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_role_has_service_role_id`
+    FOREIGN KEY (`role_id`)
+    REFERENCES `cenozo`.`role` (`id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
 
 USE `sabretooth` ;
 

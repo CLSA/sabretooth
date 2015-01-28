@@ -172,6 +172,6 @@ class participant_tree extends \cenozo\ui\widget
     $this->set_variable( 'tree', $tree );
 
     $db_operation = $operation_class_name::get_operation( 'push', 'queue', 'repopulate' );
-    $this->set_variable( 'allow_repopulate', $session->is_allowed( $db_operation ) );
+    $this->set_variable( 'allow_repopulate', $session->is_operation_allowed( $db_operation ) );
   }
 }

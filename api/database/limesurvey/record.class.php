@@ -52,13 +52,13 @@ abstract class record extends \cenozo\database\record
    * @param database\modifier $modifier Modifications to the selection.
    * @param boolean $count If true the total number of records instead of a list
    * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @param boolean $id_only Whether to return a list of primary ids instead of active records
+   * @param enum $format Whether to return an object, column data or only the record id
    * @return array( record )
    * @static
    * @access public
    */
   public static function select(
-    $modifier = NULL, $count = false, $distinct = true, $id_only = false )
+    $modifier = NULL, $count = false, $distinct = true, $format = 0 )
   {
     $sql = sprintf( $count ? 'SELECT COUNT( %s %s ) FROM %s %s' : 'SELECT %s %s FROM %s %s',
                     $distinct ? 'DISTINCT' : '',
@@ -70,15 +70,30 @@ abstract class record extends \cenozo\database\record
     {
       return static::db()->get_one( $sql );
     }
+    else if( static::ARRAY_FORMAT == $format )
+    {
+      $rows = static::db()->get_all( $sql );
+      foreach( $rows as $index => $row )
+      {
+        if( array_key_exists( 'update_timestamp', $row ) ) unset( $rows[$index]['update_timestamp'] );
+        if( array_key_exists( 'create_timestamp', $row ) ) unset( $rows[$index]['create_timestamp'] );
+      }
+      return $rows;
+    }
     else
     {
       $id_list = static::db()->get_col( $sql );
-      if( $id_only ) return $id_list;
-
-      // create records from the ids
-      $records = array();
-      foreach( $id_list as $id ) $records[] = new static( $id );
-      return $records;
+      if( static::ID_FORMAT == $format )
+      {
+        return $id_list;
+      }
+      else
+      {
+        // create records from the ids
+        $records = array();
+        foreach( $id_list as $id ) $records[] = new static( $id );
+        return $records;
+      }
     }
   }
 

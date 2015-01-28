@@ -114,14 +114,14 @@ class appointment_view extends base_appointment_view
 
     // add actions to view the interview and participant's details
     $db_operation = $operation_class_name::get_operation( 'widget', 'interview', 'view' );
-    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+    if( lib::create( 'business\session' )->is_operation_allowed( $db_operation ) )
       $this->add_action(
         'view_interview',
         'View Interview',
         NULL,
         'View the interview\'s details' );
     $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'view' );
-    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+    if( lib::create( 'business\session' )->is_operation_allowed( $db_operation ) )
       $this->add_action(
         'view_participant',
         'View Participant',

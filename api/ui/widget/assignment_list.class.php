@@ -72,7 +72,7 @@ class assignment_list extends \cenozo\ui\widget\site_restricted_list
 
     // define whether or not voip spying is allowed
     $db_operation = $operation_class_name::get_operation( 'push', 'voip', 'spy' );
-    $this->set_variable( 'allow_spy', lib::create( 'business\session' )->is_allowed( $db_operation ) );
+    $this->set_variable( 'allow_spy', lib::create( 'business\session' )->is_operation_allowed( $db_operation ) );
     
     foreach( $this->get_record_list() as $record )
     {

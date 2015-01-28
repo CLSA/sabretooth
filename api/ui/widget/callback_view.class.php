@@ -133,7 +133,7 @@ class callback_view extends \cenozo\ui\widget\base_view
 
     // add an action to view the participant's details
     $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'view' );
-    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+    if( lib::create( 'business\session' )->is_operation_allowed( $db_operation ) )
       $this->add_action(
         'view_participant',
         'View Participant',

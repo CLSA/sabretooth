@@ -90,7 +90,7 @@ class assignment_view extends \cenozo\ui\widget\base_view
 
     // add an action to view the participant's details
     $db_operation = $operation_class_name::get_operation( 'widget', 'participant', 'view' );
-    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+    if( lib::create( 'business\session' )->is_operation_allowed( $db_operation ) )
       $this->add_action(
         'view_participant',
         'View Participant',
@@ -102,7 +102,7 @@ class assignment_view extends \cenozo\ui\widget\base_view
     $db_assignment = $this->get_record();
     $db_user = $db_assignment->get_user();
     $db_operation = $operation_class_name::get_operation( 'push', 'voip', 'spy' );
-    if( lib::create( 'business\session' )->is_allowed( $db_operation ) )
+    if( lib::create( 'business\session' )->is_operation_allowed( $db_operation ) )
     { // if the user is allowed to spy
       $phone_call_mod = lib::create( 'database\modifier' );
       $phone_call_mod->where( 'end_datetime', '=', NULL );

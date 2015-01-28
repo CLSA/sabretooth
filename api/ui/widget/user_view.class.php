@@ -39,7 +39,7 @@ class user_view extends \cenozo\ui\widget\user_view
     if( $view_shifts )
     {
       $db_operation = $operation_class_name::get_operation( 'widget', 'shift', 'calendar' );
-      if( $session->is_allowed( $db_operation ) )
+      if( $session->is_operation_allowed( $db_operation ) )
         $this->add_action( 'calendar', 'Shift Calendar', NULL,
           'View the operator\'s shift calendar.' );
     }
