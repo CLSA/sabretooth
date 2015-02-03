@@ -637,11 +637,10 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`service` (
   `update_timestamp` TIMESTAMP NOT NULL,
   `create_timestamp` TIMESTAMP NOT NULL,
   `method` ENUM('DELETE','GET','PATCH','POST','PUT') NOT NULL,
-  `subject` VARCHAR(45) NOT NULL,
-  `resource` TINYINT(1) NOT NULL DEFAULT 1,
+  `path` VARCHAR(511) NOT NULL,
   `restricted` TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `uq_method_subject_resource` (`method` ASC, `subject` ASC, `resource` ASC))
+  UNIQUE INDEX `uq_method_path` (`method` ASC, `path` ASC))
 ENGINE = InnoDB;
 
 

@@ -47,62 +47,56 @@ CREATE PROCEDURE patch_role_has_service()
       SELECT role_id, service.id
       FROM operation
       JOIN role_has_operation ON operation.id = role_has_operation.operation_id
-      JOIN service ON operation.subject = service.subject
-      AND service.method = "DELETE"
-      AND service.resource = 1
-      WHERE operation.type = "push"
-      AND name = "delete";
+      JOIN service ON subject = SUBSTRING_INDEX( path, "/", 1 )
+      AND method = "DELETE"
+      WHERE name = "delete"
+      GROUP BY subject;
 
       INSERT INTO role_has_service ( role_id, service_id )
       SELECT role_id, service.id
       FROM operation
       JOIN role_has_operation ON operation.id = role_has_operation.operation_id
-      JOIN service ON operation.subject = service.subject
-      AND service.method = "GET"
-      AND service.resource = 0
-      WHERE operation.type = "widget"
-      AND name = "list";
+      JOIN service ON subject = path
+      AND method = "GET"
+      WHERE name = "list"
+      GROUP BY subject;
 
       INSERT INTO role_has_service ( role_id, service_id )
       SELECT role_id, service.id
       FROM operation
       JOIN role_has_operation ON operation.id = role_has_operation.operation_id
-      JOIN service ON operation.subject = service.subject
-      AND service.method = "GET"
-      AND service.resource = 1
-      WHERE operation.type = "widget"
-      AND name = "list";
+      JOIN service ON CONCAT( subject, "/<id>" ) = path
+      AND method = "GET"
+      WHERE name = "view"
+      GROUP BY subject;
 
       INSERT INTO role_has_service ( role_id, service_id )
       SELECT role_id, service.id
       FROM operation
       JOIN role_has_operation ON operation.id = role_has_operation.operation_id
-      JOIN service ON operation.subject = service.subject
-      AND service.method = "PATCH"
-      AND service.resource = 1
-      WHERE operation.type = "push"
-      AND name = "edit";
+      JOIN service ON CONCAT( subject, "/<id>" ) = path
+      AND method = "PATCH"
+      WHERE name = "edit"
+      GROUP BY subject;
 
       INSERT INTO role_has_service ( role_id, service_id )
       SELECT role_id, service.id
       FROM operation
       JOIN role_has_operation ON operation.id = role_has_operation.operation_id
-      JOIN service ON operation.subject = service.subject
-      AND service.method = "POST"
-      AND service.resource = 0
-      WHERE operation.type = "push"
-      AND name = "new";
+      JOIN service ON CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ) ) = path
+      AND method = "POST"
+      WHERE name LIKE "add_%" OR name LIKE "new_%"
+      GROUP BY subject,
+      SUBSTRING( name, 5 );
 
       INSERT INTO role_has_service ( role_id, service_id )
       SELECT role_id, service.id
       FROM operation
       JOIN role_has_operation ON operation.id = role_has_operation.operation_id
-      JOIN service ON operation.subject = service.subject
-      AND service.method = "PUT"
-      AND service.resource = 1
-      WHERE operation.type = "push"
-      AND name = "edit";
-
+      JOIN service ON CONCAT( subject, "/<id>/", SUBSTRING( name, 8 ), "/<id>" ) = path
+      AND method = "DELETE"
+      WHERE name LIKE "delete_%"
+      GROUP BY subject;
     END IF;
   END //
 DELIMITER ;

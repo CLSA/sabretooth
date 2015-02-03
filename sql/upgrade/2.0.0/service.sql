@@ -13,54 +13,53 @@ CREATE PROCEDURE patch_service()
       AND TABLE_NAME = "service" );
     IF @test = 0 THEN
       -- add new service_table
-      CREATE TABLE IF NOT EXISTS service (
+      CREATE TABLE IF NOT EXISTS service(
         id INT UNSIGNED NOT NULL AUTO_INCREMENT,
         update_timestamp TIMESTAMP NOT NULL,
         create_timestamp TIMESTAMP NOT NULL,
         method ENUM('DELETE','GET','PATCH','POST','PUT') NOT NULL,
-        subject VARCHAR(45) NOT NULL,
-        resource TINYINT(1) NOT NULL DEFAULT 1,
+        path VARCHAR(511) NOT NULL,
         restricted TINYINT(1) NOT NULL DEFAULT 1,
         PRIMARY KEY (id),
-        UNIQUE INDEX uq_method_subject_resource (method ASC, subject ASC, resource ASC))
+        UNIQUE INDEX uq_method_path (method ASC, path ASC))
       ENGINE = InnoDB;
 
       -- populate service_id column using the operation table
-      INSERT INTO service ( method, subject, resource, restricted )
-      SELECT "DELETE", subject, 1, restricted
+      INSERT INTO service( method, path, restricted )
+      SELECT "DELETE", CONCAT( subject, "/<id>" ), restricted
       FROM operation
-      WHERE type = "push"
-      AND name = "delete";
+      WHERE name = "delete"
+      GROUP BY subject;
 
-      INSERT INTO service ( method, subject, resource, restricted )
-      SELECT "GET", subject, 0, restricted
+      INSERT INTO service( method, path, restricted )
+      SELECT "GET", subject, restricted
       FROM operation
-      WHERE type = "widget"
-      AND name = "list";
+      WHERE name = "list"
+      GROUP BY subject;
 
-      INSERT INTO service ( method, subject, resource, restricted )
-      SELECT "GET", subject, 1, restricted
+      INSERT INTO service( method, path, restricted )
+      SELECT "GET", CONCAT( subject, "/<id>" ), restricted
       FROM operation
-      WHERE type = "widget"
-      AND name = "list";
+      WHERE name = "view"
+      GROUP BY subject;
 
-      INSERT INTO service ( method, subject, resource, restricted )
-      SELECT "PATCH", subject, 1, restricted
+      INSERT INTO service( method, path, restricted )
+      SELECT "PATCH", CONCAT( subject, "/<id>" ), restricted
       FROM operation
-      WHERE type = "push"
-      AND name = "edit";
+      WHERE name = "edit"
+      GROUP BY subject;
 
-      INSERT INTO service ( method, subject, resource, restricted )
-      SELECT "POST", subject, 0, restricted
+      INSERT INTO service( method, path, restricted )
+      SELECT "POST", CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ) ), restricted
       FROM operation
-      WHERE type = "push"
-      AND name = "new";
+      WHERE name LIKE "add_%" OR name LIKE "new_%"
+      GROUP BY subject, SUBSTRING( name, 5 );
 
-      INSERT INTO service ( method, subject, resource, restricted )
-      SELECT "PUT", subject, 1, restricted
+      INSERT INTO service( method, path, restricted )
+      SELECT "DELETE", CONCAT( subject, "/<id>/", SUBSTRING( name, 8 ), "/<id>" ), restricted
       FROM operation
-      WHERE type = "push"
-      AND name = "edit";
+      WHERE name LIKE "delete_%"
+      GROUP BY subject;
     END IF;
   END //
 DELIMITER ;
