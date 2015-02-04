@@ -50,6 +50,12 @@ CREATE PROCEDURE patch_service()
       GROUP BY subject;
 
       INSERT INTO service( method, path, restricted )
+      SELECT "POST", subject, restricted
+      FROM operation
+      WHERE name = "add" OR name = "new"
+      GROUP BY subject;
+
+      INSERT INTO service( method, path, restricted )
       SELECT "POST", CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ) ), restricted
       FROM operation
       WHERE name LIKE "add_%" OR name LIKE "new_%"

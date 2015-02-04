@@ -83,6 +83,15 @@ CREATE PROCEDURE patch_role_has_service()
       SELECT role_id, service.id
       FROM operation
       JOIN role_has_operation ON operation.id = role_has_operation.operation_id
+      JOIN service ON subject = path
+      AND method = "POST"
+      WHERE name = "add" OR name = "new"
+      GROUP BY subject;
+
+      INSERT INTO role_has_service ( role_id, service_id )
+      SELECT role_id, service.id
+      FROM operation
+      JOIN role_has_operation ON operation.id = role_has_operation.operation_id
       JOIN service ON CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ) ) = path
       AND method = "POST"
       WHERE name LIKE "add_%" OR name LIKE "new_%"
