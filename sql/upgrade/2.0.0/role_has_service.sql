@@ -92,6 +92,35 @@ CREATE PROCEDURE patch_role_has_service()
       SELECT role_id, service.id
       FROM operation
       JOIN role_has_operation ON operation.id = role_has_operation.operation_id
+      JOIN service ON CONCAT( subject, "/<id>/", SUBSTRING( name, 8 ), "/<id>" ) = path
+      AND method = "DELETE"
+      WHERE name LIKE "delete_%"
+      GROUP BY subject;
+
+      INSERT INTO role_has_service ( role_id, service_id )
+      SELECT role_id, service.id
+      FROM operation
+      JOIN role_has_operation ON operation.id = role_has_operation.operation_id
+      JOIN service ON CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ) ) = path
+      AND method = "GET"
+      WHERE name LIKE "add_%" OR name LIKE "new_%"
+      GROUP BY subject,
+      SUBSTRING( name, 5 );
+
+      INSERT INTO role_has_service ( role_id, service_id )
+      SELECT role_id, service.id
+      FROM operation
+      JOIN role_has_operation ON operation.id = role_has_operation.operation_id
+      JOIN service ON CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ), "/<id>" ) = path
+      AND method = "GET"
+      WHERE name LIKE "add_%" OR name LIKE "new_%"
+      GROUP BY subject,
+      SUBSTRING( name, 5 );
+
+      INSERT INTO role_has_service ( role_id, service_id )
+      SELECT role_id, service.id
+      FROM operation
+      JOIN role_has_operation ON operation.id = role_has_operation.operation_id
       JOIN service ON CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ) ) = path
       AND method = "POST"
       WHERE name LIKE "add_%" OR name LIKE "new_%"
@@ -102,10 +131,11 @@ CREATE PROCEDURE patch_role_has_service()
       SELECT role_id, service.id
       FROM operation
       JOIN role_has_operation ON operation.id = role_has_operation.operation_id
-      JOIN service ON CONCAT( subject, "/<id>/", SUBSTRING( name, 8 ), "/<id>" ) = path
-      AND method = "DELETE"
-      WHERE name LIKE "delete_%"
-      GROUP BY subject;
+      JOIN service ON CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ), "/<id>" ) = path
+      AND method = "PATCH"
+      WHERE name LIKE "add_%" OR name LIKE "new_%"
+      GROUP BY subject,
+      SUBSTRING( name, 5 );
     END IF;
   END //
 DELIMITER ;

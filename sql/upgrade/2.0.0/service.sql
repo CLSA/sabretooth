@@ -56,16 +56,34 @@ CREATE PROCEDURE patch_service()
       GROUP BY subject;
 
       INSERT INTO service( method, path, restricted )
-      SELECT "POST", CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ) ), restricted
+      SELECT "DELETE", CONCAT( subject, "/<id>/", SUBSTRING( name, 8 ), "/<id>" ), restricted
+      FROM operation
+      WHERE name LIKE "delete_%"
+      GROUP BY subject;
+
+      INSERT INTO service( method, path, restricted )
+      SELECT "GET", CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ) ), restricted
       FROM operation
       WHERE name LIKE "add_%" OR name LIKE "new_%"
       GROUP BY subject, SUBSTRING( name, 5 );
 
       INSERT INTO service( method, path, restricted )
-      SELECT "DELETE", CONCAT( subject, "/<id>/", SUBSTRING( name, 8 ), "/<id>" ), restricted
+      SELECT "GET", CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ), "/<id>" ), restricted
       FROM operation
-      WHERE name LIKE "delete_%"
-      GROUP BY subject;
+      WHERE name LIKE "add_%" OR name LIKE "new_%"
+      GROUP BY subject, SUBSTRING( name, 5 );
+
+      INSERT INTO service( method, path, restricted )
+      SELECT "PATCH", CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ), "/<id>" ), restricted
+      FROM operation
+      WHERE name LIKE "add_%" OR name LIKE "new_%"
+      GROUP BY subject, SUBSTRING( name, 5 );
+
+      INSERT INTO service( method, path, restricted )
+      SELECT "POST", CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ) ), restricted
+      FROM operation
+      WHERE name LIKE "add_%" OR name LIKE "new_%"
+      GROUP BY subject, SUBSTRING( name, 5 );
     END IF;
   END //
 DELIMITER ;
