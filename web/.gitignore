@@ -2,6 +2,7 @@
 *
 
 # except the standard web files
+api
 img
 index.php
 settings.ini.php
