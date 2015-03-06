@@ -85,7 +85,7 @@ class survey_timings extends sid_record
         $db->get_prefix(),
         $db->get_prefix(),
         $db->get_prefix(),
-        $database_class_name::format_string( $db_region->id ) );
+        static::db()->format_string( $db_region->id ) );
     }
     else
     {
