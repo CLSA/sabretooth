@@ -37,7 +37,7 @@ class queue_view extends \cenozo\ui\widget\base_view
   protected function prepare()
   {
     parent::prepare();
-
+    
     $session = lib::create( 'business\session' );
     if( $session->get_role()->all_sites )
     {
@@ -69,6 +69,17 @@ class queue_view extends \cenozo\ui\widget\base_view
     $this->add_item( 'qnaire', 'constant', 'Questionnaire' );
     $this->add_item( 'language', 'constant', 'Language' );
     $this->add_item( 'viewing_date', 'constant', 'Viewing date' );
+    if( !is_null( $this->db_site ) && !is_null( $this->db_qnaire ) )
+    {
+      $this->add_item( 'enabled', 'boolean', 'Enabled' );
+    }
+    else
+    {
+      // create the queue_state sub-list widget
+      $this->queue_state_list = lib::create( 'ui\widget\queue_state_list', $this->arguments );
+      $this->queue_state_list->set_parent( $this );
+      $this->queue_state_list->set_heading( 'Disabled questionnaire list' );
+    }
 
     // create the participant sub-list widget
     $this->participant_list = lib::create( 'ui\widget\participant_list', $this->arguments );
@@ -86,16 +97,45 @@ class queue_view extends \cenozo\ui\widget\base_view
   protected function setup()
   {
     parent::setup();
+    
+    $db_queue = $this->get_record();
 
     // set the view's items
-    $this->set_item( 'title', $this->get_record()->title, true );
-    $this->set_item( 'description', $this->get_record()->description );
+    $this->set_item( 'title', $db_queue->title, true );
+    $this->set_item( 'description', $db_queue->description );
     $this->set_item( 'site', $this->db_site ? $this->db_site->name : 'All sites' );
     $this->set_item( 'qnaire', $this->db_qnaire ? $this->db_qnaire->name : 'All questionnaires' );
     $this->set_item(
       'language', is_null( $this->db_language ) ? 'Any Language' : $this->db_language->name );
     $this->set_item( 'viewing_date', $this->viewing_date );
-
+    
+    if( !is_null( $this->db_site ) && !is_null( $this->db_qnaire ) )
+    {
+      $this->set_item(
+        'enabled', $db_queue->get_enabled( $this->db_site, $this->db_qnaire ), true );
+      $this->set_variable( 'site_id', $this->db_site->id );
+      $this->set_variable( 'qnaire_id', $this->db_qnaire->id );
+    }
+    else
+    {
+      // process the child widgets
+      try
+      {
+        $this->queue_state_list->process();
+        if( !is_null( $this->db_site ) )
+        { // remove the site column if we are only viewing queue_states from a single site
+          $this->queue_state_list->remove_column( 'site.name' );
+          $this->queue_state_list->execute();
+        }
+        if( !is_null( $this->db_qnaire ) )
+        { // remove the qnaire column if we are only viewing queue_states from a single qnaire
+          $this->queue_state_list->remove_column( 'qnaire.name' );
+          $this->queue_state_list->execute();
+        }
+        $this->set_variable( 'queue_state_list', $this->queue_state_list->get_variables() );
+      }
+      catch( \cenozo\exception\permission $e ) {}
+    }
 
     // process the child widgets
     try
@@ -110,6 +150,40 @@ class queue_view extends \cenozo\ui\widget\base_view
   }
 
   /**
+   * Overrides the queue_state list widget's method to restrict based on role
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return int
+   * @access protected
+   */
+  public function determine_queue_state_count( $modifier = NULL )
+  {
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    if( !is_null( $this->db_site ) ) $modifier->where( 'site_id', '=', $this->db_site->id );
+    if( !is_null( $this->db_qnaire ) ) $modifier->where( 'qnaire_id', '=', $this->db_qnaire->id );
+  
+    return $this->get_record()->get_queue_state_count( $modifier );
+  }
+
+  /**
+   * Overrides the queue_state list widget's method to restrict based on role
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\modifier $modifier Modifications to the list.
+   * @return array( record )
+   * @access protected
+   */
+  public function determine_queue_state_list( $modifier = NULL )
+  {
+    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
+    if( !is_null( $this->db_site ) ) $modifier->where( 'site_id', '=', $this->db_site->id );
+    if( !is_null( $this->db_qnaire ) ) $modifier->where( 'qnaire_id', '=', $this->db_qnaire->id );
+  
+    return $this->get_record()->get_queue_state_list( $modifier );
+  }
+
+  /**
    * Overrides the participant list widget's method to only include this queue's participant.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -119,7 +193,8 @@ class queue_view extends \cenozo\ui\widget\base_view
    */
   public function determine_participant_count( $modifier = NULL )
   {
-    $database_class_name = lib::get_class_name( 'database\database' );
+    $session = lib::create( 'business\session' );
+    $db = $session->get_database();
 
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     if( !is_null( $this->db_qnaire ) ) $modifier->where( 'qnaire_id', '=', $this->db_qnaire->id );
@@ -132,11 +207,10 @@ class queue_view extends \cenozo\ui\widget\base_view
       // if the language isn't set, assume it is the application's default language
       $column = sprintf(
         'IFNULL( participant.language_id, %s )',
-        $database_class_name::format_string(
-          lib::create( 'business\session' )->get_application()->language_id ) );
+        $db->format_string( $session->get_application()->language_id ) );
       $modifier->where( $column, '=', $this->db_language->id );
     }
-
+  
     return $db_queue->get_participant_count( $modifier );
   }
 
@@ -150,7 +224,8 @@ class queue_view extends \cenozo\ui\widget\base_view
    */
   public function determine_participant_list( $modifier = NULL )
   {
-    $database_class_name = lib::get_class_name( 'database\database' );
+    $session = lib::create( 'business\session' );
+    $db = $session->get_database();
 
     if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
     if( !is_null( $this->db_qnaire ) ) $modifier->where( 'qnaire_id', '=', $this->db_qnaire->id );
@@ -163,13 +238,19 @@ class queue_view extends \cenozo\ui\widget\base_view
       // if the language isn't set, assume it is the application's default language
       $column = sprintf(
         'IFNULL( participant.language_id, %s )',
-        $database_class_name::format_string(
-          lib::create( 'business\session' )->get_application()->language_id ) );
+        $db->format_string( $session->get_application()->language_id ) );
       $modifier->where( $column, '=', $this->db_language->id );
     }
-
+  
     return $db_queue->get_participant_list( $modifier );
   }
+
+  /**
+   * The queue_state list widget.
+   * @var queue_state_list
+   * @access protected
+   */
+  protected $queue_state_list = NULL;
 
   /**
    * The participant list widget.

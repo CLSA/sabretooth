@@ -43,7 +43,7 @@ class sample_report extends base_report
     $this->add_restriction( 'collection' );
     
     $this->set_variable( 'description',
-      'This report contains details used to help manage the sample of participants who '.
-      'have yet to complete a particular interview.' );
+      'This report contains details used to help manage the sample of participants who have yet '.
+      'to complete a particular interview and do whose last consent status isn\'t negative.' );
   }
 }

@@ -217,7 +217,7 @@ class participant extends \cenozo\database\participant
       'WHERE participant_id = %s '.
       'ORDER BY queue_id DESC '.
       'LIMIT 1',
-      $database_class_name::format_string( $this->id ) ) );
+      static::db()->format_string( $this->id ) ) );
 
     if( count( $row ) )
     {

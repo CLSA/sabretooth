@@ -36,7 +36,8 @@ class sample_report extends \cenozo\ui\pull\base_report
    */
   protected function build()
   {
-    $database_class_name = lib::get_class_name( 'database\database' );
+    $session = lib::create( 'business\session' );
+    $db = $session->get_database();
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
     $db_qnaire = lib::create( 'database\qnaire', $this->get_argument( 'restrict_qnaire_id' ) );
@@ -48,7 +49,7 @@ class sample_report extends \cenozo\ui\pull\base_report
     $db_collection = $restrict_collection_id
                    ? lib::create( 'database\collection', $restrict_collection_id )
                    : NULL;
-    $application_id = lib::create( 'business\session' )->get_application()->id;
+    $application_id = $session->get_application()->id;
     
     $this->add_title( sprintf( 'For the %s interview', $db_qnaire->name ) ) ;
     $this->add_title( is_null( $db_site ) ?
@@ -173,6 +174,5 @@ class sample_report extends \cenozo\ui\pull\base_report
     }   
 
     $this->add_table( NULL, $header, $content, NULL );
-
   }
 }

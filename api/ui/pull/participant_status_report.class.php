@@ -49,6 +49,7 @@ class participant_status_report extends \cenozo\ui\pull\base_report
 
     $setting_manager = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
+    $db = $session->get_database();
     $is_supervisor = 'supervisor' == $session->get_role()->name;
     $db_application = $session->get_application();
     $db_site = $session->get_site();

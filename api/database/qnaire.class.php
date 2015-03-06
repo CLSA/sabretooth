@@ -57,7 +57,7 @@ class qnaire extends \cenozo\database\has_rank
       'SELECT 0 < COUNT(*) '.
       'FROM qnaire_has_interview_method '.
       'WHERE interview_method_id = %s',
-      $database_class_name::format_string( $db_interview_method->id ) ) );
+      static::db()->format_string( $db_interview_method->id ) ) );
   }
 
   /**

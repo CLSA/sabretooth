@@ -26,7 +26,7 @@ class participant_report extends \cenozo\ui\pull\participant_report
   {
     parent::prepare();
 
-    $database_class_name = lib::get_class_name( 'database\database' );
+    $db = lib::create( 'business\session' )->get_database();
 
     // get the report arguments
     $last_call_result = $this->get_argument( 'last_call_result' );

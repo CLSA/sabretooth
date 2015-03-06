@@ -11,7 +11,7 @@ CREATE PROCEDURE patch_role_has_service()
       WHERE constraint_schema = DATABASE()
       AND constraint_name = "fk_role_has_operation_role_id" );
 
-    SELECT "Replacing operation_id with role_has_service_id in role_has_service table" AS "";
+    SELECT "Creating new role_has_service table" AS "";
 
     SET @test = (
       SELECT COUNT(*)
@@ -42,7 +42,7 @@ CREATE PROCEDURE patch_role_has_service()
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
 
-      -- populate role_has_service_id column using the operation table
+      -- populate role_has_service column using the operation table
       INSERT INTO role_has_service ( role_id, service_id )
       SELECT role_id, service.id
       FROM operation

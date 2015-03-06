@@ -46,7 +46,7 @@ class appointment_report extends \cenozo\ui\pull\base_report
                util::get_formatted_date( $date ) ) );
 
     $contents = array();
-    $header = array( 'UID', 'Time', 'Type', 'Reached', 'Operator' );
+    $header = array( 'UID', 'Time', 'Type', 'Reached', 'Operator', 'Interview Completed' );
     
     $appointment_class_name = lib::get_class_name( 'database\appointment' );
     $appointment_mod = lib::create( 'database\modifier' );
@@ -60,13 +60,23 @@ class appointment_report extends \cenozo\ui\pull\base_report
     $appointment_mod->order( 'datetime' );
     foreach( $appointment_class_name::select( $appointment_mod ) as $db_appointment )
     {
+      // determine whether this appointment completed the interview
+      $completed = false;
       $db_assignment = $db_appointment->get_assignment();
+      if( !is_null( $db_assignment ) )
+      {
+        $db_interview = $db_assignment->get_interview();
+        $completed = $db_interview->completed &&
+                     $db_assignment->id == $db_interview->get_last_assignment()->id;
+      }
+
       $contents[] = array(
         $db_appointment->get_interview()->get_participant()->uid,
         util::get_formatted_time( $db_appointment->datetime, false ),
         $db_appointment->type,
         $db_appointment->reached ? 'Yes' : 'No',
-        is_null( $db_assignment ) ? 'none' : $db_assignment->get_user()->name );
+        is_null( $db_assignment ) ? 'none' : $db_assignment->get_user()->name,
+        $completed ? 'Yes' : 'No' );
     }
 
     $this->add_table( NULL, $header, $contents, NULL );
