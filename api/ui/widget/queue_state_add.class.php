@@ -70,7 +70,7 @@ class queue_state_add extends \cenozo\ui\widget\base_view
     {
       $sites = array();
       $site_mod = lib::create( 'database\modifier' );
-      $site_mod->where( 'service_id', '=', $session->get_service()->id );
+      $site_mod->where( 'application_id', '=', $session->get_application()->id );
       $site_mod->order( 'name' );
       foreach( $site_class_name::select( $site_mod ) as $db_site )
         $sites[$db_site->id] = $db_site->name;

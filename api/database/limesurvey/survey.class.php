@@ -53,8 +53,6 @@ class survey extends sid_record
    */
   public static function get_responses( $token, $question_code )
   {
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     // the questions table has more than one column in its primary key so custom sql is needed
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'sid', '=', static::get_sid() );
@@ -78,7 +76,7 @@ class survey extends sid_record
       $row['gid'],
       $row['qid'],
       static::get_table_name(),
-      $database_class_name::format_string( $token ) );
+      static::db()->format_string( $token ) );
 
     return static::db()->get_col( $sql );
   }
