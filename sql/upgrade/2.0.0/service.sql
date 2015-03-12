@@ -84,6 +84,9 @@ CREATE PROCEDURE patch_service()
       FROM operation
       WHERE name LIKE "add_%" OR name LIKE "new_%"
       GROUP BY subject, SUBSTRING( name, 5 );
+
+      INSERT INTO service( method, path, restricted )
+      VALUES( 'GET', 'service', 0 );
     END IF;
   END //
 DELIMITER ;
