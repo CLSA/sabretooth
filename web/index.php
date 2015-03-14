@@ -16,38 +16,6 @@ require_once '../settings.local.ini.php';
 require_once $SETTINGS['path']['CENOZO'].'/app/application.class.php';
 $application = new \cenozo\application();
 $application->execute();
-
-function get_file_list( $path, $extension )
-{
-  $list = array();
-  foreach( scandir( $path ) as $filename )
-  {
-    if( '.' != $filename && '..' != $filename )
-    {
-      $full_filename = $path.'/'.$filename;
-      if( is_dir( $full_filename ) )
-      {
-        $list = array_merge( $list, get_file_list( $full_filename, $extension ) );
-      }
-      else
-      {
-        $pos = strrpos( $filename, '.' );
-        if( false !== $pos && substr( $filename, $pos + 1 ) == $extension )
-          $list[] = $full_filename;
-      }
-    }
-  }
-
-  return $list;
-}
-
-// get a list of all cenozo and application javascript files
-$cenozo_js_list = get_file_list( CENOZO_PATH.'/web/app', 'js' );
-foreach( $cenozo_js_list as $index => $filename )
-  $cenozo_js_list[$index] = str_replace( CENOZO_PATH.'/web', CENOZO_URL, $filename );
-$app_js_list = get_file_list( APPLICATION_PATH.'/web/app', 'js' );
-foreach( $app_js_list as $index => $filename )
-  $app_js_list[$index] = str_replace( APPLICATION_PATH.'/web/', '', $filename );
 ?>
 <!doctype html>
 <html lang="en" ng-app="sabretoothApp">
@@ -59,19 +27,29 @@ foreach( $app_js_list as $index => $filename )
   <link rel="stylesheet" href="<?php print CENOZO_URL; ?>/css/app.css">
   <link rel="stylesheet" href="<?php print CENOZO_URL; ?>/css/animations.css">
 
-  <script>window.cenozoUrl = "<?php print CENOZO_URL; ?>";</script>
+  <script>window.cnCenozoUrl = "<?php print CENOZO_URL; ?>";</script>
   <script src="<?php print CENOZO_URL; ?>/bower_components/jquery/dist/jquery.js"></script>
   <script src="<?php print CENOZO_URL; ?>/bower_components/bootstrap/dist/js/bootstrap.js"></script>
   <script src="<?php print CENOZO_URL; ?>/bower_components/snapjs/snap.js"></script>
   <script src="<?php print CENOZO_URL; ?>/bower_components/angular/angular.js"></script>
   <script src="<?php print CENOZO_URL; ?>/bower_components/angular-bootstrap/ui-bootstrap.js"></script>
   <script src="<?php print CENOZO_URL; ?>/bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+  <script src="<?php print CENOZO_URL; ?>/bower_components/angular-ui-router/release/angular-ui-router.js"></script>
   <script src="<?php print CENOZO_URL; ?>/bower_components/angular-animate/angular-animate.js"></script>
-  <script src="<?php print CENOZO_URL; ?>/bower_components/angular-route/angular-route.js"></script>
   <script src="<?php print CENOZO_URL; ?>/bower_components/angular-snap/angular-snap.js"></script>
 
-<?php foreach( $cenozo_js_list as $filename ) printf( '<script src="%s"></script>'."\n", $filename ); ?>
-<?php foreach( $app_js_list as $filename ) printf( '<script src="%s"></script>'."\n", $filename ); ?>
+  <script src="<?php print CENOZO_URL; ?>/app/cenozo/animations.js"></script>
+  <script src="<?php print CENOZO_URL; ?>/app/cenozo/controllers.js"></script>
+  <script src="<?php print CENOZO_URL; ?>/app/cenozo/directives.js"></script>
+  <script src="<?php print CENOZO_URL; ?>/app/cenozo/filters.js"></script>
+  <script src="<?php print CENOZO_URL; ?>/app/cenozo/services.js"></script>
+
+  <script src="<?php print CENOZO_URL; ?>/app/app.js"></script>
+  <script src="app/app.js"></script>
+
+  <script data-main="<?php print CENOZO_URL; ?>/app/main.js"
+          src="<?php print CENOZO_URL; ?>/bower_components/requirejs/require.js"></script>
+
 </head>
 <body>
 
@@ -83,11 +61,11 @@ foreach( $app_js_list as $index => $filename )
             <button class="btn btn-primary btn-accordion full-width">Lists</button>
           </accordion-heading>
           <div class="btn-group-vertical full-width" role="group">
-            <button class="btn btn-default"
-                    ng-repeat="item in lists"
-                    ng-class="{ 'btn-info': current == item.subject }"
-                    ng-click="load( item.subject )"
-                    snap-close>{{ item.title }}</button>
+            <a class="btn btn-default"
+               ng-repeat="item in lists"
+               ng-class="{ 'btn-info': isCurrentState( item.sref ) }"
+               ui-sref="{{ item.sref }}"
+               snap-close>{{ item.title }}</a>
           </div>
         </accordion-group>
         <accordion-group>
@@ -95,11 +73,11 @@ foreach( $app_js_list as $index => $filename )
             <button class="btn btn-primary btn-accordion full-width">Utilities</button>
           </accordion-heading>
           <div class="btn-group-vertical full-width" role="group">
-            <button class="btn btn-default"
-                    ng-repeat="item in utilities"
-                    ng-class="{ 'btn-info': current == item.subject }"
-                    ng-click="load( item.subject )"
-                    snap-close>{{ item.title }}</button>
+            <a class="btn btn-default"
+               ng-repeat="item in utilities"
+               ng-class="{ 'btn-info': isCurrentState( item.sref ) }"
+               ui-sref="{{ item.sref }}"
+               snap-close>{{ item.title }}</a>
           </div>
         </accordion-group>
         <accordion-group>
@@ -107,11 +85,11 @@ foreach( $app_js_list as $index => $filename )
             <button class="btn btn-primary btn-accordion full-width">Report</button>
           </accordion-heading>
           <div class="btn-group-vertical full-width" role="group">
-            <button class="btn btn-default"
-                    ng-repeat="item in reports"
-                    ng-class="{ 'btn-info': current == item.subject }"
-                    ng-click="load( item.subject )"
-                    snap-close>{{ item.title }}</button>
+            <a class="btn btn-default"
+               ng-repeat="item in reports"
+               ng-class="{ 'btn-info': isCurrentState( item.sref ) }"
+               ui-sref="{{ item.sref }}"
+               snap-close>{{ item.title }}</a>
           </div>
         </accordion-group>
       </accordian>
@@ -125,7 +103,7 @@ foreach( $app_js_list as $index => $filename )
     <button snap-toggle="left" class="btn btn-primary menu-button rounded-top">Menu</button>
     <button snap-toggle="right" class="btn btn-primary settings-button rounded-top">Settings</button>
     <div class="container outer-container" data-snap-ignore="true">
-      <div ng-view class="container view-frame"></div>
+      <div ui-view class="container view-frame"></div>
     </div>
   </snap-content>
 
