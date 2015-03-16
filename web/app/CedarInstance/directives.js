@@ -5,7 +5,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnCedarInstanceAdd', function () {
     return {
-      cedar_instanceUrl: 'app/cedar_instance/add.tpl.html',
+      templateUrl: 'app/CedarInstance/add.tpl.html',
       restrict: 'E'
     };
   } );
@@ -13,7 +13,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnCedarInstanceView', function () {
     return {
-      cedar_instanceUrl: 'app/cedar_instance/view.tpl.html',
+      templateUrl: 'app/CedarInstance/view.tpl.html',
       restrict: 'E'
     };
   } );

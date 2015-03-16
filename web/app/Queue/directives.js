@@ -5,7 +5,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnQueueAdd', function () {
     return {
-      queueUrl: 'app/queue/add.tpl.html',
+      templateUrl: 'app/Queue/add.tpl.html',
       restrict: 'E'
     };
   } );
@@ -13,7 +13,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnQueueView', function () {
     return {
-      queueUrl: 'app/queue/view.tpl.html',
+      templateUrl: 'app/Queue/view.tpl.html',
       restrict: 'E'
     };
   } );

@@ -3,17 +3,17 @@ define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.directive( 'cnQuestionnaireAdd', function () {
+  cnCachedProviders.directive( 'cnQnaireAdd', function () {
     return {
-      qnaireUrl: 'app/qnaire/add.tpl.html',
+      templateUrl: 'app/Qnaire/add.tpl.html',
       restrict: 'E'
     };
   } );
 
   /* ######################################################################################################## */
-  cnCachedProviders.directive( 'cnQuestionnaireView', function () {
+  cnCachedProviders.directive( 'cnQnaireView', function () {
     return {
-      qnaireUrl: 'app/qnaire/view.tpl.html',
+      templateUrl: 'app/Qnaire/view.tpl.html',
       restrict: 'E'
     };
   } );

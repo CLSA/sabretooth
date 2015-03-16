@@ -5,7 +5,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnAssignmentAdd', function () {
     return {
-      assignmentUrl: 'app/assignment/add.tpl.html',
+      templateUrl: 'app/Assignment/add.tpl.html',
       restrict: 'E'
     };
   } );
@@ -13,7 +13,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnAssignmentView', function () {
     return {
-      assignmentUrl: 'app/assignment/view.tpl.html',
+      templateUrl: 'app/Assignment/view.tpl.html',
       restrict: 'E'
     };
   } );

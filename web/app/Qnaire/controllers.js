@@ -3,27 +3,27 @@ define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'QuestionnaireAddCtrl', [
-    '$scope', 'CnQuestionnaireSingleton',
-    function( $scope, CnQuestionnaireSingleton ) {
+  cnCachedProviders.controller( 'QnaireAddCtrl', [
+    '$scope', 'CnQnaireSingleton',
+    function( $scope, CnQnaireSingleton ) {
       // use base class to create controller
-      CnBaseAddCtrl.call( this, $scope, CnQuestionnaireSingleton );
+      CnBaseAddCtrl.call( this, $scope, CnQnaireSingleton );
     }
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'QuestionnaireListCtrl', [
-    '$scope', '$location', 'CnQuestionnaireSingleton', 'CnModalRestrictFactory',
-    function( $scope, $location, CnQuestionnaireSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $location, CnQuestionnaireSingleton, CnModalRestrictFactory );
+  cnCachedProviders.controller( 'QnaireListCtrl', [
+    '$scope', '$location', 'CnQnaireSingleton', 'CnModalRestrictFactory',
+    function( $scope, $location, CnQnaireSingleton, CnModalRestrictFactory ) {
+      CnBaseListCtrl.call( this, $scope, $location, CnQnaireSingleton, CnModalRestrictFactory );
     }
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'QuestionnaireViewCtrl', [
-    '$scope', '$routeParams', 'CnQuestionnaireSingleton',
-    function( $scope, $routeParams, CnQuestionnaireSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, CnQuestionnaireSingleton );
+  cnCachedProviders.controller( 'QnaireViewCtrl', [
+    '$scope', '$routeParams', 'CnQnaireSingleton',
+    function( $scope, $routeParams, CnQnaireSingleton ) {
+      CnBaseViewCtrl.call( this, $scope, CnQnaireSingleton );
       $scope.local.cnView.load( $routeParams.id );
     }
   ] );

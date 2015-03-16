@@ -3,7 +3,7 @@ define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnQuestionnaireAddFactory', [
+  cnCachedProviders.factory( 'CnQnaireAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
       return { instance: function( params ) { return CnBaseAddFactory.instance( params ); } };
@@ -11,7 +11,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnQuestionnaireListFactory', [
+  cnCachedProviders.factory( 'CnQnaireListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
       var object = function( params ) {
@@ -36,7 +36,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnQuestionnaireViewFactory', [
+  cnCachedProviders.factory( 'CnQnaireViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
       return { instance: function( params ) { return CnBaseViewFactory.instance( params ); } };
@@ -44,9 +44,9 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnQuestionnaireSingleton', [
-    'CnBaseSingletonFactory', 'CnQuestionnaireListFactory', 'CnQuestionnaireAddFactory', 'CnQuestionnaireViewFactory', 'CnHttpFactory',
-    function( CnBaseSingletonFactory, CnQuestionnaireListFactory, CnQuestionnaireAddFactory, CnQuestionnaireViewFactory, CnHttpFactory ) {
+  cnCachedProviders.factory( 'CnQnaireSingleton', [
+    'CnBaseSingletonFactory', 'CnQnaireListFactory', 'CnQnaireAddFactory', 'CnQnaireViewFactory', 'CnHttpFactory',
+    function( CnBaseSingletonFactory, CnQnaireListFactory, CnQnaireAddFactory, CnQnaireViewFactory, CnHttpFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
           subject: 'qnaire',
@@ -56,9 +56,9 @@ define( [], function() {
             possessive: 'questionnaire\'s',
             pluralPossessive: 'questionnaires\''
           },
-          cnAdd: CnQuestionnaireAddFactory.instance( { subject: 'qnaire' } ),
-          cnList: CnQuestionnaireListFactory.instance( { subject: 'qnaire' } ),
-          cnView: CnQuestionnaireViewFactory.instance( { subject: 'qnaire' } )
+          cnAdd: CnQnaireAddFactory.instance( { subject: 'qnaire' } ),
+          cnList: CnQnaireListFactory.instance( { subject: 'qnaire' } ),
+          cnView: CnQnaireViewFactory.instance( { subject: 'qnaire' } )
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
       };
