@@ -6,7 +6,7 @@
  * @param string version
  */
 
-$filename = 'web/settings.ini.php';
+$filename = 'settings.ini.php';
 
 // validate arguments
 if( 2 != $argc )

@@ -1,4 +1,0 @@
-When creating a new widget make sure to:
-  1. Create a template that extends the widget.twig template and put it in tpl/
-  2. Create a class by the same name which extends ui\widget and put it in api/ui/
-     Handle setup and request variables in the constructor and set template variables in finish()

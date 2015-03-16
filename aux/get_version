@@ -5,7 +5,7 @@
  * @author Patrick Emond <emondpd@mcmaster.ca>
  */
 
-$filename = 'web/settings.ini.php';
+$filename = 'settings.ini.php';
 
 // validate arguments
 if( 1 != $argc )
