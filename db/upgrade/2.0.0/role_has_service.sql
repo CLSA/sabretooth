@@ -24,6 +24,8 @@ CREATE PROCEDURE patch_role_has_service()
         "CREATE TABLE IF NOT EXISTS role_has_service ( ",
           "role_id INT UNSIGNED NOT NULL, ",
           "service_id INT UNSIGNED NOT NULL, ",
+          "update_timestamp TIMESTAMP NOT NULL, ",
+          "create_timestamp TIMESTAMP NOT NULL, ",
           "PRIMARY KEY (role_id, service_id), ",
           "INDEX fk_role_id (role_id ASC), ",
           "INDEX fk_service_id (service_id ASC), ",

@@ -405,15 +405,3 @@ SELECT interview_id, total FROM
 GROUP BY interview_id
 SQL;
 }
-
-// define the join to the last assignment
-$assignment_mod = lib::create( 'database\modifier' );
-$assignment_mod->join(
-  'interview_last_assignment',
-  'interview.id',
-  'interview_last_assignment.interview_id' );
-$assignment_mod->join(
-  'assignment',
-  'interview_last_assignment.assignment_id',
-  'assignment.id' );
-interview::customize_join( 'assignment', $assignment_mod );
