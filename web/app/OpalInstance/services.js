@@ -45,8 +45,8 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnOpalInstanceSingleton', [
-    'CnBaseSingletonFactory', 'CnOpalInstanceListFactory', 'CnOpalInstanceAddFactory', 'CnOpalInstanceViewFactory', 'CnHttpFactory',
-    function( CnBaseSingletonFactory, CnOpalInstanceListFactory, CnOpalInstanceAddFactory, CnOpalInstanceViewFactory, CnHttpFactory ) {
+    'CnBaseSingletonFactory', 'CnOpalInstanceListFactory', 'CnOpalInstanceAddFactory', 'CnOpalInstanceViewFactory'
+    function( CnBaseSingletonFactory, CnOpalInstanceListFactory, CnOpalInstanceAddFactory, CnOpalInstanceViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
           subject: 'opal_instance',

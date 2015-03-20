@@ -45,8 +45,8 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnInterviewSingleton', [
-    'CnBaseSingletonFactory', 'CnInterviewListFactory', 'CnInterviewAddFactory', 'CnInterviewViewFactory', 'CnHttpFactory',
-    function( CnBaseSingletonFactory, CnInterviewListFactory, CnInterviewAddFactory, CnInterviewViewFactory, CnHttpFactory ) {
+    'CnBaseSingletonFactory', 'CnInterviewListFactory', 'CnInterviewAddFactory', 'CnInterviewViewFactory'
+    function( CnBaseSingletonFactory, CnInterviewListFactory, CnInterviewAddFactory, CnInterviewViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
           subject: 'interview',

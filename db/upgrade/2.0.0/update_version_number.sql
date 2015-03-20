@@ -8,7 +8,7 @@ CREATE PROCEDURE upgrade_application_number()
       SELECT unique_constraint_schema
       FROM information_schema.referential_constraints
       WHERE constraint_schema = DATABASE()
-      AND constraint_name = "fk_role_has_operation_role_id" );
+      AND constraint_name = "fk_system_message_site_id" );
 
     SELECT "Upgrading application version number" AS "";
 

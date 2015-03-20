@@ -45,8 +45,8 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnCedarInstanceSingleton', [
-    'CnBaseSingletonFactory', 'CnCedarInstanceListFactory', 'CnCedarInstanceAddFactory', 'CnCedarInstanceViewFactory', 'CnHttpFactory',
-    function( CnBaseSingletonFactory, CnCedarInstanceListFactory, CnCedarInstanceAddFactory, CnCedarInstanceViewFactory, CnHttpFactory ) {
+    'CnBaseSingletonFactory', 'CnCedarInstanceListFactory', 'CnCedarInstanceAddFactory', 'CnCedarInstanceViewFactory'
+    function( CnBaseSingletonFactory, CnCedarInstanceListFactory, CnCedarInstanceAddFactory, CnCedarInstanceViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
           subject: 'cedar_instance',

@@ -24,6 +24,9 @@ CREATE PROCEDURE patch_service()
         UNIQUE INDEX uq_method_path (method ASC, path ASC))
       ENGINE = InnoDB;
 
+      SELECT "Renaming service operations to application" AS "";
+      UPDATE operation SET subject = "application" WHERE subject = "service";
+
       -- populate service_id column using the operation table
       INSERT INTO service( method, path, restricted )
       SELECT "DELETE", CONCAT( subject, "/<id>" ), restricted
