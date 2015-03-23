@@ -30,11 +30,6 @@ $SETTINGS['url']['MASTODON'] = NULL;
 $SETTINGS['path']['LIMESURVEY'] = '/var/www/limesurvey';
 $SETTINGS['url']['LIMESURVEY'] = '../limesurvey';
 
-// additional javascript libraries
-$SETTINGS['url']['JQUERY'] = '/jquery';
-$SETTINGS['url']['JQUERY_PLUGINS'] = $SETTINGS['url']['JQUERY'].'/plugins';
-$SETTINGS['url']['JQUERY_TIMERS_JS'] = $SETTINGS['url']['JQUERY_PLUGINS'].'/timers.js';
-
 // voip settings
 $SETTINGS['voip']['enabled'] = false;
 $SETTINGS['voip']['url'] = 'http://localhost:8088/mxml';

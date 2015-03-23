@@ -3,14 +3,6 @@ define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnAssignmentAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      return { instance: function( params ) { return CnBaseAddFactory.instance( params ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnAssignmentListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
@@ -21,9 +13,40 @@ define( [], function() {
         ////////////////////////////////////
         // factory customizations start here
         this.columnList = {
-          id: { title: 'ID' }
+          user: {
+            column: 'user.name',
+            join: true,
+            title: 'Operator'
+          },
+          site: {
+            column: 'site.name',
+            join: true,
+            title: 'Site'
+          },
+          uid: {
+            column: 'interview.participant.uid',
+            join: true,
+            title: 'UID'
+          },
+          start_datetime: {
+            title: 'Start Time',
+            filter: 'date:"MMM d, y HH:mm"',
+            isDate: true
+          },
+          end_datetime: {
+            title: 'End Time',
+            filter: 'date:"MMM d, y HH:mm"',
+            isDate: true
+          },
+          complete: {
+            column: 'interview.completed',
+            join: true,
+            title: 'Complete',
+            filter: 'cnCheckmark'
+
+          }
         };
-        this.order = { column: 'id', reverse: false };
+        this.order = { column: 'start_datetime', reverse: true };
         // factory customizations end here
         //////////////////////////////////
 
@@ -45,8 +68,8 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnAssignmentSingleton', [
-    'CnBaseSingletonFactory', 'CnAssignmentListFactory', 'CnAssignmentAddFactory', 'CnAssignmentViewFactory'
-    function( CnBaseSingletonFactory, CnAssignmentListFactory, CnAssignmentAddFactory, CnAssignmentViewFactory ) {
+    'CnBaseSingletonFactory', 'CnAssignmentListFactory', 'CnAssignmentViewFactory',
+    function( CnBaseSingletonFactory, CnAssignmentListFactory, CnAssignmentViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
           subject: 'assignment',
@@ -56,7 +79,6 @@ define( [], function() {
             possessive: 'assignment\'s',
             pluralPossessive: 'assignments\''
           },
-          cnAdd: CnAssignmentAddFactory.instance( { subject: 'assignment' } ),
           cnList: CnAssignmentListFactory.instance( { subject: 'assignment' } ),
           cnView: CnAssignmentViewFactory.instance( { subject: 'assignment' } )
         } );
@@ -69,4 +91,5 @@ define( [], function() {
     }
   ] );
 
+  return true;
 } );

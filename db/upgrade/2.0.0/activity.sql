@@ -30,6 +30,7 @@ DROP PROCEDURE IF EXISTS patch_activity;
           "site_id INT UNSIGNED NOT NULL, ",
           "role_id INT UNSIGNED NOT NULL, ",
           "service_id INT UNSIGNED NOT NULL, ",
+          "path VARCHAR(255) NOT NULL, ",
           "elapsed FLOAT NOT NULL DEFAULT 0, ",
           "status INT NULL, ",
           "datetime DATETIME NOT NULL, ",
