@@ -153,14 +153,16 @@ class interview extends \cenozo\database\has_note
     
     // update all uncomplete tokens and surveys associated with this interview which are
     // associated with phases which are not repeated (tokens should not include assignments)
+    $phase_sel = lib::create( 'database\select' );
+    $phase_sel->add_column( 'sid' );
     $phase_mod = lib::create( 'database\modifier' );
     $phase_mod->where( 'repeated', '!=', true );
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
-    foreach( $this->get_qnaire()->get_phase_list( $phase_mod ) as $db_phase )
+    foreach( $this->get_qnaire()->get_phase_list( $phase_sel, $phase_mod ) as $phase )
     {
       // update tokens
-      $tokens_class_name::set_sid( $db_phase->sid );
+      $tokens_class_name::set_sid( $phase['sid'] );
       $tokens_mod = lib::create( 'database\modifier' );
       $tokens_mod->where( 'token', '=',
         $tokens_class_name::determine_token_string( $this ) );
@@ -173,7 +175,7 @@ class interview extends \cenozo\database\has_note
       }
 
       // update surveys
-      $survey_class_name::set_sid( $db_phase->sid );
+      $survey_class_name::set_sid( $phase['sid'] );
       $survey_mod = lib::create( 'database\modifier' );
       $survey_mod->where( 'token', '=',
         $tokens_class_name::determine_token_string( $this ) );
@@ -214,14 +216,16 @@ class interview extends \cenozo\database\has_note
     
     // delete all tokens and surveys associated with this interview which are
     // associated with phases which are not repeated (tokens should not include assignments)
+    $phase_sel = lib::create( 'database\select' );
+    $phase_sel->add_column( 'sid' );
     $phase_mod = lib::create( 'database\modifier' );
     $phase_mod->where( 'repeated', '!=', true );
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
-    foreach( $this->get_qnaire()->get_phase_list( $phase_mod ) as $db_phase )
+    foreach( $this->get_qnaire()->get_phase_list( $phase_sel, $phase_mod ) as $phase )
     {
       // delete tokens
-      $tokens_class_name::set_sid( $db_phase->sid );
+      $tokens_class_name::set_sid( $phase['sid'] );
       $tokens_mod = lib::create( 'database\modifier' );
       $tokens_mod->where( 'token', '=',
         $tokens_class_name::determine_token_string( $this ) );
@@ -233,7 +237,7 @@ class interview extends \cenozo\database\has_note
       }
 
       // delete surveys
-      $survey_class_name::set_sid( $db_phase->sid );
+      $survey_class_name::set_sid( $phase['sid'] );
       $survey_mod = lib::create( 'database\modifier' );
       $survey_mod->where( 'token', '=',
         $tokens_class_name::determine_token_string( $this ) );
@@ -256,7 +260,7 @@ class interview extends \cenozo\database\has_note
     {
       $event_mod = lib::create( 'database\modifier' );
       $event_mod->where( 'event_type_id', '=', $db_event_type->id );
-      foreach( $this->get_participant()->get_event_list( $event_mod ) as $db_event )
+      foreach( $this->get_participant()->get_event_object_list( $event_mod ) as $db_event )
         $db_event->delete();
     }
   }
@@ -332,7 +336,7 @@ class interview extends \cenozo\database\has_note
     $assignment_mod->order_desc( 'start_datetime' );
     $assignment_mod->where( 'end_datetime', '!=', NULL );
     $failed_calls = 0;
-    foreach( $this->get_assignment_list( $assignment_mod ) as $db_assignment )
+    foreach( $this->get_assignment_object_list( $assignment_mod ) as $db_assignment )
     {
       // find the most recently completed phone call
       $phone_call_mod = lib::create( 'database\modifier' );

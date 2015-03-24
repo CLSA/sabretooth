@@ -90,7 +90,7 @@ class user extends \cenozo\database\user
       // get the times for all interviews
       $phase_mod = lib::create( 'database\modifier' );
       $phase_mod->where( 'repeated', '=', false );
-      foreach( $db_qnaire->get_phase_list( $phase_mod ) as $db_phase )
+      foreach( $db_qnaire->get_phase_object_list( $phase_mod ) as $db_phase )
       {
         // first try the phase's default sid
         $survey_mod = lib::create( 'database\modifier' );
@@ -99,11 +99,13 @@ class user extends \cenozo\database\user
         $time += $survey_class_name::get_total_time( $survey_mod );
 
         // then go through each source-specifc sid
-        foreach( $db_phase->get_source_survey_list() as $db_source_survey )
+        $select = lib::create( 'database\select' );
+        $select->add_column( 'sid' );
+        foreach( $db_phase->get_source_survey_list( $select ) as $source_survey )
         {
           $survey_mod = lib::create( 'database\modifier' );
           $survey_mod->where( 'token', 'IN', $token_list );
-          $survey_class_name::set_sid( $db_source_survey->sid );
+          $survey_class_name::set_sid( $source_survey['sid'] );
           $time += $survey_class_name::get_total_time( $survey_mod );
         }
       }

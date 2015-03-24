@@ -32,23 +32,8 @@ class queue extends \cenozo\database\record
 
   /**
    * Override parent get_record_list() method to dynamically populate time-specific queues
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $record_type The type of record.
-   * @param modifier $modifier A modifier to apply to the list or count.
-   * @param boolean $inverted Whether to invert the count (count records NOT in the joining table).
-   * @param boolean $count If true then this method returns the count instead of list of records.
-   * @param boolean $distinct Whether to use the DISTINCT sql keyword
-   * @param enum $format Whether to return an object, column data or only the record id
-   * @return array( record ) | array( int ) | int
-   * @access protected
    */
-  public function get_record_list(
-    $record_type,
-    $modifier = NULL,
-    $inverted = false,
-    $count = false,
-    $distinct = true,
-    $format = 0 )
+  public function get_record_list( $record_type, $select = NULL, $modifier = NULL, $return_alternate = '' )
   {
     // if we're getting a participant list/count for a time-specific column, populate it first
     if( 'participant' == $record_type ) $this->populate_time_specific();
@@ -61,8 +46,7 @@ class queue extends \cenozo\database\record
     }
 
     // now call the parent method as usual
-    return parent::get_record_list(
-      $record_type, $modifier, $inverted, $count, $distinct, $format );
+    return parent::get_record_list( $record_type, $select, $modifier, $return_alternate );
   }
 
   /**
@@ -258,7 +242,7 @@ class queue extends \cenozo\database\record
         $interview_mod->order_desc( 'qnaire.rank' );
         $interview_mod->limit( 1 );
         $db_interview = current(
-          $db_ivr_appointment->get_participant()->get_interview_list( $interview_mod ) );
+          $db_ivr_appointment->get_participant()->get_interview_object_list( $interview_mod ) );
         if( is_null( $db_interview ) )
         {
           log::warning( sprintf(

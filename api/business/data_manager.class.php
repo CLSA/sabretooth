@@ -163,9 +163,13 @@ class data_manager extends \cenozo\business\data_manager
           $event_mod = lib::create( 'database\modifier' );
           $event_mod->where( 'event_type_id', '=', $db_event_type->id );
           $event_mod->order_desc( 'datetime' );
-          $event_list = $db_participant->get_event_list( $event_mod );
-          $db_event = current( $event_list );
-          if( $db_event ) $value = $db_event->$column;
+          $event_list = $db_participant->get_event_list( NULL, $event_mod );
+          if( 0 < count( $event_list ) )
+          {
+            if( !array_key_exists( $column, $event_list ) )
+              throw lib::create( 'exception\argument', 'column', $column, __METHOD__ );
+            $value = $event_list[0][$column];
+          }
         }
       }
     }

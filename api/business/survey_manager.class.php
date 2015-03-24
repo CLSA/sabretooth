@@ -54,8 +54,7 @@ class survey_manager extends \cenozo\singleton
         // the assignment must have an open call
         $modifier = lib::create( 'database\modifier' );
         $modifier->where( 'end_datetime', '=', NULL );
-        $call_list = $db_assignment->get_phone_call_list( $modifier );
-        if( 0 != count( $call_list ) )
+        if( 0 < $db_assignment->get_phone_call_count( $modifier ) )
           $db_participant = $db_assignment->get_interview()->get_participant();
       }
     }
@@ -216,31 +215,35 @@ class survey_manager extends \cenozo\singleton
       else
       { // the participant has not withdrawn, check each phase of the interview
         $db_qnaire = $db_interview->get_qnaire();
+        $phase_sel = lib::create( 'database\select' );
+        $phase_sel->add_column( 'id' );
+        $phase_sel->add_column( 'sid' );
+        $phase_sel->add_column( 'repeated' );
         $phase_mod = lib::create( 'database\modifier' );
         $phase_mod->order( 'rank' );
         
-        $phase_list = $db_qnaire->get_phase_list( $phase_mod );
+        $phase_list = $db_qnaire->get_phase_list( $phase_sel, $phase_mod );
         if( 0 == count( $phase_list ) )
         {
           log::emerg( 'Questionnaire with no phases has been assigned.' );
         }
         else
         {
-          foreach( $phase_list as $db_phase )
+          foreach( $phase_list as $phase )
           {
             // let the tokens record class know which SID we are dealing with by checking if
             // there is a source-specific survey for this participant, and if not falling back
             // on the default survey
             $db_source_survey = $source_survey_class_name::get_unique_record(
               array( 'phase_id', 'source_id' ),
-              array( $db_phase->id, $db_participant->source_id ) );
-            $sid = is_null( $db_source_survey ) ? $db_phase->sid : $db_source_survey->sid;
+              array( $phase['id'], $db_participant->source_id ) );
+            $sid = is_null( $db_source_survey ) ? $phase['sid'] : $db_source_survey->sid;
 
             $tokens_class_name::set_sid( $sid );
     
             $token = $tokens_class_name::determine_token_string(
                        $db_interview,
-                       $db_phase->repeated ? $db_assignment : NULL );
+                       $phase['repeated'] ? $db_assignment : NULL );
             $tokens_mod = lib::create( 'database\modifier' );
             $tokens_mod->where( 'token', '=', $token );
             $db_tokens = current( $tokens_class_name::select( $tokens_mod ) );
@@ -382,10 +385,8 @@ class survey_manager extends \cenozo\singleton
 
       $phase_mod = lib::create( 'database\modifier' );
       $phase_mod->where( 'rank', '=', 1 );
-      $phase_list = $db_interview->get_qnaire()->get_phase_list( $phase_mod );
-      
-      $db_phase = current( $phase_list );
-      if( $db_phase && 1 == $db_interview->get_assignment_count() )
+      if( 0 < $db_interview->get_qnaire()->get_phase_count( $phase_mod ) &&
+          1 == $db_interview->get_assignment_count() )
       {
         $setting_manager = lib::create( 'business\setting_manager' );
         $opal_url = $setting_manager->get_setting( 'opal', 'server' );
@@ -440,9 +441,7 @@ class survey_manager extends \cenozo\singleton
         $event_mod = lib::create( 'database\modifier' );
         $event_mod->where( 'event_type_id', '=',
           $event_type_class_name::get_unique_record( 'name', 'completed (Baseline Home)' )->id );
-        
-        $event_list = $db_participant->get_event_list( $event_mod );
-        $provided_data = 0 < count( $event_list ) ? 'yes' : 'no';
+        $provided_data = 0 < $db_participant->get_event_count( $event_mod ) ? 'yes' : 'no';
       }
       else
       {
@@ -453,20 +452,22 @@ class survey_manager extends \cenozo\singleton
         $event_mod->where( 'event_type_id', '=',
           $event_type_class_name::get_unique_record( 'name', 'completed (Baseline)' )->id );
         
-        $event_list = $db_participant->get_event_list( $event_mod );
-        if( 0 < count( $event_list ) ) $provided_data = 'yes';
+        if( 0 < $db_participant->get_event_count( $event_mod ) ) $provided_data = 'yes';
         else
         { // if the interview was never completed, see if it was partially completed
           $interview_mod = lib::create( 'database\modifier' );
           $interview_mod->order( 'qnaire.rank' );
-          $interview_list = $db_participant->get_interview_list( $interview_mod );
+          $interview_mod->limit( 1 );
+          $interview_list = $db_participant->get_interview_object_list( $interview_mod );
           if( 0 < count( $interview_list ) )
           {
+            $db_last_interview = current( $interview_list );
+            $phase_sel = lib::create( 'database\select' );
+            $phase_sel->add_column( 'sid' );
             $phase_mod = lib::create( 'database\modifier' );
             $phase_mod->where( 'repeated', '=', 0 );
             $phase_mod->order( 'rank' );
-            $db_last_interview = current( $interview_list );
-            $phase_list = $db_last_interview->get_qnaire()->get_phase_list( $phase_mod );
+            $phase_list = $db_last_interview->get_qnaire()->get_phase_list( $phase_sel, $phase_mod );
             if( 0 < count( $phase_list ) )
             {
               $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
@@ -474,8 +475,7 @@ class survey_manager extends \cenozo\singleton
 
               // see if a survey exists for this phase
               // if one does then the participant has provided partial data
-              $db_phase = current( $phase_list );
-              $survey_class_name::set_sid( $db_phase->sid );
+              $survey_class_name::set_sid( $phase_list[0]['sid'] );
               $survey_mod = lib::create( 'database\modifier' );
               $survey_mod->where( 'token', '=',
                 $tokens_class_name::determine_token_string( $db_last_interview ) );

@@ -28,7 +28,8 @@ define( [], function() {
             join: true,
             title: 'UID'
           },
-          start_datetime: {
+          start: {
+            column: 'assignment.start_datetime',
             title: 'Start Time',
             filter: 'date:"MMM d, y HH:mm"',
             isDate: true
@@ -38,12 +39,14 @@ define( [], function() {
             filter: 'date:"MMM d, y HH:mm"',
             isDate: true
           },
+          last_status: {
+            title: 'Status'
+          },
           complete: {
             column: 'interview.completed',
             join: true,
             title: 'Complete',
             filter: 'cnCheckmark'
-
           }
         };
         this.order = { column: 'start_datetime', reverse: true };

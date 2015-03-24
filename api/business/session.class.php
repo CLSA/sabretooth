@@ -102,7 +102,7 @@ class session extends \cenozo\business\session
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'end_datetime', '=', NULL );
     $modifier->order_desc( 'start_datetime' );
-    $assignment_list = $this->get_user()->get_assignment_list( $modifier );
+    $assignment_list = $this->get_user()->get_assignment_object_list( $modifier );
 
     // only one assignment should ever be open at a time, warn if this isn't the case
     if( 1 < count( $assignment_list ) )
@@ -138,7 +138,7 @@ class session extends \cenozo\business\session
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'end_datetime', '=', NULL );
     $modifier->order_desc( 'start_datetime' );
-    $phone_call_list = $db_assignment->get_phone_call_list( $modifier );
+    $phone_call_list = $db_assignment->get_phone_call_object_list( $modifier );
 
     // only one phone call should ever be open at a time, warn if this isn't the case
     if( 1 < count( $phone_call_list ) )
