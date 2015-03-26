@@ -48,8 +48,7 @@ class setting_manager extends \cenozo\business\setting_manager
                'server' => $databaselocation,
                'username' => $databaseuser,
                'password' => $databasepass,
-               'database' => $databasename,
-               'prefix' => $dbprefix );
+               'database' => $databasename );
     }
     else // no version 1.92 of the config file, try version 2.0
     {
@@ -73,8 +72,7 @@ class setting_manager extends \cenozo\business\setting_manager
                  'server' => $server,
                  'username' => $config['components']['db']['username'],
                  'password' => $config['components']['db']['password'],
-                 'database' => $database,
-                 'prefix' => $config['components']['db']['tablePrefix'] );
+                 'database' => $database );
       }
       else throw lib::create( 'exception\runtime',
         'Cannot find limesurvey config.php file.', __METHOD__ );

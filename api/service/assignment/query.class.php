@@ -24,11 +24,11 @@ class query extends \cenozo\service\query
   {
     parent::prepare();
 
-    // add the assignment's last call's status as a "last_status" column
+    // add the assignment's last call's status column
     $this->modifier->cross_join( 'assignment_last_phone_call',
       'assignment.id', 'assignment_last_phone_call.assignment_id' );
     $this->modifier->cross_join( 'phone_call AS last_phone_call',
       'assignment_last_phone_call.phone_call_id', 'last_phone_call.id' );
-    $this->select->add_column( 'last_phone_call', 'status', 'last_status' );
+    $this->select->add_table_column( 'last_phone_call', 'status' );
   }
 }

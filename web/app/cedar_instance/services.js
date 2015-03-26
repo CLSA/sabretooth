@@ -3,7 +3,15 @@ define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnAssignmentListFactory', [
+  cnCachedProviders.factory( 'CnCedarInstanceAddFactory', [
+    'CnBaseAddFactory',
+    function( CnBaseAddFactory ) {
+      return { instance: function( params ) { return CnBaseAddFactory.instance( params ); } };
+    }
+  ] );
+
+  /* ######################################################################################################## */
+  cnCachedProviders.factory( 'CnCedarInstanceListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
       var object = function( params ) {
@@ -13,43 +21,21 @@ define( [], function() {
         ////////////////////////////////////
         // factory customizations start here
         this.columnList = {
-          user: {
+          name: {
             column: 'user.name',
-            join: true,
-            title: 'Operator'
+            title: 'Name'
           },
-          site: {
-            column: 'site.name',
-            join: true,
-            title: 'Site'
-          },
-          uid: {
-            column: 'interview.participant.uid',
-            join: true,
-            title: 'UID'
-          },
-          start: {
-            column: 'assignment.start_datetime',
-            title: 'Start Time',
-            filter: 'date:"MMM d, y HH:mm"',
-            isDate: true
-          },
-          end_datetime: {
-            title: 'End Time',
-            filter: 'date:"MMM d, y HH:mm"',
-            isDate: true
-          },
-          last_status: {
-            title: 'Status'
-          },
-          complete: {
-            column: 'interview.completed',
-            join: true,
-            title: 'Complete',
+          active: {
+            column: 'user.active',
+            title: 'Active',
             filter: 'cnCheckmark'
+          },
+          datetime: {
+            title: 'Last Activity',
+            filter: 'date:"MMM d, y HH:mm"'
           }
         };
-        this.order = { column: 'start_datetime', reverse: true };
+        this.order = { column: 'user.name', reverse: false };
         // factory customizations end here
         //////////////////////////////////
 
@@ -62,7 +48,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnAssignmentViewFactory', [
+  cnCachedProviders.factory( 'CnCedarInstanceViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
       return { instance: function( params ) { return CnBaseViewFactory.instance( params ); } };
@@ -70,20 +56,21 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnAssignmentSingleton', [
-    'CnBaseSingletonFactory', 'CnAssignmentListFactory', 'CnAssignmentViewFactory',
-    function( CnBaseSingletonFactory, CnAssignmentListFactory, CnAssignmentViewFactory ) {
+  cnCachedProviders.factory( 'CnCedarInstanceSingleton', [
+    'CnBaseSingletonFactory', 'CnCedarInstanceListFactory', 'CnCedarInstanceAddFactory', 'CnCedarInstanceViewFactory',
+    function( CnBaseSingletonFactory, CnCedarInstanceListFactory, CnCedarInstanceAddFactory, CnCedarInstanceViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
-          subject: 'assignment',
+          subject: 'cedar_instance',
           name: {
-            singular: 'assignment',
-            plural: 'assignments',
-            possessive: 'assignment\'s',
-            pluralPossessive: 'assignments\''
+            singular: 'cedar instance',
+            plural: 'cedar instances',
+            possessive: 'cedar instance\'s',
+            pluralPossessive: 'cedar instances\''
           },
-          cnList: CnAssignmentListFactory.instance( { subject: 'assignment' } ),
-          cnView: CnAssignmentViewFactory.instance( { subject: 'assignment' } )
+          cnAdd: CnCedarInstanceAddFactory.instance( { subject: 'cedar_instance' } ),
+          cnList: CnCedarInstanceListFactory.instance( { subject: 'cedar_instance' } ),
+          cnView: CnCedarInstanceViewFactory.instance( { subject: 'cedar_instance' } )
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
       };
@@ -94,5 +81,4 @@ define( [], function() {
     }
   ] );
 
-  return true;
 } );

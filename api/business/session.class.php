@@ -75,8 +75,7 @@ class session extends \cenozo\business\session
         $setting_manager->get_setting( 'survey_db', 'server' ),
         $setting_manager->get_setting( 'survey_db', 'username' ),
         $setting_manager->get_setting( 'survey_db', 'password' ),
-        $setting_manager->get_setting( 'survey_db', 'database' ),
-        $setting_manager->get_setting( 'survey_db', 'prefix' ) );
+        $setting_manager->get_setting( 'survey_db', 'database' ) );
     }
 
     return $this->survey_database;

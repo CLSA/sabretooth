@@ -31,9 +31,7 @@ class survey extends sid_record
     $modifier->group( 'sid' );
     $modifier->group( 'gid' );
     $modifier->group( 'qid' );
-    $sql = sprintf( 'SELECT gid, qid FROM %s %s',
-                    static::db()->get_prefix().'questions',
-                    $modifier->get_sql() );
+    $sql = sprintf( 'SELECT gid, qid FROM questions %s', $modifier->get_sql() );
     
     $row = static::db()->get_row( $sql );
     if( 0 == count( $row ) )
@@ -60,9 +58,7 @@ class survey extends sid_record
     $modifier->group( 'sid' );
     $modifier->group( 'gid' );
     $modifier->group( 'qid' );
-    $sql = sprintf( 'SELECT gid, qid FROM %s %s',
-                    static::db()->get_prefix().'questions',
-                    $modifier->get_sql() );
+    $sql = sprintf( 'SELECT gid, qid FROM questions %s', $modifier->get_sql() );
     
     $row = static::db()->get_row( $sql );
     if( 0 == count( $row ) )

@@ -3,15 +3,7 @@ define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnCedarInstanceAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      return { instance: function( params ) { return CnBaseAddFactory.instance( params ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnCedarInstanceListFactory', [
+  cnCachedProviders.factory( 'CnAssignmentListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
       var object = function( params ) {
@@ -21,9 +13,34 @@ define( [], function() {
         ////////////////////////////////////
         // factory customizations start here
         this.columnList = {
-          id: { title: 'ID' }
+          user: {
+            column: 'user.name',
+            title: 'Operator'
+          },
+          site: {
+            column: 'site.name',
+            title: 'Site'
+          },
+          uid: {
+            column: 'interview.participant.uid',
+            title: 'UID'
+          },
+          start_datetime: {
+            column: 'assignment.start_datetime',
+            title: 'Start Time',
+            filter: 'date:"MMM d, y HH:mm"',
+            isDate: true
+          },
+          status: {
+            title: 'Status'
+          },
+          complete: {
+            column: 'interview.completed',
+            title: 'Complete',
+            filter: 'cnCheckmark'
+          }
         };
-        this.order = { column: 'id', reverse: false };
+        this.order = { column: 'start_datetime', reverse: true };
         // factory customizations end here
         //////////////////////////////////
 
@@ -36,7 +53,7 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnCedarInstanceViewFactory', [
+  cnCachedProviders.factory( 'CnAssignmentViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
       return { instance: function( params ) { return CnBaseViewFactory.instance( params ); } };
@@ -44,21 +61,20 @@ define( [], function() {
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnCedarInstanceSingleton', [
-    'CnBaseSingletonFactory', 'CnCedarInstanceListFactory', 'CnCedarInstanceAddFactory', 'CnCedarInstanceViewFactory'
-    function( CnBaseSingletonFactory, CnCedarInstanceListFactory, CnCedarInstanceAddFactory, CnCedarInstanceViewFactory ) {
+  cnCachedProviders.factory( 'CnAssignmentSingleton', [
+    'CnBaseSingletonFactory', 'CnAssignmentListFactory', 'CnAssignmentViewFactory',
+    function( CnBaseSingletonFactory, CnAssignmentListFactory, CnAssignmentViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
-          subject: 'cedar_instance',
+          subject: 'assignment',
           name: {
-            singular: 'cedar instance',
-            plural: 'cedar instances',
-            possessive: 'cedar instance\'s',
-            pluralPossessive: 'cedar instances\''
+            singular: 'assignment',
+            plural: 'assignments',
+            possessive: 'assignment\'s',
+            pluralPossessive: 'assignments\''
           },
-          cnAdd: CnCedarInstanceAddFactory.instance( { subject: 'cedar_instance' } ),
-          cnList: CnCedarInstanceListFactory.instance( { subject: 'cedar_instance' } ),
-          cnView: CnCedarInstanceViewFactory.instance( { subject: 'cedar_instance' } )
+          cnList: CnAssignmentListFactory.instance( { subject: 'assignment' } ),
+          cnView: CnAssignmentViewFactory.instance( { subject: 'assignment' } )
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
       };
@@ -69,4 +85,5 @@ define( [], function() {
     }
   ] );
 
+  return true;
 } );
