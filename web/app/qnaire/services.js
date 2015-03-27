@@ -21,9 +21,28 @@ define( [], function() {
         ////////////////////////////////////
         // factory customizations start here
         this.columnList = {
-          id: { title: 'ID' }
+          name: {
+            column: 'qnaire.name',
+            title: 'Name'
+          },
+          rank: {
+            column: 'qnaire.rank',
+            title: 'Rank' },
+          method: {
+            column: 'default_interview_method.name',
+            title: 'Method'
+          },
+          previous: {
+            column: 'prev_qnaire.name',
+            title: 'Previous'
+          },
+          delay: {
+            column: 'qnaire.delay',
+            title: 'Delay'
+          },
+          phase_count: { title: 'Phases' }
         };
-        this.order = { column: 'id', reverse: false };
+        this.order = { column: 'rank', reverse: false };
         // factory customizations end here
         //////////////////////////////////
 
@@ -45,7 +64,7 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnQnaireSingleton', [
-    'CnBaseSingletonFactory', 'CnQnaireListFactory', 'CnQnaireAddFactory', 'CnQnaireViewFactory'
+    'CnBaseSingletonFactory', 'CnQnaireListFactory', 'CnQnaireAddFactory', 'CnQnaireViewFactory',
     function( CnBaseSingletonFactory, CnQnaireListFactory, CnQnaireAddFactory, CnQnaireViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {

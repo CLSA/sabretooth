@@ -5,7 +5,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnOpalInstanceAdd', function () {
     return {
-      templateUrl: 'app/OpalInstance/add.tpl.html',
+      templateUrl: 'app/opal_instance/add.tpl.html',
       restrict: 'E'
     };
   } );
@@ -13,7 +13,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnOpalInstanceView', function () {
     return {
-      templateUrl: 'app/OpalInstance/view.tpl.html',
+      templateUrl: 'app/opal_instance/view.tpl.html',
       restrict: 'E'
     };
   } );

@@ -6,7 +6,7 @@
  * @filesource
  */
 
-namespace sabretooth\service\cedar_instance;
+namespace sabretooth\service\opal_instance;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
@@ -24,8 +24,8 @@ class query extends \cenozo\service\query
   {
     parent::prepare();
 
-    // link to the cedar instance's user and last activity and add the activity's datetime
-    $this->modifier->join( 'user', 'cedar_instance.user_id', 'user.id' );
+    // link to the opal instance's user and last activity and add the activity's datetime
+    $this->modifier->join( 'user', 'opal_instance.user_id', 'user.id' );
     $this->modifier->left_join( 'user_last_activity', 'user.id', 'user_last_activity.user_id' );
     $this->modifier->left_join(
       'activity', 'user_last_activity.activity_id', 'last_activity.id', 'last_activity' );

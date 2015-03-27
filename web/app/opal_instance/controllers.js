@@ -4,27 +4,26 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'OpalInstanceAddCtrl', [
-    '$scope', 'CnOpalInstanceSingleton',
-    function( $scope, CnOpalInstanceSingleton ) {
-      // use base class to create controller
+    '$scope', '$state', 'CnOpalInstanceSingleton',
+    function( $scope, $state, CnOpalInstanceSingleton ) {
       CnBaseAddCtrl.call( this, $scope, CnOpalInstanceSingleton );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'OpalInstanceListCtrl', [
-    '$scope', '$location', 'CnOpalInstanceSingleton', 'CnModalRestrictFactory',
-    function( $scope, $location, CnOpalInstanceSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $location, CnOpalInstanceSingleton, CnModalRestrictFactory );
+    '$scope', '$state', 'CnOpalInstanceSingleton', 'CnModalRestrictFactory',
+    function( $scope, $state, CnOpalInstanceSingleton, CnModalRestrictFactory ) {
+      CnBaseListCtrl.call( this, $scope, $state, CnOpalInstanceSingleton, CnModalRestrictFactory );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'OpalInstanceViewCtrl', [
-    '$scope', '$routeParams', 'CnOpalInstanceSingleton',
-    function( $scope, $routeParams, CnOpalInstanceSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, CnOpalInstanceSingleton );
-      $scope.local.cnView.load( $routeParams.id );
+    '$scope', '$state', '$stateParams', 'CnOpalInstanceSingleton',
+    function( $scope, $state, $stateParams, CnOpalInstanceSingleton ) {
+      CnBaseViewCtrl.call( this, $scope, $state, CnOpalInstanceSingleton );
+      $scope.local.cnView.load( $stateParams.id );
     }
   ] );
 

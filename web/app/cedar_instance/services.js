@@ -28,14 +28,14 @@ define( [], function() {
           active: {
             column: 'user.active',
             title: 'Active',
-            filter: 'cnCheckmark'
+            filter: 'cnYesNo'
           },
-          datetime: {
+          last_datetime: {
             title: 'Last Activity',
             filter: 'date:"MMM d, y HH:mm"'
           }
         };
-        this.order = { column: 'user.name', reverse: false };
+        this.order = { column: 'name', reverse: false };
         // factory customizations end here
         //////////////////////////////////
 

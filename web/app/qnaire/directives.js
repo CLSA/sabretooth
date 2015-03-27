@@ -5,7 +5,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnQnaireAdd', function () {
     return {
-      templateUrl: 'app/Qnaire/add.tpl.html',
+      templateUrl: 'app/qnaire/add.tpl.html',
       restrict: 'E'
     };
   } );
@@ -13,7 +13,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnQnaireView', function () {
     return {
-      templateUrl: 'app/Qnaire/view.tpl.html',
+      templateUrl: 'app/qnaire/view.tpl.html',
       restrict: 'E'
     };
   } );

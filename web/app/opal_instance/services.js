@@ -21,9 +21,21 @@ define( [], function() {
         ////////////////////////////////////
         // factory customizations start here
         this.columnList = {
-          id: { title: 'ID' }
+          name: {
+            column: 'user.name',
+            title: 'Name'
+          },
+          active: {
+            column: 'user.active',
+            title: 'Active',
+            filter: 'cnYesNo'
+          },
+          last_datetime: {
+            title: 'Last Activity',
+            filter: 'date:"MMM d, y HH:mm"'
+          }
         };
-        this.order = { column: 'id', reverse: false };
+        this.order = { column: 'name', reverse: false };
         // factory customizations end here
         //////////////////////////////////
 
@@ -45,7 +57,7 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnOpalInstanceSingleton', [
-    'CnBaseSingletonFactory', 'CnOpalInstanceListFactory', 'CnOpalInstanceAddFactory', 'CnOpalInstanceViewFactory'
+    'CnBaseSingletonFactory', 'CnOpalInstanceListFactory', 'CnOpalInstanceAddFactory', 'CnOpalInstanceViewFactory',
     function( CnBaseSingletonFactory, CnOpalInstanceListFactory, CnOpalInstanceAddFactory, CnOpalInstanceViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {

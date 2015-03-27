@@ -5,7 +5,7 @@ define( [], function() {
   /* ######################################################################################################## */
   cnCachedProviders.directive( 'cnAssignmentView', function () {
     return {
-      templateUrl: 'app/Assignment/view.tpl.html',
+      templateUrl: 'app/assignment/view.tpl.html',
       restrict: 'E'
     };
   } );

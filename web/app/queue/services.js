@@ -21,9 +21,11 @@ define( [], function() {
         ////////////////////////////////////
         // factory customizations start here
         this.columnList = {
-          id: { title: 'ID' }
+          rank: { title: 'Rank' },
+          name: { title: 'Name' },
+          participant_count: { title: 'Participants' }
         };
-        this.order = { column: 'id', reverse: false };
+        this.order = { column: 'rank', reverse: false };
         // factory customizations end here
         //////////////////////////////////
 
@@ -45,7 +47,7 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnQueueSingleton', [
-    'CnBaseSingletonFactory', 'CnQueueListFactory', 'CnQueueAddFactory', 'CnQueueViewFactory'
+    'CnBaseSingletonFactory', 'CnQueueListFactory', 'CnQueueAddFactory', 'CnQueueViewFactory',
     function( CnBaseSingletonFactory, CnQueueListFactory, CnQueueAddFactory, CnQueueViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {

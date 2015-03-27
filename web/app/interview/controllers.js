@@ -4,27 +4,26 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'InterviewAddCtrl', [
-    '$scope', 'CnInterviewSingleton',
-    function( $scope, CnInterviewSingleton ) {
-      // use base class to create controller
+    '$scope', '$state', 'CnInterviewSingleton',
+    function( $scope, $state, CnInterviewSingleton ) {
       CnBaseAddCtrl.call( this, $scope, CnInterviewSingleton );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'InterviewListCtrl', [
-    '$scope', '$location', 'CnInterviewSingleton', 'CnModalRestrictFactory',
-    function( $scope, $location, CnInterviewSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $location, CnInterviewSingleton, CnModalRestrictFactory );
+    '$scope', '$state', 'CnInterviewSingleton', 'CnModalRestrictFactory',
+    function( $scope, $state, CnInterviewSingleton, CnModalRestrictFactory ) {
+      CnBaseListCtrl.call( this, $scope, $state, CnInterviewSingleton, CnModalRestrictFactory );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'InterviewViewCtrl', [
-    '$scope', '$routeParams', 'CnInterviewSingleton',
-    function( $scope, $routeParams, CnInterviewSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, CnInterviewSingleton );
-      $scope.local.cnView.load( $routeParams.id );
+    '$scope', '$state', '$stateParams', 'CnInterviewSingleton',
+    function( $scope, $state, $stateParams, CnInterviewSingleton ) {
+      CnBaseViewCtrl.call( this, $scope, $state, CnInterviewSingleton );
+      $scope.local.cnView.load( $stateParams.id );
     }
   ] );
 

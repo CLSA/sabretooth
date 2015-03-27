@@ -4,27 +4,26 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'CedarInstanceAddCtrl', [
-    '$scope', 'CnCedarInstanceSingleton',
-    function( $scope, CnCedarInstanceSingleton ) {
-      // use base class to create controller
-      CnBaseAddCtrl.call( this, $scope, CnCedarInstanceSingleton );
+    '$scope', '$state', 'CnCedarInstanceSingleton',
+    function( $scope, $state, CnCedarInstanceSingleton ) {
+      CnBaseAddCtrl.call( this, $scope, $state, CnCedarInstanceSingleton );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'CedarInstanceListCtrl', [
-    '$scope', '$location', 'CnCedarInstanceSingleton', 'CnModalRestrictFactory',
-    function( $scope, $location, CnCedarInstanceSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $location, CnCedarInstanceSingleton, CnModalRestrictFactory );
+    '$scope', '$state', 'CnCedarInstanceSingleton', 'CnModalRestrictFactory',
+    function( $scope, $state, CnCedarInstanceSingleton, CnModalRestrictFactory ) {
+      CnBaseListCtrl.call( this, $scope, $state, CnCedarInstanceSingleton, CnModalRestrictFactory );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'CedarInstanceViewCtrl', [
-    '$scope', '$routeParams', 'CnCedarInstanceSingleton',
-    function( $scope, $routeParams, CnCedarInstanceSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, CnCedarInstanceSingleton );
-      $scope.local.cnView.load( $routeParams.id );
+    '$scope', '$state', '$stateParams', 'CnCedarInstanceSingleton',
+    function( $scope, $state, $stateParams, CnCedarInstanceSingleton ) {
+      CnBaseViewCtrl.call( this, $scope, $state, CnCedarInstanceSingleton );
+      $scope.local.cnView.load( $stateParams.id );
     }
   ] );
 

@@ -37,7 +37,7 @@ define( [], function() {
           complete: {
             column: 'interview.completed',
             title: 'Complete',
-            filter: 'cnCheckmark'
+            filter: 'cnYesNo'
           }
         };
         this.order = { column: 'start_datetime', reverse: true };

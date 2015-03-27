@@ -4,27 +4,26 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'QueueAddCtrl', [
-    '$scope', 'CnQueueSingleton',
-    function( $scope, CnQueueSingleton ) {
-      // use base class to create controller
+    '$scope', '$state', 'CnQueueSingleton',
+    function( $scope, $state, CnQueueSingleton ) {
       CnBaseAddCtrl.call( this, $scope, CnQueueSingleton );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'QueueListCtrl', [
-    '$scope', '$location', 'CnQueueSingleton', 'CnModalRestrictFactory',
-    function( $scope, $location, CnQueueSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $location, CnQueueSingleton, CnModalRestrictFactory );
+    '$scope', '$state', 'CnQueueSingleton', 'CnModalRestrictFactory',
+    function( $scope, $state, CnQueueSingleton, CnModalRestrictFactory ) {
+      CnBaseListCtrl.call( this, $scope, $state, CnQueueSingleton, CnModalRestrictFactory );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'QueueViewCtrl', [
-    '$scope', '$routeParams', 'CnQueueSingleton',
-    function( $scope, $routeParams, CnQueueSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, CnQueueSingleton );
-      $scope.local.cnView.load( $routeParams.id );
+    '$scope', '$state', '$stateParams', 'CnQueueSingleton',
+    function( $scope, $state, $stateParams, CnQueueSingleton ) {
+      CnBaseViewCtrl.call( this, $scope, $state, CnQueueSingleton );
+      $scope.local.cnView.load( $stateParams.id );
     }
   ] );
 
