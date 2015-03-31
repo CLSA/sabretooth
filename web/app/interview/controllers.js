@@ -4,26 +4,30 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'InterviewAddCtrl', [
-    '$scope', '$state', 'CnInterviewSingleton',
-    function( $scope, $state, CnInterviewSingleton ) {
-      CnBaseAddCtrl.call( this, $scope, CnInterviewSingleton );
+    '$scope', 'CnInterviewSingleton',
+    function( $scope, CnInterviewSingleton ) {
+      $scope.cnAdd = CnInterviewSingleton.cnAdd;
+      $scope.cnList = CnInterviewSingleton.cnList;
+      $scope.record = $scope.cnAdd.createRecord();
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'InterviewListCtrl', [
-    '$scope', '$state', 'CnInterviewSingleton', 'CnModalRestrictFactory',
-    function( $scope, $state, CnInterviewSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $state, CnInterviewSingleton, CnModalRestrictFactory );
+    '$scope', 'CnInterviewSingleton',
+    function( $scope, CnInterviewSingleton ) {
+      $scope.cnList = CnInterviewSingleton.cnList;
+      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'InterviewViewCtrl', [
-    '$scope', '$state', '$stateParams', 'CnInterviewSingleton',
-    function( $scope, $state, $stateParams, CnInterviewSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, $state, CnInterviewSingleton );
-      $scope.local.cnView.load( $stateParams.id );
+    '$stateParams', '$scope', 'CnInterviewSingleton',
+    function( $stateParams, $scope, CnInterviewSingleton ) {
+      CnBaseViewCtrl.call( this, $scope, CnInterviewSingleton );
+      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+      $scope.patch = cnPatch( $scope );
     }
   ] );
 

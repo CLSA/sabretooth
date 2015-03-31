@@ -1,9 +1,2 @@
 <div class="container-fluid bg-primary rounded-top"><h4>Interview List</h4></div>
-<cn-record-list subject="interview"
-                local="local.cnList"
-                cb-add="cbAdd()"
-                cb-add-restrict="cbAddRestrict( column )"
-                cb-delete="cbDelete( id )"
-                cb-delete-restrict="cbDeleteRestrict( column )"
-                cb-order-by="cbOrderBy( column )"
-                cb-view="cbView( id )"></cn-record-list>
+<cn-record-list list-model="cnList"></cn-record-list>

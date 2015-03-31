@@ -4,26 +4,30 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'QueueAddCtrl', [
-    '$scope', '$state', 'CnQueueSingleton',
-    function( $scope, $state, CnQueueSingleton ) {
-      CnBaseAddCtrl.call( this, $scope, CnQueueSingleton );
+    '$scope', 'CnQueueSingleton',
+    function( $scope, CnQueueSingleton ) {
+      $scope.cnAdd = CnQueueSingleton.cnAdd;
+      $scope.cnList = CnQueueSingleton.cnList;
+      $scope.record = $scope.cnAdd.createRecord();
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'QueueListCtrl', [
-    '$scope', '$state', 'CnQueueSingleton', 'CnModalRestrictFactory',
-    function( $scope, $state, CnQueueSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $state, CnQueueSingleton, CnModalRestrictFactory );
+    '$scope', 'CnQueueSingleton',
+    function( $scope, CnQueueSingleton ) {
+      $scope.cnList = CnQueueSingleton.cnList;
+      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'QueueViewCtrl', [
-    '$scope', '$state', '$stateParams', 'CnQueueSingleton',
-    function( $scope, $state, $stateParams, CnQueueSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, $state, CnQueueSingleton );
-      $scope.local.cnView.load( $stateParams.id );
+    '$stateParams', '$scope', 'CnQueueSingleton',
+    function( $stateParams, $scope, CnQueueSingleton ) {
+      CnBaseViewCtrl.call( this, $scope, CnQueueSingleton );
+      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+      $scope.patch = cnPatch( $scope );
     }
   ] );
 

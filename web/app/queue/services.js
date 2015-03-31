@@ -2,11 +2,24 @@ define( [], function() {
 
   'use strict';
 
+  var moduleSubject = 'queue';
+  var moduleNames = {
+    singular: 'queue',
+    plural: 'queues',
+    possessive: 'queue\'s',
+    pluralPossessive: 'queues\''
+  };
+
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnQueueAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      return { instance: function( params ) { return CnBaseAddFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseAddFactory.instance( params );
+      } };
     }
   ] );
 
@@ -33,7 +46,12 @@ define( [], function() {
       };
 
       object.prototype = CnBaseListFactory.prototype;
-      return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return new object( params );
+      } };
     }
   ] );
 
@@ -41,7 +59,12 @@ define( [], function() {
   cnCachedProviders.factory( 'CnQueueViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      return { instance: function( params ) { return CnBaseViewFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseViewFactory.instance( params );
+      } };
     }
   ] );
 
@@ -51,16 +74,11 @@ define( [], function() {
     function( CnBaseSingletonFactory, CnQueueListFactory, CnQueueAddFactory, CnQueueViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
-          subject: 'queue',
-          name: {
-            singular: 'queue',
-            plural: 'queues',
-            possessive: 'queue\'s',
-            pluralPossessive: 'queues\''
-          },
-          cnAdd: CnQueueAddFactory.instance( { subject: 'queue' } ),
-          cnList: CnQueueListFactory.instance( { subject: 'queue' } ),
-          cnView: CnQueueViewFactory.instance( { subject: 'queue' } )
+          subject: moduleSubject,
+          name: moduleNames,
+          cnAdd: CnQueueAddFactory.instance(),
+          cnList: CnQueueListFactory.instance(),
+          cnView: CnQueueViewFactory.instance()
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
       };

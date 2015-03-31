@@ -4,26 +4,30 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'OpalInstanceAddCtrl', [
-    '$scope', '$state', 'CnOpalInstanceSingleton',
-    function( $scope, $state, CnOpalInstanceSingleton ) {
-      CnBaseAddCtrl.call( this, $scope, CnOpalInstanceSingleton );
+    '$scope', 'CnOpalInstanceSingleton',
+    function( $scope, CnOpalInstanceSingleton ) {
+      $scope.cnAdd = CnOpalInstanceSingleton.cnAdd;
+      $scope.cnList = CnOpalInstanceSingleton.cnList;
+      $scope.record = $scope.cnAdd.createRecord();
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'OpalInstanceListCtrl', [
-    '$scope', '$state', 'CnOpalInstanceSingleton', 'CnModalRestrictFactory',
-    function( $scope, $state, CnOpalInstanceSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $state, CnOpalInstanceSingleton, CnModalRestrictFactory );
+    '$scope', 'CnOpalInstanceSingleton',
+    function( $scope, CnOpalInstanceSingleton ) {
+      $scope.cnList = CnOpalInstanceSingleton.cnList;
+      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'OpalInstanceViewCtrl', [
-    '$scope', '$state', '$stateParams', 'CnOpalInstanceSingleton',
-    function( $scope, $state, $stateParams, CnOpalInstanceSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, $state, CnOpalInstanceSingleton );
-      $scope.local.cnView.load( $stateParams.id );
+    '$stateParams', '$scope', 'CnOpalInstanceSingleton',
+    function( $stateParams, $scope, CnOpalInstanceSingleton ) {
+      CnBaseViewCtrl.call( this, $scope, CnOpalInstanceSingleton );
+      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+      $scope.patch = cnPatch( $scope );
     }
   ] );
 

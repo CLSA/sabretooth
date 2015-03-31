@@ -2,11 +2,24 @@ define( [], function() {
 
   'use strict';
 
+  var moduleSubject = 'interview';
+  var moduleNames = {
+    singular: 'interview',
+    plural: 'interviews',
+    possessive: 'interview\'s',
+    pluralPossessive: 'interviews\''
+  };
+
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnInterviewAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      return { instance: function( params ) { return CnBaseAddFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseAddFactory.instance( params );
+      } };
     }
   ] );
 
@@ -50,7 +63,12 @@ define( [], function() {
       };
 
       object.prototype = CnBaseListFactory.prototype;
-      return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return new object( params );
+      } };
     }
   ] );
 
@@ -58,7 +76,12 @@ define( [], function() {
   cnCachedProviders.factory( 'CnInterviewViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      return { instance: function( params ) { return CnBaseViewFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseViewFactory.instance( params );
+      } };
     }
   ] );
 
@@ -68,16 +91,11 @@ define( [], function() {
     function( CnBaseSingletonFactory, CnInterviewListFactory, CnInterviewAddFactory, CnInterviewViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
-          subject: 'interview',
-          name: {
-            singular: 'interview',
-            plural: 'interviews',
-            possessive: 'interview\'s',
-            pluralPossessive: 'interviews\''
-          },
-          cnAdd: CnInterviewAddFactory.instance( { subject: 'interview' } ),
-          cnList: CnInterviewListFactory.instance( { subject: 'interview' } ),
-          cnView: CnInterviewViewFactory.instance( { subject: 'interview' } )
+          subject: moduleSubject,
+          name: moduleNames,
+          cnAdd: CnInterviewAddFactory.instance(),
+          cnList: CnInterviewListFactory.instance(),
+          cnView: CnInterviewViewFactory.instance()
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
       };

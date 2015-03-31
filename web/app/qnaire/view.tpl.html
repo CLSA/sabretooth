@@ -1,6 +1,6 @@
 <div class="container-fluid bg-primary rounded-top"><h4>Viewing Questionnaire Details</h4></div>
-<cn-record-view subject="local.subject" cb-delete="cbDelete()">
-  <cn-record-input form="form" subject="qnaire" key="id" title="ID">
+<cn-record-view list-model="cnList" view-model="cnView">
+  <cn-record-input form="form" key="id" title="ID">
     <input name="id"
            ng-model="record.id"
            class="form-control"

@@ -2,6 +2,14 @@ define( [], function() {
 
   'use strict';
 
+  var moduleSubject = 'assignment';
+  var moduleNames = {
+    singular: 'assignment',
+    plural: 'assignments',
+    possessive: 'assignment\'s',
+    pluralPossessive: 'assignments\''
+  };
+
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnAssignmentListFactory', [
     'CnBaseListFactory',
@@ -48,7 +56,12 @@ define( [], function() {
       };
 
       object.prototype = CnBaseListFactory.prototype;
-      return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return new object( params );
+      } };
     }
   ] );
 
@@ -56,7 +69,12 @@ define( [], function() {
   cnCachedProviders.factory( 'CnAssignmentViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      return { instance: function( params ) { return CnBaseViewFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseViewFactory.instance( params );
+      } };
     }
   ] );
 
@@ -66,15 +84,10 @@ define( [], function() {
     function( CnBaseSingletonFactory, CnAssignmentListFactory, CnAssignmentViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
-          subject: 'assignment',
-          name: {
-            singular: 'assignment',
-            plural: 'assignments',
-            possessive: 'assignment\'s',
-            pluralPossessive: 'assignments\''
-          },
-          cnList: CnAssignmentListFactory.instance( { subject: 'assignment' } ),
-          cnView: CnAssignmentViewFactory.instance( { subject: 'assignment' } )
+          subject: moduleSubject,
+          name: moduleNames,
+          cnList: CnAssignmentListFactory.instance(),
+          cnView: CnAssignmentViewFactory.instance()
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
       };

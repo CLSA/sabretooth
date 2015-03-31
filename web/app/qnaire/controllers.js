@@ -4,26 +4,30 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'QnaireAddCtrl', [
-    '$scope', '$state', 'CnQnaireSingleton',
-    function( $scope, $state, CnQnaireSingleton ) {
-      CnBaseAddCtrl.call( this, $scope, CnQnaireSingleton );
+    '$scope', 'CnQnaireSingleton',
+    function( $scope, CnQnaireSingleton ) {
+      $scope.cnAdd = CnQnaireSingleton.cnAdd;
+      $scope.cnList = CnQnaireSingleton.cnList;
+      $scope.record = $scope.cnAdd.createRecord();
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'QnaireListCtrl', [
-    '$scope', '$state', 'CnQnaireSingleton', 'CnModalRestrictFactory',
-    function( $scope, $state, CnQnaireSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $state, CnQnaireSingleton, CnModalRestrictFactory );
+    '$scope', 'CnQnaireSingleton',
+    function( $scope, CnQnaireSingleton ) {
+      $scope.cnList = CnQnaireSingleton.cnList;
+      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'QnaireViewCtrl', [
-    '$scope', '$state', '$stateParams', 'CnQnaireSingleton',
-    function( $scope, $state, $stateParams, CnQnaireSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, $state, CnQnaireSingleton );
-      $scope.local.cnView.load( $stateParams.id );
+    '$stateParams', '$scope', 'CnQnaireSingleton',
+    function( $stateParams, $scope, CnQnaireSingleton ) {
+      CnBaseViewCtrl.call( this, $scope, CnQnaireSingleton );
+      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+      $scope.patch = cnPatch( $scope );
     }
   ] );
 

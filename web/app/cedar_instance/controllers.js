@@ -4,26 +4,30 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'CedarInstanceAddCtrl', [
-    '$scope', '$state', 'CnCedarInstanceSingleton',
-    function( $scope, $state, CnCedarInstanceSingleton ) {
-      CnBaseAddCtrl.call( this, $scope, $state, CnCedarInstanceSingleton );
+    '$scope', 'CnCedarInstanceSingleton',
+    function( $scope, CnCedarInstanceSingleton ) {
+      $scope.cnAdd = CnCedarInstanceSingleton.cnAdd;
+      $scope.cnList = CnCedarInstanceSingleton.cnList;
+      $scope.record = $scope.cnAdd.createRecord();
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'CedarInstanceListCtrl', [
-    '$scope', '$state', 'CnCedarInstanceSingleton', 'CnModalRestrictFactory',
-    function( $scope, $state, CnCedarInstanceSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $state, CnCedarInstanceSingleton, CnModalRestrictFactory );
+    '$scope', 'CnCedarInstanceSingleton',
+    function( $scope, CnCedarInstanceSingleton ) {
+      $scope.cnList = CnCedarInstanceSingleton.cnList;
+      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'CedarInstanceViewCtrl', [
-    '$scope', '$state', '$stateParams', 'CnCedarInstanceSingleton',
-    function( $scope, $state, $stateParams, CnCedarInstanceSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, $state, CnCedarInstanceSingleton );
-      $scope.local.cnView.load( $stateParams.id );
+    '$stateParams', '$scope', 'CnCedarInstanceSingleton',
+    function( $stateParams, $scope, CnCedarInstanceSingleton ) {
+      CnBaseViewCtrl.call( this, $scope, CnCedarInstanceSingleton );
+      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+      $scope.patch = cnPatch( $scope );
     }
   ] );
 

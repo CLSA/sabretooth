@@ -4,18 +4,21 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'AssignmentListCtrl', [
-    '$scope', '$state', 'CnAssignmentSingleton', 'CnModalRestrictFactory',
-    function( $scope, $state, CnAssignmentSingleton, CnModalRestrictFactory ) {
-      CnBaseListCtrl.call( this, $scope, $state, CnAssignmentSingleton, CnModalRestrictFactory );
+    '$scope', 'CnAssignmentSingleton',
+    function( $scope, CnAssignmentSingleton ) {
+      $scope.cnList = CnAssignmentSingleton.cnList;
+      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.controller( 'AssignmentViewCtrl', [
-    '$scope', '$state', '$stateParams', 'CnAssignmentSingleton',
-    function( $scope, $state, $stateParams, CnAssignmentSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, $state, CnAssignmentSingleton );
-      $scope.local.cnView.load( $stateParams.id );
+    '$stateParams', '$scope', 'CnAssignmentSingleton',
+    function( $stateParams, $scope, CnAssignmentSingleton ) {
+      $scope.cnList = CnAssignmentSingleton.cnList;
+      $scope.cnView = CnAssignmentSingleton.cnView;
+      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
+      $scope.patch = cnPatch( $scope );
     }
   ] );
 

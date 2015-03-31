@@ -2,11 +2,24 @@ define( [], function() {
 
   'use strict';
 
+  var moduleSubject = 'opal_instance';
+  var moduleNames = {
+    singular: 'opal instance',
+    plural: 'opal instances',
+    possessive: 'opal instance\'s',
+    pluralPossessive: 'opal instances\''
+  };
+
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnOpalInstanceAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      return { instance: function( params ) { return CnBaseAddFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseAddFactory.instance( params );
+      } };
     }
   ] );
 
@@ -43,7 +56,12 @@ define( [], function() {
       };
 
       object.prototype = CnBaseListFactory.prototype;
-      return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return new object( params );
+      } };
     }
   ] );
 
@@ -51,7 +69,12 @@ define( [], function() {
   cnCachedProviders.factory( 'CnOpalInstanceViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      return { instance: function( params ) { return CnBaseViewFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseViewFactory.instance( params );
+      } };
     }
   ] );
 
@@ -61,16 +84,11 @@ define( [], function() {
     function( CnBaseSingletonFactory, CnOpalInstanceListFactory, CnOpalInstanceAddFactory, CnOpalInstanceViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
-          subject: 'opal_instance',
-          name: {
-            singular: 'opal instance',
-            plural: 'opal instances',
-            possessive: 'opal instance\'s',
-            pluralPossessive: 'opal instances\''
-          },
-          cnAdd: CnOpalInstanceAddFactory.instance( { subject: 'opal_instance' } ),
-          cnList: CnOpalInstanceListFactory.instance( { subject: 'opal_instance' } ),
-          cnView: CnOpalInstanceViewFactory.instance( { subject: 'opal_instance' } )
+          subject: moduleSubject,
+          name: moduleNames,
+          cnAdd: CnOpalInstanceAddFactory.instance(),
+          cnList: CnOpalInstanceListFactory.instance(),
+          cnView: CnOpalInstanceViewFactory.instance()
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
       };

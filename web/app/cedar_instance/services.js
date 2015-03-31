@@ -2,11 +2,24 @@ define( [], function() {
 
   'use strict';
 
+  var moduleSubject = 'cedar_instance';
+  var moduleNames = {
+    singular: 'cedar instance',
+    plural: 'cedar instances',
+    possessive: 'cedar instance\'s',
+    pluralPossessive: 'cedar instances\''
+  };
+
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnCedarInstanceAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      return { instance: function( params ) { return CnBaseAddFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseAddFactory.instance( params );
+      } };
     }
   ] );
 
@@ -43,7 +56,12 @@ define( [], function() {
       };
 
       object.prototype = CnBaseListFactory.prototype;
-      return { instance: function( params ) { return new object( undefined === params ? {} : params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return new object( params );
+      } };
     }
   ] );
 
@@ -51,7 +69,12 @@ define( [], function() {
   cnCachedProviders.factory( 'CnCedarInstanceViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      return { instance: function( params ) { return CnBaseViewFactory.instance( params ); } };
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = moduleSubject;
+        params.name = moduleNames;
+        return CnBaseViewFactory.instance( params );
+      } };
     }
   ] );
 
@@ -61,16 +84,11 @@ define( [], function() {
     function( CnBaseSingletonFactory, CnCedarInstanceListFactory, CnCedarInstanceAddFactory, CnCedarInstanceViewFactory ) {
       var object = function() {
         var base = CnBaseSingletonFactory.instance( {
-          subject: 'cedar_instance',
-          name: {
-            singular: 'cedar instance',
-            plural: 'cedar instances',
-            possessive: 'cedar instance\'s',
-            pluralPossessive: 'cedar instances\''
-          },
-          cnAdd: CnCedarInstanceAddFactory.instance( { subject: 'cedar_instance' } ),
-          cnList: CnCedarInstanceListFactory.instance( { subject: 'cedar_instance' } ),
-          cnView: CnCedarInstanceViewFactory.instance( { subject: 'cedar_instance' } )
+          subject: moduleSubject,
+          name: moduleNames,
+          cnAdd: CnCedarInstanceAddFactory.instance(),
+          cnList: CnCedarInstanceListFactory.instance(),
+          cnView: CnCedarInstanceViewFactory.instance()
         } );
         for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
       };
