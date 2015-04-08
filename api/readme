@@ -1,3 +1,6 @@
 Variable naming convensions:
-- database\* objects should be named $db_*
+- database\* objects should be named $record or $db_*
+- modifier objects should either be named $modifier or $*_mod
+- select objects should either be named $select or $*_sel
 - arrays should either use a plural name, *_array or *_list
+- variables holding class names (lib::get_class_name) should be named $*_class_name

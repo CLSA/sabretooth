@@ -20,23 +20,8 @@ $SETTINGS['general']['development_mode'] = false;
 // the location of sabretooth internal path
 $SETTINGS['path']['APPLICATION'] = '/usr/local/lib/sabretooth';
 
-// the location of the Shift8 Asterisk library
-$SETTINGS['path']['SHIFT8'] = '/usr/local/lib/shift8';
-
 // the url to Mastodon (set to NULL to disable Mastodon support)
 $SETTINGS['url']['MASTODON'] = NULL;
-
-// the url of limesurvey
-$SETTINGS['path']['LIMESURVEY'] = '/var/www/limesurvey';
-$SETTINGS['url']['LIMESURVEY'] = '../limesurvey';
-
-// voip settings
-$SETTINGS['voip']['enabled'] = false;
-$SETTINGS['voip']['url'] = 'http://localhost:8088/mxml';
-$SETTINGS['voip']['username'] = '';
-$SETTINGS['voip']['password'] = '';
-$SETTINGS['voip']['prefix'] = '';
-$SETTINGS['voip']['xor_key'] = '';
 
 // IVR setup
 $SETTINGS['ivr']['enabled'] = false;
@@ -44,7 +29,3 @@ $SETTINGS['ivr']['host'] = 'https://localhost/'; // must end in a /
 $SETTINGS['ivr']['service'] = 'service_path.asmx?wsdl'; // must NOT begin with a /
 $SETTINGS['ivr']['username'] = '';
 $SETTINGS['ivr']['password'] = '';
-
-// the directory to write recorded calls
-// (must be an absolute path that the asterisk server's user has access to)
-$SETTINGS['path']['VOIP_MONITOR'] = '/var/local/sabretooth/monitor';

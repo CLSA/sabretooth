@@ -1,10 +1,6 @@
 <?php
 /**
- * index.php
- * 
  * Main web script which drives the application.
- * 
- * @author Patrick Emond <emondpd@mcmaster.ca>
  */
 
 namespace sabretooth;

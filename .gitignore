@@ -1,2 +1,4 @@
 *.swp
+!.gitkeep
+tmp
 log

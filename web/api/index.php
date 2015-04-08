@@ -1,10 +1,6 @@
 <?php
 /**
- * index.php
- * 
  * Main web script which drives the application's API
- * 
- * @author Patrick Emond <emondpd@mcmaster.ca>
  */
 
 // load web-script common code

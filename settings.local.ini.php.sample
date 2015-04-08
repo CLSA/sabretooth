@@ -9,14 +9,11 @@
 global $SETTINGS;
 
 // whether or not to run the application in development mode
-$SETTINGS['general']['development_mode'] = true;
+$SETTINGS['general']['development_mode'] = false;
 
 // defines the username and password used by mastodon when communicating as a machine
 $SETTINGS['general']['machine_user'] = 'put machine user name here';
 $SETTINGS['general']['machine_password'] = 'put machine password here';
-
-// the survey ID of the alternate contact script (comment out if the script is unavailable)
-$SETTINGS['general']['secondary_survey'] = 0;
 
 // the file path to the framework and application
 $SETTINGS['path']['CENOZO'] = '/path/to/cenozo';
@@ -26,22 +23,11 @@ $SETTINGS['path']['APPLICATION'] = '/path/to/sabretooth';
 $SETTINGS['path']['LOG_FILE'] = $SETTINGS['path']['APPLICATION'].'/log';
 
 // the url of Mastodon (cannot be relative)
-//$SETTINGS['url']['MASTODON'] = 'https://url/to/mastodon';
-
-// the path and url of Limesurvey
-$SETTINGS['path']['LIMESURVEY'] = '/path/to/limesurvey';
-$SETTINGS['url']['LIMESURVEY'] = 'http://url/to/limesurvey';
+$SETTINGS['url']['MASTODON'] = 'https://url/to/mastodon';
 
 // database settings (the driver, server and prefixes are set in the framework's settings)
 $SETTINGS['db']['username'] = 'put your database username here';
 $SETTINGS['db']['password'] = 'put your database password here';
-
-// the Asterisk AJAM url, username and password
-$SETTINGS['voip']['enabled'] = false;
-$SETTINGS['voip']['url'] = 'http://%s:8088/mxml'; // %s will be replaced with the voip host
-$SETTINGS['voip']['username'] = 'put your asterisk username here';
-$SETTINGS['voip']['password'] = 'put your asterisk password here';
-$SETTINGS['voip']['prefix'] = '00';
 
 // IVR setup
 $SETTINGS['ivr']['enabled'] = false;
@@ -49,8 +35,3 @@ $SETTINGS['ivr']['host'] = 'https://localhost/'; // must end in a /
 $SETTINGS['ivr']['service'] = 'relative/path/to/service'; // must NOT begin with a /
 $SETTINGS['ivr']['username'] = 'put your ivr username here';
 $SETTINGS['ivr']['password'] = 'put your ivr password here';
-
-// the directory to write monitored calls
-// (must be an absolute path that the asterisk server's user has access to)
-$SETTINGS['path']['VOIP_MONITOR'] = $SETTINGS['path']['APPLICATION'].'/web/monitor';
-$SETTINGS['url']['VOIP_MONITOR'] = 'monitor';
