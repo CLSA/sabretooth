@@ -13,10 +13,6 @@ SOURCE activity.sql
 SOURCE writelog.sql
 SOURCE role_has_operation.sql
 SOURCE operation.sql
-SOURCE role_last_activity.sql
-SOURCE service_last_activity.sql
-SOURCE site_last_activity.sql
-SOURCE user_last_activity.sql
 
 SOURCE update_version_number.sql
 
