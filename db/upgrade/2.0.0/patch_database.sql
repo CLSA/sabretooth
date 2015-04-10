@@ -10,6 +10,7 @@ SOURCE service.sql
 SOURCE role_has_service.sql
 
 SOURCE activity.sql
+SOURCE writelog.sql
 SOURCE role_has_operation.sql
 SOURCE operation.sql
 SOURCE role_last_activity.sql
