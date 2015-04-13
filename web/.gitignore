@@ -1,9 +1,1 @@
-# ignore everything
-*
-
-# except the standard web files
-api
-app
-img
-index.php
-.htaccess.sample
+.htaccess

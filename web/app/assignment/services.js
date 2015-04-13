@@ -1,78 +1,47 @@
-define( [], function() {
+define( [
+  cnCenozoUrl + '/app/assignment/module.js'
+], function( module ) {
 
   'use strict';
 
-  var moduleSubject = 'assignment';
-  var moduleNames = {
-    singular: 'assignment',
-    plural: 'assignments',
-    possessive: 'assignment\'s',
-    pluralPossessive: 'assignments\''
-  };
+  /* ######################################################################################################## */
+  cnCachedProviders.factory( 'CnAssignmentAddFactory', [
+    'CnBaseAddFactory', 'CnHttpFactory',
+    function( CnBaseAddFactory, CnHttpFactory ) {
+      return { instance: function( params ) {
+        if( undefined === params ) params = {};
+        params.subject = module.subject;
+        params.name = module.name;
+        params.inputList = module.inputList;
+        return CnBaseAddFactory.instance( params );
+      } };
+    }
+  ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnAssignmentListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
-      var object = function( params ) {
-        var base = CnBaseListFactory.instance( params );
-        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
-
-        ////////////////////////////////////
-        // factory customizations start here
-        this.columnList = {
-          user: {
-            column: 'user.name',
-            title: 'Operator'
-          },
-          site: {
-            column: 'site.name',
-            title: 'Site'
-          },
-          uid: {
-            column: 'interview.participant.uid',
-            title: 'UID'
-          },
-          start_datetime: {
-            column: 'assignment.start_datetime',
-            title: 'Start Time',
-            filter: 'date:"MMM d, y HH:mm"',
-            isDate: true
-          },
-          status: {
-            title: 'Status'
-          },
-          complete: {
-            column: 'interview.completed',
-            title: 'Complete',
-            filter: 'cnYesNo'
-          }
-        };
-        this.order = { column: 'start_datetime', reverse: true };
-        // factory customizations end here
-        //////////////////////////////////
-
-        cnCopyParams( this, params );
-      };
-
-      object.prototype = CnBaseListFactory.prototype;
       return { instance: function( params ) {
         if( undefined === params ) params = {};
-        params.subject = moduleSubject;
-        params.name = moduleNames;
-        return new object( params );
+        params.subject = module.subject;
+        params.name = module.name;
+        params.columnList = module.columnList;
+        params.order = module.defaultOrder;
+        return CnBaseListFactory.instance( params );
       } };
     }
   ] );
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnAssignmentViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
+    'CnBaseViewFactory', 'CnParticipantListFactory', 'CnUserListFactory',
+    function( CnBaseViewFactory, CnParticipantListFactory, CnUserListFactory ) {
       return { instance: function( params ) {
         if( undefined === params ) params = {};
-        params.subject = moduleSubject;
-        params.name = moduleNames;
+        params.subject = module.subject;
+        params.name = module.name;
+        params.inputList = module.inputList;
         return CnBaseViewFactory.instance( params );
       } };
     }
@@ -80,23 +49,21 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cnCachedProviders.factory( 'CnAssignmentSingleton', [
-    'CnBaseSingletonFactory', 'CnAssignmentListFactory', 'CnAssignmentViewFactory',
-    function( CnBaseSingletonFactory, CnAssignmentListFactory, CnAssignmentViewFactory ) {
-      var object = function() {
-        var base = CnBaseSingletonFactory.instance( {
-          subject: moduleSubject,
-          name: moduleNames,
-          cnList: CnAssignmentListFactory.instance(),
-          cnView: CnAssignmentViewFactory.instance()
-        } );
-        for( var p in base ) if( base.hasOwnProperty( p ) ) this[p] = base[p];
-      };
+    'CnBaseSingletonFactory', 'CnAssignmentListFactory', 'CnAssignmentAddFactory', 'CnAssignmentViewFactory',
+    function( CnBaseSingletonFactory, CnAssignmentListFactory, CnAssignmentAddFactory, CnAssignmentViewFactory ) {
+      return new ( function() {
+        this.subject = module.subject;
+        CnBaseSingletonFactory.apply( this );
+        this.name = module.name;
+        this.cnAdd = CnAssignmentAddFactory.instance( { parentModel: this } );
+        this.cnList = CnAssignmentListFactory.instance( { parentModel: this } );
+        this.cnView = CnAssignmentViewFactory.instance( { parentModel: this } );
 
-      object.prototype = CnBaseSingletonFactory.prototype;
-      // don't return a method to create instances, create and return the singleton
-      return new object();
+        this.cnList.enableAdd( true );
+        this.cnList.enableDelete( true );
+        this.cnList.enableView( true );
+      } );
     }
   ] );
 
-  return true;
 } );
