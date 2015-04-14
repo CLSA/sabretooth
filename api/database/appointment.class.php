@@ -15,19 +15,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class appointment extends \cenozo\database\record
 {
   /**
-   * Overrides the parent load method.
-   * @author Patrick Emond
-   * @access public
-   */
-  public function load()
-  {
-    parent::load();
-
-    // appointments are not to the second, so remove the :00 at the end of the datetime field
-    $this->datetime = substr( $this->datetime, 0, -3 );
-  }
-  
-  /**
    * Overrides the parent save method.
    * @author Patrick Emond
    * @access public
@@ -78,17 +65,16 @@ class appointment extends \cenozo\database\record
     $half_duration = $setting_manager->get_setting( 'appointment', 'half duration', $db_site );
     $full_duration = $setting_manager->get_setting( 'appointment', 'full duration', $db_site );
 
-    $start_datetime_obj = util::get_datetime_object( $this->datetime );
-    $next_day_datetime_obj = clone $start_datetime_obj;
+    $next_day_datetime_obj = clone $this->datetime;
     $next_day_datetime_obj->add( new \DateInterval( 'P1D' ) );
-    $end_datetime_obj = clone $start_datetime_obj;
+    $end_datetime_obj = clone $this->datetime;
     $duration = 'full' == $this->type ? $full_duration : $half_duration;
     $end_datetime_obj->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
 
     // determine whether to test for shifts or shift templates on the appointment day
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'site_id', '=', $db_site->id );
-    $modifier->where( 'start_datetime', '>=', $start_datetime_obj->format( 'Y-m-d' ) );
+    $modifier->where( 'start_datetime', '>=', $this->datetime->format( 'Y-m-d' ), false );
     $modifier->where( 'start_datetime', '<', $next_day_datetime_obj->format( 'Y-m-d' ) );
 
     $diffs = array();
@@ -97,21 +83,17 @@ class appointment extends \cenozo\database\record
     { // determine slots using shift template
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'site_id', '=', $db_site->id );
-      $modifier->where( 'start_date', '<=', $start_datetime_obj->format( 'Y-m-d' ) );
+      $modifier->where( 'start_date', '<=', $this->datetime );
       foreach( $shift_template_class_name::select( $modifier ) as $db_shift_template )
       {
-        if( $db_shift_template->match_date( $start_datetime_obj->format( 'Y-m-d' ) ) )
+        if( $db_shift_template->match_date( $this->datetime ) )
         {
-          $start_time_as_int =
-            intval( preg_replace( '/[^0-9]/', '',
-              substr( $db_shift_template->start_time, 0, -3 ) ) );
+          $start_time_as_int = intval( $db_shift_template->start_time->format( 'Gi' ) );
           if( $daylight_savings ) $start_time_as_int -= 100; // adjust for daylight savings
           if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[$start_time_as_int] = 0;
           $diffs[$start_time_as_int] += $db_shift_template->operators;
 
-          $end_time_as_int =
-            intval( preg_replace( '/[^0-9]/', '',
-              substr( $db_shift_template->end_time, 0, -3 ) ) );
+          $start_time_as_int = intval( $db_shift_template->end_time->format( 'Gi' ) );
           if( 0 == $end_time_as_int ) $end_time_as_int = 2400;
           if( $daylight_savings ) $end_time_as_int -= 100; // adjust for daylight savings
           if( !array_key_exists( $end_time_as_int, $diffs ) ) $diffs[$end_time_as_int] = 0;
@@ -123,16 +105,12 @@ class appointment extends \cenozo\database\record
     {
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'site_id', '=', $db_site->id );
-      $modifier->where( 'start_datetime', '<', $end_datetime_obj->format( 'Y-m-d H:i:s' ) );
-      $modifier->where( 'end_datetime', '>', $start_datetime_obj->format( 'Y-m-d H:i:s' ) );
+      $modifier->where( 'start_datetime', '<', $end_datetime_obj );
+      $modifier->where( 'end_datetime', '>', $start_datetime_obj );
       foreach( $shift_class_name::select( $modifier ) as $db_shift )
       {
-        $start_time_as_int =
-          intval( preg_replace( '/[^0-9]/', '',
-            substr( $db_shift->start_datetime, -8, -3 ) ) );
-        $end_time_as_int =
-          intval( preg_replace( '/[^0-9]/', '',
-            substr( $db_shift->end_datetime, -8, -3 ) ) );
+        $start_time_as_int = intval( $db_shift->start_datetime->format( 'Gi' ) );
+        $end_time_as_int = intval( $db_shift->end_datetime->format( 'Gi' ) );
         if( 0 == $end_time_as_int ) $end_time_as_int = 2400;
 
         if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[$start_time_as_int] = 0;
@@ -148,7 +126,7 @@ class appointment extends \cenozo\database\record
     $modifier->join(
       'participant_site', 'interview.participant_id', 'participant_site.participant_id' );
     $modifier->where( 'participant_site.site_id', '=', $db_site->id );
-    $modifier->where( 'datetime', '>=', $start_datetime_obj->format( 'Y-m-d' ) );
+    $modifier->where( 'datetime', '>=', $this->datetime->format( 'Y-m-d' ), false );
     $modifier->where( 'datetime', '<', $next_day_datetime_obj->format( 'Y-m-d' ) );
     if( !is_null( $this->id ) ) $modifier->where( 'appointment.id', '!=', $this->id );
     $appointment_class_name = lib::get_class_name( 'database\appointment' );
@@ -157,13 +135,10 @@ class appointment extends \cenozo\database\record
       $state = $db_appointment->get_state();
       if( 'reached' != $state && 'not reached' != $state )
       { // incomplete appointments only
-        $appointment_datetime_obj = util::get_datetime_object( $db_appointment->datetime );
-  
-        $start_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
-        
+        $start_time_as_int = intval( $db_appointment->datetime->format( 'Gi' ) );
         $duration = 'full' == $db_appointment->type ? $full_duration : $half_duration;
-        $appointment_datetime_obj->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
-        $end_time_as_int = intval( $appointment_datetime_obj->format( 'Gi' ) );
+        $db_appointment->datetime->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
+        $end_time_as_int = intval( $db_appointment->datetime->format( 'Gi' ) );
         if( 0 == $end_time_as_int ) $end_time_as_int = 2400;
   
         if( !array_key_exists( $start_time_as_int, $diffs ) ) $diffs[ $start_time_as_int ] = 0;
@@ -191,7 +166,7 @@ class appointment extends \cenozo\database\record
     
     // Now search the times array for any 0's inside the appointment time
     // NOTE: we need to include the time immediately prior to the appointment start time
-    $start_time_as_int = intval( $start_datetime_obj->format( 'Gi' ) );
+    $start_time_as_int = intval( $this->datetime->format( 'Gi' ) );
     $end_time_as_int = intval( $end_datetime_obj->format( 'Gi' ) );
     if( 0 == $end_time_as_int ) $end_time_as_int = 2400;
     $match = false;
@@ -254,7 +229,7 @@ class appointment extends \cenozo\database\record
     $post_window_time = 60 * $setting_manager->get_setting(
                               'appointment', 'call post-window', $db_site );
     $now = util::get_datetime_object()->getTimestamp();
-    $appointment = util::get_datetime_object( $this->datetime )->getTimestamp();
+    $appointment = $this->datetime->getTimestamp();
 
     // get the status of the appointment
     $db_assignment = $this->get_assignment();

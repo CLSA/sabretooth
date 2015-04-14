@@ -126,7 +126,7 @@ class interview extends \cenozo\database\has_note
         $db_event = lib::create( 'database\event' );
         $db_event->participant_id = $this->participant_id;
         $db_event->event_type_id = $db_event_type->id;
-        $db_event->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+        $db_event->datetime = util::get_datetime_object();
         $db_event->save();
       }
     }
@@ -161,6 +161,7 @@ class interview extends \cenozo\database\has_note
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
     foreach( $this->get_qnaire()->get_phase_list( $phase_sel, $phase_mod ) as $phase )
     {
+      $now_datetime_obj = util::get_datetime_object();
       // update tokens
       $tokens_class_name::set_sid( $phase['sid'] );
       $tokens_mod = lib::create( 'database\modifier' );
@@ -169,7 +170,7 @@ class interview extends \cenozo\database\has_note
       $tokens_mod->where( 'completed', '=', 'N' );
       foreach( $tokens_class_name::select( $tokens_mod ) as $db_tokens )
       {
-        $db_tokens->completed = util::get_datetime_object()->format( 'Y-m-d H:i' );
+        $db_tokens->completed = $now_datetime_obj->format( 'Y-m-d H:i' );
         $db_tokens->usesleft = 0;
         $db_tokens->save();
       }
@@ -188,7 +189,7 @@ class interview extends \cenozo\database\has_note
 
       foreach( $survey_class_name::select( $survey_mod ) as $db_survey )
       {
-        $db_survey->submitdate = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+        $db_survey->submitdate = $now_datetime_obj->format( 'Y-m-d H:i:s' );
         if( $lastpage ) $db_survey->lastpage = $lastpage;
         $db_survey->save();
       }

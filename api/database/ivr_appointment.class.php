@@ -15,19 +15,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class ivr_appointment extends \cenozo\database\record
 {
   /**
-   * Overrides the parent load method.
-   * @author Patrick Emond
-   * @access public
-   */
-  public function load()
-  {
-    parent::load();
-
-    // IVR appointments are not to the second, so remove the :00 at the end of the datetime field
-    $this->datetime = substr( $this->datetime, 0, -3 );
-  }
-  
-  /**
    * Overrides the parent save method.
    * @author Patrick Emond
    * @access public

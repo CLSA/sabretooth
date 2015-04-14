@@ -199,12 +199,10 @@ class queue extends \cenozo\database\record
 
     // get the status of all IVR appointments which have passed and do not have a completed status
     $duration = $setting_manager->get_setting( 'appointment', 'full duration' );
-    $now_datetime_obj = util::get_datetime_object();
-    $appointment_datetime_obj = clone $now_datetime_obj;
+    $appointment_datetime_obj = util::get_datetime_object();
     $appointment_datetime_obj->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
     $ivr_appointment_mod = lib::create( 'database\modifier' );
-    $ivr_appointment_mod->where(
-      'datetime', '<=', $appointment_datetime_obj->format( 'Y-m-d H:i:s' ) );
+    $ivr_appointment_mod->where( 'datetime', '<=', $appointment_datetime_obj->format( 'c' ) );
     $ivr_appointment_mod->where( 'ivr_appointment.completed', '=', NULL );
     if( !is_null( $db_participant ) )
     {
@@ -267,7 +265,7 @@ class queue extends \cenozo\database\record
               $db_event = lib::create( 'database\event' );
               $db_event->participant_id = $db_ivr_participant->id;
               $db_event->event_type_id = $db_event_type->id;
-              $db_event->datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+              $db_event->datetime = util::get_datetime_object();
               $db_event->save();
             }
           }
@@ -282,7 +280,7 @@ class queue extends \cenozo\database\record
       else if( $ivr_status_class_name::NO_APPOINTMENT == $status )
       {
         // the appointment is missing from the IVR, so add it in now
-        $db_ivr_appointment->datetime = $now_datetime_obj->format( 'Y-m-d H:i:s' );
+        $db_ivr_appointment->datetime = util::get_datetime_object();
         $db_ivr_appointment->save();
 
         try

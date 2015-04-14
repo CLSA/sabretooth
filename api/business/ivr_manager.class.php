@@ -119,7 +119,7 @@ class ivr_manager extends \cenozo\singleton
     $parameters = array(
       'Id' => $db_participant->uid,
       'Phone' => preg_replace( '/[^0-9]*/', '', $db_phone->number ),
-      'Call_DateTime' => $datetime->format( \DateTime::ISO8601 ),
+      'Call_DateTime' => $datetime->format( 'c' ),
       'First_Initial' => substr( $db_participant->first_name, 0, 1 ),
       'Last_Initial' => substr( $db_participant->last_name, 0, 1 ),
       'Last_Interview_Date' => $last_datetime->format( 'Y-m-d' ),

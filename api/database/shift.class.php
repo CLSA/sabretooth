@@ -48,32 +48,28 @@ class shift extends \cenozo\database\record
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'id', '!=', $this->id );
     $modifier->where( 'user_id', '=', $this->user_id );
-    
-    // convert the start and end times to server time
-    $start_datetime = util::to_server_datetime( $this->start_datetime );
-    $end_datetime = util::to_server_datetime( $this->end_datetime );
+    $modifier->where_bracket( true );
+    $modifier->where_bracket( true );
+    $modifier->where( 'start_datetime', '>', $this->start_datetime );
+    $modifier->or_where( 'end_datetime', '>', $this->start_datetime );
+    $modifier->where_bracket( false );
+    $modifier->where_bracket( true );
+    $modifier->where( 'start_datetime', '<', $this->end_datetime );
+    $modifier->or_where( 'end_datetime', '<', $this->end_datetime );
+    $modifier->where_bracket( false );
+    $modifier->where_bracket( false );
+    $modifier->limit( 1 );
 
-    // (need to use custom SQL)
-    $overlap_ids = static::db()->get_col( 
-      sprintf( 'SELECT id FROM %s %s '.
-               'AND NOT ( ( start_datetime <= %s AND end_datetime <= %s ) OR '.
-                         '( start_datetime >= %s AND end_datetime >= %s ) )',
-               static::get_table_name(),
-               $modifier->get_where(),
-               static::db()->format_string( $start_datetime ),
-               static::db()->format_string( $start_datetime ),
-               static::db()->format_string( $end_datetime ),
-               static::db()->format_string( $end_datetime ) ) );
+    $shift_list = static::select_objects( $modifier );
     
-    if( 0 < count( $overlap_ids ) )
+    if( 0 < count( $shift_list ) )
     {
-      $overlap_id = current( $overlap_ids );
-      $db_overlap = new static( $overlap_id );
+      $db_overlap = current( $shift_list );
       throw lib::create( 'exception\notice',
         sprintf( 'There is already a shift which exists for this operator during the requested '.
                  'time (%s to %s).  Please adjust the shift times so that there is no overlap.',
-                 substr( $db_overlap->start_datetime, 0, -3 ),
-                 substr( $db_overlap->end_datetime, 11, -3 ) ),
+                 $db_overlap->start_datetime->format( 'H:i' ),
+                 $db_overlap->end_datetime->format( 'H:i' ) ),
         __METHOD__ );
     }
     
