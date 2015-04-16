@@ -1,4 +1,3 @@
-
 DROP PROCEDURE IF EXISTS patch_service;
 DELIMITER //
 CREATE PROCEDURE patch_service()
@@ -18,81 +17,92 @@ CREATE PROCEDURE patch_service()
         update_timestamp TIMESTAMP NOT NULL,
         create_timestamp TIMESTAMP NOT NULL,
         method ENUM('DELETE','GET','PATCH','POST','PUT') NOT NULL,
-        path VARCHAR(511) NOT NULL,
+        subject VARCHAR(45) NOT NULL,
+        resource TINYINT(1) NOT NULL DEFAULT 0,
         restricted TINYINT(1) NOT NULL DEFAULT 1,
         PRIMARY KEY (id),
-        UNIQUE INDEX uq_method_path (method ASC, path ASC))
+        UNIQUE INDEX uq_method_subject_resource (method ASC, subject ASC, resource ASC))
       ENGINE = InnoDB;
 
-      SELECT "Renaming service operations to application" AS "";
-      UPDATE operation SET subject = "application" WHERE subject = "service";
-
-      -- populate service_id column using the operation table
-      INSERT INTO service( method, path, restricted )
-      SELECT "DELETE", CONCAT( subject, "/<id>" ), restricted
-      FROM operation
-      WHERE name = "delete"
-      GROUP BY subject;
-
-      INSERT INTO service( method, path, restricted )
-      SELECT "GET", subject, restricted
-      FROM operation
-      WHERE name = "list"
-      GROUP BY subject;
-
-      INSERT INTO service( method, path, restricted )
-      SELECT "GET", CONCAT( subject, "/<id>" ), restricted
-      FROM operation
-      WHERE name = "view"
-      GROUP BY subject;
-
-      INSERT INTO service( method, path, restricted )
-      SELECT "PATCH", CONCAT( subject, "/<id>" ), restricted
-      FROM operation
-      WHERE name = "edit"
-      GROUP BY subject;
-
-      INSERT INTO service( method, path, restricted )
-      SELECT "POST", subject, restricted
-      FROM operation
-      WHERE name = "add" OR name = "new"
-      GROUP BY subject;
-
-      INSERT INTO service( method, path, restricted )
-      SELECT "DELETE", CONCAT( subject, "/<id>/", SUBSTRING( name, 8 ), "/<id>" ), restricted
-      FROM operation
-      WHERE name LIKE "delete_%"
-      GROUP BY subject;
-
-      INSERT INTO service( method, path, restricted )
-      SELECT "GET", CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ) ), restricted
-      FROM operation
-      WHERE name LIKE "add_%" OR name LIKE "new_%"
-      GROUP BY subject, SUBSTRING( name, 5 );
-
-      INSERT INTO service( method, path, restricted )
-      SELECT "GET", CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ), "/<id>" ), restricted
-      FROM operation
-      WHERE name LIKE "add_%" OR name LIKE "new_%"
-      GROUP BY subject, SUBSTRING( name, 5 );
-
-      INSERT INTO service( method, path, restricted )
-      SELECT "PATCH", CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ), "/<id>" ), restricted
-      FROM operation
-      WHERE name LIKE "add_%" OR name LIKE "new_%"
-      GROUP BY subject, SUBSTRING( name, 5 );
-
-      INSERT INTO service( method, path, restricted )
-      SELECT "POST", CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ) ), restricted
-      FROM operation
-      WHERE name LIKE "add_%" OR name LIKE "new_%"
-      GROUP BY subject, SUBSTRING( name, 5 );
-
-      INSERT INTO service( method, path, restricted )
-      VALUES( 'GET', 'service', 0 );
+      INSERT INTO service ( subject, method, resource, restricted ) VALUES
+      ( 'access', 'DELETE', 1, 1 ),
+      ( 'access', 'GET', 0, 1 ),
+      ( 'access', 'GET', 1, 1 ),
+      ( 'access', 'POST', 0, 1 ),
+      ( 'activity', 'GET', 0, 1 ),
+      ( 'address', 'DELETE', 1, 1 ),
+      ( 'address', 'GET', 0, 1 ),
+      ( 'address', 'GET', 1, 1 ),
+      ( 'address', 'PATCH', 1, 1 ),
+      ( 'address', 'POST', 0, 1 ),
+      ( 'age_group', 'GET', 0, 0 ),
+      ( 'alternate', 'DELETE', 1, 1 ),
+      ( 'alternate', 'GET', 0, 1 ),
+      ( 'alternate', 'GET', 1, 1 ),
+      ( 'alternate', 'PATCH', 1, 1 ),
+      ( 'alternate', 'POST', 0, 1 ),
+      ( 'collection', 'DELETE', 1, 1 ),
+      ( 'collection', 'GET', 0, 0 ),
+      ( 'collection', 'GET', 1, 0 ),
+      ( 'collection', 'PATCH', 1, 1 ),
+      ( 'collection', 'POST', 0, 1 ),
+      ( 'consent', 'DELETE', 1, 1 ),
+      ( 'consent', 'GET', 0, 1 ),
+      ( 'consent', 'GET', 1, 1 ),
+      ( 'consent', 'PATCH', 1, 1 ),
+      ( 'consent', 'POST', 0, 1 ),
+      ( 'event', 'DELETE', 1, 1 ),
+      ( 'event', 'GET', 0, 1 ),
+      ( 'event', 'GET', 1, 1 ),
+      ( 'event', 'PATCH', 1, 1 ),
+      ( 'event', 'POST', 0, 1 ),
+      ( 'event_type', 'GET', 0, 0 ),
+      ( 'event_type', 'GET', 1, 0 ),
+      ( 'language', 'GET', 0, 0 ),
+      ( 'language', 'GET', 1, 0 ),
+      ( 'participant', 'GET', 0, 1 ),
+      ( 'participant', 'GET', 1, 1 ),
+      ( 'participant', 'PATCH', 1, 1 ),
+      ( 'phone', 'DELETE', 1, 1 ),
+      ( 'phone', 'GET', 0, 1 ),
+      ( 'phone', 'GET', 1, 1 ),
+      ( 'phone', 'PATCH', 1, 1 ),
+      ( 'phone', 'POST', 0, 1 ),
+      ( 'quota', 'DELETE', 1, 1 ),
+      ( 'quota', 'GET', 0, 1 ),
+      ( 'quota', 'GET', 1, 1 ),
+      ( 'quota', 'PATCH', 1, 1 ),
+      ( 'quota', 'POST', 0, 1 ),
+      ( 'region', 'GET', 0, 0 ),
+      ( 'region', 'GET', 1, 0 ),
+      ( 'region_site', 'DELETE', 1, 1 ),
+      ( 'region_site', 'GET', 0, 1 ),
+      ( 'region_site', 'GET', 1, 1 ),
+      ( 'region_site', 'PATCH', 1, 1 ),
+      ( 'region_site', 'POST', 0, 1 ),
+      ( 'role', 'GET', 0, 0 ),
+      ( 'role', 'GET', 1, 0 ),
+      ( 'self', 'GET', 1, 0 ),
+      ( 'site', 'DELETE', 1, 1 ),
+      ( 'site', 'GET', 0, 1 ),
+      ( 'site', 'GET', 1, 1 ),
+      ( 'site', 'PATCH', 1, 1 ),
+      ( 'site', 'POST', 0, 1 ),
+      ( 'state', 'DELETE', 1, 1 ),
+      ( 'state', 'GET', 0, 0 ),
+      ( 'state', 'GET', 1, 0 ),
+      ( 'state', 'PATCH', 1, 1 ),
+      ( 'state', 'POST', 0, 1 ),
+      ( 'system_message', 'DELETE', 1, 1 ),
+      ( 'system_message', 'GET', 0, 0 ),
+      ( 'system_message', 'GET', 1, 0 ),
+      ( 'system_message', 'PATCH', 1, 1 ),
+      ( 'system_message', 'POST', 0, 1 ),
+      ( 'user', 'DELETE', 1, 1 ),
+      ( 'user', 'GET', 0, 1 ),
+      ( 'user', 'GET', 1, 1 ),
+      ( 'user', 'PATCH', 1, 1 ),
+      ( 'user', 'POST', 0, 1 );
     END IF;
   END //
 DELIMITER ;
-
-CALL patch_service();
-DROP PROCEDURE IF EXISTS patch_service;

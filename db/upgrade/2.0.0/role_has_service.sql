@@ -44,101 +44,261 @@ CREATE PROCEDURE patch_role_has_service()
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
 
-      -- populate role_has_service column using the operation table
-      INSERT INTO role_has_service ( role_id, service_id )
-      SELECT role_id, service.id
-      FROM operation
-      JOIN role_has_operation ON operation.id = role_has_operation.operation_id
-      JOIN service ON subject = SUBSTRING_INDEX( path, "/", 1 )
-      AND method = "DELETE"
-      WHERE name = "delete"
-      GROUP BY subject;
+      -- populate table
+      SET @sql = CONCAT(
+        "INSERT INTO role_has_service ( role_id, service_id ) ",
+        "SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'access' AND method = 'DELETE' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
 
-      INSERT INTO role_has_service ( role_id, service_id )
-      SELECT role_id, service.id
-      FROM operation
-      JOIN role_has_operation ON operation.id = role_has_operation.operation_id
-      JOIN service ON subject = path
-      AND method = "GET"
-      WHERE name = "list"
-      GROUP BY subject;
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'access' AND method = 'GET' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
 
-      INSERT INTO role_has_service ( role_id, service_id )
-      SELECT role_id, service.id
-      FROM operation
-      JOIN role_has_operation ON operation.id = role_has_operation.operation_id
-      JOIN service ON CONCAT( subject, "/<id>" ) = path
-      AND method = "GET"
-      WHERE name = "view"
-      GROUP BY subject;
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'access' AND method = 'GET' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
 
-      INSERT INTO role_has_service ( role_id, service_id )
-      SELECT role_id, service.id
-      FROM operation
-      JOIN role_has_operation ON operation.id = role_has_operation.operation_id
-      JOIN service ON CONCAT( subject, "/<id>" ) = path
-      AND method = "PATCH"
-      WHERE name = "edit"
-      GROUP BY subject;
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'access' AND method = 'POST' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
 
-      INSERT INTO role_has_service ( role_id, service_id )
-      SELECT role_id, service.id
-      FROM operation
-      JOIN role_has_operation ON operation.id = role_has_operation.operation_id
-      JOIN service ON subject = path
-      AND method = "POST"
-      WHERE name = "add" OR name = "new"
-      GROUP BY subject;
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'activity' AND method = 'GET' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
 
-      INSERT INTO role_has_service ( role_id, service_id )
-      SELECT role_id, service.id
-      FROM operation
-      JOIN role_has_operation ON operation.id = role_has_operation.operation_id
-      JOIN service ON CONCAT( subject, "/<id>/", SUBSTRING( name, 8 ), "/<id>" ) = path
-      AND method = "DELETE"
-      WHERE name LIKE "delete_%"
-      GROUP BY subject;
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'address' AND method = 'DELETE' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
 
-      INSERT INTO role_has_service ( role_id, service_id )
-      SELECT role_id, service.id
-      FROM operation
-      JOIN role_has_operation ON operation.id = role_has_operation.operation_id
-      JOIN service ON CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ) ) = path
-      AND method = "GET"
-      WHERE name LIKE "add_%" OR name LIKE "new_%"
-      GROUP BY subject,
-      SUBSTRING( name, 5 );
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'address' AND method = 'GET' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
 
-      INSERT INTO role_has_service ( role_id, service_id )
-      SELECT role_id, service.id
-      FROM operation
-      JOIN role_has_operation ON operation.id = role_has_operation.operation_id
-      JOIN service ON CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ), "/<id>" ) = path
-      AND method = "GET"
-      WHERE name LIKE "add_%" OR name LIKE "new_%"
-      GROUP BY subject,
-      SUBSTRING( name, 5 );
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'address' AND method = 'GET' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
 
-      INSERT INTO role_has_service ( role_id, service_id )
-      SELECT role_id, service.id
-      FROM operation
-      JOIN role_has_operation ON operation.id = role_has_operation.operation_id
-      JOIN service ON CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ) ) = path
-      AND method = "POST"
-      WHERE name LIKE "add_%" OR name LIKE "new_%"
-      GROUP BY subject,
-      SUBSTRING( name, 5 );
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'address' AND method = 'PATCH' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
 
-      INSERT INTO role_has_service ( role_id, service_id )
-      SELECT role_id, service.id
-      FROM operation
-      JOIN role_has_operation ON operation.id = role_has_operation.operation_id
-      JOIN service ON CONCAT( subject, "/<id>/", SUBSTRING( name, 5 ), "/<id>" ) = path
-      AND method = "PATCH"
-      WHERE name LIKE "add_%" OR name LIKE "new_%"
-      GROUP BY subject,
-      SUBSTRING( name, 5 );
-    END IF;
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'address' AND method = 'POST' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'alternate' AND method = 'DELETE' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'alternate' AND method = 'GET' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'alternate' AND method = 'GET' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'alternate' AND method = 'PATCH' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'alternate' AND method = 'POST' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'collection' AND method = 'DELETE' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'collection' AND method = 'PATCH' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'collection' AND method = 'POST' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'curator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'consent' AND method = 'DELETE' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'consent' AND method = 'GET' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'consent' AND method = 'GET' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'consent' AND method = 'PATCH' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'consent' AND method = 'POST' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'event' AND method = 'DELETE' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'event' AND method = 'GET' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'event' AND method = 'GET' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'event' AND method = 'PATCH' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'event' AND method = 'POST' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'curator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'participant' AND method = 'GET' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'participant' AND method = 'GET' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'participant' AND method = 'PATCH' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'phone' AND method = 'DELETE' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'phone' AND method = 'GET' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'phone' AND method = 'GET' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'phone' AND method = 'PATCH' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'phone' AND method = 'POST' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'quota' AND method = 'DELETE' AND resource = 1 ",
+        "AND role.name IN( 'administrator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'quota' AND method = 'GET' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'quota' AND method = 'GET' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'quota' AND method = 'PATCH' AND resource = 1 ",
+        "AND role.name IN( 'administrator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'quota' AND method = 'POST' AND resource = 0 ",
+        "AND role.name IN( 'administrator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'region_site' AND method = 'DELETE' AND resource = 1 ",
+        "AND role.name IN( 'administrator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'region_site' AND method = 'GET' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'region_site' AND method = 'GET' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'region_site' AND method = 'PATCH' AND resource = 1 ",
+        "AND role.name IN( 'administrator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'region_site' AND method = 'POST' AND resource = 0 ",
+        "AND role.name IN( 'administrator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'site' AND method = 'DELETE' AND resource = 1 ",
+        "AND role.name IN( 'administrator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'site' AND method = 'GET' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'site' AND method = 'GET' AND resource = 1 ",
+        "AND role.name IN( 'administrator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'site' AND method = 'PATCH' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'site' AND method = 'POST' AND resource = 0 ",
+        "AND role.name IN( 'administrator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'state' AND method = 'DELETE' AND resource = 1 ",
+        "AND role.name IN( 'administrator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'state' AND method = 'PATCH' AND resource = 1 ",
+        "AND role.name IN( 'administrator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'state' AND method = 'POST' AND resource = 0 ",
+        "AND role.name IN( 'administrator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'system_message' AND method = 'DELETE' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'system_message' AND method = 'PATCH' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'system_message' AND method = 'POST' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'user' AND method = 'DELETE' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'user' AND method = 'GET' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'user' AND method = 'GET' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'user' AND method = 'PATCH' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'user' AND method = 'POST' AND resource = 0 ",
+        "AND role.name IN( 'administrator', 'supervisor' )" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
+END IF;
   END //
 DELIMITER ;
 
