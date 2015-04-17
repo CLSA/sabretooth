@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * phone_call: record
  */
-class phone_call extends \cenozo\database\has_note
+class phone_call extends record
 {
   /**
    * Overrides the parent save method.

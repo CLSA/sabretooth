@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * interview: record
  */
-class interview extends \cenozo\database\has_note
+class interview extends record
 {
   /**
    * Get the interview's last (most recent) assignment.
