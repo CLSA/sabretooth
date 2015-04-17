@@ -3,7 +3,7 @@ DELIMITER //
 CREATE PROCEDURE patch_service()
   BEGIN
 
-    SELECT "Replacing operation_id with service_id in service table" AS "";
+    SELECT "Creating new service table" AS "";
 
     SET @test = (
       SELECT COUNT(*)
@@ -41,6 +41,11 @@ CREATE PROCEDURE patch_service()
       ( 'alternate', 'GET', 1, 1 ),
       ( 'alternate', 'PATCH', 1, 1 ),
       ( 'alternate', 'POST', 0, 1 ),
+      ( 'application', 'DELETE', 1, 1 ),
+      ( 'application', 'GET', 0, 0 ),
+      ( 'application', 'GET', 1, 0 ),
+      ( 'application', 'PATCH', 1, 1 ),
+      ( 'application', 'POST', 0, 1 ),
       ( 'collection', 'DELETE', 1, 1 ),
       ( 'collection', 'GET', 0, 0 ),
       ( 'collection', 'GET', 1, 0 ),
@@ -58,6 +63,11 @@ CREATE PROCEDURE patch_service()
       ( 'event', 'POST', 0, 1 ),
       ( 'event_type', 'GET', 0, 0 ),
       ( 'event_type', 'GET', 1, 0 ),
+      ( 'jurisdiction', 'DELETE', 1, 1 ),
+      ( 'jurisdiction', 'GET', 0, 0 ),
+      ( 'jurisdiction', 'GET', 1, 0 ),
+      ( 'jurisdiction', 'PATCH', 1, 1 ),
+      ( 'jurisdiction', 'POST', 0, 1 ),
       ( 'language', 'GET', 0, 0 ),
       ( 'language', 'GET', 1, 0 ),
       ( 'participant', 'GET', 0, 1 ),
@@ -76,16 +86,17 @@ CREATE PROCEDURE patch_service()
       ( 'region', 'GET', 0, 0 ),
       ( 'region', 'GET', 1, 0 ),
       ( 'region_site', 'DELETE', 1, 1 ),
-      ( 'region_site', 'GET', 0, 1 ),
-      ( 'region_site', 'GET', 1, 1 ),
+      ( 'region_site', 'GET', 0, 0 ),
+      ( 'region_site', 'GET', 1, 0 ),
       ( 'region_site', 'PATCH', 1, 1 ),
       ( 'region_site', 'POST', 0, 1 ),
       ( 'role', 'GET', 0, 0 ),
       ( 'role', 'GET', 1, 0 ),
       ( 'self', 'GET', 1, 0 ),
+      ( 'self', 'PATCH', 1, 0 ),
       ( 'site', 'DELETE', 1, 1 ),
-      ( 'site', 'GET', 0, 1 ),
-      ( 'site', 'GET', 1, 1 ),
+      ( 'site', 'GET', 0, 0 ),
+      ( 'site', 'GET', 1, 0 ),
       ( 'site', 'PATCH', 1, 1 ),
       ( 'site', 'POST', 0, 1 ),
       ( 'state', 'DELETE', 1, 1 ),
@@ -106,3 +117,6 @@ CREATE PROCEDURE patch_service()
     END IF;
   END //
 DELIMITER ;
+
+CALL patch_service();
+DROP PROCEDURE IF EXISTS patch_service;
