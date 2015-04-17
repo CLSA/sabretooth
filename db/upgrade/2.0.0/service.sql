@@ -1,6 +1,6 @@
 DROP PROCEDURE IF EXISTS patch_service;
-DELIMITER //
-CREATE PROCEDURE patch_service()
+  DELIMITER //
+  CREATE PROCEDURE patch_service()
   BEGIN
 
     SELECT "Creating new service table" AS "";
