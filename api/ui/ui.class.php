@@ -17,22 +17,31 @@ class ui extends \cenozo\ui\ui
   /**
    * Extends the parent method
    */
-  public function get_lists( $modifier = NULL )
+  protected function get_module_list( $modifier = NULL )
   {
-    if( is_null( $modifier ) ) $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'service.subject', 'IN', array(
-      'activity',
-      'application',
-      'collection',
-      'language',
-      'participant',
-      'quota',
-      'region_site',
-      'site',
-      'state',
-      'system_message',
-      'user' ) );
+    $module_list = parent::get_module_list( $modifier );
 
-    return parent::get_lists( $modifier );
+    // add child actions to certain modules
+    if( array_key_exists( 'qnaire', $module_list ) )
+      $module_list['qnaire']['children'] = array( 'phase' );
+
+    return $module_list;
+  }
+
+  /**
+   * Extends the parent method
+   */
+  protected function get_list_items()
+  {
+    $list = parent::get_list_items();
+    
+    // add application-specific states to the base list
+    $list['assignment'] = 'Assignments';
+    $list['interview'] = 'Interviews';
+    $list['opal_instance'] = 'Opal Instances';
+    $list['qnaire'] = 'Questionnaires';
+    $list['queue'] = 'Queues';
+
+    return $list;
   }
 }
