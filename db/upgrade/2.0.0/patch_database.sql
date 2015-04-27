@@ -15,6 +15,8 @@ SOURCE operation.sql
 SOURCE setting_value.sql
 SOURCE setting.sql
 
+SOURCE character_set.sql
+
 SOURCE update_version_number.sql
 
 COMMIT;
