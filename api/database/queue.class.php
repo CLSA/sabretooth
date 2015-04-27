@@ -1067,17 +1067,18 @@ class queue extends \cenozo\database\record
     // build participant_for_queue_first_address table
     $sql = 
       'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue_first_address '.
-      'SELECT participant_first_address.participant_id AS id, '.
+      'SELECT participant.id AS id, '.
              'address.city AS first_address_city, '.
              'address.region_id AS first_address_region_id, '.
              'address.postcode AS first_address_postcode, '.
              'address.timezone_offset AS first_address_timezone_offset, '.
              'address.daylight_savings AS first_address_daylight_savings '.
-      'FROM participant_first_address '.
+      'FROM person_first_address '.
+      'LEFT JOIN participant ON person_first_address.person_id = participant.person_id '.
       'LEFT JOIN address '.
-      'ON participant_first_address.address_id = address.id ';
+      'ON person_first_address.address_id = address.id ';
     if( !is_null( $db_participant ) )
-      $sql .= sprintf( 'WHERE participant_first_address.participant_id = %s ',
+      $sql .= sprintf( 'WHERE participant.id = %s ',
                        static::db()->format_string( $db_participant->id ) );
 
     static::db()->execute( 'DROP TABLE IF EXISTS participant_for_queue_first_address' );
