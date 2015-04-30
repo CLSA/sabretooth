@@ -1048,7 +1048,7 @@ class queue extends \cenozo\database\record
       'FROM participant '.
       'JOIN application_has_participant ON participant.id = application_has_participant.participant_id '.
       'AND application_has_participant.application_id = %s '.
-      'LEFT JOIN phone ON participant.person_id = phone.person_id '.
+      'LEFT JOIN phone ON participant.id = phone.participant_id '.
       'AND phone.active AND phone.number IS NOT NULL ',
       static::db()->format_string( $application_id ) );
     if( !is_null( $db_participant ) )
@@ -1073,10 +1073,10 @@ class queue extends \cenozo\database\record
              'address.postcode AS first_address_postcode, '.
              'address.timezone_offset AS first_address_timezone_offset, '.
              'address.daylight_savings AS first_address_daylight_savings '.
-      'FROM person_first_address '.
-      'LEFT JOIN participant ON person_first_address.person_id = participant.person_id '.
+      'FROM participant_first_address '.
+      'LEFT JOIN participant ON participant_first_address.participant_id = participant.id '.
       'LEFT JOIN address '.
-      'ON person_first_address.address_id = address.id ';
+      'ON participant_first_address.address_id = address.id ';
     if( !is_null( $db_participant ) )
       $sql .= sprintf( 'WHERE participant.id = %s ',
                        static::db()->format_string( $db_participant->id ) );
