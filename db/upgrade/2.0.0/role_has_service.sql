@@ -8,7 +8,7 @@ CREATE PROCEDURE patch_role_has_service()
       SELECT unique_constraint_schema
       FROM information_schema.referential_constraints
       WHERE constraint_schema = DATABASE()
-      AND constraint_name = "fk_system_message_site_id" );
+      AND constraint_name = "fk_queue_state_site_id" );
 
     SELECT "Creating new role_has_service table" AS "";
 

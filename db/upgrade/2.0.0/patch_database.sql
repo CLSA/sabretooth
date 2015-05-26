@@ -14,6 +14,7 @@ SOURCE role_has_service.sql
 SOURCE operation.sql
 SOURCE setting_value.sql
 SOURCE setting.sql
+SOURCE system_message.sql
 
 SOURCE character_set.sql
 
