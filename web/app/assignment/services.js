@@ -1,68 +1,46 @@
-define( [
-  cnCenozoUrl + '/app/assignment/module.js'
-], function( module ) {
-
+define( [ 'app/assignment/module.js' ], function( module ) {
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnAssignmentAddFactory', [
-    'CnBaseAddFactory', 'CnHttpFactory',
-    function( CnBaseAddFactory, CnHttpFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.inputList = module.inputList;
-        return CnBaseAddFactory.instance( params );
-      } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnAssignmentListFactory', [
+  cenozo.providers.factory( 'CnAssignmentListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.columnList = module.columnList;
-        params.order = module.defaultOrder;
-        return CnBaseListFactory.instance( params );
-      } };
+      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnAssignmentViewFactory', [
-    'CnBaseViewFactory', 'CnParticipantListFactory', 'CnUserListFactory',
-    function( CnBaseViewFactory, CnParticipantListFactory, CnUserListFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.inputList = module.inputList;
-        return CnBaseViewFactory.instance( params );
-      } };
+  cenozo.providers.factory( 'CnAssignmentViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnAssignmentSingleton', [
-    'CnBaseSingletonFactory', 'CnAssignmentListFactory', 'CnAssignmentAddFactory', 'CnAssignmentViewFactory',
-    function( CnBaseSingletonFactory, CnAssignmentListFactory, CnAssignmentAddFactory, CnAssignmentViewFactory ) {
-      return new ( function() {
-        this.subject = module.subject;
-        CnBaseSingletonFactory.apply( this );
-        this.name = module.name;
-        this.cnAdd = CnAssignmentAddFactory.instance( { parentModel: this } );
-        this.cnList = CnAssignmentListFactory.instance( { parentModel: this } );
-        this.cnView = CnAssignmentViewFactory.instance( { parentModel: this } );
+  cenozo.providers.factory( 'CnAssignmentModelFactory', [
+    'CnBaseModelFactory',
+    'CnAssignmentListFactory', 'CnAssignmentViewFactory',
+    'CnAppSingleton',
+    function( CnBaseModelFactory,
+              CnAssignmentListFactory, CnAssignmentViewFactory,
+              CnAppSingleton ) {
+      var object = function() {
+        var self = this;
+        CnBaseModelFactory.construct( this, module );
+        this.listModel = CnAssignmentListFactory.instance( this );
+        this.viewModel = CnAssignmentViewFactory.instance( this );
 
-        this.cnList.enableAdd( true );
-        this.cnList.enableDelete( true );
-        this.cnList.enableView( true );
-      } );
+        this.enableDelete( true );
+        this.enableView( true );
+      };
+
+      return {
+        root: new object(),
+        instance: function() { return new object(); }
+      };
     }
   ] );
 

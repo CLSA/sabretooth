@@ -7,7 +7,42 @@ define( {
     pluralPossessive: 'assignments\''
   },
   inputList: {
-    // TODO: fill out
+    user: {
+      column: 'user.name',
+      title: 'User',
+      type: 'string',
+      constant: true
+    },
+    site: {
+      column: 'site.name',
+      title: 'Site',
+      type: 'string',
+      constant: true
+    },
+    participant: {
+      column: 'participant.uid',
+      title: 'Participant',
+      type: 'string',
+      constant: true
+    },
+    queue: {
+      column: 'queue.title',
+      title: 'Queue',
+      type: 'string',
+      constant: true
+    },
+    start_datetime: {
+      column: 'assignment.start_datetime',
+      title: 'Start Date & Time',
+      type: 'datetimesecond',
+      constant: true
+    },
+    end_datetime: {
+      column: 'assignment.end_datetime',
+      title: 'End Date & Time',
+      type: 'datetimesecond',
+      constant: true
+    }
   },
   columnList: {
     user: {
@@ -25,8 +60,7 @@ define( {
     start_datetime: {
       column: 'assignment.start_datetime',
       title: 'Start Time',
-      filter: 'date:"MMM d, y HH:mm"',
-      isDate: true
+      filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm"',
     },
     status: {
       title: 'Status'

@@ -1,0 +1,38 @@
+<?php
+/**
+ * module.class.php
+ * 
+ * @author Patrick Emond <emondpd@mcmaster.ca>
+ * @filesource
+ */
+
+namespace sabretooth\service\assignment;
+use cenozo\lib, cenozo\log, cenozo\util;
+
+/**
+ * Performs operations which effect how this module is used in a service
+ */
+class module extends \cenozo\service\module
+{
+  /**
+   * Extend parent method
+   */
+  public function prepare_read( $select, $modifier )
+  {
+    parent::prepare_read( $select, $modifier );
+
+    // add the assignment's last call's status column
+    $modifier->cross_join( 'assignment_last_phone_call',
+      'assignment.id', 'assignment_last_phone_call.assignment_id' );
+    $modifier->cross_join( 'phone_call AS last_phone_call',
+      'assignment_last_phone_call.phone_call_id', 'last_phone_call.id' );
+    $select->add_table_column( 'last_phone_call', 'status' );
+
+    // join to participant table
+    if( $select->has_table_columns( 'participant' ) )
+    {
+      $modifier->join( 'interview', 'assignment.interview_id', 'interview.id' );
+      $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
+    }
+  }
+}
