@@ -23,10 +23,8 @@ define( [ 'app/assignment/module.js' ], function( module ) {
   cenozo.providers.factory( 'CnAssignmentModelFactory', [
     'CnBaseModelFactory',
     'CnAssignmentListFactory', 'CnAssignmentViewFactory',
-    'CnAppSingleton',
     function( CnBaseModelFactory,
-              CnAssignmentListFactory, CnAssignmentViewFactory,
-              CnAppSingleton ) {
+              CnAssignmentListFactory, CnAssignmentViewFactory ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
