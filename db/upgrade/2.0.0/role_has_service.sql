@@ -136,15 +136,15 @@ CREATE PROCEDURE patch_role_has_service()
 
         "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
         "WHERE subject = 'collection' AND method = 'DELETE' AND resource = 1 ",
-        "AND role.name IN( 'administrator', 'curator', 'supervisor' ) ",
+        "AND role.name IN( 'administrator' ) ",
 
         "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
         "WHERE subject = 'collection' AND method = 'PATCH' AND resource = 1 ",
-        "AND role.name IN( 'administrator', 'curator', 'helpline', 'operator', 'supervisor' ) ",
+        "AND role.name IN( 'administrator' ) ",
 
         "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
         "WHERE subject = 'collection' AND method = 'POST' AND resource = 0 ",
-        "AND role.name IN( 'administrator', 'curator', 'supervisor' ) ",
+        "AND role.name IN( 'administrator' ) ",
 
         "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
         "WHERE subject = 'consent' AND method = 'DELETE' AND resource = 1 ",
@@ -273,10 +273,6 @@ CREATE PROCEDURE patch_role_has_service()
         "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
         "WHERE subject = 'site' AND method = 'DELETE' AND resource = 1 ",
         "AND role.name IN( 'administrator' ) ",
-
-        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
-        "WHERE subject = 'site' AND method = 'GET' AND resource = 0 ",
-        "AND role.name IN( 'administrator', 'supervisor' ) ",
 
         "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
         "WHERE subject = 'site' AND method = 'GET' AND resource = 1 ",

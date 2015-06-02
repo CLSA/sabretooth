@@ -99,7 +99,7 @@ DROP PROCEDURE IF EXISTS patch_service;
       ( 'self', 'GET', 1, 0 ),
       ( 'self', 'PATCH', 1, 0 ),
       ( 'site', 'DELETE', 1, 1 ),
-      ( 'site', 'GET', 0, 1 ),
+      ( 'site', 'GET', 0, 0 ),
       ( 'site', 'GET', 1, 1 ),
       ( 'site', 'PATCH', 1, 1 ),
       ( 'site', 'POST', 0, 1 ),
