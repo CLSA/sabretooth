@@ -1,52 +1,49 @@
-define( [
-  cnCenozoUrl + '/app/interview/module.js'
-], function( module ) {
-
+define( [ 'app/interview/module.js' ], function( module ) {
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnInterviewListFactory', [
+  cenozo.providers.factory( 'CnInterviewAddFactory', [
+    'CnBaseAddFactory',
+    function( CnBaseAddFactory ) {
+      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
+    } 
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnInterviewListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.columnList = module.columnList;
-        params.order = module.defaultOrder;
-        return CnBaseListFactory.instance( params );
-      } };
+      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnInterviewViewFactory', [
-    'CnBaseViewFactory', 'CnParticipantListFactory', 'CnUserListFactory',
-    function( CnBaseViewFactory, CnParticipantListFactory, CnUserListFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.inputList = module.inputList;
-        return CnBaseViewFactory.instance( params );
-      } };
+  cenozo.providers.factory( 'CnInterviewViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnInterviewSingleton', [
-    'CnBaseSingletonFactory', 'CnInterviewListFactory', 'CnInterviewViewFactory',
-    function( CnBaseSingletonFactory, CnInterviewListFactory, CnInterviewViewFactory ) {
-      return new ( function() {
-        this.subject = module.subject;
-        CnBaseSingletonFactory.apply( this );
-        this.name = module.name;
-        this.cnList = CnInterviewListFactory.instance( { parentModel: this } );
-        this.cnView = CnInterviewViewFactory.instance( { parentModel: this } );
+  cenozo.providers.factory( 'CnInterviewModelFactory', [
+    'CnBaseModelFactory', 'CnInterviewAddFactory', 'CnInterviewListFactory', 'CnInterviewViewFactory',
+    function( CnBaseModelFactory, CnInterviewAddFactory, CnInterviewListFactory, CnInterviewViewFactory ) {
+      var object = function() {
+        var self = this;
+        CnBaseModelFactory.construct( this, module );
+        this.addModel = CnInterviewListFactory.instance( this );
+        this.listModel = CnInterviewListFactory.instance( this );
+        this.viewModel = CnInterviewViewFactory.instance( this );
+      };
 
-        this.cnList.enableDelete( true );
-        this.cnList.enableView( true );
-      } );
+      return {
+        root: new object(),
+        instance: function() { return new object(); }
+      };
     }
   ] );
 

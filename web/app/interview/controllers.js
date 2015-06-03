@@ -3,33 +3,36 @@ define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'InterviewAddCtrl', [
-    '$scope', 'CnInterviewSingleton',
-    function( $scope, CnInterviewSingleton ) {
-      $scope.cnAdd = CnInterviewSingleton.cnAdd;
-      $scope.cnList = CnInterviewSingleton.cnList;
-      CnInterviewSingleton.promise.then( function() {
-        $scope.record = $scope.cnAdd.createRecord();
+  cenozo.providers.controller( 'InterviewAddCtrl', [
+    '$scope', 'CnInterviewModelFactory',
+    function( $scope, CnInterviewModelFactory ) {
+      $scope.model = CnInterviewModelFactory.root;
+      $scope.record = {};
+      $scope.model.addModel.onNew( $scope.record ).catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
       } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'InterviewListCtrl', [
-    '$scope', 'CnInterviewSingleton',
-    function( $scope, CnInterviewSingleton ) {
-      $scope.cnList = CnInterviewSingleton.cnList;
-      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
+  cenozo.providers.controller( 'InterviewListCtrl', [
+    '$scope', 'CnInterviewModelFactory',
+    function( $scope, CnInterviewModelFactory ) {
+      $scope.model = CnInterviewModelFactory.root;
+      $scope.model.listModel.onList().catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'InterviewViewCtrl', [
-    '$stateParams', '$scope', 'CnInterviewSingleton',
-    function( $stateParams, $scope, CnInterviewSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, CnInterviewSingleton );
-      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
-      $scope.patch = cnPatch( $scope );
+  cenozo.providers.controller( 'InterviewViewCtrl', [
+    '$stateParams', '$scope', 'CnInterviewModelFactory',
+    function( $scope, CnInterviewModelFactory ) {
+      $scope.model = CnInterviewModelFactory.root;
+      $scope.model.viewModel.onView().catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
+      } );
     }
   ] );
 

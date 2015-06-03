@@ -3,33 +3,36 @@ define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'QnaireAddCtrl', [
-    '$scope', 'CnQnaireSingleton',
-    function( $scope, CnQnaireSingleton ) {
-      $scope.cnAdd = CnQnaireSingleton.cnAdd;
-      $scope.cnList = CnQnaireSingleton.cnList;
-      CnQnaireSingleton.promise.then( function() {
-        $scope.record = $scope.cnAdd.createRecord();
+  cenozo.providers.controller( 'QnaireAddCtrl', [
+    '$scope', 'CnQnaireModelFactory',
+    function( $scope, CnQnaireModelFactory ) {
+      $scope.model = CnQnaireModelFactory.root;
+      $scope.record = {};
+      $scope.model.addModel.onNew( $scope.record ).catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
       } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'QnaireListCtrl', [
-    '$scope', 'CnQnaireSingleton',
-    function( $scope, CnQnaireSingleton ) {
-      $scope.cnList = CnQnaireSingleton.cnList;
-      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
+  cenozo.providers.controller( 'QnaireListCtrl', [
+    '$scope', 'CnQnaireModelFactory',
+    function( $scope, CnQnaireModelFactory ) {
+      $scope.model = CnQnaireModelFactory.root;
+      $scope.model.listModel.onList().catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'QnaireViewCtrl', [
-    '$stateParams', '$scope', 'CnQnaireSingleton',
-    function( $stateParams, $scope, CnQnaireSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, CnQnaireSingleton );
-      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
-      $scope.patch = cnPatch( $scope );
+  cenozo.providers.controller( 'QnaireViewCtrl', [
+    '$stateParams', '$scope', 'CnQnaireModelFactory',
+    function( $scope, CnQnaireModelFactory ) {
+      $scope.model = CnQnaireModelFactory.root;
+      $scope.model.viewModel.onView().catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
+      } );
     }
   ] );
 

@@ -3,7 +3,7 @@ define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.directive( 'cnOpalInstanceAdd', function () {
+  cenozo.providers.directive( 'cnOpalInstanceAdd', function () {
     return {
       templateUrl: 'app/opal_instance/add.tpl.html',
       restrict: 'E'
@@ -11,7 +11,7 @@ define( [], function() {
   } );
 
   /* ######################################################################################################## */
-  cnCachedProviders.directive( 'cnOpalInstanceView', function () {
+  cenozo.providers.directive( 'cnOpalInstanceView', function () {
     return {
       templateUrl: 'app/opal_instance/view.tpl.html',
       restrict: 'E'

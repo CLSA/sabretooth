@@ -30,9 +30,6 @@ define( [ 'app/assignment/module.js' ], function( module ) {
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnAssignmentListFactory.instance( this );
         this.viewModel = CnAssignmentViewFactory.instance( this );
-
-        this.enableDelete( true );
-        this.enableView( true );
       };
 
       return {

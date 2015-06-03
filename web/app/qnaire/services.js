@@ -1,68 +1,49 @@
-define( [
-  cnCenozoUrl + '/app/qnaire/module.js'
-], function( module ) {
-
+define( [ 'app/qnaire/module.js' ], function( module ) { 
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnQnaireAddFactory', [
-    'CnBaseAddFactory', 'CnHttpFactory',
-    function( CnBaseAddFactory, CnHttpFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.inputList = module.inputList;
-        return CnBaseAddFactory.instance( params );
-      } };
-    }
+  cenozo.providers.factory( 'CnQnaireAddFactory', [
+    'CnBaseAddFactory',
+    function( CnBaseAddFactory ) {
+      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
+    } 
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnQnaireListFactory', [
+  cenozo.providers.factory( 'CnQnaireListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.columnList = module.columnList;
-        params.order = module.defaultOrder;
-        return CnBaseListFactory.instance( params );
-      } };
+      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnQnaireViewFactory', [
-    'CnBaseViewFactory', 'CnParticipantListFactory', 'CnUserListFactory',
-    function( CnBaseViewFactory, CnParticipantListFactory, CnUserListFactory ) {
-      return { instance: function( params ) {
-        if( undefined === params ) params = {};
-        params.subject = module.subject;
-        params.name = module.name;
-        params.inputList = module.inputList;
-        return CnBaseViewFactory.instance( params );
-      } };
+  cenozo.providers.factory( 'CnQnaireViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
+      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.factory( 'CnQnaireSingleton', [
-    'CnBaseSingletonFactory', 'CnQnaireListFactory', 'CnQnaireAddFactory', 'CnQnaireViewFactory',
-    function( CnBaseSingletonFactory, CnQnaireListFactory, CnQnaireAddFactory, CnQnaireViewFactory ) {
-      return new ( function() {
-        this.subject = module.subject;
-        CnBaseSingletonFactory.apply( this );
-        this.name = module.name;
-        this.cnAdd = CnQnaireAddFactory.instance( { parentModel: this } );
-        this.cnList = CnQnaireListFactory.instance( { parentModel: this } );
-        this.cnView = CnQnaireViewFactory.instance( { parentModel: this } );
+  cenozo.providers.factory( 'CnQnaireModelFactory', [
+    'CnBaseModelFactory', 'CnQnaireAddFactory', 'CnQnaireListFactory', 'CnQnaireViewFactory',
+    function( CnBaseModelFactory, CnQnaireAddFactory, CnQnaireListFactory, CnQnaireViewFactory ) {
+      var object = function() {
+        var self = this;
+        CnBaseModelFactory.construct( this, module );
+        this.addModel = CnQnaireListFactory.instance( this );
+        this.listModel = CnQnaireListFactory.instance( this );
+        this.viewModel = CnQnaireViewFactory.instance( this );
+      };
 
-        this.cnList.enableAdd( true );
-        this.cnList.enableDelete( true );
-        this.cnList.enableView( true );
-      } );
+      return {
+        root: new object(),
+        instance: function() { return new object(); }
+      };
     }
   ] );
 

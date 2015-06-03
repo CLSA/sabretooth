@@ -3,33 +3,24 @@ define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'QueueAddCtrl', [
-    '$scope', 'CnQueueSingleton',
-    function( $scope, CnQueueSingleton ) {
-      $scope.cnAdd = CnQueueSingleton.cnAdd;
-      $scope.cnList = CnQueueSingleton.cnList;
-      CnQueueSingleton.promise.then( function() {
-        $scope.record = $scope.cnAdd.createRecord();
+  cenozo.providers.controller( 'QueueListCtrl', [
+    '$scope', 'CnQueueModelFactory',
+    function( $scope, CnQueueModelFactory ) {
+      $scope.model = CnQueueModelFactory.root;
+      $scope.model.listModel.onList().catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
       } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'QueueListCtrl', [
-    '$scope', 'CnQueueSingleton',
-    function( $scope, CnQueueSingleton ) {
-      $scope.cnList = CnQueueSingleton.cnList;
-      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cnCachedProviders.controller( 'QueueViewCtrl', [
-    '$stateParams', '$scope', 'CnQueueSingleton',
-    function( $stateParams, $scope, CnQueueSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, CnQueueSingleton );
-      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
-      $scope.patch = cnPatch( $scope );
+  cenozo.providers.controller( 'QueueViewCtrl', [
+    '$stateParams', '$scope', 'CnQueueModelFactory',
+    function( $scope, CnQueueModelFactory ) {
+      $scope.model = CnQueueModelFactory.root;
+      $scope.model.viewModel.onView().catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
+      } );
     }
   ] );
 

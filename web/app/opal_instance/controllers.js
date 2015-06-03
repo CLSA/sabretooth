@@ -3,33 +3,36 @@ define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'OpalInstanceAddCtrl', [
-    '$scope', 'CnOpalInstanceSingleton',
-    function( $scope, CnOpalInstanceSingleton ) {
-      $scope.cnAdd = CnOpalInstanceSingleton.cnAdd;
-      $scope.cnList = CnOpalInstanceSingleton.cnList;
-      CnOpalInstanceSingleton.promise.then( function() {
-        $scope.record = $scope.cnAdd.createRecord();
+  cenozo.providers.controller( 'OpalInstanceAddCtrl', [
+    '$scope', 'CnOpalInstanceModelFactory',
+    function( $scope, CnOpalInstanceModelFactory ) {
+      $scope.model = CnOpalInstanceModelFactory.root;
+      $scope.record = {};
+      $scope.model.addModel.onNew( $scope.record ).catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
       } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'OpalInstanceListCtrl', [
-    '$scope', 'CnOpalInstanceSingleton',
-    function( $scope, CnOpalInstanceSingleton ) {
-      $scope.cnList = CnOpalInstanceSingleton.cnList;
-      $scope.cnList.load().catch( function exception() { cnFatalError(); } );
+  cenozo.providers.controller( 'OpalInstanceListCtrl', [
+    '$scope', 'CnOpalInstanceModelFactory',
+    function( $scope, CnOpalInstanceModelFactory ) {
+      $scope.model = CnOpalInstanceModelFactory.root;
+      $scope.model.listModel.onList().catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cnCachedProviders.controller( 'OpalInstanceViewCtrl', [
-    '$stateParams', '$scope', 'CnOpalInstanceSingleton',
-    function( $stateParams, $scope, CnOpalInstanceSingleton ) {
-      CnBaseViewCtrl.call( this, $scope, CnOpalInstanceSingleton );
-      $scope.cnView.load( $stateParams.id ).catch( function exception() { cnFatalError(); } );
-      $scope.patch = cnPatch( $scope );
+  cenozo.providers.controller( 'OpalInstanceViewCtrl', [
+    '$stateParams', '$scope', 'CnOpalInstanceModelFactory',
+    function( $scope, CnOpalInstanceModelFactory ) {
+      $scope.model = CnOpalInstanceModelFactory.root;
+      $scope.model.viewModel.onView().catch( function exception( response ) {
+        $scope.model.transitionToErrorState( response );
+      } );
     }
   ] );
 

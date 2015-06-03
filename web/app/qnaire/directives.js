@@ -3,7 +3,7 @@ define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */
-  cnCachedProviders.directive( 'cnQnaireAdd', function () {
+  cenozo.providers.directive( 'cnQnaireAdd', function () {
     return {
       templateUrl: 'app/qnaire/add.tpl.html',
       restrict: 'E'
@@ -11,7 +11,7 @@ define( [], function() {
   } );
 
   /* ######################################################################################################## */
-  cnCachedProviders.directive( 'cnQnaireView', function () {
+  cenozo.providers.directive( 'cnQnaireView', function () {
     return {
       templateUrl: 'app/qnaire/view.tpl.html',
       restrict: 'E'
