@@ -15,7 +15,7 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'QueueViewCtrl', [
-    '$stateParams', '$scope', 'CnQueueModelFactory',
+    '$scope', 'CnQueueModelFactory',
     function( $scope, CnQueueModelFactory ) {
       $scope.model = CnQueueModelFactory.root;
       $scope.model.viewModel.onView().catch( function exception( response ) {

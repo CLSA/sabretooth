@@ -13,17 +13,26 @@ define( {
       type: 'string',
       constant: true
     },
+    qnaire_id: {
+      title: 'Questionnaire',
+      type: 'enum',
+      constant: true
+    },
+    interview_method_id: {
+      title: 'Interview Method',
+      type: 'enum'
+    },
     start_datetime: {
       column: 'interview.start_datetime',
       title: 'Start Date & Time',
       type: 'datetimesecond',
-      constant: true
+      help: 'When the first call from the first assignment was made for this interview.'
     },
     end_datetime: {
       column: 'interview.end_datetime',
       title: 'End Date & Time',
       type: 'datetimesecond',
-      constant: true
+      help: 'Will remain blank until the questionnaire is complete.'
     }
   },
   columnList: {

@@ -27,7 +27,7 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'QnaireViewCtrl', [
-    '$stateParams', '$scope', 'CnQnaireModelFactory',
+    '$scope', 'CnQnaireModelFactory',
     function( $scope, CnQnaireModelFactory ) {
       $scope.model = CnQnaireModelFactory.root;
       $scope.model.viewModel.onView().catch( function exception( response ) {

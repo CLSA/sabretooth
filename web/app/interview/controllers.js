@@ -27,7 +27,7 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'InterviewViewCtrl', [
-    '$stateParams', '$scope', 'CnInterviewModelFactory',
+    '$scope', 'CnInterviewModelFactory',
     function( $scope, CnInterviewModelFactory ) {
       $scope.model = CnInterviewModelFactory.root;
       $scope.model.viewModel.onView().catch( function exception( response ) {

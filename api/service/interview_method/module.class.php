@@ -6,7 +6,7 @@
  * @filesource
  */
 
-namespace sabretooth\service\qnaire;
+namespace sabretooth\service\interview_method;
 use cenozo\lib, cenozo\log, cenozo\util;
 
 /**

@@ -27,7 +27,7 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'OpalInstanceViewCtrl', [
-    '$stateParams', '$scope', 'CnOpalInstanceModelFactory',
+    '$scope', 'CnOpalInstanceModelFactory',
     function( $scope, CnOpalInstanceModelFactory ) {
       $scope.model = CnOpalInstanceModelFactory.root;
       $scope.model.viewModel.onView().catch( function exception( response ) {

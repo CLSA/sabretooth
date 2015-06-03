@@ -25,6 +25,12 @@ define( {
       type: 'string',
       constant: true
     },
+    qnaire: {
+      column: 'qnaire.name',
+      title: 'Questionnaire',
+      type: 'string',
+      constant: true
+    },
     queue: {
       column: 'queue.title',
       title: 'Queue',
