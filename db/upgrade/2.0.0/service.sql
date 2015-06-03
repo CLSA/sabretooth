@@ -127,6 +127,7 @@ DROP PROCEDURE IF EXISTS patch_service;
       ( 'interview', 'GET', 1, 0 ),
       ( 'interview', 'PATCH', 1, 1 ),
       ( 'interview', 'POST', 0, 1 ),
+      ( 'interview_method', 'GET', 1, 0 ),
       ( 'opal_instance', 'DELETE', 1, 1 ),
       ( 'opal_instance', 'GET', 0, 1 ),
       ( 'opal_instance', 'GET', 1, 1 ),
