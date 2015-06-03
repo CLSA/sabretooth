@@ -41,9 +41,9 @@ class module extends \cenozo\service\module
     }
 
     // add the assignment's last call's status column
-    $modifier->cross_join( 'assignment_last_phone_call',
+    $modifier->left_join( 'assignment_last_phone_call',
       'assignment.id', 'assignment_last_phone_call.assignment_id' );
-    $modifier->cross_join( 'phone_call AS last_phone_call',
+    $modifier->left_join( 'phone_call AS last_phone_call',
       'assignment_last_phone_call.phone_call_id', 'last_phone_call.id' );
     $select->add_table_column( 'last_phone_call', 'status' );
   }

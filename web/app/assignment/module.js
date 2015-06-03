@@ -59,14 +59,19 @@ define( {
     },
     start_datetime: {
       column: 'assignment.start_datetime',
-      title: 'Start Time',
+      title: 'Start',
+      filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm"',
+    },
+    end_datetime: {
+      column: 'assignment.end_datetime',
+      title: 'End',
       filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm"',
     },
     status: {
       title: 'Status'
     },
     complete: {
-      column: 'interview.completed',
+      column: 'interview.end_datetime',
       title: 'Complete',
       filter: 'cnYesNo'
     }
