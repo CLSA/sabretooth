@@ -8,7 +8,9 @@ define( [], function() {
     function( $scope, CnOpalInstanceModelFactory ) {
       $scope.model = CnOpalInstanceModelFactory.root;
       $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).catch( function exception( response ) {
+      $scope.model.addModel.onNew( $scope.record ).then( function() {
+        $scope.model.setupBreadcrumbTrail( 'add' );
+      } ).catch( function exception( response ) {
         $scope.model.transitionToErrorState( response );
       } );
     }
@@ -19,7 +21,9 @@ define( [], function() {
     '$scope', 'CnOpalInstanceModelFactory',
     function( $scope, CnOpalInstanceModelFactory ) {
       $scope.model = CnOpalInstanceModelFactory.root;
-      $scope.model.listModel.onList().catch( function exception( response ) {
+      $scope.model.listModel.onList().then( function() {
+        $scope.model.setupBreadcrumbTrail( 'list' );
+      } ).catch( function exception( response ) {
         $scope.model.transitionToErrorState( response );
       } );
     }
@@ -30,7 +34,9 @@ define( [], function() {
     '$scope', 'CnOpalInstanceModelFactory',
     function( $scope, CnOpalInstanceModelFactory ) {
       $scope.model = CnOpalInstanceModelFactory.root;
-      $scope.model.viewModel.onView().catch( function exception( response ) {
+      $scope.model.viewModel.onView().then( function() {
+        $scope.model.setupBreadcrumbTrail( 'view' );
+      } ).catch( function exception( response ) {
         $scope.model.transitionToErrorState( response );
       } );
     }

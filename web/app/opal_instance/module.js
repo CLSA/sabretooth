@@ -1,5 +1,6 @@
 define( {
   subject: 'opal_instance',
+  identifier: {}, // standard
   name: {
     singular: 'opal instance',
     plural: 'opal instances',
