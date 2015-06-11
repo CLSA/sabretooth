@@ -1,4 +1,4 @@
-define( [ 'app/queue/module.js' ], function( module ) { 
+define( cenozo.getServicesIncludeList( 'queue' ), function( module ) { 
   'use strict';
 
   /* ######################################################################################################## */
@@ -11,13 +11,14 @@ define( [ 'app/queue/module.js' ], function( module ) {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnQueueViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
+  cenozo.providers.factory( 'CnQueueViewFactory',
+    cenozo.getListModelInjectionList( 'queue' ).concat( function() {
+      var args = arguments;
+      var CnBaseViewFactory = args[0];
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
+    } )
+  );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQueueModelFactory', [

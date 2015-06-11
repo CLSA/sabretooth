@@ -1,6 +1,11 @@
 define( {
   subject: 'assignment',
-  identifier: {}, // standard
+  identifier: {
+    parent: {
+      subject: 'interview',
+      column: 'interview_id'
+    }
+  },
   name: {
     singular: 'assignment',
     plural: 'assignments',
@@ -8,18 +13,6 @@ define( {
     pluralPossessive: 'assignments\''
   },
   inputList: {
-    user: {
-      column: 'user.name',
-      title: 'User',
-      type: 'string',
-      constant: true
-    },
-    site: {
-      column: 'site.name',
-      title: 'Site',
-      type: 'string',
-      constant: true
-    },
     participant: {
       column: 'participant.uid',
       title: 'Participant',
@@ -29,6 +22,18 @@ define( {
     qnaire: {
       column: 'qnaire.name',
       title: 'Questionnaire',
+      type: 'string',
+      constant: true
+    },
+    user: {
+      column: 'user.name',
+      title: 'User',
+      type: 'string',
+      constant: true
+    },
+    site: {
+      column: 'site.name',
+      title: 'Site',
       type: 'string',
       constant: true
     },
@@ -60,10 +65,6 @@ define( {
       column: 'site.name',
       title: 'Site'
     },
-    uid: {
-      column: 'interview.participant.uid',
-      title: 'UID'
-    },
     start_datetime: {
       column: 'assignment.start_datetime',
       title: 'Start',
@@ -73,14 +74,6 @@ define( {
       column: 'assignment.end_datetime',
       title: 'End',
       filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm"',
-    },
-    status: {
-      title: 'Status'
-    },
-    complete: {
-      column: 'interview.end_datetime',
-      title: 'Complete',
-      filter: 'cnYesNo'
     }
   },
   defaultOrder: {

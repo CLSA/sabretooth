@@ -1,3 +1,5 @@
 <cn-record-view model="model"></cn-record-view>
-<div class="vertical-spacer"></div>
-<cn-record-list heading="Assignment List" model="model.viewModel.assignmentModel"></cn-record-list>
+<div class="vertical-spacer" ng-repeat="child in model.children">
+  <cn-record-list heading="{{ child.title }} List"
+                  model="model.viewModel[child.camel+'Model']"></cn-record-list>
+</div>

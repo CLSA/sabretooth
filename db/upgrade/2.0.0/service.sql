@@ -119,8 +119,8 @@ DROP PROCEDURE IF EXISTS patch_service;
 
       -- application services
       ( 'assignment', 'DELETE', 1, 1 ),
-      ( 'assignment', 'GET', 0, 1 ),
-      ( 'assignment', 'GET', 1, 1 ),
+      ( 'assignment', 'GET', 0, 0 ),
+      ( 'assignment', 'GET', 1, 0 ),
       ( 'assignment', 'PATCH', 1, 1 ),
       ( 'interview', 'DELETE', 1, 1 ),
       ( 'interview', 'GET', 0, 0 ),
@@ -133,6 +133,7 @@ DROP PROCEDURE IF EXISTS patch_service;
       ( 'opal_instance', 'GET', 1, 1 ),
       ( 'opal_instance', 'PATCH', 1, 1 ),
       ( 'opal_instance', 'POST', 0, 1 ),
+      ( 'phone_call', 'GET', 0, 0 ),
       ( 'qnaire', 'DELETE', 1, 1 ),
       ( 'qnaire', 'GET', 0, 1 ),
       ( 'qnaire', 'GET', 1, 1 ),

@@ -1,4 +1,4 @@
-define( [ 'app/opal_instance/module.js' ], function( module ) { 
+define( cenozo.getServicesIncludeList( 'opal_instance' ), function( module ) { 
   'use strict';
 
   /* ######################################################################################################## */
@@ -20,13 +20,14 @@ define( [ 'app/opal_instance/module.js' ], function( module ) {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnOpalInstanceViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); };
+  cenozo.providers.factory( 'CnOpalInstanceViewFactory',
+    cenozo.getListModelInjectionList( 'opal_instance' ).concat( function() {
+      var args = arguments;
+      var CnBaseViewFactory = args[0];
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
+    } )
+  );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnOpalInstanceModelFactory', [

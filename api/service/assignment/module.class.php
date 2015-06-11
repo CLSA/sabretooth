@@ -29,10 +29,13 @@ class module extends \cenozo\service\module
       $modifier->where( 'assignment.site_id', '=', $session->get_site()->id );
     }
 
-    if( $select->has_table_columns( 'participant' ) )
+    if( $select->has_table_columns( 'participant' ) || $select->has_table_columns( 'qnaire' ) )
     {
       $modifier->join( 'interview', 'assignment.interview_id', 'interview.id' );
-      $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
+      if( $select->has_table_columns( 'participant' ) )
+        $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
+      if( $select->has_table_columns( 'qnaire' ) )
+        $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
     }
 
     // add the assignment's last call's status column
