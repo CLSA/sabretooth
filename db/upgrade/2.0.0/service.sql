@@ -122,7 +122,6 @@ DROP PROCEDURE IF EXISTS patch_service;
       ( 'assignment', 'GET', 0, 0 ),
       ( 'assignment', 'GET', 1, 0 ),
       ( 'assignment', 'PATCH', 1, 1 ),
-      ( 'interview', 'DELETE', 1, 1 ),
       ( 'interview', 'GET', 0, 0 ),
       ( 'interview', 'GET', 1, 0 ),
       ( 'interview', 'PATCH', 1, 1 ),
