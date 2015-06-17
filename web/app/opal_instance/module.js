@@ -18,11 +18,11 @@ define( {
     active: {
       column: 'user.active',
       title: 'Active',
-      filter: 'cnYesNo'
+      type: 'boolean'
     },
     last_datetime: {
       title: 'Last Activity',
-      filter: 'date:"MMM d, y HH:mm"'
+      type: 'datetime'
     }
   },
   defaultOrder: {

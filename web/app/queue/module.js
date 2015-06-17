@@ -11,9 +11,15 @@ define( {
     // TODO: fill out
   },
   columnList: {
-    rank: { title: 'Rank' },
+    rank: {
+      title: 'Rank',
+      type: 'rank'
+    },
     name: { title: 'Name' },
-    participant_count: { title: 'Participants' }
+    participant_count: {
+      title: 'Participants',
+      type: 'number'
+    }
   },
   defaultOrder: {
     column: 'rank',

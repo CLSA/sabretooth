@@ -57,12 +57,12 @@ define( {
     start_datetime: {
       column: 'interview.start_datetime',
       title: 'Start',
-      filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm"',
+      type: 'datetime'
     },
     end_datetime: {
       column: 'interview.end_datetime',
       title: 'End',
-      filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm"',
+      type: 'datetime'
     }
   },
   defaultOrder: {

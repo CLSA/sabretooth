@@ -68,12 +68,12 @@ define( {
     start_datetime: {
       column: 'assignment.start_datetime',
       title: 'Start',
-      filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm"',
+      type: 'datetime'
     },
     end_datetime: {
       column: 'assignment.end_datetime',
       title: 'End',
-      filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm"',
+      type: 'datetime'
     }
   },
   defaultOrder: {

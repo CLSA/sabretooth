@@ -23,12 +23,12 @@ define( {
     start_datetime: {
       column: 'phone_call.start_datetime',
       title: 'Start',
-      filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm"',
+      type: 'datetime',
     },
     end_datetime: {
       column: 'phone_call.end_datetime',
       title: 'End',
-      filter: 'cnMomentDate:"MMM D, YYYY @ HH:mm"',
+      type: 'datetime',
     },
     status: { title: 'Status' }
   },

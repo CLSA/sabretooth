@@ -17,7 +17,9 @@ define( {
     },
     rank: {
       column: 'qnaire.rank',
-      title: 'Rank' },
+      title: 'Rank',
+      type: 'rank'
+    },
     method: {
       column: 'default_interview_method.name',
       title: 'Method'
@@ -30,7 +32,10 @@ define( {
       column: 'qnaire.delay',
       title: 'Delay'
     },
-    phase_count: { title: 'Phases' }
+    phase_count: {
+      title: 'Phases',
+      type: 'number'
+    }
   },
   defaultOrder: {
     column: 'rank',
