@@ -68,12 +68,12 @@ define( {
     start_datetime: {
       column: 'assignment.start_datetime',
       title: 'Start',
-      type: 'datetime'
+      type: 'datetimesecond'
     },
     end_datetime: {
       column: 'assignment.end_datetime',
       title: 'End',
-      type: 'datetime'
+      type: 'datetimesecond'
     }
   },
   defaultOrder: {

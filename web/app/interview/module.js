@@ -57,12 +57,12 @@ define( {
     start_datetime: {
       column: 'interview.start_datetime',
       title: 'Start',
-      type: 'datetime'
+      type: 'datetimesecond'
     },
     end_datetime: {
       column: 'interview.end_datetime',
       title: 'End',
-      type: 'datetime'
+      type: 'datetimesecond'
     }
   },
   defaultOrder: {

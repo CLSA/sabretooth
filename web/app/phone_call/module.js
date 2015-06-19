@@ -23,12 +23,12 @@ define( {
     start_datetime: {
       column: 'phone_call.start_datetime',
       title: 'Start',
-      type: 'datetime',
+      type: 'datetimesecond',
     },
     end_datetime: {
       column: 'phone_call.end_datetime',
       title: 'End',
-      type: 'datetime',
+      type: 'datetimesecond',
     },
     status: { title: 'Status' }
   },
