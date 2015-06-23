@@ -4,14 +4,12 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'PhoneCallListCtrl', [
-    '$scope', 'CnPhoneCallModelFactory',
-    function( $scope, CnPhoneCallModelFactory ) {
+    '$scope', 'CnPhoneCallModelFactory', 'CnSession',
+    function( $scope, CnPhoneCallModelFactory, CnSession ) {
       $scope.model = CnPhoneCallModelFactory.root;
       $scope.model.listModel.onList().then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( function exception( response ) {
-        $scope.model.transitionToErrorState( response );
-      } );
+      } ).catch( CnSession.errorHandler );
     }
   ] );
 

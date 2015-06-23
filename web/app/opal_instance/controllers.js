@@ -4,41 +4,35 @@ define( [], function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'OpalInstanceAddCtrl', [
-    '$scope', 'CnOpalInstanceModelFactory',
-    function( $scope, CnOpalInstanceModelFactory ) {
+    '$scope', 'CnOpalInstanceModelFactory', 'CnSession',
+    function( $scope, CnOpalInstanceModelFactory, CnSession ) {
       $scope.model = CnOpalInstanceModelFactory.root;
       $scope.record = {};
       $scope.model.addModel.onNew( $scope.record ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'add' );
-      } ).catch( function exception( response ) {
-        $scope.model.transitionToErrorState( response );
-      } );
+      } ).catch( CnSession.errorHandler );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'OpalInstanceListCtrl', [
-    '$scope', 'CnOpalInstanceModelFactory',
-    function( $scope, CnOpalInstanceModelFactory ) {
+    '$scope', 'CnOpalInstanceModelFactory', 'CnSession',
+    function( $scope, CnOpalInstanceModelFactory, CnSession ) {
       $scope.model = CnOpalInstanceModelFactory.root;
       $scope.model.listModel.onList().then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( function exception( response ) {
-        $scope.model.transitionToErrorState( response );
-      } );
+      } ).catch( CnSession.errorHandler );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'OpalInstanceViewCtrl', [
-    '$scope', 'CnOpalInstanceModelFactory',
-    function( $scope, CnOpalInstanceModelFactory ) {
+    '$scope', 'CnOpalInstanceModelFactory', 'CnSession',
+    function( $scope, CnOpalInstanceModelFactory, CnSession ) {
       $scope.model = CnOpalInstanceModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
-      } ).catch( function exception( response ) {
-        $scope.model.transitionToErrorState( response );
-      } );
+      } ).catch( CnSession.errorHandler );
     }
   ] );
 

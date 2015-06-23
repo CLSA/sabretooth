@@ -31,12 +31,12 @@ CREATE PROCEDURE patch_role_has_service()
           "CONSTRAINT fk_role_has_service_service_id ",
             "FOREIGN KEY (service_id) ",
             "REFERENCES service (id) ",
-            "ON DELETE NO ACTION ",
+            "ON DELETE CASCADE ",
             "ON UPDATE NO ACTION, ",
           "CONSTRAINT fk_role_has_service_role_id ",
             "FOREIGN KEY (role_id) ",
             "REFERENCES ", @cenozo, ".role (id) ",
-            "ON DELETE NO ACTION ",
+            "ON DELETE CASCADE ",
             "ON UPDATE NO ACTION) ",
         "ENGINE = InnoDB" );
       PREPARE statement FROM @sql;
