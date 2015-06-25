@@ -118,7 +118,6 @@ DROP PROCEDURE IF EXISTS patch_service;
       ( 'user', 'POST', 0, 1 ),
 
       -- application services
-      ( 'assignment', 'DELETE', 1, 1 ),
       ( 'assignment', 'GET', 0, 0 ),
       ( 'assignment', 'GET', 1, 0 ),
       ( 'assignment', 'PATCH', 1, 1 ),
