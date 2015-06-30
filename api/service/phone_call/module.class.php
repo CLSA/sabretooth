@@ -7,7 +7,7 @@
  */
 
 namespace sabretooth\service\phone_call;
-use cenozo\lib, cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Performs operations which effect how this module is used in a service
