@@ -38,7 +38,7 @@ define( cenozo.getServicesIncludeList( 'opal_instance' ), function( module ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
-        this.addModel = CnOpalInstanceListFactory.instance( this );
+        this.addModel = CnOpalInstanceAddFactory.instance( this );
         this.listModel = CnOpalInstanceListFactory.instance( this );
         this.viewModel = CnOpalInstanceViewFactory.instance( this );
       };

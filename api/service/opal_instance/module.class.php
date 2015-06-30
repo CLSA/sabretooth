@@ -7,7 +7,7 @@
  */
 
 namespace sabretooth\service\opal_instance;
-use cenozo\lib, cenozo\log, cenozo\util;
+use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Performs operations which effect how this module is used in a service
@@ -35,11 +35,23 @@ class module extends \cenozo\service\module
       $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
     }
 
-    // add the opal_instance's last call's status column
-    $modifier->left_join( 'opal_instance_last_phone_call',
-      'opal_instance.id', 'opal_instance_last_phone_call.opal_instance_id' );
-    $modifier->left_join( 'phone_call AS last_phone_call',
-      'opal_instance_last_phone_call.phone_call_id', 'last_phone_call.id' );
-    $select->add_table_column( 'last_phone_call', 'status' );
+    // add the opal_instance's last access column
+    if( $select->has_column( 'last_access_datetime' ) )
+    {
+      $join_sel = lib::create( 'database\select' );
+      $join_sel->from( 'access' );
+      $join_sel->add_column( 'user_id' );
+      $join_sel->add_column( 'MAX( access.datetime )', 'last_access_datetime', false );
+
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->group( 'user_id' );
+
+      $modifier->left_join(
+        sprintf( '( %s %s ) AS user_join_access', $join_sel->get_sql(), $join_mod->get_sql() ),
+        'opal_instance.user_id',
+        'user_join_access.user_id' );
+
+      $select->add_column( 'user_join_access.last_access_datetime', 'last_access_datetime', false );
+    }
   }
 }

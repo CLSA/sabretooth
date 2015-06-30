@@ -8,7 +8,19 @@ define( {
     pluralPossessive: 'opal instances\''
   },
   inputList: {
-    // TODO: fill out
+    active: {
+      title: 'Active',
+      type: 'boolean'
+    },
+    username: {
+      title: 'Username',
+      type: 'string'
+    },
+    password: {
+      title: 'Password',
+      type: 'string',
+      noview: true
+    }
   },
   columnList: {
     name: {
@@ -20,7 +32,7 @@ define( {
       title: 'Active',
       type: 'boolean'
     },
-    last_datetime: {
+    last_access_datetime: {
       title: 'Last Activity',
       type: 'datetime'
     }
