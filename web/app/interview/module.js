@@ -66,7 +66,7 @@ define( {
     }
   },
   defaultOrder: {
-    column: 'uid',
+    column: 'participant.uid',
     reverse: false
   }
 } );
