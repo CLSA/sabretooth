@@ -19,6 +19,7 @@ define( {
     password: {
       title: 'Password',
       type: 'string',
+      regex: '^((?!(password)).){8,}$', // length >= 8 and can't have "password"
       noview: true
     }
   },
