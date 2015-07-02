@@ -248,6 +248,26 @@ CREATE PROCEDURE patch_role_has_service()
         "AND role.name IN( 'administrator', 'supervisor' ) ",
 
         "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'cedar_instance' AND method = 'DELETE' AND resource = 1 ",
+        "AND role.name IN( 'administrator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'cedar_instance' AND method = 'GET' AND resource = 0 ",
+        "AND role.name IN( 'administrator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'cedar_instance' AND method = 'GET' AND resource = 1 ",
+        "AND role.name IN( 'administrator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'cedar_instance' AND method = 'PATCH' AND resource = 1 ",
+        "AND role.name IN( 'administrator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'cedar_instance' AND method = 'POST' AND resource = 0 ",
+        "AND role.name IN( 'administrator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
         "WHERE subject = 'interview' AND method = 'PATCH' AND resource = 1 ",
         "AND role.name IN( 'administrator', 'supervisor' ) ",
 
