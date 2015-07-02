@@ -42,7 +42,6 @@ class post extends \cenozo\service\post
    */
   protected function get_leaf_record()
   {
-    // TODO: referencing problem.  We're setting the user_id, but then it isn't present in $this->new_record
     $db_opal_instance = parent::get_leaf_record();
 
     if( is_null( $db_opal_instance->user_id ) )
@@ -70,7 +69,6 @@ class post extends \cenozo\service\post
       $db_access->site_id = $db_site->id;
       $db_access->role_id = $db_role->id;
 
-      $db_opal_instance = lib::create( 'database\opal_instance' );
       $db_opal_instance->user_id = $db_user->id;
     }
 
