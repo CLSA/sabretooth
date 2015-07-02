@@ -32,13 +32,55 @@ define( cenozo.getServicesIncludeList( 'qnaire' ), function( module ) {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQnaireModelFactory', [
     'CnBaseModelFactory', 'CnQnaireAddFactory', 'CnQnaireListFactory', 'CnQnaireViewFactory',
-    function( CnBaseModelFactory, CnQnaireAddFactory, CnQnaireListFactory, CnQnaireViewFactory ) {
+    'CnHttpFactory',
+    function( CnBaseModelFactory, CnQnaireAddFactory, CnQnaireListFactory, CnQnaireViewFactory,
+              CnHttpFactory ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnQnaireListFactory.instance( this );
         this.listModel = CnQnaireListFactory.instance( this );
         this.viewModel = CnQnaireViewFactory.instance( this );
+
+        // extend getMetadata
+        this.getMetadata = function() {
+          this.metadata.loadingCount++;
+          return this.loadMetadata().then( function() {
+            return CnHttpFactory.instance( {
+              path: 'interview_method',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: { name: false } }
+              }
+            } ).query().then( function( response ) {
+              self.metadata.columnList.interview_method_id.enumList = [];
+              for( var i = 0; i < response.data.length; i++ ) {
+                self.metadata.columnList.interview_method_id.enumList.push( {
+                  value: response.data[i].id,
+                  name: response.data[i].name
+                } );
+              }
+            } ).then( function() {
+              return CnHttpFactory.instance( {
+                path: 'qnaire',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: { name: false } }
+                }
+              } ).query().then( function( response ) {
+                self.metadata.columnList.prev_qnaire_id.enumList = [];
+                for( var i = 0; i < response.data.length; i++ ) {
+                  self.metadata.columnList.prev_qnaire_id.enumList.push( {
+                    value: response.data[i].id,
+                    name: response.data[i].name
+                  } );
+                }
+              } );
+            } ).then( function() {
+              self.metadata.loadingCount--;
+            } );
+          } );
+        };
       };
 
       return {

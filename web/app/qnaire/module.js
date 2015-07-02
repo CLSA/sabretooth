@@ -8,7 +8,36 @@ define( {
     pluralPossessive: 'questionnaires\''
   },
   inputList: {
-    // TODO: fill out
+    name: {
+      title: 'Name',
+      type: 'string'
+    },
+    rank: {
+      title: 'Rank',
+      type: 'rank'
+    },
+    interview_method_id: {
+      title: 'Default Interview Method',
+      type: 'enum'
+    },
+    prev_qnaire_id: {
+      title: 'Previous Questionnaire',
+      type: 'enum'
+    },
+    delay: {
+      title: 'Delay (weeks)',
+      type: 'string',
+      format: 'integer',
+      minValue: 0
+    },
+    withdraw_sid: {
+      title: 'Withdraw Survey',
+      type: 'enum'
+    },
+    description: {
+      title: 'Description',
+      type: 'text'
+    }
   },
   columnList: {
     name: {
@@ -21,7 +50,7 @@ define( {
       type: 'rank'
     },
     method: {
-      column: 'default_interview_method.name',
+      column: 'interview_method.name',
       title: 'Method'
     },
     previous: {
