@@ -22,7 +22,7 @@ define( {
     }
   },
   columnList: {
-    survey_name: {
+    survey_title: {
       title: 'Name'
     },
     rank: {

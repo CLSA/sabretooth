@@ -41,30 +41,6 @@ class session extends \cenozo\business\session
   }
 
   /**
-   * Get the survey database.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return database
-   * @access public
-   */
-  public function get_survey_database()
-  {
-    // create the database if it doesn't exist yet
-    if( is_null( $this->survey_database ) )
-    {
-      $setting_manager = lib::create( 'business\setting_manager' );
-      $this->survey_database = lib::create( 'database\database',
-        $setting_manager->get_setting( 'survey_db', 'driver' ),
-        $setting_manager->get_setting( 'survey_db', 'server' ),
-        $setting_manager->get_setting( 'survey_db', 'username' ),
-        $setting_manager->get_setting( 'survey_db', 'password' ),
-        $setting_manager->get_setting( 'survey_db', 'database' ) );
-    }
-
-    return $this->survey_database;
-  }
-
-  /**
    * Get the user's current assignment.
    * Should only be called if the user is an operator, otherwise an exception will be thrown.
    * 
@@ -159,11 +135,4 @@ class session extends \cenozo\business\session
 
     return $allow;
   }
-  
-  /**
-   * The survey database object.
-   * @var database
-   * @access private
-   */
-  private $survey_database = NULL;
 }

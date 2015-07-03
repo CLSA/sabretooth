@@ -106,6 +106,7 @@ DROP PROCEDURE IF EXISTS patch_service;
       ( 'state', 'GET', 1, 0 ),
       ( 'state', 'PATCH', 1, 1 ),
       ( 'state', 'POST', 0, 1 ),
+      ( 'survey', 'GET', 0, 0 ),
       ( 'system_message', 'DELETE', 1, 1 ),
       ( 'system_message', 'GET', 0, 1 ),
       ( 'system_message', 'GET', 1, 1 ),

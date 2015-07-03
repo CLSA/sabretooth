@@ -22,17 +22,17 @@ class module extends \cenozo\service\module
     parent::prepare_read( $select, $modifier );
 
     // join to limesurvey tables to get the survey name
-    if( $select->has_column( 'survey_name' ) )
+    if( $select->has_column( 'survey_title' ) )
     {
-      $setting_manager = lib::create( 'business\setting_manager' );
-      $lsdb = $setting_manager->get_setting( 'survey_db', 'database' );
+      $surveys_class_name = lib::get_class_name( 'database\limesurvey\surveys' );
+      
+      $survey_table_array = array();
+      foreach( $surveys_class_name::get_titles() as $sid => $title )
+        $survey_table_array[] = sprintf( 'SELECT %s sid, "%s" title', $sid, $title );
+      $survey_table = sprintf( '( %s ) AS survey', implode( $survey_table_array, ' UNION ' ) );
 
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'phase.sid', '=', 'surveyls_survey_id', false );
-      $join_mod->where( 'surveyls_language', '=', 'en' );
-      $modifier->join_modifier( $lsdb.'.surveys_languagesettings', $join_mod );
-
-      $select->add_table_column( 'surveys_languagesettings', 'surveyls_title', 'survey_name' );
+      $modifier->left_join( $survey_table, 'phase.sid', 'survey.sid' );
+      $select->add_table_column( 'survey', 'title', 'survey_title' );
     }
   }
 }

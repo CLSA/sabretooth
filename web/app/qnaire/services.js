@@ -38,7 +38,7 @@ define( cenozo.getServicesIncludeList( 'qnaire' ), function( module ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
-        this.addModel = CnQnaireListFactory.instance( this );
+        this.addModel = CnQnaireAddFactory.instance( this );
         this.listModel = CnQnaireListFactory.instance( this );
         this.viewModel = CnQnaireViewFactory.instance( this );
 
@@ -73,6 +73,22 @@ define( cenozo.getServicesIncludeList( 'qnaire' ), function( module ) {
                   self.metadata.columnList.prev_qnaire_id.enumList.push( {
                     value: response.data[i].id,
                     name: response.data[i].name
+                  } );
+                }
+              } );
+            } ).then( function() {
+              return CnHttpFactory.instance( {
+                path: 'survey',
+                data: {
+                  select: { column: [ 'sid', 'title' ] },
+                  modifier: { order: { title: false } }
+                }
+              } ).query().then( function( response ) {
+                self.metadata.columnList.withdraw_sid.enumList = [];
+                for( var i = 0; i < response.data.length; i++ ) {
+                  self.metadata.columnList.withdraw_sid.enumList.push( {
+                    value: response.data[i].sid,
+                    name: response.data[i].title
                   } );
                 }
               } );
