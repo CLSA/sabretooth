@@ -1,6 +1,6 @@
-DROP PROCEDURE IF EXISTS patch_character_set;
+DROP PROCEDURE IF EXISTS patch_table_character_sets;
 DELIMITER //
-CREATE PROCEDURE patch_character_set()
+CREATE PROCEDURE patch_table_character_sets()
   BEGIN
 
     -- Declare '_val' variables to read in each record from the cursor
@@ -74,5 +74,5 @@ CREATE PROCEDURE patch_character_set()
   END //
 DELIMITER ;
 
-CALL patch_character_set();
-DROP PROCEDURE IF EXISTS patch_character_set;
+CALL patch_table_character_sets();
+DROP PROCEDURE IF EXISTS patch_table_character_sets;

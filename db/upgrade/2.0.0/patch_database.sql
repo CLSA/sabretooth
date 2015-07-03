@@ -26,7 +26,8 @@ SOURCE update_participant_last_interview.sql
 SOURCE update_interview_last_assignment.sql
 SOURCE update_assignment_last_phone_call.sql
 
-SOURCE character_set.sql
+SOURCE table_character_sets.sql
+SOURCE column_character_sets.sql
 
 SOURCE update_version_number.sql
 
