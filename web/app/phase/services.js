@@ -32,13 +32,39 @@ define( cenozo.getServicesIncludeList( 'phase' ), function( module ) {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnPhaseModelFactory', [
     'CnBaseModelFactory', 'CnPhaseAddFactory', 'CnPhaseListFactory', 'CnPhaseViewFactory',
-    function( CnBaseModelFactory, CnPhaseAddFactory, CnPhaseListFactory, CnPhaseViewFactory ) {
+    'CnHttpFactory',
+    function( CnBaseModelFactory, CnPhaseAddFactory, CnPhaseListFactory, CnPhaseViewFactory,
+              CnHttpFactory ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
-        this.addModel = CnPhaseListFactory.instance( this );
+        this.addModel = CnPhaseAddFactory.instance( this );
         this.listModel = CnPhaseListFactory.instance( this );
         this.viewModel = CnPhaseViewFactory.instance( this );
+
+        // extend getMetadata
+        this.getMetadata = function() {
+          this.metadata.loadingCount++;
+          return this.loadMetadata().then( function() {
+            return CnHttpFactory.instance( {
+              path: 'survey',
+              data: {
+                select: { column: [ 'sid', 'title' ] },
+                modifier: { order: { title: false } }
+              }
+            } ).query().then( function( response ) {
+              self.metadata.columnList.sid.enumList = [];
+              for( var i = 0; i < response.data.length; i++ ) {
+                self.metadata.columnList.sid.enumList.push( {
+                  value: response.data[i].sid,
+                  name: response.data[i].title
+                } );
+              }
+            } ).then( function() {
+              self.metadata.loadingCount--;
+            } );
+          } );
+        };
       };
 
       return {

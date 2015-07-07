@@ -13,6 +13,7 @@ define( {
       type: 'enum'
     },
     rank: {
+      column: 'phase.rank',
       title: 'Stage',
       type: 'rank'
     },
@@ -26,6 +27,7 @@ define( {
       title: 'Name'
     },
     rank: {
+      column: 'phase.rank',
       title: 'Stage',
       type: 'rank'
     },
@@ -35,7 +37,7 @@ define( {
     }
   },
   defaultOrder: {
-    column: 'rank',
+    column: 'phase.rank',
     reverse: false
   }
 } );

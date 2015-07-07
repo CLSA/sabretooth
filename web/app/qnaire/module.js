@@ -13,6 +13,7 @@ define( {
       type: 'string'
     },
     rank: {
+      column: 'qnaire.rank',
       title: 'Rank',
       type: 'rank'
     },
@@ -67,7 +68,7 @@ define( {
     }
   },
   defaultOrder: {
-    column: 'rank',
+    column: 'qnaire.rank',
     reverse: false
   }
 } );
