@@ -7,7 +7,7 @@ define( [], function() {
     '$scope', 'CnAssignmentModelFactory', 'CnSession',
     function( $scope, CnAssignmentModelFactory, CnSession ) {
       $scope.model = CnAssignmentModelFactory.root;
-      $scope.model.listModel.onList().then( function() {
+      $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
       } ).catch( CnSession.errorHandler );
     }

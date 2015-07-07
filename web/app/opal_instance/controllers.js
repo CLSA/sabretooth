@@ -19,7 +19,7 @@ define( [], function() {
     '$scope', 'CnOpalInstanceModelFactory', 'CnSession',
     function( $scope, CnOpalInstanceModelFactory, CnSession ) {
       $scope.model = CnOpalInstanceModelFactory.root;
-      $scope.model.listModel.onList().then( function() {
+      $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
       } ).catch( CnSession.errorHandler );
     }

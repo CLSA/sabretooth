@@ -19,7 +19,7 @@ define( [], function() {
     '$scope', 'CnQnaireModelFactory', 'CnSession',
     function( $scope, CnQnaireModelFactory, CnSession ) {
       $scope.model = CnQnaireModelFactory.root;
-      $scope.model.listModel.onList().then( function() {
+      $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
       } ).catch( CnSession.errorHandler );
     }
