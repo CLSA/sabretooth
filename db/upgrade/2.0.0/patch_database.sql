@@ -18,6 +18,7 @@ SOURCE role_has_operation.sql
 SOURCE role_has_service.sql
 SOURCE operation.sql
 SOURCE qnaire.sql
+SOURCE queue.sql
 SOURCE setting_value.sql
 SOURCE setting.sql
 SOURCE system_message.sql
