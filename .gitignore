@@ -1,3 +1,4 @@
+settings.local.ini.php
 *.swp
 !.gitkeep
 tmp

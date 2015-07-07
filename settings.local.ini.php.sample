@@ -22,9 +22,6 @@ $SETTINGS['path']['APPLICATION'] = '/path/to/sabretooth';
 // the path to the log file
 $SETTINGS['path']['LOG_FILE'] = $SETTINGS['path']['APPLICATION'].'/log';
 
-// the url of Mastodon (cannot be relative)
-$SETTINGS['url']['MASTODON'] = 'https://url/to/mastodon';
-
 // database settings (the driver, server and prefixes are set in the framework's settings)
 $SETTINGS['db']['username'] = 'put your database username here';
 $SETTINGS['db']['password'] = 'put your database password here';

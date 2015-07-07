@@ -20,9 +20,6 @@ $SETTINGS['general']['development_mode'] = false;
 // the location of sabretooth internal path
 $SETTINGS['path']['APPLICATION'] = '/usr/local/lib/sabretooth';
 
-// the url to Mastodon (set to NULL to disable Mastodon support)
-$SETTINGS['url']['MASTODON'] = NULL;
-
 // IVR setup
 $SETTINGS['ivr']['enabled'] = false;
 $SETTINGS['ivr']['host'] = 'https://localhost/'; // must end in a /
