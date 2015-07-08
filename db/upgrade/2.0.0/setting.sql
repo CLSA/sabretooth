@@ -36,6 +36,7 @@ DROP PROCEDURE IF EXISTS patch_setting;
           "post_call_window INT UNSIGNED NOT NULL DEFAULT 15, ",
           "PRIMARY KEY (id), ",
           "INDEX fk_site_id (site_id ASC), ",
+          "UNIQUE INDEX uq_site_id (site_id ASC), ",
           "CONSTRAINT fk_setting_site_id ",
             "FOREIGN KEY (site_id) ",
             "REFERENCES ", @cenozo, ".site (id) ",
@@ -47,7 +48,7 @@ DROP PROCEDURE IF EXISTS patch_setting;
       DEALLOCATE PREPARE statement;
 
       -- insert data from temporary "old_setting_value" table
-      INSERT INTO setting( site_id ) SELECT site_id FROM old_setting_value;
+      INSERT INTO setting( site_id ) SELECT DISTINCT site_id FROM old_setting_value ORDER BY site_id;
 
       UPDATE setting JOIN old_setting_value USING( site_id )
       SET survey_without_sip = "true" = old_setting_value.value
