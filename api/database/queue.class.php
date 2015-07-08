@@ -213,7 +213,7 @@ class queue extends \cenozo\database\record
       $ivr_appointment_mod->where( 'interview.participant_id', '=', $db_participant->id );
     }
 
-    foreach( $ivr_appointment_class_name::select( $ivr_appointment_mod ) as $db_ivr_appointment )
+    foreach( $ivr_appointment_class_name::select_objects( $ivr_appointment_mod ) as $db_ivr_appointment )
     {
       $db_interview = $db_ivr_appointment->get_interview();
       $db_ivr_participant = $db_interview->get_participant();
@@ -236,7 +236,7 @@ class queue extends \cenozo\database\record
 
         // now mark the interview as complete
         $interview_mod = lib::create( 'database\modifier' );
-        $interview_mod->where( 'interview.completed', '=', false );
+        $interview_mod->where( 'interview.end_datetime', '=', NULL );
         $interview_mod->order_desc( 'qnaire.rank' );
         $interview_mod->limit( 1 );
         $db_interview = current(
@@ -250,7 +250,7 @@ class queue extends \cenozo\database\record
         }
         else
         {
-          $db_interview->completed = true;
+          $db_interview->end_datetime = util::get_datetime_object();
           $db_interview->save();
 
           // record the event (if one exists)
@@ -323,7 +323,7 @@ class queue extends \cenozo\database\record
 
     $modifier = lib::create( 'database\modifier' );
     $modifier->order( 'id' );
-    foreach( static::select( $modifier ) as $db_queue )
+    foreach( static::select_objects( $modifier ) as $db_queue )
     {
       $columns = sprintf(
         'DISTINCT participant_for_queue.id, %s, '.
@@ -641,12 +641,12 @@ class queue extends \cenozo\database\record
       'LEFT JOIN participant_for_queue_first_address '.
       'ON participant_for_queue_first_address.id = participant_for_queue.id ';
 
-    // join to the quota table based on site, region, gender and age group
+    // join to the quota table based on site, region, sex and age group
     $quota_join =
       'LEFT JOIN quota '.
       'ON quota.site_id = participant_site_id '.
       'AND quota.region_id = primary_region_id '.
-      'AND quota.gender = participant_gender '.
+      'AND quota.sex = participant_sex '.
       'AND quota.age_group_id = participant_age_group_id '.
       'LEFT JOIN qnaire_has_quota '.
       'ON quota.id = qnaire_has_quota.quota_id '.
@@ -1012,7 +1012,7 @@ class queue extends \cenozo\database\record
       static::db()->execute(
         'ALTER TABLE participant_for_queue '.
         'ADD INDEX fk_id ( id ), '.
-        'ADD INDEX fk_participant_gender ( participant_gender ), '.
+        'ADD INDEX fk_participant_sex ( participant_sex ), '.
         'ADD INDEX fk_participant_language_id ( participant_language_id ), '.
         'ADD INDEX fk_participant_age_group_id ( participant_age_group_id ), '.
         'ADD INDEX fk_participant_active ( participant_active ), '.
@@ -1110,7 +1110,7 @@ class queue extends \cenozo\database\record
     {
       $queue_mod = lib::create( 'database\modifier' );
       $queue_mod->order( 'id' );
-      foreach( static::select( $queue_mod ) as $db_queue )
+      foreach( static::select_objects( $queue_mod ) as $db_queue )
       {
         self::$queue_list_cache[$db_queue->name] =
           array( 'object' => $db_queue,
@@ -1187,7 +1187,7 @@ class queue extends \cenozo\database\record
   protected static $participant_for_queue_sql = <<<'SQL'
 SELECT participant.id,
 participant.active AS participant_active,
-participant.gender AS participant_gender,
+participant.sex AS participant_sex,
 participant.age_group_id AS participant_age_group_id,
 participant.state_id AS participant_state_id,
 participant.language_id AS participant_language_id,
@@ -1203,13 +1203,13 @@ IF
 (
   current_interview.id IS NULL,
   ( SELECT id FROM qnaire WHERE rank = 1 ),
-  IF( current_interview.completed, next_qnaire.id, current_qnaire.id )
+  IF( current_interview.end_datetime IS NOT NULL, next_qnaire.id, current_qnaire.id )
 ) AS effective_qnaire_id,
 IF
 (
   current_interview.id IS NULL,
   ( SELECT default_interview_method_id FROM qnaire WHERE rank = 1 ),
-  IF( current_interview.completed,
+  IF( current_interview.end_datetime IS NOT NULL,
       IF( next_qnaire.id IS NULL,
           last_interview.interview_method_id,
           next_qnaire.default_interview_method_id
@@ -1229,7 +1229,7 @@ IF
     ),
     IF
     (
-      current_interview.completed,
+      current_interview.end_datetime IS NOT NULL,
       GREATEST
       (
         IFNULL( next_event.datetime, "" ),
