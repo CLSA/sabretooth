@@ -66,7 +66,7 @@ define( {
     }
   },
   defaultOrder: {
-    column: 'participant.uid',
+    column: 'interview.start_datetime',
     reverse: false
   }
 } );

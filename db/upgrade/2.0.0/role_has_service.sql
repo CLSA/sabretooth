@@ -174,6 +174,14 @@ CREATE PROCEDURE patch_role_has_service()
         "AND role.name IN( 'administrator' ) ",
 
         "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'setting' AND method = 'GET' AND resource = 0 ",
+        "AND role.name IN( 'administrator' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+        "WHERE subject = 'setting' AND method = 'PATCH' AND resource = 1 ",
+        "AND role.name IN( 'administrator', 'supervisor' ) ",
+
+        "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
         "WHERE subject = 'site' AND method = 'DELETE' AND resource = 1 ",
         "AND role.name IN( 'administrator' ) ",
 

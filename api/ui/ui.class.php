@@ -43,9 +43,12 @@ class ui extends \cenozo\ui\ui
    */
   protected function get_operation_items()
   {
+    $role = lib::create( 'business\session' )->get_role()->name;
+
     $operation_items = parent::get_operation_items();
-    if( 'operator' == lib::create( 'business\session' )->get_role()->name )
-      array_unshift( $operation_items, 'break' );
+    if( 'operator' == $role ) array_unshift( $operation_items, 'break' );
+    else if( 'supervisor' == $role )
+      array_splice( $operation_items, array_search( 'account', $operation_items ) + 1, 0, 'siteSettings' );
 
     return $operation_items;
   }
