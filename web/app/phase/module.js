@@ -5,7 +5,8 @@ define( {
     singular: 'phase',
     plural: 'phases',
     possessive: 'phase\'s',
-    pluralPossessive: 'phases\''
+    pluralPossessive: 'phases\'',
+    friendlyColumn: 'rank'
   },
   inputList: {
     sid: {

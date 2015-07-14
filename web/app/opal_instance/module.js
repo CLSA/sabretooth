@@ -5,7 +5,8 @@ define( {
     singular: 'opal instance',
     plural: 'opal instances',
     possessive: 'opal instance\'s',
-    pluralPossessive: 'opal instances\''
+    pluralPossessive: 'opal instances\'',
+    friendlyColumn: 'username'
   },
   inputList: {
     active: {

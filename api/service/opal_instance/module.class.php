@@ -35,8 +35,16 @@ class module extends \cenozo\service\module
       $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
     }
 
+    // add the opal_instance's user
+    if( $select->has_alias( 'username' ) || $select->has_alias( 'active' ) )
+    {
+      $modifier->join( 'user', 'opal_instance.user_id', 'user.id' );
+      if( $select->has_alias( 'active' ) ) $select->add_table_column( 'user', 'active', 'active' );
+      if( $select->has_alias( 'username' ) ) $select->add_table_column( 'user', 'name', 'username' );
+    }
+
     // add the opal_instance's last access column
-    if( $select->has_column( 'last_access_datetime' ) )
+    if( $select->has_alias( 'last_access_datetime' ) )
     {
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'access' );
@@ -53,5 +61,14 @@ class module extends \cenozo\service\module
 
       $select->add_column( 'user_join_access.last_access_datetime', 'last_access_datetime', false );
     }
+  }
+
+  /**
+   * Extend parent method
+   */
+  public function post_read( &$row )
+  {
+    // convert active to a boolean value
+    if( is_array( $row ) ) $row['active'] = (boolean) $row['active'];
   }
 }

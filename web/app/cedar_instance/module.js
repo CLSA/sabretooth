@@ -5,7 +5,8 @@ define( {
     singular: 'cedar instance',
     plural: 'cedar instances',
     possessive: 'cedar instance\'s',
-    pluralPossessive: 'cedar instances\''
+    pluralPossessive: 'cedar instances\'',
+    friendlyColumn: 'username'
   },
   inputList: {
     active: {
