@@ -45,18 +45,6 @@ class qnaire extends \cenozo\database\has_rank
   }
 
   /**
-   * Allow access to default interview method object
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return database\interview_method
-   * @access public
-   */
-  public function get_default_interview_method()
-  {
-    return is_null( $this->default_interview_method_id ) ?
-      NULL : lib::create( 'database\interview_method', $this->default_interview_method_id );
-  }
-
-  /**
    * Returns whether a particular interview method is in use by any qnaire
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\interview_method $db_interview_method

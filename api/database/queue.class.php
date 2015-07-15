@@ -1066,11 +1066,11 @@ IF
 IF
 (
   current_interview.id IS NULL,
-  ( SELECT default_interview_method_id FROM qnaire WHERE rank = 1 ),
+  ( SELECT interview_method_id FROM qnaire WHERE rank = 1 ),
   IF( current_interview.end_datetime IS NOT NULL,
       IF( next_qnaire.id IS NULL,
           last_interview.interview_method_id,
-          next_qnaire.default_interview_method_id
+          next_qnaire.interview_method_id
       ),
       current_interview.interview_method_id
   )
