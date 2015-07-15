@@ -3,18 +3,6 @@ define( [], function() {
   'use strict';
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'InterviewAddCtrl', [
-    '$scope', 'CnInterviewModelFactory', 'CnSession',
-    function( $scope, CnInterviewModelFactory, CnSession ) {
-      $scope.model = CnInterviewModelFactory.root;
-      $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'add' );
-      } ).catch( CnSession.errorHandler );
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.controller( 'InterviewListCtrl', [
     '$scope', 'CnInterviewModelFactory', 'CnSession',
     function( $scope, CnInterviewModelFactory, CnSession ) {

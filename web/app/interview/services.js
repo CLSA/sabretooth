@@ -5,15 +5,6 @@ define( [
   'use strict';
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnInterviewAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } 
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnInterviewListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
@@ -34,14 +25,13 @@ define( [
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnInterviewModelFactory', [
-    'CnBaseModelFactory', 'CnInterviewAddFactory', 'CnInterviewListFactory', 'CnInterviewViewFactory',
+    'CnBaseModelFactory', 'CnInterviewListFactory', 'CnInterviewViewFactory',
     'CnHttpFactory',
-    function( CnBaseModelFactory, CnInterviewAddFactory, CnInterviewListFactory, CnInterviewViewFactory,
+    function( CnBaseModelFactory, CnInterviewListFactory, CnInterviewViewFactory,
               CnHttpFactory ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
-        this.addModel = CnInterviewListFactory.instance( this );
         this.listModel = CnInterviewListFactory.instance( this );
         this.viewModel = CnInterviewViewFactory.instance( this );
 
