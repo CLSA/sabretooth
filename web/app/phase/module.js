@@ -1,6 +1,11 @@
 define( {
   subject: 'phase',
-  identifier: {}, // standard
+  identifier: {
+    parent: {
+      subject: 'qnaire',
+      column: 'qnaire_id'
+    }
+  },
   name: {
     singular: 'phase',
     plural: 'phases',
@@ -10,7 +15,7 @@ define( {
   },
   inputList: {
     sid: {
-      title: 'Default Survey',
+      title: 'Survey',
       type: 'enum'
     },
     rank: {
