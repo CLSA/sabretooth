@@ -62,13 +62,4 @@ class module extends \cenozo\service\module
       $select->add_column( 'user_join_access.last_access_datetime', 'last_access_datetime', false );
     }
   }
-
-  /**
-   * Extend parent method
-   */
-  public function post_read( &$row )
-  {
-    // convert active to a boolean value
-    if( is_array( $row ) ) $row['active'] = (boolean) $row['active'];
-  }
 }
