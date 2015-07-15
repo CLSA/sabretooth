@@ -7,10 +7,10 @@ CREATE PROCEDURE patch_interview_last_assignment()
 
     SET @test = (
       SELECT COUNT(*)
-      FROM information_schema.TABLES
+      FROM information_schema.VIEWS
       WHERE TABLE_SCHEMA = DATABASE()
       AND TABLE_NAME = "interview_last_assignment" );
-    IF @test = 0 THEN
+    IF @test = 1 THEN
 
       DROP VIEW IF EXISTS interview_last_assignment;
 

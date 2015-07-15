@@ -7,10 +7,10 @@ CREATE PROCEDURE patch_assignment_last_phone_call()
 
     SET @test = (
       SELECT COUNT(*)
-      FROM information_schema.TABLES
+      FROM information_schema.VIEWS
       WHERE TABLE_SCHEMA = DATABASE()
       AND TABLE_NAME = "assignment_last_phone_call" );
-    IF @test = 0 THEN
+    IF @test = 1 THEN
 
       DROP VIEW IF EXISTS assignment_last_phone_call;
 
