@@ -90,7 +90,6 @@ class queue extends \cenozo\database\record
       'qnaire',
       'qnaire waiting',
       'assigned',
-      'ivr_appointment',
       'appointment',
       'upcoming appointment',
       'assignable appointment',
@@ -189,127 +188,9 @@ class queue extends \cenozo\database\record
   static public function repopulate( $db_participant = NULL )
   {
     $database_class_name = lib::get_class_name( 'database\database' );
-    $ivr_appointment_class_name = lib::get_class_name( 'database\ivr_appointment' );
-    $ivr_status_class_name = lib::get_class_name( 'business\ivr_status' );
 
-    $setting_manager = lib::create( 'business\setting_manager' );
-    $ivr_manager = lib::create( 'business\ivr_manager' );
     $session = lib::create( 'business\session' );
     $db_user = $session->get_user();
-
-    // get the status of all IVR appointments which have passed and do not have a completed status
-    $duration = $setting_manager->get_setting( 'appointment', 'full duration' );
-    $appointment_datetime_obj = util::get_datetime_object();
-    $appointment_datetime_obj->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
-    $ivr_appointment_mod = lib::create( 'database\modifier' );
-    $ivr_appointment_mod->where( 'datetime', '<=', $appointment_datetime_obj->format( 'c' ) );
-    $ivr_appointment_mod->where( 'ivr_appointment.completed', '=', NULL );
-    if( !is_null( $db_participant ) )
-    {
-      $ivr_appointment_mod->join(
-        'interview',
-        'ivr_appointment.interview_id',
-        'interview.id' );
-      $ivr_appointment_mod->where( 'interview.participant_id', '=', $db_participant->id );
-    }
-
-    foreach( $ivr_appointment_class_name::select_objects( $ivr_appointment_mod ) as $db_ivr_appointment )
-    {
-      $db_interview = $db_ivr_appointment->get_interview();
-      $db_ivr_participant = $db_interview->get_participant();
-
-      try
-      {
-        $status = $ivr_manager->get_status( $db_interview );
-      }
-      // ignore errors
-      catch( \cenozo\exception\runtime $e )
-      {
-        $status = $ivr_status_class_name::ERROR;
-      }
-
-      if( $ivr_status_class_name::CALLING_COMPLETE_INTERVIEW_COMPLETE == $status )
-      {
-        // mark the appointment as completed
-        $db_ivr_appointment->completed = true;
-        $db_ivr_appointment->save();
-
-        // now mark the interview as complete
-        $interview_mod = lib::create( 'database\modifier' );
-        $interview_mod->where( 'interview.end_datetime', '=', NULL );
-        $interview_mod->order_desc( 'qnaire.rank' );
-        $interview_mod->limit( 1 );
-        $db_interview = current(
-          $db_ivr_appointment->get_participant()->get_interview_object_list( $interview_mod ) );
-        if( is_null( $db_interview ) )
-        {
-          log::warning( sprintf(
-            'Cannot find incomplete interview which matches completed IVR appointment reported '.
-            'by IVR service for %s.',
-            $db_ivr_participant->uid ) );
-        }
-        else
-        {
-          $db_interview->end_datetime = util::get_datetime_object();
-          $db_interview->save();
-
-          // record the event (if one exists)
-          $db_event_type = $db_interview->get_qnaire()->get_completed_event_type();
-          if( !is_null( $db_event_type ) )
-          {
-            // make sure the event doesn't already exist
-            $event_mod = lib::create( 'database\modifier' );
-            $event_mod->where( 'event_type_id', '=', $db_event_type->id );
-            if( 0 == $db_ivr_participant->get_event_count( $event_mod ) )
-            {
-              $db_event = lib::create( 'database\event' );
-              $db_event->participant_id = $db_ivr_participant->id;
-              $db_event->event_type_id = $db_event_type->id;
-              $db_event->datetime = util::get_datetime_object();
-              $db_event->save();
-            }
-          }
-        }
-      }
-      else if( $ivr_status_class_name::CALLING_COMPLETE_INTERVIEW_NOT_COMPLETE == $status )
-      {
-        // mark the appointment as completed, but not the interview
-        $db_ivr_appointment->completed = true;
-        $db_ivr_appointment->save();
-      }
-      else if( $ivr_status_class_name::NO_APPOINTMENT == $status )
-      {
-        // the appointment is missing from the IVR, so add it in now
-        $db_ivr_appointment->datetime = util::get_datetime_object();
-        $db_ivr_appointment->save();
-
-        try
-        {
-          $ivr_manager->set_appointment(
-            $db_interview,
-            $db_ivr_appointment->get_phone(),
-            $db_ivr_appointment->datetime );
-        }
-        catch( \cenozo\exception\runtime $e )
-        {
-          log::err( sprintf(
-            'IVR service was unable to add replacement appointment for %s.',
-            $db_ivr_participant->uid ) );
-        }
-      }
-      else if( $ivr_status_class_name::FUTURE_APPOINTMENT_SCHEDULED == $status )
-      {
-        log::warning( sprintf(
-          'IVR service reporting appointment time mismatch for %s.',
-          $db_ivr_participant->uid ) );
-      }
-      else if( $ivr_status_class_name::ERROR == $status )
-      {
-        log::crit( sprintf(
-          'Unable to get status for %s from IVR service.',
-          $db_ivr_participant->uid ) );
-      }
-    }
 
     // block with a semaphore
     $semaphore = lib::create( 'business\semaphore', 'repopulate' );
@@ -370,6 +251,7 @@ class queue extends \cenozo\database\record
     $database_class_name = lib::get_class_name( 'database\database' );
     $session = lib::create( 'business\session' );
     $db_user = $session->get_user();
+    $db_setting = $this->db_site->get_setting();
 
     // block with a semaphore
     $semaphore = lib::create( 'business\semaphore', 'time_specific' );
@@ -392,9 +274,6 @@ class queue extends \cenozo\database\record
       $check_time = false;
     }
 
-    // fill in the settings
-    $setting_manager = lib::create( 'business\setting_manager' );
-
     static::db()->execute( sprintf(
       'DELETE FROM queue_has_participant WHERE queue_id = %s',
       static::db()->format_string( $this->id ) ) );
@@ -402,11 +281,6 @@ class queue extends \cenozo\database\record
     // populate appointment upcomming/assignable/missed queues
     if( ' appointment' == substr( $this->name, -12 ) )
     {
-      $appointment_pre_window =
-        $setting_manager->get_setting( 'appointment', 'call pre-window', $this->db_site );
-      $appointment_post_window =
-        $setting_manager->get_setting( 'appointment', 'call post-window', $this->db_site );
-
       $sql = sprintf(
         'INSERT INTO queue_has_participant( '.
           'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date, interview_method_id ) '.
@@ -427,7 +301,7 @@ class queue extends \cenozo\database\record
           $check_time ? '%s < appointment.datetime - INTERVAL %d MINUTE'
                       : 'DATE( %s ) < DATE( appointment.datetime )',
           $viewing_date,
-          $appointment_pre_window );
+          $db_setting->pre_call_window );
       }
       else if( 'assignable appointment' == $this->name )
       {
@@ -436,9 +310,9 @@ class queue extends \cenozo\database\record
                         '%s <= appointment.datetime + INTERVAL %d MINUTE'
                       : 'DATE( %s ) = DATE( appointment.datetime )',
           $viewing_date,
-          $appointment_pre_window,
+          $db_setting->pre_call_window,
           $viewing_date,
-          $appointment_post_window );
+          $db_setting->post_call_window );
       }
       else if( 'missed appointment' == $this->name )
       {
@@ -446,7 +320,7 @@ class queue extends \cenozo\database\record
           $check_time ? '%s > appointment.datetime + INTERVAL %d MINUTE'
                       : 'DATE( %s ) > DATE( appointment.datetime )',
           $viewing_date,
-          $appointment_post_window );
+          $db_setting->post_call_window );
       }
 
       static::db()->execute( $sql );
@@ -454,9 +328,6 @@ class queue extends \cenozo\database\record
     // populate callback upcoming/assignable queues
     else if( ' callback' == substr( $this->name, -9 ) )
     {
-      $callback_pre_window =
-        $setting_manager->get_setting( 'callback', 'call pre-window', $this->db_site );
-    
       $sql = sprintf(
         'INSERT INTO queue_has_participant( '.
           'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date, interview_method_id ) '.
@@ -475,7 +346,7 @@ class queue extends \cenozo\database\record
           $check_time ? '%s < callback.datetime - INTERVAL %d MINUTE'
                       : 'DATE( %s ) < DATE( callback.datetime )',
           $viewing_date,
-          $callback_pre_window );
+          $db_setting->pre_call_window );
       }
       else if( 'assignable callback' == $this->name )
       {
@@ -483,7 +354,7 @@ class queue extends \cenozo\database\record
           $check_time ? '%s >= callback.datetime - INTERVAL %d MINUTE'
                       : 'DATE( %s ) = DATE( callback.datetime )',
           $viewing_date,
-          $callback_pre_window );
+          $db_setting->pre_call_window );
       }
 
       static::db()->execute( $sql );
@@ -491,6 +362,8 @@ class queue extends \cenozo\database\record
     // populate "last call waiting" queues
     else if( ' waiting' == substr( $this->name, -8 ) || ' ready' == substr( $this->name, -6 ) )
     {
+      // TODO: replace setting manager with settings put directly in the queue table
+      $setting_manager = lib::create( 'business\setting_manager' );
       $call_type = ' waiting' == substr( $this->name, -8 )
                  ? substr( $this->name, 0, -8 )
                  : substr( $this->name, 0, -6 );
@@ -633,7 +506,7 @@ class queue extends \cenozo\database\record
 
     // an array containing all of the qnaire queue's direct children queues
     $qnaire_children = array(
-      'qnaire waiting', 'assigned', 'ivr_appointment', 'appointment', 'quota disabled',
+      'qnaire waiting', 'assigned', 'appointment', 'quota disabled',
       'outside calling time', 'callback', 'new participant', 'old participant' );
 
     // join to the first_address table based on participant id
@@ -789,20 +662,7 @@ class queue extends \cenozo\database\record
             $parts['where'][] =
               '( last_assignment_id IS NULL OR last_assignment_end_datetime IS NOT NULL )';
 
-            if( 'ivr_appointment' == $queue )
-            {
-              // link to ivr_appointment table and make sure the ivr_appointment completed status
-              // hasn't been set (by design, there can only ever be one unset ivr_appointment per
-              // interview)
-              $parts['from'][] = 'interview_method';
-              $parts['where'][] = 'effective_interview_method_id = interview_method.id';
-              $parts['where'][] = 'interview_method.name = "ivr"';
-              $parts['from'][] = 'ivr_appointment';
-              $parts['where'][] =
-                'ivr_appointment.interview_id = participant_for_queue.current_interview_id';
-              $parts['where'][] = 'ivr_appointment.completed IS NULL';
-            }
-            else if( 'appointment' == $queue )
+            if( 'appointment' == $queue )
             {
               // link to appointment table and make sure the appointment hasn't been assigned
               // (by design, there can only ever be one unassigned appointment per interview)
@@ -955,11 +815,9 @@ class queue extends \cenozo\database\record
     $sql = str_replace( '<SITE_TEST>', $site_test_sql, $sql );
 
     // fill in the settings
-    $setting_manager = lib::create( 'business\setting_manager' );
-    $setting = $setting_manager->get_setting( 'calling', 'start time', $this->db_site );
-    $sql = str_replace( '<CALLING_START_TIME>', $setting.':00', $sql );
-    $setting = $setting_manager->get_setting( 'calling', 'end time', $this->db_site );
-    $sql = str_replace( '<CALLING_END_TIME>', $setting.':00', $sql );
+    $db_setting = $this->db_site->get_setting();
+    $sql = str_replace( '<CALLING_START_TIME>', $db_setting->calling_start_time, $sql );
+    $sql = str_replace( '<CALLING_END_TIME>', $db_setting->calling_end_time, $sql );
 
     return $sql;
   }

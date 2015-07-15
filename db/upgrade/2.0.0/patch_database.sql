@@ -3,6 +3,7 @@
 SET AUTOCOMMIT=0;
 
 SOURCE interview.sql
+SOURCE interview_method.sql
 SOURCE assignment.sql
 SOURCE phone_call.sql
 SOURCE activity.sql
