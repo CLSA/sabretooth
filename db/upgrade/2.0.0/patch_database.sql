@@ -23,6 +23,7 @@ SOURCE queue.sql
 SOURCE setting_value.sql
 SOURCE setting.sql
 SOURCE system_message.sql
+SOURCE user_time.sql
 
 SOURCE update_participant_last_interview.sql
 SOURCE update_interview_last_assignment.sql
