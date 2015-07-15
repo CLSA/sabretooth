@@ -56,19 +56,15 @@ class appointment extends \cenozo\database\record
     if( is_null( $db_site ) )
       throw lib::create( 'exception\notice',
         'Cannot validate appointment date, participant has no primary address.', __METHOD__ );
-    
+    $db_setting = $db_site->get_setting();
+
     $shift_template_class_name = lib::get_class_name( 'database\shift_template' );
     $shift_class_name = lib::get_class_name( 'database\shift' );
-
-    // determine the full and half appointment intervals
-    $setting_manager = lib::create( 'business\setting_manager' );
-    $half_duration = $setting_manager->get_setting( 'appointment', 'half duration', $db_site );
-    $full_duration = $setting_manager->get_setting( 'appointment', 'full duration', $db_site );
 
     $next_day_datetime_obj = clone $this->datetime;
     $next_day_datetime_obj->add( new \DateInterval( 'P1D' ) );
     $end_datetime_obj = clone $this->datetime;
-    $duration = 'full' == $this->type ? $full_duration : $half_duration;
+    $duration = 'full' == $this->type ? $db_setting->long_appointment : $db_setting->short_appointment;
     $end_datetime_obj->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
 
     // determine whether to test for shifts or shift templates on the appointment day
@@ -136,7 +132,9 @@ class appointment extends \cenozo\database\record
       if( 'reached' != $state && 'not reached' != $state )
       { // incomplete appointments only
         $start_time_as_int = intval( $db_appointment->datetime->format( 'Gi' ) );
-        $duration = 'full' == $db_appointment->type ? $full_duration : $half_duration;
+        $duration = 'full' == $db_appointment->type
+                  ? $db_setting->long_appointment
+                  : $db_setting->short_appointment;
         $db_appointment->datetime->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
         $end_time_as_int = intval( $db_appointment->datetime->format( 'Gi' ) );
         if( 0 == $end_time_as_int ) $end_time_as_int = 2400;
@@ -218,16 +216,13 @@ class appointment extends \cenozo\database\record
     if( !is_null( $this->reached ) ) return $this->reached ? 'reached' : 'not reached';
 
     $db_participant = lib::create( 'database\participant', $this->get_interview()->participant_id );
-    $db_site = $db_participant->get_effective_site();
+    $db_setting = $db_participant->get_effective_site()->get_setting();
 
     $status = 'unknown';
     
     // settings are in minutes, time() is in seconds, so multiply by 60
-    $setting_manager = lib::create( 'business\setting_manager' );
-    $pre_window_time  = 60 * $setting_manager->get_setting(
-                              'appointment', 'call pre-window', $db_site );
-    $post_window_time = 60 * $setting_manager->get_setting(
-                              'appointment', 'call post-window', $db_site );
+    $pre_window_time = 60 * $db_setting->pre_call_window;
+    $post_window_time = 60 * $db_setting->post_call_window;
     $now = util::get_datetime_object()->getTimestamp();
     $appointment = $this->datetime->getTimestamp();
 

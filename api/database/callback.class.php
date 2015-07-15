@@ -62,14 +62,10 @@ class callback extends \cenozo\database\record
     if( !is_null( $this->reached ) ) return $this->reached ? 'reached' : 'not reached';
 
     $db_participant = lib::create( 'database\participant', $this->participant_id );
-    $db_site = $db_participant->get_effective_site();
-
     $status = 'unknown';
     
     // settings are in minutes, time() is in seconds, so multiply by 60
-    $setting_manager = lib::create( 'business\setting_manager' );
-    $pre_window_time  = 60 * $setting_manager->get_setting(
-                              'callback', 'call pre-window', $db_site );
+    $pre_window_time = 60 * $db_participant->get_effective_site()->get_setting()->pre_call_window;
     $now = util::get_datetime_object()->getTimestamp();
     $callback = $this->datetime->getTimestamp();
 

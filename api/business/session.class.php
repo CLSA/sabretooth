@@ -118,6 +118,7 @@ class session extends \cenozo\business\session
   public function get_allow_call()
   {
     $allow = false;
+    $session = lib::create( 'business\session' );
     $setting_manager = lib::create( 'business\setting_manager' );
     $voip_manager = lib::create( 'business\voip_manager' );
     if( !$setting_manager->get_setting( 'voip', 'enabled' ) )
@@ -130,7 +131,7 @@ class session extends \cenozo\business\session
     }
     else
     { // check to see if we can call without a SIP connection
-      $allow = $setting_manager->get_setting( 'voip', 'survey without sip' );
+      $allow = $session->get_setting()->survey_without_sip;
     }
 
     return $allow;
