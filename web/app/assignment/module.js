@@ -47,13 +47,13 @@ define( {
       column: 'assignment.start_datetime',
       title: 'Start Date & Time',
       type: 'datetimesecond',
-      constant: true
+      max: 'now'
     },
     end_datetime: {
       column: 'assignment.end_datetime',
       title: 'End Date & Time',
       type: 'datetimesecond',
-      constant: true
+      max: 'now'
     }
   },
   columnList: {

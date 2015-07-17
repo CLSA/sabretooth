@@ -32,12 +32,14 @@ define( {
       column: 'interview.start_datetime',
       title: 'Start Date & Time',
       type: 'datetimesecond',
+      max: 'now',
       help: 'When the first call from the first assignment was made for this interview.'
     },
     end_datetime: {
       column: 'interview.end_datetime',
       title: 'End Date & Time',
       type: 'datetimesecond',
+      max: 'now',
       help: 'Will remain blank until the questionnaire is complete.'
     }
   },

@@ -24,11 +24,13 @@ define( {
       column: 'phone_call.start_datetime',
       title: 'Start',
       type: 'datetimesecond',
+      max: 'now'
     },
     end_datetime: {
       column: 'phone_call.end_datetime',
       title: 'End',
       type: 'datetimesecond',
+      max: 'now'
     },
     status: { title: 'Status' }
   },
