@@ -3,7 +3,8 @@ define( {
   identifier: {
     parent: {
       subject: 'interview',
-      column: 'interview_id'
+      column: 'interview_id',
+      friendly: 'qnaire'
     }
   },
   name: {

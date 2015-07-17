@@ -35,9 +35,10 @@ define( [
         this.listModel = CnInterviewListFactory.instance( this );
         this.viewModel = CnInterviewViewFactory.instance( this );
 
-        // extend getFriendlyNameFromRecord
-        this.getFriendlyNameFromRecord = function( record ) {
-          var qnaire = self.metadata.columnList.qnaire_id.enumList.findByProperty( 'value', record.qnaire_id );
+        // extend getBreadcrumbTitle
+        this.getBreadcrumbTitle = function() {
+          var qnaire = self.metadata.columnList.qnaire_id.enumList.findByProperty(
+            'value', this.viewModel.record.qnaire_id );
           return qnaire ? qnaire.name : 'unknown';
         };
 

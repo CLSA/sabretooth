@@ -40,7 +40,7 @@ DROP PROCEDURE IF EXISTS patch_setting;
           "CONSTRAINT fk_setting_site_id ",
             "FOREIGN KEY (site_id) ",
             "REFERENCES ", @cenozo, ".site (id) ",
-            "ON DELETE NO ACTION ",
+            "ON DELETE CASCADE ",
             "ON UPDATE NO ACTION ) ",
         "ENGINE = InnoDB" );
       PREPARE statement FROM @sql;
