@@ -60,7 +60,8 @@ define( {
     },
     delay: {
       column: 'qnaire.delay',
-      title: 'Delay'
+      title: 'Delay',
+      type: 'number'
     },
     phase_count: {
       title: 'Phases',
