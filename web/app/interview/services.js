@@ -50,7 +50,7 @@ define( [
               path: 'interview_method',
               data: {
                 select: { column: [ 'id', 'name' ] },
-                modifier: { order: { name: false } }
+                modifier: { order: 'name' }
               }
             } ).query().then( function success( response ) {
               self.metadata.columnList.interview_method_id.enumList = [];
@@ -65,12 +65,28 @@ define( [
                 path: 'qnaire',
                 data: {
                   select: { column: [ 'id', 'name' ] },
-                  modifier: { order: { rank: false } }
+                  modifier: { order: 'rank' }
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.qnaire_id.enumList = [];
                 for( var i = 0; i < response.data.length; i++ ) {
                   self.metadata.columnList.qnaire_id.enumList.push( {
+                    value: response.data[i].id,
+                    name: response.data[i].name
+                  } );
+                }
+              } );
+            } ).then( function() {
+              return CnHttpFactory.instance( {
+                path: 'site',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { order: 'name' }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.site_id.enumList = [];
+                for( var i = 0; i < response.data.length; i++ ) {
+                  self.metadata.columnList.site_id.enumList.push( {
                     value: response.data[i].id,
                     name: response.data[i].name
                   } );

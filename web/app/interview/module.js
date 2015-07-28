@@ -24,6 +24,11 @@ define( {
       type: 'enum',
       constant: true
     },
+    site_id: {
+      title: 'Credited Site',
+      type: 'enum',
+      help: 'This determines which site is credited with the completed interview.'.
+    },
     interview_method_id: {
       title: 'Interview Method',
       type: 'enum'
@@ -52,9 +57,9 @@ define( {
       column: 'qnaire.name',
       title: 'Questionnaire'
     },
-    method: {
-      column: 'interview_method.name',
-      title: 'Method'
+    site: {
+      column: 'site.name',
+      title: 'Site'
     },
     start_datetime: {
       column: 'interview.start_datetime',
