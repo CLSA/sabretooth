@@ -27,7 +27,7 @@ define( {
     site_id: {
       title: 'Credited Site',
       type: 'enum',
-      help: 'This determines which site is credited with the completed interview.'.
+      help: 'This determines which site is credited with the completed interview.'
     },
     interview_method_id: {
       title: 'Interview Method',
