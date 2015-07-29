@@ -21,7 +21,8 @@ define( {
       title: 'Password',
       type: 'string',
       regex: '^((?!(password)).){8,}$', // length >= 8 and can't have "password"
-      noview: true
+      noview: true,
+      help: 'Passwords must be at least 8 characters long and cannot contain the word "password"'
     }
   },
   columnList: {
