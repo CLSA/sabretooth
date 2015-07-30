@@ -3,6 +3,13 @@ DROP PROCEDURE IF EXISTS patch_interview;
   CREATE PROCEDURE patch_interview()
   BEGIN
 
+    -- determine the @cenozo database name
+    SET @cenozo = (
+      SELECT unique_constraint_schema
+      FROM information_schema.referential_constraints
+      WHERE constraint_schema = DATABASE()
+      AND constraint_name = "fk_queue_state_site_id" );
+
     SELECT "Replacing completed with start_datetime and end_datetime columns in interview table" AS "";
 
     SET @test = (
@@ -53,6 +60,42 @@ DROP PROCEDURE IF EXISTS patch_interview;
       SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
     END IF;
 
+    SELECT "Adding new site_id column to interview table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "interview"
+      AND COLUMN_NAME = "site_id" );
+    IF @test = 0 THEN
+      SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+
+      SET @sql = CONCAT(
+        "ALTER TABLE interview ",
+        "ADD COLUMN site_id INT UNSIGNED NOT NULL AFTER participant_id, ",
+        "ADD INDEX fk_site_id (site_id ASC), ",
+        "ADD CONSTRAINT fk_interview_site_id ",
+        "FOREIGN KEY (site_id) ",
+        "REFERENCES ", @cenozo, ".site (id) ",
+        "ON DELETE NO ACTION ",
+        "ON UPDATE NO ACTION" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
+      -- fill in sites based on the last assignment
+      CREATE TEMPORARY TABLE interview_site
+      SELECT assignment.interview_id, assignment.site_id
+      FROM interview_last_assignment
+      JOIN assignment ON assignment.id = interview_last_assignment.assignment_id;
+
+      UPDATE interview
+      JOIN interview_site ON interview_site.interview_id = interview.id
+      SET interview.site_id = interview_site.site_id;
+
+      SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+    END IF;
   END //
 DELIMITER ;
 
