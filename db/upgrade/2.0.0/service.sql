@@ -78,6 +78,7 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'jurisdiction', 'POST', 0, 1 ),
 ( 'language', 'GET', 0, 0 ),
 ( 'language', 'GET', 1, 0 ),
+( 'language', 'PATCH', 1, 1 ),
 ( 'note', 'DELETE', 1, 1 ),
 ( 'note', 'GET', 0, 0 ),
 ( 'note', 'PATCH', 1, 1 ),
