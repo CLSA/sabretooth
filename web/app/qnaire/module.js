@@ -23,7 +23,8 @@ define( {
     },
     prev_qnaire_id: {
       title: 'Previous Questionnaire',
-      type: 'enum'
+      type: 'enum',
+      noself: true // previous qnaire cannot be itself
     },
     delay: {
       title: 'Delay (weeks)',
