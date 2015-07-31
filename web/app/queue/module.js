@@ -41,7 +41,7 @@ define( {
     }*/
   },
   defaultOrder: {
-    column: 'queue.id',
+    column: 'rank',
     reverse: false
   }
 } );
