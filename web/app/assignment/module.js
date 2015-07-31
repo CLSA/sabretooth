@@ -48,12 +48,13 @@ define( {
       column: 'assignment.start_datetime',
       title: 'Start Date & Time',
       type: 'datetimesecond',
-      max: 'now'
+      max: 'end_datetime'
     },
     end_datetime: {
       column: 'assignment.end_datetime',
       title: 'End Date & Time',
       type: 'datetimesecond',
+      min: 'start_datetime',
       max: 'now'
     }
   },
