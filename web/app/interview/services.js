@@ -1,7 +1,4 @@
-define( [
-  'app/interview/module.js',
-  'app/assignment/bootstrap.js'
-], function( module ) {
+define( cenozo.getServicesIncludeList( 'interview' ), function( module ) {
   'use strict';
 
   /* ######################################################################################################## */

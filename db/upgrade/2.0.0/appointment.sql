@@ -45,6 +45,22 @@ DROP PROCEDURE IF EXISTS patch_appointment;
       SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
     END IF;
 
+    SELECT "Changing appointment types to long/short" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "appointment"
+      AND COLUMN_TYPE = "enum('full','half')" );
+    IF @test = 1 THEN
+      ALTER TABLE appointment
+      MODIFY COLUMN type CHAR(5) NOT NULL DEFAULT 'long';
+      UPDATE appointment SET type = IF( type = "full", "long", "short" );
+      ALTER TABLE appointment
+      MODIFY COLUMN type enum('long','short') NOT NULL DEFAULT 'long';
+    END IF;
+
   END //
 DELIMITER ;
 

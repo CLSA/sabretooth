@@ -64,7 +64,7 @@ class appointment extends \cenozo\database\record
     $next_day_datetime_obj = clone $this->datetime;
     $next_day_datetime_obj->add( new \DateInterval( 'P1D' ) );
     $end_datetime_obj = clone $this->datetime;
-    $duration = 'full' == $this->type ? $db_setting->long_appointment : $db_setting->short_appointment;
+    $duration = 'long' == $this->type ? $db_setting->long_appointment : $db_setting->short_appointment;
     $end_datetime_obj->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );
 
     // determine whether to test for shifts or shift templates on the appointment day
@@ -132,7 +132,7 @@ class appointment extends \cenozo\database\record
       if( 'reached' != $state && 'not reached' != $state )
       { // incomplete appointments only
         $start_time_as_int = intval( $db_appointment->datetime->format( 'Gi' ) );
-        $duration = 'full' == $db_appointment->type
+        $duration = 'long' == $db_appointment->type
                   ? $db_setting->long_appointment
                   : $db_setting->short_appointment;
         $db_appointment->datetime->add( new \DateInterval( sprintf( 'PT%dM', $duration ) ) );

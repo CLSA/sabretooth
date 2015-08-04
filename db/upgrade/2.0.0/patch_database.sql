@@ -10,6 +10,8 @@ SOURCE activity.sql
 SOURCE writelog.sql
 SOURCE appointment.sql
 SOURCE ivr_appointment.sql
+SOURCE source_survey.sql
+SOURCE source_withdraw.sql
 SOURCE participant_last_appointment.sql
 SOURCE participant_last_interview.sql
 SOURCE interview_phone_call_status_count.sql
