@@ -48,28 +48,30 @@ define( cenozo.getServicesIncludeList( 'appointment' ), function( module ) {
           return this.loadMetadata().then( function() {
             var parent = self.getParentIdentifier();
             
-            return CnHttpFactory.instance( {
-              path: [ parent.subject, parent.identifier ].join( '/' ),
-              data: { select: { column: { column: 'participant_id' } } }
-            } ).query().then( function( response ) {
+            if( angular.isDefined( parent.subject ) && angular.isDefined( parent.identifier ) ) {
               return CnHttpFactory.instance( {
-                path: ['participant', response.data.participant_id, 'phone' ].join( '/' ),
-                data: {
-                  select: { column: [ 'id', 'rank', 'type', 'number' ] },
-                  modifier: { order: { rank: false } }
-                }
+                path: [ parent.subject, parent.identifier ].join( '/' ),
+                data: { select: { column: { column: 'participant_id' } } }
               } ).query().then( function( response ) {
-                self.metadata.columnList.phone_id.enumList = [];
-                for( var i = 0; i < response.data.length; i++ ) {
-                  self.metadata.columnList.phone_id.enumList.push( {
-                    value: response.data[i].id,
-                    name: '(' + response.data[i].rank + ') ' + response.data[i].type + ': ' + response.data[i].number
-                  } );
-                }
-              } ).then( function() {
-                self.metadata.loadingCount--;
+                return CnHttpFactory.instance( {
+                  path: ['participant', response.data.participant_id, 'phone' ].join( '/' ),
+                  data: {
+                    select: { column: [ 'id', 'rank', 'type', 'number' ] },
+                    modifier: { order: { rank: false } }
+                  }
+                } ).query().then( function( response ) {
+                  self.metadata.columnList.phone_id.enumList = [];
+                  for( var i = 0; i < response.data.length; i++ ) {
+                    self.metadata.columnList.phone_id.enumList.push( {
+                      value: response.data[i].id,
+                      name: '(' + response.data[i].rank + ') ' + response.data[i].type + ': ' + response.data[i].number
+                    } );
+                  }
+                } ).then( function() {
+                  self.metadata.loadingCount--;
+                } );
               } );
-            } );
+            } else self.metadata.loadingCount--;
           } );
         };
       };

@@ -42,7 +42,8 @@ define( {
       column: 'user.name',
       title: 'Assigned to',
       type: 'string',
-      constant: true
+      constant: true,
+      help: 'This will remain blank until the appointment has been assigned.'
     },
     state: {
       title: 'State',

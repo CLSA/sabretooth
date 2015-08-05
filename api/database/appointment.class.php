@@ -29,7 +29,7 @@ class appointment extends \cenozo\database\record
       $modifier->where( 'assignment_id', '=', NULL );
       if( !is_null( $this->id ) ) $modifier->where( 'id', '!=', $this->id );
       if( 0 < static::count( $modifier ) )
-        throw lib::create( 'exception\runtime',
+        throw lib::create( 'exception\notice',
           'Cannot have more than one unassigned appointment per interview.', __METHOD__ );
     }
 
