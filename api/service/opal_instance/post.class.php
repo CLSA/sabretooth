@@ -23,19 +23,19 @@ class post extends \cenozo\service\post
     { // create a user for this opal instance
       $role_class_name = lib::get_class_name( 'database\role' );
 
-      $object = $this->get_file_as_object();
       $db_site = lib::create( 'business\session' )->get_site();
       $db_role = $role_class_name::get_unique_record( 'name', 'opal' );
       $db_user = lib::create( 'database\user' );
 
+      $post_object = $this->get_file_as_object();
       foreach( $db_user->get_column_names() as $column_name )
-        if( 'id' != $column_name && property_exists( $object, $column_name ) )
-          $db_user->$column_name = $object->$column_name;
-      $db_user->name = $object->username;
+        if( 'id' != $column_name && property_exists( $post_object, $column_name ) )
+          $db_user->$column_name = $post_object->$column_name;
+      $db_user->name = $post_object->username;
       $db_user->first_name = $db_site->name.' opal instance';
-      $db_user->last_name = $object->username;
+      $db_user->last_name = $post_object->username;
       $db_user->active = true;
-      $db_user->password = util::encrypt( $object->password );
+      $db_user->password = util::encrypt( $post_object->password );
       $db_user->save();
 
       // grant opal-access to the user
@@ -61,8 +61,11 @@ class post extends \cenozo\service\post
     $ldap_manager = lib::create( 'business\ldap_manager' );
     try
     {
-      $object = $this->get_file_as_object();
-      $ldap_manager->new_user( $db_user->name, $db_user->first_name, $db_user->last_name, $object->password );
+      $ldap_manager->new_user(
+        $db_user->name,
+        $db_user->first_name,
+        $db_user->last_name,
+        $this->get_file_as_object()->password );
     }
     catch( \cenozo\exception\ldap $e )
     {

@@ -14,13 +14,14 @@ class patch extends \cenozo\service\patch
   /**
    * Extends parent method
    */
-  protected function setup()
+  public function get_file_as_array()
   {
-    parent::setup();
+    $patch_array = parent::get_file_as_array();
 
-    $this->original_patch_array = $this->patch_array;
-    if( array_key_exists( 'active', $this->patch_array ) ) unset( $this->patch_array['active'] );
-    if( array_key_exists( 'username', $this->patch_array ) ) unset( $this->patch_array['username'] );
+    $this->original_patch_array = $patch_array;
+    if( array_key_exists( 'active', $patch_array ) ) unset( $patch_array['active'] );
+    if( array_key_exists( 'username', $patch_array ) ) unset( $patch_array['username'] );
+    return $patch_array;
   }
 
   /**
@@ -98,5 +99,5 @@ class patch extends \cenozo\service\patch
   /**
    * TODO: document
    */
-  private $original_select = NULL;
+  private $original_patch_array = NULL;
 }
