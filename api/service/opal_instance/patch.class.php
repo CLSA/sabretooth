@@ -74,15 +74,16 @@ class patch extends \cenozo\service\patch
           }
           catch( \cenozo\exception\notice $e )
           {
-            $this->data = $e->get_notice();
+            $this->set_data( $e->get_notice() );
             $this->status->set_code( 406 );
           }
           catch( \cenozo\exception\database $e )
           {
             if( $e->is_duplicate_entry() )
             {
-              $this->data = $e->get_duplicate_columns( $db_user->get_class_name() );
-              if( 1 == count( $this->data ) && 'name' == $this->data[0] ) $this->data = array( 'username' );
+              $data = $e->get_duplicate_columns( $db_user->get_class_name() );
+              if( 1 == count( $data ) && 'name' == $data[0] ) $data = array( 'username' );
+              $this->set_data( $data );
               $this->status->set_code( 409 );
             }
             else

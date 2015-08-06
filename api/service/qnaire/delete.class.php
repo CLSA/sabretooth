@@ -29,14 +29,14 @@ class delete extends \cenozo\service\delete
     }
     catch( \cenozo\exception\notice $e )
     {
-      $this->data = $e->get_notice();
+      $this->set_data( $e->get_notice() );
       $this->status->set_code( 406 );
     }
     catch( \cenozo\exception\database $e )
     {
       if( $e->is_constrained() )
       {
-        $this->data = $e->get_failed_constraint_table();
+        $this->set_data( $e->get_failed_constraint_table() );
         $this->status->set_code( 409 );
       }
       else
@@ -68,14 +68,14 @@ class delete extends \cenozo\service\delete
     }
     catch( \cenozo\exception\notice $e )
     {
-      $this->data = $e->get_notice();
+      $this->set_data( $e->get_notice() );
       $this->status->set_code( 406 );
     }
     catch( \cenozo\exception\database $e )
     {
       if( $e->is_constrained() )
       {
-        $this->data = $e->get_failed_constraint_table();
+        $this->set_data( $e->get_failed_constraint_table() );
         $this->status->set_code( 409 );
       }
       else
