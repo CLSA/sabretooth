@@ -15,7 +15,36 @@ define( cenozo.getServicesIncludeList( 'interview' ), function( module ) {
     cenozo.getListModelInjectionList( 'interview' ).concat( function() {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
+      var object = function( parentModel ) {
+        var self = this;
+        CnBaseViewFactory.construct( this, parentModel, args );
+
+        // override onPatch
+        this.onPatch = function( data ) {
+          return this.patchRecord( data ).then( function() {
+            // if the end datetime has changed then reload then update the appointment list actions
+            if( angular.isDefined( data.end_datetime ) ) {
+              var completed = null !== self.record.end_datetime;
+              self.appointmentModel.enableAdd( !completed );
+              self.appointmentModel.enableDelete( !completed );
+              self.appointmentModel.enableEdit( !completed );
+              self.appointmentModel.enableView( !completed );
+            }
+          } );
+        };
+
+        // override onView
+        this.onView = function() {
+          return this.viewRecord().then( function() {
+            // if the end datetime has changed then reload then update the appointment list actions
+            var completed = null !== self.record.end_datetime;
+            self.appointmentModel.enableAdd( !completed );
+            self.appointmentModel.enableDelete( !completed );
+            self.appointmentModel.enableEdit( !completed );
+            self.appointmentModel.enableView( !completed );
+          } );
+        };
+      }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     } )
   );

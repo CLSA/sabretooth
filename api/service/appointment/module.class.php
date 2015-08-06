@@ -14,6 +14,31 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  */
 class module extends \cenozo\service\module
 {
+  public function validate()
+  {
+    parent::validate();
+
+    $service_class_name = lib::get_class_name( 'service\service' );
+    $db_appointment = $this->get_resource();
+    $db_interview = is_null( $db_appointment ) ? $this->get_parent_resource() : $db_appointment->get_interview();
+
+    if( $service_class_name::is_write_method( $this->get_method() ) )
+    {
+      // no writing of appointments if interview is completed
+      if( !is_null( $db_interview ) && null !== $db_interview->end_datetime )
+      {
+        $this->set_data( 'Appointments cannot be changed after an interview is complete.' );
+        $this->get_status()->set_code( 406 );
+      }
+      // no writing of appointments if it has passed
+      else if( !is_null( $db_appointment ) && $db_appointment->datetime < util::get_datetime_object() )
+      {
+        $this->set_data( 'Appointments cannot be changed after they have passed.' );
+        $this->get_status()->set_code( 406 );
+      }
+    }
+  }
+
   /**
    * Extend parent method
    */

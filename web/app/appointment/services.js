@@ -24,7 +24,18 @@ define( cenozo.getServicesIncludeList( 'appointment' ), function( module ) {
     cenozo.getListModelInjectionList( 'appointment' ).concat( function() {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
+      var object = function( parentModel ) {
+        var self = this;
+        CnBaseViewFactory.construct( this, parentModel, args );
+
+        this.onView = function() {
+          return this.viewRecord().then( function() {
+            var upcoming = moment().isBefore( self.record.datetime );
+            parentModel.enableDelete( upcoming );
+            parentModel.enableEdit( upcoming );
+          } );
+        };
+      }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     } )
   );
