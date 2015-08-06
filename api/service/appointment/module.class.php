@@ -23,6 +23,13 @@ class module extends \cenozo\service\module
 
     $session = lib::create( 'business\session' );
 
+    // include the user first/last/name as supplemental data
+    $modifier->left_join( 'user', 'appointment.user_id', 'user.id' );
+    $select->add_column(
+      'CONCAT( user.first_name, " ", user.last_name, " (", user.name, ")" )',
+      'formatted_user_id',
+      false );
+
     if( $select->has_table_columns( 'participant' ) )
     {
       $modifier->join( 'interview', 'appointment.interview_id', 'interview.id' );
@@ -36,10 +43,10 @@ class module extends \cenozo\service\module
       $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
     }
 
-    if( $select->has_table_columns( 'user' ) )
+    if( $select->has_table_columns( 'assignment_user' ) )
     {
       $modifier->left_join( 'assignment', 'appointment.assignment_id', 'assignment.id' );
-      $modifier->left_join( 'user', 'assignment.user_id', 'user.id' );
+      $modifier->left_join( 'user', 'assignment.user_id', 'assignment_user.id', 'assignment_user' );
     }
 
     if( $select->has_table_column( 'phone', 'name' ) )

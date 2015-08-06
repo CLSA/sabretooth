@@ -38,12 +38,25 @@ define( {
       help: 'Which number should be called for the appointment, or leave this field blank if any of the ' +
             'participant\'s phone numbers can be called.'
     },
-    user: {
-      column: 'user.name',
+    user_id: {
+      column: 'appointment.user_id',
+      title: 'Reserved for',
+      type: 'lookup-typeahead',
+      typeahead: {
+        table: 'user',
+        select: 'CONCAT( first_name, " ", last_name, " (", name, ")" )',
+        where: [ 'first_name', 'last_name', 'name' ]
+      },
+      help: 'The user the appointment is specifically reserved for. ' +
+            'Cannot be changed once the appointment has passed.'
+    },
+    assignment_user: {
+      column: 'assignment_user.name',
       title: 'Assigned to',
       type: 'string',
       constant: true,
-      help: 'This will remain blank until the appointment has been assigned.'
+      help: 'This will remain blank until the appointment has been assigned. The assigned user can only be ' +
+            ' different from the reserved user when the appointment was missed.'
     },
     state: {
       title: 'State',
@@ -65,6 +78,11 @@ define( {
       column: 'phone.name',
       type: 'string',
       title: 'Phone Number'
+    },
+    user: {
+      column: 'user.name',
+      type: 'string',
+      title: 'User'
     },
     type: {
       type: 'string',

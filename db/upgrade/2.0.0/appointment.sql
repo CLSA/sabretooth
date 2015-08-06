@@ -3,6 +3,13 @@ DROP PROCEDURE IF EXISTS patch_appointment;
   CREATE PROCEDURE patch_appointment()
   BEGIN
 
+    -- determine the @cenozo database name
+    SET @cenozo = (
+      SELECT unique_constraint_schema
+      FROM information_schema.referential_constraints
+      WHERE constraint_schema = DATABASE()
+      AND constraint_name = "fk_queue_state_site_id" );
+
     SELECT "Replacing participant_id with interview_id column in appointment table" AS "";
 
     SET @test = (
@@ -43,6 +50,32 @@ DROP PROCEDURE IF EXISTS patch_appointment;
 
       SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
       SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+    END IF;
+
+    SELECT "Adding user_id column to appointment table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "appointment"
+      AND COLUMN_NAME = "user_id" );
+    IF @test = 0 THEN
+      ALTER TABLE appointment
+      ADD COLUMN user_id INT UNSIGNED NULL DEFAULT NULL
+      AFTER interview_id;
+
+      SET @sql = CONCAT(
+        "ALTER TABLE appointment ",
+        "ADD INDEX fk_user_id (user_id ASC), ",
+        "ADD CONSTRAINT fk_appointment_user_id ",
+        "FOREIGN KEY (user_id) ",
+        "REFERENCES ", @cenozo, ".user (id) ",
+        "ON DELETE NO ACTION ",
+        "ON UPDATE NO ACTION" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
     END IF;
 
     SELECT "Changing appointment types to long/short" AS "";
