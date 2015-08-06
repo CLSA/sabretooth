@@ -27,7 +27,7 @@ class ui extends \cenozo\ui\ui
     if( array_key_exists( 'cedar_instance', $module_list ) )
       $module_list['cedar_instance']['children'] = array( 'activity' );
     if( array_key_exists( 'interview', $module_list ) ) 
-      $module_list['interview']['children'] = array( 'appointment', 'assignment' );
+      $module_list['interview']['children'] = array( 'assignment', 'appointment', 'callback' );
     if( array_key_exists( 'opal_instance', $module_list ) )
       $module_list['opal_instance']['children'] = array( 'activity' );
     if( array_key_exists( 'participant', $module_list ) )

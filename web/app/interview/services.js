@@ -22,13 +22,17 @@ define( cenozo.getServicesIncludeList( 'interview' ), function( module ) {
         // override onPatch
         this.onPatch = function( data ) {
           return this.patchRecord( data ).then( function() {
-            // if the end datetime has changed then reload then update the appointment list actions
+            // if the end datetime has changed then reload then update the appointment/callback list actions
             if( angular.isDefined( data.end_datetime ) ) {
               var completed = null !== self.record.end_datetime;
               self.appointmentModel.enableAdd( !completed );
               self.appointmentModel.enableDelete( !completed );
               self.appointmentModel.enableEdit( !completed );
               self.appointmentModel.enableView( !completed );
+              self.callbackModel.enableAdd( !completed );
+              self.callbackModel.enableDelete( !completed );
+              self.callbackModel.enableEdit( !completed );
+              self.callbackModel.enableView( !completed );
             }
           } );
         };
@@ -36,12 +40,17 @@ define( cenozo.getServicesIncludeList( 'interview' ), function( module ) {
         // override onView
         this.onView = function() {
           return this.viewRecord().then( function() {
-            // if the end datetime has changed then reload then update the appointment list actions
+            // if the end datetime has changed then reload then update the appointment/callback list actions
             var completed = null !== self.record.end_datetime;
-            self.appointmentModel.enableAdd( !completed );
+            var existing = 0 < self.record.open_appointment_count || 0 < self.record.open_callback_count;
+            self.appointmentModel.enableAdd( !completed && !existing );
             self.appointmentModel.enableDelete( !completed );
             self.appointmentModel.enableEdit( !completed );
             self.appointmentModel.enableView( !completed );
+            self.callbackModel.enableAdd( !completed && !existing );
+            self.callbackModel.enableDelete( !completed );
+            self.callbackModel.enableEdit( !completed );
+            self.callbackModel.enableView( !completed );
           } );
         };
       }

@@ -47,6 +47,12 @@ define( {
       min: 'start_datetime',
       max: 'now',
       help: 'Will remain blank until the questionnaire is complete.'
+    },
+    open_appointment_count: {
+      type: 'hidden'
+    },
+    open_callback_count: {
+      type: 'hidden'
     }
   },
   columnList: {

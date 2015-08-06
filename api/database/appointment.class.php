@@ -21,16 +21,23 @@ class appointment extends \cenozo\database\record
    */
   public function save()
   {
+    $callback_class_name = lib::get_class_name( 'database\callback' );
+
     // make sure there is a maximum of 1 unassigned appointment per interview
-    if( is_null( $this->assignment_id ) )
+    if( is_null( $this->id ) && is_null( $this->assignment_id ) )
     {
-      $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'interview_id', '=', $this->interview_id );
-      $modifier->where( 'assignment_id', '=', NULL );
-      if( !is_null( $this->id ) ) $modifier->where( 'id', '!=', $this->id );
-      if( 0 < static::count( $modifier ) )
+      $appointment_mod = lib::create( 'database\modifier' );
+      $appointment_mod->where( 'interview_id', '=', $this->interview_id );
+      $appointment_mod->where( 'assignment_id', '=', NULL );
+      if( !is_null( $this->id ) ) $appointment_mod->where( 'id', '!=', $this->id );
+
+      $callback_mod = lib::create( 'database\modifier' );
+      $callback_mod->where( 'interview_id', '=', $this->interview_id );
+      $callback_mod->where( 'assignment_id', '=', NULL );
+
+      if( 0 < static::count( $appointment_mod ) || 0 < $callback_class_name::count( $callback_mod ) )
         throw lib::create( 'exception\notice',
-          'Cannot have more than one unassigned appointment per interview.', __METHOD__ );
+          'Cannot have more than one unassigned appointment or callback per interview.', __METHOD__ );
     }
 
     parent::save();
