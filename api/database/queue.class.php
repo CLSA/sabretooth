@@ -251,7 +251,6 @@ class queue extends \cenozo\database\record
     $database_class_name = lib::get_class_name( 'database\database' );
     $session = lib::create( 'business\session' );
     $db_user = $session->get_user();
-    $db_setting = $this->db_site->get_setting();
 
     // block with a semaphore
     $semaphore = lib::create( 'business\semaphore', 'time_specific' );
@@ -298,29 +297,25 @@ class queue extends \cenozo\database\record
       if( 'upcoming appointment' == $this->name )
       {
         $sql .= sprintf(
-          $check_time ? '%s < appointment.datetime - INTERVAL %d MINUTE'
+          $check_time ? '%s < appointment.datetime - INTERVAL pre_call_window MINUTE'
                       : 'DATE( %s ) < DATE( appointment.datetime )',
-          $viewing_date,
-          $db_setting->pre_call_window );
+          $viewing_date );
       }
       else if( 'assignable appointment' == $this->name )
       {
         $sql .= sprintf(
-          $check_time ? '%s >= appointment.datetime - INTERVAL %d MINUTE AND '.
-                        '%s <= appointment.datetime + INTERVAL %d MINUTE'
+          $check_time ? '%s >= appointment.datetime - INTERVAL pre_call_window MINUTE AND '.
+                        '%s <= appointment.datetime + INTERVAL post_call_window MINUTE'
                       : 'DATE( %s ) = DATE( appointment.datetime )',
           $viewing_date,
-          $db_setting->pre_call_window,
-          $viewing_date,
-          $db_setting->post_call_window );
+          $viewing_date );
       }
       else if( 'missed appointment' == $this->name )
       {
         $sql .= sprintf(
-          $check_time ? '%s > appointment.datetime + INTERVAL %d MINUTE'
+          $check_time ? '%s > appointment.datetime + INTERVAL post_call_window MINUTE'
                       : 'DATE( %s ) > DATE( appointment.datetime )',
-          $viewing_date,
-          $db_setting->post_call_window );
+          $viewing_date );
       }
 
       static::db()->execute( $sql );
@@ -345,18 +340,16 @@ class queue extends \cenozo\database\record
       if( 'upcoming callback' == $this->name )
       {
         $sql .= sprintf(
-          $check_time ? '%s < callback.datetime - INTERVAL %d MINUTE'
+          $check_time ? '%s < callback.datetime - INTERVAL pre_call_window MINUTE'
                       : 'DATE( %s ) < DATE( callback.datetime )',
-          $viewing_date,
-          $db_setting->pre_call_window );
+          $viewing_date );
       }
       else if( 'assignable callback' == $this->name )
       {
         $sql .= sprintf(
-          $check_time ? '%s >= callback.datetime - INTERVAL %d MINUTE'
+          $check_time ? '%s >= callback.datetime - INTERVAL pre_call_window MINUTE'
                       : 'DATE( %s ) = DATE( callback.datetime )',
-          $viewing_date,
-          $db_setting->pre_call_window );
+          $viewing_date );
       }
 
       static::db()->execute( $sql );
@@ -364,13 +357,9 @@ class queue extends \cenozo\database\record
     // populate "last call waiting" queues
     else if( ' waiting' == substr( $this->name, -8 ) || ' ready' == substr( $this->name, -6 ) )
     {
-      // TODO: replace setting manager with settings put directly in the queue table
-      $setting_manager = lib::create( 'business\setting_manager' );
       $call_type = ' waiting' == substr( $this->name, -8 )
                  ? substr( $this->name, 0, -8 )
                  : substr( $this->name, 0, -6 );
-      $callback_timing =
-        $setting_manager->get_setting( 'callback timing', $call_type, $this->db_site );
 
       $sql = sprintf(
         'INSERT INTO queue_has_participant( '.
@@ -392,18 +381,16 @@ class queue extends \cenozo\database\record
       if( ' waiting' == substr( $this->name, -8 ) )
       {
         $sql .= sprintf(
-          $check_time ? '%s < phone_call.end_datetime + INTERVAL %d MINUTE' :
-                        'DATE( %s ) < DATE( phone_call.end_datetime + INTERVAL %d MINUTE )',
-          $viewing_date,
-          $callback_timing );
+          $check_time ? '%s < phone_call.end_datetime' :
+                        'DATE( %s ) < DATE( phone_call.end_datetime )',
+          $viewing_date );
       }
       else // ' ready' == substr( $this->name, -6 )
       {
         $sql .= sprintf(
-          $check_time ? '%s >= phone_call.end_datetime + INTERVAL %d MINUTE' :
-                        'DATE( %s ) >= DATE( phone_call.end_datetime + INTERVAL %d MINUTE )',
-          $viewing_date,
-          $callback_timing );
+          $check_time ? '%s >= phone_call.end_datetime' :
+                        'DATE( %s ) >= DATE( phone_call.end_datetime )',
+          $viewing_date );
       }
 
       static::db()->execute( $sql );
@@ -536,8 +523,8 @@ class queue extends \cenozo\database\record
               : 'first_address_timezone_offset';
       $calling_time_sql = sprintf(
         '( '.
-          'TIME( %s + INTERVAL ( %s )*60 MINUTE ) >= "<CALLING_START_TIME>" AND '.
-          'TIME( %s + INTERVAL ( %s )*60 MINUTE ) < "<CALLING_END_TIME>" '.
+          'TIME( %s + INTERVAL ( %s )*60 MINUTE ) >= calling_start_time AND '.
+          'TIME( %s + INTERVAL ( %s )*60 MINUTE ) < calling_end_time '.
         ')',
         $viewing_date,
         $offset,
@@ -583,14 +570,10 @@ class queue extends \cenozo\database\record
       if( 'ineligible' == $queue )
       {
         // ineligible means either inactive or with a "final" state
-        $parts['join'][] = 
-          'JOIN participant_for_queue_phone_count '.
-          'ON participant_for_queue_phone_count.id = participant_for_queue.id';
         $parts['where'][] =
           '( '.
             'participant_active = false '.
             'OR participant_state_id IS NOT NULL '.
-            'OR phone_count = 0 '.
             'OR last_consent_accept = 0 '.
           ')';
       }
@@ -616,12 +599,8 @@ class queue extends \cenozo\database\record
       else if( 'eligible' == $queue )
       {
         // active participant who does not have a "final" state and has at least one phone number
-        $parts['join'][] = 
-          'JOIN participant_for_queue_phone_count '.
-          'ON participant_for_queue_phone_count.id = participant_for_queue.id';
         $parts['where'][] = 'participant_active = true';
         $parts['where'][] = 'participant_state_id IS NULL';
-        $parts['where'][] = 'phone_count > 0';
         $parts['where'][] =
           '( '.
             'last_consent_accept IS NULL OR '.
@@ -816,11 +795,6 @@ class queue extends \cenozo\database\record
     $sql = str_replace( '<SELECT_PARTICIPANT>', 'participant_for_queue.id', $sql );
     $sql = str_replace( '<SITE_TEST>', $site_test_sql, $sql );
 
-    // fill in the settings
-    $db_setting = $this->db_site->get_setting();
-    $sql = str_replace( '<CALLING_START_TIME>', $db_setting->calling_start_time, $sql );
-    $sql = str_replace( '<CALLING_END_TIME>', $db_setting->calling_end_time, $sql );
-
     return $sql;
   }
 
@@ -885,8 +859,10 @@ class queue extends \cenozo\database\record
     // build participant_for_queue_participant_site
     $sql = sprintf(
       'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue_participant_site '.
-      'SELECT participant_id AS id, site_id AS participant_site_id '.
+      'SELECT participant_id AS id, participant_site.site_id AS participant_site_id, '.
+             'calling_start_time, calling_end_time, pre_call_window, post_call_window '.
       'FROM participant_site '.
+      'LEFT JOIN setting ON participant_site.site_id = setting.site_id '.
       'WHERE application_id = %s ',
       static::db()->format_string( $application_id ) );
     if( !is_null( $db_participant ) )
@@ -900,29 +876,6 @@ class queue extends \cenozo\database\record
       static::db()->execute(
         'ALTER TABLE participant_for_queue_participant_site '.
         'ADD INDEX dk_participant_id_site_id ( id, participant_site_id )' );
-
-    // build participant_for_queue_phone_count table
-    $sql = sprintf(
-      'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue_phone_count '.
-      'SELECT participant.id, IF( phone.id IS NULL, 0, COUNT(*) ) phone_count '.
-      'FROM participant '.
-      'JOIN application_has_participant ON participant.id = application_has_participant.participant_id '.
-      'AND application_has_participant.application_id = %s '.
-      'LEFT JOIN phone ON participant.id = phone.participant_id '.
-      'AND phone.active AND phone.number IS NOT NULL ',
-      static::db()->format_string( $application_id ) );
-    if( !is_null( $db_participant ) )
-      $sql .= sprintf( 'WHERE participant.id = %s ',
-                       static::db()->format_string( $db_participant->id ) );
-    $sql .= 'GROUP BY participant.id ';
-
-    static::db()->execute( 'DROP TABLE IF EXISTS participant_for_queue_phone_count' );
-    static::db()->execute( $sql );
-
-    if( is_null( $db_participant ) )
-      static::db()->execute(
-        'ALTER TABLE participant_for_queue_phone_count '.
-        'ADD INDEX dk_phone_count ( phone_count )' );
 
     // build participant_for_queue_first_address table
     $sql = 
