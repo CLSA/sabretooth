@@ -8,6 +8,7 @@ SOURCE assignment.sql
 SOURCE phone_call.sql
 SOURCE activity.sql
 SOURCE writelog.sql
+SOURCE callback.sql
 SOURCE appointment.sql
 SOURCE ivr_appointment.sql
 SOURCE source_survey.sql

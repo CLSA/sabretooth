@@ -25,12 +25,12 @@ class callback extends \cenozo\database\record
     if( is_null( $this->assignment_id ) )
     {
       $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'participant_id', '=', $this->participant_id );
+      $modifier->where( 'interview_id', '=', $this->interview_id );
       $modifier->where( 'assignment_id', '=', NULL );
       if( !is_null( $this->id ) ) $modifier->where( 'id', '!=', $this->id );
       if( 0 < static::count( $modifier ) )
         throw lib::create( 'exception\runtime',
-          'Cannot have more than one unassigned callback per participant.', __METHOD__ );
+          'Cannot have more than one unassigned callback per interview.', __METHOD__ );
     }
 
     parent::save();
@@ -61,7 +61,7 @@ class callback extends \cenozo\database\record
     // if the callback's reached column is set, nothing else matters
     if( !is_null( $this->reached ) ) return $this->reached ? 'reached' : 'not reached';
 
-    $db_participant = lib::create( 'database\participant', $this->participant_id );
+    $db_participant = lib::create( 'database\participant', $this->get_interview()->participant_id );
     $status = 'unknown';
     
     // settings are in minutes, time() is in seconds, so multiply by 60

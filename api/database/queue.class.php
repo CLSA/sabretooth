@@ -334,7 +334,9 @@ class queue extends \cenozo\database\record
         'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, '.
         'qnaire_id, start_qnaire_date, interview_method_id '.
         'FROM queue_has_participant '.
-        'JOIN callback ON queue_has_participant.participant_id = callback.participant_id '.
+        'JOIN interview ON queue_has_participant.participant_id = interview.participant_id '.
+        'AND queue_has_participant.qnaire_id = interview.qnaire_id '.
+        'JOIN callback ON interview.id = callback.interview_id '.
         'AND callback.assignment_id IS NULL '.
         'WHERE queue_id = %s AND ',
         static::db()->format_string( $this->id ),
@@ -723,7 +725,7 @@ class queue extends \cenozo\database\record
                     // link to callback table and make sure the callback hasn't been assigned
                     // (by design, there can only ever one unassigned callback per participant)
                     $parts['from'][] = 'callback';
-                    $parts['where'][] = 'callback.participant_id = participant_for_queue.id';
+                    $parts['where'][] = 'callback.interview_id = participant_for_queue.current_interview_id';
                     $parts['where'][] = 'callback.assignment_id IS NULL';
                   }
                   else
@@ -733,7 +735,7 @@ class queue extends \cenozo\database\record
                     // callbacks.
                     $parts['join'][] =
                       'LEFT JOIN callback '.
-                      'ON callback.participant_id = participant_for_queue.id '.
+                      'ON callback.interview_id = participant_for_queue.current_interview_id '.
                       'AND callback.assignment_id IS NULL';
                     $parts['where'][] = 'callback.id IS NULL';
 
