@@ -80,13 +80,6 @@ class module extends \cenozo\service\module
         $modifier->left_join( 'assignment', 'callback.assignment_id', 'assignment.id' );
       if( !$modifier->has_join( 'interview' ) )
         $modifier->join( 'interview', 'callback.interview_id', 'interview.id' );
-      $participant_site_join_mod = lib::create( 'database\modifier' );
-      $participant_site_join_mod->where(
-        'interview.participant_id', '=', 'participant_site.participant_id', false );
-      $participant_site_join_mod->where(
-        'participant_site.application_id', '=', $session->get_application()->id );
-      $modifier->join_modifier( 'participant_site', $participant_site_join_mod, 'left' );
-      $modifier->left_join( 'setting', 'participant_site.site_id', 'setting.site_id' );
 
       $phone_call_join_mod = lib::create( 'database\modifier' );
       $phone_call_join_mod->where( 'assignment.id', '=', 'phone_call.assignment_id', false );
@@ -108,17 +101,11 @@ class module extends \cenozo\service\module
                     'IF( phone_call.id IS NOT NULL, "in progress", "assigned" ) '.
                 '), '.
                 // the callback hasn't been assigned
-                'IF( UTC_TIMESTAMP() < '.
-                    'callback.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE, '.
+                'IF( UTC_TIMESTAMP() < callback.datetime, '.
                     // the callback is in the pre-callback time
                     '"upcoming", '.
-                    'IF( UTC_TIMESTAMP() < '.
-                        'callback.datetime + INTERVAL IFNULL( post_call_window, 0 ) MINUTE, '.
-                        // the callback is in the post-callback time
-                        '"assignable", '.
-                        // the callback is after the post-callback time
-                        '"missed" '.
-                    ') '.
+                    // the callback is in the post-callback time
+                    '"assignable" '.
                 ') '.
             ') '.
         ')';

@@ -49,7 +49,6 @@ class callback extends \cenozo\database\record
    *   not reached: the callback was met but the participant was not reached
    *   upcoming: the callback's date/time has not yet occurred
    *   assignable: the callback is ready to be assigned, but hasn't been
-   *   missed: the callback was missed (never assigned) and the call window has passed
    *   incomplete: the callback was assigned but the assignment never closed (an error)
    *   assigned: the callback is currently assigned
    *   in progress: the callback is currently assigned and currently in a call
@@ -72,7 +71,6 @@ class callback extends \cenozo\database\record
     $status = 'unknown';
     
     // settings are in minutes, time() is in seconds, so multiply by 60
-    $pre_window_time = 60 * $db_participant->get_effective_site()->get_setting()->pre_call_window;
     $now = util::get_datetime_object()->getTimestamp();
     $callback = $this->datetime->getTimestamp();
 
@@ -102,7 +100,7 @@ class callback extends \cenozo\database\record
         }
       }
     }
-    else if( $now < $callback - $pre_window_time )
+    else if( $now < $callback )
     {
       $status = 'upcoming';
     }
