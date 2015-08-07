@@ -224,11 +224,13 @@ class queue extends \cenozo\database\record
       
       // only populate queues which are not time-specific
       if( !$db_queue->time_specific )
+      {
         static::db()->execute( sprintf(
           'INSERT INTO queue_has_participant( '.
             'participant_id, queue_id, site_id, qnaire_id, '.
             'start_qnaire_date, interview_method_id ) %s',
           $db_queue->get_sql( $columns ) ) );
+      }
     }
 
     $semaphore->release();
@@ -241,9 +243,9 @@ class queue extends \cenozo\database\record
    * Only time-specific queues are affected by this function, to populate non time-specific
    * queues use the repopulate() static method instead.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access protected
+   * @access public
    */
-  protected function populate_time_specific()
+  public function populate_time_specific()
   {
     // do nothing if this isn't a time-specific queue
     if( !$this->time_specific ) return;
@@ -283,9 +285,10 @@ class queue extends \cenozo\database\record
       $sql = sprintf(
         'INSERT INTO queue_has_participant( '.
           'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date, interview_method_id ) '.
-        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, '.
-        'interview.qnaire_id, start_qnaire_date, interview.interview_method_id '.
+        'SELECT DISTINCT queue_has_participant.participant_id, %s, queue_has_participant.site_id, '.
+        'queue_has_participant.qnaire_id, start_qnaire_date, queue_has_participant.interview_method_id '.
         'FROM queue_has_participant '.
+        'LEFT JOIN setting ON queue_has_participant.site_id = setting.site_id '.
         'JOIN interview ON queue_has_participant.participant_id = interview.participant_id '.
         'AND queue_has_participant.qnaire_id = interview.qnaire_id '.
         'JOIN appointment ON interview.id = appointment.interview_id '.
@@ -297,15 +300,15 @@ class queue extends \cenozo\database\record
       if( 'upcoming appointment' == $this->name )
       {
         $sql .= sprintf(
-          $check_time ? '%s < appointment.datetime - INTERVAL pre_call_window MINUTE'
+          $check_time ? '%s < appointment.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE'
                       : 'DATE( %s ) < DATE( appointment.datetime )',
           $viewing_date );
       }
       else if( 'assignable appointment' == $this->name )
       {
         $sql .= sprintf(
-          $check_time ? '%s >= appointment.datetime - INTERVAL pre_call_window MINUTE AND '.
-                        '%s <= appointment.datetime + INTERVAL post_call_window MINUTE'
+          $check_time ? '%s >= appointment.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE AND '.
+                        '%s <= appointment.datetime + INTERVAL IFNULL( post_call_window, 0 ) MINUTE'
                       : 'DATE( %s ) = DATE( appointment.datetime )',
           $viewing_date,
           $viewing_date );
@@ -313,7 +316,7 @@ class queue extends \cenozo\database\record
       else if( 'missed appointment' == $this->name )
       {
         $sql .= sprintf(
-          $check_time ? '%s > appointment.datetime + INTERVAL post_call_window MINUTE'
+          $check_time ? '%s > appointment.datetime + INTERVAL IFNULL( post_call_window, 0 ) MINUTE'
                       : 'DATE( %s ) > DATE( appointment.datetime )',
           $viewing_date );
       }
@@ -326,9 +329,10 @@ class queue extends \cenozo\database\record
       $sql = sprintf(
         'INSERT INTO queue_has_participant( '.
           'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date, interview_method_id ) '.
-        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, '.
-        'qnaire_id, start_qnaire_date, interview_method_id '.
+        'SELECT DISTINCT queue_has_participant.participant_id, %s, queue_has_participant.site_id, '.
+        'queue_has_participant.qnaire_id, start_qnaire_date, queue_has_participant.interview_method_id '.
         'FROM queue_has_participant '.
+        'LEFT JOIN setting ON queue_has_participant.site_id = setting.site_id '.
         'JOIN interview ON queue_has_participant.participant_id = interview.participant_id '.
         'AND queue_has_participant.qnaire_id = interview.qnaire_id '.
         'JOIN callback ON interview.id = callback.interview_id '.
@@ -340,14 +344,14 @@ class queue extends \cenozo\database\record
       if( 'upcoming callback' == $this->name )
       {
         $sql .= sprintf(
-          $check_time ? '%s < callback.datetime - INTERVAL pre_call_window MINUTE'
+          $check_time ? '%s < callback.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE'
                       : 'DATE( %s ) < DATE( callback.datetime )',
           $viewing_date );
       }
       else if( 'assignable callback' == $this->name )
       {
         $sql .= sprintf(
-          $check_time ? '%s >= callback.datetime - INTERVAL pre_call_window MINUTE'
+          $check_time ? '%s >= callback.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE'
                       : 'DATE( %s ) = DATE( callback.datetime )',
           $viewing_date );
       }
@@ -364,8 +368,8 @@ class queue extends \cenozo\database\record
       $sql = sprintf(
         'INSERT INTO queue_has_participant( '.
           'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date, interview_method_id ) '.
-        'SELECT DISTINCT queue_has_participant.participant_id, %s, site_id, '.
-        'qnaire_id, start_qnaire_date, interview_method_id '.
+        'SELECT DISTINCT queue_has_participant.participant_id, %s, queue_has_participant.site_id, '.
+        'queue_has_participant.qnaire_id, start_qnaire_date, queue_has_participant.interview_method_id '.
         'FROM queue_has_participant '.
         'JOIN participant_last_interview '.
         'ON queue_has_participant.participant_id = participant_last_interview.participant_id '.
@@ -635,13 +639,13 @@ class queue extends \cenozo\database\record
           {
             // participants who are currently assigned
             $parts['where'][] =
-              '( last_assignment_id IS NOT NULL AND last_assignment_end_datetime IS NULL )';
+              '( current_assignment_id IS NOT NULL AND current_assignment_end_datetime IS NULL )';
           }
           else
           {
             // participants who are NOT currently assigned
             $parts['where'][] =
-              '( last_assignment_id IS NULL OR last_assignment_end_datetime IS NOT NULL )';
+              '( current_assignment_id IS NULL OR current_assignment_end_datetime IS NOT NULL )';
 
             if( 'appointment' == $queue )
             {
@@ -725,7 +729,7 @@ class queue extends \cenozo\database\record
                       $parts['where'][] =
                         '('.
                           'start_qnaire_date IS NOT NULL OR '.
-                          'last_assignment_id IS NULL '.
+                          'current_assignment_id IS NULL '.
                         ')';
                     }
                     else // old participant
@@ -736,12 +740,12 @@ class queue extends \cenozo\database\record
                       $parts['from'][] = 'phone_call';
                       $parts['from'][] = 'assignment_last_phone_call';
                       $parts['where'][] =
-                        'assignment_last_phone_call.assignment_id = last_assignment_id';
+                        'assignment_last_phone_call.assignment_id = current_assignment_id';
                       $parts['where'][] =
                         'phone_call.id = assignment_last_phone_call.phone_call_id';
                       // make sure the current interview's qnaire matches the effective qnaire,
                       // otherwise this participant has never been assigned
-                      $parts['where'][] = 'current_interview_qnaire_id = effective_qnaire_id';
+                      $parts['where'][] = 'current_qnaire_id = effective_qnaire_id';
                     }
                   }
                 }
@@ -853,14 +857,14 @@ class queue extends \cenozo\database\record
         'ADD INDEX fk_participant_state_id ( participant_state_id ), '.
         'ADD INDEX fk_effective_qnaire_id ( effective_qnaire_id ), '.
         'ADD INDEX fk_last_consent_accept ( last_consent_accept ), '.
-        'ADD INDEX fk_last_assignment_id ( last_assignment_id ), '.
+        'ADD INDEX fk_current_assignment_id ( current_assignment_id ), '.
         'ADD INDEX dk_primary_region_id ( primary_region_id )' );
 
     // build participant_for_queue_participant_site
     $sql = sprintf(
       'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue_participant_site '.
       'SELECT participant_id AS id, participant_site.site_id AS participant_site_id, '.
-             'calling_start_time, calling_end_time, pre_call_window, post_call_window '.
+             'calling_start_time, calling_end_time '.
       'FROM participant_site '.
       'LEFT JOIN setting ON participant_site.site_id = setting.site_id '.
       'WHERE application_id = %s ',
@@ -872,13 +876,14 @@ class queue extends \cenozo\database\record
     static::db()->execute( 'DROP TABLE IF EXISTS participant_for_queue_participant_site' );
     static::db()->execute( $sql );
 
+
     if( is_null( $db_participant ) )
       static::db()->execute(
         'ALTER TABLE participant_for_queue_participant_site '.
         'ADD INDEX dk_participant_id_site_id ( id, participant_site_id )' );
 
     // build participant_for_queue_first_address table
-    $sql = 
+    $sql = sprintf(
       'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue_first_address '.
       'SELECT participant.id AS id, '.
              'address.city AS first_address_city, '.
@@ -887,9 +892,14 @@ class queue extends \cenozo\database\record
              'address.timezone_offset AS first_address_timezone_offset, '.
              'address.daylight_savings AS first_address_daylight_savings '.
       'FROM participant_first_address '.
+      'JOIN application_has_participant '.
+      'ON participant_first_address.participant_id = application_has_participant.participant_id '.
+      'AND application_has_participant.application_id = %s '.
+      'AND application_has_participant.datetime IS NOT NULL '.
       'LEFT JOIN participant ON participant_first_address.participant_id = participant.id '.
       'LEFT JOIN address '.
-      'ON participant_first_address.address_id = address.id ';
+      'ON participant_first_address.address_id = address.id ',
+      static::db()->format_string( $application_id ) );
     if( !is_null( $db_participant ) )
       $sql .= sprintf( 'WHERE participant.id = %s ',
                        static::db()->format_string( $db_participant->id ) );
@@ -1009,25 +1019,23 @@ source.override_quota AS source_override_quota,
 primary_region.id AS primary_region_id,
 last_consent.accept AS last_consent_accept,
 current_interview.id AS current_interview_id,
-current_interview.qnaire_id AS current_interview_qnaire_id,
-last_assignment.id AS last_assignment_id,
-last_assignment.end_datetime AS last_assignment_end_datetime,
+current_qnaire.id AS current_qnaire_id,
+current_assignment.id AS current_assignment_id,
+current_assignment.end_datetime AS current_assignment_end_datetime,
 IF
 (
-  current_interview.id IS NULL,
-  ( SELECT id FROM qnaire WHERE rank = 1 ),
+  current_qnaire.id IS NULL,
+  first_qnaire.id,
   IF( current_interview.end_datetime IS NOT NULL, next_qnaire.id, current_qnaire.id )
 ) AS effective_qnaire_id,
 IF
 (
   current_interview.id IS NULL,
-  ( SELECT interview_method_id FROM qnaire WHERE rank = 1 ),
-  IF( current_interview.end_datetime IS NOT NULL,
-      IF( next_qnaire.id IS NULL,
-          last_interview.interview_method_id,
-          next_qnaire.interview_method_id
-      ),
-      current_interview.interview_method_id
+  first_qnaire.interview_method_id,
+  IF(
+    current_interview.end_datetime IS NOT NULL,
+    next_qnaire.interview_method_id,
+    current_interview.interview_method_id
   )
 ) AS effective_interview_method_id,
 (
@@ -1046,12 +1054,13 @@ IF
       GREATEST
       (
         IFNULL( next_event.datetime, "" ),
-        IFNULL( next_prev_assignment.end_datetime, "" )
+        IFNULL( prev_assignment.end_datetime, "" )
       ) + INTERVAL next_qnaire.delay WEEK,
       NULL
     )
   )
 ) AS start_qnaire_date
+
 FROM participant
 JOIN application_has_participant
 ON participant.id = application_has_participant.participant_id
@@ -1059,81 +1068,61 @@ AND application_has_participant.datetime IS NOT NULL
 JOIN application
 ON application_has_participant.application_id = application.id
 AND application.id = %s
+
 JOIN source
 ON participant.source_id = source.id
+
 LEFT JOIN participant_primary_address
 ON participant.id = participant_primary_address.participant_id
 LEFT JOIN address AS primary_address
 ON participant_primary_address.address_id = primary_address.id
 LEFT JOIN region AS primary_region
 ON primary_address.region_id = primary_region.id
+
 JOIN participant_last_consent
 ON participant.id = participant_last_consent.participant_id
 LEFT JOIN consent AS last_consent
 ON last_consent.id = participant_last_consent.consent_id
-LEFT JOIN participant_last_interview
-ON participant.id = participant_last_interview.participant_id
-LEFT JOIN interview AS last_interview
-ON participant_last_interview.interview_id = last_interview.id
+
+LEFT JOIN participant_last_interview AS participant_current_interview
+ON participant.id = participant_current_interview.participant_id
 LEFT JOIN interview AS current_interview
-ON current_interview.participant_id = participant.id
-LEFT JOIN interview_last_assignment
-ON current_interview.id = interview_last_assignment.interview_id
-LEFT JOIN assignment AS last_assignment
-ON interview_last_assignment.assignment_id = last_assignment.id
+ON participant_current_interview.interview_id = current_interview.id
 LEFT JOIN qnaire AS current_qnaire
-ON current_qnaire.id = current_interview.qnaire_id
-LEFT JOIN qnaire AS next_qnaire
-ON next_qnaire.rank = ( current_qnaire.rank + 1 )
-LEFT JOIN qnaire AS next_prev_qnaire
-ON next_prev_qnaire.id = next_qnaire.prev_qnaire_id
-LEFT JOIN interview AS next_prev_interview
-ON next_prev_interview.qnaire_id = next_prev_qnaire.id
-AND next_prev_interview.participant_id = participant.id
-LEFT JOIN assignment AS next_prev_assignment
-ON next_prev_assignment.interview_id = next_prev_interview.id
+ON current_interview.qnaire_id = current_qnaire.id
+LEFT JOIN interview_last_assignment AS interview_current_assignment
+ON current_interview.id = interview_current_assignment.interview_id
+LEFT JOIN assignment AS current_assignment
+ON interview_current_assignment.assignment_id = current_assignment.id
+
 CROSS JOIN qnaire AS first_qnaire
 ON first_qnaire.rank = 1
-LEFT JOIN event first_event
+LEFT JOIN event AS first_event
 ON participant.id = first_event.participant_id
-AND first_event.event_type_id IN
-(
+AND first_event.event_type_id IN (
   SELECT event_type_id
   FROM qnaire_has_event_type
   WHERE qnaire_id = first_qnaire.id
 )
-LEFT JOIN event next_event
+
+LEFT JOIN qnaire AS next_qnaire
+ON next_qnaire.rank = ( current_qnaire.rank + 1 )
+LEFT JOIN event AS next_event
 ON participant.id = next_event.participant_id
-AND next_event.event_type_id IN
-(
+AND next_event.event_type_id IN (
   SELECT event_type_id
   FROM qnaire_has_event_type
   WHERE qnaire_id = next_qnaire.id
 )
-WHERE
-(
-  current_qnaire.rank IS NULL
-  OR current_qnaire.rank =
-  (
-    SELECT MAX( qnaire.rank )
-    FROM interview
-    JOIN qnaire ON qnaire.id = interview.qnaire_id
-    WHERE interview.participant_id = current_interview.participant_id
-    GROUP BY current_interview.participant_id
-  )
-)
-AND
-(
-  next_prev_assignment.end_datetime IS NULL
-  OR next_prev_assignment.end_datetime =
-  (
-    SELECT MAX( assignment.end_datetime )
-    FROM interview
-    JOIN assignment ON assignment.interview_id = interview.id
-    WHERE interview.qnaire_id = next_prev_qnaire.id
-    AND assignment.id = next_prev_assignment.id
-    GROUP BY next_prev_assignment.interview_id
-  )
-)
+
+LEFT JOIN qnaire AS prev_qnaire
+ON next_qnaire.prev_qnaire_id = prev_qnaire.id
+LEFT JOIN interview AS prev_interview
+ON prev_interview.qnaire_id = prev_qnaire.id
+AND prev_interview.participant_id = participant.id
+LEFT JOIN interview_last_assignment AS interview_prev_assignment
+ON prev_interview.id = interview_prev_assignment.interview_id
+LEFT JOIN assignment AS prev_assignment
+ON interview_prev_assignment.assignment_id = prev_assignment.id
 SQL;
 }

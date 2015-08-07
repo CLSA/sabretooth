@@ -12,12 +12,35 @@ define( cenozo.getServicesIncludeList( 'queue' ), function( module ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQueueViewFactory',
-    cenozo.getListModelInjectionList( 'queue' ).concat( function() {
+    cenozo.getListModelInjectionList( 'queue' ).concat( [ 'CnHttpFactory', function() {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
+      var CnHttpFactory = args[args.length-1];
+      var object = function( parentModel ) {
+        CnBaseViewFactory.construct( this, parentModel, args );
+
+        // make sure users can't add/remove participants from queues
+        this.participantModel.enableChoose( false );
+
+        // add operations
+        var self = this;
+        if( true ) {
+          this.onView = function() {
+            return this.viewRecord().then( function() {
+              self.operationList = [ {
+                name: 'Repopulate',
+                execute: function() {
+                  CnHttpFactory.instance( {
+                    path: 'queue/' + self.record.id + '?repopulate=true'
+                  } ).patch();
+                }
+              } ];
+            } );
+          };
+        }
+      }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } )
+    } ] )
   );
 
   /* ######################################################################################################## */

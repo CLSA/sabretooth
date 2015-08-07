@@ -34,11 +34,11 @@ define( {
       title: 'Rank',
       type: 'rank'
     },
-    name: { title: 'Name' }/*,
+    name: { title: 'Name' },
     participant_count: {
       title: 'Participants',
       type: 'number'
-    }*/
+    }
   },
   defaultOrder: {
     column: 'rank',
