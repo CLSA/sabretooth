@@ -66,11 +66,24 @@ class ui extends \cenozo\ui\ui
     $list = parent::get_list_items();
     
     // add application-specific states to the base list
-    $list['cedar_instance'] = 'Cedar Instances';
-    $list['interview'] = 'Interviews';
-    $list['opal_instance'] = 'Opal Instances';
-    $list['qnaire'] = 'Questionnaires';
-    $list['queue'] = 'Queues';
+    $list['Cedar Instances'] = 'cedar_instance';
+    $list['Interviews']      = 'interview';
+    $list['Opal Instances']  = 'opal_instance';
+    $list['Questionnaires']  = 'qnaire';
+    $list['Queues']          = 'queue';
+
+    return $list;
+  }
+
+  /**
+   * Extends the parent method
+   */
+  protected function get_utility_items()
+  {
+    $list = parent::get_utility_items();
+    
+    // add application-specific states to the base list
+    $list['Queue Tree'] = array( 'subject' => 'queue', 'action' => 'tree' );
 
     return $list;
   }

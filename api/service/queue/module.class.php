@@ -24,15 +24,16 @@ class module extends \cenozo\service\module
     $db_role = $session->get_role();
     $db_site = $session->get_site();
 
-    // only show ranked queues
-    $modifier->where( 'queue.rank', '!=', NULL );
+    // if the "full" parameter isn't included then only show ranked queues
+    $full = $this->get_argument( 'full', false );
+    if( !$full ) $modifier->where( 'queue.rank', '!=', NULL );
 
     // add the total number of participants
     if( $select->has_column( 'participant_count' ) )
     {
-      // must force all ranked queues to repopulate
+      // must force all queues to repopulate
       $queue_mod = lib::create( 'database\modifier' );
-      $queue_mod->where( 'rank', '!=', NULL );
+      if( !$full ) $queue_mod->where( 'rank', '!=', NULL );
       foreach( $queue_class_name::select_objects( $queue_mod ) as $db_queue )
         $db_queue->populate_time_specific();
 
