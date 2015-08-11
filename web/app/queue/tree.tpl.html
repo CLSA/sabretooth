@@ -6,7 +6,7 @@
          ng-click="refresh()"
          tooltip="Click to refresh data"
          tooltip-placement="left"></i>
-      Queue Tree <span ng-if="isLoading">(Loading...)</span>
+      Queue Tree <span ng-if="isLoading">(Loading&hellip;)</span>
     </h4>
   </div>
   <div class="container-fluid" ng-switch="isComplete">
@@ -14,6 +14,65 @@
       <h3 class="text-primary text-center">Waiting for a response from the server</h3>
       <div class="loader"></div>
     </div>
-    <cn-tree class="spacer" ng-switch-when="true" model="model.queueTree"></cn-tree>
+    <div class="spacer row" ng-switch-when="true">
+      <div class="col-sm-4">
+        <div class="form-group">
+          <label for="qnaire_id" class="control-label">Questionnaire</label>
+          <select id="qnaire_id"
+                  ng-model="model.form.qnaire_id"
+                  class="form-control"
+                  ng-options="item.value as item.name for item in model.form.qnaireList">
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="time" class="control-label">Viewing Date &amp; Time</label>
+          <input id="time"
+                 ng-model="model.form.formattedDatetime"
+                 class="form-control"
+                 type="text"
+                 ng-click="model.form.selectDatetime()"
+                 onkeydown="return false">
+        </div>
+        <div class="form-group">
+          <label for="language_id" class="control-label">Language</label>
+          <select id="language_id"
+                  ng-model="model.form.language_id"
+                  class="form-control"
+                  ng-options="item.value as item.name for item in model.form.languageList">
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="collection_id" class="control-label">Collection</label>
+          <select id="collection_id"
+                  ng-model="model.form.collection_id"
+                  class="form-control"
+                  ng-options="item.value as item.name for item in model.form.collectionList">
+          </select>
+        </div>
+        <div class="text-info well small">
+          <p>
+            The queue tree provides an overview of how the queues are populated.
+          </p>
+          <p>
+            Each branch of the tree represents a queue and includes the total number of participants
+            belonging to that queue.  Ranked queues are denoted by their rank (Q<em>n</em>) and
+            highlighted.  A participant must belong to a ranked queue in order to be assigned for
+            interviewing.
+          </p>
+          <p>
+            Arrow buttons expand and collapse parts of the tree.  Numbered buttons indicate how many
+            participants belong in each queue in the tree.  Clicking a queue button will view the queue
+            providing you with a list of all participants belonging to it.
+          </p>
+          <p>
+            The above controls will refine which participants are shown by restricting to a
+            questionnaire, particular viewing time, participant language or collection.
+          </p>
+        </div>
+      </div>
+      <div class="col-sm-8" style="padding-right: 0px;">
+        <cn-tree model="model.queueTree"></cn-tree>
+      </div>
+    </div>
   </div>
 </div>

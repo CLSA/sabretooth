@@ -34,12 +34,11 @@ define( [], function() {
       $scope.refresh = function() {
         $scope.isLoading = 0 < this.model.queueTree.length;
         $scope.isComplete = 0 < this.model.queueTree.length;
-        $scope.model.onView().then(
-          function() { $scope.isLoading = false; $scope.isComplete = true; },
-          CnSession.errorHandler
-        );
+        $scope.model.onView().then( function() {
+          CnSession.setBreadcrumbTrail( [ { title: 'Queue Tree' } ] );
+          $scope.isLoading = false; $scope.isComplete = true;
+        } ).catch( CnSession.errorHandler );
       };
-
       $scope.refresh();
     }
   ] );
