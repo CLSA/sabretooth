@@ -166,7 +166,7 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'phase', 'POST', 0, 1 ),
 ( 'phone_call', 'GET', 0, 0 ),
 ( 'qnaire', 'DELETE', 1, 1 ),
-( 'qnaire', 'GET', 0, 1 ),
+( 'qnaire', 'GET', 0, 0 ),
 ( 'qnaire', 'GET', 1, 1 ),
 ( 'qnaire', 'PATCH', 1, 1 ),
 ( 'qnaire', 'POST', 0, 1 ),

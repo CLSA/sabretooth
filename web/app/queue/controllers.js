@@ -32,8 +32,8 @@ define( [], function() {
       $scope.isComplete = false;
       $scope.model = CnQueueTreeFactory.instance();
       $scope.refresh = function() {
-        $scope.isLoading = 0 < this.model.queueTree.length;
-        $scope.isComplete = 0 < this.model.queueTree.length;
+        $scope.isLoading = 0 < $scope.model.queueTree.length;
+        $scope.isComplete = 0 < $scope.model.queueTree.length;
         $scope.model.onView().then( function() {
           CnSession.setBreadcrumbTrail( [ { title: 'Queue Tree' } ] );
           $scope.isLoading = false; $scope.isComplete = true;
