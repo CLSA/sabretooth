@@ -35,6 +35,9 @@ class module extends \cenozo\service\module
       $join_sel->from( 'queue' );
       $join_sel->add_column( 'id', 'queue_id' );
       $join_sel->add_column(
+        'MAX( CONVERT_TZ( queue_has_participant.update_timestamp, "US/Eastern", "UTC" ) )',
+        'last_repopulation', false, 'datetime' );
+      $join_sel->add_column(
         'IF( queue_has_participant.participant_id IS NOT NULL, COUNT(*), 0 )',
         'participant_count', false );
 
@@ -61,7 +64,8 @@ class module extends \cenozo\service\module
         {
           if( 'date' == $where->column )
           {
-            $queue_class_name::set_viewing_date( util::get_datetime_object( $where->value )->format( 'Y-m-d' ) );
+            $queue_class_name::set_viewing_date(
+              util::get_datetime_object( $where->value )->format( 'Y-m-d' ) );
           }
           else
           {
@@ -87,6 +91,7 @@ class module extends \cenozo\service\module
         sprintf( '( %s %s ) AS queue_join_participant', $join_sel->get_sql(), $join_mod->get_sql() ),
         'queue.id',
         'queue_join_participant.queue_id' );
+      $select->add_column( 'last_repopulation', 'last_repopulation', false );
       $select->add_column( 'participant_count', 'participant_count', false );
 
       // must force all queues to repopulate

@@ -37,7 +37,9 @@ define( [], function() {
         $scope.model.onView().then( function() {
           CnSession.setBreadcrumbTrail( [ { title: 'Queue Tree' } ] );
           $scope.isLoading = false; $scope.isComplete = true;
-        } ).catch( CnSession.errorHandler );
+        }, CnSession.errorHandler, function( progress ) {
+          console.log( progress );
+        } );
       };
       $scope.refresh();
     }

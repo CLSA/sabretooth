@@ -12,33 +12,23 @@ define( cenozo.getServicesIncludeList( 'queue' ), function( module ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQueueViewFactory',
-    cenozo.getListModelInjectionList( 'queue' ).concat( [ 'CnHttpFactory', function() {
+    cenozo.getListModelInjectionList( 'queue' ).concat( [ '$state', function() {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var CnHttpFactory = args[args.length-1];
+      var $state = args[args.length-1];
       var object = function( parentModel ) {
         CnBaseViewFactory.construct( this, parentModel, args );
 
         // make sure users can't add/remove participants from queues
         this.participantModel.enableChoose( false );
-
+        
         // add operations
-        var self = this;
-        if( true ) {
-          this.onView = function() {
-            return this.viewRecord().then( function() {
-              self.operationList = [ {
-                name: 'Repopulate',
-                execute: function() {
-                  CnHttpFactory.instance( {
-                    path: 'queue/' + self.record.id + '?repopulate=true'
-                  } ).patch();
-                }
-              } ];
-            } );
-          };
-        }
-      }
+        this.operationList = [ {
+          name: 'View Queue Tree',
+          execute: function() { $state.go( 'queue.tree' ); }
+        } ];
+      };
+
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     } ] )
   );
@@ -63,14 +53,16 @@ define( cenozo.getServicesIncludeList( 'queue' ), function( module ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQueueTreeFactory', [
-    'CnSession', 'CnHttpFactory', 'CnModalDatetimeFactory',
-    function( CnSession, CnHttpFactory, CnModalDatetimeFactory ) {
+    '$state', 'CnSession', 'CnHttpFactory', 'CnModalDatetimeFactory',
+    function( $state, CnSession, CnHttpFactory, CnModalDatetimeFactory ) {
       var object = function() {
         var self = this;
         this.queueList = []; // one-dimensional list for manipulation
         this.queueTree = []; // multi-dimensional tree for display
 
         this.form = {
+          lastRepopulation: null,
+          isRepopulating: false,
           qnaire_id: undefined,
           qnaireList: null,
           site_id: undefined,
@@ -96,6 +88,26 @@ define( cenozo.getServicesIncludeList( 'queue' ), function( module ) {
               }
             } );
           }
+        };
+
+        this.repopulate = function() {
+          this.form.isRepopulating = true;
+
+          // blank out the button title if the tree is already built
+          if( 0 < this.queueTree.length ) {
+            for( var i = 1; i < this.queueList.length; i++ ) {
+              if( angular.isDefined( this.queueList[i] ) ) {
+                this.queueList[i].participant_count = 0;
+                this.queueList[i].childTotal = 0;
+                this.queueList[i].button.name = '\u2026';
+              }
+            }
+          }
+
+          // isRepopulating any queue repopulates them all
+          CnHttpFactory.instance( { path: 'queue/1?repopulate=true' } ).patch().then( function() {
+            self.onView().then( function() { self.form.isRepopulating = false; } );
+          } );
         };
 
         this.onView = function() {
@@ -172,24 +184,31 @@ define( cenozo.getServicesIncludeList( 'queue' ), function( module ) {
             if( 0 < self.queueTree.length ) {
               // don't rebuild the queue, just update the participant totals
               for( var i = 0; i < response.data.length; i++ ) {
-                self.queueList[response.data[i].id].participant_count = response.data[i].participant_count;
-                self.queueList[response.data[i].id].button.name = response.data[i].participant_count;
+                var queue = self.queueList[response.data[i].id];
+                queue.participant_count = response.data[i].participant_count;
+                queue.button.name = response.data[i].participant_count;
+                queue.last_repopulation = response.data[i].last_repopulation;
               }
             } else {
               // create an array containing all branches and add their child branches as we go
               var eligibleQueueId = null;
+              var oldParticipantQueueId = null;
               for( var i = 0; i < response.data.length; i++ ) {
-                // make note of the eligible queue
+                // make note of certain queues
                 if( null === eligibleQueueId && 'eligible' == response.data[i].name )
                   eligibleQueueId = response.data[i].id;
+                if( null === oldParticipantQueueId && 'old participant' == response.data[i].name )
+                  oldParticipantQueueId = response.data[i].id;
 
                 // add all branches to the root, for now
                 response.data[i].branchList = []; // will be filled in if the branch has any children
-                response.data[i].initialOpen = "old participant" != response.data[i].name;
+                response.data[i].initialOpen = null === oldParticipantQueueId ||
+                                               oldParticipantQueueId > response.data[i].id;
                 response.data[i].open = response.data[i].initialOpen;
                 response.data[i].button = {
+                  id: response.data[i].id,
                   name: response.data[i].participant_count,
-                  go: function() { console.log( 'TODO' ); }
+                  go: function() { $state.go( 'queue.view', { identifier: this.id } ); }
                 };
                 if( null !== response.data[i].rank ) {
                   response.data[i].title = 'Q' + response.data[i].rank + ': ' + response.data[i].title;
@@ -211,6 +230,10 @@ define( cenozo.getServicesIncludeList( 'queue' ), function( module ) {
 
             // now check for count errors
             for( var i = 1; i < self.queueList.length; i++ ) {
+              if( 'all' == self.queueList[i].name )
+                self.form.lastRepopulation =
+                  CnSession.formatValue( self.queueList[i].last_repopulation, 'datetimesecond', false );
+
               if( angular.isDefined( self.queueList[i] ) && 0 < self.queueList[i].branchList.length ) {
                 self.queueList[i].childTotal = 0;
                 for( var c = 0; c < self.queueList[i].branchList.length; c++ )

@@ -17,11 +17,41 @@
     <div class="spacer row" ng-switch-when="true">
       <div class="col-sm-4">
         <div class="form-group">
+          <label for="lastRepopulation" class="control-label">Last re-population</label>
+          <input id="lastRepopulation"
+                 ng-model="model.form.lastRepopulation"
+                 class="form-control"
+                 type="text"
+                 readonly></input>
+        </div>
+        <button ng-if="!model.form.isRepopulating"
+                class="btn btn-warning full-width"
+                type="button"
+                cn-really-message="Are you sure you wish to repopulate all queues?
+                  This may cause applications to slow down until the processing is complete."
+                cn-really-click="model.repopulate()">Re-populate</button>
+        <progressbar ng-if="model.form.isRepopulating"
+                     class="progress-striped active"
+                     type="warning"
+                     value="1"
+                     max="1"
+                     animate="false"
+                     style="margin-bottom: 0px; height: 34px;">
+          <h5><strong>Please wait&hellip;</strong></h5>
+        </progressbar>
+        <div class="text-info well small">
+          <p>
+            The queue automatically and regularly re-populates itself.  You can force the queues to
+            re-populate immediately by clicking the Re-populate button below.  However, this operation
+          </p>
+        </div>
+        <div class="form-group">
           <label for="qnaire_id" class="control-label">Questionnaire</label>
           <select id="qnaire_id"
                   ng-model="model.form.qnaire_id"
                   ng-change="refresh()"
                   class="form-control"
+                  ng-disabled="model.form.isRepopulating"
                   ng-options="item.value as item.name for item in model.form.qnaireList">
           </select>
         </div>
@@ -31,6 +61,7 @@
                   ng-model="model.form.site_id"
                   ng-change="refresh()"
                   class="form-control"
+                  ng-disabled="model.form.isRepopulating"
                   ng-options="item.value as item.name for item in model.form.siteList">
           </select>
         </div>
@@ -41,7 +72,8 @@
                  class="form-control"
                  type="text"
                  ng-click="model.form.selectViewingDate( refresh )"
-                 onkeydown="return false">
+                 ng-disabled="model.form.isRepopulating"
+                 onkeydown="return false"></input>
         </div>
         <div class="form-group">
           <label for="language_id" class="control-label">Participant Language</label>
@@ -49,23 +81,16 @@
                   ng-model="model.form.language_id"
                   ng-change="refresh()"
                   class="form-control"
+                  ng-disabled="model.form.isRepopulating"
                   ng-options="item.value as item.name for item in model.form.languageList">
           </select>
         </div>
         <div class="text-info well small">
           <p>
-            The queue tree provides an overview of how the queues are populated.
-          </p>
-          <p>
             Each branch of the tree represents a queue and includes the total number of participants
             belonging to that queue (refined by the settings above).
             Ranked queues are denoted by their rank (Q<em>n</em>) and highlighted.
             A participant must belong to a ranked queue in order to be assigned for interviewing.
-          </p>
-          <p>
-            Arrow buttons expand and collapse parts of the tree.  Numbered buttons indicate how many
-            participants belong in each queue in the tree.  Clicking a queue button will view the queue
-            providing you with a list of all participants belonging to it.
           </p>
         </div>
       </div>
