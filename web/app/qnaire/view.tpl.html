@@ -1,7 +1,17 @@
 <cn-record-view model="model"></cn-record-view>
-<div class="vertical-spacer" ng-repeat="child in model.children">
-  <cn-record-list model="model.viewModel[child.camel+'Model']"></cn-record-list>
+<div class="vertical-spacer">
+  <cn-record-list model="model.viewModel['phaseModel']"
+                  heading="Phase List"></cn-record-list>
 </div>
-<div class="vertical-spacer" ng-repeat="child in model.choosing">
-  <cn-record-list model="model.viewModel[child.camel+'Model']"></cn-record-list>
+<div class="vertical-spacer">
+  <cn-record-list model="model.viewModel['interviewMethodModel']"
+                  heading="Available Interview Method List"></cn-record-list>
+</div>
+<div class="vertical-spacer">
+  <cn-record-list model="model.viewModel['eventTypeModel']"
+                  heading="Required To Begin Event List"></cn-record-list>
+</div>
+<div class="vertical-spacer">
+  <cn-record-list model="model.viewModel['quotaModel']"
+                  heading="Disabled Quota List"></cn-record-list>
 </div>
