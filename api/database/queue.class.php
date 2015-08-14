@@ -54,7 +54,7 @@ class queue extends \cenozo\database\record
     $db_queue_state = $queue_state_class_name::get_unique_record(
       array( 'queue_id', 'site_id', 'qnaire_id' ),
       array( $this->id, $db_site->id, $db_qnaire->id ) );
-    return is_null( $db_queue_state ) ? true : $db_queue_state->enabled;
+    return is_null( $db_queue_state );
   }
 
   /**
@@ -988,14 +988,6 @@ class queue extends \cenozo\database\record
    * @static
    */
   protected static $viewing_date = NULL;
-
-  /**
-   * Whether or not calling times are enabled.
-   * @var boolean
-   * @access protected
-   * @static
-   */
-  protected static $calling_times_enabled = NULL;
 
   /**
    * The queries for each queue

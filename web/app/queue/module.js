@@ -1,6 +1,6 @@
 define( {
   subject: 'queue',
-  identifier: { column: 'name' }, // standard
+  identifier: { column: 'name' },
   name: {
     singular: 'queue',
     plural: 'queues',

@@ -3,6 +3,7 @@
 SET AUTOCOMMIT=0;
 
 SOURCE queue.sql
+SOURCE queue_state.sql
 SOURCE interview.sql
 SOURCE interview_method.sql
 SOURCE assignment.sql

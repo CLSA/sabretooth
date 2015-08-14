@@ -34,11 +34,16 @@ class ui extends \cenozo\ui\ui
       array_unshift( $module_list['participant']['children'], 'interview' );
     if( array_key_exists( 'qnaire', $module_list ) )
     {
-      $module_list['qnaire']['children'] = array( 'phase' );
+      $module_list['qnaire']['children'] = array( 'phase', 'queue_state' );
       $module_list['qnaire']['choosing'] = array( 'event_type', 'interview_method', 'quota' );
     }
     if( array_key_exists( 'queue', $module_list ) )
+    {
+      $module_list['queue']['children'] = array( 'queue_state' );
       $module_list['queue']['choosing'] = array( 'participant' );
+    }
+    if( array_key_exists( 'site', $module_list ) )
+      array_unshift( $module_list['site']['children'], 'queue_state' );
 
     return $module_list;
   }
@@ -64,13 +69,18 @@ class ui extends \cenozo\ui\ui
   protected function get_list_items()
   {
     $list = parent::get_list_items();
+    $db_role = lib::create( 'business\session' )->get_role();
     
     // add application-specific states to the base list
-    $list['Cedar Instances'] = 'cedar_instance';
-    $list['Interviews']      = 'interview';
-    $list['Opal Instances']  = 'opal_instance';
-    $list['Questionnaires']  = 'qnaire';
-    $list['Queues']          = 'queue';
+    $list['Interviews'] = 'interview';
+    $list['Queues']     = 'queue';
+
+    if( 3 <= $db_role->tier )
+    {
+      $list['Cedar Instances'] = 'cedar_instance';
+      $list['Opal Instances']  = 'opal_instance';
+      $list['Questionnaires']  = 'qnaire';
+    }
 
     return $list;
   }
@@ -81,9 +91,11 @@ class ui extends \cenozo\ui\ui
   protected function get_utility_items()
   {
     $list = parent::get_utility_items();
+    $db_role = lib::create( 'business\session' )->get_role();
     
     // add application-specific states to the base list
-    $list['Queue Tree'] = array( 'subject' => 'queue', 'action' => 'tree' );
+    if( 2 <= $db_role->tier )
+      $list['Queue Tree'] = array( 'subject' => 'queue', 'action' => 'tree' );
 
     return $list;
   }

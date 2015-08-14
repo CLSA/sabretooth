@@ -359,7 +359,19 @@ CREATE PROCEDURE patch_role_has_service()
 
       "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
       "WHERE subject = 'queue' AND method = 'PATCH' AND resource = 1 ",
-      "AND role.name IN( 'administrator' )" );
+      "AND role.name IN( 'administrator', 'supervisor' ) ",
+
+      "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+      "WHERE subject = 'queue_state' AND method = 'DELETE' AND resource = 1 ",
+      "AND role.name IN( 'administrator', 'supervisor' ) ",
+
+      "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+      "WHERE subject = 'queue_state' AND method = 'GET' AND resource = 0 ",
+      "AND role.name IN( 'administrator', 'supervisor' ) ",
+
+      "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+      "WHERE subject = 'queue_state' AND method = 'POST' AND resource = 0 ",
+      "AND role.name IN( 'administrator', 'supervisor' )" );
 
     PREPARE statement FROM @sql;
     EXECUTE statement;
