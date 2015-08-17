@@ -96,6 +96,8 @@ class ui extends \cenozo\ui\ui
     // add application-specific states to the base list
     if( 2 <= $db_role->tier )
       $list['Queue Tree'] = array( 'subject' => 'queue', 'action' => 'tree' );
+    if( in_array( $db_role->name, array( 'helpline', 'operator', 'supervisor' ) ) )
+      $list['Assignment Home'] = array( 'subject' => 'assignment', 'action' => 'home' );
 
     return $list;
   }

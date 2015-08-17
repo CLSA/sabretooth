@@ -45,4 +45,30 @@ class module extends \cenozo\service\module
       'assignment_last_phone_call.phone_call_id', 'last_phone_call.id' );
     $select->add_table_column( 'last_phone_call', 'status' );
   }
+
+  /**
+   * Extend parent method
+   */
+  public function pre_write( $record )
+  {
+    parent::pre_write( $record );
+
+    if( 'POST' == $this->get_method() )
+    {
+      $session = lib::create( 'business\session' );
+      $db_user = $session->get_user();
+      $db_site = $session->get_site();
+
+      // use the uid parameter to fill in the record columns
+      $post_object = $this->get_file_as_object();
+      $db_participant = lib::create( 'database\participant', $post_object->participant_id );
+      $db_interview = $db_participant->get_effective_interview();
+
+      $record->user_id = $db_user->id;
+      $record->site_id = $db_site->id;
+      $record->interview_id = $db_interview->id;
+      $record->queue_id = $db_participant->effective_qnaire_id;
+      $record->start_datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+    }
+  }
 }

@@ -1,0 +1,57 @@
+<div class="utility-view rounded">
+  <div class="container-fluid bg-primary rounded-top">
+    <h4>
+      <i class="glyphicon glyphicon-refresh glyph-hover rounded pull-right btn-primary"
+         ng-if="isComplete && !isLoading"
+         ng-click="refresh()"
+         tooltip="Click to refresh data"
+         tooltip-placement="left"></i>
+      Current Assignment <span ng-if="isLoading">(Loading&hellip;)</span>
+    </h4>
+  </div>
+  <form name="form" class="form-horizontal" novalidate>
+    <div class="form-body">
+      <div class="form-group">
+        <label for="XXX" class="col-sm-3 control-label">Details</label>
+        <div class="col-sm-9">
+          <input id="XXX"
+                 ng-model="currentAssignment.XXX"
+                 class="form-control"
+                 type="text"
+                 readonly="true"></input>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="XXX" class="col-sm-3 control-label">Details</label>
+        <div class="col-sm-9">
+          <input id="XXX"
+                 ng-model="currentAssignment.XXX"
+                 class="form-control"
+                 type="text"
+                 readonly="true"></input>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="XXX" class="col-sm-3 control-label">Details</label>
+        <div class="col-sm-9">
+          <input id="XXX"
+                 ng-model="currentAssignment.XXX"
+                 class="form-control"
+                 type="text"
+                 readonly="true"></input>
+        </div>
+      </div>
+    </div>
+    <div class="form-footer text-right rounded-bottom bg-info">
+      Footer goes here
+    </div>
+  </form>
+  <div class="vertical-spacer">
+    Participant record goes here (should be collapsable).
+  </div>
+</div>
+<div class="vertical-spacer" ng-if="!model.currentAssignment">
+  <cn-record-list model="model.participantSelectModel"
+                  heading="Assignable Participant List"
+                  remove-columns="active cohort source"></cn-record-list>
+</div>

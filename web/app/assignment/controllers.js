@@ -13,12 +13,24 @@ define( [], function() {
     }
   ] );
 
+  /* ######################################################################################################## */
   cenozo.providers.controller( 'AssignmentViewCtrl', [
     '$scope', 'CnAssignmentModelFactory', 'CnSession',
     function( $scope, CnAssignmentModelFactory, CnSession ) {
       $scope.model = CnAssignmentModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
+      } ).catch( CnSession.errorHandler );
+    }
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.controller( 'AssignmentHomeCtrl', [
+    '$scope', 'CnAssignmentHomeFactory', 'CnSession',
+    function( $scope, CnAssignmentHomeFactory, CnSession ) {
+      $scope.model = CnAssignmentHomeFactory.instance();
+      $scope.model.participantSelectModel.listModel.onList( true ).then( function() {
+        CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Home' } ] );
       } ).catch( CnSession.errorHandler );
     }
   ] );

@@ -92,6 +92,41 @@ class participant extends \cenozo\database\participant
   }
 
   /**
+   * Extends parent method
+   */
+  public function __get( $column_name )
+  {
+    $queue_columns = array(
+      'current_queue_id',
+      'effective_qnaire_id',
+      'effective_interview_method_id',
+      'start_qnaire_date' );
+
+    if( in_array( $column_name, $queue_columns ) )
+    {
+      $this->load_queue_data();
+      return $this->$column_name;
+    }
+
+    return parent::__get( $column_name );
+  }
+
+  /**
+   * Returns the participant's current queue.
+   * 
+   * The "current" queue is only set if the participant is in a ranked queue.
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\queue
+   * @access public
+   */
+  public function get_current_queue()
+  {
+    $this->load_queue_data();
+    return is_null( $this->current_queue_id ) ?
+      NULL : lib::create( 'database\queue', $this->current_queue_id );
+  }
+
+  /**
    * Returns the participant's effective qnaire.
    * 
    * The "effective" qnaire is determined by the queue.
@@ -212,14 +247,17 @@ class participant extends \cenozo\database\participant
 
     // the qnaire date is cached in the queue_has_participant joining table
     $row = static::db()->get_row( sprintf(
-      'SELECT * FROM queue_has_participant '.
+      'SELECT queue_has_participant.* FROM queue_has_participant '.
+      'JOIN queue ON queue_has_participant.queue_id = queue.id '.
       'WHERE participant_id = %s '.
-      'ORDER BY queue_id DESC '.
+      'AND queue.rank IS NOT NULL '.
+      'ORDER BY queue.rank '.
       'LIMIT 1',
       static::db()->format_string( $this->id ) ) );
 
     if( count( $row ) )
     {
+      $this->current_queue_id = $row['queue_id'];     
       $this->effective_qnaire_id = $row['qnaire_id'];
       $this->effective_interview_method_id = $row['interview_method_id'];
       $this->start_qnaire_date = !$row['start_qnaire_date']
@@ -236,6 +274,13 @@ class participant extends \cenozo\database\participant
    * @access private
    */
   private $queue_data_loaded = false;
+
+  /**
+   * The participant's current queue id (from a custom query)
+   * @var int
+   * @access private
+   */
+  private $current_queue_id = NULL;
 
   /**
    * The participant's current questionnaire id (from a custom query)
