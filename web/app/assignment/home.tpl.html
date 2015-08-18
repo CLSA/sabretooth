@@ -1,4 +1,4 @@
-<div class="utility-view rounded">
+<div class="utility-view rounded" ng-if="model.assignment">
   <div class="container-fluid bg-primary rounded-top">
     <h4>
       <i class="glyphicon glyphicon-refresh glyph-hover rounded pull-right btn-primary"
@@ -10,48 +10,67 @@
     </h4>
   </div>
   <form name="form" class="form-horizontal" novalidate>
-    <div class="form-body">
-      <div class="form-group">
-        <label for="XXX" class="col-sm-3 control-label">Details</label>
-        <div class="col-sm-9">
-          <input id="XXX"
-                 ng-model="currentAssignment.XXX"
-                 class="form-control"
-                 type="text"
-                 readonly="true"></input>
+    <div class="form-body spacer">
+      <div class="row">
+        <label class="col-sm-3 control-label">Participant</label>
+        <div class="col-sm-9 form-text">
+            {{ model.participant.first_name }}
+            {{ model.participant.other_name ? '(' + model.participant.other_name + ')' : '' }}
+            {{ model.participant.last_name }}
+            ({{ model.participant.uid }})
         </div>
       </div>
-      <div class="form-group">
-        <label for="XXX" class="col-sm-3 control-label">Details</label>
-        <div class="col-sm-9">
-          <input id="XXX"
-                 ng-model="currentAssignment.XXX"
-                 class="form-control"
-                 type="text"
-                 readonly="true"></input>
-        </div>
+      <div class="row">
+        <label class="col-sm-3 control-label">Preferred Language</label>
+        <div class="col-sm-9 form-text">{{ model.participant.language }}</div>
       </div>
-      <div class="form-group">
-        <label for="XXX" class="col-sm-3 control-label">Details</label>
-        <div class="col-sm-9">
-          <input id="XXX"
-                 ng-model="currentAssignment.XXX"
-                 class="form-control"
-                 type="text"
-                 readonly="true"></input>
-        </div>
+      <div class="row">
+        <label class="col-sm-3 control-label">Referring Queue</label>
+        <div class="col-sm-9 form-text">{{ model.assignment.queue }}</div>
+      </div>
+      <div class="row">
+        <label class="col-sm-3 control-label">Questionnaire</label>
+        <div class="col-sm-9 form-text">{{ model.assignment.qnaire }}</div>
       </div>
     </div>
     <div class="form-footer text-right rounded-bottom bg-info">
-      Footer goes here
+      <div class="btn-group btn-group-justified">
+        <div class="btn-group">
+          <button type="button"
+                  class="btn btn-default"
+                  ui-sref="participant.view({ identifier: model.participant.getIdentifier() })">
+            View Participant
+          </button>
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn btn-default" ng-click="model.openNotes()">Notes</button>
+        </div>
+        <div class="btn-group dropdown">
+          <button type="button"
+                  class="btn btn-primary dropdown-toggle"
+                  id="phoneList"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false">Call <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu full-width" aria-labelledby="phoneList">
+            <li ng-repeat="phone in model.phoneList">
+              <a ng-click="">
+                {{ phone.rank }}. {{ phone.type }}
+                <span class="pull-right">{{ phone.number }}</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn btn-success" ng-click="model.endAssignment()">End Assignment</button>
+        </div>
+      </div>
     </div>
   </form>
-  <div class="vertical-spacer">
-    Participant record goes here (should be collapsable).
-  </div>
 </div>
-<div class="vertical-spacer" ng-if="!model.currentAssignment">
-  <cn-record-list model="model.participantSelectModel"
+<div class="vertical-spacer" ng-if="!model.assignment">
+  <cn-record-list model="model.participantModel"
                   heading="Assignable Participant List"
                   remove-columns="active cohort source"></cn-record-list>
 </div>

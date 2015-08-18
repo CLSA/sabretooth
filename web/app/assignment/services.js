@@ -40,24 +40,27 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAssignmentHomeFactory', [
-    '$state', 'CnSession', 'CnParticipantModelFactory', 'CnModalConfirmFactory', 'CnHttpFactory',
-    function( $state, CnSession, CnParticipantModelFactory, CnModalConfirmFactory, CnHttpFactory ) {
+    '$state', 'CnSession', 'CnHttpFactory',
+    'CnParticipantModelFactory', 'CnModalConfirmFactory', 'CnModalParticipantNoteFactory',
+    function( $state, CnSession, CnHttpFactory,
+              CnParticipantModelFactory, CnModalConfirmFactory, CnModalParticipantNoteFactory ) {
       var object = function() {
         var self = this;
 
-        this.currentAssignment = null;
-        this.participantSelectModel = CnParticipantModelFactory.instance();
+        this.assignment = null;
+        this.participant = null;
+        this.participantModel = CnParticipantModelFactory.instance();
         
         // add additional columns to the model
-        this.participantSelectModel.addColumn( 'rank', { title: 'Rank', column: 'queue.rank', type: 'rank' }, 0 );
-        this.participantSelectModel.addColumn( 'queue', { title: 'Queue', column: 'queue.name' }, 1 );
-        this.participantSelectModel.addColumn( 'qnaire', { title: 'Questionnaire', column: 'qnaire.name' }, 2 );
+        this.participantModel.addColumn( 'rank', { title: 'Rank', column: 'queue.rank', type: 'rank' }, 0 );
+        this.participantModel.addColumn( 'queue', { title: 'Queue', column: 'queue.name' }, 1 );
+        this.participantModel.addColumn( 'qnaire', { title: 'Questionnaire', column: 'qnaire.name' }, 2 );
 
         // override the default order
-        this.participantSelectModel.listModel.orderBy( 'rank', true );
+        this.participantModel.listModel.orderBy( 'rank', true );
 
         // override the onChoose function
-        this.participantSelectModel.listModel.onSelect = function( record ) {
+        this.participantModel.listModel.onSelect = function( record ) {
           // attempt to assign the participant to the user
           CnModalConfirmFactory.instance( {
             title: 'Begin Assignment',
@@ -68,19 +71,74 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
                 path: 'assignment',
                 data: { participant_id: record.id }
               } ).post().then( function( response ) {
-                CnHttpFactory.instance( {
-                  path: 'assignment/' + response.data,
-                  data: { select: { column: [ 'id', 'start_datetime' ] } }
-                } ).get().then( function( response ) {
-                  self.currentAssignment = response.data;
-                } );
+                self.onLoad();
               } ).catch( CnSession.errorHandler );
             }
           } );
         };
 
-        // override the getServiceCollectionPath function
-        this.participantSelectModel.getServiceCollectionPath = function() { return 'participant'; }
+        // override model functions
+        this.participantModel.getServiceCollectionPath = function() { return 'participant'; }
+
+        this.onLoad = function() {
+          return CnHttpFactory.instance( {
+            path: 'assignment/0',
+            data: { select: { column: [ 'id', 'start_datetime',
+              { table: 'participant', column: 'id', alias: 'participant_id' },
+              { table: 'qnaire', column: 'name', alias: 'qnaire' },
+              { table: 'queue', column: 'title', alias: 'queue' }
+            ] } }
+          } ).get().then( function success( response ) {
+            self.assignment = response.data;
+            CnHttpFactory.instance( {
+              path: 'participant/' + self.assignment.participant_id,
+              data: { select: { column: [ 'id', 'uid', 'first_name', 'other_name', 'last_name',
+                { table: 'language', column: 'name', alias: 'language' }
+              ] } }
+            } ).get().then( function success( response ) {
+              self.participant = response.data;
+              self.participant.getIdentifier = function() {
+                return self.participantModel.getIdentifierFromRecord( this );
+              };
+            } );
+            CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: self.assignment.uid } ] );
+          } ).then( function() {
+            CnHttpFactory.instance( {
+              path: 'participant/' + self.assignment.participant_id + '/phone',
+              data: { select: { column: [ 'id', 'rank', 'type', 'number' ] } }
+            } ).query().then( function success( response ) {
+              self.phoneList = response.data;
+            } );
+            CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: self.assignment.uid } ] );
+          } ).catch( function( response ) {
+            if( 307 == response.status ) {
+              return self.participantModel.listModel.onList().then( function() {
+                CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Select' } ] );
+              } );
+            } else { CnSession.errorHandler(); }
+          } );
+        };
+
+        this.openNotes = function() {
+          if( null != self.participant )
+            CnModalParticipantNoteFactory.instance( { participant: self.participant } ).show();
+        };
+
+        this.endAssignment = function() {
+          if( null != self.assignment ) {
+            // if the assignment has calls then set the end datetime
+            CnHttpFactory.instance( {
+              path: 'assignment/0/phone_call'
+            } ).query().then( function( response ) {
+              // TODONEXT
+            } )
+            CnHttpFactory.instance( {
+              path: 'assignment/0',
+              data: { close_assignment: true }
+            } ).patch().then( function() {
+            } ).catch( CnSession.errorHandler );
+          }
+        };
       };
 
       return { instance: function() { return new object(); } };

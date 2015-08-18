@@ -29,7 +29,10 @@ class module extends \cenozo\service\module
       $modifier->where( 'assignment.site_id', '=', $session->get_site()->id );
     }
 
-    if( $select->has_table_columns( 'participant' ) || $select->has_table_columns( 'qnaire' ) )
+    if( $select->has_table_columns( 'queue' ) )
+      $modifier->left_join( 'queue', 'assignment.queue_id', 'queue.id' );
+
+    if( $select->has_table_columns( 'participant' ) || $select->has_table_columns( 'qnaire' )  )
     {
       $modifier->join( 'interview', 'assignment.interview_id', 'interview.id' );
       if( $select->has_table_columns( 'participant' ) )
@@ -67,7 +70,7 @@ class module extends \cenozo\service\module
       $record->user_id = $db_user->id;
       $record->site_id = $db_site->id;
       $record->interview_id = $db_interview->id;
-      $record->queue_id = $db_participant->effective_qnaire_id;
+      $record->queue_id = $db_participant->current_queue_id;
       $record->start_datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
     }
   }

@@ -29,9 +29,7 @@ define( [], function() {
     '$scope', 'CnAssignmentHomeFactory', 'CnSession',
     function( $scope, CnAssignmentHomeFactory, CnSession ) {
       $scope.model = CnAssignmentHomeFactory.instance();
-      $scope.model.participantSelectModel.listModel.onList( true ).then( function() {
-        CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Home' } ] );
-      } ).catch( CnSession.errorHandler );
+      $scope.model.onLoad(); // breadcrumbs are handled by the service
     }
   ] );
 
