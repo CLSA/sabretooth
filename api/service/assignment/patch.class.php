@@ -1,6 +1,6 @@
 <?php
 /**
- * get.class.php
+ * patch.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * Special service for handling 
  */
-class get extends \cenozo\service\get
+class patch extends \cenozo\service\patch
 {
   /**
    * Override parent method

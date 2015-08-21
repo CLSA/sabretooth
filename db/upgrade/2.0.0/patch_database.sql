@@ -5,6 +5,9 @@ SET AUTOCOMMIT=0;
 SOURCE queue.sql
 SOURCE queue_state.sql
 SOURCE interview.sql
+SOURCE qnaire.sql
+SOURCE queue_has_participant.sql
+SOURCE qnaire_has_interview_method.sql
 SOURCE interview_method.sql
 SOURCE assignment.sql
 SOURCE phone_call.sql
@@ -24,7 +27,6 @@ SOURCE service.sql
 SOURCE role_has_operation.sql
 SOURCE role_has_service.sql
 SOURCE operation.sql
-SOURCE qnaire.sql
 SOURCE setting_value.sql
 SOURCE setting.sql
 SOURCE system_message.sql

@@ -53,8 +53,8 @@ define( cenozo.getServicesIncludeList( 'queue' ), function( module ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQueueTreeFactory', [
-    '$state', 'CnSession', 'CnHttpFactory', 'CnModalDatetimeFactory',
-    function( $state, CnSession, CnHttpFactory, CnModalDatetimeFactory ) {
+    '$state', 'CnSession', 'CnHttpFactory',
+    function( $state, CnSession, CnHttpFactory ) {
       var object = function() {
         var self = this;
         this.queueList = []; // one-dimensional list for manipulation
@@ -67,27 +67,8 @@ define( cenozo.getServicesIncludeList( 'queue' ), function( module ) {
           qnaireList: null,
           site_id: undefined,
           siteList: null,
-          viewingDate: null,
-          formattedViewingDate: 'Now',
           language_id: undefined,
-          languageList: null,
-          selectViewingDate: function( onChange ) {
-            return CnModalDatetimeFactory.instance( {
-              title: 'Select Viewing Date & Time',
-              date: self.form.viewingDate,
-              minDate: 'today',
-              pickerType: 'date',
-              emptyAllowed: true
-            } ).show().then( function( response ) {
-              if( false !== response ) {
-                self.form.viewingDate = response;
-                self.form.formattedViewingDate = null === response
-                                               ? 'Now'
-                                               : CnSession.formatValue( response, 'date', false );
-                if( angular.isDefined( onChange ) ) onChange();
-              }
-            } );
-          }
+          languageList: null
         };
 
         this.repopulate = function() {
@@ -166,8 +147,6 @@ define( cenozo.getServicesIncludeList( 'queue' ), function( module ) {
             whereList.push( { column: 'qnaire_id', operator: '=', value: self.form.qnaire_id } );
           if( angular.isDefined( self.form.site_id ) )
             whereList.push( { column: 'site_id', operator: '=', value: self.form.site_id } );
-          if( null !== self.form.viewingDate )
-            whereList.push( { column: 'date', operator: '=', value: self.form.viewingDate } );
           if( angular.isDefined( self.form.language_id ) )
             whereList.push( { column: 'language_id', operator: '=', value: self.form.language_id } );
 

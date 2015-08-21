@@ -17,10 +17,6 @@ define( {
       title: 'Rank',
       type: 'rank'
     },
-    interview_method_id: {
-      title: 'Default Interview Method',
-      type: 'enum'
-    },
     prev_qnaire_id: {
       title: 'Previous Questionnaire',
       type: 'enum',
@@ -50,10 +46,6 @@ define( {
       column: 'qnaire.rank',
       title: 'Rank',
       type: 'rank'
-    },
-    method: {
-      column: 'interview_method.name',
-      title: 'Method'
     },
     previous: {
       column: 'prev_qnaire.name',

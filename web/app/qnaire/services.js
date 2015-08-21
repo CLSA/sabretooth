@@ -47,35 +47,19 @@ define( cenozo.getServicesIncludeList( 'qnaire' ), function( module ) {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
             return CnHttpFactory.instance( {
-              path: 'interview_method',
+              path: 'qnaire',
               data: {
                 select: { column: [ 'id', 'name' ] },
                 modifier: { order: { name: false } }
               }
             } ).query().then( function( response ) {
-              self.metadata.columnList.interview_method_id.enumList = [];
+              self.metadata.columnList.prev_qnaire_id.enumList = [];
               for( var i = 0; i < response.data.length; i++ ) {
-                self.metadata.columnList.interview_method_id.enumList.push( {
+                self.metadata.columnList.prev_qnaire_id.enumList.push( {
                   value: response.data[i].id,
                   name: response.data[i].name
                 } );
               }
-            } ).then( function() {
-              return CnHttpFactory.instance( {
-                path: 'qnaire',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: { order: { name: false } }
-                }
-              } ).query().then( function( response ) {
-                self.metadata.columnList.prev_qnaire_id.enumList = [];
-                for( var i = 0; i < response.data.length; i++ ) {
-                  self.metadata.columnList.prev_qnaire_id.enumList.push( {
-                    value: response.data[i].id,
-                    name: response.data[i].name
-                  } );
-                }
-              } );
             } ).then( function() {
               return CnHttpFactory.instance( {
                 path: 'survey',

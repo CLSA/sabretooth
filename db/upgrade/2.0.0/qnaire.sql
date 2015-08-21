@@ -3,7 +3,7 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
   CREATE PROCEDURE patch_qnaire()
   BEGIN
 
-    SELECT "Renaming default_interview_method_id to interview_method_id in qnaire table" AS "";
+    SELECT "Dropping default_interview_method_id column from qnaire table" AS "";
 
     SET @test = (
       SELECT COUNT(*)
@@ -12,24 +12,11 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       AND TABLE_NAME = "qnaire"
       AND COLUMN_NAME = "default_interview_method_id" );
     IF @test = 1 THEN
-      SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-      SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-
       ALTER TABLE qnaire
       DROP FOREIGN KEY fk_qnaire_default_interview_method_id,
       DROP INDEX fk_default_interview_method_id;
 
-      ALTER TABLE qnaire
-      CHANGE default_interview_method_id interview_method_id INT UNSIGNED NOT NULL;
-
-      ALTER TABLE qnaire
-      ADD INDEX fk_interview_method_id (interview_method_id ASC),
-      ADD CONSTRAINT fk_qnaire_interview_method_id 
-      FOREIGN KEY( interview_method_id ) REFERENCES interview_method( id ) 
-      ON DELETE NO ACTION ON UPDATE NO ACTION;
-
-      SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-      SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+      ALTER TABLE qnaire DROP COLUMN default_interview_method_id;
     END IF;
 
   END //

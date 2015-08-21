@@ -29,10 +29,6 @@ define( {
       type: 'enum',
       help: 'This determines which site is credited with the completed interview.'
     },
-    interview_method_id: {
-      title: 'Interview Method',
-      type: 'enum'
-    },
     start_datetime: {
       column: 'interview.start_datetime',
       title: 'Start Date & Time',
@@ -66,7 +62,7 @@ define( {
     },
     site: {
       column: 'site.name',
-      title: 'Site'
+      title: 'Credited Site'
     },
     start_datetime: {
       column: 'interview.start_datetime',

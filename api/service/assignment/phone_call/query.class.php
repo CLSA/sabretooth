@@ -1,18 +1,18 @@
 <?php
 /**
- * get.class.php
+ * query.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
  */
 
-namespace sabretooth\service\assignment;
+namespace sabretooth\service\assignment\phone_call;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
  * Special service for handling 
  */
-class get extends \cenozo\service\get
+class query extends \cenozo\service\query
 {
   /**
    * Override parent method

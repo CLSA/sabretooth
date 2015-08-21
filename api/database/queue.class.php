@@ -216,14 +216,12 @@ class queue extends \cenozo\database\record
           'DISTINCT participant_for_queue.id, %s, '.
           'participant_site_id, '.
           'effective_qnaire_id, '.
-          'start_qnaire_date, '.
-          'effective_interview_method_id ',
+          'start_qnaire_date',
           static::db()->format_string( $db_queue->id ) );
     
         static::db()->execute( sprintf(
           'INSERT INTO queue_has_participant( '.
-            'participant_id, queue_id, site_id, qnaire_id, '.
-            'start_qnaire_date, interview_method_id ) %s',
+            'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) %s',
           $db_queue->get_sql( $columns ) ) );
       }
       if( static::$debug ) log::debug( sprintf(
@@ -263,142 +261,212 @@ class queue extends \cenozo\database\record
     static::create_queue_list_cache();
     $db_parent_queue = self::$queue_list_cache[$this->name]['parent'];
 
-    // determine what date/time to view the queues
-    if( is_null( self::$viewing_date ) )
-    {
-      $viewing_date = 'UTC_TIMESTAMP()';
-      $check_time = true;
-    }
-    else
-    {
-      // put double quotes around the date since it is being inserted into sql below
-      $viewing_date = sprintf( '"%s"', self::$viewing_date );
-      $check_time = false;
-    }
-
     static::db()->execute( sprintf(
       'DELETE FROM queue_has_participant WHERE queue_id = %s',
       static::db()->format_string( $this->id ) ) );
 
-    // populate appointment upcomming/assignable/missed queues
-    if( ' appointment' == substr( $this->name, -12 ) )
-    {
-      $sql = sprintf(
-        'INSERT INTO queue_has_participant( '.
-          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date, interview_method_id ) '.
-        'SELECT DISTINCT queue_has_participant.participant_id, %s, queue_has_participant.site_id, '.
-        'queue_has_participant.qnaire_id, start_qnaire_date, queue_has_participant.interview_method_id '.
-        'FROM queue_has_participant '.
-        'LEFT JOIN setting ON queue_has_participant.site_id = setting.site_id '.
-        'JOIN interview ON queue_has_participant.participant_id = interview.participant_id '.
-        'AND queue_has_participant.qnaire_id = interview.qnaire_id '.
-        'JOIN appointment ON interview.id = appointment.interview_id '.
-        'AND appointment.assignment_id IS NULL '.
-        'WHERE queue_id = %s AND ',
-        static::db()->format_string( $this->id ),
-        static::db()->format_string( $db_parent_queue->id ) );
+    // sql used by all insert statements below
+    $base_sql = sprintf(
+      'INSERT INTO queue_has_participant( '.
+        'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) '.
+      'SELECT DISTINCT queue_has_participant.participant_id, %s, queue_has_participant.site_id, '.
+      'queue_has_participant.qnaire_id, start_qnaire_date '.
+      'FROM queue_has_participant',
+      static::db()->format_string( $this->id ) );
+    
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'queue_has_participant.queue_id', '=', $db_parent_queue->id );
 
+    if( in_array( $this->name,
+      array( 'outside calling time', 'callback', 'new participant', 'old participant' ) ) )
+    {
+      // create temporary table containing all participants in queue not belonging to sibling tables
+      $sub_sel = lib::create( 'database\select' );
+      $sub_sel->add_column( 'participant_id' );
+      $sub_sel->from( 'queue_has_participant' );
+      $sub_mod = lib::create( 'database\modifier' );
+      $sub_mod->join( 'queue', 'queue_has_participant.queue_id', 'queue.id' );
+      $sub_mod->where( 'queue.id', '=', $db_parent_queue->id );
+      $sub_mod->or_where( 'queue.parent_queue_id', '=', $db_parent_queue->id );
+      $sub_mod->group( 'participant_id' );
+      $sub_mod->having( 'COUNT(*)', '=', 1 );
+      $sql = sprintf(
+        'CREATE TEMPORARY TABLE IF NOT EXISTS sub_queue_has_participant %s %s',
+        $sub_sel->get_sql(),
+        $sub_mod->get_sql() );
+      static::db()->execute( 'DROP TABLE IF EXISTS sub_queue_has_participant' );
+      static::db()->execute( $sql );
+      static::db()->execute(
+        'ALTER TABLE sub_queue_has_participant ADD INDEX fk_participant_id ( participant_id )' );
+
+      $modifier->left_join( 'setting', 'queue_has_participant.site_id', 'setting.site_id' );
+      $modifier->join( 'sub_queue_has_participant',
+        'queue_has_participant.participant_id', 'sub_queue_has_participant.participant_id' );
+
+      $modifier->join( 'participant_first_address',
+        'queue_has_participant.participant_id', 'participant_first_address.participant_id' );
+      $modifier->join( 'address', 'participant_first_address.address_id', 'address.id' );
+
+      $localtime = localtime( time(), true );
+      $offset = $localtime['tm_isdst']
+              ? 'address.timezone_offset + address.daylight_savings'
+              : 'address.timezone_offset';
+      $left = sprintf( 'TIME( UTC_TIMESTAMP() + INTERVAL ( %s )*60 MINUTE )', $offset );
+
+      $modifier->where_bracket( true, false, 'outside calling time' == $this->name );
+      $modifier->where( 'calling_start_time', '<=', $left, false );
+      $modifier->where( 'calling_end_time', '>', $left, false );
+      $modifier->where_bracket( false );
+
+      if( 'outside calling time' != $this->name )
+      {
+        // we need to join to the interview table
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'queue_has_participant.participant_id', '=', 'interview.participant_id', false );
+        $join_mod->where( 'queue_has_participant.qnaire_id', '=', 'interview.qnaire_id', false );
+        $modifier->join_modifier( 'interview', $join_mod, 'left' );
+
+        // link to callback table
+        // (by design, there can only ever one unassigned callback per participant)
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'interview.id', '=', 'callback.interview_id', false );
+        $join_mod->where( 'callback.assignment_id', '=', NULL );
+
+        if( 'callback' == $this->name )
+        {
+          $modifier->join_modifier( 'callback', $join_mod );
+        }
+        else
+        {
+          // Make sure there is no unassigned callback
+          $modifier->join_modifier( 'callback', $join_mod, 'left' );
+          $modifier->where( 'callback.id', '=', NULL );
+
+          if( 'new participant' == $this->name )
+          {
+            // If there is a start_qnaire_date then the current qnaire has never been
+            // started, the exception is for participants who have never been assigned
+            $modifier->left_join( 'participant_last_interview',
+              'queue_has_participant.participant_id', 'participant_last_interview.participant_id' );
+            $modifier->left_join( 'interview_last_assignment',
+              'participant_last_interview.interview_id', 'interview_last_assignment.interview_id' );
+            $modifier->left_join( 'assignment',
+              'interview_last_assignment.assignment_id', 'assignment.id' );
+
+            $modifier->where_bracket( true );
+            $modifier->where( 'queue_has_participant.start_qnaire_date', '!=', NULL );
+            $modifier->or_where( 'assignment.id', '=', NULL );
+            $modifier->where_bracket( false );
+          }
+          else // old participant
+          {
+            // if there is no start_qnaire_date then the current qnaire has been started
+            $modifier->where( 'start_qnaire_date', '=', NULL );
+
+            // make sure the current interview's qnaire matches the effective qnaire,
+            // otherwise this participant has never been assigned
+            $modifier->join( 'participant_last_interview',
+              'queue_has_participant.participant_id', 'participant_last_interview.participant_id' );
+            $modifier->left_join( 'interview',
+              'participant_last_interview.interview_id', 'current_interview.id', 'current_interview' );
+            $modifier->where( 'queue_has_participant.qnaire_id', '=', 'current_interview.qnaire_id', false );
+          }
+        }
+      }
+
+      static::db()->execute( sprintf( '%s %s', $base_sql, $modifier->get_sql() ) );
+    }
+    else if( in_array( $this->name,
+      array( 'contacted', 'busy', 'fax', 'no answer', 'not reached', 'hang up', 'soft refusal' ) ) )
+    {
+      $modifier->join( 'participant_last_interview',
+        'queue_has_participant.participant_id', 'participant_last_interview.participant_id' );
+      $modifier->join( 'interview_last_assignment',
+        'participant_last_interview.interview_id', 'interview_last_assignment.interview_id' );
+      $modifier->join( 'assignment_last_phone_call',
+        'interview_last_assignment.assignment_id', 'assignment_last_phone_call.phone_call_id' );
+      $modifier->join( 'phone_call', 'assignment_last_phone_call.phone_call_id', 'phone_call.id' );
+      if( 'not reached' == $this->name )
+      {
+        $modifier->where( 'phone_call.status', 'IN',
+          array( 'machine message', 'machine no message', 'disconnected', 'wrong number', 'not reached' ) );
+      }
+      else
+      {
+        $modifier->where( 'phone_call.status', '=', $this->name );
+      }
+
+      static::db()->execute( sprintf( '%s %s', $base_sql, $modifier->get_sql() ) );
+    }
+    // populate appointment upcomming/assignable/missed queues
+    else if( ' appointment' == substr( $this->name, -12 ) )
+    {
+      $modifier->left_join( 'setting', 'queue_has_participant.site_id', 'setting.site_id' );
+
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'queue_has_participant.participant_id', '=', 'interview.participant_id', false );
+      $join_mod->where( 'queue_has_participant.qnaire_id', '=', 'interview.qnaire_id', false );
+      $modifier->join_modifier( 'interview', $join_mod );
+
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'interview.id', '=', 'appointment.interview_id', false );
+      $join_mod->where( 'appointment.assignment_id', '=', NULL );
+      $modifier->join_modifier( 'appointment', $join_mod );
+
+      $pre_call = 'appointment.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE';
+      $post_call = 'appointment.datetime + INTERVAL IFNULL( post_call_window, 0 ) MINUTE';
       if( 'upcoming appointment' == $this->name )
       {
-        $sql .= sprintf(
-          $check_time ? '%s < appointment.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE'
-                      : 'DATE( %s ) < DATE( appointment.datetime )',
-          $viewing_date );
+        $modifier->where( 'UTC_TIMESTAMP()', '<', $pre_call, false );
       }
       else if( 'assignable appointment' == $this->name )
       {
-        $sql .= sprintf(
-          $check_time ? '%s >= appointment.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE AND '.
-                        '%s <= appointment.datetime + INTERVAL IFNULL( post_call_window, 0 ) MINUTE'
-                      : 'DATE( %s ) = DATE( appointment.datetime )',
-          $viewing_date,
-          $viewing_date );
+        $modifier->where( 'UTC_TIMESTAMP()', '>=', $pre_call, false );
+        $modifier->where( 'UTC_TIMESTAMP()', '<=', $post_call, false );
       }
       else if( 'missed appointment' == $this->name )
       {
-        $sql .= sprintf(
-          $check_time ? '%s > appointment.datetime + INTERVAL IFNULL( post_call_window, 0 ) MINUTE'
-                      : 'DATE( %s ) > DATE( appointment.datetime )',
-          $viewing_date );
+        $modifier->where( 'UTC_TIMESTAMP()', '>', $post_call, false );
       }
 
-      static::db()->execute( $sql );
+      static::db()->execute( sprintf( '%s %s', $base_sql, $modifier->get_sql() ) );
     }
     // populate callback upcoming/assignable queues
     else if( ' callback' == substr( $this->name, -9 ) )
     {
-      $sql = sprintf(
-        'INSERT INTO queue_has_participant( '.
-          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date, interview_method_id ) '.
-        'SELECT DISTINCT queue_has_participant.participant_id, %s, queue_has_participant.site_id, '.
-        'queue_has_participant.qnaire_id, start_qnaire_date, queue_has_participant.interview_method_id '.
-        'FROM queue_has_participant '.
-        'LEFT JOIN setting ON queue_has_participant.site_id = setting.site_id '.
-        'JOIN interview ON queue_has_participant.participant_id = interview.participant_id '.
-        'AND queue_has_participant.qnaire_id = interview.qnaire_id '.
-        'JOIN callback ON interview.id = callback.interview_id '.
-        'AND callback.assignment_id IS NULL '.
-        'WHERE queue_id = %s AND ',
-        static::db()->format_string( $this->id ),
-        static::db()->format_string( $db_parent_queue->id ) );
+      $modifier->left_join( 'setting', 'queue_has_participant.site_id', 'setting.site_id' );
 
-      if( 'upcoming callback' == $this->name )
-      {
-        $sql .= sprintf(
-          $check_time ? '%s < callback.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE'
-                      : 'DATE( %s ) < DATE( callback.datetime )',
-          $viewing_date );
-      }
-      else if( 'assignable callback' == $this->name )
-      {
-        $sql .= sprintf(
-          $check_time ? '%s >= callback.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE'
-                      : 'DATE( %s ) = DATE( callback.datetime )',
-          $viewing_date );
-      }
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'queue_has_participant.participant_id', '=', 'interview.participant_id', false );
+      $join_mod->where( 'queue_has_participant.qnaire_id', '=', 'interview.qnaire_id', false );
+      $modifier->join_modifier( 'interview', $join_mod );
 
-      static::db()->execute( $sql );
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'interview.id', '=', 'callback.interview_id', false );
+      $join_mod->where( 'callback.assignment_id', '=', NULL );
+      $modifier->join_modifier( 'callback', $join_mod );
+
+      $pre_call = 'callback.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE';
+      $test = 'upcoming callback' == $this->name ? '<' : '>=';
+      $modifier->where( 'UTC_TIMESTAMP()', $test, $pre_call, false );
+
+      static::db()->execute( sprintf( '%s %s', $base_sql, $modifier->get_sql() ) );
     }
     // populate "last call waiting" queues
     else if( ' waiting' == substr( $this->name, -8 ) || ' ready' == substr( $this->name, -6 ) )
     {
-      $call_type = ' waiting' == substr( $this->name, -8 )
-                 ? substr( $this->name, 0, -8 )
-                 : substr( $this->name, 0, -6 );
+      $modifier->join( 'participant_last_interview',
+        'queue_has_participant.participant_id', 'participant_last_interview.participant_id', false );
+      $modifier->join( 'interview_last_assignment',
+        'participant_last_interview.interview_id', 'interview_last_assignment.interview_id', false );
+      $modifier->join( 'assignment_last_phone_call',
+        'interview_last_assignment.assignment_id', 'assignment_last_phone_call.assignment_id', false );
+      $modifier->join( 'phone_call', 'phone_call.id', 'assignment_last_phone_call.phone_call_id', false );
 
-      $sql = sprintf(
-        'INSERT INTO queue_has_participant( '.
-          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date, interview_method_id ) '.
-        'SELECT DISTINCT queue_has_participant.participant_id, %s, queue_has_participant.site_id, '.
-        'queue_has_participant.qnaire_id, start_qnaire_date, queue_has_participant.interview_method_id '.
-        'FROM queue_has_participant '.
-        'JOIN participant_last_interview '.
-        'ON queue_has_participant.participant_id = participant_last_interview.participant_id '.
-        'JOIN interview_last_assignment '.
-        'ON participant_last_interview.interview_id = interview_last_assignment.interview_id '.
-        'JOIN assignment_last_phone_call '.
-        'ON interview_last_assignment.assignment_id = assignment_last_phone_call.assignment_id '.
-        'JOIN phone_call ON phone_call.id = assignment_last_phone_call.phone_call_id '.
-        'WHERE queue_id = %s AND ',
-        static::db()->format_string( $this->id ),
-        static::db()->format_string( $db_parent_queue->id ) );
+      $test = ' waiting' == substr( $this->name, -8 ) ? '<' : '>=';
+      $modifier->where( 'UTC_TIMESTAMP()', $test, 'phone_call.end_datetime', false );
 
-      if( ' waiting' == substr( $this->name, -8 ) )
-      {
-        $sql .= sprintf(
-          $check_time ? '%s < phone_call.end_datetime' :
-                        'DATE( %s ) < DATE( phone_call.end_datetime )',
-          $viewing_date );
-      }
-      else // ' ready' == substr( $this->name, -6 )
-      {
-        $sql .= sprintf(
-          $check_time ? '%s >= phone_call.end_datetime' :
-                        'DATE( %s ) >= DATE( phone_call.end_datetime )',
-          $viewing_date );
-      }
-
-      static::db()->execute( $sql );
+      static::db()->execute( sprintf( '%s %s', $base_sql, $modifier->get_sql() ) );
     }
     else
     {
@@ -469,59 +537,7 @@ class queue extends \cenozo\database\record
           'ON participant_for_queue_participant_site.id = participant_for_queue.id ' ),
         'where' => array( 'false' ) );
 
-    // determine what date/time to view the queues
-    if( is_null( self::$viewing_date ) )
-    {
-      $viewing_date = 'UTC_TIMESTAMP()';
-      $check_time = true;
-    }
-    else
-    {
-      // put double quotes around the date since it is being inserted into sql below
-      $viewing_date = sprintf( '"%s"', self::$viewing_date );
-      $check_time = false;
-    }
-
     $participant_class_name = lib::get_class_name( 'database\participant' );
-
-    // an array containing all of the qnaire queue's direct children queues
-    $qnaire_children = array(
-      'qnaire waiting', 'assigned', 'appointment', 'quota disabled',
-      'outside calling time', 'callback', 'new participant', 'old participant' );
-
-    // join to the first_address table based on participant id
-    $first_address_join =
-      'LEFT JOIN participant_for_queue_first_address '.
-      'ON participant_for_queue_first_address.id = participant_for_queue.id ';
-
-    // join to the quota table based on site, region, sex and age group
-    $quota_join =
-      'LEFT JOIN quota '.
-      'ON quota.site_id = participant_site_id '.
-      'AND quota.region_id = primary_region_id '.
-      'AND quota.sex = participant_sex '.
-      'AND quota.age_group_id = participant_age_group_id '.
-      'LEFT JOIN qnaire_has_quota '.
-      'ON quota.id = qnaire_has_quota.quota_id '.
-      'AND effective_qnaire_id = qnaire_has_quota.qnaire_id';
-
-    // checks to make sure a participant is within calling time hours
-    if( $check_time )
-    {
-      $localtime = localtime( time(), true );
-      $offset = $localtime['tm_isdst']
-              ? 'first_address_timezone_offset + first_address_daylight_savings'
-              : 'first_address_timezone_offset';
-      $calling_time_sql = sprintf(
-        '( '.
-          'TIME( %s + INTERVAL ( %s )*60 MINUTE ) >= calling_start_time AND '.
-          'TIME( %s + INTERVAL ( %s )*60 MINUTE ) < calling_end_time '.
-        ')',
-        $viewing_date,
-        $offset,
-        $viewing_date,
-        $offset );
-    }
 
     // get the parent queue's query parts
     if( is_null( $phone_call_status ) )
@@ -580,11 +596,7 @@ class queue extends \cenozo\database\record
       else if( 'condition' == $queue )
       {
         $parts['where'][] = 'participant_active = true';
-        $parts['where'][] =
-          '( '.
-            'last_consent_accept IS NULL '.
-            'OR last_consent_accept = 1 '.
-          ')';
+        $parts['where'][] = 'IFNULL( last_consent_accept, 1 ) = 1';
         $parts['where'][] = 'participant_state_id IS NOT NULL';
       }
       else if( 'eligible' == $queue )
@@ -592,35 +604,25 @@ class queue extends \cenozo\database\record
         // active participant who does not have a "final" state and has at least one phone number
         $parts['where'][] = 'participant_active = true';
         $parts['where'][] = 'participant_state_id IS NULL';
-        $parts['where'][] =
-          '( '.
-            'last_consent_accept IS NULL OR '.
-            'last_consent_accept = 1 '.
-          ')';
+        $parts['where'][] = 'IFNULL( last_consent_accept, 1 ) = 1';
       }
       else if( 'qnaire' == $queue )
       {
         // no additional parts needed
       }
       // we must process all of the qnaire queue's direct children as a whole
-      else if( in_array( $queue, $qnaire_children ) )
+      else if( in_array( $queue,
+        array( 'qnaire waiting', 'assigned', 'appointment', 'quota disabled' ) ) )
       {
         if( 'qnaire waiting' == $queue )
         {
           // the current qnaire cannot start before start_qnaire_date
-          $parts['where'][] = 'start_qnaire_date IS NOT NULL';
-          $parts['where'][] = sprintf( 'start_qnaire_date > DATE( %s )',
-                                       $viewing_date );
+          $parts['where'][] = 'IFNULL( start_qnaire_date, UTC_TIMESTAMP() ) > UTC_TIMESTAMP()';
         }
         else
         {
           // the qnaire is ready to start if the start_qnaire_date is null or we have reached that date
-          $parts['where'][] = sprintf(
-            '( '.
-              'start_qnaire_date IS NULL OR '.
-              'start_qnaire_date <= DATE( %s ) '.
-            ')',
-            $viewing_date );
+          $parts['where'][] = 'IFNULL( start_qnaire_date, UTC_TIMESTAMP() ) <= UTC_TIMESTAMP()';
 
           if( 'assigned' == $queue )
           {
@@ -638,9 +640,6 @@ class queue extends \cenozo\database\record
             {
               // link to appointment table and make sure the appointment hasn't been assigned
               // (by design, there can only ever be one unassigned appointment per interview)
-              $parts['from'][] = 'interview_method';
-              $parts['where'][] = 'effective_interview_method_id = interview_method.id';
-              $parts['where'][] = 'interview_method.name = "operator"';
               $parts['from'][] = 'appointment';
               $parts['where'][] =
                 'appointment.interview_id = participant_for_queue.current_interview_id';
@@ -657,8 +656,21 @@ class queue extends \cenozo\database\record
                 'AND appointment.assignment_id IS NULL';
               $parts['where'][] = 'appointment.id IS NULL';
 
-              $parts['join'][] = $first_address_join;
-              $parts['join'][] = $quota_join;
+              // join to the first_address table based on participant id
+              $parts['join'][] =
+                'LEFT JOIN participant_for_queue_first_address '.
+                'ON participant_for_queue_first_address.id = participant_for_queue.id ';
+
+              // join to the quota table based on site, region, sex and age group
+              $parts['join'][] = 
+                'LEFT JOIN quota '.
+                'ON quota.site_id = participant_site_id '.
+                'AND quota.region_id = primary_region_id '.
+                'AND quota.sex = participant_sex '.
+                'AND quota.age_group_id = participant_age_group_id '.
+                'LEFT JOIN qnaire_has_quota '.
+                'ON quota.id = qnaire_has_quota.quota_id '.
+                'AND effective_qnaire_id = qnaire_has_quota.qnaire_id';
 
               if( 'quota disabled' == $queue )
               {
@@ -668,90 +680,9 @@ class queue extends \cenozo\database\record
                 $parts['where'][] = 'participant_override_quota = false';
                 $parts['where'][] = 'source_override_quota = false';
               }
-              else
-              {
-                // who belong to a quota which is not disabled or doesn't exist or is overridden
-                $parts['where'][] =
-                  '( qnaire_has_quota.quota_id IS NULL OR '.
-                    'participant_override_quota = true OR '.
-                    'source_override_quota = true )';
-                
-                if( 'outside calling time' == $queue )
-                {
-                  // outside of the calling time
-                  $parts['where'][] = $check_time
-                                    ? 'NOT '.$calling_time_sql
-                                    : 'NOT true'; // purposefully a negative tautology
-                }
-                else
-                {
-                  // within the calling time
-                  $parts['where'][] = $check_time
-                                    ? $calling_time_sql
-                                    : 'true'; // purposefully a tautology
-
-                  if( 'callback' == $queue )
-                  {
-                    // link to callback table and make sure the callback hasn't been assigned
-                    // (by design, there can only ever one unassigned callback per participant)
-                    $parts['from'][] = 'callback';
-                    $parts['where'][] = 'callback.interview_id = participant_for_queue.current_interview_id';
-                    $parts['where'][] = 'callback.assignment_id IS NULL';
-                  }
-                  else
-                  {
-                    // Make sure there is no unassigned callback.  By design there can only be one of
-                    // per participant, so if the callback is null then the participant has no pending
-                    // callbacks.
-                    $parts['join'][] =
-                      'LEFT JOIN callback '.
-                      'ON callback.interview_id = participant_for_queue.current_interview_id '.
-                      'AND callback.assignment_id IS NULL';
-                    $parts['where'][] = 'callback.id IS NULL';
-
-                    if( 'new participant' == $queue )
-                    {
-                      // If there is a start_qnaire_date then the current qnaire has never been
-                      // started, the exception is for participants who have never been assigned
-                      $parts['where'][] =
-                        '('.
-                          'start_qnaire_date IS NOT NULL OR '.
-                          'current_assignment_id IS NULL '.
-                        ')';
-                    }
-                    else // old participant
-                    {
-                      // if there is no start_qnaire_date then the current qnaire has been started
-                      $parts['where'][] = 'start_qnaire_date IS NULL';
-                      // add the last phone call's information
-                      $parts['from'][] = 'phone_call';
-                      $parts['from'][] = 'assignment_last_phone_call';
-                      $parts['where'][] =
-                        'assignment_last_phone_call.assignment_id = current_assignment_id';
-                      $parts['where'][] =
-                        'phone_call.id = assignment_last_phone_call.phone_call_id';
-                      // make sure the current interview's qnaire matches the effective qnaire,
-                      // otherwise this participant has never been assigned
-                      $parts['where'][] = 'current_qnaire_id = effective_qnaire_id';
-                    }
-                  }
-                }
-              }
             }
           }
         }
-      }
-      else if( 'phone call status' == $queue )
-      {
-        // phone call status has been included (all remaining queues require it)
-        if( is_null( $phone_call_status ) )
-          throw lib::create( 'exception\argument',
-            'phone_call_status', $phone_call_status, __METHOD__ );
-
-        $parts['where'][] = 'not reached' == $phone_call_status
-                          ? 'phone_call.status IN ( "machine message","machine no message",'.
-                            '"disconnected","wrong number","not reached" )'
-                          : sprintf( 'phone_call.status = "%s"', $phone_call_status );
       }
       else // we should never get here
       {
@@ -782,23 +713,6 @@ class queue extends \cenozo\database\record
     $sql = str_replace( '<SELECT_PARTICIPANT>', 'participant_for_queue.id', $sql );
 
     return $sql;
-  }
-
-  /**
-   * The date (YYYY-MM-DD) with respect to check all queues
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $date
-   * @access public
-   * @static
-   */
-  public static function set_viewing_date( $date = NULL )
-  {
-    // validate the input
-    $datetime_obj = util::get_datetime_object( $date );
-    if( $date != $datetime_obj->format( 'Y-m-d' ) )
-      log::err( 'The selected viewing date ('.$date.') may not be valid.' );
-
-    self::$viewing_date = $datetime_obj->format( 'Y-m-d' );
   }
 
   /**
@@ -982,14 +896,6 @@ class queue extends \cenozo\database\record
   protected static $participant_for_queue_created = false;
 
   /**
-   * The date (YYYY-MM-DD) with respect to check all queues
-   * @var string
-   * @access protected
-   * @static
-   */
-  protected static $viewing_date = NULL;
-
-  /**
    * The queries for each queue
    * @var associative array of strings
    * @access protected
@@ -1031,16 +937,6 @@ IF
   first_qnaire.id,
   IF( current_interview.end_datetime IS NOT NULL, next_qnaire.id, current_qnaire.id )
 ) AS effective_qnaire_id,
-IF
-(
-  current_interview.id IS NULL,
-  first_qnaire.interview_method_id,
-  IF(
-    current_interview.end_datetime IS NOT NULL,
-    next_qnaire.interview_method_id,
-    current_interview.interview_method_id
-  )
-) AS effective_interview_method_id,
 (
   IF
   (

@@ -80,14 +80,17 @@ class participant extends \cenozo\database\participant
       return NULL;
     }
 
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'interview.participant_id', '=', $this->id );
-    $modifier->where( 'end_datetime', '=', NULL );
-    $modifier->order_desc( 'start_datetime' );
-    $modifier->limit( 1 );
     $assignment_class_name = lib::get_class_name( 'database\assignment' );
-    $assignment_list = $assignment_class_name::select( $modifier );
 
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->join( 'interview', 'assignment.interview_id', 'interview.id' );
+    $modifier->where( 'interview.participant_id', '=', $this->id );
+    $modifier->where( 'assignment.end_datetime', '=', NULL );
+    $modifier->order_desc( 'assignment.start_datetime' );
+    $assignment_list = $assignment_class_name::select_objects( $modifier );
+
+    if( 1 < count( $assignment_list ) )
+      log::warning( sprintf( 'Participant %d (%s) has more than one open assignment!', $this->id, $this->uid ) );
     return 0 == count( $assignment_list ) ? NULL : current( $assignment_list );
   }
 
@@ -99,7 +102,6 @@ class participant extends \cenozo\database\participant
     $queue_columns = array(
       'current_queue_id',
       'effective_qnaire_id',
-      'effective_interview_method_id',
       'start_qnaire_date' );
 
     if( in_array( $column_name, $queue_columns ) )
@@ -187,26 +189,6 @@ class participant extends \cenozo\database\participant
   }
 
   /**
-   * Returns the participant's interview method
-   * 
-   * The interview is either:
-   * 1. if the participant hasn't started an interview then the first qnaire's default interview
-   *    method
-   * 2. if the current interview is not complete then that interview's interview method
-   * 3. if all interviews are complete then the last interview's interview method
-   * 4. otherwise, the next qnaire's default interview method
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return database\interview_method
-   * @access public
-   */
-  public function get_effective_interview_method()
-  {
-    $this->load_queue_data();
-    return is_null( $this->effective_interview_method_id ) ?
-      NULL : lib::create( 'database\interview_method', $this->effective_interview_method_id );
-  }
-
-  /**
    * Returns the participant's qnaire start date.
    * 
    * The qnaire start date is determined based on the following rules:
@@ -259,7 +241,6 @@ class participant extends \cenozo\database\participant
     {
       $this->current_queue_id = $row['queue_id'];     
       $this->effective_qnaire_id = $row['qnaire_id'];
-      $this->effective_interview_method_id = $row['interview_method_id'];
       $this->start_qnaire_date = !$row['start_qnaire_date']
                                ? NULL
                                : util::get_datetime_object( $row['start_qnaire_date'] );
@@ -288,13 +269,6 @@ class participant extends \cenozo\database\participant
    * @access private
    */
   private $effective_qnaire_id = NULL;
-
-  /**
-   * The participant's current interview method id (from a custom query)
-   * @var int
-   * @access private
-   */
-  private $effective_interview_method_id = NULL;
 
   /**
    * The date that the current questionnaire is to begin (from a custom query)

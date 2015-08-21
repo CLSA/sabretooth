@@ -41,9 +41,11 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAssignmentHomeFactory', [
     '$state', 'CnSession', 'CnHttpFactory',
-    'CnParticipantModelFactory', 'CnModalConfirmFactory', 'CnModalParticipantNoteFactory',
+    'CnParticipantModelFactory', 'CnModalMessageFactory',
+    'CnModalConfirmFactory', 'CnModalParticipantNoteFactory',
     function( $state, CnSession, CnHttpFactory,
-              CnParticipantModelFactory, CnModalConfirmFactory, CnModalParticipantNoteFactory ) {
+              CnParticipantModelFactory, CnModalMessageFactory,
+              CnModalConfirmFactory, CnModalParticipantNoteFactory ) {
       var object = function() {
         var self = this;
 
@@ -72,7 +74,16 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
                 data: { participant_id: record.id }
               } ).post().then( function( response ) {
                 self.onLoad();
-              } ).catch( CnSession.errorHandler );
+              } ).catch( function( response ) {
+                if( 409 == response.status ) {
+                  // 409 means there is a conflict (the assignment can't be made)
+                  CnModalMessageFactory.instance( {
+                    title: 'Unable to start assignment with ' + record.uid,
+                    message: response.data,
+                    error: true
+                  } ).show().then( self.onLoad );
+                } else { CnSession.errorHandler(); }
+              } );
             }
           } );
         };
@@ -100,8 +111,8 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
               self.participant.getIdentifier = function() {
                 return self.participantModel.getIdentifierFromRecord( this );
               };
+              CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: self.participant.uid } ] );
             } );
-            CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: self.assignment.uid } ] );
           } ).then( function() {
             CnHttpFactory.instance( {
               path: 'participant/' + self.assignment.participant_id + '/phone',
@@ -109,9 +120,11 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
             } ).query().then( function success( response ) {
               self.phoneList = response.data;
             } );
-            CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: self.assignment.uid } ] );
           } ).catch( function( response ) {
             if( 307 == response.status ) {
+              // 307 means the user has no active assignment, so load the participant select list
+              self.assignment = null;
+              self.participant = null;
               return self.participantModel.listModel.onList().then( function() {
                 CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Select' } ] );
               } );
@@ -126,17 +139,20 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
 
         this.endAssignment = function() {
           if( null != self.assignment ) {
-            // if the assignment has calls then set the end datetime
             CnHttpFactory.instance( {
               path: 'assignment/0/phone_call'
             } ).query().then( function( response ) {
-              // TODONEXT
-            } )
-            CnHttpFactory.instance( {
-              path: 'assignment/0',
-              data: { close_assignment: true }
-            } ).patch().then( function() {
-            } ).catch( CnSession.errorHandler );
+              // delete the assignment if there are no phone calls, or close it if there are
+              var promise = 0 == response.data.length
+                          ? CnHttpFactory.instance( { path: 'assignment/0' } ).delete()
+                          : CnHttpFactory.instance( { path: 'assignment/0', data: { close: true } } ).patch();
+              return promise.then( function() { self.onLoad(); } );
+            } ).catch( function( response ) {
+              if( 307 == response.status ) {
+                // 307 means the user has no active assignment, so just refresh the page data
+                self.onLoad();
+              } else { CnSession.errorHandler(); }
+            } );
           }
         };
       };

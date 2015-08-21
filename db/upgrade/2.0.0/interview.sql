@@ -73,7 +73,7 @@ DROP PROCEDURE IF EXISTS patch_interview;
 
       SET @sql = CONCAT(
         "ALTER TABLE interview ",
-        "ADD COLUMN site_id INT UNSIGNED NOT NULL AFTER participant_id, ",
+        "ADD COLUMN site_id INT UNSIGNED NULL DEFAULT NULL AFTER participant_id, ",
         "ADD INDEX fk_site_id (site_id ASC), ",
         "ADD CONSTRAINT fk_interview_site_id ",
         "FOREIGN KEY (site_id) ",
@@ -95,6 +95,22 @@ DROP PROCEDURE IF EXISTS patch_interview;
       SET interview.site_id = interview_site.site_id;
 
       SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+    END IF;
+
+    SELECT "Removing interview_method_id column from interview table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "interview"
+      AND COLUMN_NAME = "interview_method_id" );
+    IF @test = 1 THEN
+      ALTER TABLE interview
+      DROP FOREIGN KEY fk_interview_interview_method_id,
+      DROP INDEX fk_interview_method_id;
+
+      ALTER TABLE interview DROP COLUMN interview_method_id;
     END IF;
   END //
 DELIMITER ;

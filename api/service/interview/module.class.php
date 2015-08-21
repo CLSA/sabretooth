@@ -39,6 +39,9 @@ class module extends \cenozo\service\module
       }
     }
 
+    if( $select->has_table_columns( 'site' ) )
+      $modifier->left_join( 'site', 'interview.site_id', 'site.id' );
+
     if( $select->has_column( 'open_appointment_count' ) )
     {
       $join_sel = lib::create( 'database\select' );

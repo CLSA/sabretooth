@@ -52,3 +52,9 @@ DROP PROCEDURE IF EXISTS set_queue_id;
 SELECT "Removing extraneous whitespace in queue descriptions" AS "";
 
 UPDATE queue SET description = REPLACE( description, "\n      ", " " );
+
+SELECT "Converting more queues to time-specific mode" AS "";
+
+UPDATE queue SET time_specific = 1 WHERE id >= ( SELECT id FROM ( 
+  SELECT id FROM queue WHERE name = "outside calling time"
+) AS t );
