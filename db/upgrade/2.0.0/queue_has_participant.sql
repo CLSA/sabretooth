@@ -17,6 +17,9 @@ DROP PROCEDURE IF EXISTS patch_queue_has_participant;
       DROP INDEX fk_interview_method_id;
 
       ALTER TABLE queue_has_participant DROP COLUMN interview_method_id;
+
+      SELECT "Truncating the queue_has_participant table" AS "";
+      TRUNCATE queue_has_participant;
     END IF;
 
   END //

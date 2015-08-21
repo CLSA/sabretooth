@@ -51,6 +51,18 @@ DROP PROCEDURE IF EXISTS patch_interview;
         LIMIT 1
       );
 
+      -- determine missing start/end times from other sources
+      SET @sql = CONCAT(
+        "UPDATE interview ",
+        "JOIN ", @cenozo, ".event ON interview.participant_id = event.participant_id ",
+        "JOIN ", @cenozo, ".event_type on event.event_type_id = event_type.id ",
+        "SET interview.start_datetime = interview.create_timestamp, ",
+            "interview.end_datetime = event.datetime ",
+        "WHERE interview.start_datetime = '0000-00-00 00:00:00'" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
       -- now get rid of the completed column and index
       ALTER TABLE interview
       DROP INDEX dk_completed,
