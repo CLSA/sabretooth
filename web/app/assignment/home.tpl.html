@@ -56,8 +56,10 @@
           <ul class="dropdown-menu full-width" aria-labelledby="phoneList">
             <li ng-repeat="phone in model.phoneList">
               <a ng-click="">
-                {{ phone.rank }}. {{ phone.type }}
-                <span class="pull-right">{{ phone.number }}</span>
+                <div class="row">
+                  <div class="col-xs-6">{{ phone.rank }}. {{ phone.type }}</div>
+                  <div class="col-xs-6"><span class="pull-right">{{ phone.number }}</span></div>
+                </div>
               </a>
             </li>
           </ul>
