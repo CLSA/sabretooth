@@ -92,7 +92,7 @@ class module extends \cenozo\service\module
         'queue.id',
         'queue_join_participant.queue_id' );
       $select->add_column( 'last_repopulation', 'last_repopulation', false );
-      $select->add_column( 'participant_count', 'participant_count', false );
+      $select->add_column( 'IFNULL( participant_count, 0 )', 'participant_count', false );
 
       // must force all queues to repopulate
       $queue_mod = lib::create( 'database\modifier' );
