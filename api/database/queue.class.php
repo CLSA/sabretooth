@@ -87,13 +87,7 @@ class queue extends \cenozo\database\record
       'upcoming appointment',
       'assignable appointment',
       'missed appointment',
-      'quota disabled',
-      'outside calling time',
-      'callback',
-      'upcoming callback',
-      'assignable callback',
-      'new participant',
-      'old participant' );
+      'quota disabled' );
 
     foreach( $queue_list as $queue )
     {
@@ -269,7 +263,7 @@ class queue extends \cenozo\database\record
     $base_sql = sprintf(
       'INSERT INTO queue_has_participant( '.
         'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) '.
-      'SELECT DISTINCT queue_has_participant.participant_id, %s, queue_has_participant.site_id, '.
+      'SELECT queue_has_participant.participant_id, %s, queue_has_participant.site_id, '.
       'queue_has_participant.qnaire_id, start_qnaire_date '.
       'FROM queue_has_participant',
       static::db()->format_string( $this->id ) );
@@ -384,7 +378,7 @@ class queue extends \cenozo\database\record
       $modifier->join( 'interview_last_assignment',
         'participant_last_interview.interview_id', 'interview_last_assignment.interview_id' );
       $modifier->join( 'assignment_last_phone_call',
-        'interview_last_assignment.assignment_id', 'assignment_last_phone_call.phone_call_id' );
+        'interview_last_assignment.assignment_id', 'assignment_last_phone_call.assignment_id' );
       $modifier->join( 'phone_call', 'assignment_last_phone_call.phone_call_id', 'phone_call.id' );
       if( 'not reached' == $this->name )
       {
