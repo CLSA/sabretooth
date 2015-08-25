@@ -19,10 +19,3 @@ $SETTINGS['general']['development_mode'] = false;
 
 // the location of sabretooth internal path
 $SETTINGS['path']['APPLICATION'] = '/usr/local/lib/sabretooth';
-
-// IVR setup
-$SETTINGS['ivr']['enabled'] = false;
-$SETTINGS['ivr']['host'] = 'https://localhost/'; // must end in a /
-$SETTINGS['ivr']['service'] = 'service_path.asmx?wsdl'; // must NOT begin with a /
-$SETTINGS['ivr']['username'] = '';
-$SETTINGS['ivr']['password'] = '';

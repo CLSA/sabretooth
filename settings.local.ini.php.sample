@@ -21,10 +21,3 @@ $SETTINGS['path']['LOG_FILE'] = $SETTINGS['path']['APPLICATION'].'/log';
 // database settings (the driver, server and prefixes are set in the framework's settings)
 $SETTINGS['db']['username'] = 'put your database username here';
 $SETTINGS['db']['password'] = 'put your database password here';
-
-// IVR setup
-$SETTINGS['ivr']['enabled'] = false;
-$SETTINGS['ivr']['host'] = 'https://localhost/'; // must end in a /
-$SETTINGS['ivr']['service'] = 'relative/path/to/service'; // must NOT begin with a /
-$SETTINGS['ivr']['username'] = 'put your ivr username here';
-$SETTINGS['ivr']['password'] = 'put your ivr password here';
