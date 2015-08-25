@@ -57,8 +57,6 @@ class ui extends \cenozo\ui\ui
 
     $operation_items = parent::get_operation_items();
     if( 'operator' == $role ) array_unshift( $operation_items, 'break' );
-    else if( 'supervisor' == $role )
-      array_splice( $operation_items, array_search( 'account', $operation_items ) + 1, 0, 'siteSettings' );
 
     return $operation_items;
   }
@@ -91,11 +89,19 @@ class ui extends \cenozo\ui\ui
   protected function get_utility_items()
   {
     $list = parent::get_utility_items();
+    $db_site = lib::create( 'business\session' )->get_site();
     $db_role = lib::create( 'business\session' )->get_role();
     
     // add application-specific states to the base list
     if( 2 <= $db_role->tier )
+    {
       $list['Queue Tree'] = array( 'subject' => 'queue', 'action' => 'tree' );
+      if( !$db_role->all_sites )
+        $list['Site Settings'] = array(
+          'subject' => 'site',
+          'action' => 'view',
+          'identifier' => sprintf( 'name=%s', $db_site->name ) );
+    }
     if( in_array( $db_role->name, array( 'helpline', 'operator', 'supervisor' ) ) )
       $list['Assignment Home'] = array( 'subject' => 'assignment', 'action' => 'home' );
 
