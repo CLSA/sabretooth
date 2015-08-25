@@ -50,14 +50,14 @@ define( {
       help: 'The length of time, in minutes, of a long appointment'
     },
     pre_call_window: {
-      title: 'Pre-Appointment Call Window',
+      title: 'Pre-Appointment Window',
       type: 'string',
       format: 'integer',
       minValue: 0,
       help: 'How many minutes before an appointment or callback that a participant can be assigned'
     },
     post_call_window: {
-      title: 'Post-Appointment Call Window',
+      title: 'Post-Appointment Window',
       type: 'string',
       format: 'integer',
       minValue: 0,
