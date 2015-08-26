@@ -25,16 +25,24 @@ class module extends \cenozo\service\module
     $db_user = lib::create( 'business\session' )->get_user();
     $db_role = lib::create( 'business\session' )->get_role();
 
-    // do not allow more than one open assignment
     $method = $this->get_method();
-    if( 'DELETE' == $method ||'PATCH' == $method )
+    if( 'PATCH' == $method &&
+        $this->get_argument( 'close', false ) &&
+        0 < count( $this->get_file_as_array() ) )
+    {
+      $this->set_data( 'Patch data must be empty when closing an assignment.' );
+      $this->get_status()->set_code( 400 );
+    }
+    else if( ( 'DELETE' == $method || 'PATCH' == $method ) &&
+        3 > $db_role->tier &&
+        $this->get_resource()->user_id != $db_user->id )
     {
       // only admins can delete or modify assignments other than their own
-      if( 3 > $db_role->tier && $this->get_resource()->user_id != $db_user->id )
         $this->get_status()->set_code( 403 );
     }
     else if( 'POST' == $method )
     {
+      // do not allow more than one open assignment
       $data = NULL;
 
       if( $db_user->has_open_assignment() )
@@ -68,12 +76,13 @@ class module extends \cenozo\service\module
 
     // restrict to participants in this site (for some roles)
     if( !$session->get_role()->all_sites )
-    {
       $modifier->where( 'assignment.site_id', '=', $session->get_site()->id );
-    }
 
     if( $select->has_table_columns( 'queue' ) )
       $modifier->left_join( 'queue', 'assignment.queue_id', 'queue.id' );
+
+    if( $select->has_table_columns( 'user' ) )
+      $modifier->left_join( 'user', 'assignment.user_id', 'user.id' );
 
     if( $select->has_table_columns( 'participant' ) || $select->has_table_columns( 'qnaire' )  )
     {
@@ -84,12 +93,34 @@ class module extends \cenozo\service\module
         $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
     }
 
+    if( $select->has_column( 'phone_call_count' ) )
+    {
+      $join_sel = lib::create( 'database\select' );
+      $join_sel->from( 'phone_call' );
+      $join_sel->add_column( 'assignment_id' );
+      $join_sel->add_column( 'COUNT( * )', 'phone_call_count', false );
+
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->group( 'assignment_id' );
+
+      $modifier->left_join(
+        sprintf( '( %s %s ) AS assignment_join_phone_call', $join_sel->get_sql(), $join_mod->get_sql() ),
+        'assignment.id',
+        'assignment_join_phone_call.assignment_id' );
+      $select->add_column( 'IFNULL( phone_call_count, 0 )', 'phone_call_count', false );
+    }
+
     // add the assignment's last call's status column
     $modifier->left_join( 'assignment_last_phone_call',
       'assignment.id', 'assignment_last_phone_call.assignment_id' );
     $modifier->left_join( 'phone_call AS last_phone_call',
       'assignment_last_phone_call.phone_call_id', 'last_phone_call.id' );
     $select->add_table_column( 'last_phone_call', 'status' );
+
+    if( $select->has_column( 'call_active' ) )
+      $select->add_table_column( 'last_phone_call',
+        'last_phone_call.id IS NOT NULL AND last_phone_call.end_datetime IS NULL',
+        'call_active', false, 'boolean' );
   }
 
   /**
@@ -99,7 +130,7 @@ class module extends \cenozo\service\module
   {
     parent::pre_write( $record );
 
-    if( 'POST' == $this->get_method() )
+    if( 'POST' == $this->get_method() && $this->get_argument( 'open', false ) )
     {
       $session = lib::create( 'business\session' );
       $db_user = $session->get_user();
@@ -118,10 +149,9 @@ class module extends \cenozo\service\module
     }
     else if( 'PATCH' == $this->get_method() )
     {
-      $patch_array = $this->get_file_as_array();
-      if( 1 == count( $patch_array ) && array_key_exists( 'close', $patch_array ) && $patch_array['close'] )
+      if( $this->get_argument( 'close', false ) )
       { // close the assignment by setting the end datetime
-        if( is_null( $record->end_datetime ) )
+        if( !is_null( $record->end_datetime ) )
           log::warning( sprintf( 'Tried to close assignment id %d which is already closed.', $record->id ) );
         else $record->end_datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
       }

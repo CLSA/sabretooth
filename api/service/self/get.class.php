@@ -17,9 +17,9 @@ class get extends \cenozo\service\self\get
   /**
    * Override parent method since self is a meta-resource
    */
-  public function get_resource( $index )
+  protected function create_resource( $index )
   {
-    $resource = parent::get_resource( $index );
+    $resource = parent::create_resource( $index );
 
     $setting_sel = lib::create( 'database\select' );
     $setting_sel->from( 'setting' );
