@@ -9,12 +9,9 @@
       Queue Tree <span ng-if="isLoading">(Loading&hellip;)</span>
     </h4>
   </div>
-  <div class="container-fluid" ng-switch="isComplete">
-    <div ng-switch-when="false">
-      <h3 class="text-primary text-center">Waiting for a response from the server</h3>
-      <div class="loader"></div>
-    </div>
-    <div class="spacer row" ng-switch-when="true">
+  <div class="container-fluid">
+    <cn-loading ng-if="!isComplete"></cn-loading>
+    <div class="spacer row" ng-if="isComplete">
       <div class="col-sm-4">
         <div class="form-group">
           <label for="lastRepopulation" class="control-label">Last re-population</label>
