@@ -40,6 +40,17 @@ class assignment extends \cenozo\database\record
     }
 
     parent::save();
+    $this->get_interview()->get_participant()->update_queue_status();
+  }
+
+  /**
+   * Override the parent method
+   */
+  public function delete()
+  {
+    $db_participant = $this->get_interview()->get_participant();
+    parent::delete();
+    $db_participant->update_queue_status();
   }
 
   /**

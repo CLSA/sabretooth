@@ -2,11 +2,13 @@
   <div class="container-fluid bg-primary rounded-top">
     <h4>
       <i class="glyphicon glyphicon-refresh glyph-hover rounded pull-right btn-primary"
-         ng-if="isComplete && !isLoading"
+         ng-if="isComplete && !isLoading && !model.form.isRepopulating"
          ng-click="refresh()"
          tooltip="Click to refresh data"
          tooltip-placement="left"></i>
-      Queue Tree <span ng-if="isLoading">(Loading&hellip;)</span>
+      Queue Tree
+      <span ng-if="isLoading">(Loading&hellip;)</span>
+      <span ng-if="model.form.isRepopulating">(Re-populating&hellip;)</span>
     </h4>
   </div>
   <div class="container-fluid">
@@ -21,26 +23,37 @@
                  type="text"
                  readonly></input>
         </div>
-        <button ng-if="!model.form.isRepopulating"
-                class="btn btn-warning full-width"
-                type="button"
-                cn-really-message="Are you sure you wish to repopulate all queues?
-                  This may cause applications to slow down until the processing is complete."
-                cn-really-click="model.repopulate()">Re-populate</button>
-        <progressbar ng-if="model.form.isRepopulating"
-                     class="progress-striped active"
-                     type="warning"
-                     value="1"
-                     max="1"
-                     animate="false"
-                     style="margin-bottom: 0px; height: 34px;">
-          <h5><strong>Please wait&hellip;</strong></h5>
-        </progressbar>
-        <div class="text-info well small">
-          <p>
-            The queue automatically and regularly re-populates itself.  You can force the queues to
-            re-populate immediately by clicking the Re-populate button below.  However, this operation
-          </p>
+        <div ng-if="model.form.canRepopulate">
+          <button ng-if="!model.form.isRepopulating"
+                  class="btn btn-warning full-width"
+                  type="button"
+                  cn-really-title="Warning!"
+                  cn-really-message="Are you sure you wish to repopulate all queues?
+                    This will prevent assignments from being started or finished and generally slow down
+                    all applications until it is finished processing.This may cause applications to slow
+                    down until the processing is complete."
+                  cn-really-click="model.repopulate()">Re-populate</button>
+          <progressbar ng-if="model.form.isRepopulating"
+                       class="progress-striped active"
+                       type="warning"
+                       value="1"
+                       max="1"
+                       animate="false"
+                       style="margin-bottom: 0px; height: 34px;">
+            <h5><strong>Please wait&hellip;</strong></h5>
+          </progressbar>
+          <div class="text-info well small">
+            <ul class="list-unstyled">
+              <li>The queue tree automatically re-populates itself once a day.</li>
+              <li>The last time the queue was re-popluated is shown above.</li>
+              <li>The queue tree can be manually re-populated by clicking the button above.</li>
+              <li>
+                This feature should be used sparingly as it will prevent assignments from
+                being started or finished and generally slow down all applications until
+                it is finished processing.
+              </li>
+            </ul>
+          </div>
         </div>
         <div class="form-group">
           <label for="qnaire_id" class="control-label">Questionnaire</label>
@@ -73,12 +86,14 @@
           </select>
         </div>
         <div class="text-info well small">
-          <p>
-            Each branch of the tree represents a queue and includes the total number of participants
-            belonging to that queue (refined by the settings above).
-            Ranked queues are denoted by their rank (Q<em>n</em>) and highlighted.
-            A participant must belong to a ranked queue in order to be assigned for interviewing.
-          </p>
+          <ul class="list-unstyled">
+            <li>
+              Each branch of the tree represents a queue and includes the total number of
+              participants belonging to that queue (refined by the settings above).
+            </li>
+            <li>Ranked queues are denoted by their rank (Q<em>n</em>) and highlighted.</li>
+            <li>A participant must belong to a ranked queue in order to be assigned for interviewing.</li>
+          </ul>
         </div>
       </div>
       <div class="col-sm-8" style="padding-right: 0px;">

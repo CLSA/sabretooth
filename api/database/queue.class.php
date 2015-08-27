@@ -31,18 +31,6 @@ class queue extends \cenozo\database\record
   }
 
   /**
-   * Override parent get_record_list() method to dynamically populate time-specific queues
-   */
-  public function get_record_list( $record_type, $select = NULL, $modifier = NULL, $return_alternate = '' )
-  {
-    // if we're getting a participant list/count for a time-specific column, populate it first
-    if( 'participant' == $record_type ) $this->populate_time_specific();
-
-    // now call the parent method as usual
-    return parent::get_record_list( $record_type, $select, $modifier, $return_alternate );
-  }
-
-  /**
    * Returns whether a queue is enabled or not for a given site and qnaire.
    * @auther Patrick Emond <emondpd@mcmaster.ca>
    * @access public
@@ -71,25 +59,9 @@ class queue extends \cenozo\database\record
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
 
-    // define the SQL for each queue
-    $queue_list = array(
-      'all',
-      'finished',
-      'ineligible',
-      'inactive',
-      'refused consent',
-      'condition',
-      'eligible',
-      'qnaire',
-      'qnaire waiting',
-      'assigned',
-      'appointment',
-      'upcoming appointment',
-      'assignable appointment',
-      'missed appointment',
-      'quota disabled' );
-
-    foreach( $queue_list as $queue )
+    // make sure the queue_list_cache has been created and loop through it
+    static::create_queue_list_cache();
+    foreach( array_keys( self::$queue_list_cache ) as $queue )
     {
       $parts = self::get_query_parts( $queue );
 
@@ -114,50 +86,6 @@ class queue extends \cenozo\database\record
                  $join_sql,
                  $where_sql );
     }
-
-    // now add the sql for each call back status, grouping machine message, machine no message,
-    // not reached, disconnected and wrong number into a single "not reached" category
-    $phone_call_status_list = $phone_call_class_name::get_enum_values( 'status' );
-    $remove_list = array(
-      'machine message',
-      'machine no message',
-      'disconnected',
-      'wrong number' );
-    $phone_call_status_list = array_diff( $phone_call_status_list, $remove_list );
-    foreach( $phone_call_status_list as $phone_call_status )
-    {
-      $queue_list = array(
-        'phone call status',
-        'phone call status waiting',
-        'phone call status ready' );
-
-      foreach( $queue_list as $queue )
-      {
-        $parts = self::get_query_parts( $queue, $phone_call_status );
-
-        $from_sql = '';
-        $first = true;
-        // reverse order to make sure the join works
-        foreach( array_reverse( $parts['from'] ) as $from )
-        {
-          $from_sql .= sprintf( $first ? 'FROM %s' : ', %s', $from );
-          $first = false;
-        }
-
-        $join_sql = '';
-        foreach( $parts['join'] as $join ) $join_sql .= ' '.$join;
-
-        $where_sql = 'WHERE true';
-        foreach( $parts['where'] as $where ) $where_sql .= ' AND '.$where;
-
-        $queue_name = str_replace( 'phone call status', $phone_call_status, $queue );
-        self::$query_list[$queue_name] =
-          sprintf( 'SELECT <SELECT_PARTICIPANT> %s %s %s',
-                   $from_sql,
-                   $join_sql,
-                   $where_sql );
-      }
-    }
   }
 
   /**
@@ -165,7 +93,7 @@ class queue extends \cenozo\database\record
    * 
    * This method is used to pupulate all non-time-specific queues.
    * Only non time-specific queues are affected by this function, to populate time-specific
-   * queues use the populate_time_specific() method instead.
+   * queues use the repopulate_time_specific() method instead.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant If provided then only that participant will
    *        be affected by the operation.
@@ -175,20 +103,13 @@ class queue extends \cenozo\database\record
   static public function repopulate( $db_participant = NULL )
   {
     if( static::$debug ) $total_time = util::get_elapsed_time();  
-    $database_class_name = lib::get_class_name( 'database\database' );
-
-    $session = lib::create( 'business\session' );
-    $db_user = $session->get_user();
 
     // block with a semaphore
-    $semaphore = lib::create( 'business\semaphore', 'repopulate' );
+    $semaphore = lib::create( 'business\semaphore', __METHOD__ );
     $semaphore->acquire();
 
     // make sure the temporary table exists
     static::create_participant_for_queue( $db_participant );
-
-    // make sure the queue list cache exists
-    static::create_queue_list_cache();
 
     // delete queue_has_participant records
     $sql = is_null( $db_participant )
@@ -199,25 +120,24 @@ class queue extends \cenozo\database\record
     static::db()->execute( $sql );
 
     $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'time_specific', '=', false );
     $modifier->order( 'id' );
     foreach( static::select_objects( $modifier ) as $db_queue )
     {
       if( static::$debug ) $queue_time = util::get_elapsed_time();
-      if( $db_queue->time_specific ) $db_queue->populate_time_specific();
-      else
-      {
-        $columns = sprintf(
-          'DISTINCT participant_for_queue.id, %s, '.
-          'participant_site_id, '.
-          'effective_qnaire_id, '.
-          'start_qnaire_date',
-          static::db()->format_string( $db_queue->id ) );
-    
-        static::db()->execute( sprintf(
-          'INSERT INTO queue_has_participant( '.
-            'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) %s',
-          $db_queue->get_sql( $columns ) ) );
-      }
+
+      $columns = sprintf(
+        'DISTINCT participant_for_queue.id, %s, '.
+        'participant_site_id, '.
+        'effective_qnaire_id, '.
+        'start_qnaire_date',
+        static::db()->format_string( $db_queue->id ) );
+  
+      static::db()->execute( sprintf(
+        'INSERT INTO queue_has_participant( '.
+          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) %s',
+        $db_queue->get_sql( $columns ) ) );
+
       if( static::$debug ) log::debug( sprintf(
         '(Queue) "%s" build time: %0.2f', $db_queue->name, util::get_elapsed_time() - $queue_time ) );
     }
@@ -226,250 +146,265 @@ class queue extends \cenozo\database\record
 
     $semaphore->release();
     if( static::$debug ) log::debug( sprintf(
-      '(Queue) Total processing time: %0.2f', util::get_elapsed_time() - $total_time ) );
+      '(Queue) Total repopulate() time: %0.2f', util::get_elapsed_time() - $total_time ) );
   }
 
   /**
-   * Re-populates a time-specific queue
+   * Re-populates all time-specific queue
    * 
    * This method is used to populate queues which are dependent on the exact time.
    * Only time-specific queues are affected by this function, to populate non time-specific
    * queues use the repopulate() static method instead.
+   * @param database\participant $db_participant If provided then only that participant will
+   *        be affected by the operation.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  public function populate_time_specific()
+  static public function repopulate_time_specific( $db_participant = NULL )
   {
-    // do nothing if this isn't a time-specific queue
-    if( !$this->time_specific ) return;
-
-    $database_class_name = lib::get_class_name( 'database\database' );
-    $session = lib::create( 'business\session' );
-    $db_user = $session->get_user();
+    if( static::$debug ) $total_time = util::get_elapsed_time();  
 
     // block with a semaphore
-    $semaphore = lib::create( 'business\semaphore', 'time_specific' );
+    $semaphore = lib::create( 'business\semaphore', __METHOD__ );
     $semaphore->acquire();
 
-    // make sure the queue list cache exists and get the queue's parent
-    static::create_queue_list_cache();
-    $db_parent_queue = self::$queue_list_cache[$this->name]['parent'];
+    // delete queue_has_participant records
+    $delete_mod = lib::create( 'database\modifier' );
+    $delete_mod->where( 'queue_id', 'IN', '( SELECT id FROM queue WHERE time_specific = true )', false );
+    if( !is_null( $db_participant ) ) $delete_mod->where( 'participant_id', '=', $db_participant->id );
+    $sql = 'DELETE FROM queue_has_participant '.$delete_mod->get_sql();
+    if( static::$debug ) $time = util::get_elapsed_time();
+    static::db()->execute( $sql );
 
-    static::db()->execute( sprintf(
-      'DELETE FROM queue_has_participant WHERE queue_id = %s',
-      static::db()->format_string( $this->id ) ) );
-
-    // sql used by all insert statements below
-    $base_sql = sprintf(
-      'INSERT INTO queue_has_participant( '.
-        'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) '.
-      'SELECT queue_has_participant.participant_id, %s, queue_has_participant.site_id, '.
-      'queue_has_participant.qnaire_id, start_qnaire_date '.
-      'FROM queue_has_participant',
-      static::db()->format_string( $this->id ) );
-    
     $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'queue_has_participant.queue_id', '=', $db_parent_queue->id );
-
-    if( in_array( $this->name,
-      array( 'outside calling time', 'callback', 'new participant', 'old participant' ) ) )
+    $modifier->where( 'time_specific', '=', true );
+    $modifier->order( 'id' );
+    foreach( static::select_objects( $modifier ) as $db_queue )
     {
-      // create temporary table containing all participants in queue not belonging to sibling tables
-      $sub_sel = lib::create( 'database\select' );
-      $sub_sel->add_column( 'participant_id' );
-      $sub_sel->from( 'queue_has_participant' );
-      $sub_mod = lib::create( 'database\modifier' );
-      $sub_mod->join( 'queue', 'queue_has_participant.queue_id', 'queue.id' );
-      $sub_mod->where( 'queue.id', '=', $db_parent_queue->id );
-      $sub_mod->or_where( 'queue.parent_queue_id', '=', $db_parent_queue->id );
-      $sub_mod->group( 'participant_id' );
-      $sub_mod->having( 'COUNT(*)', '=', 1 );
-      $sql = sprintf(
-        'CREATE TEMPORARY TABLE IF NOT EXISTS sub_queue_has_participant %s %s',
-        $sub_sel->get_sql(),
-        $sub_mod->get_sql() );
-      static::db()->execute( 'DROP TABLE IF EXISTS sub_queue_has_participant' );
-      static::db()->execute( $sql );
-      static::db()->execute(
-        'ALTER TABLE sub_queue_has_participant ADD INDEX fk_participant_id ( participant_id )' );
+      if( static::$debug ) $queue_time = util::get_elapsed_time();
 
-      $modifier->left_join( 'setting', 'queue_has_participant.site_id', 'setting.site_id' );
-      $modifier->join( 'sub_queue_has_participant',
-        'queue_has_participant.participant_id', 'sub_queue_has_participant.participant_id' );
+      // sql used by all insert statements below
+      $base_sql = sprintf(
+        'INSERT INTO queue_has_participant( '.
+          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) '.
+        'SELECT queue_has_participant.participant_id, %s, queue_has_participant.site_id, '.
+        'queue_has_participant.qnaire_id, start_qnaire_date '.
+        'FROM queue_has_participant',
+        static::db()->format_string( $db_queue->id ) );
+      
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'queue_has_participant.queue_id', '=', $db_queue->parent_queue_id );
+      if( !is_null( $db_participant ) )
+        $modifier->where( 'queue_has_participant.participant_id', '=', $db_participant->id );
 
-      $modifier->join( 'participant_first_address',
-        'queue_has_participant.participant_id', 'participant_first_address.participant_id' );
-      $modifier->join( 'address', 'participant_first_address.address_id', 'address.id' );
-
-      $localtime = localtime( time(), true );
-      $offset = $localtime['tm_isdst']
-              ? 'address.timezone_offset + address.daylight_savings'
-              : 'address.timezone_offset';
-      $left = sprintf( 'TIME( UTC_TIMESTAMP() + INTERVAL ( %s )*60 MINUTE )', $offset );
-
-      $modifier->where_bracket( true, false, 'outside calling time' == $this->name );
-      $modifier->where( 'calling_start_time', '<=', $left, false );
-      $modifier->where( 'calling_end_time', '>', $left, false );
-      $modifier->where_bracket( false );
-
-      if( 'outside calling time' != $this->name )
+      if( in_array( $db_queue->name,
+        array( 'outside calling time', 'callback', 'new participant', 'old participant' ) ) )
       {
-        // we need to join to the interview table
-        $join_mod = lib::create( 'database\modifier' );
-        $join_mod->where( 'queue_has_participant.participant_id', '=', 'interview.participant_id', false );
-        $join_mod->where( 'queue_has_participant.qnaire_id', '=', 'interview.qnaire_id', false );
-        $modifier->join_modifier( 'interview', $join_mod, 'left' );
+        // create temporary table containing all participants in queue not belonging to sibling tables
+        $sub_sel = lib::create( 'database\select' );
+        $sub_sel->add_column( 'participant_id' );
+        $sub_sel->from( 'queue_has_participant' );
+        $sub_mod = lib::create( 'database\modifier' );
+        $sub_mod->join( 'queue', 'queue_has_participant.queue_id', 'queue.id' );
+        $sub_mod->where( 'queue.id', '=', $db_queue->parent_queue_id );
+        $sub_mod->or_where( 'queue.parent_queue_id', '=', $db_queue->parent_queue_id );
+        $sub_mod->group( 'participant_id' );
+        $sub_mod->having( 'COUNT(*)', '=', 1 );
+        $sql = sprintf(
+          'CREATE TEMPORARY TABLE IF NOT EXISTS sub_queue_has_participant %s %s',
+          $sub_sel->get_sql(),
+          $sub_mod->get_sql() );
+        static::db()->execute( 'DROP TABLE IF EXISTS sub_queue_has_participant' );
+        static::db()->execute( $sql );
+        static::db()->execute(
+          'ALTER TABLE sub_queue_has_participant ADD INDEX fk_participant_id ( participant_id )' );
 
-        // link to callback table
-        // (by design, there can only ever one unassigned callback per participant)
-        $join_mod = lib::create( 'database\modifier' );
-        $join_mod->where( 'interview.id', '=', 'callback.interview_id', false );
-        $join_mod->where( 'callback.assignment_id', '=', NULL );
+        $modifier->left_join( 'setting', 'queue_has_participant.site_id', 'setting.site_id' );
+        $modifier->join( 'sub_queue_has_participant',
+          'queue_has_participant.participant_id', 'sub_queue_has_participant.participant_id' );
 
-        if( 'callback' == $this->name )
+        $modifier->join( 'participant_first_address',
+          'queue_has_participant.participant_id', 'participant_first_address.participant_id' );
+        $modifier->join( 'address', 'participant_first_address.address_id', 'address.id' );
+
+        $localtime = localtime( time(), true );
+        $offset = $localtime['tm_isdst']
+                ? 'address.timezone_offset + address.daylight_savings'
+                : 'address.timezone_offset';
+        $left = sprintf( 'TIME( UTC_TIMESTAMP() + INTERVAL ( %s )*60 MINUTE )', $offset );
+
+        $modifier->where_bracket( true, false, 'outside calling time' == $db_queue->name );
+        $modifier->where( 'calling_start_time', '<=', $left, false );
+        $modifier->where( 'calling_end_time', '>', $left, false );
+        $modifier->where_bracket( false );
+
+        if( 'outside calling time' != $db_queue->name )
         {
-          $modifier->join_modifier( 'callback', $join_mod );
+          // we need to join to the interview table
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->where( 'queue_has_participant.participant_id', '=', 'interview.participant_id', false );
+          $join_mod->where( 'queue_has_participant.qnaire_id', '=', 'interview.qnaire_id', false );
+          $modifier->join_modifier( 'interview', $join_mod, 'left' );
+
+          // link to callback table
+          // (by design, there can only ever one unassigned callback per participant)
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->where( 'interview.id', '=', 'callback.interview_id', false );
+          $join_mod->where( 'callback.assignment_id', '=', NULL );
+
+          if( 'callback' == $db_queue->name )
+          {
+            $modifier->join_modifier( 'callback', $join_mod );
+          }
+          else
+          {
+            // Make sure there is no unassigned callback
+            $modifier->join_modifier( 'callback', $join_mod, 'left' );
+            $modifier->where( 'callback.id', '=', NULL );
+
+            if( 'new participant' == $db_queue->name )
+            {
+              // If there is a start_qnaire_date then the current qnaire has never been
+              // started, the exception is for participants who have never been assigned
+              $modifier->left_join( 'participant_last_interview',
+                'queue_has_participant.participant_id', 'participant_last_interview.participant_id' );
+              $modifier->left_join( 'interview_last_assignment',
+                'participant_last_interview.interview_id', 'interview_last_assignment.interview_id' );
+              $modifier->left_join( 'assignment',
+                'interview_last_assignment.assignment_id', 'assignment.id' );
+
+              $modifier->where_bracket( true );
+              $modifier->where( 'queue_has_participant.start_qnaire_date', '!=', NULL );
+              $modifier->or_where( 'assignment.id', '=', NULL );
+              $modifier->where_bracket( false );
+            }
+            else // old participant
+            {
+              // if there is no start_qnaire_date then the current qnaire has been started
+              $modifier->where( 'start_qnaire_date', '=', NULL );
+
+              // make sure the current interview's qnaire matches the effective qnaire,
+              // otherwise this participant has never been assigned
+              $modifier->join( 'participant_last_interview',
+                'queue_has_participant.participant_id', 'participant_last_interview.participant_id' );
+              $modifier->left_join( 'interview',
+                'participant_last_interview.interview_id', 'current_interview.id', 'current_interview' );
+              $modifier->where( 'queue_has_participant.qnaire_id', '=', 'current_interview.qnaire_id', false );
+            }
+          }
+        }
+
+        static::db()->execute( sprintf( '%s %s', $base_sql, $modifier->get_sql() ) );
+      }
+      else if( in_array( $db_queue->name,
+        array( 'contacted', 'busy', 'fax', 'no answer', 'not reached', 'hang up', 'soft refusal' ) ) )
+      {
+        $modifier->join( 'participant_last_interview',
+          'queue_has_participant.participant_id', 'participant_last_interview.participant_id' );
+        $modifier->join( 'interview_last_assignment',
+          'participant_last_interview.interview_id', 'interview_last_assignment.interview_id' );
+        $modifier->join( 'assignment_last_phone_call',
+          'interview_last_assignment.assignment_id', 'assignment_last_phone_call.assignment_id' );
+        $modifier->join( 'phone_call', 'assignment_last_phone_call.phone_call_id', 'phone_call.id' );
+        if( 'not reached' == $db_queue->name )
+        {
+          $modifier->where( 'phone_call.status', 'IN',
+            array( 'machine message', 'machine no message', 'disconnected', 'wrong number', 'not reached' ) );
         }
         else
         {
-          // Make sure there is no unassigned callback
-          $modifier->join_modifier( 'callback', $join_mod, 'left' );
-          $modifier->where( 'callback.id', '=', NULL );
-
-          if( 'new participant' == $this->name )
-          {
-            // If there is a start_qnaire_date then the current qnaire has never been
-            // started, the exception is for participants who have never been assigned
-            $modifier->left_join( 'participant_last_interview',
-              'queue_has_participant.participant_id', 'participant_last_interview.participant_id' );
-            $modifier->left_join( 'interview_last_assignment',
-              'participant_last_interview.interview_id', 'interview_last_assignment.interview_id' );
-            $modifier->left_join( 'assignment',
-              'interview_last_assignment.assignment_id', 'assignment.id' );
-
-            $modifier->where_bracket( true );
-            $modifier->where( 'queue_has_participant.start_qnaire_date', '!=', NULL );
-            $modifier->or_where( 'assignment.id', '=', NULL );
-            $modifier->where_bracket( false );
-          }
-          else // old participant
-          {
-            // if there is no start_qnaire_date then the current qnaire has been started
-            $modifier->where( 'start_qnaire_date', '=', NULL );
-
-            // make sure the current interview's qnaire matches the effective qnaire,
-            // otherwise this participant has never been assigned
-            $modifier->join( 'participant_last_interview',
-              'queue_has_participant.participant_id', 'participant_last_interview.participant_id' );
-            $modifier->left_join( 'interview',
-              'participant_last_interview.interview_id', 'current_interview.id', 'current_interview' );
-            $modifier->where( 'queue_has_participant.qnaire_id', '=', 'current_interview.qnaire_id', false );
-          }
+          $modifier->where( 'phone_call.status', '=', $db_queue->name );
         }
-      }
 
-      static::db()->execute( sprintf( '%s %s', $base_sql, $modifier->get_sql() ) );
-    }
-    else if( in_array( $this->name,
-      array( 'contacted', 'busy', 'fax', 'no answer', 'not reached', 'hang up', 'soft refusal' ) ) )
-    {
-      $modifier->join( 'participant_last_interview',
-        'queue_has_participant.participant_id', 'participant_last_interview.participant_id' );
-      $modifier->join( 'interview_last_assignment',
-        'participant_last_interview.interview_id', 'interview_last_assignment.interview_id' );
-      $modifier->join( 'assignment_last_phone_call',
-        'interview_last_assignment.assignment_id', 'assignment_last_phone_call.assignment_id' );
-      $modifier->join( 'phone_call', 'assignment_last_phone_call.phone_call_id', 'phone_call.id' );
-      if( 'not reached' == $this->name )
+        static::db()->execute( sprintf( '%s %s', $base_sql, $modifier->get_sql() ) );
+      }
+      // populate appointment upcomming/assignable/missed queues
+      else if( ' appointment' == substr( $db_queue->name, -12 ) )
       {
-        $modifier->where( 'phone_call.status', 'IN',
-          array( 'machine message', 'machine no message', 'disconnected', 'wrong number', 'not reached' ) );
+        $modifier->left_join( 'setting', 'queue_has_participant.site_id', 'setting.site_id' );
+
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'queue_has_participant.participant_id', '=', 'interview.participant_id', false );
+        $join_mod->where( 'queue_has_participant.qnaire_id', '=', 'interview.qnaire_id', false );
+        $modifier->join_modifier( 'interview', $join_mod );
+
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'interview.id', '=', 'appointment.interview_id', false );
+        $join_mod->where( 'appointment.assignment_id', '=', NULL );
+        $modifier->join_modifier( 'appointment', $join_mod );
+
+        $pre_call = 'appointment.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE';
+        $post_call = 'appointment.datetime + INTERVAL IFNULL( post_call_window, 0 ) MINUTE';
+        if( 'upcoming appointment' == $db_queue->name )
+        {
+          $modifier->where( 'UTC_TIMESTAMP()', '<', $pre_call, false );
+        }
+        else if( 'assignable appointment' == $db_queue->name )
+        {
+          $modifier->where( 'UTC_TIMESTAMP()', '>=', $pre_call, false );
+          $modifier->where( 'UTC_TIMESTAMP()', '<=', $post_call, false );
+        }
+        else if( 'missed appointment' == $db_queue->name )
+        {
+          $modifier->where( 'UTC_TIMESTAMP()', '>', $post_call, false );
+        }
+
+        static::db()->execute( sprintf( '%s %s', $base_sql, $modifier->get_sql() ) );
+      }
+      // populate callback upcoming/assignable queues
+      else if( ' callback' == substr( $db_queue->name, -9 ) )
+      {
+        $modifier->left_join( 'setting', 'queue_has_participant.site_id', 'setting.site_id' );
+
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'queue_has_participant.participant_id', '=', 'interview.participant_id', false );
+        $join_mod->where( 'queue_has_participant.qnaire_id', '=', 'interview.qnaire_id', false );
+        $modifier->join_modifier( 'interview', $join_mod );
+
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'interview.id', '=', 'callback.interview_id', false );
+        $join_mod->where( 'callback.assignment_id', '=', NULL );
+        $modifier->join_modifier( 'callback', $join_mod );
+
+        $pre_call = 'callback.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE';
+        $test = 'upcoming callback' == $db_queue->name ? '<' : '>=';
+        $modifier->where( 'UTC_TIMESTAMP()', $test, $pre_call, false );
+
+        static::db()->execute( sprintf( '%s %s', $base_sql, $modifier->get_sql() ) );
+      }
+      // populate "last call waiting" queues
+      else if( ' waiting' == substr( $db_queue->name, -8 ) || ' ready' == substr( $db_queue->name, -6 ) )
+      {
+        $modifier->join( 'participant_last_interview',
+          'queue_has_participant.participant_id', 'participant_last_interview.participant_id', false );
+        $modifier->join( 'interview_last_assignment',
+          'participant_last_interview.interview_id', 'interview_last_assignment.interview_id', false );
+        $modifier->join( 'assignment_last_phone_call',
+          'interview_last_assignment.assignment_id', 'assignment_last_phone_call.assignment_id', false );
+        $modifier->join( 'phone_call', 'phone_call.id', 'assignment_last_phone_call.phone_call_id', false );
+
+        $test = ' waiting' == substr( $db_queue->name, -8 ) ? '<' : '>=';
+        $modifier->where( 'UTC_TIMESTAMP()', $test, 'phone_call.end_datetime', false );
+
+        static::db()->execute( sprintf( '%s %s', $base_sql, $modifier->get_sql() ) );
       }
       else
       {
-        $modifier->where( 'phone_call.status', '=', $this->name );
+        $semaphore->release();
+        throw lib::create( 'exception\runtime',
+          sprintf( 'No rules to populate time-specific queue "%s"', $db_queue->name ),
+          __METHOD__ );
       }
 
-      static::db()->execute( sprintf( '%s %s', $base_sql, $modifier->get_sql() ) );
+      if( static::$debug ) log::debug( sprintf(
+        '(Queue) "%s" build time: %0.2f', $db_queue->name, util::get_elapsed_time() - $queue_time ) );
     }
-    // populate appointment upcomming/assignable/missed queues
-    else if( ' appointment' == substr( $this->name, -12 ) )
-    {
-      $modifier->left_join( 'setting', 'queue_has_participant.site_id', 'setting.site_id' );
+    if( static::$debug ) log::debug( sprintf(
+      '(Queue) Total queue build time: %0.2f', util::get_elapsed_time() - $time ) );
 
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'queue_has_participant.participant_id', '=', 'interview.participant_id', false );
-      $join_mod->where( 'queue_has_participant.qnaire_id', '=', 'interview.qnaire_id', false );
-      $modifier->join_modifier( 'interview', $join_mod );
-
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'interview.id', '=', 'appointment.interview_id', false );
-      $join_mod->where( 'appointment.assignment_id', '=', NULL );
-      $modifier->join_modifier( 'appointment', $join_mod );
-
-      $pre_call = 'appointment.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE';
-      $post_call = 'appointment.datetime + INTERVAL IFNULL( post_call_window, 0 ) MINUTE';
-      if( 'upcoming appointment' == $this->name )
-      {
-        $modifier->where( 'UTC_TIMESTAMP()', '<', $pre_call, false );
-      }
-      else if( 'assignable appointment' == $this->name )
-      {
-        $modifier->where( 'UTC_TIMESTAMP()', '>=', $pre_call, false );
-        $modifier->where( 'UTC_TIMESTAMP()', '<=', $post_call, false );
-      }
-      else if( 'missed appointment' == $this->name )
-      {
-        $modifier->where( 'UTC_TIMESTAMP()', '>', $post_call, false );
-      }
-
-      static::db()->execute( sprintf( '%s %s', $base_sql, $modifier->get_sql() ) );
-    }
-    // populate callback upcoming/assignable queues
-    else if( ' callback' == substr( $this->name, -9 ) )
-    {
-      $modifier->left_join( 'setting', 'queue_has_participant.site_id', 'setting.site_id' );
-
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'queue_has_participant.participant_id', '=', 'interview.participant_id', false );
-      $join_mod->where( 'queue_has_participant.qnaire_id', '=', 'interview.qnaire_id', false );
-      $modifier->join_modifier( 'interview', $join_mod );
-
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'interview.id', '=', 'callback.interview_id', false );
-      $join_mod->where( 'callback.assignment_id', '=', NULL );
-      $modifier->join_modifier( 'callback', $join_mod );
-
-      $pre_call = 'callback.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE';
-      $test = 'upcoming callback' == $this->name ? '<' : '>=';
-      $modifier->where( 'UTC_TIMESTAMP()', $test, $pre_call, false );
-
-      static::db()->execute( sprintf( '%s %s', $base_sql, $modifier->get_sql() ) );
-    }
-    // populate "last call waiting" queues
-    else if( ' waiting' == substr( $this->name, -8 ) || ' ready' == substr( $this->name, -6 ) )
-    {
-      $modifier->join( 'participant_last_interview',
-        'queue_has_participant.participant_id', 'participant_last_interview.participant_id', false );
-      $modifier->join( 'interview_last_assignment',
-        'participant_last_interview.interview_id', 'interview_last_assignment.interview_id', false );
-      $modifier->join( 'assignment_last_phone_call',
-        'interview_last_assignment.assignment_id', 'assignment_last_phone_call.assignment_id', false );
-      $modifier->join( 'phone_call', 'phone_call.id', 'assignment_last_phone_call.phone_call_id', false );
-
-      $test = ' waiting' == substr( $this->name, -8 ) ? '<' : '>=';
-      $modifier->where( 'UTC_TIMESTAMP()', $test, 'phone_call.end_datetime', false );
-
-      static::db()->execute( sprintf( '%s %s', $base_sql, $modifier->get_sql() ) );
-    }
-    else
-    {
-      $semaphore->release();
-      throw lib::create( 'exception\runtime',
-        sprintf( 'No rules to populate time-specific queue "%s"', $this->name ),
-        __METHOD__ );
-    }
     $semaphore->release();
+    if( static::$debug ) log::debug( sprintf(
+      '(Queue) Total repopulate_time_specific() time: %0.2f', util::get_elapsed_time() - $total_time ) );
   }
 
   /**
@@ -503,24 +438,22 @@ class queue extends \cenozo\database\record
    * Gets the parts of the query for a particular queue.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $queue The name of the queue to get the query parts for
-   * @param string $phone_call_status The name of which phone call status to get the query parts
-   *               for (or NULL when the queue type is not based on phone call status)
    * @return associative array
    * @throws exception\argument
    * @access protected
    * @static
    */
-  protected static function get_query_parts( $queue, $phone_call_status = NULL )
+  protected static function get_query_parts( $queue )
   {
+    // make sure the queue_list_cache has been created
+    static::create_queue_list_cache();
+
     // start by getting the queue and parent queue objects from the cache
-    $queue_name = is_null( $phone_call_status )
-                ? $queue
-                : str_replace( 'phone call status', $phone_call_status, $queue );
-    $db_queue = self::$queue_list_cache[$queue_name]['object'];
+    $db_queue = self::$queue_list_cache[$queue]['object'];
     if( is_null( $db_queue ) ) // invalid queue name
       throw lib::create( 'exception\runtime',
-        sprintf( 'Cannot find queue named "%s"', $queue_name ), __METHOD__ );
-    $db_parent_queue = self::$queue_list_cache[$queue_name]['parent'];
+        sprintf( 'Cannot find queue named "%s"', $queue ), __METHOD__ );
+    $db_parent_queue = self::$queue_list_cache[$queue]['parent'];
 
     // if this is a time-specific queue then return a query which will return no rows
     if( $db_queue->time_specific )
@@ -534,18 +467,7 @@ class queue extends \cenozo\database\record
     $participant_class_name = lib::get_class_name( 'database\participant' );
 
     // get the parent queue's query parts
-    if( is_null( $phone_call_status ) )
-    {
-      if( !is_null( $db_parent_queue ) ) $parts = self::get_query_parts( $db_parent_queue->name );
-    }
-    else if( 'phone call status' == $queue )
-    {
-      $parts = self::get_query_parts( 'old participant' );
-    }
-    else
-    {
-      $parts = self::get_query_parts( 'phone call status', $phone_call_status );
-    }
+    if( !is_null( $db_parent_queue ) ) $parts = self::get_query_parts( $db_parent_queue->name );
 
     // now determine the sql parts for the given queue
     if( 'all' == $queue )
@@ -697,8 +619,6 @@ class queue extends \cenozo\database\record
    */
   protected function get_sql( $select_participant_sql )
   {
-    $database_class_name = lib::get_class_name( 'database\database' );
-
     // start by making sure the query list has been generated
     if( 0 == count( self::$query_list ) ) self::generate_query_list();
 
@@ -720,7 +640,6 @@ class queue extends \cenozo\database\record
    */
   protected static function create_participant_for_queue( $db_participant = NULL )
   {
-    $database_class_name = lib::get_class_name( 'database\database' );
     $application_id = lib::create( 'business\session' )->get_application()->id;
 
     if( static::$participant_for_queue_created ) return;
@@ -756,7 +675,7 @@ class queue extends \cenozo\database\record
                     static::$participant_for_queue_sql,
                     static::db()->format_string( $application_id ) );
     if( !is_null( $db_participant ) )
-      $sql .= sprintf( ' AND participant.id = %s ',
+      $sql .= sprintf( ' WHERE participant.id = %s ',
                        static::db()->format_string( $db_participant->id ) );
 
     if( static::$debug ) $time = util::get_elapsed_time();
@@ -851,7 +770,9 @@ class queue extends \cenozo\database\record
     if( 0 == count( self::$queue_list_cache ) )
     {
       $queue_mod = lib::create( 'database\modifier' );
+      $queue_mod->where( 'time_specific', '=', false );
       $queue_mod->order( 'id' );
+      $queue_list = array();
       foreach( static::select_objects( $queue_mod ) as $db_queue )
       {
         self::$queue_list_cache[$db_queue->name] =
@@ -864,7 +785,7 @@ class queue extends \cenozo\database\record
           { // search in reverse order, most parent's aren't far from their child
             if( $db_queue->parent_queue_id == $queue_cache['object']->id )
             {
-              self::$queue_list_cache[$db_queue->name]['parent'] = &$queue_cache['object'];
+              self::$queue_list_cache[$db_queue->name]['parent'] = $queue_cache['object'];
               break;
             }
           }
@@ -876,10 +797,10 @@ class queue extends \cenozo\database\record
   /**
    * Whether or not to show debug information
    * @var boolean
-   * @access protected
+   * @access public
    * @static
    */
-  protected static $debug = false;
+  public static $debug = false;
 
   /**
    * Whether the participant_for_queue temporary table has been created.

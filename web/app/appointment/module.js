@@ -77,12 +77,12 @@ define( {
     phone: {
       column: 'phone.name',
       type: 'string',
-      title: 'Phone Number'
+      title: 'Number'
     },
     user: {
       column: 'user.name',
       type: 'string',
-      title: 'User'
+      title: 'Reserved For'
     },
     assignment_user: {
       column: 'assignment_user.name',

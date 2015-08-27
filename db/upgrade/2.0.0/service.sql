@@ -142,7 +142,6 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'appointment', 'GET', 1, 0 ),
 ( 'appointment', 'PATCH', 1, 0 ),
 ( 'appointment', 'POST', 0, 0 ),
-( 'assignment', 'DELETE', 1, 1 ),
 ( 'assignment', 'GET', 0, 0 ),
 ( 'assignment', 'GET', 1, 0 ),
 ( 'assignment', 'PATCH', 1, 1 ),

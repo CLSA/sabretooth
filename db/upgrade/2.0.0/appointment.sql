@@ -38,6 +38,9 @@ DROP PROCEDURE IF EXISTS patch_appointment;
       ON appointment.participant_id = interview.participant_id 
       SET interview_id = interview.id;
 
+      -- delete any remaining appointments which didn't have an interview
+      DELETE FROM appointment WHERE interview_id = 0;
+
       -- now get rid of the participant column, index and constraint
       ALTER TABLE appointment
       DROP FOREIGN KEY fk_appointment_participant_id;
@@ -92,6 +95,44 @@ DROP PROCEDURE IF EXISTS patch_appointment;
       UPDATE appointment SET type = IF( type = "full", "long", "short" );
       ALTER TABLE appointment
       MODIFY COLUMN type enum('long','short') NOT NULL DEFAULT 'long';
+    END IF;
+
+    SELECT "Modifiying constraint delete rules in appointment table" AS "";
+
+    SET @test = (
+      SELECT DELETE_RULE
+      FROM information_schema.REFERENTIAL_CONSTRAINTS
+      WHERE CONSTRAINT_SCHEMA = DATABASE()
+      AND TABLE_NAME = "appointment"
+      AND REFERENCED_TABLE_NAME = "interview" );
+    IF @test = "NO ACTION" THEN
+      ALTER TABLE appointment
+      DROP FOREIGN KEY fk_appointment_interview_id;
+
+      ALTER TABLE appointment
+      ADD CONSTRAINT fk_appointment_interview_id
+      FOREIGN KEY (interview_id)
+      REFERENCES interview (id)
+      ON DELETE CASCADE
+      ON UPDATE NO ACTION;
+    END IF;
+
+    SET @test = (
+      SELECT DELETE_RULE
+      FROM information_schema.REFERENTIAL_CONSTRAINTS
+      WHERE CONSTRAINT_SCHEMA = DATABASE()
+      AND TABLE_NAME = "appointment"
+      AND REFERENCED_TABLE_NAME = "assignment" );
+    IF @test = "NO ACTION" THEN
+      ALTER TABLE appointment
+      DROP FOREIGN KEY fk_appointment_assignment_id;
+
+      ALTER TABLE appointment
+      ADD CONSTRAINT fk_appointment_assignment_id
+      FOREIGN KEY (assignment_id)
+      REFERENCES assignment (id)
+      ON DELETE SET NULL
+      ON UPDATE NO ACTION;
     END IF;
 
   END //

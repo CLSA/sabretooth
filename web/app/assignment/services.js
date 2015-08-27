@@ -69,6 +69,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
             message: 'Are you sure you wish to start a new assignment with participant ' + record.uid + '?'
           } ).show().then( function( response ) {
             if( response ) {
+              self.isAssignmentLoading = true; // show loading screen right away
               CnHttpFactory.instance( {
                 path: 'assignment?open=true',
                 data: { participant_id: record.id }
@@ -216,11 +217,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
             CnHttpFactory.instance( {
               path: 'assignment/0/phone_call'
             } ).query().then( function( response ) {
-              // delete the assignment if there are no phone calls, or close it if there are
-              var promise = 0 == response.data.length
-                          ? CnHttpFactory.instance( { path: 'assignment/0' } ).delete()
-                          : CnHttpFactory.instance( { path: 'assignment/0?close=true', data: {} } ).patch();
-              return promise.then( function() { self.onLoad(); } );
+              CnHttpFactory.instance( { path: 'assignment/0?close=true', data: {} } ).patch().then( self.onLoad );
             } ).catch( function( response ) {
               if( 307 == response.status ) {
                 // 307 means the user has no active assignment, so just refresh the page data

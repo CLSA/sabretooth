@@ -61,6 +61,7 @@ define( cenozo.getServicesIncludeList( 'queue' ), function( module ) {
         this.queueTree = []; // multi-dimensional tree for display
 
         this.form = {
+          canRepopulate: 3 <= CnSession.role.tier,
           lastRepopulation: null,
           isRepopulating: false,
           qnaire_id: undefined,

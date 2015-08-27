@@ -38,6 +38,9 @@ DROP PROCEDURE IF EXISTS patch_callback;
       ON callback.participant_id = interview.participant_id 
       SET interview_id = interview.id;
 
+      -- delete any remaining callbacks which didn't have an interview
+      DELETE FROM callback WHERE interview_id = 0;
+
       -- now get rid of the participant column, index and constraint
       ALTER TABLE callback
       DROP FOREIGN KEY fk_callback_participant_id;
@@ -50,6 +53,44 @@ DROP PROCEDURE IF EXISTS patch_callback;
 
       SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
       SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+    END IF;
+
+    SELECT "Modifiying constraint delete rules in callback table" AS "";
+
+    SET @test = (
+      SELECT DELETE_RULE
+      FROM information_schema.REFERENTIAL_CONSTRAINTS
+      WHERE CONSTRAINT_SCHEMA = DATABASE()
+      AND TABLE_NAME = "callback"
+      AND REFERENCED_TABLE_NAME = "interview" );
+    IF @test = "NO ACTION" THEN
+      ALTER TABLE callback
+      DROP FOREIGN KEY fk_callback_interview_id;
+
+      ALTER TABLE callback
+      ADD CONSTRAINT fk_callback_interview_id
+      FOREIGN KEY (interview_id)
+      REFERENCES interview (id)
+      ON DELETE CASCADE
+      ON UPDATE NO ACTION;
+    END IF;
+
+    SET @test = (
+      SELECT DELETE_RULE
+      FROM information_schema.REFERENTIAL_CONSTRAINTS
+      WHERE CONSTRAINT_SCHEMA = DATABASE()
+      AND TABLE_NAME = "callback"
+      AND REFERENCED_TABLE_NAME = "assignment" );
+    IF @test = "NO ACTION" THEN
+      ALTER TABLE callback
+      DROP FOREIGN KEY fk_callback_assignment_id;
+
+      ALTER TABLE callback
+      ADD CONSTRAINT fk_callback_assignment_id
+      FOREIGN KEY (assignment_id)
+      REFERENCES assignment (id)
+      ON DELETE SET NULL
+      ON UPDATE NO ACTION;
     END IF;
 
   END //

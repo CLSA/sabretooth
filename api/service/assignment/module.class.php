@@ -157,4 +157,68 @@ class module extends \cenozo\service\module
       }
     }
   }
+
+  /**
+   * Extend parent method
+   */
+  public function post_write( $record )
+  {
+    parent::post_write( $record );
+
+    if( 'POST' == $this->get_method() && $this->get_argument( 'open', false ) )
+    {
+      $db_queue = $record->get_queue();
+
+      // set the assignment in appointments and callbacks
+      if( $db_queue->from_appointment() || $db_queue->from_callback() )
+      {
+        $db_interview = $record->get_interview();
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'assignment_id', '=', NULL );
+        $record_list = $db_queue->from_appointment()
+                     ? $db_interview->get_appointment_object_list( $modifier )
+                     : $db_interview->get_callback_object_list( $modifier );
+        if( count( $record_list ) )
+        {
+          $linked_record = current( $record_list );
+          $linked_record->assignment_id = $record->id;
+          $linked_record->save();
+        }
+      }
+    }
+    else if( 'PATCH' == $this->get_method() )
+    {
+      // delete the assignment if there are no phone calls, or close it if there are
+      if( $this->get_argument( 'close', false ) )
+      {
+        if( 0 == $record->get_phone_call_count() ) $record->delete();
+        else
+        {
+          $db_queue = $record->get_queue();
+
+          // set reached in appointments and callbacks
+          if( $db_queue->from_appointment() || $db_queue->from_callback() )
+          {
+            $record_list = $db_queue->from_appointment()
+                         ? $record->get_appointment_object_list()
+                         : $record->get_callback_object_list();
+            if( 0 == count( $record_list ) )
+              log::warning( sprintf(
+                'Can\'t find %s for assignment %d created from %s queue',
+                $db_queue->from_appointment() ? 'appointment' : 'callback',
+                $record->id,
+                $db_queue->name ) );
+            else
+            {
+              $linked_record = current( $record_list );
+              $modifier = lib::create( 'database\modifier' );
+              $modifier->where( 'status', '=', 'contacted' );
+              $linked_record->reached = 0 < $record->get_phone_call_count( $modifier );
+              $linked_record->save();
+            }
+          }
+        }
+      }
+    }
+  }
 }

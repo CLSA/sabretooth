@@ -19,7 +19,6 @@ class module extends \cenozo\service\module
    */
   public function prepare_read( $select, $modifier )
   {
-    $queue_class_name = lib::get_class_name( 'database\queue' );
     $session = lib::create( 'business\session' );
     $db_role = $session->get_role();
     $db_site = $session->get_site();
@@ -62,24 +61,16 @@ class module extends \cenozo\service\module
 
         foreach( $mod_arg->where as $where )
         {
-          if( 'date' == $where->column )
-          {
-            $queue_class_name::set_viewing_date(
-              util::get_datetime_object( $where->value )->format( 'Y-m-d' ) );
-          }
-          else
-          {
-            // the column either refers to the queue_has_participant or the participant table
-            $table = 'language_id' == $where->column
-                   ? 'participant'
-                   : 'queue_has_participant';
+          // the column either refers to the queue_has_participant or the participant table
+          $table = 'language_id' == $where->column
+                 ? 'participant'
+                 : 'queue_has_participant';
 
-            if( 'participant' == $table )
-              $join_mod->left_join( 'participant', 'queue_has_participant.participant_id', 'participant.id' );
+          if( 'participant' == $table )
+            $join_mod->left_join( 'participant', 'queue_has_participant.participant_id', 'participant.id' );
 
-            $column = sprintf( '%s.%s', $table, $where->column );
-            $join_mod->where( $column, $where->operator, $where->value );
-          }
+          $column = sprintf( '%s.%s', $table, $where->column );
+          $join_mod->where( $column, $where->operator, $where->value );
         }
       }
 
@@ -95,10 +86,8 @@ class module extends \cenozo\service\module
       $select->add_column( 'IFNULL( participant_count, 0 )', 'participant_count', false );
 
       // must force all queues to repopulate
-      $queue_mod = lib::create( 'database\modifier' );
-      if( !$full ) $queue_mod->where( 'rank', '!=', NULL );
-      foreach( $queue_class_name::select_objects( $queue_mod ) as $db_queue )
-        $db_queue->populate_time_specific();
+      $queue_class_name = lib::get_class_name( 'database\queue' );
+      $queue_class_name::repopulate_time_specific();
     }
   }
 }

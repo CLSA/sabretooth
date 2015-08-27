@@ -15,6 +15,27 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class participant extends \cenozo\database\participant
 {
   /**
+   * Override parent method
+   */
+  public function save()
+  {
+    // if we changed certain columns then update the queue
+    $update_queue = $this->has_column_changed(
+      array( 'active', 'sex', 'age_group_id', 'state_id', 'source_id', 'override_quota' ) );
+    parent::save();
+    if( $update_queue ) $this->update_queue_status();
+  }
+
+  /**
+   * Override parent method
+   */
+  public function set_preferred_site( $db_application, $site = NULL )
+  {
+    parent::set_preferred_site( $db_application, $site );
+    $this->update_queue_status();
+  }
+
+  /**
    * Updates the participant's queue status.
    * 
    * The participant's entries in the queue_has_participant table are all removed and
@@ -37,6 +58,7 @@ class participant extends \cenozo\database\participant
 
     $queue_class_name = lib::get_class_name( 'database\queue' );
     $queue_class_name::repopulate( $this );
+    $queue_class_name::repopulate_time_specific( $this );
   }
 
   /**
@@ -210,7 +232,7 @@ class participant extends \cenozo\database\participant
   }
 
   /**
-   * Fills in the effective qnaire id, effective interview method id and start qnaire date
+   * Fills in the queue-based information about the participant
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access private
    */
