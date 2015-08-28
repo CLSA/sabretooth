@@ -142,5 +142,36 @@ class module extends \cenozo\service\module
         }
       }
     }
+    else if( 'PATCH' == $this->get_method() && $this->get_argument( 'close', false ) )
+    {
+      $now = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+      $db_interview = $record->get_assignment()->get_interview();
+      $db_participant = $db_interview->get_participant();
+      $db_qnaire = $db_interview->get_qnaire();
+
+      // mark first attempt events
+      $event_mod = lib::create( 'database\modifier' );
+      $event_mod->where( 'event_type_id', '=', $db_qnaire->first_attempt_event_type_id );
+      if( 0 == $db_participant->get_event_count( $event_mod ) )
+      {
+        $db_event = lib::create( 'database\event' );
+        $db_event->participant_id = $db_participant->id;
+        $db_event->event_type_id = $db_qnaire->first_attempt_event_type_id;
+        $db_event->datetime = $now;
+        $db_event->save();
+      }
+
+      // mark reached events
+      $event_mod = lib::create( 'database\modifier' );
+      $event_mod->where( 'event_type_id', '=', $db_qnaire->reached_event_type_id );
+      if( 'contacted' == $record->status && 0 == $db_participant->get_event_count( $event_mod ) )
+      {
+        $db_event = lib::create( 'database\event' );
+        $db_event->participant_id = $db_participant->id;
+        $db_event->event_type_id = $db_qnaire->reached_event_type_id;
+        $db_event->datetime = $now;
+        $db_event->save();
+      }
+    }
   }
 }
