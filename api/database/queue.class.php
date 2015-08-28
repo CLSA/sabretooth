@@ -375,6 +375,8 @@ class queue extends \cenozo\database\record
       // populate "last call waiting" queues
       else if( ' waiting' == substr( $db_queue->name, -8 ) || ' ready' == substr( $db_queue->name, -6 ) )
       {
+        $modifier->left_join( 'setting', 'queue_has_participant.site_id', 'setting.site_id' );
+
         $modifier->join( 'participant_last_interview',
           'queue_has_participant.participant_id', 'participant_last_interview.participant_id', false );
         $modifier->join( 'interview_last_assignment',
@@ -383,8 +385,11 @@ class queue extends \cenozo\database\record
           'interview_last_assignment.assignment_id', 'assignment_last_phone_call.assignment_id', false );
         $modifier->join( 'phone_call', 'phone_call.id', 'assignment_last_phone_call.phone_call_id', false );
 
+        $after_call = sprintf(
+          'phone_call.end_datetime + INTERVAL IFNULL( %s_wait, 0 ) MINUTE',
+          str_replace( ' ', '_', substr( $db_queue->name, 0, strrpos( $db_queue->name, ' ' ) ) ) );
         $test = ' waiting' == substr( $db_queue->name, -8 ) ? '<' : '>=';
-        $modifier->where( 'UTC_TIMESTAMP()', $test, 'phone_call.end_datetime', false );
+        $modifier->where( 'UTC_TIMESTAMP()', $test, $after_call, false );
 
         static::db()->execute( sprintf( '%s %s', $base_sql, $modifier->get_sql() ) );
       }

@@ -62,6 +62,55 @@ define( {
       format: 'integer',
       minValue: 0,
       help: 'How many minutes after an appointment before it is considered missed'
+    },
+    contacted_wait: {
+      title: 'Contacted Wait',
+      type: 'string',
+      format: 'integer',
+      minValue: 0,
+      help: 'How many minutes after a "contacted" call result to allow a participant to be called'
+    },
+    busy_wait: {
+      title: 'Busy Wait',
+      type: 'string',
+      format: 'integer',
+      minValue: 0,
+      help: 'How many minutes after a "busy" call result to allow a participant to be called'
+    },
+    fax_wait: {
+      title: 'Fax Wait',
+      type: 'string',
+      format: 'integer',
+      minValue: 0,
+      help: 'How many minutes after a "fax" call result to allow a participant to be called'
+    },
+    no_answer_wait: {
+      title: 'No Answer Wait',
+      type: 'string',
+      format: 'integer',
+      minValue: 0,
+      help: 'How many minutes after a "no answer" call result to allow a participant to be called'
+    },
+    not_reached_wait: {
+      title: 'Not Reached Wait',
+      type: 'string',
+      format: 'integer',
+      minValue: 0,
+      help: 'How many minutes after a "not reached" call result to allow a participant to be called'
+    },
+    hang_up_wait: {
+      title: 'Hang Up Wait',
+      type: 'string',
+      format: 'integer',
+      minValue: 0,
+      help: 'How many minutes after a "hang up" call result to allow a participant to be called'
+    },
+    soft_refusal_wait: {
+      title: 'Soft Refusal Wait',
+      type: 'string',
+      format: 'integer',
+      minValue: 0,
+      help: 'How many minutes after a "soft refusal" call result to allow a participant to be called'
     }
   },
   columnList: {

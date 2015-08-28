@@ -51,10 +51,22 @@ class module extends \cenozo\service\module
       }
       else
       {
+        // repopulate the participant to make sure they are still available for an assignment
         $post_object = $this->get_file_as_object();
         $db_participant = lib::create( 'database\participant', $post_object->participant_id );
-        if( !is_null( $db_participant->get_current_assignment() ) )
-          $data = 'Cannot create a new assignment since the participant is already assigned to a different user.';
+        $db_participant->update_queue_status();
+        $queue_mod = lib::create( 'database\modifier' );
+        $queue_mod->where( 'queue.rank', '!=', NULL );
+        if( 0 == $db_participant->get_queue_count( $queue_mod ) )
+        {
+          $data = 'The participant is no longer available for an interview.';
+        }
+        else
+        {
+          if( !is_null( $db_participant->get_current_assignment() ) )
+            $data = 'Cannot create a new assignment since the participant is already '.
+                    'assigned to a different user.';
+        }
       }
 
       if( !is_null( $data ) )
@@ -165,28 +177,7 @@ class module extends \cenozo\service\module
   {
     parent::post_write( $record );
 
-    if( 'POST' == $this->get_method() && $this->get_argument( 'open', false ) )
-    {
-      $db_queue = $record->get_queue();
-
-      // set the assignment in appointments and callbacks
-      if( $db_queue->from_appointment() || $db_queue->from_callback() )
-      {
-        $db_interview = $record->get_interview();
-        $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'assignment_id', '=', NULL );
-        $record_list = $db_queue->from_appointment()
-                     ? $db_interview->get_appointment_object_list( $modifier )
-                     : $db_interview->get_callback_object_list( $modifier );
-        if( count( $record_list ) )
-        {
-          $linked_record = current( $record_list );
-          $linked_record->assignment_id = $record->id;
-          $linked_record->save();
-        }
-      }
-    }
-    else if( 'PATCH' == $this->get_method() )
+    if( 'PATCH' == $this->get_method() )
     {
       // delete the assignment if there are no phone calls, or close it if there are
       if( $this->get_argument( 'close', false ) )

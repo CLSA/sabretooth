@@ -34,6 +34,13 @@ DROP PROCEDURE IF EXISTS patch_setting;
           "long_appointment INT UNSIGNED NOT NULL DEFAULT 60, ",
           "pre_call_window INT UNSIGNED NOT NULL DEFAULT 5, ",
           "post_call_window INT UNSIGNED NOT NULL DEFAULT 15, ",
+          "contacted_wait INT UNSIGNED NOT NULL DEFAULT 10080, ",
+          "busy_wait INT UNSIGNED NOT NULL DEFAULT 15, ",
+          "fax_wait INT UNSIGNED NOT NULL DEFAULT 15, ",
+          "no_answer_wait INT UNSIGNED NOT NULL DEFAULT 1440, ",
+          "not_reached_wait INT UNSIGNED NOT NULL DEFAULT 4320, ",
+          "hang_up_wait INT UNSIGNED NOT NULL DEFAULT 2880, ",
+          "soft_refusal_wait INT UNSIGNED NOT NULL DEFAULT 525600, ",
           "PRIMARY KEY (id), ",
           "INDEX fk_site_id (site_id ASC), ",
           "UNIQUE INDEX uq_site_id (site_id ASC), ",
@@ -84,6 +91,41 @@ DROP PROCEDURE IF EXISTS patch_setting;
       SET post_call_window = value
       WHERE old_setting_value.category = "appointment"
       AND old_setting_value.name = "call post-window";
+
+      UPDATE setting JOIN old_setting_value USING( site_id )
+      SET contacted_wait = value
+      WHERE old_setting_value.category = "callback timing"
+      AND old_setting_value.name = "contacted";
+
+      UPDATE setting JOIN old_setting_value USING( site_id )
+      SET busy_wait = value
+      WHERE old_setting_value.category = "callback timing"
+      AND old_setting_value.name = "busy";
+
+      UPDATE setting JOIN old_setting_value USING( site_id )
+      SET fax_wait = value
+      WHERE old_setting_value.category = "callback timing"
+      AND old_setting_value.name = "fax";
+
+      UPDATE setting JOIN old_setting_value USING( site_id )
+      SET no_answer_wait = value
+      WHERE old_setting_value.category = "callback timing"
+      AND old_setting_value.name = "no answer";
+
+      UPDATE setting JOIN old_setting_value USING( site_id )
+      SET not_reached_wait = value
+      WHERE old_setting_value.category = "callback timing"
+      AND old_setting_value.name = "not reached";
+
+      UPDATE setting JOIN old_setting_value USING( site_id )
+      SET hang_up_wait = value
+      WHERE old_setting_value.category = "callback timing"
+      AND old_setting_value.name = "hang up";
+
+      UPDATE setting JOIN old_setting_value USING( site_id )
+      SET soft_refusal_wait = value
+      WHERE old_setting_value.category = "callback timing"
+      AND old_setting_value.name = "soft refusal";
 
       DROP TABLE old_setting_value;
 

@@ -61,6 +61,9 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
         // override the default order
         this.participantModel.listModel.orderBy( 'rank', true );
 
+        // override model functions
+        this.participantModel.getServiceCollectionPath = function() { return 'participant?assignment=true'; }
+
         // override the onChoose function
         this.participantModel.listModel.onSelect = function( record ) {
           // attempt to assign the participant to the user
@@ -88,9 +91,6 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
             }
           } );
         };
-
-        // override model functions
-        this.participantModel.getServiceCollectionPath = function() { return 'participant'; }
 
         this.onLoad = function( showLoading ) {
           if( angular.isUndefined( showLoading ) ) showLoading = true;

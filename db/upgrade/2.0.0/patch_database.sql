@@ -16,6 +16,7 @@ SOURCE writelog.sql
 SOURCE callback.sql
 SOURCE appointment.sql
 SOURCE ivr_appointment.sql
+SOURCE prerecruit.sql
 SOURCE source_survey.sql
 SOURCE source_withdraw.sql
 SOURCE participant_last_appointment.sql
