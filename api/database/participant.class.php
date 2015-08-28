@@ -173,10 +173,10 @@ class participant extends \cenozo\database\participant
    * Returns the participant's effective interview.
    * 
    * The "effective" interview is determined by the queue.
-   * If they have not yet started an interview then the first qnaire is returned.
-   * If they current have an incomplete interview then that interview's qnaire is returned.
-   * If their current interview is complete then the next qnaire is returned, and if there
-   * is no next qnaire then NULL is returned (ie: the participant has completed all qnaires).
+   * If they have not yet started an interview then a new interview is created or the first qnaire and returned.
+   * If they have an incomplete interview then that interviews is returned.
+   * If their current interview is complete then a new interview is created for the next qnaire and returned,
+   * and if there is no next qnaire then NULL is returned (ie: the participant has completed all interviews).
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\qnaire
    * @access public
@@ -185,10 +185,24 @@ class participant extends \cenozo\database\participant
   {
     $interview_class_name = lib::get_class_name( 'database\interview' );
     $this->load_queue_data();
-    return is_null( $this->effective_qnaire_id ) ?
-      NULL : $interview_class_name::get_unique_record(
+
+    $db_interview = NULL;
+    if( !is_null( $this->effective_qnaire_id ) )
+    {
+      $db_interview = $interview_class_name::get_unique_record(
         array( 'participant_id', 'qnaire_id' ),
         array( $this->id, $this->effective_qnaire_id ) );
+      
+      if( is_null( $db_interview ) )
+      { // create the interview if it isn't found
+        $db_interview = lib::create( 'database\interview' );
+        $db_interview->participant_id = $this->id;
+        $db_interview->qnaire_id = $this->effective_qnaire_id;
+        $db_interview->save();
+      }
+    }
+
+    return $db_interview;
   }
 
   /**

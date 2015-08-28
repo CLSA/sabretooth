@@ -124,6 +124,18 @@ DROP PROCEDURE IF EXISTS patch_interview;
 
       ALTER TABLE interview DROP COLUMN interview_method_id;
     END IF;
+
+    SELECT "Removing require_supervisor column from interview table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "interview"
+      AND COLUMN_NAME = "require_supervisor" );
+    IF @test = 1 THEN
+      ALTER TABLE interview DROP COLUMN require_supervisor;
+    END IF;
   END //
 DELIMITER ;
 
