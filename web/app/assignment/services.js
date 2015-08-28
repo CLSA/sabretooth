@@ -86,7 +86,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
                     message: response.data,
                     error: true
                   } ).show().then( self.onLoad );
-                } else { CnSession.errorHandler(); }
+                } else { CnSession.errorHandler( response ); }
               } );
             }
           } );
@@ -181,7 +181,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
               return self.participantModel.listModel.onList().then( function() {
                 CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Select' } ] );
               } );
-            } else { CnSession.errorHandler(); }
+            } else { CnSession.errorHandler( response ); }
           } );
         };
 
@@ -222,7 +222,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
               if( 307 == response.status ) {
                 // 307 means the user has no active assignment, so just refresh the page data
                 self.onLoad();
-              } else { CnSession.errorHandler(); }
+              } else { CnSession.errorHandler( response ); }
             } );
           }
         };
