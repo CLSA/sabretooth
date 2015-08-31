@@ -84,7 +84,7 @@ define( cenozo.getServicesIncludeList( 'interview' ), function( module ) {
             return CnHttpFactory.instance( {
               path: 'qnaire',
               data: {
-                select: { column: [ 'id', 'name' ] },
+                select: { column: [ 'id', { table: 'script', column: 'name' } ] },
                 modifier: { order: 'rank' }
               }
             } ).query().then( function success( response ) {

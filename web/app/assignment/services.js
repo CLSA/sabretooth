@@ -56,7 +56,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
         // add additional columns to the model
         this.participantModel.addColumn( 'rank', { title: 'Rank', column: 'queue.rank', type: 'rank' }, 0 );
         this.participantModel.addColumn( 'queue', { title: 'Queue', column: 'queue.name' }, 1 );
-        this.participantModel.addColumn( 'qnaire', { title: 'Questionnaire', column: 'qnaire.name' }, 2 );
+        this.participantModel.addColumn( 'qnaire', { title: 'Questionnaire', column: 'script.name' }, 2 );
 
         // override the default order
         this.participantModel.listModel.orderBy( 'rank', true );
@@ -100,7 +100,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
             path: 'assignment/0',
             data: { select: { column: [ 'id', 'interview_id', 'start_datetime',
               { table: 'participant', column: 'id', alias: 'participant_id' },
-              { table: 'qnaire', column: 'name', alias: 'qnaire' },
+              { table: 'script', column: 'name', alias: 'qnaire' },
               { table: 'queue', column: 'title', alias: 'queue' }
             ] } }
           } ).get().then( function success( response ) {

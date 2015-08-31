@@ -74,8 +74,8 @@ define( cenozo.getServicesIncludeList( 'queue_state' ), function( module ) {
               return CnHttpFactory.instance( {
                 path: 'qnaire',
                 data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: { order: { name: false } }
+                  select: { column: [ 'id', { table: 'script', column: 'name' } ] },
+                  modifier: { order: 'rank' }
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.qnaire_id.enumList = [];

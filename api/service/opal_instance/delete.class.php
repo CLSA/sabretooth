@@ -21,8 +21,29 @@ class delete extends \cenozo\service\delete
   {
     parent::setup();
 
-    // delete the associated user record
+    // make note of the user now so we can delete it after the instance is deleted
     $this->db_user = $this->get_leaf_record()->get_user();
+  }
+
+  /**
+   * Extends parent method
+   */
+  protected function finish()
+  {
+    parent::finish();
+
+    // remove the user from ldap
+    $ldap_manager = lib::create( 'business\ldap_manager' );
+    try
+    {
+      $ldap_manager->delete_user( $this->db_user->name );
+    }
+    catch( \cenozo\exception\ldap $e )
+    {
+      // only warn if there are problems deleting users
+      log::warning( $e->get_raw_message() );
+    }
+
     try
     {
       $this->db_user->delete();
@@ -48,27 +69,9 @@ class delete extends \cenozo\service\delete
   }
 
   /**
-   * Extends parent method
+   * Record cache
+   * @var database\user
+   * @access protected
    */
-  protected function finish()
-  {
-    parent::finish();
-
-    // add the user to ldap
-    $ldap_manager = lib::create( 'business\ldap_manager' );
-    try
-    {
-      $ldap_manager->new_user( $this->db_user->name );
-    }
-    catch( \cenozo\exception\ldap $e )
-    {
-      // only warn if there are problems deleting users
-      log::warning( $e->get_raw_message() );
-    }
-  }
-
-  /**
-   * TODO: document
-   */
-  private $db_user = NULL;
+  protected $db_user = NULL;
 }

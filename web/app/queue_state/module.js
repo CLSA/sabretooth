@@ -42,8 +42,8 @@ define( {
       title: 'Site'
     },
     qnaire: {
-      column: 'qnaire.name',
-      title: 'Qnaire'
+      column: 'script.name',
+      title: 'Questionnaire'
     }
   },
   defaultOrder: {

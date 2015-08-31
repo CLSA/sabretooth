@@ -73,19 +73,4 @@ class qnaire extends \cenozo\database\has_rank
     return is_null( $this->reached_event_type_id ) ?
       NULL : lib::create( 'database\event_type', $this->reached_event_type_id );
   }
-
-  /**
-   * Returns a special event-type associated with this qnaire
-   * 
-   * Returns the event-type associated with when this qnaire is completed.  If no event-type exists
-   * this method will return NULL.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return database\event_type
-   * @access public
-   */
-  public function get_completed_event_type()
-  {
-    return is_null( $this->completed_event_type_id ) ?
-      NULL : lib::create( 'database\event_type', $this->completed_event_type_id );
-  }
 }

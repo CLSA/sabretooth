@@ -27,7 +27,7 @@ define( {
       constant: true
     },
     qnaire: {
-      column: 'qnaire.name',
+      column: 'script.name',
       title: 'Questionnaire',
       type: 'string',
       constant: true

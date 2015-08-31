@@ -107,7 +107,10 @@ define( cenozo.getServicesIncludeList( 'queue' ), function( module ) {
           if( null == self.form.qnaireList ) {
             CnHttpFactory.instance( {
               path: 'qnaire',
-              data: { select: { column: [ 'id', 'name' ] }, modifier: { order: 'rank' } }
+              data: {
+                select: { column: [ 'id', { table: 'script', column: 'name' } ] },
+                modifier: { order: 'rank' }
+              }
             } ).query().then( function( response ) {
               self.form.qnaireList = [ { value: undefined, name: 'Any' } ];
               for( var i = 0; i < response.data.length; i++ ) {

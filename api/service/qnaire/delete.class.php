@@ -21,11 +21,24 @@ class delete extends \cenozo\service\delete
   {
     parent::setup();
 
-    // delete the associated phases
+    // make note of the event_types so we can delete it after the qnaire is deleted
+    $db_qnaire = $this->get_leaf_record();
+    $this->db_first_attempt_event_type = $db_qnaire->get_first_attempt_event_type();
+    $this->db_completed_event_type = $db_qnaire->get_completed_event_type();
+  }
+
+  /**
+   * Extends parent method
+   */
+  protected function finish()
+  {
+    parent::finish();
+
+    // delete the associated event types
     try
     {
-      foreach( $this->get_leaf_record()->get_phase_object_list() as $db_phase )
-        $db_phase->delete();
+      $this->db_first_attempt_event_type->delete();
+      $this->db_reached_event_type->delete();
     }
     catch( \cenozo\exception\notice $e )
     {
@@ -48,41 +61,16 @@ class delete extends \cenozo\service\delete
   }
 
   /**
-   * Extends parent method
+   * Record cache
+   * @var database\first_attempt_event_type
+   * @access protected
    */
-  protected function finish()
-  {
-    parent::finish();
+  protected $db_first_attempt_event_type = NULL;
 
-    // delete the associated event types
-    $db_qnaire = $this->get_leaf_record();
-    $db_first_attempt_event_type = $db_qnaire->get_first_attempt_event_type();
-    $db_reached_event_type = $db_qnaire->get_reached_event_type();
-    $db_completed_event_type = $db_qnaire->get_completed_event_type();
-
-    try
-    {
-      $db_first_attempt_event_type->delete();
-      $db_reached_event_type->delete();
-      $db_completed_event_type->delete();
-    }
-    catch( \cenozo\exception\notice $e )
-    {
-      $this->set_data( $e->get_notice() );
-      $this->status->set_code( 406 );
-    }
-    catch( \cenozo\exception\database $e )
-    {
-      if( $e->is_constrained() )
-      {
-        $this->set_data( $e->get_failed_constraint_table() );
-        $this->status->set_code( 409 );
-      }
-      else
-      {
-        $this->status->set_code( 500 );
-        throw $e;
-      }
-    }
-  }
+  /**
+   * Record cache
+   * @var database\reached_event_type
+   * @access protected
+   */
+  protected $db_reached_event_type = NULL;
 }

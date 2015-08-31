@@ -1,6 +1,6 @@
 define( {
   subject: 'qnaire',
-  identifier: { column: 'name' },
+  identifier: { column: 'rank' },
   name: {
     singular: 'questionnaire',
     plural: 'questionnaires',
@@ -8,14 +8,15 @@ define( {
     pluralPossessive: 'questionnaires\''
   },
   inputList: {
-    name: {
-      title: 'Name',
-      type: 'string'
-    },
     rank: {
       column: 'qnaire.rank',
       title: 'Rank',
       type: 'rank'
+    },
+    script_id: {
+      title: 'Script',
+      type: 'enum',
+      noedit: true
     },
     prev_qnaire_id: {
       title: 'Previous Questionnaire',
@@ -27,19 +28,11 @@ define( {
       type: 'string',
       format: 'integer',
       minValue: 0
-    },
-    withdraw_sid: {
-      title: 'Withdraw Survey',
-      type: 'enum'
-    },
-    description: {
-      title: 'Description',
-      type: 'text'
     }
   },
   columnList: {
     name: {
-      column: 'qnaire.name',
+      column: 'script.name',
       title: 'Name'
     },
     rank: {
@@ -48,16 +41,12 @@ define( {
       type: 'rank'
     },
     previous: {
-      column: 'prev_qnaire.name',
+      column: 'prev_script.name',
       title: 'Previous'
     },
     delay: {
       column: 'qnaire.delay',
       title: 'Delay',
-      type: 'number'
-    },
-    phase_count: {
-      title: 'Phases',
       type: 'number'
     }
   },

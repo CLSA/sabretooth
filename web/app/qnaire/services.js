@@ -47,32 +47,32 @@ define( cenozo.getServicesIncludeList( 'qnaire' ), function( module ) {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
             return CnHttpFactory.instance( {
-              path: 'qnaire',
+              path: 'script',
               data: {
                 select: { column: [ 'id', 'name' ] },
-                modifier: { order: { name: false } }
+                modifier: { order: 'name' }
               }
             } ).query().then( function( response ) {
-              self.metadata.columnList.prev_qnaire_id.enumList = [];
+              self.metadata.columnList.script_id.enumList = [];
               for( var i = 0; i < response.data.length; i++ ) {
-                self.metadata.columnList.prev_qnaire_id.enumList.push( {
+                self.metadata.columnList.script_id.enumList.push( {
                   value: response.data[i].id,
                   name: response.data[i].name
                 } );
               }
             } ).then( function() {
               return CnHttpFactory.instance( {
-                path: 'survey',
+                path: 'qnaire',
                 data: {
-                  select: { column: [ 'sid', 'title' ] },
-                  modifier: { order: { title: false } }
+                  select: { column: [ 'id', { table: 'script', column: 'name' } ] },
+                  modifier: { order: 'rank' }
                 }
               } ).query().then( function( response ) {
-                self.metadata.columnList.withdraw_sid.enumList = [];
+                self.metadata.columnList.prev_qnaire_id.enumList = [];
                 for( var i = 0; i < response.data.length; i++ ) {
-                  self.metadata.columnList.withdraw_sid.enumList.push( {
-                    value: response.data[i].sid,
-                    name: response.data[i].title
+                  self.metadata.columnList.prev_qnaire_id.enumList.push( {
+                    value: response.data[i].id,
+                    name: response.data[i].name
                   } );
                 }
               } );

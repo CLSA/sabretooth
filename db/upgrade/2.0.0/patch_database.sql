@@ -6,6 +6,8 @@ SOURCE queue.sql
 SOURCE queue_state.sql
 SOURCE interview.sql
 SOURCE qnaire.sql
+SOURCE source_survey.sql
+SOURCE phase.sql
 SOURCE queue_has_participant.sql
 SOURCE qnaire_has_interview_method.sql
 SOURCE interview_method.sql
@@ -17,7 +19,6 @@ SOURCE callback.sql
 SOURCE appointment.sql
 SOURCE ivr_appointment.sql
 SOURCE prerecruit.sql
-SOURCE source_survey.sql
 SOURCE source_withdraw.sql
 SOURCE participant_last_appointment.sql
 SOURCE participant_last_interview.sql

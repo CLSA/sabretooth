@@ -96,13 +96,17 @@ class module extends \cenozo\service\module
     if( $select->has_table_columns( 'user' ) )
       $modifier->left_join( 'user', 'assignment.user_id', 'user.id' );
 
-    if( $select->has_table_columns( 'participant' ) || $select->has_table_columns( 'qnaire' )  )
+    if( $select->has_table_columns( 'participant' ) ||
+        $select->has_table_columns( 'qnaire' ) ||
+        $select->has_table_columns( 'script' ) )
     {
       $modifier->join( 'interview', 'assignment.interview_id', 'interview.id' );
       if( $select->has_table_columns( 'participant' ) )
         $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
-      if( $select->has_table_columns( 'qnaire' ) )
+      if( $select->has_table_columns( 'qnaire' ) || $select->has_table_columns( 'script' ) )
         $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
+      if( $select->has_table_columns( 'script' ) )
+        $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
     }
 
     if( $select->has_column( 'phone_call_count' ) )

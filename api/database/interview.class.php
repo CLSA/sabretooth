@@ -124,7 +124,7 @@ class interview extends \cenozo\database\record
     $this->update_recording_list();
 
     // record the event (if one exists)
-    $db_event_type = $this->get_qnaire()->get_completed_event_type();
+    $db_event_type = $this->get_qnaire()->get_script()->get_event_type();
     if( !is_null( $db_event_type ) )
     {
       // make sure the event doesn't already exist
@@ -265,7 +265,7 @@ class interview extends \cenozo\database\record
     $this->update_recording_list();
 
     // remove completed events (if any exist)
-    $db_event_type = $this->get_qnaire()->get_completed_event_type();
+    $db_event_type = $this->get_qnaire()->get_script()->get_event_type();
     if( !is_null( $db_event_type ) )
     {
       $event_mod = lib::create( 'database\modifier' );

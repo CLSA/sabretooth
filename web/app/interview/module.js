@@ -57,7 +57,7 @@ define( {
       title: 'UID'
     },
     qnaire: {
-      column: 'qnaire.name',
+      column: 'script.name',
       title: 'Questionnaire'
     },
     site: {
