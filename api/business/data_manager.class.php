@@ -102,8 +102,8 @@ class data_manager extends \cenozo\business\data_manager
         
         // get the phase by rank
         $db_phase = $phase_class_name::get_unique_record(
-          array( 'qnaire_id', 'rank' ),
-          array( $db_qnaire->id, $phase_rank ) );
+          array( 'script_id', 'rank' ),
+          array( $db_qnaire->script_id, $phase_rank ) );
         if( !is_null( $db_interview ) && !is_null( $db_phase ) )
         {
           $limesurvey_manager = lib::create( 'business\limesurvey_manager' );
