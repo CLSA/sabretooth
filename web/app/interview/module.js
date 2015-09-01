@@ -65,18 +65,16 @@ define( {
       title: 'Credited Site'
     },
     start_datetime: {
-      column: 'interview.start_datetime',
       title: 'Start',
       type: 'datetimesecond'
     },
     end_datetime: {
-      column: 'interview.end_datetime',
       title: 'End',
       type: 'datetimesecond'
     }
   },
   defaultOrder: {
-    column: 'interview.start_datetime',
-    reverse: false
+    column: 'start_datetime',
+    reverse: true
   }
 } );

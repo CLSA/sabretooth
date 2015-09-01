@@ -47,7 +47,7 @@ define( {
     }
   },
   defaultOrder: {
-    column: 'site.name',
+    column: 'site',
     reverse: false
   }
 } );

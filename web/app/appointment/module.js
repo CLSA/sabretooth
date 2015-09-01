@@ -100,7 +100,7 @@ define( {
     }
   },
   defaultOrder: {
-    column: 'appointment.datetime',
+    column: 'datetime',
     reverse: true
   }
 } );

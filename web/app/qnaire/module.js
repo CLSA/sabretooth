@@ -36,7 +36,6 @@ define( {
       title: 'Name'
     },
     rank: {
-      column: 'qnaire.rank',
       title: 'Rank',
       type: 'rank'
     },
@@ -45,13 +44,12 @@ define( {
       title: 'Previous'
     },
     delay: {
-      column: 'qnaire.delay',
       title: 'Delay',
       type: 'number'
     }
   },
   defaultOrder: {
-    column: 'qnaire.rank',
+    column: 'rank',
     reverse: false
   }
 } );

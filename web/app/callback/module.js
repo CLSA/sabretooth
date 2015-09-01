@@ -75,7 +75,7 @@ define( {
     }
   },
   defaultOrder: {
-    column: 'callback.datetime',
+    column: 'datetime',
     reverse: true
   }
 } );
