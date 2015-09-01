@@ -36,5 +36,9 @@ class post extends \cenozo\service\post
       sprintf( 'First time the participant was reached for the "%" questionnaire.', $db_script->name );
     $db_reached_event_type->save();
     $db_qnaire->reached_event_type_id = $db_reached_event_type->id;
+
+    // now repopulate the queues
+    $queue_class_name = lib::get_class_name( 'database\queue' );
+    $queue_class_name::repopulate();
   }
 }
