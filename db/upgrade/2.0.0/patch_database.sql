@@ -8,6 +8,7 @@ SOURCE interview.sql
 SOURCE qnaire.sql
 SOURCE source_survey.sql
 SOURCE phase.sql
+SOURCE event_type.sql
 SOURCE queue_has_participant.sql
 SOURCE qnaire_has_interview_method.sql
 SOURCE interview_method.sql

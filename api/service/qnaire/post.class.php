@@ -26,14 +26,14 @@ class post extends \cenozo\service\post
 
     $db_first_attempt_event_type->name = sprintf( 'first attempt (%s)', $db_script->name );
     $db_first_attempt_event_type->description =
-      sprintf( 'First attempt to contact (for the %s interview).', $db_script->name );
+      sprintf( 'First attempt to start the "%s" questionnaire.', $db_script->name );
     $db_first_attempt_event_type->save();
     $db_qnaire->first_attempt_event_type_id = $db_first_attempt_event_type->id;
 
     $db_reached_event_type = lib::create( 'database\event_type' );
     $db_reached_event_type->name = sprintf( 'reached (%s)', $db_script->name );
     $db_reached_event_type->description =
-      sprintf( 'The participant was first reached (for the %s interview).', $db_script->name );
+      sprintf( 'First time the participant was reached for the "%" questionnaire.', $db_script->name );
     $db_reached_event_type->save();
     $db_qnaire->reached_event_type_id = $db_reached_event_type->id;
   }
