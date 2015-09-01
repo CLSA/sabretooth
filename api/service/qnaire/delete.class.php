@@ -24,7 +24,7 @@ class delete extends \cenozo\service\delete
     // make note of the event_types so we can delete it after the qnaire is deleted
     $db_qnaire = $this->get_leaf_record();
     $this->db_first_attempt_event_type = $db_qnaire->get_first_attempt_event_type();
-    $this->db_completed_event_type = $db_qnaire->get_completed_event_type();
+    $this->db_reached_event_type = $db_qnaire->get_reached_event_type();
   }
 
   /**

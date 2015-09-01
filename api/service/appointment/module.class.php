@@ -61,7 +61,7 @@ class module extends \cenozo\service\module
       $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
     }
 
-    if( $select->has_table_columns( 'qnaire' ) || $select->has_table_columns( 'script' ) ) )
+    if( $select->has_table_columns( 'qnaire' ) || $select->has_table_columns( 'script' ) )
     {
       if( !$modifier->has_join( 'interview' ) )
         $modifier->join( 'interview', 'appointment.interview_id', 'interview.id' );
