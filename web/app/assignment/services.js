@@ -50,7 +50,16 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
         var self = this;
 
         this.assignment = null;
+        this.prevAssignment = null;
         this.participant = null;
+        this.activePhoneCall = false;
+        this.qnaireScript = null;
+        this.withdrawScript = null;
+        this.scriptList = null;
+        this.phoneCallStatusList = null;
+        this.phoneCallList = null;
+        this.isAssignmentLoading = false;
+        this.isPrevAssignmentLoading = false;
         this.participantModel = CnParticipantModelFactory.instance();
         
         // add additional columns to the model
@@ -100,6 +109,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
             path: 'assignment/0',
             data: { select: { column: [ 'id', 'interview_id', 'start_datetime',
               { table: 'participant', column: 'id', alias: 'participant_id' },
+              { table: 'script', column: 'id', alias: 'script_id' },
               { table: 'script', column: 'name', alias: 'qnaire' },
               { table: 'queue', column: 'title', alias: 'queue' }
             ] } }
@@ -134,6 +144,31 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
                                    : null;
             } );
           } ).then( function() {
+            if( null === self.qnaireScript && null === self.withdrawScript && null === self.scriptList ) {
+              CnHttpFactory.instance( {
+                path: 'application/' + CnSession.application.id + '/script',
+                data: {
+                  modifier: {
+                    order: 'name',
+                    where: [
+                      { column: 'script.id', operator: '=', value: self.assignment.script_id },
+                      { or: true, column: 'reserved', operator: '=', value: false },
+                    ]
+                  },
+                  select: { column: [ 'id', 'name', 'description' ] }
+                }
+              } ).query().then( function success( response ) {
+                self.scriptList = [];
+                for( var i = 0; i < response.data.length; i++ ) {
+                  if( self.assignment.script_id == response.data[i].id )
+                    self.qnaireScript = response.data[i];
+                  else if( 'withdraw' == response.data[i].name.toLowerCase() )
+                    self.withdrawScript = response.data[i];
+                  else self.scriptList.push( response.data[i] );
+                }
+              } );
+            }
+          } ).then( function() {
             CnHttpFactory.instance( {
               path: 'participant/' + self.assignment.participant_id +
                     '/interview/' + self.assignment.interview_id + '/assignment',
@@ -163,7 +198,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
               self.phoneList = response.data;
             } );
           } ).then( function() {
-            if( angular.isUndefined( self.phoneCallStatusList ) ) {
+            if( null === self.phoneCallStatusList ) {
               CnHttpFactory.instance( {
                 path: 'phone_call'
               } ).head().then( function success( response ) {
@@ -188,6 +223,15 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
         this.openNotes = function() {
           if( null != self.participant )
             CnModalParticipantNoteFactory.instance( { participant: self.participant } ).show();
+        };
+
+        this.launchScript = function( script ) {
+          // TODO: launch script
+          var url = CnSession.urlList.limesurvey + '/index.php' + 
+                    '?sid=' + sid +
+                    '&lang=' + language +
+                    '&token=' + token +
+                    '&newtest=Y';
         };
 
         this.startCall = function( phone ) {

@@ -41,10 +41,24 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       ALTER TABLE qnaire
       ADD INDEX fk_script_id( script_id ASC );
 
+      -- eliminate any qnaires without phases
+      DELETE FROM qnaire
+      WHERE id IN ( SELECT id FROM (
+        SELECT qnaire.id
+        FROM qnaire
+        LEFT JOIN phase ON qnaire.id = phase.qnaire_id
+        WHERE phase.id IS NULL ) AS t
+      );
+
       -- now create a script to represent all qnaires
       SET @sql = CONCAT(
-        "INSERT INTO ", @cenozo, ".script( name, event_type_id, description ) ",
-        "SELECT name, completed_event_type_id, description FROM qnaire ORDER BY rank" );
+        "INSERT INTO ", @cenozo, ".script( name, event_type_id, sid, repeated, reserved, description ) ",
+        "SELECT name, completed_event_type_id, phase.sid, phase.repeated, 1, description ",
+        "FROM qnaire ",
+        "JOIN phase ON qnaire.id = phase.qnaire_id ",
+        "AND phase.repeated = 0 ",
+        "GROUP BY qnaire.id ",
+        "ORDER BY qnaire.rank" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
