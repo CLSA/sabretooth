@@ -50,15 +50,37 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
         WHERE phase.id IS NULL ) AS t
       );
 
+      -- create started event_type for script to be used by each qnaire
+      SET @sql = CONCAT(
+        "INSERT IGNORE INTO ", @cenozo, ".event_type( name, description ) ",
+        "SELECT CONCAT( 'started (', qnaire.name, ')' ), ",
+               "CONCAT( 'Started the "', qnaire.name, '" script.' ) ",
+        "FROM qnaire" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
       -- now create a script to represent all qnaires
       SET @sql = CONCAT(
-        "INSERT INTO ", @cenozo, ".script( name, event_type_id, sid, repeated, reserved, description ) ",
-        "SELECT name, completed_event_type_id, phase.sid, phase.repeated, 1, description ",
+        "INSERT INTO ", @cenozo, ".script( ",
+          "name, started_event_type_id, completed_event_type_id, sid, repeated, reserved, description ) ",
+        "SELECT name, event_type.id, completed_event_type_id, phase.sid, phase.repeated, 1, description ",
         "FROM qnaire ",
+        "JOIN ", @cenozo, ".event_type ON event_type.name = CONCAT( 'started (', qnaire.name, ')' ) ",
         "JOIN phase ON qnaire.id = phase.qnaire_id ",
         "AND phase.repeated = 0 ",
         "GROUP BY qnaire.id ",
         "ORDER BY qnaire.rank" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
+      SET @sql = CONCAT(
+        "INSERT INTO ", @cenozo, ".application_has_script( application_id, script_id ) ",
+        "SELECT application.id, script.id ",
+        "FROM ", @cenozo, ".application, ", @cenozo, ".script ",
+        "JOIN qnaire ON script.id = qnaire.script_id ",
+        "WHERE DATABASE LIKE CONCAT( '%_', application.name )" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;

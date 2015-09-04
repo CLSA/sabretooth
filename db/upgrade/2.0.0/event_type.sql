@@ -13,7 +13,7 @@ DROP PROCEDURE IF EXISTS patch_event_type;
 
       SET @sql = CONCAT(
         "UPDATE ", @cenozo, ".script ",
-        "JOIN ", @cenozo, ".event_type ON script.event_type_id = event_type.id ",
+        "JOIN ", @cenozo, ".event_type ON script.completed_event_type_id = event_type.id ",
         "SET event_type.name = CONCAT( 'completed (', script.name, ')' ), ",
             "event_type.description = CONCAT( 'Completed the \"', script.name, '\" script.' )" );
       PREPARE statement FROM @sql;
