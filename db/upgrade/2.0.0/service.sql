@@ -64,6 +64,8 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'consent', 'GET', 1, 0 ),
 ( 'consent', 'PATCH', 1, 1 ),
 ( 'consent', 'POST', 0, 1 ),
+( 'consent_type', 'GET', 0, 0 ),
+( 'consent_type', 'GET', 1, 0 ),
 ( 'event', 'DELETE', 1, 1 ),
 ( 'event', 'GET', 0, 0 ),
 ( 'event', 'GET', 1, 0 ),

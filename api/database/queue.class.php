@@ -502,7 +502,7 @@ class queue extends \cenozo\database\record
           '( '.
             'participant_active = false '.
             'OR participant_state_id IS NOT NULL '.
-            'OR last_consent_accept = 0 '.
+            'OR last_participation_consent_accept = 0 '.
           ')';
       }
       else if( 'inactive' == $queue )
@@ -512,12 +512,12 @@ class queue extends \cenozo\database\record
       else if( 'refused consent' == $queue )
       {
         $parts['where'][] = 'participant_active = true';
-        $parts['where'][] = 'last_consent_accept = 0';
+        $parts['where'][] = 'last_participation_consent_accept = 0';
       }
       else if( 'condition' == $queue )
       {
         $parts['where'][] = 'participant_active = true';
-        $parts['where'][] = 'IFNULL( last_consent_accept, 1 ) = 1';
+        $parts['where'][] = 'IFNULL( last_participation_consent_accept, 1 ) = 1';
         $parts['where'][] = 'participant_state_id IS NOT NULL';
       }
       else if( 'eligible' == $queue )
@@ -525,7 +525,7 @@ class queue extends \cenozo\database\record
         // active participant who does not have a "final" state and has at least one phone number
         $parts['where'][] = 'participant_active = true';
         $parts['where'][] = 'participant_state_id IS NULL';
-        $parts['where'][] = 'IFNULL( last_consent_accept, 1 ) = 1';
+        $parts['where'][] = 'IFNULL( last_participation_consent_accept, 1 ) = 1';
       }
       else if( 'qnaire' == $queue )
       {
@@ -696,7 +696,7 @@ class queue extends \cenozo\database\record
         'ADD INDEX fk_participant_active ( participant_active ), '.
         'ADD INDEX fk_participant_state_id ( participant_state_id ), '.
         'ADD INDEX fk_effective_qnaire_id ( effective_qnaire_id ), '.
-        'ADD INDEX fk_last_consent_accept ( last_consent_accept ), '.
+        'ADD INDEX fk_last_participation_consent_accept ( last_participation_consent_accept ), '.
         'ADD INDEX fk_current_assignment_id ( current_assignment_id ), '.
         'ADD INDEX dk_primary_region_id ( primary_region_id )' );
     if( static::$debug ) log::debug( sprintf(
@@ -846,7 +846,7 @@ participant.state_id AS participant_state_id,
 participant.override_quota AS participant_override_quota,
 source.override_quota AS source_override_quota,
 primary_region.id AS primary_region_id,
-last_consent.accept AS last_consent_accept,
+last_participation_consent.accept AS last_participation_consent_accept,
 current_interview.id AS current_interview_id,
 current_qnaire.id AS current_qnaire_id,
 current_assignment.id AS current_assignment_id,
@@ -900,8 +900,11 @@ ON primary_address.region_id = primary_region.id
 
 JOIN participant_last_consent
 ON participant.id = participant_last_consent.participant_id
-LEFT JOIN consent AS last_consent
-ON last_consent.id = participant_last_consent.consent_id
+JOIN consent_type
+ON participant_last_consent.consent_type_id = consent_type.id
+AND consent_type.name = "participation"
+LEFT JOIN consent AS last_participation_consent
+ON last_participation_consent.id = participant_last_consent.consent_id
 
 LEFT JOIN participant_last_interview AS participant_current_interview
 ON participant.id = participant_current_interview.participant_id
