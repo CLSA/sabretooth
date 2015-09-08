@@ -208,14 +208,6 @@ CREATE PROCEDURE patch_role_has_service()
       "AND role.name IN( 'administrator' ) ",
 
       "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
-      "WHERE subject = 'script' AND method = 'GET' AND resource = 0 ",
-      "AND role.name IN( 'administrator' ) ",
-
-      "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
-      "WHERE subject = 'script' AND method = 'GET' AND resource = 1 ",
-      "AND role.name IN( 'administrator' ) ",
-
-      "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
       "WHERE subject = 'script' AND method = 'PATCH' AND resource = 1 ",
       "AND role.name IN( 'administrator' ) ",
 
@@ -290,6 +282,14 @@ CREATE PROCEDURE patch_role_has_service()
       "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
       "WHERE subject = 'system_message' AND method = 'POST' AND resource = 0 ",
       "AND role.name IN( 'administrator', 'supervisor' ) ",
+
+      "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+      "WHERE subject = 'token' AND method = 'GET' AND resource = 1 ",
+      "AND role.name IN( 'helpline', 'operator', 'supervisor' ) ",
+
+      "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
+      "WHERE subject = 'token' AND method = 'POST' AND resource = 0 ",
+      "AND role.name IN( 'helpline', 'operator', 'supervisor' ) ",
 
       "UNION SELECT role.id, service.id FROM ", @cenozo, ".role, service ",
       "WHERE subject = 'user' AND method = 'DELETE' AND resource = 1 ",

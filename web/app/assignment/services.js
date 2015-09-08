@@ -40,15 +40,16 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAssignmentHomeFactory', [
-    '$state', 'CnSession', 'CnHttpFactory',
+    '$state', '$window', 'CnSession', 'CnHttpFactory',
     'CnParticipantModelFactory', 'CnModalMessageFactory',
     'CnModalConfirmFactory', 'CnModalParticipantNoteFactory',
-    function( $state, CnSession, CnHttpFactory,
+    function( $state, $window, CnSession, CnHttpFactory,
               CnParticipantModelFactory, CnModalMessageFactory,
               CnModalConfirmFactory, CnModalParticipantNoteFactory ) {
       var object = function() {
         var self = this;
 
+        this.application = CnSession.application.title;
         this.assignment = null;
         this.prevAssignment = null;
         this.participant = null;
@@ -118,6 +119,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
             CnHttpFactory.instance( {
               path: 'participant/' + self.assignment.participant_id,
               data: { select: { column: [ 'id', 'uid', 'first_name', 'other_name', 'last_name',
+                { table: 'language', column: 'code', alias: 'language_code' },
                 { table: 'language', column: 'name', alias: 'language' }
               ] } }
             } ).get().then( function success( response ) {
@@ -155,7 +157,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
                       { or: true, column: 'reserved', operator: '=', value: false },
                     ]
                   },
-                  select: { column: [ 'id', 'name', 'description' ] }
+                  select: { column: [ 'id', 'name', 'url', 'description' ] }
                 }
               } ).query().then( function success( response ) {
                 self.scriptList = [];
@@ -226,12 +228,33 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
         };
 
         this.launchScript = function( script ) {
-          // TODO: launch script
-          var url = CnSession.urlList.limesurvey + '/index.php' + 
-                    '?sid=' + sid +
-                    '&lang=' + language +
-                    '&token=' + token +
-                    '&newtest=Y';
+          var url = script.url + '&lang=' + self.participant.language_code + '&newtest=Y';
+
+          // first see if a token already exists
+          CnHttpFactory.instance( {
+            path: 'script/' + script.id + '/token/uid=' + self.participant.uid
+          } ).get().then( function( response ) {
+            // now launch the script
+            url += '&token=' + response.data.token
+            $window.open( url, 'cenozoScript' );
+          } ).catch( function( response ) {
+            if( 404 == response.status ) {
+              // the token doesn't exist so create it
+              CnHttpFactory.instance( {
+                path: 'script/' + script.id + '/token',
+                data: { uid: self.participant.uid }
+              } ).post().then( function success( response ) {
+                // now get the new token string we just created
+                CnHttpFactory.instance( {
+                  path: 'script/' + script.id + '/token/' + response.data
+                } ).get().then( function( response ) {
+                  // now launch the script
+                  url += '&token=' + response.data.token
+                  $window.open( url, 'cenozoScript' );
+                } ).catch( CnSession.errorHandler );
+              } );
+            } else CnSession.errorHandler( response );
+          } );
         };
 
         this.startCall = function( phone ) {

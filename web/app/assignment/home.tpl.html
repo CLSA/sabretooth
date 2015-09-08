@@ -172,6 +172,16 @@
         <h4>Available Scripts</h4>
       </div>
       <div class="form-footer rounded-bottom bg-info">
+        <div class="well">
+          All available scripts are listed below.
+          When clicking on a script your browser will switch to a new tab with the script you selected.
+          The application will still be accessible by clicking the brower's <em>{{ model.application }}</em> tab.
+          <div class="vertical-spacer text-warning">
+            NOTE: If you already have the script tab open then selecting a new script will not automatically
+            switch to the script tab.
+            Simply select the script tab after you have clicked a script button.
+          </div>
+        </div>
         <div class="btn-group btn-group-justified">
           <div class="btn-group" ng-if="model.qnaireScript">
             <button type="button"
