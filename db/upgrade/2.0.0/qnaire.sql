@@ -9,6 +9,22 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       WHERE constraint_schema = DATABASE()
       AND constraint_name = "fk_queue_state_site_id" );
 
+    SELECT "Dropping prev_qnaire_id column from qnaire table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "qnaire"
+      AND COLUMN_NAME = "prev_qnaire_id" );
+    IF @test = 1 THEN
+      ALTER TABLE qnaire
+      DROP FOREIGN KEY fk_qnaire_prev_qnaire_id,
+      DROP INDEX fk_prev_qnaire_id;
+
+      ALTER TABLE qnaire DROP COLUMN prev_qnaire_id;
+    END IF;
+
     SELECT "Dropping default_interview_method_id column from qnaire table" AS "";
 
     SET @test = (

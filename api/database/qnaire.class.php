@@ -15,36 +15,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class qnaire extends \cenozo\database\has_rank
 {
   /**
-   * Override parent method
-   */
-  public function save()
-  {
-    $util = lib::get_class_name( 'util' );
-
-    // do not let the previous qnaire to be itself
-    if( !is_null( $this->prev_qnaire_id ) && $this->id === $this->prev_qnaire_id )
-      throw lib::create( 'exception\notice',
-        'Cannot set the previous questionnaire to be itself',
-        __METHOD__ );
-
-    parent::save();
-  }
-
-  /**
-   * Returns the previous qnaire
-   * 
-   * Returns the qnaire done previously to the current qnaire.  If there is no previous qnaire
-   * then this method will return NULL.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return database\qnaire
-   * @access public
-   */
-  public function get_prev_qnaire()
-  {
-    return is_null( $this->prev_qnaire_id ) ?  NULL : new static( $this->prev_qnaire_id );
-  }
-
-  /**
    * Returns a special event-type associated with this qnaire
    * 
    * Returns the event-type associated with the first attempt of contacting a participant for this

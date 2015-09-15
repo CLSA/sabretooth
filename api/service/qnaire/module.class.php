@@ -21,16 +21,7 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
-    // join to limesurvey tables to get the survey name
-    if( $select->has_table_columns( 'prev_qnaire' ) )
-      $modifier->left_join( 'qnaire', 'qnaire.prev_qnaire_id', 'prev_qnaire.id', 'prev_qnaire' );
-
-    if( $select->has_table_columns( 'prev_script' ) )
-    {
-      $modifier->left_join( 'qnaire', 'qnaire.prev_qnaire_id', 'prev_qnaire.id', 'prev_qnaire' );
-      $modifier->left_join( 'script', 'prev_qnaire.script_id', 'prev_script.id', 'prev_script' );
-    }
-
+    // join to the survey name
     if( $select->has_table_columns( 'script' ) )
       $modifier->left_join( 'script', 'qnaire.script_id', 'script.id' );
   }

@@ -61,22 +61,6 @@ define( cenozo.getServicesIncludeList( 'qnaire' ), function( module ) {
                 } );
               }
             } ).then( function() {
-              return CnHttpFactory.instance( {
-                path: 'qnaire',
-                data: {
-                  select: { column: [ 'id', { table: 'script', column: 'name' } ] },
-                  modifier: { order: 'rank' }
-                }
-              } ).query().then( function( response ) {
-                self.metadata.columnList.prev_qnaire_id.enumList = [];
-                for( var i = 0; i < response.data.length; i++ ) {
-                  self.metadata.columnList.prev_qnaire_id.enumList.push( {
-                    value: response.data[i].id,
-                    name: response.data[i].name
-                  } );
-                }
-              } );
-            } ).then( function() {
               self.metadata.loadingCount--;
             } );
           } );

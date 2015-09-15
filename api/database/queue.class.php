@@ -873,7 +873,7 @@ IF
       GREATEST
       (
         IFNULL( next_event.datetime, "" ),
-        IFNULL( prev_assignment.end_datetime, "" )
+        IFNULL( current_assignment.end_datetime, "" )
       ) + INTERVAL next_qnaire.delay WEEK,
       NULL
     )
@@ -940,15 +940,5 @@ AND IF(
   next_event.event_type_id IN( next_qnaire_event_type.list ),
   false
 )
-
-LEFT JOIN qnaire AS prev_qnaire
-ON next_qnaire.prev_qnaire_id = prev_qnaire.id
-LEFT JOIN interview AS prev_interview
-ON prev_interview.qnaire_id = prev_qnaire.id
-AND prev_interview.participant_id = participant.id
-LEFT JOIN interview_last_assignment AS interview_prev_assignment
-ON prev_interview.id = interview_prev_assignment.interview_id
-LEFT JOIN assignment AS prev_assignment
-ON interview_prev_assignment.assignment_id = prev_assignment.id
 SQL;
 }

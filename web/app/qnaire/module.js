@@ -18,11 +18,6 @@ define( {
       type: 'enum',
       noedit: true
     },
-    prev_qnaire_id: {
-      title: 'Previous Questionnaire',
-      type: 'enum',
-      noself: true // previous qnaire cannot be itself
-    },
     delay: {
       title: 'Delay (weeks)',
       type: 'string',
@@ -38,10 +33,6 @@ define( {
     rank: {
       title: 'Rank',
       type: 'rank'
-    },
-    previous: {
-      column: 'prev_script.name',
-      title: 'Previous'
     },
     delay: {
       title: 'Delay',
