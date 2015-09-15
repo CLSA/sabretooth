@@ -1,7 +1,7 @@
 define( [
-    'app/setting/controllers.js',
-    'app/setting/directives.js',
-    'app/setting/services.js'
+    cenozoApp.baseUrl + '/app/setting/controllers.js',
+    cenozoApp.baseUrl + '/app/setting/directives.js',
+    cenozoApp.baseUrl + '/app/setting/services.js'
   ],
   function() {}
 );

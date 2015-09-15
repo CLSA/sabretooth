@@ -1,7 +1,7 @@
 define( [
-    'app/interview/controllers.js',
-    'app/interview/directives.js',
-    'app/interview/services.js'
+    cenozoApp.baseUrl + '/app/interview/controllers.js',
+    cenozoApp.baseUrl + '/app/interview/directives.js',
+    cenozoApp.baseUrl + '/app/interview/services.js'
   ],
   function() {}
 );

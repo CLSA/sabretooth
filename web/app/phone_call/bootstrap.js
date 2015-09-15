@@ -1,7 +1,7 @@
 define( [
-    'app/phone_call/controllers.js',
-    'app/phone_call/directives.js',
-    'app/phone_call/services.js'
+    cenozoApp.baseUrl + '/app/phone_call/controllers.js',
+    cenozoApp.baseUrl + '/app/phone_call/directives.js',
+    cenozoApp.baseUrl + '/app/phone_call/services.js'
   ],
   function() {}
 );

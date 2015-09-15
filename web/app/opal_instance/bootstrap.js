@@ -1,7 +1,7 @@
 define( [
-    'app/opal_instance/controllers.js',
-    'app/opal_instance/directives.js',
-    'app/opal_instance/services.js'
+    cenozoApp.baseUrl + '/app/opal_instance/controllers.js',
+    cenozoApp.baseUrl + '/app/opal_instance/directives.js',
+    cenozoApp.baseUrl + '/app/opal_instance/services.js'
   ],
   function() {}
 );

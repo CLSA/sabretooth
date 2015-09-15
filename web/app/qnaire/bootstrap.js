@@ -1,7 +1,7 @@
 define( [
-    'app/qnaire/controllers.js',
-    'app/qnaire/directives.js',
-    'app/qnaire/services.js'
+    cenozoApp.baseUrl + '/app/qnaire/controllers.js',
+    cenozoApp.baseUrl + '/app/qnaire/directives.js',
+    cenozoApp.baseUrl + '/app/qnaire/services.js'
   ],
   function() {}
 );
