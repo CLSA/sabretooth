@@ -16,7 +16,6 @@ define( 'NOTICE_SABRETOOTH_BASE_ERRNO',     450000 );
 define( 'PERMISSION_SABRETOOTH_BASE_ERRNO', 550000 );
 define( 'RUNTIME_SABRETOOTH_BASE_ERRNO',    650000 );
 define( 'SYSTEM_SABRETOOTH_BASE_ERRNO',     750000 );
-define( 'TEMPLATE_SABRETOOTH_BASE_ERRNO',   850000 );
 define( 'VOIP_SABRETOOTH_BASE_ERRNO',       950000 );
 
 /**
@@ -46,10 +45,8 @@ define( 'NOTICE__SABRETOOTH_DATABASE_APPOINTMENT__SAVE__ERRNO',
         NOTICE_SABRETOOTH_BASE_ERRNO + 1 );
 define( 'NOTICE__SABRETOOTH_DATABASE_CALLBACK__SAVE__ERRNO',
         NOTICE_SABRETOOTH_BASE_ERRNO + 2 );
-define( 'NOTICE__SABRETOOTH_DATABASE_QNAIRE__SAVE__ERRNO',
-        NOTICE_SABRETOOTH_BASE_ERRNO + 3 );
 define( 'NOTICE__SABRETOOTH_DATABASE_SHIFT__SAVE__ERRNO',
-        NOTICE_SABRETOOTH_BASE_ERRNO + 4 );
+        NOTICE_SABRETOOTH_BASE_ERRNO + 3 );
 
 /**
  * "permission" error codes
@@ -91,12 +88,6 @@ define( 'RUNTIME__SABRETOOTH_DATABASE_SHIFT__SAVE__ERRNO',
  *    256: user error,
  *    512: user warning,
  *   1024: user notice
- */
-
-/**
- * "template" error codes
- * 
- * Since template errors already have codes this list is likely to stay empty.
  */
 
 /**

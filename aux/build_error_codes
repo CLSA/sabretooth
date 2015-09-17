@@ -130,7 +130,6 @@ define( 'NOTICE_SABRETOOTH_BASE_ERRNO',     450000 );
 define( 'PERMISSION_SABRETOOTH_BASE_ERRNO', 550000 );
 define( 'RUNTIME_SABRETOOTH_BASE_ERRNO',    650000 );
 define( 'SYSTEM_SABRETOOTH_BASE_ERRNO',     750000 );
-define( 'TEMPLATE_SABRETOOTH_BASE_ERRNO',   850000 );
 define( 'VOIP_SABRETOOTH_BASE_ERRNO',       950000 );
 
 /**
@@ -205,12 +204,6 @@ print <<<OUTPUT
  *    256: user error,
  *    512: user warning,
  *   1024: user notice
- */
-
-/**
- * "template" error codes
- * 
- * Since template errors already have codes this list is likely to stay empty.
  */
 
 /**
