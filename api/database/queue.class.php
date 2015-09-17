@@ -517,7 +517,7 @@ class queue extends \cenozo\database\record
       else if( 'condition' == $queue )
       {
         $parts['where'][] = 'participant_active = true';
-        $parts['where'][] = 'IFNULL( last_participation_consent_accept, 1 ) = 1';
+        $parts['where'][] = 'IFNULL( last_participation_consent_accept = 1, true )';
         $parts['where'][] = 'participant_state_id IS NOT NULL';
       }
       else if( 'eligible' == $queue )
@@ -525,7 +525,7 @@ class queue extends \cenozo\database\record
         // active participant who does not have a "final" state and has at least one phone number
         $parts['where'][] = 'participant_active = true';
         $parts['where'][] = 'participant_state_id IS NULL';
-        $parts['where'][] = 'IFNULL( last_participation_consent_accept, 1 ) = 1';
+        $parts['where'][] = 'IFNULL( last_participation_consent_accept = 1, true )';
       }
       else if( 'qnaire' == $queue )
       {
@@ -538,12 +538,12 @@ class queue extends \cenozo\database\record
         if( 'qnaire waiting' == $queue )
         {
           // the current qnaire cannot start before start_qnaire_date
-          $parts['where'][] = 'IFNULL( start_qnaire_date, UTC_TIMESTAMP() ) > UTC_TIMESTAMP()';
+          $parts['where'][] = 'IFNULL( start_qnaire_date > UTC_TIMESTAMP(), true )';
         }
         else
         {
           // the qnaire is ready to start if the start_qnaire_date is null or we have reached that date
-          $parts['where'][] = 'IFNULL( start_qnaire_date, UTC_TIMESTAMP() ) <= UTC_TIMESTAMP()';
+          $parts['where'][] = 'IFNULL( start_qnaire_date <= UTC_TIMESTAMP(), true )';
 
           if( 'assigned' == $queue )
           {
