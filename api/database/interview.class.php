@@ -38,11 +38,13 @@ class interview extends \cenozo\database\record
       return NULL;
     }
     
-    // need custom SQL
-    $database_class_name = lib::get_class_name( 'database\database' );
-    $assignment_id = static::db()->get_one(
-      sprintf( 'SELECT assignment_id FROM interview_last_assignment WHERE interview_id = %s',
-               static::db()->format_string( $this->id ) ) );
+    $select = lib::create( 'database\select' );
+    $select->from( 'interview_last_assignment' );
+    $select->add_column( 'assignment_id' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'interview_id', '=', $this->id );
+
+    $assignment_id = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
     return $assignment_id ? lib::create( 'database\assignment', $assignment_id ) : NULL;
   }
 
@@ -262,101 +264,8 @@ class interview extends \cenozo\database\record
       {
         static::db()->execute( sprintf(
           'INSERT IGNORE INTO recording ( interview_id, assignment_id, rank ) '.
-          'VALUES %s', $values ) );
+          "\n".'VALUES %s', $values ) );
       }
     }
   }
-
-  /**
-   * Returns the most recent total number of consecutive failed calls.  A maximum of one
-   * failed call per assignment is counted.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return int
-   * @access public
-   */
-  public function get_failed_call_count()
-  {
-    if( is_null( $this->id ) )
-    {
-      log::warning( 'Tried to get failed call count for interview with no id.' );
-      return;
-    }
-    
-    $assignment_mod = lib::create( 'database\modifier' );
-    $assignment_mod->order_desc( 'start_datetime' );
-    $assignment_mod->where( 'end_datetime', '!=', NULL );
-    $failed_calls = 0;
-    foreach( $this->get_assignment_object_list( $assignment_mod ) as $db_assignment )
-    {
-      // find the most recently completed phone call
-      $phone_call_mod = lib::create( 'database\modifier' );
-      $phone_call_mod->order_desc( 'start_datetime' );
-      $phone_call_mod->where( 'status', '=', 'contacted' );
-      $phone_call_mod->where( 'end_datetime', '!=', NULL );
-      if( 0 < $db_assignment->get_phone_call_count( $phone_call_mod ) ) break;
-      $failed_calls++;
-    }
-
-    return $failed_calls;
-  }
-  
-  /**
-   * Creates the interview_failed_call_count temporary table needed by all queues.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   * @static
-   */
-  public static function create_interview_failed_call_count()
-  {
-    if( static::$interview_failed_call_count_created ) return;
-    static::db()->execute( 'SET @next := @series := @nc := @interview_id := 0' );
-    $sql = 'CREATE TEMPORARY TABLE IF NOT EXISTS interview_failed_call_count '.
-           static::$interview_failed_call_count_sql;
-    static::db()->execute( $sql );
-    static::db()->execute(
-      'ALTER TABLE interview_failed_call_count '.
-      'ADD INDEX dk_interview_id ( interview_id ), '.
-      'ADD INDEX dk_total ( total )' );
-    static::$interview_failed_call_count_created = true;
-  }
-  
-  /**
-   * Whether the interview_failed_call_count temporary table has been created.
-   * @var boolean
-   * @static
-   */
-  protected static $interview_failed_call_count_created = false;
-
-  /**
-   * A string containing the SQL used to create the interview_failed_call_count data
-   * @var string
-   * @static
-   */
-  protected static $interview_failed_call_count_sql = <<<'SQL'
-SELECT interview_id, total FROM
-(
-  SELECT interview_id, series, max( nc ) AS total
-  FROM
-  (
-    SELECT
-      @next := IF( interview_id != COALESCE( @interview_id, 0 ) OR status = "contacted", 1, 0 ) AS next,
-      @series := COALESCE( @series, 0 ) + IF( @next, 1, 0 ) AS series,
-      @nc := IF( @next, IF( status = "contacted", 0, 1 ), @nc + 1 ) AS nc,
-      @interview_id := interview_id AS interview_id,
-      status
-    FROM
-    (
-      SELECT interview_id, status
-      FROM assignment
-      JOIN phone_call on assignment.id = phone_call.assignment_id
-      WHERE phone_call.end_datetime is not null
-      ORDER by interview_id, phone_call.end_datetime
-    ) AS t1
-  ) AS t2
-  GROUP BY interview_id, series ORDER BY interview_id, series DESC
-) AS t3
-GROUP BY interview_id
-SQL;
 }

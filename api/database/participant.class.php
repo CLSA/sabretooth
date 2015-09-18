@@ -264,14 +264,16 @@ class participant extends \cenozo\database\participant
     $database_class_name = lib::get_class_name( 'database\database' );
 
     // the qnaire date is cached in the queue_has_participant joining table
-    $row = static::db()->get_row( sprintf(
-      'SELECT queue_has_participant.* FROM queue_has_participant '.
-      'JOIN queue ON queue_has_participant.queue_id = queue.id '.
-      'WHERE participant_id = %s '.
-      'AND queue.rank IS NOT NULL '.
-      'ORDER BY queue.rank '.
-      'LIMIT 1',
-      static::db()->format_string( $this->id ) ) );
+    $select = lib::create( 'database\select' );
+    $select->from( 'queue_has_participant' );
+    $select->add_column( '*' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->join( 'queue', 'queue_has_participant.queue_id', 'queue.id' );
+    $modifier->where( 'participant_id', '=', $this->id );
+    $modifier->where( 'queue.rank', '!=', NULL );
+    $modifier->order( 'queue.rank' );
+    $modifier->limit( 1 );
+    $row = static::db()->get_row( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
 
     if( count( $row ) )
     {
