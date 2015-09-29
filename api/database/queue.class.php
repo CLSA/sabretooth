@@ -183,14 +183,19 @@ class queue extends \cenozo\database\record
     {
       if( static::$debug ) $queue_time = util::get_elapsed_time();
 
+      $select = lib::create( 'database\select' );
+      $select->add_column( 'participant_id' );
+      $select->add_constant( $db_queue->id );
+      $select->add_column( 'site_id' );
+      $select->add_column( 'qnaire_id' );
+      $select->add_column( 'start_qnaire_date' );
+      $select->from( 'queue_has_participant' );
+
       // sql used by all insert statements below
       $base_sql = sprintf(
-        'INSERT INTO queue_has_participant( '.
-          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) '.
-        'SELECT queue_has_participant.participant_id, %s, queue_has_participant.site_id, '.
-        'queue_has_participant.qnaire_id, start_qnaire_date '.
-        'FROM queue_has_participant',
-        static::db()->format_string( $db_queue->id ) );
+        'INSERT INTO queue_has_participant( participant_id, queue_id, site_id, qnaire_id, start_qnaire_date )'.
+        "\n%s",
+        $select->get_sql() );
       
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'queue_has_participant.queue_id', '=', $db_queue->parent_queue_id );
@@ -925,7 +930,7 @@ LEFT JOIN event AS first_event
 ON participant.id = first_event.participant_id
 AND IF(
   first_qnaire_event_type.total,
-  first_event.event_type_id IN( first_qnaire_event_type.list ),
+  0 < FIND_IN_SET( first_event.event_type_id, first_qnaire_event_type.list ),
   false
 )
 
@@ -937,7 +942,7 @@ LEFT JOIN event AS next_event
 ON participant.id = next_event.participant_id
 AND IF(
   next_qnaire_event_type.total,
-  next_event.event_type_id IN( next_qnaire_event_type.list ),
+  0 < FIND_IN_SET( next_event.event_type_id, next_qnaire_event_type.list ),
   false
 )
 SQL;
