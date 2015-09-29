@@ -15,18 +15,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class data_manager extends \cenozo\business\data_manager
 {
   /**
-   * Constructor.
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @throws exception\argument
-   * @access protected
-   */
-  protected function __construct()
-  {
-    // nothing required
-  }
-
-  /**
    * Get participant-based data
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -49,67 +37,68 @@ class data_manager extends \cenozo\business\data_manager
     $value = NULL;
     if( 'limesurvey' == $subject )
     {
-      // participant.limesurvey.qnaire.<q>.phase.<p>.question.<code>.<first|last><.notnull> or
-      // limesurvey.qnaire.<q>.phase.<p>.question.<code>.<first|last><.notnull>
+      // participant.limesurvey.sid.<q>.question.<code>.<first|last><.notnull> or
+      // limesurvey.sid.<q>.question.<code>.<first|last><.notnull>
 
       // omitting the second last parameter will return the first response
       // omitting the last parameter will return null responses
-      if( !( 7 <= count( $parts ) && count( $parts ) <= 9 ) )
+      if( !( 5 <= count( $parts ) && count( $parts ) <= 7 ) )
         throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
       // validate text parameters
-      if( 'qnaire' != $parts[1] ||
-          'phase' != $parts[3] ||
-          'question' != $parts[5] )
+      if( 'sid' != $parts[1] ||
+          'question' != $parts[3] )
         throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
-      $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
-      $interview_class_name = lib::get_class_name( 'database\interview' );
-      $phase_class_name = lib::get_class_name( 'database\phase' );
-     
-      // get the ranks and make sure they are numbers
-      $qnaire_rank = $parts[2];
-      if( !util::string_matches_int( $qnaire_rank ) )
+      // get the sid and make sure it is a number
+      $sid = $parts[2];
+      if( !util::string_matches_int( $sid ) )
         throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
-      $phase_rank = $parts[4];
-      if( !util::string_matches_int( $phase_rank ) )
-        throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
-      $question = $parts[6];
+      $question = $parts[4];
 
-      $response = 'first';
-      if( 7 < count( $parts ) )
+      $which = 'first';
+      if( 5 < count( $parts ) )
       {
-        if( 'first' != $parts[7] && 'last' != $parts[7] )
+        if( 'first' != $parts[5] && 'last' != $parts[5] )
           throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
-        $response = $parts[7];
+        $which = $parts[5];
       }
 
       $notnull = false;
-      if( 8 < count( $parts ) )
+      if( 6 < count( $parts ) )
       {
-        if( 'notnull' != $parts[8] )
+        if( 'notnull' != $parts[6] )
           throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
         $notnull = true;
       }
-      
-      // get the participant's interview by rank
-      $db_qnaire = $qnaire_class_name::get_unique_record( 'rank', $qnaire_rank );
-      if( !is_null( $db_qnaire ) )
+
+      $survey_class_name::set_sid( $sid );
+      $survey_mod = lib::create( 'database\modifier' );
+      $survey_mod->where_bracket( true );
+      $survey_mod->where( 'token', '=', $db_participant->uid );
+      $survey_mod->where( 'token', 'LIKE', $db_participant->uid.'_%' );
+      $survey_mod->where_bracket( false );
+      $responses = $survey_class_name::get_responses( $question, $modifier );
+
+      if( !is_array( $responses ) )
       {
-        $db_interview = $interview_class_name::get_unique_record(
-          array( 'participant_id', 'qnaire_id' ),
-          array( $db_participant->id, $db_qnaire->id ) );
-        
-        // get the phase by rank
-        $db_phase = $phase_class_name::get_unique_record(
-          array( 'script_id', 'rank' ),
-          array( $db_qnaire->script_id, $phase_rank ) );
-        if( !is_null( $db_interview ) && !is_null( $db_phase ) )
+        $value = $responses;
+      }
+      else
+      {
+        if( 'last' == $which ) $responses = array_reverse( $responses );
+        if( $notnull )
         {
-          $limesurvey_manager = lib::create( 'business\limesurvey_manager' );
-          $value = $limesurvey_manager->get_value(
-            $db_interview, $db_phase, $question, 'last' == $response, $notnull );
+          foreach( $responses as $response )
+          {
+            if( !is_null( $response ) )
+            {
+              $value = $response;
+              break;
+            }
+          }
         }
+        else $value = current( $responses );
       }
     }
     else if( 'participant' == $subject && 2 == count( $parts ) && 'override_quota()' == $parts[1] )

@@ -103,48 +103,39 @@ class interview extends \cenozo\database\record
     // do nothing if the interview is already set as completed
     if( $this->completed ) return;
     
-    // update all uncomplete tokens and surveys associated with this interview which are
-    // associated with phases which are not repeated (tokens should not include assignments)
-    $phase_sel = lib::create( 'database\select' );
-    $phase_sel->add_column( 'sid' );
-    $phase_mod = lib::create( 'database\modifier' );
-    $phase_mod->where( 'repeated', '!=', true );
+    // update the token and survey associated with this interview
+    $now = util::get_datetime_object()->format( 'Y-m-d' );
+    $token = $this->get_participant()->uid;
+    $db_script = $this->get_qnaire()->get_script();
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+    $tokens_class_name::set_sid( $db_script->sid );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
-    foreach( $this->get_qnaire()->get_script()->get_phase_list( $phase_sel, $phase_mod ) as $phase )
+    $survey_class_name::set_sid( $db_script->sid );
+    
+    $tokens_mod = lib::create( 'database\modifier' );
+    $tokens_mod->where( 'token', '=', $token );
+    $tokens_mod->where( 'completed', '=', 'N' );
+    foreach( $tokens_class_name::select( $tokens_mod ) as $db_tokens )
     {
-      $now_datetime_obj = util::get_datetime_object();
-      // update tokens
-      $tokens_class_name::set_sid( $phase['sid'] );
-      $tokens_mod = lib::create( 'database\modifier' );
-      $tokens_mod->where( 'token', '=',
-        $tokens_class_name::determine_token_string( $this ) );
-      $tokens_mod->where( 'completed', '=', 'N' );
-      foreach( $tokens_class_name::select( $tokens_mod ) as $db_tokens )
-      {
-        $db_tokens->completed = $now_datetime_obj->format( 'Y-m-d H:i' );
-        $db_tokens->usesleft = 0;
-        $db_tokens->save();
-      }
+      $db_tokens->completed = $now;
+      $db_tokens->usesleft = 0;
+      $db_tokens->save();
+    }
 
-      // update surveys
-      $survey_class_name::set_sid( $phase['sid'] );
-      $survey_mod = lib::create( 'database\modifier' );
-      $survey_mod->where( 'token', '=',
-        $tokens_class_name::determine_token_string( $this ) );
-      $survey_mod->where( 'submitdate', '=', NULL );
+    // get the last page for this survey
+    $lastpage_sel = lib::create( 'database\select' );
+    $lastpage_sel->add_column( 'MAX( lastpage )', 'lastpage', false );
+    $lastpage_sel->from( $survey_class_name::get_table_name() );
+    $lastpage = $survey_class_name::db()->get_one( $lastpage_sel->get_sql() );
 
-      // get the last page for this survey
-      $lastpage = $survey_class_name::db()->get_one( sprintf(
-        'SELECT MAX( lastpage ) FROM %s',
-        $survey_class_name::get_table_name() ) );
-
-      foreach( $survey_class_name::select( $survey_mod ) as $db_survey )
-      {
-        $db_survey->submitdate = $now_datetime_obj->format( 'Y-m-d H:i:s' );
-        if( $lastpage ) $db_survey->lastpage = $lastpage;
-        $db_survey->save();
-      }
+    $survey_mod = lib::create( 'database\modifier' );
+    $survey_mod->where( 'token', '=', $token );
+    $survey_mod->where( 'submitdate', '=', NULL );
+    foreach( $survey_class_name::select( $survey_mod ) as $db_survey )
+    {
+      $db_survey->submitdate = $now;
+      if( $lastpage ) $db_survey->lastpage = $lastpage;
+      $db_survey->save();
     }
 
     // finally, update the record
@@ -167,39 +158,32 @@ class interview extends \cenozo\database\record
       return;
     }
     
-    // delete all tokens and surveys associated with this interview which are
-    // associated with phases which are not repeated (tokens should not include assignments)
-    $phase_sel = lib::create( 'database\select' );
-    $phase_sel->add_column( 'sid' );
-    $phase_mod = lib::create( 'database\modifier' );
-    $phase_mod->where( 'repeated', '!=', true );
+    // delete the token and survey associated with this interview
+    $db_participant = $this->get_participant();
+    $token = $db_participant->uid;
+    $db_script = $this->get_qnaire()->get_script();
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+    $tokens_class_name::set_sid( $db_script->sid );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
-    foreach( $this->get_qnaire()->get_script()->get_phase_list( $phase_sel, $phase_mod ) as $phase )
+    $survey_class_name::set_sid( $db_script->sid );
+
+    // delete tokens
+    $tokens_mod = lib::create( 'database\modifier' );
+    $tokens_mod->where( 'token', '=', $token );
+    foreach( $tokens_class_name::select( $tokens_mod ) as $db_tokens )
     {
-      // delete tokens
-      $tokens_class_name::set_sid( $phase['sid'] );
-      $tokens_mod = lib::create( 'database\modifier' );
-      $tokens_mod->where( 'token', '=',
-        $tokens_class_name::determine_token_string( $this ) );
-      foreach( $tokens_class_name::select( $tokens_mod ) as $db_tokens )
-      {
-        $db_tokens->completed = 'N';
-        $db_tokens->usesleft = 1;
-        $db_tokens->save();
-      }
+      $db_tokens->completed = 'N';
+      $db_tokens->usesleft = 1;
+      $db_tokens->save();
+    }
 
-      // delete surveys
-      $survey_class_name::set_sid( $phase['sid'] );
-      $survey_mod = lib::create( 'database\modifier' );
-      $survey_mod->where( 'token', '=',
-        $tokens_class_name::determine_token_string( $this ) );
-
-      foreach( $survey_class_name::select( $survey_mod ) as $db_survey )
-      {
-        $db_survey->submitdate = NULL;
-        $db_survey->save();
-      }
+    // delete surveys
+    $survey_mod = lib::create( 'database\modifier' );
+    $survey_mod->where( 'token', '=', $token );
+    foreach( $survey_class_name::select( $survey_mod ) as $db_survey )
+    {
+      $db_survey->submitdate = NULL;
+      $db_survey->save();
     }
 
     // finally, update the record
@@ -213,7 +197,7 @@ class interview extends \cenozo\database\record
     {
       $event_mod = lib::create( 'database\modifier' );
       $event_mod->where( 'event_type_id', '=', $db_event_type->id );
-      foreach( $this->get_participant()->get_event_object_list( $event_mod ) as $db_event )
+      foreach( $db_participant->get_event_object_list( $event_mod ) as $db_event )
         $db_event->delete();
     }
   }

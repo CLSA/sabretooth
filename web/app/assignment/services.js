@@ -252,7 +252,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
                   url += '&token=' + response.data.token
                   $window.open( url, 'cenozoScript' );
                 } ).catch( CnSession.errorHandler );
-              } );
+              } ).catch( CnSession.errorHandler );
             } else CnSession.errorHandler( response );
           } );
         };
