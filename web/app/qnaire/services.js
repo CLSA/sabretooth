@@ -50,7 +50,13 @@ define( cenozo.getServicesIncludeList( 'qnaire' ), function( module ) {
               path: 'script',
               data: {
                 select: { column: [ 'id', 'name' ] },
-                modifier: { order: 'name' }
+                modifier: {
+                  where: [
+                    { column: 'reserved', operator: '=', value: true },
+                    { column: 'repeated', operator: '=', value: false }
+                  ],
+                  order: 'name'
+                }
               }
             } ).query().then( function( response ) {
               self.metadata.columnList.script_id.enumList = [];

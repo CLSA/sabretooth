@@ -16,7 +16,8 @@ define( {
     script_id: {
       title: 'Script',
       type: 'enum',
-      noedit: true
+      noedit: true,
+      help: 'Only scripts which are marked as reserved and non-repeatable may be used as a questionnaire.'
     },
     delay: {
       title: 'Delay (weeks)',
