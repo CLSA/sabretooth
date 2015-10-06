@@ -21,21 +21,7 @@ if( 1 != $argc )
   exit( 1 );
 }
 
-$filename = sprintf( TEMPORARY_FILES_PATH.'/schema.ser' );
-printf( "Removing cached schema file \"%s\"...\n", $filename );
+$filename = sprintf( TEMPORARY_FILES_PATH.'/*.schema.ser' );
+print "Removing all cached schema files\n";
 
-if( !file_exists( $filename ) )
-{
-  print "The file doesn't exist.\n";
-  exit( 2 );
-}
-
-$result = unlink( $filename );
-
-if( !$result )
-{
-  print "Unable to remove the file.\n";
-  exit( 3 );
-}
-
-print "Successfully removed file.\n";
+$result = passthru( sprintf( 'rm -v %s', $filename ) );
