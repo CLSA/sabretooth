@@ -25,3 +25,5 @@ DELIMITER ;
 
 CALL upgrade_application_number();
 DROP PROCEDURE IF EXISTS upgrade_application_number;
+
+SELECT "PLEASE NOTE: You must remove the application's cached schema file for changes to take effect" AS "";
