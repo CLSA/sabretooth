@@ -239,11 +239,21 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
             $window.open( url, 'cenozoScript' );
           } ).catch( function( response ) {
             if( 404 == response.status ) {
+              console.info( 'The "404 (Not Found)" error found above is normal and can be ignored.' );
               // the token doesn't exist so create it
+              var modal = CnModalMessageFactory.instance( {
+                title: 'Please Wait',
+                message: 'Please wait while the participant\'s data is retrieved.',
+                block: true
+              } );
+              modal.show();
+
               CnHttpFactory.instance( {
                 path: 'script/' + script.id + '/token',
                 data: { uid: self.participant.uid }
               } ).post().then( function success( response ) {
+                modal.close();
+
                 // now get the new token string we just created
                 CnHttpFactory.instance( {
                   path: 'script/' + script.id + '/token/' + response.data
@@ -252,7 +262,10 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
                   url += '&token=' + response.data.token
                   $window.open( url, 'cenozoScript' );
                 } ).catch( CnSession.errorHandler );
-              } ).catch( CnSession.errorHandler );
+              } ).catch( function( response ) {
+                modal.close();
+                CnSession.errorHandler( response );
+              } );
             } else CnSession.errorHandler( response );
           } );
         };
