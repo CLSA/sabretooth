@@ -543,7 +543,7 @@ class queue extends \cenozo\database\record
         if( 'qnaire waiting' == $queue )
         {
           // the current qnaire cannot start before start_qnaire_date
-          $parts['where'][] = 'IFNULL( start_qnaire_date > UTC_TIMESTAMP(), true )';
+          $parts['where'][] = 'IFNULL( start_qnaire_date > UTC_TIMESTAMP(), false )';
         }
         else
         {
