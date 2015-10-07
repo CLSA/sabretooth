@@ -17,7 +17,7 @@
         </h4>
       </div>
       <div class="form-horizontal">
-        <div class="form-body vertical-spacer">
+        <div class="form-body vertical-spacer allow-select">
           <div class="row">
             <label class="col-sm-4 control-label">Participant</label>
             <div class="col-sm-8 form-text">
@@ -45,7 +45,7 @@
           <div class="row">
             <div class="col-sm-6">
               <h4 class="text-center">Active Assignment</h4>
-              <div class="form-body well">
+              <div class="form-body well allow-select">
                 <div class="row">
                   <label class="col-sm-5 control-label">Start Date &amp; Time</label>
                   <div class="col-sm-7 form-text">
@@ -82,7 +82,7 @@
                   This participant has never been called for the "{{ model.assignment.qnaire }}" questionnaire.
                 </span>
               </div>
-              <div class="form-body well" ng-if="model.prevAssignment">
+              <div class="form-body well allow-select" ng-if="model.prevAssignment">
                 <div class="row">
                   <label class="col-sm-5 control-label">User</label>
                   <div class="col-sm-7 form-text">
