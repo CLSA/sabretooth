@@ -166,10 +166,24 @@ class module extends \cenozo\service\module
     else if( 'PATCH' == $this->get_method() )
     {
       if( $this->get_argument( 'close', false ) )
-      { // close the assignment by setting the end datetime
+      {
         if( !is_null( $record->end_datetime ) )
           log::warning( sprintf( 'Tried to close assignment id %d which is already closed.', $record->id ) );
-        else $record->end_datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+        else
+        {
+          // close the assignment by setting the end datetime
+          $record->end_datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+
+          // now check if the script is complete and update the interview if it is
+          $db_interview = $record->get_interview();
+          $db_script = $db_interview->get_qnaire()->get_script();
+          $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+          $tokens_class_name::set_sid( $db_script->sid );
+          $tokens_mod = lib::create( 'database\modifier' );
+          $tokens_mod->where( 'token', '=', $token = $db_interview->get_participant()->uid );
+          $tokens_mod->where( 'completed', '=', 'N' );
+          if( 0 == $tokens_class_name::count( $tokens_mod ) ) $db_interview->complete();
+        }
       }
     }
   }

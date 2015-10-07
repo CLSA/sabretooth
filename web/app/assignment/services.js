@@ -297,7 +297,9 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
             CnHttpFactory.instance( {
               path: 'assignment/0/phone_call'
             } ).query().then( function( response ) {
-              CnHttpFactory.instance( { path: 'assignment/0?close=true', data: {} } ).patch().then( self.onLoad );
+              return CnHttpFactory.instance( {
+                path: 'assignment/0?close=true', data: {}
+              } ).patch().then( self.onLoad );
             } ).catch( function( response ) {
               if( 307 == response.status ) {
                 // 307 means the user has no active assignment, so just refresh the page data
