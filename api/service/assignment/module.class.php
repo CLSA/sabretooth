@@ -53,17 +53,17 @@ class module extends \cenozo\service\module
       {
         // repopulate the participant to make sure they are still available for an assignment
         $post_object = $this->get_file_as_object();
-        $db_participant = lib::create( 'database\participant', $post_object->participant_id );
-        $db_participant->update_queue_status();
+        $this->db_participant = lib::create( 'database\participant', $post_object->participant_id );
+        $this->db_participant->update_queue_status();
         $queue_mod = lib::create( 'database\modifier' );
         $queue_mod->where( 'queue.rank', '!=', NULL );
-        if( 0 == $db_participant->get_queue_count( $queue_mod ) )
+        if( 0 == $this->db_participant->get_queue_count( $queue_mod ) )
         {
           $data = 'The participant is no longer available for an interview.';
         }
         else
         {
-          if( !is_null( $db_participant->get_current_assignment() ) )
+          if( !is_null( $this->db_participant->get_current_assignment() ) )
             $data = 'Cannot create a new assignment since the participant is already '.
                     'assigned to a different user.';
         }
@@ -74,6 +74,10 @@ class module extends \cenozo\service\module
         $this->set_data( $data );
         $this->get_status()->set_code( 409 );
       }
+    }
+    else if( 'PATCH' == $method )
+    {
+      $this->db_participant = lib::create( 'database\participant', $post_object->participant_id );
     }
   }
 
@@ -154,13 +158,12 @@ class module extends \cenozo\service\module
 
       // use the uid parameter to fill in the record columns
       $post_object = $this->get_file_as_object();
-      $db_participant = lib::create( 'database\participant', $post_object->participant_id );
-      $db_interview = $db_participant->get_effective_interview();
+      $db_interview = $this->db_participant->get_effective_interview();
 
       $record->user_id = $db_user->id;
       $record->site_id = $db_site->id;
       $record->interview_id = $db_interview->id;
-      $record->queue_id = $db_participant->current_queue_id;
+      $record->queue_id = $this->db_participant->current_queue_id;
       $record->start_datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
     }
     else if( 'PATCH' == $this->get_method() )
@@ -171,16 +174,20 @@ class module extends \cenozo\service\module
           log::warning( sprintf( 'Tried to close assignment id %d which is already closed.', $record->id ) );
         else
         {
+          $db_interview = $record->get_interview();
+          $this->db_script = $db_interview->get_qnaire()->get_script();
+          $this->db_participant = $db_interview->get_participant();
+
           // close the assignment by setting the end datetime
           $record->end_datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
 
           // now check if the script is complete and update the interview if it is
           $db_interview = $record->get_interview();
-          $db_script = $db_interview->get_qnaire()->get_script();
+          $this->db_script = $db_interview->get_qnaire()->get_script();
           $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-          $tokens_class_name::set_sid( $db_script->sid );
+          $tokens_class_name::set_sid( $this->db_script->sid );
           $tokens_mod = lib::create( 'database\modifier' );
-          $tokens_mod->where( 'token', '=', $token = $db_interview->get_participant()->uid );
+          $tokens_class_name::where_token( $tokens_mod, $this->db_participant, false );
           $tokens_mod->where( 'completed', '=', 'N' );
           if( 0 == $tokens_class_name::count( $tokens_mod ) ) $db_interview->complete();
         }
@@ -230,4 +237,18 @@ class module extends \cenozo\service\module
       }
     }
   }
+
+  /**
+   * Cache of script record
+   * @var database\script $db_script
+   * @access protected
+   */
+  protected $db_script = NULL;
+
+  /**
+   * Cache of participant record
+   * @var database\participant $db_participant
+   * @access protected
+   */
+  protected $db_participant = NULL;
 }

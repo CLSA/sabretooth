@@ -17,7 +17,7 @@
         </h4>
       </div>
       <div class="form-horizontal">
-        <div class="form-body vertical-spacer allow-select">
+        <div class="container-fluid form-body allow-select">
           <div class="row">
             <label class="col-sm-4 control-label">Participant</label>
             <div class="col-sm-8 form-text">
@@ -171,39 +171,71 @@
     </div>
     <div class="utility-view rounded vertical-spacer" ng-if="model.activePhoneCall">
       <div class="container-fluid bg-primary rounded-top">
-        <h4>Available Scripts</h4>
+        <h4>Script Launcher</h4>
       </div>
-      <div class="form-footer rounded-bottom bg-info">
-        <div class="well">
-          All available scripts are listed below.
-          When clicking on a script your browser will switch to a new tab with the script you selected.
-          The application will still be accessible by clicking the brower's <em>{{ model.application }}</em> tab.
-          <div class="vertical-spacer text-warning">
-            NOTE: If you already have the script tab open then selecting a new script will not automatically
-            switch to the script tab.
-            Simply select the script tab after you have clicked a script button.
+      <div class="form-horizontal">
+        <div class="container-fluid form-body allow-select">
+          <div class="row">
+            <label class="col-sm-4 control-label">Active Script</label>
+            <div class="col-sm-8">
+              <div class="btn-group full-width">
+                <select ng-model="model.activeScript"
+                        ng-options="script.name for script in model.scriptList"
+                        class="form-control"></select>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <label class="col-sm-4 control-label">
+              {{ model.activeScript.repeated ? 'Last' : '' }} Started Date &amp; Time
+            </label>
+            <div class="col-sm-8 form-text">
+              {{ null == model.activeScript.started_datetime ?
+                 'Not started' : model.activeScript.started_datetime |
+                 cnDatetime:'datetimesecond' }}
+            </div>
+          </div>
+          <div class="row">
+            <label class="col-sm-4 control-label">
+              {{ model.activeScript.repeated ? 'Last' : '' }} Completed Date &amp; Time
+            </label>
+            <div class="col-sm-8 form-text">
+              {{ null == model.activeScript.completed_datetime ?
+                 'Not completed' : model.activeScript.completed_datetime |
+                 cnDatetime:'datetimesecond' }}
+            </div>
+          </div>
+          <div class="row">
+            <label class="col-sm-4 control-label">May Be Repeated</label>
+            <div class="col-sm-8 form-long-text">{{ model.activeScript.repeated ? 'Yes' : 'No' }}</div>
+          </div>
+          <div class="row">
+            <label class="col-sm-4 control-label">Description</label>
+            <div class="col-sm-8 form-long-text">
+              {{ null == model.activeScript.description ? 'No description' : model.activeScript.description }}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12">
+              <blockquote class="text-info">
+                When launching on a script your browser will open the script in a new tab.
+                The application will still be accessible by clicking the brower's
+                <em>{{ model.application }}</em> tab.
+                <div class="vertical-spacer text-warning">
+                  NOTE: If you already have the script tab open then selecting a new script will not automatically
+                  switch to the script tab.
+                  Simply select the script tab after you have clicked a script button.
+                </div>
+              </blockquote>
+            </div>
           </div>
         </div>
-        <div class="btn-group btn-group-justified">
-          <div class="btn-group" ng-if="model.qnaireScript">
-            <button type="button"
-                    class="btn btn-success"
-                    tooltip="{{ model.qnaireScript.description }}"
-                    ng-click="model.launchScript( model.qnaireScript )">Questionnaire</button>
-          </div>
-          <div class="btn-group" ng-repeat="script in model.scriptList">
-            <button type="button"
-                    class="btn btn-default"
-                    tooltip="{{ script.description }}"
-                    ng-click="model.launchScript( script )">{{ script.name }}</button>
-          </div>
-          <div class="btn-group" ng-if="model.withdrawScript">
-            <button type="button"
-                    class="btn btn-danger"
-                    tooltip="{{ model.withdrawScript.description }}"
-                    ng-click="model.launchScript( model.withdrawScript )">Withdraw</button>
-          </div>
-        </div>
+      </div>
+      <div class="form-footer text-right rounded-bottom bg-info">
+        <button type="button"
+                class="btn btn-primary"
+                ng-disabled="!model.activeScript.repeated && model.activeScript.completed_datetime"
+                ng-click="model.launchScript( model.activeScript )">Launch Script</button>
       </div>
     </div>
   </div>

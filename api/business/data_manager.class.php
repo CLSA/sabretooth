@@ -37,6 +37,8 @@ class data_manager extends \cenozo\business\data_manager
     $value = NULL;
     if( 'limesurvey' == $subject )
     {
+      $tokens_class_name = lib::get_class_name( 'database\tokens' );
+
       // participant.limesurvey.sid.<q>.question.<code>.<first|last><.notnull> or
       // limesurvey.sid.<q>.question.<code>.<first|last><.notnull>
 
@@ -75,8 +77,9 @@ class data_manager extends \cenozo\business\data_manager
       $survey_class_name::set_sid( $sid );
       $survey_mod = lib::create( 'database\modifier' );
       $survey_mod->where_bracket( true );
-      $survey_mod->where( 'token', '=', $db_participant->uid );
-      $survey_mod->where( 'token', 'LIKE', $db_participant->uid.'_%' );
+      // search for either type of token (repeated or single)
+      $tokens_class_name::where_token( $survey_mod, $db_participant, false );
+      $tokens_class_name::where_token( $survey_mod, $db_participant, true );
       $survey_mod->where_bracket( false );
       $responses = $survey_class_name::get_responses( $question, $modifier );
 

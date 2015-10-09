@@ -54,8 +54,6 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
         this.prevAssignment = null;
         this.participant = null;
         this.activePhoneCall = false;
-        this.qnaireScript = null;
-        this.withdrawScript = null;
         this.scriptList = null;
         this.phoneCallStatusList = null;
         this.phoneCallList = null;
@@ -146,9 +144,10 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
                                    : null;
             } );
           } ).then( function() {
-            if( null === self.qnaireScript && null === self.withdrawScript && null === self.scriptList ) {
+            if( null === self.scriptList ) {
               CnHttpFactory.instance( {
-                path: 'application/' + CnSession.application.id + '/script',
+                path: 'application/' + CnSession.application.id +
+                      '/script?participant_id=' + self.assignment.participant_id,
                 data: {
                   modifier: {
                     order: 'name',
@@ -157,18 +156,18 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
                       { or: true, column: 'reserved', operator: '=', value: false },
                     ]
                   },
-                  select: { column: [ 'id', 'name', 'url', 'description' ] }
+                  select: { column: [
+                    'id', 'name', 'repeated', 'url', 'description',
+                    { table: 'started_event', column: 'datetime', alias: 'started_datetime' },
+                    { table: 'completed_event', column: 'datetime', alias: 'completed_datetime' }
+                  ] }
                 }
               } ).query().then( function success( response ) {
-                self.scriptList = [];
-                for( var i = 0; i < response.data.length; i++ ) {
-                  if( self.assignment.script_id == response.data[i].id )
-                    self.qnaireScript = response.data[i];
-                  else if( 'withdraw' == response.data[i].name.toLowerCase() )
-                    self.withdrawScript = response.data[i];
-                  else self.scriptList.push( response.data[i] );
-                }
-              } );
+                self.scriptList = response.data;
+                if( 0 < self.scriptList.length ) self.activeScript = self.scriptList[0];
+
+                // move the questionnaire to the front and the withdraw to the end of the list
+              } ).catch( CnSession.errorHandler );
             }
           } ).then( function() {
             CnHttpFactory.instance( {
@@ -195,7 +194,10 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
           } ).then( function() {
             CnHttpFactory.instance( {
               path: 'participant/' + self.assignment.participant_id + '/phone',
-              data: { select: { column: [ 'id', 'rank', 'type', 'number', 'international' ] } }
+              data: {
+                select: { column: [ 'id', 'rank', 'type', 'number', 'international' ] },
+                modifier: { order: 'rank' }
+              }
             } ).query().then( function success( response ) {
               self.phoneList = response.data;
             } );
@@ -232,14 +234,16 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
 
           // first see if a token already exists
           CnHttpFactory.instance( {
-            path: 'script/' + script.id + '/token/uid=' + self.participant.uid
+            path: 'script/' + script.id + '/token/uid=' + self.participant.uid,
+            data: { select: { column: [ 'token', 'completed' ] } }
           } ).get().then( function( response ) {
-            // now launch the script
+            // launch the script
             url += '&token=' + response.data.token
             $window.open( url, 'cenozoScript' );
           } ).catch( function( response ) {
             if( 404 == response.status ) {
               console.info( 'The "404 (Not Found)" error found above is normal and can be ignored.' );
+
               // the token doesn't exist so create it
               var modal = CnModalMessageFactory.instance( {
                 title: 'Please Wait',
@@ -252,13 +256,14 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
                 path: 'script/' + script.id + '/token',
                 data: { uid: self.participant.uid }
               } ).post().then( function success( response ) {
+                // close the wait message
                 modal.close();
 
                 // now get the new token string we just created
                 CnHttpFactory.instance( {
                   path: 'script/' + script.id + '/token/' + response.data
                 } ).get().then( function( response ) {
-                  // now launch the script
+                  // launch the script
                   url += '&token=' + response.data.token
                   $window.open( url, 'cenozoScript' );
                 } ).catch( CnSession.errorHandler );

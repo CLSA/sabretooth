@@ -120,7 +120,6 @@ class interview extends \cenozo\database\record
 
     // update the token and survey associated with this interview
     $now = util::get_datetime_object();
-    $token = $this->get_participant()->uid;
     $db_script = $this->get_qnaire()->get_script();
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $tokens_class_name::set_sid( $db_script->sid );
@@ -128,7 +127,7 @@ class interview extends \cenozo\database\record
     $survey_class_name::set_sid( $db_script->sid );
 
     $tokens_mod = lib::create( 'database\modifier' );
-    $tokens_mod->where( 'token', '=', $token );
+    $tokens_class_name::where_token( $tokens_mod, $db_participant, false );
     $tokens_mod->where( 'completed', '=', 'N' );
     foreach( $tokens_class_name::select_objects( $tokens_mod ) as $db_tokens )
     {
@@ -144,7 +143,7 @@ class interview extends \cenozo\database\record
     $lastpage = $survey_class_name::db()->get_one( $lastpage_sel->get_sql() );
 
     $survey_mod = lib::create( 'database\modifier' );
-    $survey_mod->where( 'token', '=', $token );
+    $tokens_class_name::where_token( $survey_mod, $db_participant, false );
     $survey_mod->where( 'submitdate', '=', NULL );
     foreach( $survey_class_name::select_objects( $survey_mod ) as $db_survey )
     {
@@ -175,7 +174,6 @@ class interview extends \cenozo\database\record
 
     // delete the token and survey associated with this interview
     $db_participant = $this->get_participant();
-    $token = $db_participant->uid;
     $db_script = $this->get_qnaire()->get_script();
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $tokens_class_name::set_sid( $db_script->sid );
@@ -184,7 +182,7 @@ class interview extends \cenozo\database\record
 
     // delete tokens
     $tokens_mod = lib::create( 'database\modifier' );
-    $tokens_mod->where( 'token', '=', $token );
+    $tokens_class_name::where_token( $tokens_mod, $db_participant, false );
     foreach( $tokens_class_name::select_objects( $tokens_mod ) as $db_tokens )
     {
       $db_tokens->completed = 'N';
@@ -194,7 +192,7 @@ class interview extends \cenozo\database\record
 
     // delete surveys
     $survey_mod = lib::create( 'database\modifier' );
-    $survey_mod->where( 'token', '=', $token );
+    $tokens_class_name::where_token( $survey_mod, $db_participant, false );
     foreach( $survey_class_name::select_objects( $survey_mod ) as $db_survey )
     {
       $db_survey->submitdate = NULL;
