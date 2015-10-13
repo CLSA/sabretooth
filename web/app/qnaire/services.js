@@ -32,9 +32,9 @@ define( cenozo.getServicesIncludeList( 'qnaire' ), function( module ) {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQnaireModelFactory', [
     'CnBaseModelFactory', 'CnQnaireAddFactory', 'CnQnaireListFactory', 'CnQnaireViewFactory',
-    'CnHttpFactory',
+    'CnSession', 'CnHttpFactory',
     function( CnBaseModelFactory, CnQnaireAddFactory, CnQnaireListFactory, CnQnaireViewFactory,
-              CnHttpFactory ) {
+              CnSession, CnHttpFactory ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -47,7 +47,7 @@ define( cenozo.getServicesIncludeList( 'qnaire' ), function( module ) {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
             return CnHttpFactory.instance( {
-              path: 'script',
+              path: 'application/' + CnSession.application.id + '/script',
               data: {
                 select: { column: [ 'id', 'name' ] },
                 modifier: {
