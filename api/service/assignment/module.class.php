@@ -152,14 +152,16 @@ class module extends \cenozo\service\module
       $db_user = $session->get_user();
       $db_site = $session->get_site();
 
-      // use the uid parameter to fill in the record columns
+      // use the post object to fill in the record columns
       $post_object = $this->get_file_as_object();
-      $db_interview = $record->get_interview();
+      $post_object = $this->get_file_as_object();
+      $db_participant = lib::create( 'database\participant', $post_object->participant_id );
+      $db_interview = $db_participant->get_effective_interview();
 
       $record->user_id = $db_user->id;
       $record->site_id = $db_site->id;
       $record->interview_id = $db_interview->id;
-      $record->queue_id = $db_interview->get_participant()->current_queue_id;
+      $record->queue_id = $db_participant->current_queue_id;
       $record->start_datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
     }
     else if( 'PATCH' == $this->get_method() )
