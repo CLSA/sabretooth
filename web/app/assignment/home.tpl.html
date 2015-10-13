@@ -171,7 +171,15 @@
     </div>
     <div class="utility-view rounded vertical-spacer" ng-if="model.activePhoneCall">
       <div class="container-fluid bg-primary rounded-top">
-        <h4>Script Launcher</h4>
+        <h4>
+          <i class="glyphicon glyphicon-refresh glyph-hover rounded pull-right btn-primary"
+             ng-click="model.loadScriptList()"
+             ng-disabled="model.isScriptListLoading"
+             tooltip="Click to refresh data"
+             tooltip-placement="left"></i>
+          Script Launcher
+          <span ng-if="model.isScriptListLoading">(Loading&hellip;)</span>
+        </h4>
       </div>
       <div class="form-horizontal">
         <div class="container-fluid form-body allow-select">
@@ -187,22 +195,20 @@
           </div>
           <div class="row">
             <label class="col-sm-4 control-label">
-              {{ model.activeScript.repeated ? 'Last' : '' }} Started Date &amp; Time
+              {{ model.activeScript.repeated ? 'Last Start' : 'Started' }} Date &amp; Time
             </label>
             <div class="col-sm-8 form-text">
               {{ null == model.activeScript.started_datetime ?
-                 'Not started' : model.activeScript.started_datetime |
-                 cnDatetime:'datetimesecond' }}
+                 'Not started' : ( model.activeScript.started_datetime | cnDatetime:'datetimesecond' ) }}
             </div>
           </div>
           <div class="row">
             <label class="col-sm-4 control-label">
-              {{ model.activeScript.repeated ? 'Last' : '' }} Completed Date &amp; Time
+              {{ model.activeScript.repeated ? 'Last Complete' : 'Completed' }} Date &amp; Time
             </label>
             <div class="col-sm-8 form-text">
               {{ null == model.activeScript.completed_datetime ?
-                 'Not completed' : model.activeScript.completed_datetime |
-                 cnDatetime:'datetimesecond' }}
+                 'Not completed' : ( model.activeScript.completed_datetime | cnDatetime:'datetimesecond' ) }}
             </div>
           </div>
           <div class="row">

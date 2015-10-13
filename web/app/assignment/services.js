@@ -55,6 +55,8 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
         this.participant = null;
         this.activePhoneCall = false;
         this.scriptList = null;
+        this.isScriptListLoading = false;
+        this.activeScript = null;
         this.phoneCallStatusList = null;
         this.phoneCallList = null;
         this.isAssignmentLoading = false;
@@ -144,31 +146,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
                                    : null;
             } );
           } ).then( function() {
-            if( null === self.scriptList ) {
-              CnHttpFactory.instance( {
-                path: 'application/' + CnSession.application.id +
-                      '/script?participant_id=' + self.assignment.participant_id,
-                data: {
-                  modifier: {
-                    order: 'name',
-                    where: [
-                      { column: 'script.id', operator: '=', value: self.assignment.script_id },
-                      { or: true, column: 'reserved', operator: '=', value: false },
-                    ]
-                  },
-                  select: { column: [
-                    'id', 'name', 'repeated', 'url', 'description',
-                    { table: 'started_event', column: 'datetime', alias: 'started_datetime' },
-                    { table: 'completed_event', column: 'datetime', alias: 'completed_datetime' }
-                  ] }
-                }
-              } ).query().then( function success( response ) {
-                self.scriptList = response.data;
-                if( 0 < self.scriptList.length ) self.activeScript = self.scriptList[0];
-
-                // move the questionnaire to the front and the withdraw to the end of the list
-              } ).catch( CnSession.errorHandler );
-            }
+            if( null === self.scriptList ) self.loadScriptList();
           } ).then( function() {
             CnHttpFactory.instance( {
               path: 'participant/' + self.assignment.participant_id +
@@ -229,6 +207,44 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
             CnModalParticipantNoteFactory.instance( { participant: self.participant } ).show();
         };
 
+        this.loadScriptList = function() {
+          self.isScriptListLoading = true;
+          return CnHttpFactory.instance( {
+            path: 'application/' + CnSession.application.id +
+                  '/script?participant_id=' + self.assignment.participant_id,
+            data: {
+              modifier: {
+                order: 'name',
+                where: [
+                  { column: 'script.id', operator: '=', value: self.assignment.script_id },
+                  { or: true, column: 'reserved', operator: '=', value: false },
+                ]
+              },
+              select: { column: [
+                'id', 'name', 'repeated', 'url', 'description',
+                { table: 'started_event', column: 'datetime', alias: 'started_datetime' },
+                { table: 'completed_event', column: 'datetime', alias: 'completed_datetime' }
+              ] }
+            }
+          } ).query().then( function success( response ) {
+            var activeScriptName = null != self.activeScript ? self.activeScript.name : null;
+            self.scriptList = response.data;
+            if( 0 < self.scriptList ) {
+              self.activeScript = null;
+            } else {
+              if( null == self.activeScript ) {
+                self.activeScript = self.scriptList[0];
+              } else {
+                var activeScriptName = self.activeScript.name;
+                for( var i = 0; i < self.scriptList.length; i++ ) {
+                  if( activeScriptName == self.scriptList[i].name ) self.activeScript = self.scriptList[i];
+                }
+              }
+            }
+            self.isScriptListLoading = false;
+          } ).catch( CnSession.errorHandler );
+        };
+
         this.launchScript = function( script ) {
           var url = script.url + '&lang=' + self.participant.language_code + '&newtest=Y';
 
@@ -259,7 +275,10 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
                 // close the wait message
                 modal.close();
 
-                // now get the new token string we just created
+                // update the script list to reflect the new start datetime
+                self.loadScriptList();
+
+                // now get the new token string we just created and use it to open the script window
                 CnHttpFactory.instance( {
                   path: 'script/' + script.id + '/token/' + response.data
                 } ).get().then( function( response ) {

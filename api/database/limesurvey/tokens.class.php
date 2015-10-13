@@ -34,7 +34,7 @@ class tokens extends \cenozo\database\limesurvey\tokens
         lib::create( 'business\session' )->get_user()->get_assignment_list( $select, $modifier );
       if( 0 < count( $assignment_id_list ) )
       {
-        $postfix = '.'.str_pad(
+        $postfix = str_pad(
           current( $assignment_id_list )['id'],
           self::TOKEN_POSTFIX_LENGTH, '0', STR_PAD_LEFT );
       }
