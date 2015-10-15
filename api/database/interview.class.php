@@ -15,15 +15,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class interview extends \cenozo\database\record
 {
   /**
-   * Overrides the parent save method.
-   */
-  public function save()
-  {
-    parent::save();
-    $this->get_participant()->update_queue_status();
-  }
-
-  /**
    * Get the interview's last (most recent) assignment.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return assignment

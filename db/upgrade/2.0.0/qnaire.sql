@@ -80,7 +80,7 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       SET @sql = CONCAT(
         "INSERT INTO ", @cenozo, ".script( ",
           "name, started_event_type_id, completed_event_type_id, sid, repeated, reserved, description ) ",
-        "SELECT name, event_type.id, completed_event_type_id, phase.sid, phase.repeated, 1, description ",
+        "SELECT qnaire.name, event_type.id, completed_event_type_id, phase.sid, phase.repeated, 1, qnaire.description ",
         "FROM qnaire ",
         "JOIN ", @cenozo, ".event_type ON event_type.name = CONCAT( 'started (', qnaire.name, ')' ) ",
         "JOIN phase ON qnaire.id = phase.qnaire_id ",
@@ -96,7 +96,7 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
         "SELECT application.id, script.id ",
         "FROM ", @cenozo, ".application, ", @cenozo, ".script ",
         "JOIN qnaire ON script.id = qnaire.script_id ",
-        "WHERE DATABASE LIKE CONCAT( '%_', application.name )" );
+        "WHERE DATABASE() LIKE CONCAT( '%_', application.name )" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;

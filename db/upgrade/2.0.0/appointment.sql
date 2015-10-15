@@ -34,12 +34,42 @@ DROP PROCEDURE IF EXISTS patch_appointment;
 
       -- fill in the new interview_id column using the existing participant_id column
       UPDATE appointment 
-      JOIN interview 
-      ON appointment.participant_id = interview.participant_id 
+      JOIN interview ON appointment.participant_id = interview.participant_id 
       SET interview_id = interview.id;
 
       -- delete any remaining appointments which didn't have an interview
       DELETE FROM appointment WHERE interview_id = 0;
+
+      -- delete any appointments which are for a completed interview which is for the last qnaire
+      SET @last_qnaire_id = ( SELECT id FROM qnaire WHERE rank = ( SELECT MAX( rank ) FROM qnaire ) );
+      DELETE FROM appointment WHERE interview_id IN (
+        SELECT id FROM interview WHERE qnaire_id = @last_qnaire_id
+      );
+
+      -- determine which appointments are for completed interviews whose qnaire is not the last
+      -- and whose next interview doesn't yet exist
+      INSERT INTO interview( qnaire_id, participant_id, start_datetime )
+      SELECT next_qnaire.id, interview.participant_id, appointment.datetime
+      FROM appointment
+      JOIN interview ON appointment.interview_id = interview.id
+      JOIN qnaire ON interview.qnaire_id = qnaire.id
+      JOIN qnaire AS next_qnaire ON qnaire.rank + 1 = next_qnaire.rank
+      LEFT JOIN interview AS next_interview ON next_qnaire.id = next_interview.qnaire_id
+      AND interview.participant_id = next_interview.participant_id
+      WHERE appointment.assignment_id IS NULL
+      AND interview.end_datetime IS NOT NULL
+      AND next_interview.id IS NULL;
+
+      -- advance appointments which belong to completed interviews to the next interview
+      UPDATE appointment
+      JOIN interview ON appointment.interview_id = interview.id
+      JOIN qnaire ON interview.qnaire_id = qnaire.id
+      JOIN qnaire AS next_qnaire ON qnaire.rank + 1 = next_qnaire.rank
+      JOIN interview AS next_interview ON next_qnaire.id = next_interview.qnaire_id
+      AND interview.participant_id = next_interview.participant_id
+      SET appointment.interview_id = next_interview.id
+      WHERE appointment.assignment_id IS NULL
+      AND interview.end_datetime IS NOT NULL;
 
       -- now get rid of the participant column, index and constraint
       ALTER TABLE appointment

@@ -59,6 +59,7 @@ define( cenozo.getServicesIncludeList( 'queue' ), function( module ) {
         var self = this;
         this.queueList = []; // one-dimensional list for manipulation
         this.queueTree = []; // multi-dimensional tree for display
+        this.updateQueueTime = true; // repopulate the time queue the first time we load
 
         this.form = {
           canRepopulate: 3 <= CnSession.role.tier,
@@ -87,7 +88,7 @@ define( cenozo.getServicesIncludeList( 'queue' ), function( module ) {
           }
 
           // isRepopulating any queue repopulates them all
-          CnHttpFactory.instance( { path: 'queue/1?repopulate=true' } ).patch().then( function() {
+          CnHttpFactory.instance( { path: 'queue/1?repopulate=full' } ).get().then( function() {
             self.onView().then( function() { self.form.isRepopulating = false; } );
           } );
         };
@@ -155,7 +156,7 @@ define( cenozo.getServicesIncludeList( 'queue' ), function( module ) {
             whereList.push( { column: 'language_id', operator: '=', value: self.form.language_id } );
 
           return CnHttpFactory.instance( {
-            path: 'queue?full=1',
+            path: 'queue?full=1' + ( self.updateQueueTime ? '&repopulate=time' : '' ),
             data: {
               modifier: {
                 order: 'id',
@@ -164,6 +165,7 @@ define( cenozo.getServicesIncludeList( 'queue' ), function( module ) {
               select: { column: [ "id", "parent_queue_id", "rank", "name", "title", "participant_count" ] }
             }
           } ).query().then( function( response ) {
+            if( self.updateQueueTime ) self.updateQueueTime = false;
             if( 0 < self.queueTree.length ) {
               // don't rebuild the queue, just update the participant totals
               for( var i = 0; i < response.data.length; i++ ) {

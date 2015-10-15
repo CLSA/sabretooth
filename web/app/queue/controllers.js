@@ -31,7 +31,8 @@ define( [], function() {
       $scope.isLoading = false;
       $scope.isComplete = false;
       $scope.model = CnQueueTreeFactory.instance();
-      $scope.refresh = function() {
+      $scope.refresh = function( updateQueueTime ) {
+        $scope.model.updateQueueTime = true === updateQueueTime;
         $scope.isLoading = 0 < $scope.model.queueTree.length;
         $scope.isComplete = 0 < $scope.model.queueTree.length;
         $scope.model.onView().then( function() {

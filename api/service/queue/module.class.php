@@ -84,9 +84,14 @@ class module extends \cenozo\service\module
         'queue_join_participant.queue_id' );
       $select->add_column( 'last_repopulation', 'last_repopulation', false );
       $select->add_column( 'IFNULL( participant_count, 0 )', 'participant_count', false );
+    }
 
-      // must force all queues to repopulate
+    // if requested, repopulate time specific queues
+    $repopulate = $this->get_argument( 'repopulate', false );
+    if( $repopulate )
+    {
       $queue_class_name = lib::get_class_name( 'database\queue' );
+      if( 'full' == $repopulate ) $queue_class_name::repopulate();
       $queue_class_name::repopulate_time_specific();
     }
   }

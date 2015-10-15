@@ -109,7 +109,7 @@ class queue extends \cenozo\database\record
     $semaphore->acquire();
 
     // make sure the temporary table exists
-    static::create_participant_for_queue( $db_participant );
+    static::build_temporary_tables( $db_participant );
 
     // delete queue_has_participant records
     $sql = is_null( $db_participant )
@@ -127,7 +127,7 @@ class queue extends \cenozo\database\record
       if( static::$debug ) $queue_time = util::get_elapsed_time();
 
       $columns = sprintf(
-        'DISTINCT participant_for_queue.id, %s, '.
+        'DISTINCT temp_participant.id, %s, '.
         'participant_site_id, '.
         'effective_qnaire_id, '.
         'start_qnaire_date',
@@ -139,14 +139,21 @@ class queue extends \cenozo\database\record
         $db_queue->get_sql( $columns ) ) );
 
       if( static::$debug ) log::debug( sprintf(
-        '(Queue) "%s" build time: %0.2f', $db_queue->name, util::get_elapsed_time() - $queue_time ) );
+        '(Queue) "%s" build time%s: %0.2f',
+        $db_queue->name,
+        is_null( $db_participant ) ? '' : ' for '.$db_participant->uid,
+        util::get_elapsed_time() - $queue_time ) );
     }
     if( static::$debug ) log::debug( sprintf(
-      '(Queue) Total queue build time: %0.2f', util::get_elapsed_time() - $time ) );
+      '(Queue) Total queue build time%s: %0.2f',
+      is_null( $db_participant ) ? '' : ' for '.$db_participant->uid,
+      util::get_elapsed_time() - $time ) );
 
     $semaphore->release();
     if( static::$debug ) log::debug( sprintf(
-      '(Queue) Total repopulate() time: %0.2f', util::get_elapsed_time() - $total_time ) );
+      '(Queue) Total repopulate() time%s: %0.2f',
+      is_null( $db_participant ) ? '' : ' for '.$db_participant->uid,
+      util::get_elapsed_time() - $total_time ) );
   }
 
   /**
@@ -407,14 +414,21 @@ class queue extends \cenozo\database\record
       }
 
       if( static::$debug ) log::debug( sprintf(
-        '(Queue) "%s" build time: %0.2f', $db_queue->name, util::get_elapsed_time() - $queue_time ) );
+        '(Queue) "%s" build time%s: %0.2f',
+        $db_queue->name,
+        is_null( $db_participant ) ? '' : ' for '.$db_participant->uid,
+        util::get_elapsed_time() - $queue_time ) );
     }
     if( static::$debug ) log::debug( sprintf(
-      '(Queue) Total queue build time: %0.2f', util::get_elapsed_time() - $time ) );
+      '(Queue) Total queue build time%s: %0.2f',
+      is_null( $db_participant ) ? '' : ' for '.$db_participant->uid,
+      util::get_elapsed_time() - $time ) );
 
     $semaphore->release();
     if( static::$debug ) log::debug( sprintf(
-      '(Queue) Total repopulate_time_specific() time: %0.2f', util::get_elapsed_time() - $total_time ) );
+      '(Queue) Total repopulate_time_specific() time%s: %0.2f',
+      is_null( $db_participant ) ? '' : ' for '.$db_participant->uid,
+      util::get_elapsed_time() - $total_time ) );
   }
 
   /**
@@ -468,10 +482,10 @@ class queue extends \cenozo\database\record
     // if this is a time-specific queue then return a query which will return no rows
     if( $db_queue->time_specific )
       return array(
-        'from' => array( 'participant_for_queue' ),
+        'from' => array( 'temp_participant' ),
         'join' => array( // always join to the participant site table
-          'LEFT JOIN participant_for_queue_participant_site '.
-          'ON participant_for_queue_participant_site.id = participant_for_queue.id ' ),
+          'LEFT JOIN temp_participant_participant_site '.
+          'ON temp_participant_participant_site.id = temp_participant.id ' ),
         'where' => array( 'false' ) );
 
     $participant_class_name = lib::get_class_name( 'database\participant' );
@@ -485,10 +499,10 @@ class queue extends \cenozo\database\record
       // NOTE: when updating this query database\participant::get_queue_data()
       //       should also be updated as it performs a very similar query
       $parts = array(
-        'from' => array( 'participant_for_queue' ),
+        'from' => array( 'temp_participant' ),
         'join' => array( // always join to the participant site table
-          'LEFT JOIN participant_for_queue_participant_site '.
-          'ON participant_for_queue_participant_site.id = participant_for_queue.id ' ),
+          'LEFT JOIN temp_participant_participant_site '.
+          'ON temp_participant_participant_site.id = temp_participant.id ' ),
         'where' => array() );
     }
     else if( 'finished' == $queue )
@@ -508,6 +522,7 @@ class queue extends \cenozo\database\record
             'participant_active = false '.
             'OR participant_state_id IS NOT NULL '.
             'OR last_participation_consent_accept = 0 '.
+            'OR primary_region_id IS NULL '.
           ')';
       }
       else if( 'inactive' == $queue )
@@ -525,12 +540,20 @@ class queue extends \cenozo\database\record
         $parts['where'][] = 'IFNULL( last_participation_consent_accept = 1, true )';
         $parts['where'][] = 'participant_state_id IS NOT NULL';
       }
+      else if( 'no address' == $queue )
+      {
+        $parts['where'][] = 'participant_active = true';
+        $parts['where'][] = 'IFNULL( last_participation_consent_accept = 1, true )';
+        $parts['where'][] = 'participant_state_id IS NULL';
+        $parts['where'][] = 'primary_region_id IS NULL';
+      }
       else if( 'eligible' == $queue )
       {
         // active participant who does not have a "final" state and has at least one phone number
         $parts['where'][] = 'participant_active = true';
         $parts['where'][] = 'participant_state_id IS NULL';
         $parts['where'][] = 'IFNULL( last_participation_consent_accept = 1, true )';
+        $parts['where'][] = 'primary_region_id IS NOT NULL';
       }
       else if( 'qnaire' == $queue )
       {
@@ -538,7 +561,7 @@ class queue extends \cenozo\database\record
       }
       // we must process all of the qnaire queue's direct children as a whole
       else if( in_array( $queue,
-        array( 'qnaire waiting', 'assigned', 'appointment', 'quota disabled' ) ) )
+        array( 'qnaire waiting', 'assigned', 'appointment', 'quota disabled', 'no active address' ) ) )
       {
         if( 'qnaire waiting' == $queue )
         {
@@ -568,7 +591,7 @@ class queue extends \cenozo\database\record
               // (by design, there can only ever be one unassigned appointment per interview)
               $parts['from'][] = 'appointment';
               $parts['where'][] =
-                'appointment.interview_id = participant_for_queue.current_interview_id';
+                'appointment.interview_id = temp_participant.current_interview_id';
               $parts['where'][] = 'appointment.assignment_id IS NULL';
             }
             else
@@ -578,33 +601,44 @@ class queue extends \cenozo\database\record
               // appointments.
               $parts['join'][] =
                 'LEFT JOIN appointment '.
-                'ON appointment.interview_id = participant_for_queue.current_interview_id '.
+                'ON appointment.interview_id = temp_participant.current_interview_id '.
                 'AND appointment.assignment_id IS NULL';
               $parts['where'][] = 'appointment.id IS NULL';
 
               // join to the first_address table based on participant id
               $parts['join'][] =
-                'LEFT JOIN participant_for_queue_first_address '.
-                'ON participant_for_queue_first_address.id = participant_for_queue.id ';
+                'LEFT JOIN temp_participant_first_address '.
+                'ON temp_participant_first_address.id = temp_participant.id ';
 
-              // join to the quota table based on site, region, sex and age group
-              $parts['join'][] = 
-                'LEFT JOIN quota '.
-                'ON quota.site_id = participant_site_id '.
-                'AND quota.region_id = primary_region_id '.
-                'AND quota.sex = participant_sex '.
-                'AND quota.age_group_id = participant_age_group_id '.
-                'LEFT JOIN qnaire_has_quota '.
-                'ON quota.id = qnaire_has_quota.quota_id '.
-                'AND effective_qnaire_id = qnaire_has_quota.qnaire_id';
-
-              if( 'quota disabled' == $queue )
+              if( 'no active address' == $queue )
               {
-                // who belong to a quota which is disabled (row in qnaire_has_quota found)
-                $parts['where'][] = 'qnaire_has_quota.quota_id IS NOT NULL';
-                // and who are not marked to override quota
-                $parts['where'][] = 'participant_override_quota = false';
-                $parts['where'][] = 'source_override_quota = false';
+                // make sure there is no active address
+                $parts['where'][] = 'temp_participant_first_address.address_id IS NULL';
+              }
+              else
+              {
+                // make sure there is an active address
+                $parts['where'][] = 'temp_participant_first_address.address_id IS NOT NULL';
+
+                // join to the quota table based on site, region, sex and age group
+                $parts['join'][] = 
+                  'LEFT JOIN quota '.
+                  'ON quota.site_id = participant_site_id '.
+                  'AND quota.region_id = primary_region_id '.
+                  'AND quota.sex = participant_sex '.
+                  'AND quota.age_group_id = participant_age_group_id '.
+                  'LEFT JOIN qnaire_has_quota '.
+                  'ON quota.id = qnaire_has_quota.quota_id '.
+                  'AND effective_qnaire_id = qnaire_has_quota.qnaire_id';
+
+                if( 'quota disabled' == $queue )
+                {
+                  // who belong to a quota which is disabled (row in qnaire_has_quota found)
+                  $parts['where'][] = 'qnaire_has_quota.quota_id IS NOT NULL';
+                  // and who are not marked to override quota
+                  $parts['where'][] = 'participant_override_quota = false';
+                  $parts['where'][] = 'source_override_quota = false';
+                }
               }
             }
           }
@@ -634,13 +668,13 @@ class queue extends \cenozo\database\record
 
     $sql = self::$query_list[ $this->name ];
     $sql = preg_replace( '/\<SELECT_PARTICIPANT\>/', $select_participant_sql, $sql, 1 );
-    $sql = str_replace( '<SELECT_PARTICIPANT>', 'participant_for_queue.id', $sql );
+    $sql = str_replace( '<SELECT_PARTICIPANT>', 'temp_participant.id', $sql );
 
     return $sql;
   }
 
   /**
-   * Creates the participant_for_queue temporary table needed by all queues.
+   * Creates the temp_participant temporary table needed by all queues.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant If provided then only that participant will
@@ -648,11 +682,11 @@ class queue extends \cenozo\database\record
    * @access protected
    * @static
    */
-  protected static function create_participant_for_queue( $db_participant = NULL )
+  protected static function build_temporary_tables( $db_participant = NULL )
   {
     $application_id = lib::create( 'business\session' )->get_application()->id;
 
-    if( static::$participant_for_queue_created ) return;
+    if( static::$temporary_tables_created ) return;
 
     // build first_qnaire_event_type table
     $sql = 
@@ -663,7 +697,7 @@ class queue extends \cenozo\database\record
       'FROM qnaire '.
       'LEFT JOIN qnaire_has_event_type ON qnaire.id = qnaire_has_event_type.qnaire_id '.
       'GROUP BY qnaire.id';
-    static::db()->execute( 'DROP TABLE IF EXISTS participant_for_queue' );
+    static::db()->execute( 'DROP TABLE IF EXISTS temp_participant' );
     static::db()->execute( $sql );
     static::db()->execute( 'ALTER TABLE first_qnaire_event_type ADD INDEX fk_qnaire_id ( qnaire_id )' );
 
@@ -676,25 +710,25 @@ class queue extends \cenozo\database\record
       'FROM qnaire '.
       'LEFT JOIN qnaire_has_event_type ON qnaire.id = qnaire_has_event_type.qnaire_id '.
       'GROUP BY qnaire.id';
-    static::db()->execute( 'DROP TABLE IF EXISTS participant_for_queue' );
+    static::db()->execute( 'DROP TABLE IF EXISTS temp_participant' );
     static::db()->execute( $sql );
     static::db()->execute( 'ALTER TABLE next_qnaire_event_type ADD INDEX fk_qnaire_id ( qnaire_id )' );
 
-    // build participant_for_queue table
-    $sql = sprintf( 'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue '.
-                    static::$participant_for_queue_sql,
+    // build temp_participant table
+    $sql = sprintf( 'CREATE TEMPORARY TABLE IF NOT EXISTS temp_participant '.
+                    static::$temp_participant_sql,
                     static::db()->format_string( $application_id ) );
     if( !is_null( $db_participant ) )
       $sql .= sprintf( ' WHERE participant.id = %s ',
                        static::db()->format_string( $db_participant->id ) );
 
     if( static::$debug ) $time = util::get_elapsed_time();
-    static::db()->execute( 'DROP TABLE IF EXISTS participant_for_queue' );
+    static::db()->execute( 'DROP TABLE IF EXISTS temp_participant' );
     static::db()->execute( $sql );
 
     if( is_null( $db_participant ) )
       static::db()->execute(
-        'ALTER TABLE participant_for_queue '.
+        'ALTER TABLE temp_participant '.
         'ADD INDEX fk_id ( id ), '.
         'ADD INDEX fk_participant_sex ( participant_sex ), '.
         'ADD INDEX fk_participant_age_group_id ( participant_age_group_id ), '.
@@ -705,11 +739,13 @@ class queue extends \cenozo\database\record
         'ADD INDEX fk_current_assignment_id ( current_assignment_id ), '.
         'ADD INDEX dk_primary_region_id ( primary_region_id )' );
     if( static::$debug ) log::debug( sprintf(
-      '(Queue) Building queue_has_participant temp table: %0.2f', util::get_elapsed_time() - $time ) );
+      '(Queue) Building temp_participant temp table%s: %0.2f',
+      is_null( $db_participant ) ? '' : ' for '.$db_participant->uid,
+      util::get_elapsed_time() - $time ) );
 
-    // build participant_for_queue_participant_site
+    // build temp_participant_participant_site
     $sql = sprintf(
-      'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue_participant_site '.
+      'CREATE TEMPORARY TABLE IF NOT EXISTS temp_participant_participant_site '.
       'SELECT participant_id AS id, participant_site.site_id AS participant_site_id, '.
              'calling_start_time, calling_end_time '.
       'FROM participant_site '.
@@ -721,21 +757,23 @@ class queue extends \cenozo\database\record
                        static::db()->format_string( $db_participant->id ) );
 
     if( static::$debug ) $time = util::get_elapsed_time();
-    static::db()->execute( 'DROP TABLE IF EXISTS participant_for_queue_participant_site' );
+    static::db()->execute( 'DROP TABLE IF EXISTS temp_participant_participant_site' );
     static::db()->execute( $sql );
 
     if( is_null( $db_participant ) )
       static::db()->execute(
-        'ALTER TABLE participant_for_queue_participant_site '.
+        'ALTER TABLE temp_participant_participant_site '.
         'ADD INDEX dk_participant_id_site_id ( id, participant_site_id )' );
     if( static::$debug ) log::debug( sprintf(
-      '(Queue) Building participant_for_queue_participant_site temp table: %0.2f',
+      '(Queue) Building temp_participant_participant_site temp table%s: %0.2f',
+      is_null( $db_participant ) ? '' : ' for '.$db_participant->uid,
       util::get_elapsed_time() - $time ) );
 
-    // build participant_for_queue_first_address table
+    // build temp_participant_first_address table
     $sql = sprintf(
-      'CREATE TEMPORARY TABLE IF NOT EXISTS participant_for_queue_first_address '.
+      'CREATE TEMPORARY TABLE IF NOT EXISTS temp_participant_first_address '.
       'SELECT participant.id AS id, '.
+             'address.id AS address_id, '.
              'address.timezone_offset AS first_address_timezone_offset, '.
              'address.daylight_savings AS first_address_daylight_savings '.
       'FROM participant_first_address '.
@@ -752,20 +790,21 @@ class queue extends \cenozo\database\record
                        static::db()->format_string( $db_participant->id ) );
 
     if( static::$debug ) $time = util::get_elapsed_time();
-    static::db()->execute( 'DROP TABLE IF EXISTS participant_for_queue_first_address' );
+    static::db()->execute( 'DROP TABLE IF EXISTS temp_participant_first_address' );
     static::db()->execute( $sql );
 
     if( is_null( $db_participant ) )
       static::db()->execute(
-        'ALTER TABLE participant_for_queue_first_address '.
+        'ALTER TABLE temp_participant_first_address '.
         'ADD INDEX dk_id ( id ), '.
         'ADD INDEX dk_first_address_timezone_offset ( first_address_timezone_offset ), '.
         'ADD INDEX dk_first_address_daylight_savings ( first_address_daylight_savings )' );
     if( static::$debug ) log::debug( sprintf(
-      '(Queue) Building participant_for_queue_first_address temp table: %0.2f',
+      '(Queue) Building temp_participant_first_address temp table%s: %0.2f',
+      is_null( $db_participant ) ? '' : ' for '.$db_participant->uid,
       util::get_elapsed_time() - $time ) );
 
-    static::$participant_for_queue_created = true;
+    static::$temporary_tables_created = true;
   }
 
   /**
@@ -813,12 +852,12 @@ class queue extends \cenozo\database\record
   public static $debug = false;
 
   /**
-   * Whether the participant_for_queue temporary table has been created.
+   * Whether the temporary tables has been created.
    * @var boolean
    * @access protected
    * @static
    */
-  protected static $participant_for_queue_created = false;
+  protected static $temporary_tables_created = false;
 
   /**
    * The queries for each queue
@@ -837,12 +876,12 @@ class queue extends \cenozo\database\record
   private static $queue_list_cache = array();
 
   /**
-   * A string containing the SQL used to create the participant_for_queue data
+   * A string containing the SQL used to create the temp_participant data
    * @var string
    * @access protected
    * @static
    */
-  protected static $participant_for_queue_sql = <<<'SQL'
+  protected static $temp_participant_sql = <<<'SQL'
 SELECT participant.id,
 participant.active AS participant_active,
 participant.sex AS participant_sex,
