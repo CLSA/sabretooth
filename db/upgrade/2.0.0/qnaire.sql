@@ -79,8 +79,8 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       -- now create a script to represent all qnaires
       SET @sql = CONCAT(
         "INSERT INTO ", @cenozo, ".script( ",
-          "name, started_event_type_id, completed_event_type_id, sid, repeated, reserved, description ) ",
-        "SELECT qnaire.name, event_type.id, completed_event_type_id, phase.sid, phase.repeated, 1, qnaire.description ",
+          "name, started_event_type_id, completed_event_type_id, sid, repeated, description ) ",
+        "SELECT qnaire.name, event_type.id, completed_event_type_id, phase.sid, phase.repeated, qnaire.description ",
         "FROM qnaire ",
         "JOIN ", @cenozo, ".event_type ON event_type.name = CONCAT( 'started (', qnaire.name, ')' ) ",
         "JOIN phase ON qnaire.id = phase.qnaire_id ",

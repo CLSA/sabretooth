@@ -51,10 +51,7 @@ define( cenozo.getServicesIncludeList( 'qnaire' ), function( module ) {
               data: {
                 select: { column: [ 'id', 'name' ] },
                 modifier: {
-                  where: [
-                    { column: 'reserved', operator: '=', value: true },
-                    { column: 'repeated', operator: '=', value: false }
-                  ],
+                  where: [ { column: 'repeated', operator: '=', value: false } ],
                   order: 'name'
                 }
               }
