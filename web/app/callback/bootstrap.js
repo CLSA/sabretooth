@@ -1,7 +1,1 @@
-define( [
-    cenozoApp.baseUrl + '/app/callback/controllers.js',
-    cenozoApp.baseUrl + '/app/callback/directives.js',
-    cenozoApp.baseUrl + '/app/callback/services.js'
-  ],
-  function() {}
-);
+define( cenozo.getDependencyList( 'callback' ), function() {} );

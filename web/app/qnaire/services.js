@@ -1,4 +1,4 @@
-define( cenozo.getServicesIncludeList( 'qnaire' ), function( module ) { 
+define( [], function() { 
   'use strict';
 
   /* ######################################################################################################## */
