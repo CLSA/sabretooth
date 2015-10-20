@@ -37,8 +37,8 @@ class post extends \cenozo\service\post
     $db_reached_event_type->save();
     $db_qnaire->reached_event_type_id = $db_reached_event_type->id;
 
-    // now repopulate the queues
+    // now repopulate the queues immediately
     $queue_class_name = lib::get_class_name( 'database\queue' );
-    $queue_class_name::repopulate();
+    $queue_class_name::delayed_repopulate();
   }
 }

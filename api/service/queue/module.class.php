@@ -86,13 +86,22 @@ class module extends \cenozo\service\module
       $select->add_column( 'IFNULL( participant_count, 0 )', 'participant_count', false );
     }
 
-    // if requested, repopulate time specific queues
+    // if requested, repopulate queue immediately
     $repopulate = $this->get_argument( 'repopulate', false );
     if( $repopulate )
     {
       $queue_class_name = lib::get_class_name( 'database\queue' );
-      if( 'full' == $repopulate ) $queue_class_name::repopulate();
-      $queue_class_name::repopulate_time_specific();
+      if( 'full' == $repopulate )
+      {
+        $queue_class_name::repopulate();
+        $queue_class_name::repopulate_time();
+      }
+      else
+      {
+        $interval = $queue_class_name::get_interval_since_last_repopulate_time();
+        if( is_null( $interval ) || 0 < $interval->days || 0 < $interval->h || 0 < $interval->i )
+          $queue_class_name::repopulate_time();
+      }
     }
   }
 }

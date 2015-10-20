@@ -40,7 +40,7 @@ class assignment extends \cenozo\database\record
     }
 
     parent::save();
-    $this->get_interview()->get_participant()->update_queue_status();
+    $this->get_interview()->get_participant()->repopulate_queue( true );
   }
 
   /**
@@ -50,7 +50,7 @@ class assignment extends \cenozo\database\record
   {
     $db_participant = $this->get_interview()->get_participant();
     parent::delete();
-    $db_participant->update_queue_status();
+    $db_participant->repopulate_queue( true );
   }
 
   /**
@@ -89,5 +89,31 @@ class assignment extends \cenozo\database\record
     if( 1 < count( $phone_call_list ) )
       log::warning( sprintf( 'User %d (%s) has more than one open phone_call!', $this->id, $this->name ) );
     return 0 < count( $phone_call_list ) ? current( $phone_call_list ) : NULL;
+  }
+
+  // TODO: document
+  function process_appointments_and_callbacks()
+  {
+    $db_queue = $this->get_queue();
+
+    // set the assignment and reached in appointments and callbacks
+    if( $db_queue->from_appointment() || $db_queue->from_callback() )
+    {
+      $db_interview = $this->get_interview();
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'assignment_id', '=', NULL );
+      $record_list = $db_queue->from_appointment()
+                   ? $db_interview->get_appointment_object_list( $modifier )
+                   : $db_interview->get_callback_object_list( $modifier );
+      if( count( $record_list ) )
+      {
+        $linked_record = current( $record_list );
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'status', '=', 'contacted' );
+        $linked_record->reached = 0 < $record->get_phone_call_count( $modifier );
+        $linked_record->assignment_id = $db_assignment->id;
+        $linked_record->save();
+      }
+    }
   }
 }

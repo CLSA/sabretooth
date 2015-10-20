@@ -71,21 +71,19 @@ class interview extends \cenozo\database\record
       $this->site_id = $db_credit_site->id;
       $this->save();
 
-      // record the event (if one exists)
+      // record the event
       $db_event_type = $this->get_qnaire()->get_script()->get_completed_event_type();
-      if( !is_null( $db_event_type ) )
+
+      // make sure the event doesn't already exist
+      $event_mod = lib::create( 'database\modifier' );
+      $event_mod->where( 'event_type_id', '=', $db_event_type->id );
+      if( 0 == $this->get_participant()->get_event_count( $event_mod ) )
       {
-        // make sure the event doesn't already exist
-        $event_mod = lib::create( 'database\modifier' );
-        $event_mod->where( 'event_type_id', '=', $db_event_type->id );
-        if( 0 == $this->get_participant()->get_event_count( $event_mod ) )
-        {
-          $db_event = lib::create( 'database\event' );
-          $db_event->participant_id = $this->participant_id;
-          $db_event->event_type_id = $db_event_type->id;
-          $db_event->datetime = $now;
-          $db_event->save();
-        }
+        $db_event = lib::create( 'database\event' );
+        $db_event->participant_id = $this->participant_id;
+        $db_event->event_type_id = $db_event_type->id;
+        $db_event->datetime = $now;
+        $db_event->save();
       }
     }
   }
@@ -195,14 +193,11 @@ class interview extends \cenozo\database\record
     $this->site_id = NULL;
     $this->save();
 
-    // remove completed events (if any exist)
+    // remove completed events
     $db_event_type = $this->get_qnaire()->get_script()->get_completed_event_type();
-    if( !is_null( $db_event_type ) )
-    {
-      $event_mod = lib::create( 'database\modifier' );
-      $event_mod->where( 'event_type_id', '=', $db_event_type->id );
-      foreach( $db_participant->get_event_object_list( $event_mod ) as $db_event )
-        $db_event->delete();
-    }
+    $event_mod = lib::create( 'database\modifier' );
+    $event_mod->where( 'event_type_id', '=', $db_event_type->id );
+    foreach( $db_participant->get_event_object_list( $event_mod ) as $db_event )
+      $db_event->delete();
   }
 }

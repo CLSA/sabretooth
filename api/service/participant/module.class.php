@@ -52,9 +52,22 @@ class module extends \cenozo\service\participant\module
       $modifier->or_where( sprintf( 'IFNULL( appointment.user_id, %d )', $user_id ), '=', $user_id );
       $modifier->where_bracket( false );
 
-      // must force all queues to repopulate
+      // repopulate queue if it is out of date
       $queue_class_name = lib::get_class_name( 'database\queue' );
-      $queue_class_name::repopulate_time_specific();
+      $interval = $queue_class_name::get_interval_since_last_repopulate();
+      if( is_null( $interval ) || 0 < $interval->days || 22 < $interval->h )
+      { // it's been at least 23 hours since the non time-based queues have been repopulated
+        $queue_class_name::repopulate();
+        $queue_class_name::repopulate_time();
+      }
+      else
+      {
+        $interval = $queue_class_name::get_interval_since_last_repopulate_time();
+        if( is_null( $interval ) || 0 < $interval->days || 0 < $interval->h || 0 < $interval->i )
+        { // it's been at least one minute since the time-based queues have been repopulated
+          $queue_class_name::repopulate_time();
+        }
+      }
     }
   }
 }

@@ -22,57 +22,110 @@ class module extends \cenozo\service\module
     parent::validate();
 
     $service_class_name = lib::get_class_name( 'service\service' );
+    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
+    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+
     $db_user = lib::create( 'business\session' )->get_user();
     $db_role = lib::create( 'business\session' )->get_role();
 
     $method = $this->get_method();
-    if( 'PATCH' == $method &&
-        $this->get_argument( 'close', false ) &&
-        0 < count( $this->get_file_as_array() ) )
-    {
-      $this->set_data( 'Patch data must be empty when closing an assignment.' );
-      $this->get_status()->set_code( 400 );
-    }
-    else if( ( 'DELETE' == $method || 'PATCH' == $method ) &&
+    $operation = $this->get_argument( 'operation', false );
+
+    if( ( 'DELETE' == $method || 'PATCH' == $method ) &&
         3 > $db_role->tier &&
         $this->get_resource()->user_id != $db_user->id )
     {
       // only admins can delete or modify assignments other than their own
         $this->get_status()->set_code( 403 );
     }
-    else if( 'POST' == $method )
+    else if( 'PATCH' == $method && ( 'advance' == $operation || 'close' == $operation ) )
     {
-      // do not allow more than one open assignment
-      $data = NULL;
+      $record = $this->get_resource();
 
-      if( $db_user->has_open_assignment() )
+      if( 0 < count( $this->get_file_as_array() ) )
       {
-        $data = 'Cannot create a new assignment since you already have one open.';
+        $this->set_data( 'Patch data must be empty when advancing or closing an assignment.' );
+        $this->get_status()->set_code( 400 );
+      }
+      else if( !is_null( $record->end_datetime ) )
+      {
+        $this->set_data( 'Cannot advance or close the assignment since it is already closed.' );
+        $this->get_status()->set_code( 409 );
       }
       else
       {
-        // repopulate the participant to make sure they are still available for an assignment
+        // check if the qnaire script is complete or not (used below)
+        $db_interview = $record->get_interview();
+        $db_participant = $db_interview->get_participant();
+        $db_qnaire = $db_interview->get_qnaire();
+        $tokens_class_name::set_sid( $db_qnaire->get_script()->sid );
+        $tokens_mod = lib::create( 'database\modifier' );
+        $tokens_class_name::where_token( $tokens_mod, $db_participant, false );
+        $tokens_mod->where( 'completed', '!=', 'N' );
+        $this->is_survey_complete = 0 < $tokens_class_name::count( $tokens_mod );
+
+        $has_open_phone_call = $record->has_open_phone_call();
+        if( 'advance' == $operation )
+        {
+          if( 0 == $has_open_phone_call )
+          {
+            $this->set_data( 'An assignment can only be advanced during an open call.' );
+            $this->get_status()->set_code( 409 );
+          }
+          else if( !$this->is_survey_complete )
+          {
+            $this->set_data( 'The assignment cannot be advanced as the questionnaire is not complete.' );
+            $this->get_status()->set_code( 409 );
+          }
+          else
+          {
+            // make sure there is another questionnaire after the current one
+            $qnaire_mod = lib::create( 'database\modifier' );
+            $qnaire_mod->where( 'rank', '=', $db_qnaire->rank + 1 );
+            if( 0 == $qnaire_class_name::count( $qnaire_mod ) )
+            {
+              $this->set_data( 'There are no other questionnaires to advance to.' );
+              $this->get_status()->set_code( 409 );
+            }
+          }
+        }
+        else if( 'close' == $operation )
+        {
+          if( 0 < $has_open_phone_call )
+          {
+            $this->set_data( 'An assignment cannot be closed during an open call.' );
+            $this->get_status()->set_code( 409 );
+          }
+        }
+      }
+    }
+    else if( 'POST' == $method )
+    {
+      // do not allow more than one open assignment
+      if( $db_user->has_open_assignment() )
+      {
+        $this->set_data( 'Cannot create a new assignment since you already have one open.' );
+        $this->get_status()->set_code( 409 );
+      }
+      else
+      {
+        // repopulate the participant immediately to make sure they are still available for an assignment
         $post_object = $this->get_file_as_object();
         $db_participant = lib::create( 'database\participant', $post_object->participant_id );
-        $db_participant->update_queue_status();
+        $db_participant->repopulate_queue( false );
         $queue_mod = lib::create( 'database\modifier' );
         $queue_mod->where( 'queue.rank', '!=', NULL );
         if( 0 == $db_participant->get_queue_count( $queue_mod ) )
         {
-          $data = 'The participant is no longer available for an interview.';
+          $this->set_data( 'The participant is no longer available for an interview.' );
+          $this->get_status()->set_code( 409 );
         }
-        else
+        else if( !is_null( $db_participant->get_current_assignment() ) )
         {
-          if( !is_null( $db_participant->get_current_assignment() ) )
-            $data = 'Cannot create a new assignment since the participant is already '.
-                    'assigned to a different user.';
+          $this->set_data(
+            'Cannot create a new assignment since the participant is already assigned to a different user.' );
+          $this->get_status()->set_code( 409 );
         }
-      }
-
-      if( !is_null( $data ) )
-      {
-        $this->set_data( $data );
-        $this->get_status()->set_code( 409 );
       }
     }
   }
@@ -146,14 +199,15 @@ class module extends \cenozo\service\module
   {
     parent::pre_write( $record );
 
-    if( 'POST' == $this->get_method() && $this->get_argument( 'open', false ) )
+    $now = util::get_datetime_object();
+    $operation = $this->get_argument( 'operation', false );
+    if( 'POST' == $this->get_method() && 'open' == $operation )
     {
       $session = lib::create( 'business\session' );
       $db_user = $session->get_user();
       $db_site = $session->get_site();
 
       // use the post object to fill in the record columns
-      $post_object = $this->get_file_as_object();
       $post_object = $this->get_file_as_object();
       $db_participant = lib::create( 'database\participant', $post_object->participant_id );
       $db_interview = $db_participant->get_effective_interview();
@@ -162,28 +216,24 @@ class module extends \cenozo\service\module
       $record->site_id = $db_site->id;
       $record->interview_id = $db_interview->id;
       $record->queue_id = $db_participant->current_queue_id;
-      $record->start_datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+      $record->start_datetime = $now;
     }
-    else if( 'PATCH' == $this->get_method() )
+    else if( 'PATCH' == $this->get_method() && ( 'advance' == $operation || 'close' == $operation ) )
     {
-      if( $this->get_argument( 'close', false ) )
-      {
-        if( !is_null( $record->end_datetime ) )
-          log::warning( sprintf( 'Tried to close assignment id %d which is already closed.', $record->id ) );
-        else
-        {
-          // close the assignment by setting the end datetime
-          $record->end_datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+      // whether advancing or closing, the assignment is done
+      $record->end_datetime = $now;
 
-          // now check if the script is complete and update the interview if it is
-          $db_interview = $record->get_interview();
-          $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-          $tokens_class_name::set_sid( $db_interview->get_qnaire()->get_script()->sid );
-          $tokens_mod = lib::create( 'database\modifier' );
-          $tokens_class_name::where_token( $tokens_mod, $db_interview->get_participant(), false );
-          $tokens_mod->where( 'completed', '=', 'N' );
-          if( 0 == $tokens_class_name::count( $tokens_mod ) ) $db_interview->complete();
-        }
+      if( 'advance' == $operation )
+      {
+        // end the phone call now
+        $db_phone_call = $record->get_open_phone_call();
+        $db_phone_call->end_datetime = $now;
+        $db_phone_call->status = 'contacted';
+        $db_phone_call->save();
+        $db_phone_call->process_events();
+
+        // make a note of which phone was called
+        $this->current_phone_id = $db_phone_call->phone_id;
       }
     }
   }
@@ -197,37 +247,73 @@ class module extends \cenozo\service\module
 
     if( 'PATCH' == $this->get_method() )
     {
-      // delete the assignment if there are no phone calls, or close it if there are
-      if( $this->get_argument( 'close', false ) )
+      $operation = $this->get_argument( 'operation', false );
+      if( 'advance' == $operation )
       {
+        $session = lib::create( 'business\session' );
+        $now = util::get_datetime_object();
+        $db_user = $session->get_user();
+        $db_site = $session->get_site();
+
+        // update any appointments or callbacks associated with this assignment
+        $record->process_appointments_and_callbacks();
+        $db_interview = $record->get_interview();
+        $db_participant = $db_interview->get_participant();
+
+        // mark the interview as complete and immediately update the queue
+        $db_interview->complete();
+        $db_participant->repopulate_queue( false );
+
+        /*
+        // get the next qnaire
+        $qnaire_sel = lib::create( 'database\select' );
+        $qnaire_sel->add_column( 'id' );
+        $qnaire_sel->from( 'qnaire' );
+        $qnaire_mod = lib::create( 'database\modifier' );
+        $qnaire_mod->where( 'rank', '=', $db_interview->get_qnaire()->rank + 1 );
+        $row = current( $qnaire_class_name->select( $qnaire_sel, $qnaire_mod ) );
+        */
+
+        // now create a new interview and assign it to the same user and start a new call
+        // since the interview is now complete the effective interview will be newly created
+        // by the participant record's get_effective_interview() method
+        $db_next_interview = $db_participant->get_effective_interview();
+        $db_next_interview->start_datetime = $now;
+        $db_next_interview->save();
+
+        $db_assignment = lib::create( 'database\assignment' );
+        $db_assignment->user_id = $db_user->id;
+        $db_assignment->site_id = $db_site->id;
+        $db_assignment->interview_id = $db_next_interview->id;
+        $db_assignment->queue_id = $record->queue_id;
+        $db_assignment->start_datetime = $now;
+        $db_assignment->save();
+
+        $db_phone_call = lib::create( 'database\phone_call' );
+        $db_phone_call->assignment_id = $db_assignment->id;
+        $db_phone_call->phone_id = $this->current_phone_id;
+        $db_phone_call->start_datetime = $now;
+        $db_phone_call->save();
+      }
+      else if( 'close' == $operation )
+      { 
+        // delete the assignment if there are no phone calls, or set appointment/callback reached if there are
         if( 0 == $record->get_phone_call_count() ) $record->delete();
         else
         {
-          $db_queue = $record->get_queue();
+          // update any appointments or callbacks associated with this assignment
+          $record->process_appointments_and_callbacks();
 
-          // set reached in appointments and callbacks
-          if( $db_queue->from_appointment() || $db_queue->from_callback() )
-          {
-            $record_list = $db_queue->from_appointment()
-                         ? $record->get_appointment_object_list()
-                         : $record->get_callback_object_list();
-            if( 0 == count( $record_list ) )
-              log::warning( sprintf(
-                'Can\'t find %s for assignment %d created from %s queue',
-                $db_queue->from_appointment() ? 'appointment' : 'callback',
-                $record->id,
-                $db_queue->name ) );
-            else
-            {
-              $linked_record = current( $record_list );
-              $modifier = lib::create( 'database\modifier' );
-              $modifier->where( 'status', '=', 'contacted' );
-              $linked_record->reached = 0 < $record->get_phone_call_count( $modifier );
-              $linked_record->save();
-            }
-          }
+          // mark the interview as complete if the survey is complete
+          if( $this->is_survey_complete ) $record->get_interview()->complete();
         }
       }
     }
   }
+
+  // TODO: document
+  protected $is_survey_complete = NULL;
+
+  // TODO: document
+  protected $current_phone_id = NULL;
 }

@@ -14,20 +14,75 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  */
 class queue extends \cenozo\database\record
 {
-  /**
-   * Constructor
-   * 
-   * The constructor either creates a new object which can then be insert into the database by
-   * calling the {@link save} method, or, if an primary key is provided then the row with the
-   * requested primary id will be loaded.
-   * This method overrides the parent constructor because of custom sql required by each queue.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param integer $id The primary key for this object.
-   * @access public
-   */
-  public function __construct( $id = NULL )
+  // TODO: document
+  public static function delayed_repopulate( $db_participant = NULL )
   {
-    parent::__construct( $id );
+    if( 'all' != static::$delayed_repopulate_list )
+    {
+      if( is_null( $db_participant ) ) static::$delayed_repopulate_list = 'all';
+      else if( !array_key_exists( $db_participant->uid, static::$delayed_repopulate_list ) )
+        static::$delayed_repopulate_list[$db_participant->uid] = $db_participant;
+    }
+  }
+
+  // TODO: document
+  public static function delayed_repopulate_time( $db_participant = NULL )
+  {
+    if( 'all' != static::$delayed_repopulate_time_list )
+    {
+      if( is_null( $db_participant ) ) static::$delayed_repopulate_time_list = 'all';
+      else if( !array_key_exists( $db_participant->uid, static::$delayed_repopulate_time_list ) )
+        static::$delayed_repopulate_time_list[$db_participant->uid] = $db_participant;
+    }
+  }
+
+  // TODO: document
+  public static function execute_delayed()
+  {
+    static::$temporary_tables_created = false; // force rebuild temporary tables
+    if( 'all' == static::$delayed_repopulate_list )
+      static::repopulate();
+    else foreach( static::$delayed_repopulate_list as $db_participant )
+      static::repopulate( $db_participant );
+    static::$delayed_repopulate_list = array();
+    
+    if( 'all' == static::$delayed_repopulate_time_list )
+      static::repopulate_time();
+    else foreach( static::$delayed_repopulate_time_list as $db_participant )
+      static::repopulate_time( $db_participant );
+    static::$delayed_repopulate_time_list = array();
+  }
+
+  // TODO: document
+  public static function get_interval_since_last_repopulate()
+  {
+    $select = lib::create( 'database\select' );
+    $select->add_column(
+      sprintf( 'MIN( CONVERT_TZ( update_timestamp, "%s", "UTC" ) )', date_default_timezone_get() ),
+      'update_datetime',
+      false );
+    $select->from( 'queue_has_participant' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'queue_id', 'IN', 'SELECT id FROM queue WHERE time_specific = false', false );
+
+    $datetime = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
+    return $datetime ? util::get_interval( $datetime ) : NULL;
+  }
+
+  // TODO: document
+  public static function get_interval_since_last_repopulate_time()
+  {
+    $select = lib::create( 'database\select' );
+    $select->add_column(
+      sprintf( 'MIN( CONVERT_TZ( update_timestamp, "%s", "UTC" ) )', date_default_timezone_get() ),
+      'update_datetime',
+      false );
+    $select->from( 'queue_has_participant' );
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'queue_id', 'IN', 'SELECT id FROM queue WHERE time_specific = true', false );
+
+    $datetime = static::db()->get_one( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
+    return $datetime ? util::get_interval( $datetime ) : NULL;
   }
 
   /**
@@ -93,14 +148,14 @@ class queue extends \cenozo\database\record
    * 
    * This method is used to pupulate all non-time-specific queues.
    * Only non time-specific queues are affected by this function, to populate time-specific
-   * queues use the repopulate_time_specific() method instead.
+   * queues use the repopulate_time() method instead.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant If provided then only that participant will
    *        be affected by the operation.
    * @access public
    * @static
    */
-  static public function repopulate( $db_participant = NULL )
+  public static function repopulate( $db_participant = NULL )
   {
     if( static::$debug ) $total_time = util::get_elapsed_time();  
 
@@ -167,7 +222,7 @@ class queue extends \cenozo\database\record
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
-  static public function repopulate_time_specific( $db_participant = NULL )
+  public static function repopulate_time( $db_participant = NULL )
   {
     if( static::$debug ) $total_time = util::get_elapsed_time();  
 
@@ -177,7 +232,7 @@ class queue extends \cenozo\database\record
 
     // delete queue_has_participant records
     $delete_mod = lib::create( 'database\modifier' );
-    $delete_mod->where( 'queue_id', 'IN', '( SELECT id FROM queue WHERE time_specific = true )', false );
+    $delete_mod->where( 'queue_id', 'IN', 'SELECT id FROM queue WHERE time_specific = true', false );
     if( !is_null( $db_participant ) ) $delete_mod->where( 'participant_id', '=', $db_participant->id );
     $sql = 'DELETE FROM queue_has_participant '.$delete_mod->get_sql();
     if( static::$debug ) $time = util::get_elapsed_time();
@@ -426,7 +481,7 @@ class queue extends \cenozo\database\record
 
     $semaphore->release();
     if( static::$debug ) log::debug( sprintf(
-      '(Queue) Total repopulate_time_specific() time%s: %0.2f',
+      '(Queue) Total repopulate_time() time%s: %0.2f',
       is_null( $db_participant ) ? '' : ' for '.$db_participant->uid,
       util::get_elapsed_time() - $total_time ) );
   }
@@ -697,7 +752,7 @@ class queue extends \cenozo\database\record
       'FROM qnaire '.
       'LEFT JOIN qnaire_has_event_type ON qnaire.id = qnaire_has_event_type.qnaire_id '.
       'GROUP BY qnaire.id';
-    static::db()->execute( 'DROP TABLE IF EXISTS temp_participant' );
+    static::db()->execute( 'DROP TABLE IF EXISTS first_qnaire_event_type' );
     static::db()->execute( $sql );
     static::db()->execute( 'ALTER TABLE first_qnaire_event_type ADD INDEX fk_qnaire_id ( qnaire_id )' );
 
@@ -710,7 +765,7 @@ class queue extends \cenozo\database\record
       'FROM qnaire '.
       'LEFT JOIN qnaire_has_event_type ON qnaire.id = qnaire_has_event_type.qnaire_id '.
       'GROUP BY qnaire.id';
-    static::db()->execute( 'DROP TABLE IF EXISTS temp_participant' );
+    static::db()->execute( 'DROP TABLE IF EXISTS next_qnaire_event_type' );
     static::db()->execute( $sql );
     static::db()->execute( 'ALTER TABLE next_qnaire_event_type ADD INDEX fk_qnaire_id ( qnaire_id )' );
 
@@ -851,6 +906,12 @@ class queue extends \cenozo\database\record
    */
   public static $debug = false;
 
+  // TODO: document
+  public static $delayed_repopulate_list = array();
+
+  // TODO: document
+  public static $delayed_repopulate_time_list = array();
+  
   /**
    * Whether the temporary tables has been created.
    * @var boolean

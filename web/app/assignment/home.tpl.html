@@ -238,6 +238,12 @@
         </div>
       </div>
       <div class="form-footer text-right rounded-bottom bg-info">
+        <button ng-if="model.activeScript.id == model.assignment.script_id && model.activeQnaire.id != model.lastQnaire.id"
+                type="button"
+                class="btn btn-default pull-left"
+                ng-disabled="null == model.activeScript.completed_datetime"
+                tooltip="This will immediately end the current assignment and begin a new assignment for the next questionnaire without ending the current call. You should only click this button if you intend to immediately proceed with the next questionnaire."
+                ng-click="model.advanceQnaire()">Advance Questionnaire</button>
         <button type="button"
                 class="btn btn-primary"
                 ng-disabled="!model.activeScript.repeated && model.activeScript.completed_datetime"

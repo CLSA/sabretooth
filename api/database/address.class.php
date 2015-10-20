@@ -26,7 +26,7 @@ class address extends \cenozo\database\address
         'january', 'february', 'march', 'april', 'may', 'june',
         'july', 'august', 'september', 'october', 'november', 'december' ) );
     parent::save();
-    if( $update_queue ) $this->get_participant()->update_queue_status();
+    if( $update_queue ) $this->get_participant()->repopulate_queue( true );
   }
 
   /**
@@ -36,6 +36,6 @@ class address extends \cenozo\database\address
   {
     $db_participant = $this->get_participant();
     parent::delete();
-    $db_participant->update_queue_status();
+    $db_participant->repopulate_queue( true );
   }
 }

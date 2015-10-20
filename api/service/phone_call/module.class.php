@@ -26,8 +26,9 @@ class module extends \cenozo\service\module
     $db_role = lib::create( 'business\session' )->get_role();
 
     $method = $this->get_method();
+    $operation = $this->get_argument( 'operation', false );
     if( 'PATCH' == $method &&
-        $this->get_argument( 'close', false ) &&
+        'close' == $operation &&
         !array_key_exists( 'status', $this->get_file_as_array() ) )
     {
       // can't close a phone call without defining the status
@@ -86,8 +87,10 @@ class module extends \cenozo\service\module
   {
     parent::pre_write( $record );
 
+    $now = util::get_datetime_object();
     $method = $this->get_method();
-    if( 'POST' == $method && $this->get_argument( 'open', false ) )
+    $operation = $this->get_argument( 'operation', false );
+    if( 'POST' == $method && 'open' == $operation )
     {
       $session = lib::create( 'business\session' );
       $db_user = $session->get_user();
@@ -95,11 +98,11 @@ class module extends \cenozo\service\module
       $post_object = $this->get_file_as_object();
       $record->assignment_id = $db_user->get_open_assignment()->id;
       $record->phone_id = $post_object->phone_id;
-      $record->start_datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+      $record->start_datetime = $now;
     }
     else if( 'PATCH' == $method )
     {
-      if( $this->get_argument( 'close', false ) )
+      if( 'close' == $operation )
       { // close the phone call by setting the end datetime
         if( !is_null( $record->end_datetime ) )
         {
@@ -107,7 +110,7 @@ class module extends \cenozo\service\module
         }
         else
         {
-          $record->end_datetime = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
+          $record->end_datetime = $now;
         }
       }
     }
@@ -120,7 +123,8 @@ class module extends \cenozo\service\module
   {
     parent::post_write( $record );
 
-    if( 'POST' == $this->get_method() && $this->get_argument( 'open', false ) )
+    $operation = $this->get_argument( 'operation', false );
+    if( 'POST' == $this->get_method() && 'open' == $operation )
     {
       $db_assignment = $record->get_assignment();
       $db_queue = $db_assignment->get_queue();
@@ -142,40 +146,9 @@ class module extends \cenozo\service\module
         }
       }
     }
-    else if( 'PATCH' == $this->get_method() && $this->get_argument( 'close', false ) )
+    else if( 'PATCH' == $this->get_method() && 'close' == $operation )
     {
-      $now = util::get_datetime_object()->format( 'Y-m-d H:i:s' );
-      $db_interview = $record->get_assignment()->get_interview();
-      $db_participant = $db_interview->get_participant();
-      $db_qnaire = $db_interview->get_qnaire();
-
-      // mark first attempt events
-      $event_mod = lib::create( 'database\modifier' );
-      $event_mod->where( 'event_type_id', '=', $db_qnaire->first_attempt_event_type_id );
-      if( 0 == $db_participant->get_event_count( $event_mod ) )
-      {
-        $db_event = lib::create( 'database\event' );
-        $db_event->participant_id = $db_participant->id;
-        $db_event->event_type_id = $db_qnaire->first_attempt_event_type_id;
-        $db_event->datetime = $now;
-        $db_event->save();
-      }
-
-      // mark reached events
-      $event_mod = lib::create( 'database\modifier' );
-      $event_mod->where( 'event_type_id', '=', $db_qnaire->reached_event_type_id );
-      if( 'contacted' == $record->status && 0 == $db_participant->get_event_count( $event_mod ) )
-      {
-        $db_event = lib::create( 'database\event' );
-        $db_event->participant_id = $db_participant->id;
-        $db_event->event_type_id = $db_qnaire->reached_event_type_id;
-        $db_event->datetime = $now;
-        $db_event->save();
-      }
-
-      // mark any completed script events
-      $script_class_name = lib::get_class_name( 'database\script' );
-      $script_class_name::add_all_event_types( $db_participant );
+      $record->process_events();
     }
   }
 }

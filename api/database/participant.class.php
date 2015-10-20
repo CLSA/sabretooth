@@ -23,7 +23,7 @@ class participant extends \cenozo\database\participant
     $update_queue = $this->has_column_changed(
       array( 'active', 'sex', 'age_group_id', 'state_id', 'source_id', 'override_quota' ) );
     parent::save();
-    if( $update_queue ) $this->update_queue_status();
+    if( $update_queue ) $this->repopulate_queue( true );
   }
 
   /**
@@ -32,7 +32,7 @@ class participant extends \cenozo\database\participant
   public function set_preferred_site( $db_application, $site = NULL )
   {
     parent::set_preferred_site( $db_application, $site );
-    $this->update_queue_status();
+    $this->repopulate_queue( true );
   }
 
   /**
@@ -42,12 +42,11 @@ class participant extends \cenozo\database\participant
    * re-determined.  This method should be called if any of the participant's details
    * which affect which queue they belong in change (eg: change to appointments, consent
    * status, state, etc).
-   * WARNING: this operation is db-intensive so it should only be called after all
-   * changes to the participant are complete (never more than once per operation).
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $delayed Whether to wait until the end of execution or to process immediately
    * @access public
    */
-  public function update_queue_status()
+  public function repopulate_queue( $delayed = false )
   {
     // check the primary key value
     if( is_null( $this->id ) )
@@ -57,8 +56,16 @@ class participant extends \cenozo\database\participant
     }
 
     $queue_class_name = lib::get_class_name( 'database\queue' );
-    $queue_class_name::repopulate( $this );
-    $queue_class_name::repopulate_time_specific( $this );
+    if( $delayed )
+    {
+      $queue_class_name::delayed_repopulate( $this );
+      $queue_class_name::delayed_repopulate_time( $this );
+    }
+    else
+    {
+      $queue_class_name::repopulate( $this );
+      $queue_class_name::repopulate_time( $this );
+    }
   }
 
   /**

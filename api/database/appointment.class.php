@@ -43,7 +43,7 @@ class appointment extends \cenozo\database\record
     // if we changed certain columns then update the queue
     $update_queue = $this->has_column_changed( array( 'assignment_id', 'datetime' ) );
     parent::save();
-    if( $update_queue ) $this->get_interview()->get_participant()->update_queue_status();
+    if( $update_queue ) $this->get_interview()->get_participant()->repopulate_queue( true );
   }
 
   /**
@@ -53,7 +53,7 @@ class appointment extends \cenozo\database\record
   {
     $db_participant = $this->get_interview()->get_participant();
     parent::delete();
-    $db_participant->update_queue_status();
+    $db_participant->repopulate_queue( true );
   }
 
   /**

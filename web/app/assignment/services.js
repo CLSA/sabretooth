@@ -49,19 +49,26 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
       var object = function() {
         var self = this;
 
+        this.reset = function() {
+          self.assignment = null;
+          self.prevAssignment = null;
+          self.participant = null;
+          self.activePhoneCall = false;
+          self.qnaireList = null;
+          self.activeQnaire = null;
+          self.lastQnaire = null;
+          self.isScriptListLoading = false;
+          self.scriptList = null;
+          self.activeScript = null;
+          self.phoneCallStatusList = null;
+          self.phoneCallList = null;
+          self.isAssignmentLoading = false;
+          self.isPrevAssignmentLoading = false;
+        };
+
         this.application = CnSession.application.title;
-        this.assignment = null;
-        this.prevAssignment = null;
-        this.participant = null;
-        this.activePhoneCall = false;
-        this.scriptList = null;
-        this.isScriptListLoading = false;
-        this.activeScript = null;
-        this.phoneCallStatusList = null;
-        this.phoneCallList = null;
-        this.isAssignmentLoading = false;
-        this.isPrevAssignmentLoading = false;
         this.participantModel = CnParticipantModelFactory.instance();
+        this.reset();
         
         // add additional columns to the model
         this.participantModel.addColumn( 'rank', { title: 'Rank', column: 'queue.rank', type: 'rank' }, 0 );
@@ -84,7 +91,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
             if( response ) {
               self.isAssignmentLoading = true; // show loading screen right away
               CnHttpFactory.instance( {
-                path: 'assignment?open=true',
+                path: 'assignment?operation=open',
                 data: { participant_id: record.id }
               } ).post().then( function( response ) {
                 self.onLoad();
@@ -103,6 +110,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
         };
 
         this.onLoad = function( showLoading ) {
+          self.reset();
           if( angular.isUndefined( showLoading ) ) showLoading = true;
           self.isAssignmentLoading = showLoading;
           self.isPrevAssignmentLoading = showLoading;
@@ -110,12 +118,15 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
             path: 'assignment/0',
             data: { select: { column: [ 'id', 'interview_id', 'start_datetime',
               { table: 'participant', column: 'id', alias: 'participant_id' },
+              { table: 'qnaire', column: 'id', alias: 'qnaire_id' },
               { table: 'script', column: 'id', alias: 'script_id' },
               { table: 'script', column: 'name', alias: 'qnaire' },
               { table: 'queue', column: 'title', alias: 'queue' }
             ] } }
           } ).get().then( function success( response ) {
             self.assignment = response.data;
+
+            // get the assigned participant's details
             CnHttpFactory.instance( {
               path: 'participant/' + self.assignment.participant_id,
               data: { select: { column: [ 'id', 'uid', 'first_name', 'other_name', 'last_name',
@@ -125,7 +136,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
             } ).get().then( function success( response ) {
               self.participant = response.data;
               self.participant.getIdentifier = function() {
-                return self.participantModel.getIdentifierFromRecord( this );
+                return self.participantModel.getIdentifierFromRecord( self.participant );
               };
               CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: self.participant.uid } ] );
               self.isAssignmentLoading = false;
@@ -146,7 +157,24 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
                                    : null;
             } );
           } ).then( function() {
-            if( null === self.scriptList ) self.loadScriptList();
+            if( null === self.scriptList ) {
+              // get the qnaire list and store the current and last qnaires
+              CnHttpFactory.instance( {
+                path: 'qnaire',
+                data: {
+                  select: { column: ['id', 'rank', 'script_id', 'delay'] },
+                  modifier: { order: 'rank' }
+                }
+              } ).query().then( function( response ) {
+                self.qnaireList = response.data;
+                var len = self.qnaireList.length;
+                if( 0 < len ) {
+                  self.activeQnaire = self.qnaireList.findByProperty( 'id', self.assignment.qnaire_id );
+                  self.lastQnaire = self.qnaireList[len-1];
+                }
+                self.loadScriptList(); // now load the script list
+              } ).catch( CnSession.errorHandler );
+            }
           } ).then( function() {
             CnHttpFactory.instance( {
               path: 'participant/' + self.assignment.participant_id +
@@ -180,14 +208,12 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
               self.phoneList = response.data;
             } );
           } ).then( function() {
-            if( null === self.phoneCallStatusList ) {
-              CnHttpFactory.instance( {
-                path: 'phone_call'
-              } ).head().then( function success( response ) {
-                self.phoneCallStatusList =
-                  cenozo.parseEnumList( angular.fromJson( response.headers( 'Columns' ) ).status );
-              } );
-            }
+            CnHttpFactory.instance( {
+              path: 'phone_call'
+            } ).head().then( function success( response ) {
+              self.phoneCallStatusList =
+                cenozo.parseEnumList( angular.fromJson( response.headers( 'Columns' ) ).status );
+            } );
           } ).catch( function( response ) {
             if( 307 == response.status ) {
               // 307 means the user has no active assignment, so load the participant select list
@@ -195,7 +221,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
               self.participant = null;
               self.isAssignmentLoading = false;
               self.isPrevAssignmentLoading = false;
-              return self.participantModel.listModel.onList().then( function() {
+              self.participantModel.listModel.onList( true ).then( function() {
                 CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Select' } ] );
               } );
             } else { CnSession.errorHandler( response ); }
@@ -213,13 +239,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
             path: 'application/' + CnSession.application.id +
                   '/script?participant_id=' + self.assignment.participant_id,
             data: {
-              modifier: {
-                order: 'name',
-                where: [
-                  { column: 'script.id', operator: '=', value: self.assignment.script_id },
-                  { or: true, column: 'reserved', operator: '=', value: false },
-                ]
-              },
+              modifier: { order: 'name' },
               select: { column: [
                 'id', 'name', 'repeated', 'url', 'description',
                 { table: 'started_event', column: 'datetime', alias: 'started_datetime' },
@@ -227,12 +247,24 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
               ] }
             }
           } ).query().then( function success( response ) {
-            var activeScriptName = null != self.activeScript ? self.activeScript.name : null;
-            self.scriptList = response.data;
-            if( 0 < self.scriptList ) {
+            // put qnaire scripts in separate list and only include the current qnaire script in the main list
+            self.scriptList = [];
+            self.qnaireScriptList = [];
+            for( var i = 0; i < response.data.length; i++ ) {
+              var script = response.data[i];
+              if( null != self.qnaireList.findByProperty( 'script_id', script.id ) ) {
+                self.qnaireScriptList.push( script );
+                if( script.id == self.assignment.script_id ) self.scriptList.unshift( script );
+              } else {
+                self.scriptList.push( script );
+              }
+            }
+
+            if( 0 == self.scriptList.length ) {
               self.activeScript = null;
             } else {
-              if( null == self.activeScript ) {
+              if( null == self.activeScript ||
+                  null == self.scriptList.findByProperty( 'script_id', self.activeScript.id ) ) {
                 self.activeScript = self.scriptList[0];
               } else {
                 var activeScriptName = self.activeScript.name;
@@ -294,13 +326,19 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
           } );
         };
 
+        this.advanceQnaire = function() {
+          return CnHttpFactory.instance( {
+            path: 'assignment/0?operation=advance', data: {}
+          } ).patch().then( self.onLoad ).catch( CnSession.errorHandler );
+        };
+
         this.startCall = function( phone ) {
           if( CnSession.voip_enabled && !phone.international ) {
             // TODO VOIP: start call
           }
 
           CnHttpFactory.instance( {
-            path: 'phone_call?open=true',
+            path: 'phone_call?operation=open',
             data: { phone_id: phone.id }
           } ).post().then( function() { self.onLoad( false ); } ).catch( CnSession.errorHandler );
         };
@@ -311,7 +349,7 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
           }
 
           CnHttpFactory.instance( {
-            path: 'phone_call/0?close=true',
+            path: 'phone_call/0?operation=close',
             data: { status: status }
           } ).patch().then( function() { self.onLoad( false ); } ).catch( CnSession.errorHandler );
         };
@@ -319,11 +357,11 @@ define( cenozo.getServicesIncludeList( 'assignment' ).concat( cenozo.getModuleUr
         this.endAssignment = function() {
           if( null != self.assignment ) {
             CnHttpFactory.instance( {
-              path: 'assignment/0/phone_call'
-            } ).query().then( function( response ) {
+              path: 'assignment/0'
+            } ).get().then( function( response ) {
               return CnHttpFactory.instance( {
-                path: 'assignment/0?close=true', data: {}
-              } ).patch().then( self.onLoad );
+                path: 'assignment/0?operation=close', data: {}
+              } ).patch().then( self.onLoad ).catch( CnSession.errorHandler );
             } ).catch( function( response ) {
               if( 307 == response.status ) {
                 // 307 means the user has no active assignment, so just refresh the page data
