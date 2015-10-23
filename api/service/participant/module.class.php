@@ -69,5 +69,51 @@ class module extends \cenozo\service\participant\module
         }
       }
     }
+    else
+    {
+      if( $select->has_table_columns( 'queue' ) || $select->has_table_columns( 'qnaire' ) )
+      {
+        $join_sel = lib::create( 'database\select' );
+        $join_sel->from( 'queue_has_participant' );
+        $join_sel->add_column( 'participant_id' );
+        $join_sel->add_column( 'MAX( queue_id )', 'queue_id', false );
+
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->group( 'participant_id' );
+
+        $modifier->left_join(
+          sprintf( '( %s %s ) AS participant_max_queue',
+                   $join_sel->get_sql(),
+                   $join_mod->get_sql() ),
+          'participant.id',
+          'participant_max_queue.participant_id' );
+
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where(
+          'participant_max_queue.queue_id', '=', 'queue_has_participant.queue_id', false );
+        $join_mod->where(
+          'participant_max_queue.participant_id', '=', 'queue_has_participant.participant_id', false );
+
+        $modifier->join_modifier( 'queue_has_participant', $join_mod, 'left' );
+
+        if( $select->has_table_columns( 'queue' ) )
+          $modifier->left_join( 'queue', 'queue_has_participant.queue_id', 'queue.id' );
+        if( $select->has_table_columns( 'qnaire' ) )
+        {
+          $modifier->left_join( 'qnaire', 'queue_has_participant.qnaire_id', 'qnaire.id' );
+
+          // title is "qnaire.rank: script.name"
+          if( $select->has_table_column( 'qnaire', 'title' ) )
+          {
+            $modifier->left_join( 'script', 'qnaire.script_id', 'script.id' );
+            $select->add_table_column( 'qnaire', 'CONCAT( qnaire.rank, ": ", script.name )', 'title', false );
+          }
+
+          // fake the qnaire start-date 
+          if( $select->has_table_column( 'qnaire', 'start_date' ) )
+            $select->add_table_column( 'qnaire', 'queue_has_participant.start_qnaire_date', 'start_date', false );
+        }
+      }
+    }
   }
 }
