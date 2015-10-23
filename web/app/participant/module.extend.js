@@ -2,7 +2,7 @@
 define( [], function() {
   var module = cenozoApp.moduleList['participant'];
 
-  module.inputList.separateQueue = {
+  module.inputList.queue_separator = {
     title: 'Queue Details',
     type: 'separator'
   };
