@@ -21,20 +21,6 @@ define( cenozo.getDependencyList( 'queue_state' ), function() {
       possessive: 'queue restriction\'s',
       pluralPossessive: 'queue restrictions\''
     },
-    inputList: {
-      queue_id: {
-        title: 'Queue',
-        type: 'enum'
-      },
-      site_id: {
-        title: 'Site',
-        type: 'enum'
-      },
-      qnaire_id: {
-        title: 'Questionnaire',
-        type: 'enum'
-      }
-    },
     columnList: {
       queue: {
         column: 'queue.title',
@@ -52,6 +38,21 @@ define( cenozo.getDependencyList( 'queue_state' ), function() {
     defaultOrder: {
       column: 'site',
       reverse: false
+    }
+  } );
+
+  module.addInputGroup( null, {
+    queue_id: {
+      title: 'Queue',
+      type: 'enum'
+    },
+    site_id: {
+      title: 'Site',
+      type: 'enum'
+    },
+    qnaire_id: {
+      title: 'Questionnaire',
+      type: 'enum'
     }
   } );
 

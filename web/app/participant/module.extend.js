@@ -1,36 +1,30 @@
 // extend the framework's module
-define( [], function() {
-  var module = cenozoApp.moduleList['participant'];
+var module = cenozoApp.module( 'participant' );
+define( [ module.url + 'module.js' ], function() {
 
-  module.inputList.queue_separator = {
-    title: 'Queue Details',
-    type: 'separator'
-  };
-
-  module.inputList.title = {
-    title: 'Current Questionnaire',
-    column: 'qnaire.title',
-    type: 'string',
-    constant: true
-  };
-
-  module.inputList.start_date = {
-    title: 'Questionnaire Start',
-    column: 'qnaire.start_date',
-    type: 'date',
-    constant: true
-  };
-
-  module.inputList.queue = {
-    title: 'Current Queue',
-    column: 'queue.name',
-    type: 'string',
-    constant: true
-  };
-
-  module.inputList.override_quota = {
-    title: 'Override Quota',
-    type: 'boolean'
-  };
+  module.addInputGroup( 'Queue Details', {
+    title: {
+      title: 'Current Questionnaire',
+      column: 'qnaire.title',
+      type: 'string',
+      constant: true
+    },
+    start_date: {
+      title: 'Questionnaire Start',
+      column: 'qnaire.start_date',
+      type: 'date',
+      constant: true
+    },
+    queue: {
+      title: 'Current Queue',
+      column: 'queue.name',
+      type: 'string',
+      constant: true
+    },
+    override_quota: {
+      title: 'Override Quota',
+      type: 'boolean'
+    }
+  } );
 
 } );

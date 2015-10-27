@@ -11,23 +11,6 @@ define( cenozo.getDependencyList( 'cedar_instance' ), function() {
       pluralPossessive: 'cedar instances\'',
       friendlyColumn: 'username'
     },
-    inputList: {
-      active: {
-        title: 'Active',
-        type: 'boolean'
-      },
-      username: {
-        title: 'Username',
-        type: 'string'
-      },
-      password: {
-        title: 'Password',
-        type: 'string',
-        regex: '^((?!(password)).){8,}$', // length >= 8 and can't have "password"
-        noview: true,
-        help: 'Passwords must be at least 8 characters long and cannot contain the word "password"'
-      }
-    },
     columnList: {
       name: {
         column: 'user.name',
@@ -46,6 +29,24 @@ define( cenozo.getDependencyList( 'cedar_instance' ), function() {
     defaultOrder: {
       column: 'name',
       reverse: false
+    }
+  } );
+
+  module.addInputGroup( null, {
+    active: {
+      title: 'Active',
+      type: 'boolean'
+    },
+    username: {
+      title: 'Username',
+      type: 'string'
+    },
+    password: {
+      title: 'Password',
+      type: 'string',
+      regex: '^((?!(password)).){8,}$', // length >= 8 and can't have "password"
+      noview: true,
+      help: 'Passwords must be at least 8 characters long and cannot contain the word "password"'
     }
   } );
 

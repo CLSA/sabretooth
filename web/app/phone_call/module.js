@@ -15,9 +15,6 @@ define( cenozo.getDependencyList( 'phone_call' ), function() {
       possessive: 'phone call\'s',
       pluralPossessive: 'phone calls\''
     },
-    inputList: {
-      // not used
-    },
     columnList: {
       phone: {
         column: 'phone.type',

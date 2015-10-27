@@ -10,25 +10,6 @@ define( cenozo.getDependencyList( 'qnaire' ), function() {
       possessive: 'questionnaire\'s',
       pluralPossessive: 'questionnaires\''
     },
-    inputList: {
-      rank: {
-        column: 'qnaire.rank',
-        title: 'Rank',
-        type: 'rank'
-      },
-      script_id: {
-        title: 'Script',
-        type: 'enum',
-        noedit: true,
-        help: 'Only scripts which are marked as non-repeatable may be used as a questionnaire.'
-      },
-      delay: {
-        title: 'Delay (weeks)',
-        type: 'string',
-        format: 'integer',
-        minValue: 0
-      }
-    },
     columnList: {
       name: {
         column: 'script.name',
@@ -46,6 +27,26 @@ define( cenozo.getDependencyList( 'qnaire' ), function() {
     defaultOrder: {
       column: 'rank',
       reverse: false
+    }
+  } );
+
+  module.addInputGroup( null, {
+    rank: {
+      column: 'qnaire.rank',
+      title: 'Rank',
+      type: 'rank'
+    },
+    script_id: {
+      title: 'Script',
+      type: 'enum',
+      noedit: true,
+      help: 'Only scripts which are marked as non-repeatable may be used as a questionnaire.'
+    },
+    delay: {
+      title: 'Delay (weeks)',
+      type: 'string',
+      format: 'integer',
+      minValue: 0
     }
   } );
 

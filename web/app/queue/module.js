@@ -10,28 +10,6 @@ define( cenozo.getDependencyList( 'queue' ), function() {
       possessive: 'queue\'s',
       pluralPossessive: 'queues\''
     },
-    inputList: {
-      rank: {
-        title: 'Rank',
-        type: 'rank',
-        constant: true
-      },
-      name: {
-        title: 'Name',
-        type: 'string',
-        constant: true
-      },
-      title: {
-        title: 'Title',
-        type: 'string',
-        constant: true
-      },
-      description: {
-        title: 'Description',
-        type: 'text',
-        constant: true
-      }
-    },
     columnList: {
       rank: {
         title: 'Rank',
@@ -46,6 +24,29 @@ define( cenozo.getDependencyList( 'queue' ), function() {
     defaultOrder: {
       column: 'rank',
       reverse: false
+    }
+  } );
+
+  module.addInputGroup( null, {
+    rank: {
+      title: 'Rank',
+      type: 'rank',
+      constant: true
+    },
+    name: {
+      title: 'Name',
+      type: 'string',
+      constant: true
+    },
+    title: {
+      title: 'Title',
+      type: 'string',
+      constant: true
+    },
+    description: {
+      title: 'Description',
+      type: 'text',
+      constant: true
     }
   } );
 
