@@ -107,8 +107,10 @@ define( cenozo.getDependencyList( 'queue_state' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQueueStateModelFactory', [
-    'CnBaseModelFactory', 'CnQueueStateListFactory', 'CnQueueStateAddFactory', 'CnSession', 'CnHttpFactory',
-    function( CnBaseModelFactory, CnQueueStateListFactory, CnQueueStateAddFactory, CnSession, CnHttpFactory ) {
+    'CnBaseModelFactory', 'CnQueueStateListFactory', 'CnQueueStateAddFactory',
+    'CnSession', 'CnHttpFactory', '$q',
+    function( CnBaseModelFactory, CnQueueStateListFactory, CnQueueStateAddFactory,
+              CnSession, CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -119,27 +121,48 @@ define( cenozo.getDependencyList( 'queue_state' ), function() {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'queue',
-              data: {
-                select: { column: [ 'id', 'title' ] },
-                modifier: { order: { name: false } }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.queue_id.enumList = [];
-              for( var i = 0; i < response.data.length; i++ ) {
-                self.metadata.columnList.queue_id.enumList.push( {
-                  value: response.data[i].id,
-                  name: response.data[i].title
-                } );
-              }
-            } ).then( function() {
-              if( !CnSession.role.all_sites ) {
-                self.metadata.columnList.site_id.enumList = [ {
-                  value: CnSession.site.id,
-                  name: CnSession.site.name
-                } ];
-              } else {
+
+          var promiseList = [
+              CnHttpFactory.instance( {
+                path: 'queue',
+                data: {
+                  select: { column: [ 'id', 'title' ] },
+                  modifier: { order: { name: false } }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.queue_id.enumList = [];
+                for( var i = 0; i < response.data.length; i++ ) {
+                  self.metadata.columnList.queue_id.enumList.push( {
+                    value: response.data[i].id,
+                    name: response.data[i].title
+                  } );
+                }
+              } ),
+
+              CnHttpFactory.instance( {
+                path: 'qnaire',
+                data: {
+                  select: { column: [ 'id', { table: 'script', column: 'name' } ] },
+                  modifier: { order: 'rank' }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.qnaire_id.enumList = [];
+                for( var i = 0; i < response.data.length; i++ ) {
+                  self.metadata.columnList.qnaire_id.enumList.push( {
+                    value: response.data[i].id,
+                    name: response.data[i].name
+                  } );
+                }
+              } )
+            ];
+
+            if( !CnSession.role.all_sites ) {
+              self.metadata.columnList.site_id.enumList = [ {
+                value: CnSession.site.id,
+                name: CnSession.site.name
+              } ];
+            } else {
+              promiseList.push(
                 CnHttpFactory.instance( {
                   path: 'site',
                   data: {
@@ -154,27 +177,11 @@ define( cenozo.getDependencyList( 'queue_state' ), function() {
                       name: response.data[i].name
                     } );
                   }
-                } );
-              }
-            } ).then( function() {
-              return CnHttpFactory.instance( {
-                path: 'qnaire',
-                data: {
-                  select: { column: [ 'id', { table: 'script', column: 'name' } ] },
-                  modifier: { order: 'rank' }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.qnaire_id.enumList = [];
-                for( var i = 0; i < response.data.length; i++ ) {
-                  self.metadata.columnList.qnaire_id.enumList.push( {
-                    value: response.data[i].id,
-                    name: response.data[i].name
-                  } );
-                }
-              } );
-            } ).then( function() {
-              self.metadata.loadingCount--;
-            } );
+                } )
+              );
+            }
+
+            return $q.all( promiseList ).then( function() { self.metadata.loadingCount--; } );
           } );
         };
       };

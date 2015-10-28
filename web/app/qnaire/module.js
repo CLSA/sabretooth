@@ -131,9 +131,9 @@ define( cenozo.getDependencyList( 'qnaire' ), function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQnaireModelFactory', [
     'CnBaseModelFactory', 'CnQnaireAddFactory', 'CnQnaireListFactory', 'CnQnaireViewFactory',
-    'CnSession', 'CnHttpFactory',
+    'CnSession', 'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnQnaireAddFactory, CnQnaireListFactory, CnQnaireViewFactory,
-              CnSession, CnHttpFactory ) {
+              CnSession, CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -145,6 +145,7 @@ define( cenozo.getDependencyList( 'qnaire' ), function() {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
+
             return CnHttpFactory.instance( {
               path: 'application/' + CnSession.application.id + '/script',
               data: {
@@ -162,9 +163,8 @@ define( cenozo.getDependencyList( 'qnaire' ), function() {
                   name: response.data[i].name
                 } );
               }
-            } ).then( function() {
-              self.metadata.loadingCount--;
-            } );
+            } ).then( function() { self.metadata.loadingCount--; } );
+
           } );
         };
       };

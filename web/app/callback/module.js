@@ -191,8 +191,8 @@ define( cenozo.getDependencyList( 'callback' ), function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
             var parent = self.getParentIdentifier();
-            
             if( angular.isDefined( parent.subject ) && angular.isDefined( parent.identifier ) ) {
+
               return CnHttpFactory.instance( {
                 path: [ parent.subject, parent.identifier ].join( '/' ),
                 data: { select: { column: { column: 'participant_id' } } }
@@ -211,10 +211,9 @@ define( cenozo.getDependencyList( 'callback' ), function() {
                       name: '(' + response.data[i].rank + ') ' + response.data[i].type + ': ' + response.data[i].number
                     } );
                   }
-                } ).then( function() {
-                  self.metadata.loadingCount--;
-                } );
+                } ).then( function() { self.metadata.loadingCount--; } );
               } );
+
             } else self.metadata.loadingCount--;
           } );
         };

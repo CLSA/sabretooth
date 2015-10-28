@@ -173,9 +173,9 @@ define( cenozo.getDependencyList( 'interview' ), function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnInterviewModelFactory', [
     'CnBaseModelFactory', 'CnInterviewListFactory', 'CnInterviewViewFactory',
-    'CnHttpFactory',
+    'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnInterviewListFactory, CnInterviewViewFactory,
-              CnHttpFactory ) {
+              CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -193,22 +193,25 @@ define( cenozo.getDependencyList( 'interview' ), function() {
         this.getMetadata = function() {
           this.metadata.loadingCount++;
           return this.loadMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'qnaire',
-              data: {
-                select: { column: [ 'id', { table: 'script', column: 'name' } ] },
-                modifier: { order: 'rank' }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.qnaire_id.enumList = [];
-              for( var i = 0; i < response.data.length; i++ ) {
-                self.metadata.columnList.qnaire_id.enumList.push( {
-                  value: response.data[i].id,
-                  name: response.data[i].name
-                } );
-              }
-            } ).then( function() {
-              return CnHttpFactory.instance( {
+            return $q.all( [
+            
+              CnHttpFactory.instance( {
+                path: 'qnaire',
+                data: {
+                  select: { column: [ 'id', { table: 'script', column: 'name' } ] },
+                  modifier: { order: 'rank' }
+                }
+              } ).query().then( function success( response ) {
+                self.metadata.columnList.qnaire_id.enumList = [];
+                for( var i = 0; i < response.data.length; i++ ) {
+                  self.metadata.columnList.qnaire_id.enumList.push( {
+                    value: response.data[i].id,
+                    name: response.data[i].name
+                  } );
+                }
+              } ),
+
+              CnHttpFactory.instance( {
                 path: 'site',
                 data: {
                   select: { column: [ 'id', 'name' ] },
@@ -222,10 +225,9 @@ define( cenozo.getDependencyList( 'interview' ), function() {
                     name: response.data[i].name
                   } );
                 }
-              } );
-            } ).then( function() {
-              self.metadata.loadingCount--;
-            } );
+              } )
+
+            ] ).then( function() { self.metadata.loadingCount--; } );
           } );
         };
       };
