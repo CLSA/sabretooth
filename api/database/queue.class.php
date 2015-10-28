@@ -109,37 +109,24 @@ class queue extends \cenozo\database\record
    * @access protected
    * @static
    */
-  protected static function generate_query_list()
+  protected static function generate_query_object_list()
   {
-    $participant_class_name = lib::get_class_name( 'database\participant' );
-    $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
-
-    // make sure the queue_list_cache has been created and loop through it
-    static::create_queue_list_cache();
-    foreach( array_keys( self::$queue_list_cache ) as $queue )
+    if( 0 == count( self::$query_object_list ) )
     {
-      $parts = self::get_query_parts( $queue );
+      $participant_class_name = lib::get_class_name( 'database\participant' );
+      $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
 
-      $from_sql = '';
-      $first = true;
-      // reverse order to make sure the join works
-      foreach( array_reverse( $parts['from'] ) as $from )
+      // make sure the queue_list_cache has been created and loop through it
+      static::create_queue_list_cache();
+      foreach( array_keys( self::$queue_list_cache ) as $queue )
       {
-        $from_sql .= sprintf( $first ? 'FROM %s' : ', %s', $from );
-        $first = false;
+        $select = lib::create( 'database\select' );
+        $modifier = lib::create( 'database\modifier' );
+
+        // build the select and modifier and store the resulting sql
+        self::prepare_queue_query( $queue, $select, $modifier );
+        self::$query_object_list[$queue] = array( 'select' => $select, 'modifier' => $modifier );
       }
-
-      $join_sql = '';
-      foreach( $parts['join'] as $join ) $join_sql .= ' '.$join;
-
-      $where_sql = 'WHERE true';
-      foreach( $parts['where'] as $where ) $where_sql .= ' AND '.$where;
-
-      self::$query_list[$queue] =
-        sprintf( 'SELECT <SELECT_PARTICIPANT> %s %s %s',
-                 $from_sql,
-                 $join_sql,
-                 $where_sql );
     }
   }
 
@@ -174,6 +161,9 @@ class queue extends \cenozo\database\record
     if( static::$debug ) $time = util::get_elapsed_time();
     static::db()->execute( $sql );
 
+    // re-generate the query object list
+    self::generate_query_object_list();
+
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'time_specific', '=', false );
     $modifier->order( 'id' );
@@ -181,17 +171,20 @@ class queue extends \cenozo\database\record
     {
       if( static::$debug ) $queue_time = util::get_elapsed_time();
 
-      $columns = sprintf(
-        'DISTINCT temp_participant.id, %s, '.
-        'participant_site_id, '.
-        'effective_qnaire_id, '.
-        'start_qnaire_date',
-        static::db()->format_string( $db_queue->id ) );
-  
+      $queue_sel = static::$query_object_list[ $db_queue->name ]['select'];
+      $queue_mod = static::$query_object_list[ $db_queue->name ]['modifier'];
+
+      $queue_sel->set_distinct( true );
+      $queue_sel->add_table_column( 'temp_participant', 'id' );
+      $queue_sel->add_constant( $db_queue->id );
+      $queue_sel->add_column( 'participant_site_id', NULL, false );
+      $queue_sel->add_column( 'effective_qnaire_id', NULL, false );
+      $queue_sel->add_column( 'start_qnaire_date', NULL, false );
+
       static::db()->execute( sprintf(
-        'INSERT INTO queue_has_participant( '.
-          'participant_id, queue_id, site_id, qnaire_id, start_qnaire_date ) %s',
-        $db_queue->get_sql( $columns ) ) );
+        'INSERT INTO queue_has_participant( participant_id, queue_id, site_id, qnaire_id, start_qnaire_date )'.
+        "\n%s %s",
+        $queue_sel->get_sql(), $queue_mod->get_sql() ) );
 
       if( static::$debug ) log::debug( sprintf(
         '(Queue) "%s" build time%s: %0.2f',
@@ -514,15 +507,16 @@ class queue extends \cenozo\database\record
   }
 
   /**
-   * Gets the parts of the query for a particular queue.
+   * Prepares select and modifier objects according to the query generated for a particular queue.
    * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $queue The name of the queue to get the query parts for
-   * @return associative array
+   * @param string $queue The name of the queue
+   * @param database\select A select object which will be set according to the given queue
+   * @param database\modifier A modifier object which will be set according to the given queue
    * @throws exception\argument
    * @access protected
    * @static
    */
-  protected static function get_query_parts( $queue )
+  protected static function prepare_queue_query( $queue, $select, $modifier )
   {
     // make sure the queue_list_cache has been created
     static::create_queue_list_cache();
@@ -536,196 +530,173 @@ class queue extends \cenozo\database\record
 
     // if this is a time-specific queue then return a query which will return no rows
     if( $db_queue->time_specific )
-      return array(
-        'from' => array( 'temp_participant' ),
-        'join' => array( // always join to the participant site table
-          'LEFT JOIN temp_participant_participant_site '.
-          'ON temp_participant_participant_site.id = temp_participant.id ' ),
-        'where' => array( 'false' ) );
+    {
+      $modifier->where( 'true', '=', false );
+      return;
+    }
 
-    $participant_class_name = lib::get_class_name( 'database\participant' );
+    // get the parent queue's details
+    if( !is_null( $db_parent_queue ) ) self::prepare_queue_query( $db_parent_queue->name, $select, $modifier );
 
-    // get the parent queue's query parts
-    if( !is_null( $db_parent_queue ) ) $parts = self::get_query_parts( $db_parent_queue->name );
-
-    // now determine the sql parts for the given queue
+    // now process given the queue
     if( 'all' == $queue )
     {
       // NOTE: when updating this query database\participant::get_queue_data()
       //       should also be updated as it performs a very similar query
-      $parts = array(
-        'from' => array( 'temp_participant' ),
-        'join' => array( // always join to the participant site table
-          'LEFT JOIN temp_participant_participant_site '.
-          'ON temp_participant_participant_site.id = temp_participant.id ' ),
-        'where' => array() );
+      $select->from( 'temp_participant' );
+      $modifier->left_join(
+        'temp_participant_participant_site', 'temp_participant_participant_site.id', 'temp_participant.id' );
+      return;
     }
-    else if( 'finished' == $queue )
+
+    if( 'finished' == $queue )
     {
       // no effective_qnaire_id means no qnaires left to complete
-      $parts['where'][] = 'effective_qnaire_id IS NULL';
+      $modifier->where( 'effective_qnaire_id', '=', NULL );
+      return;
     }
-    else
+
+    // effective_qnaire_id is the either the next qnaire to work on or the one in progress
+    $modifier->where( 'effective_qnaire_id', '!=', NULL );
+    if( 'ineligible' == $queue )
     {
-      // effective_qnaire_id is the either the next qnaire to work on or the one in progress
-      $parts['where'][] = 'effective_qnaire_id IS NOT NULL';
-      if( 'ineligible' == $queue )
-      {
-        // ineligible means either inactive or with a "final" state
-        $parts['where'][] =
-          '( '.
-            'participant_active = false '.
-            'OR participant_state_id IS NOT NULL '.
-            'OR last_participation_consent_accept = 0 '.
-            'OR primary_region_id IS NULL '.
-          ')';
-      }
-      else if( 'inactive' == $queue )
-      {
-        $parts['where'][] = 'participant_active = false';
-      }
-      else if( 'refused consent' == $queue )
-      {
-        $parts['where'][] = 'participant_active = true';
-        $parts['where'][] = 'last_participation_consent_accept = 0';
-      }
-      else if( 'condition' == $queue )
-      {
-        $parts['where'][] = 'participant_active = true';
-        $parts['where'][] = 'IFNULL( last_participation_consent_accept = 1, true )';
-        $parts['where'][] = 'participant_state_id IS NOT NULL';
-      }
-      else if( 'no address' == $queue )
-      {
-        $parts['where'][] = 'participant_active = true';
-        $parts['where'][] = 'IFNULL( last_participation_consent_accept = 1, true )';
-        $parts['where'][] = 'participant_state_id IS NULL';
-        $parts['where'][] = 'primary_region_id IS NULL';
-      }
-      else if( 'eligible' == $queue )
-      {
-        // active participant who does not have a "final" state and has at least one phone number
-        $parts['where'][] = 'participant_active = true';
-        $parts['where'][] = 'participant_state_id IS NULL';
-        $parts['where'][] = 'IFNULL( last_participation_consent_accept = 1, true )';
-        $parts['where'][] = 'primary_region_id IS NOT NULL';
-      }
-      else if( 'qnaire' == $queue )
-      {
-        // no additional parts needed
-      }
-      // we must process all of the qnaire queue's direct children as a whole
-      else if( in_array( $queue,
-        array( 'qnaire waiting', 'assigned', 'appointment', 'quota disabled', 'no active address' ) ) )
-      {
-        if( 'qnaire waiting' == $queue )
-        {
-          // the current qnaire cannot start before start_qnaire_date
-          $parts['where'][] = 'IFNULL( start_qnaire_date > UTC_TIMESTAMP(), false )';
-        }
-        else
-        {
-          // the qnaire is ready to start if the start_qnaire_date is null or we have reached that date
-          $parts['where'][] = 'IFNULL( start_qnaire_date <= UTC_TIMESTAMP(), true )';
-
-          if( 'assigned' == $queue )
-          {
-            // participants who are currently assigned
-            $parts['where'][] =
-              '( current_assignment_id IS NOT NULL AND current_assignment_end_datetime IS NULL )';
-          }
-          else
-          {
-            // participants who are NOT currently assigned
-            $parts['where'][] =
-              '( current_assignment_id IS NULL OR current_assignment_end_datetime IS NOT NULL )';
-
-            if( 'appointment' == $queue )
-            {
-              // link to appointment table and make sure the appointment hasn't been assigned
-              // (by design, there can only ever be one unassigned appointment per interview)
-              $parts['from'][] = 'appointment';
-              $parts['where'][] =
-                'appointment.interview_id = temp_participant.current_interview_id';
-              $parts['where'][] = 'appointment.assignment_id IS NULL';
-            }
-            else
-            {
-              // Make sure there is no unassigned appointment.  By design there can only be one of
-              // per interview, so if the appointment is null then the interview has no pending
-              // appointments.
-              $parts['join'][] =
-                'LEFT JOIN appointment '.
-                'ON appointment.interview_id = temp_participant.current_interview_id '.
-                'AND appointment.assignment_id IS NULL';
-              $parts['where'][] = 'appointment.id IS NULL';
-
-              // join to the first_address table based on participant id
-              $parts['join'][] =
-                'LEFT JOIN temp_participant_first_address '.
-                'ON temp_participant_first_address.id = temp_participant.id ';
-
-              if( 'no active address' == $queue )
-              {
-                // make sure there is no active address
-                $parts['where'][] = 'temp_participant_first_address.address_id IS NULL';
-              }
-              else
-              {
-                // make sure there is an active address
-                $parts['where'][] = 'temp_participant_first_address.address_id IS NOT NULL';
-
-                // join to the quota table based on site, region, sex and age group
-                $parts['join'][] = 
-                  'LEFT JOIN quota '.
-                  'ON quota.site_id = participant_site_id '.
-                  'AND quota.region_id = primary_region_id '.
-                  'AND quota.sex = participant_sex '.
-                  'AND quota.age_group_id = participant_age_group_id '.
-                  'LEFT JOIN qnaire_has_quota '.
-                  'ON quota.id = qnaire_has_quota.quota_id '.
-                  'AND effective_qnaire_id = qnaire_has_quota.qnaire_id';
-
-                if( 'quota disabled' == $queue )
-                {
-                  // who belong to a quota which is disabled (row in qnaire_has_quota found)
-                  $parts['where'][] = 'qnaire_has_quota.quota_id IS NOT NULL';
-                  // and who are not marked to override quota
-                  $parts['where'][] = 'participant_override_quota = false';
-                  $parts['where'][] = 'source_override_quota = false';
-                }
-              }
-            }
-          }
-        }
-      }
-      else // we should never get here
-      {
-        throw lib::create( 'exception\argument', 'queue', $queue, __METHOD__ );
-      }
+      // ineligible means either inactive or with a "final" state
+      $modifier->where_bracket( true );
+      $modifier->where( 'participant_active', '=', false );
+      $modifier->or_where( 'participant_state_id', '!=', NULL );
+      $modifier->or_where( 'last_participation_consent_accept', '=', 0 );
+      $modifier->or_where( 'primary_region_id', '=', NULL );
+      $modifier->where_bracket( false );
+      return;
     }
 
-    return $parts;
-  }
+    if( 'inactive' == $queue )
+    {
+      $modifier->where( 'participant_active', '=', false );
+      return;
+    }
+    
+    if( 'refused consent' == $queue )
+    {
+      $modifier->where( 'participant_active', '=', true );
+      $modifier->where( 'last_participation_consent_accept', '=', 0 );
+      return;
+    }
+    
+    if( 'condition' == $queue )
+    {
+      $modifier->where( 'participant_active', '=', true );
+      $modifier->where( 'IFNULL( last_participation_consent_accept = 1, true )', '=', true );
+      $modifier->where( 'participant_state_id', '!=', NULL );
+      return;
+    }
+    
+    if( 'no address' == $queue )
+    {
+      $modifier->where( 'participant_active', '=', true );
+      $modifier->where( 'IFNULL( last_participation_consent_accept = 1, true )', '=', true );
+      $modifier->where( 'participant_state_id', '=', NULL );
+      $modifier->where( 'primary_region_id', '=', NULL );
+      return;
+    }
+    
+    if( 'eligible' == $queue )
+    {
+      // active participant who does not have a "final" state and has at least one phone number
+      $modifier->where( 'participant_active', '=', true );
+      $modifier->where( 'participant_state_id', '=', NULL );
+      $modifier->where( 'IFNULL( last_participation_consent_accept = 1, true )', '=', true );
+      $modifier->where( 'primary_region_id', '!=', NULL );
+      return;
+    }
+    
+    if( 'qnaire' == $queue )
+    {
+      // no additional modifications needed
+      return;
+    }
+    
+    if( 'qnaire waiting' == $queue )
+    {
+      // the current qnaire cannot start before start_qnaire_date
+      $modifier->where( 'IFNULL( start_qnaire_date > UTC_TIMESTAMP(), false )', '=', true );
+      return;
+    }
 
-  /**
-   * Get the query for this queue.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @param string $select_participant_sql The text to put in place of the first occurance of
-   *               <SELECT_PARTICIPANT>
-   * @return string
-   * @access protected
-   */
-  protected function get_sql( $select_participant_sql )
-  {
-    // start by making sure the query list has been generated
-    if( 0 == count( self::$query_list ) ) self::generate_query_list();
+    // the qnaire is ready to start if the start_qnaire_date is null or we have reached that date
+    $modifier->where( 'IFNULL( start_qnaire_date <= UTC_TIMESTAMP(), true )', '=', true );
 
-    $sql = self::$query_list[ $this->name ];
-    $sql = preg_replace( '/\<SELECT_PARTICIPANT\>/', $select_participant_sql, $sql, 1 );
-    $sql = str_replace( '<SELECT_PARTICIPANT>', 'temp_participant.id', $sql );
+    if( 'assigned' == $queue )
+    {
+      // participants who are currently assigned
+      $modifier->where( 'current_assignment_id', '!=', NULL );
+      $modifier->where( 'current_assignment_end_datetime', '=', NULL );
+      return;
+    }
 
-    return $sql;
+    // participants who are NOT currently assigned
+    $modifier->where_bracket( true );
+    $modifier->where( 'current_assignment_id', '=', NULL );
+    $modifier->or_where( 'current_assignment_end_datetime', '!=', NULL );
+    $modifier->where_bracket( false );
+
+    if( 'appointment' == $queue )
+    {
+      // link to appointment table and make sure the appointment hasn't been assigned
+      // (by design, there can only ever be one unassigned appointment per interview)
+      $modifier->join( 'appointment', 'appointment.interview_id', 'temp_participant.current_interview_id' );
+      $modifier->where( 'appointment.assignment_id', '=', NULL );
+      return;
+    }
+
+    // Make sure there is no unassigned appointment.  By design there can only be one of
+    // per interview, so if the appointment is null then the interview has no pending
+    // appointments.
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'appointment.interview_id', '=', 'temp_participant.current_interview_id', false );
+    $join_mod->where( 'appointment.assignment_id', '=', NULL );
+    $modifier->join_modifier( 'appointment', $join_mod, 'left' );
+    $modifier->where( 'appointment.id', '=', NULL );
+
+    // join to the first_address table based on participant id
+    $modifier->left_join(
+      'temp_participant_first_address', 'temp_participant_first_address.id', 'temp_participant.id' );
+
+    if( 'no active address' == $queue )
+    {
+      // make sure there is no active address
+      $modifier->where( 'temp_participant_first_address.address_id', '=', NULL );
+      return;
+    }
+
+    // make sure there is an active address
+    $modifier->where( 'temp_participant_first_address.address_id', '!=', NULL );
+
+    // join to the quota table based on site, region, sex and age group
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'quota.site_id', '=', 'participant_site_id', false );
+    $join_mod->where( 'quota.region_id', '=', 'primary_region_id', false );
+    $join_mod->where( 'quota.sex', '=', 'participant_sex', false );
+    $join_mod->where( 'quota.age_group_id', '=', 'participant_age_group_id', false );
+    $modifier->join_modifier( 'quota', $join_mod, 'left' );
+
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'quota.id', '=', 'qnaire_has_quota.quota_id', false );
+    $join_mod->where( 'effective_qnaire_id', '=', 'qnaire_has_quota.qnaire_id', false );
+    $modifier->join_modifier( 'qnaire_has_quota', $join_mod, 'left' );
+
+    if( 'quota disabled' == $queue )
+    {
+      // who belong to a quota which is disabled (row in qnaire_has_quota found)
+      $modifier->where( 'qnaire_has_quota.quota_id', '!=', NULL );
+      // and who are not marked to override quota
+      $modifier->where( 'participant_override_quota', '=', false );
+      $modifier->where( 'source_override_quota', '=', false );
+      return;
+    }
+
+    // we should never get here
+    throw lib::create( 'exception\argument', 'queue', $queue, __METHOD__ );
   }
 
   /**
@@ -921,15 +892,15 @@ class queue extends \cenozo\database\record
   protected static $temporary_tables_created = false;
 
   /**
-   * The queries for each queue
-   * @var associative array of strings
+   * The select and modifier objects for queue
+   * @var associative array of ( 'select' => object, 'modifier' => object )
    * @access protected
    * @static
    */
-  protected static $query_list = array();
+  protected static $query_object_list = array();
 
   /**
-   * A cache of all queues and their parents used by get_query_parts()
+   * A cache of all queues and their parents used by prepare_queue_query()
    * @var array
    * @access private
    * @static
