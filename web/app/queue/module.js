@@ -49,6 +49,10 @@ define( cenozo.getDependencyList( 'queue' ), function() {
       constant: true
     }
   } );
+        
+  module.addViewOperation( 'View Queue Tree', function( viewModel ) {
+    angular.element( document.body ).injector().get( '$state' ).go( 'queue.tree' );
+  } );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'QueueListCtrl', [
@@ -120,12 +124,6 @@ define( cenozo.getDependencyList( 'queue' ), function() {
 
         // make sure users can't add/remove participants from queues
         this.participantModel.enableChoose( false );
-        
-        // add operations
-        this.operationList = [ {
-          name: 'View Queue Tree',
-          execute: function() { $state.go( 'queue.tree' ); }
-        } ];
       };
 
       return { instance: function( parentModel ) { return new object( parentModel ); } };
