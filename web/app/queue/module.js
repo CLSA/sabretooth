@@ -171,17 +171,17 @@ define( cenozo.getDependencyList( 'queue' ), function() {
         };
 
         this.repopulate = function() {
-          this.form.isRepopulating = true;
+          self.form.isRepopulating = true;
 
           // blank out the button title if the tree is already built
-          if( 0 < this.queueTree.length ) {
-            for( var i = 1; i < this.queueList.length; i++ ) {
-              if( angular.isDefined( this.queueList[i] ) ) {
-                this.queueList[i].participant_count = 0;
-                this.queueList[i].childTotal = 0;
-                this.queueList[i].button.name = '\u2026';
+          if( 0 < self.queueTree.length ) {
+            self.queueList.forEach( function( item, index, array ) {
+              if( 0 < index && angular.isDefined( item ) ) {
+                array[index].participant_count = 0;
+                array[index].childTotal = 0;
+                array[index].button.name = '\u2026';
               }
-            }
+            } );
           }
 
           // isRepopulating any queue repopulates them all
@@ -193,13 +193,13 @@ define( cenozo.getDependencyList( 'queue' ), function() {
         this.onView = function() {
           // blank out the button title if the tree is already built
           if( 0 < self.queueTree.length ) {
-            for( var i = 1; i < self.queueList.length; i++ ) {
-              if( angular.isDefined( self.queueList[i] ) ) {
-                self.queueList[i].participant_count = 0;
-                self.queueList[i].childTotal = 0;
-                self.queueList[i].button.name = '\u2026';
+            self.queueList.forEach( function( item, index, array ) {
+              if( 0 < index && angular.isDefined( item ) ) {
+                array[index].participant_count = 0;
+                array[index].childTotal = 0;
+                array[index].button.name = '\u2026';
               }
-            }
+            } );
           }
 
           if( null == self.form.qnaireList ) {
@@ -211,9 +211,9 @@ define( cenozo.getDependencyList( 'queue' ), function() {
               }
             } ).query().then( function( response ) {
               self.form.qnaireList = [ { value: undefined, name: 'Any' } ];
-              for( var i = 0; i < response.data.length; i++ ) {
-                self.form.qnaireList.push( { value: response.data[i].id, name: response.data[i].name } );
-              }
+              response.data.forEach( function( item ) {
+                self.form.qnaireList.push( { value: item.id, name: item.name } );
+              } );
             } );
           }
           
@@ -223,9 +223,9 @@ define( cenozo.getDependencyList( 'queue' ), function() {
               data: { select: { column: [ 'id', 'name' ] }, modifier: { order: 'name' } }
             } ).query().then( function( response ) {
               self.form.siteList = [ { value: undefined, name: 'All' } ];
-              for( var i = 0; i < response.data.length; i++ ) {
-                self.form.siteList.push( { value: response.data[i].id, name: response.data[i].name } );
-              }
+              response.data.forEach( function( item ) {
+                self.form.siteList.push( { value: item.id, name: item.name } );
+              } );
             } );
           }
 
@@ -238,9 +238,9 @@ define( cenozo.getDependencyList( 'queue' ), function() {
               }
             } ).query().then( function( response ) {
               self.form.languageList = [ { value: undefined, name: 'Any' } ];
-              for( var i = 0; i < response.data.length; i++ ) {
-                self.form.languageList.push( { value: response.data[i].id, name: response.data[i].name } );
-              }
+              response.data.forEach( function( item ) {
+                self.form.languageList.push( { value: item.id, name: item.name } );
+              } );
             } );
           }
 
@@ -265,70 +265,70 @@ define( cenozo.getDependencyList( 'queue' ), function() {
             if( self.updateQueueTime ) self.updateQueueTime = false;
             if( 0 < self.queueTree.length ) {
               // don't rebuild the queue, just update the participant totals
-              for( var i = 0; i < response.data.length; i++ ) {
-                var queue = self.queueList[response.data[i].id];
-                queue.participant_count = response.data[i].participant_count;
-                queue.button.name = response.data[i].participant_count;
-                queue.last_repopulation = response.data[i].last_repopulation;
-              }
+              response.data.forEach( function( item ) {
+                var queue = self.queueList[item.id];
+                queue.participant_count = item.participant_count;
+                queue.button.name = item.participant_count;
+                queue.last_repopulation = item.last_repopulation;
+              } );
             } else {
               // create an array containing all branches and add their child branches as we go
               var eligibleQueueId = null;
               var oldParticipantQueueId = null;
-              for( var i = 0; i < response.data.length; i++ ) {
+              response.data.forEach( function( item ) {
                 // make note of certain queues
-                if( null === eligibleQueueId && 'eligible' == response.data[i].name )
-                  eligibleQueueId = response.data[i].id;
-                if( null === oldParticipantQueueId && 'old participant' == response.data[i].name )
-                  oldParticipantQueueId = response.data[i].id;
+                if( null === eligibleQueueId && 'eligible' == item.name )
+                  eligibleQueueId = item.id;
+                if( null === oldParticipantQueueId && 'old participant' == item.name )
+                  oldParticipantQueueId = item.id;
 
                 // add all branches to the root, for now
-                response.data[i].branchList = []; // will be filled in if the branch has any children
-                response.data[i].initialOpen = null === oldParticipantQueueId ||
-                                               oldParticipantQueueId > response.data[i].id;
-                response.data[i].open = response.data[i].initialOpen;
-                response.data[i].button = {
-                  id: response.data[i].id,
-                  name: response.data[i].participant_count,
+                item.branchList = []; // will be filled in if the branch has any children
+                item.initialOpen = null === oldParticipantQueueId ||
+                                               oldParticipantQueueId > item.id;
+                item.open = item.initialOpen;
+                item.button = {
+                  id: item.id,
+                  name: item.participant_count,
                   go: function() { $state.go( 'queue.view', { identifier: this.id } ); }
                 };
-                if( null !== response.data[i].rank ) {
-                  response.data[i].title = 'Q' + response.data[i].rank + ': ' + response.data[i].title;
-                  response.data[i].color = 'success';
+                if( null !== item.rank ) {
+                  item.title = 'Q' + item.rank + ': ' + item.title;
+                  item.color = 'success';
                 }
-                self.queueList[response.data[i].id] = response.data[i];
-                if( null !== response.data[i].parent_queue_id && 'qnaire' != response.data[i].name ) {
-                  if( 'qnaire' == self.queueList[response.data[i].parent_queue_id].name )
-                    response.data[i].parent_queue_id = eligibleQueueId;
-                  self.queueList[response.data[i].parent_queue_id].branchList.push( response.data[i] );
+                self.queueList[item.id] = item;
+                if( null !== item.parent_queue_id && 'qnaire' != item.name ) {
+                  if( 'qnaire' == self.queueList[item.parent_queue_id].name )
+                    item.parent_queue_id = eligibleQueueId;
+                  self.queueList[item.parent_queue_id].branchList.push( item );
                 }
-              }
+              } );
 
               // now put all root branches into the queue tree
-              for( var i = 1; i < self.queueList.length; i++ )
-                if( angular.isDefined( self.queueList[i] ) && null === self.queueList[i].parent_queue_id )
-                  self.queueTree.push( self.queueList[i] );
+              self.queueList.forEach( function( item ) {
+                if( angular.isDefined( item ) && null === item.parent_queue_id ) self.queueTree.push( item );
+              } );
             }
 
             // now check for count errors
-            for( var i = 1; i < self.queueList.length; i++ ) {
-              if( 'all' == self.queueList[i].name )
+            self.queueList.forEach( function( queue, index, array ) {
+              if( 'all' == queue.name )
                 self.form.lastRepopulation =
-                  CnSession.formatValue( self.queueList[i].last_repopulation, 'datetimesecond', false );
+                  CnSession.formatValue( queue.last_repopulation, 'datetimesecond', false );
 
-              if( angular.isDefined( self.queueList[i] ) && 0 < self.queueList[i].branchList.length ) {
-                self.queueList[i].childTotal = 0;
-                for( var c = 0; c < self.queueList[i].branchList.length; c++ )
-                  self.queueList[i].childTotal += self.queueList[i].branchList[c].participant_count;
+              if( angular.isDefined( queue ) && 0 < queue.branchList.length ) {
+                var count = 0;
+                queue.branchList.forEach( function( branch ) { count += branch.participant_count; } );
+                array[index].childTotal = count;
 
-                if( self.queueList[i].childTotal != self.queueList[i].participant_count )
+                if( queue.childTotal != queue.participant_count )
                   console.error(
-                    'Queue "' + self.queueList[i].title +
-                    '" has ' + self.queueList[i].participant_count +
-                    ' participants but child queues add up to ' + self.queueList[i].childTotal +
+                    'Queue "' + queue.title +
+                    '" has ' + queue.participant_count +
+                    ' participants but child queues add up to ' + queue.childTotal +
                     ' (they should be equal)' );
               }
-            }
+            } );
           } );
         };
       };

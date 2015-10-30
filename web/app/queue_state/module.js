@@ -131,12 +131,9 @@ define( cenozo.getDependencyList( 'queue_state' ), function() {
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.queue_id.enumList = [];
-                for( var i = 0; i < response.data.length; i++ ) {
-                  self.metadata.columnList.queue_id.enumList.push( {
-                    value: response.data[i].id,
-                    name: response.data[i].title
-                  } );
-                }
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.queue_id.enumList.push( { value: item.id, name: item.title } );
+                } );
               } ),
 
               CnHttpFactory.instance( {
@@ -147,12 +144,9 @@ define( cenozo.getDependencyList( 'queue_state' ), function() {
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.qnaire_id.enumList = [];
-                for( var i = 0; i < response.data.length; i++ ) {
-                  self.metadata.columnList.qnaire_id.enumList.push( {
-                    value: response.data[i].id,
-                    name: response.data[i].name
-                  } );
-                }
+                response.data.forEach( function( item ) {
+                  self.metadata.columnList.qnaire_id.enumList.push( { value: item.id, name: item.name } );
+                } );
               } )
             ];
 
@@ -171,12 +165,9 @@ define( cenozo.getDependencyList( 'queue_state' ), function() {
                   }
                 } ).query().then( function success( response ) {
                   self.metadata.columnList.site_id.enumList = [];
-                  for( var i = 0; i < response.data.length; i++ ) {
-                    self.metadata.columnList.site_id.enumList.push( {
-                      value: response.data[i].id,
-                      name: response.data[i].name
-                    } );
-                  }
+                  response.data.forEach( function( item ) {
+                    self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
+                  } );
                 } )
               );
             }

@@ -376,15 +376,14 @@ define( cenozo.getDependencyList( 'assignment' ), function() {
             // put qnaire scripts in separate list and only include the current qnaire script in the main list
             self.scriptList = [];
             self.qnaireScriptList = [];
-            for( var i = 0; i < response.data.length; i++ ) {
-              var script = response.data[i];
-              if( null != self.qnaireList.findByProperty( 'script_id', script.id ) ) {
-                self.qnaireScriptList.push( script );
-                if( script.id == self.assignment.script_id ) self.scriptList.unshift( script );
+            response.data.forEach( function( item ) {
+              if( null != self.qnaireList.findByProperty( 'script_id', item.id ) ) {
+                self.qnaireScriptList.push( item );
+                if( item.id == self.assignment.script_id ) self.scriptList.unshift( item );
               } else {
-                self.scriptList.push( script );
+                self.scriptList.push( item );
               }
-            }
+            } );
 
             if( 0 == self.scriptList.length ) {
               self.activeScript = null;
@@ -394,9 +393,9 @@ define( cenozo.getDependencyList( 'assignment' ), function() {
                 self.activeScript = self.scriptList[0];
               } else {
                 var activeScriptName = self.activeScript.name;
-                for( var i = 0; i < self.scriptList.length; i++ ) {
-                  if( activeScriptName == self.scriptList[i].name ) self.activeScript = self.scriptList[i];
-                }
+                self.scriptList.forEach( function( item ) {
+                  if( activeScriptName == item.name ) self.activeScript = item;
+                } );
               }
             }
             self.isScriptListLoading = false;

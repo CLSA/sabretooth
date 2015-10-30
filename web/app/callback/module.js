@@ -205,12 +205,12 @@ define( cenozo.getDependencyList( 'callback' ), function() {
                   }
                 } ).query().then( function( response ) {
                   self.metadata.columnList.phone_id.enumList = [];
-                  for( var i = 0; i < response.data.length; i++ ) {
+                  response.data.forEach( function( item ) {
                     self.metadata.columnList.phone_id.enumList.push( {
-                      value: response.data[i].id,
-                      name: '(' + response.data[i].rank + ') ' + response.data[i].type + ': ' + response.data[i].number
+                      value: item.id,
+                      name: '(' + item.rank + ') ' + item.type + ': ' + item.number
                     } );
-                  }
+                  } );
                 } ).then( function() { self.metadata.loadingCount--; } );
               } );
 

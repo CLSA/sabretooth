@@ -157,12 +157,9 @@ define( cenozo.getDependencyList( 'qnaire' ), function() {
               }
             } ).query().then( function( response ) {
               self.metadata.columnList.script_id.enumList = [];
-              for( var i = 0; i < response.data.length; i++ ) {
-                self.metadata.columnList.script_id.enumList.push( {
-                  value: response.data[i].id,
-                  name: response.data[i].name
-                } );
-              }
+              response.data.forEach( function( item ) {
+                self.metadata.columnList.script_id.enumList.push( { value: item.id, name: item.name } );
+              } );
             } ).then( function() { self.metadata.loadingCount--; } );
 
           } );
