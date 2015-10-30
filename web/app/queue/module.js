@@ -92,7 +92,7 @@ define( cenozo.getDependencyList( 'queue' ), function() {
           $scope.isLoading = false; $scope.isComplete = true;
         } ).catch( CnSession.errorHandler );
       };
-      $scope.refresh();
+      $scope.refresh( true );
     }
   ] );
 
