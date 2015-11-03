@@ -34,8 +34,7 @@ class module extends \cenozo\service\module
       $join_sel->from( 'queue' );
       $join_sel->add_column( 'id', 'queue_id' );
       $join_sel->add_column(
-        'MAX( CONVERT_TZ( queue_has_participant.update_timestamp, "US/Eastern", "UTC" ) )',
-        'last_repopulation', false, 'datetime' );
+        'MAX( queue_has_participant.update_timestamp )', 'last_repopulation', false, 'timestamp' );
       $join_sel->add_column(
         'IF( queue_has_participant.participant_id IS NOT NULL, COUNT(*), 0 )',
         'participant_count', false );

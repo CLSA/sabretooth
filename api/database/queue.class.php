@@ -57,10 +57,7 @@ class queue extends \cenozo\database\record
   public static function get_interval_since_last_repopulate()
   {
     $select = lib::create( 'database\select' );
-    $select->add_column(
-      sprintf( 'MIN( CONVERT_TZ( update_timestamp, "%s", "UTC" ) )', date_default_timezone_get() ),
-      'update_datetime',
-      false );
+    $select->add_column( 'MIN( update_timestamp )', 'update_datetime', false, 'timestamp' );
     $select->from( 'queue_has_participant' );
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'queue_id', 'IN', 'SELECT id FROM queue WHERE time_specific = false', false );
@@ -73,10 +70,7 @@ class queue extends \cenozo\database\record
   public static function get_interval_since_last_repopulate_time()
   {
     $select = lib::create( 'database\select' );
-    $select->add_column(
-      sprintf( 'MIN( CONVERT_TZ( update_timestamp, "%s", "UTC" ) )', date_default_timezone_get() ),
-      'update_datetime',
-      false );
+    $select->add_column( 'MIN( update_timestamp )', 'update_datetime', false, 'timestamp' );
     $select->from( 'queue_has_participant' );
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'queue_id', 'IN', 'SELECT id FROM queue WHERE time_specific = true', false );
