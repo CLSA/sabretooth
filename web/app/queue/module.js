@@ -50,9 +50,7 @@ define( cenozo.getDependencyList( 'queue' ), function() {
     }
   } );
         
-  module.addViewOperation( 'View Queue Tree', function( viewModel ) {
-    angular.element( document.body ).injector().get( '$state' ).go( 'queue.tree' );
-  } );
+  module.addViewOperation( 'View Queue Tree', function( viewModel, $state ) { $state.go( 'queue.tree' ); } );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'QueueListCtrl', [
