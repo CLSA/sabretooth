@@ -93,7 +93,7 @@ class appointment extends \cenozo\database\record
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to determine state for appointment with no id.' );
+      log::warning( 'Tried to determine state for appointment with no primary key.' );
       return NULL;
     } 
     

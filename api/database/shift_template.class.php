@@ -26,7 +26,7 @@ class shift_template extends \cenozo\database\record
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to query shift_template with no id.' );
+      log::warning( 'Tried to query shift_template with no primary key.' );
       return false;
     } 
 

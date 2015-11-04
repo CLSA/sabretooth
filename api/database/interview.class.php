@@ -25,7 +25,7 @@ class interview extends \cenozo\database\record
     // check the last key value
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to query interview with no id.' );
+      log::warning( 'Tried to query interview with no primary key.' );
       return NULL;
     }
 
@@ -53,7 +53,7 @@ class interview extends \cenozo\database\record
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to complete interview with no id.' );
+      log::warning( 'Tried to complete interview with no primary key.' );
       return;
     }
 
@@ -100,7 +100,7 @@ class interview extends \cenozo\database\record
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to force complete interview with no id.' );
+      log::warning( 'Tried to force complete interview with no primary key.' );
       return;
     }
 
@@ -157,7 +157,7 @@ class interview extends \cenozo\database\record
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to force uncomplete interview with no id.' );
+      log::warning( 'Tried to force uncomplete interview with no primary key.' );
       return;
     }
 

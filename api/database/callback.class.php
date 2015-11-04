@@ -60,7 +60,7 @@ class callback extends \cenozo\database\record
   {
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to determine state for callback with no id.' );
+      log::warning( 'Tried to determine state for callback with no primary key.' );
       return NULL;
     } 
     

@@ -61,7 +61,7 @@ class assignment extends \cenozo\database\record
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to determine if assignment with no id has an open phone_call.' );
+      log::warning( 'Tried to determine if assignment with no primary key has an open phone_call.' );
       return NULL;
     }
 
@@ -78,7 +78,7 @@ class assignment extends \cenozo\database\record
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to get open phone_call from assignment with no id.' );
+      log::warning( 'Tried to get open phone_call from assignment with no primary key.' );
       return NULL;
     }
 

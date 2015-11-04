@@ -22,7 +22,7 @@ class user extends \cenozo\database\user
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to determine if user with no id has an open assignment.' );
+      log::warning( 'Tried to determine if user with no primary key has an open assignment.' );
       return NULL;
     }
 
@@ -39,7 +39,7 @@ class user extends \cenozo\database\user
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to get open assignment from user with no id.' );
+      log::warning( 'Tried to get open assignment from user with no primary key.' );
       return NULL;
     }
 
@@ -60,7 +60,7 @@ class user extends \cenozo\database\user
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to determine if user with no id has an open phone call.' );
+      log::warning( 'Tried to determine if user with no primary key has an open phone call.' );
       return NULL;
     }
 
@@ -78,7 +78,7 @@ class user extends \cenozo\database\user
     // check the primary key value
     if( is_null( $this->id ) )
     {
-      log::warning( 'Tried to get open phone_call from user with no id.' );
+      log::warning( 'Tried to get open phone_call from user with no primary key.' );
       return NULL;
     }
 
