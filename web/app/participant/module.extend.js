@@ -69,7 +69,7 @@ define( [ module.url + 'module.js' ], function() {
                   description += item.assignment_id
                                ? 'been met.\nDuring the call the participant was ' +
                                  ( item.reached ? 'reached' : 'not reached' ) + '.\n'
-                               : 'net yet been met.';
+                               : 'not yet been met.';
                   historyList.push( {
                     datetime: item.datetime,
                     category: 'Appointment',
@@ -151,7 +151,7 @@ define( [ module.url + 'module.js' ], function() {
                   description += item.assignment_id
                                ? 'been met.\nDuring the call the participant was ' +
                                  ( item.reached ? 'reached' : 'not reached' ) + '.\n'
-                               : 'net yet been met.';
+                               : 'not yet been met.';
                   historyList.push( {
                     datetime: item.datetime,
                     category: 'Callback',
