@@ -123,7 +123,15 @@ define( cenozo.getDependencyList( 'qnaire' ), function() {
     cenozo.getViewModelInjectionList( 'qnaire' ).concat( function() {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
+      var object = function( parentModel ) {
+        CnBaseViewFactory.construct( this, parentModel, args );
+        if( angular.isDefined( this.eventTypeModel ) )
+          this.eventTypeModel.heading = 'Required To Begin Event List';
+        if( angular.isDefined( this.queueStateModel ) )
+          this.queueStateModel.heading = 'Disabled Queue List';
+        if( angular.isDefined( this.quotaModel ) )
+          this.quotaModel.heading = 'Disabled Quota List';
+      }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     } )
   );

@@ -119,6 +119,8 @@ define( cenozo.getDependencyList( 'queue' ), function() {
       var $state = args[args.length-1];
       var object = function( parentModel ) {
         CnBaseViewFactory.construct( this, parentModel, args );
+        if( angular.isDefined( this.queueStateModel ) )
+          this.queueStateModel.heading = 'Disabled Questionnaire List';
 
         // make sure users can't add/remove participants from queues
         this.participantModel.enableChoose( false );

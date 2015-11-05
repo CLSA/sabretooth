@@ -1,13 +1,7 @@
 <cn-record-view model="model"></cn-record-view>
-<div class="vertical-spacer">
-  <cn-record-list model="model.viewModel['eventTypeModel']"
-                  heading="Required To Begin Event List"></cn-record-list>
+<div class="vertical-spacer" ng-repeat="child in model.module.children">
+  <cn-record-list model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
 </div>
-<div class="vertical-spacer">
-  <cn-record-list model="model.viewModel['queueStateModel']"
-                  heading="Disabled Queue List"></cn-record-list>
-</div>
-<div class="vertical-spacer">
-  <cn-record-list model="model.viewModel['quotaModel']"
-                  heading="Disabled Quota List"></cn-record-list>
+<div class="vertical-spacer" ng-repeat="child in model.module.choosing">
+  <cn-record-list model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
 </div>
