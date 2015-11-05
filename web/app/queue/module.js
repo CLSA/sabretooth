@@ -123,7 +123,8 @@ define( cenozo.getDependencyList( 'queue' ), function() {
           this.queueStateModel.heading = 'Disabled Questionnaire List';
 
         // make sure users can't add/remove participants from queues
-        this.participantModel.enableChoose( false );
+        if( angular.isDefined( this.participantModel ) )
+          this.participantModel.enableChoose( false );
       };
 
       return { instance: function( parentModel ) { return new object( parentModel ); } };
