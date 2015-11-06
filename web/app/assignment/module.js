@@ -283,7 +283,7 @@ define( cenozo.getDependencyList( 'assignment' ), function() {
                                    : null;
             } );
           } ).then( function() {
-            if( null === self.scriptList ) {
+            if( null === self.qnaireList ) {
               // get the qnaire list and store the current and last qnaires
               CnHttpFactory.instance( {
                 path: 'qnaire',
