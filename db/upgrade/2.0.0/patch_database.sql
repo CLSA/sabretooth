@@ -2,6 +2,7 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE cedar_instance.sql
 SOURCE queue.sql
 SOURCE queue_state.sql
 SOURCE interview.sql
