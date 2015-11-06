@@ -64,21 +64,22 @@ class ui extends \cenozo\ui\ui
   /**
    * Extends the parent method
    */
-  protected function get_list_items()
+  protected function get_list_items( $module_list )
   {
-    $list = parent::get_list_items();
+    $list = parent::get_list_items( $module_list );
     $db_role = lib::create( 'business\session' )->get_role();
     
     // add application-specific states to the base list
-    $list['Interviews'] = 'interview';
-    $list['Queues']     = 'queue';
-
-    if( 3 <= $db_role->tier )
-    {
+    if( array_key_exists( 'cedar_instance', $module_list ) && $module_list['cedar_instance']['list_menu'] )
       $list['Cedar Instances'] = 'cedar_instance';
-      $list['Opal Instances']  = 'opal_instance';
-      $list['Questionnaires']  = 'qnaire';
-    }
+    if( array_key_exists( 'interview', $module_list ) && $module_list['interview']['list_menu'] )
+      $list['Interviews'] = 'interview';
+    if( array_key_exists( 'opal_instance', $module_list ) && $module_list['opal_instance']['list_menu'] )
+      $list['Opal Instances'] = 'opal_instance';
+    if( array_key_exists( 'qnaire', $module_list ) && $module_list['qnaire']['list_menu'] )
+      $list['Questionnaires'] = 'qnaire';
+    if( array_key_exists( 'queue', $module_list ) && $module_list['queue']['list_menu'] )
+      $list['Queues'] = 'queue';
 
     return $list;
   }
@@ -93,17 +94,15 @@ class ui extends \cenozo\ui\ui
     $db_role = lib::create( 'business\session' )->get_role();
     
     // add application-specific states to the base list
-    if( 2 <= $db_role->tier )
-    {
-      $list['Queue Tree'] = array( 'subject' => 'queue', 'action' => 'tree' );
-      if( !$db_role->all_sites )
-        $list['Site Settings'] = array(
-          'subject' => 'site',
-          'action' => 'view',
-          'identifier' => sprintf( 'name=%s', $db_site->name ) );
-    }
     if( in_array( $db_role->name, array( 'helpline', 'operator', 'supervisor' ) ) )
       $list['Assignment Home'] = array( 'subject' => 'assignment', 'action' => 'home' );
+    if( 2 <= $db_role->tier )
+      $list['Queue Tree'] = array( 'subject' => 'queue', 'action' => 'tree' );
+    if( 2 <= $db_role->tier && !$db_role->all_sites )
+      $list['Site Settings'] = array(
+        'subject' => 'site',
+        'action' => 'view',
+        'identifier' => sprintf( 'name=%s', $db_site->name ) );
 
     return $list;
   }
