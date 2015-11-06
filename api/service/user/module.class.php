@@ -28,7 +28,7 @@ class module extends \cenozo\service\user\module
 
     $join_mod = lib::create( 'database\modifier' );
     $join_mod->join( 'role', 'access.role_id', 'role.id' );
-    $join_mod->where( 'role.name', 'IN', array( 'cedar', 'opal' ) );
+    $join_mod->where( 'role.name', '!=', 'opal' );
     $join_mod->group( 'user_id' );
 
     $modifier->left_join(

@@ -24,8 +24,6 @@ class ui extends \cenozo\ui\ui
     // add child actions to certain modules
     if( array_key_exists( 'assignment', $module_list ) )
       $module_list['assignment']['children'] = array( 'phone_call' );
-    if( array_key_exists( 'cedar_instance', $module_list ) )
-      $module_list['cedar_instance']['children'] = array( 'activity' );
     if( array_key_exists( 'interview', $module_list ) ) 
       $module_list['interview']['children'] = array( 'assignment', 'appointment', 'callback' );
     if( array_key_exists( 'opal_instance', $module_list ) )
@@ -70,8 +68,6 @@ class ui extends \cenozo\ui\ui
     $db_role = lib::create( 'business\session' )->get_role();
     
     // add application-specific states to the base list
-    if( array_key_exists( 'cedar_instance', $module_list ) && $module_list['cedar_instance']['list_menu'] )
-      $list['Cedar Instances'] = 'cedar_instance';
     if( array_key_exists( 'interview', $module_list ) && $module_list['interview']['list_menu'] )
       $list['Interviews'] = 'interview';
     if( array_key_exists( 'opal_instance', $module_list ) && $module_list['opal_instance']['list_menu'] )

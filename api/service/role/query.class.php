@@ -25,7 +25,7 @@ class query extends \cenozo\service\role\query
     if( $this->get_argument( 'granting', false ) )
     {
       // remove instance-based roles
-      $this->modifier->where( 'role.name', 'NOT IN', array( 'cedar', 'opal' ) );
+      $this->modifier->where( 'role.name', '!=', 'opal' );
 
       // supervisors can only create other supervisors and operators
       if( 'supervisor' == $db_role->name )
