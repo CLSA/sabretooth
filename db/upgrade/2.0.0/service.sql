@@ -94,6 +94,7 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'participant', 'GET', 0, 1 ),
 ( 'participant', 'GET', 1, 0 ),
 ( 'participant', 'PATCH', 1, 0 ),
+( 'participant', 'POST', 0, 1 ),
 ( 'phase', 'DELETE', 1, 1 ),
 ( 'phase', 'GET', 0, 1 ),
 ( 'phase', 'GET', 1, 1 ),
