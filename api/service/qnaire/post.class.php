@@ -32,6 +32,7 @@ class post extends \cenozo\service\post
 
     $db_reached_event_type = lib::create( 'database\event_type' );
     $db_reached_event_type->name = sprintf( 'reached (%s)', $db_script->name );
+    $db_reached_event_type->record_address = true;
     $db_reached_event_type->description =
       sprintf( 'First time the participant was reached for the "%" questionnaire.', $db_script->name );
     $db_reached_event_type->save();
