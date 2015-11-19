@@ -42,12 +42,12 @@ define( cenozo.getDependencyList( 'phone_call' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'PhoneCallListCtrl', [
-    '$scope', 'CnPhoneCallModelFactory', 'CnSession',
-    function( $scope, CnPhoneCallModelFactory, CnSession ) {
+    '$scope', 'CnPhoneCallModelFactory',
+    function( $scope, CnPhoneCallModelFactory ) {
       $scope.model = CnPhoneCallModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 

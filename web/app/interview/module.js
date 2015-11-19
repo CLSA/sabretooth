@@ -85,28 +85,28 @@ define( cenozo.getDependencyList( 'interview' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'InterviewListCtrl', [
-    '$scope', 'CnInterviewModelFactory', 'CnSession',
-    function( $scope, CnInterviewModelFactory, CnSession ) {
+    '$scope', 'CnInterviewModelFactory',
+    function( $scope, CnInterviewModelFactory ) {
       $scope.model = CnInterviewModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'InterviewViewCtrl', [
-    '$scope', 'CnInterviewModelFactory', 'CnSession',
-    function( $scope, CnInterviewModelFactory, CnSession ) {
+    '$scope', 'CnInterviewModelFactory',
+    function( $scope, CnInterviewModelFactory ) {
       $scope.model = CnInterviewModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnInterviewView', function () {
+  cenozo.providers.directive( 'cnInterviewView', function() {
     return {
       templateUrl: 'app/interview/view.tpl.html',
       restrict: 'E'
@@ -133,7 +133,7 @@ define( cenozo.getDependencyList( 'interview' ), function() {
 
         // override onPatch
         this.onPatch = function( data ) {
-          return this.patchRecord( data ).then( function() {
+          return this.$$onPatch( data ).then( function() {
             // if the end datetime has changed then reload then update the appointment/callback list actions
             if( angular.isDefined( data.end_datetime ) ) {
               var completed = null !== self.record.end_datetime;
@@ -155,7 +155,7 @@ define( cenozo.getDependencyList( 'interview' ), function() {
 
         // override onView
         this.onView = function() {
-          return this.viewRecord().then( function() {
+          return this.$$onView().then( function() {
             // if the end datetime has changed then reload then update the appointment/callback list actions
             var completed = null !== self.record.end_datetime;
             var existing = 0 < self.record.open_appointment_count || 0 < self.record.open_callback_count;

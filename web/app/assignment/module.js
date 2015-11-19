@@ -90,37 +90,37 @@ define( cenozo.getDependencyList( 'assignment' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'AssignmentListCtrl', [
-    '$scope', 'CnAssignmentModelFactory', 'CnSession',
-    function( $scope, CnAssignmentModelFactory, CnSession ) {
+    '$scope', 'CnAssignmentModelFactory',
+    function( $scope, CnAssignmentModelFactory ) {
       $scope.model = CnAssignmentModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'AssignmentViewCtrl', [
-    '$scope', 'CnAssignmentModelFactory', 'CnSession',
-    function( $scope, CnAssignmentModelFactory, CnSession ) {
+    '$scope', 'CnAssignmentModelFactory',
+    function( $scope, CnAssignmentModelFactory ) {
       $scope.model = CnAssignmentModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'AssignmentHomeCtrl', [
-    '$scope', 'CnAssignmentHomeFactory', 'CnSession',
-    function( $scope, CnAssignmentHomeFactory, CnSession ) {
+    '$scope', 'CnAssignmentHomeFactory',
+    function( $scope, CnAssignmentHomeFactory ) {
       $scope.model = CnAssignmentHomeFactory.instance();
       $scope.model.onLoad(); // breadcrumbs are handled by the service
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAssignmentView', function () {
+  cenozo.providers.directive( 'cnAssignmentView', function() {
     return {
       templateUrl: 'app/assignment/view.tpl.html',
       restrict: 'E'
@@ -167,11 +167,9 @@ define( cenozo.getDependencyList( 'assignment' ), function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAssignmentHomeFactory', [
     '$state', '$window', 'CnSession', 'CnHttpFactory',
-    'CnParticipantModelFactory', 'CnModalMessageFactory',
-    'CnModalConfirmFactory', 'CnModalParticipantNoteFactory',
+    'CnParticipantModelFactory', 'CnModalMessageFactory', 'CnModalConfirmFactory',
     function( $state, $window, CnSession, CnHttpFactory,
-              CnParticipantModelFactory, CnModalMessageFactory,
-              CnModalConfirmFactory, CnModalParticipantNoteFactory ) {
+              CnParticipantModelFactory, CnModalMessageFactory, CnModalConfirmFactory ) {
       var object = function() {
         var self = this;
 
@@ -218,18 +216,19 @@ define( cenozo.getDependencyList( 'assignment' ), function() {
               self.isAssignmentLoading = true; // show loading screen right away
               CnHttpFactory.instance( {
                 path: 'assignment?operation=open',
-                data: { participant_id: record.id }
+                data: { participant_id: record.id },
+                onError: function( response ) {
+                  if( 409 == response.status ) {
+                    // 409 means there is a conflict (the assignment can't be made)
+                    CnModalMessageFactory.instance( {
+                      title: 'Unable to start assignment with ' + record.uid,
+                      message: response.data,
+                      error: true
+                    } ).show().then( self.onLoad );
+                  } else { CnModalMessageFactory.httpError( response ); }
+                }
               } ).post().then( function( response ) {
                 self.onLoad();
-              } ).catch( function( response ) {
-                if( 409 == response.status ) {
-                  // 409 means there is a conflict (the assignment can't be made)
-                  CnModalMessageFactory.instance( {
-                    title: 'Unable to start assignment with ' + record.uid,
-                    message: response.data,
-                    error: true
-                  } ).show().then( self.onLoad );
-                } else { CnSession.errorHandler( response ); }
               } );
             }
           } );
@@ -299,7 +298,7 @@ define( cenozo.getDependencyList( 'assignment' ), function() {
                   self.lastQnaire = self.qnaireList[len-1];
                 }
                 self.loadScriptList(); // now load the script list
-              } ).catch( CnSession.errorHandler );
+              } );
             }
           } ).then( function() {
             CnHttpFactory.instance( {
@@ -335,28 +334,29 @@ define( cenozo.getDependencyList( 'assignment' ), function() {
             } );
           } ).then( function() {
             CnHttpFactory.instance( {
-              path: 'phone_call'
+              path: 'phone_call',
+              onError: function( response ) {
+                if( 307 == response.status ) {
+                  // 307 means the user has no active assignment, so load the participant select list
+                  self.assignment = null;
+                  self.participant = null;
+                  self.isAssignmentLoading = false;
+                  self.isPrevAssignmentLoading = false;
+                  self.participantModel.listModel.onList( true ).then( function() {
+                    CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Select' } ] );
+                  } );
+                } else { CnModalMessageFactory.httpError( response ); }
+              }
             } ).head().then( function success( response ) {
               self.phoneCallStatusList =
                 cenozo.parseEnumList( angular.fromJson( response.headers( 'Columns' ) ).status );
             } );
-          } ).catch( function( response ) {
-            if( 307 == response.status ) {
-              // 307 means the user has no active assignment, so load the participant select list
-              self.assignment = null;
-              self.participant = null;
-              self.isAssignmentLoading = false;
-              self.isPrevAssignmentLoading = false;
-              self.participantModel.listModel.onList( true ).then( function() {
-                CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Select' } ] );
-              } );
-            } else { CnSession.errorHandler( response ); }
           } );
         };
 
         this.openNotes = function() {
           if( null != self.participant )
-            CnModalParticipantNoteFactory.instance( { participant: self.participant } ).show();
+            $state.go( 'participant.notes', { identifier: self.participant.getIdentifier() } );
         };
 
         this.loadScriptList = function() {
@@ -399,7 +399,7 @@ define( cenozo.getDependencyList( 'assignment' ), function() {
               }
             }
             self.isScriptListLoading = false;
-          } ).catch( CnSession.errorHandler );
+          } );
         };
 
         this.launchScript = function( script ) {
@@ -408,53 +408,55 @@ define( cenozo.getDependencyList( 'assignment' ), function() {
           // first see if a token already exists
           CnHttpFactory.instance( {
             path: 'script/' + script.id + '/token/uid=' + self.participant.uid,
-            data: { select: { column: [ 'token', 'completed' ] } }
+            data: { select: { column: [ 'token', 'completed' ] } },
+            onError: function( response ) {
+              if( 404 == response.status ) {
+                console.info( 'The "404 (Not Found)" error found above is normal and can be ignored.' );
+
+                // the token doesn't exist so create it
+                var modal = CnModalMessageFactory.instance( {
+                  title: 'Please Wait',
+                  message: 'Please wait while the participant\'s data is retrieved.',
+                  block: true
+                } );
+                modal.show();
+
+                CnHttpFactory.instance( {
+                  path: 'script/' + script.id + '/token',
+                  data: { uid: self.participant.uid },
+                  onError: function( response ) {
+                    modal.close();
+                    CnModalMessageFactory.httpError( response );
+                  }
+                } ).post().then( function success( response ) {
+                  // close the wait message
+                  modal.close();
+
+                  // update the script list to reflect the new start datetime
+                  self.loadScriptList();
+
+                  // now get the new token string we just created and use it to open the script window
+                  CnHttpFactory.instance( {
+                    path: 'script/' + script.id + '/token/' + response.data
+                  } ).get().then( function( response ) {
+                    // launch the script
+                    url += '&token=' + response.data.token
+                    $window.open( url, 'cenozoScript' );
+                  } );
+                } );
+              } else CnModalMessageFactory.httpError( response );
+            }
           } ).get().then( function( response ) {
             // launch the script
             url += '&token=' + response.data.token
             $window.open( url, 'cenozoScript' );
-          } ).catch( function( response ) {
-            if( 404 == response.status ) {
-              console.info( 'The "404 (Not Found)" error found above is normal and can be ignored.' );
-
-              // the token doesn't exist so create it
-              var modal = CnModalMessageFactory.instance( {
-                title: 'Please Wait',
-                message: 'Please wait while the participant\'s data is retrieved.',
-                block: true
-              } );
-              modal.show();
-
-              CnHttpFactory.instance( {
-                path: 'script/' + script.id + '/token',
-                data: { uid: self.participant.uid }
-              } ).post().then( function success( response ) {
-                // close the wait message
-                modal.close();
-
-                // update the script list to reflect the new start datetime
-                self.loadScriptList();
-
-                // now get the new token string we just created and use it to open the script window
-                CnHttpFactory.instance( {
-                  path: 'script/' + script.id + '/token/' + response.data
-                } ).get().then( function( response ) {
-                  // launch the script
-                  url += '&token=' + response.data.token
-                  $window.open( url, 'cenozoScript' );
-                } ).catch( CnSession.errorHandler );
-              } ).catch( function( response ) {
-                modal.close();
-                CnSession.errorHandler( response );
-              } );
-            } else CnSession.errorHandler( response );
           } );
         };
 
         this.advanceQnaire = function() {
           return CnHttpFactory.instance( {
             path: 'assignment/0?operation=advance', data: {}
-          } ).patch().then( self.onLoad ).catch( CnSession.errorHandler );
+          } ).patch().then( self.onLoad );
         };
 
         this.startCall = function( phone ) {
@@ -465,7 +467,7 @@ define( cenozo.getDependencyList( 'assignment' ), function() {
           CnHttpFactory.instance( {
             path: 'phone_call?operation=open',
             data: { phone_id: phone.id }
-          } ).post().then( function() { self.onLoad( false ); } ).catch( CnSession.errorHandler );
+          } ).post().then( function() { self.onLoad( false ); } );
         };
 
         this.endCall = function( status ) {
@@ -476,22 +478,23 @@ define( cenozo.getDependencyList( 'assignment' ), function() {
           CnHttpFactory.instance( {
             path: 'phone_call/0?operation=close',
             data: { status: status }
-          } ).patch().then( function() { self.onLoad( false ); } ).catch( CnSession.errorHandler );
+          } ).patch().then( function() { self.onLoad( false ); } );
         };
 
         this.endAssignment = function() {
           if( null != self.assignment ) {
             CnHttpFactory.instance( {
-              path: 'assignment/0'
+              path: 'assignment/0',
+              onError: function( response ) {
+                if( 307 == response.status ) {
+                  // 307 means the user has no active assignment, so just refresh the page data
+                  self.onLoad();
+                } else { CnModalMessageFactory.httpError( response ); }
+              }
             } ).get().then( function( response ) {
               return CnHttpFactory.instance( {
                 path: 'assignment/0?operation=close', data: {}
-              } ).patch().then( self.onLoad ).catch( CnSession.errorHandler );
-            } ).catch( function( response ) {
-              if( 307 == response.status ) {
-                // 307 means the user has no active assignment, so just refresh the page data
-                self.onLoad();
-              } else { CnSession.errorHandler( response ); }
+              } ).patch().then( self.onLoad );
             } );
           }
         };

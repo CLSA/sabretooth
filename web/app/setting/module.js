@@ -159,27 +159,27 @@ define( cenozo.getDependencyList( 'setting' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'SettingListCtrl', [
-    '$scope', 'CnSettingModelFactory', 'CnSession',
-    function( $scope, CnSettingModelFactory, CnSession ) {
+    '$scope', 'CnSettingModelFactory',
+    function( $scope, CnSettingModelFactory ) {
       $scope.model = CnSettingModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   cenozo.providers.controller( 'SettingViewCtrl', [
-    '$scope', 'CnSettingModelFactory', 'CnSession',
-    function( $scope, CnSettingModelFactory, CnSession ) {
+    '$scope', 'CnSettingModelFactory',
+    function( $scope, CnSettingModelFactory ) {
       $scope.model = CnSettingModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSettingView', function () {
+  cenozo.providers.directive( 'cnSettingView', function() {
     return {
       templateUrl: 'app/setting/view.tpl.html',
       restrict: 'E'

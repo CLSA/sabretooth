@@ -86,40 +86,40 @@ define( cenozo.getDependencyList( 'callback' ), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'CallbackAddCtrl', [
-    '$scope', 'CnCallbackModelFactory', 'CnSession',
-    function( $scope, CnCallbackModelFactory, CnSession ) {
+    '$scope', 'CnCallbackModelFactory',
+    function( $scope, CnCallbackModelFactory ) {
       $scope.model = CnCallbackModelFactory.root;
       $scope.record = {};
       $scope.model.addModel.onNew( $scope.record ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'add' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'CallbackListCtrl', [
-    '$scope', 'CnCallbackModelFactory', 'CnSession',
-    function( $scope, CnCallbackModelFactory, CnSession ) {
+    '$scope', 'CnCallbackModelFactory',
+    function( $scope, CnCallbackModelFactory ) {
       $scope.model = CnCallbackModelFactory.root;
       $scope.model.listModel.onList( true ).then( function() {
         $scope.model.setupBreadcrumbTrail( 'list' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.controller( 'CallbackViewCtrl', [
-    '$scope', 'CnCallbackModelFactory', 'CnSession',
-    function( $scope, CnCallbackModelFactory, CnSession ) {
+    '$scope', 'CnCallbackModelFactory',
+    function( $scope, CnCallbackModelFactory ) {
       $scope.model = CnCallbackModelFactory.root;
       $scope.model.viewModel.onView().then( function() {
         $scope.model.setupBreadcrumbTrail( 'view' );
-      } ).catch( CnSession.errorHandler );
+      } );
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnCallbackAdd', function () {
+  cenozo.providers.directive( 'cnCallbackAdd', function() {
     return {
       templateUrl: 'app/callback/add.tpl.html',
       restrict: 'E'
@@ -127,7 +127,7 @@ define( cenozo.getDependencyList( 'callback' ), function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnCallbackView', function () {
+  cenozo.providers.directive( 'cnCallbackView', function() {
     return {
       templateUrl: 'app/callback/view.tpl.html',
       restrict: 'E'
@@ -162,7 +162,7 @@ define( cenozo.getDependencyList( 'callback' ), function() {
         CnBaseViewFactory.construct( this, parentModel, args );
 
         this.onView = function() {
-          return this.viewRecord().then( function() {
+          return this.$$onView().then( function() {
             var upcoming = moment().isBefore( self.record.datetime );
             parentModel.enableDelete( upcoming );
             parentModel.enableEdit( upcoming );
