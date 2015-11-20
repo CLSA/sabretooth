@@ -35,6 +35,6 @@ class module extends \cenozo\service\user\module
       sprintf( '( %s %s ) AS user_join_instance_access', $join_sel->get_sql(), $join_mod->get_sql() ),
       'user.id',
       'user_join_instance_access.user_id' );
-    $modifier->where( 'user_join_instance_access.user_id', '=', NULL );
+    $modifier->where( 'user_join_instance_access.user_id', '!=', NULL );
   }
 }
