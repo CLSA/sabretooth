@@ -86,7 +86,7 @@ define( cenozo.getDependencyList( 'queue' ), function() {
         $scope.isLoading = 0 < $scope.model.queueTree.length;
         $scope.isComplete = 0 < $scope.model.queueTree.length;
         $scope.model.onView()
-          .then( function success() { CnSession.setBreadcrumbTrail( [ { title: 'Queue Tree' } ] ) )
+          .then( function success() { CnSession.setBreadcrumbTrail( [ { title: 'Queue Tree' } ] ); } )
           .finally( function finished() { $scope.isLoading = false; $scope.isComplete = true; } );
       };
       $scope.refresh( true );
