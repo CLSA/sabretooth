@@ -1,7 +1,7 @@
 define( cenozo.getDependencyList( 'opal_instance' ), function() {
   'use strict';
 
-  var module = cenozoApp.module( 'opal_instance' );
+  try { var module = cenozoApp.module( 'opal_instance', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {}, // standard
     name: {

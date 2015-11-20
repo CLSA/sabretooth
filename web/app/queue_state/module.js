@@ -1,7 +1,7 @@
 define( cenozo.getDependencyList( 'queue_state' ), function() {
   'use strict';
 
-  var module = cenozoApp.module( 'queue_state' );
+  try { var module = cenozoApp.module( 'queue_state', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: [ {

@@ -1,7 +1,7 @@
 define( cenozo.getDependencyList( 'callback' ), function() {
   'use strict';
 
-  var module = cenozoApp.module( 'callback' );
+  try { var module = cenozoApp.module( 'callback', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: {

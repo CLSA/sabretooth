@@ -1,7 +1,7 @@
 define( cenozo.getDependencyList( 'assignment' ), function() {
   'use strict';
 
-  var module = cenozoApp.module( 'assignment' );
+  try { var module = cenozoApp.module( 'assignment', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: {

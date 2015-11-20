@@ -1,7 +1,7 @@
 define( cenozo.getDependencyList( 'qnaire' ), function() {
   'use strict';
 
-  var module = cenozoApp.module( 'qnaire' );
+  try { var module = cenozoApp.module( 'qnaire', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: { column: 'rank' },
     name: {
