@@ -120,60 +120,62 @@ define( cenozo.getDependencyList( 'queue_state' ), function() {
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;
-          return this.loadMetadata().then( function() {
 
           var promiseList = [
+
+            this.loadMetadata(),
+
+            CnHttpFactory.instance( {
+              path: 'queue',
+              data: {
+                select: { column: [ 'id', 'title' ] },
+                modifier: { order: { name: false } }
+              }
+            } ).query().then( function success( response ) {
+              self.metadata.columnList.queue_id.enumList = [];
+              response.data.forEach( function( item ) {
+                self.metadata.columnList.queue_id.enumList.push( { value: item.id, name: item.title } );
+              } );
+            } ),
+
+            CnHttpFactory.instance( {
+              path: 'qnaire',
+              data: {
+                select: { column: [ 'id', { table: 'script', column: 'name' } ] },
+                modifier: { order: 'rank' }
+              }
+            } ).query().then( function success( response ) {
+              self.metadata.columnList.qnaire_id.enumList = [];
+              response.data.forEach( function( item ) {
+                self.metadata.columnList.qnaire_id.enumList.push( { value: item.id, name: item.name } );
+              } );
+            } )
+
+          ];
+
+          if( !CnSession.role.all_sites ) {
+            self.metadata.columnList.site_id.enumList = [ {
+              value: CnSession.site.id,
+              name: CnSession.site.name
+            } ];
+          } else {
+            promiseList.push(
               CnHttpFactory.instance( {
-                path: 'queue',
+                path: 'site',
                 data: {
-                  select: { column: [ 'id', 'title' ] },
+                  select: { column: [ 'id', 'name' ] },
                   modifier: { order: { name: false } }
                 }
               } ).query().then( function success( response ) {
-                self.metadata.columnList.queue_id.enumList = [];
+                self.metadata.columnList.site_id.enumList = [];
                 response.data.forEach( function( item ) {
-                  self.metadata.columnList.queue_id.enumList.push( { value: item.id, name: item.title } );
-                } );
-              } ),
-
-              CnHttpFactory.instance( {
-                path: 'qnaire',
-                data: {
-                  select: { column: [ 'id', { table: 'script', column: 'name' } ] },
-                  modifier: { order: 'rank' }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.qnaire_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.qnaire_id.enumList.push( { value: item.id, name: item.name } );
+                  self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
                 } );
               } )
-            ];
+            );
+          }
 
-            if( !CnSession.role.all_sites ) {
-              self.metadata.columnList.site_id.enumList = [ {
-                value: CnSession.site.id,
-                name: CnSession.site.name
-              } ];
-            } else {
-              promiseList.push(
-                CnHttpFactory.instance( {
-                  path: 'site',
-                  data: {
-                    select: { column: [ 'id', 'name' ] },
-                    modifier: { order: { name: false } }
-                  }
-                } ).query().then( function success( response ) {
-                  self.metadata.columnList.site_id.enumList = [];
-                  response.data.forEach( function( item ) {
-                    self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
-                  } );
-                } )
-              );
-            }
-
-            return $q.all( promiseList ).then( function() { self.metadata.loadingCount--; } );
-          } );
+          return $q.all( promiseList ).finally( function finished() { self.metadata.loadingCount--; } );
         };
       };
 

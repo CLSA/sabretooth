@@ -152,9 +152,11 @@ define( cenozo.getDependencyList( 'qnaire' ), function() {
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;
-          return this.loadMetadata().then( function() {
+          return $q.all( [
 
-            return CnHttpFactory.instance( {
+            this.loadMetadata(),
+
+            CnHttpFactory.instance( {
               path: 'application/' + CnSession.application.id + '/script',
               data: {
                 select: { column: [ 'id', 'name' ] },
@@ -168,9 +170,9 @@ define( cenozo.getDependencyList( 'qnaire' ), function() {
               response.data.forEach( function( item ) {
                 self.metadata.columnList.script_id.enumList.push( { value: item.id, name: item.name } );
               } );
-            } ).then( function() { self.metadata.loadingCount--; } );
+            } )
 
-          } );
+          ] ).finally( function finished() { self.metadata.loadingCount--; } );
         };
       };
 

@@ -201,9 +201,9 @@ define( cenozo.getDependencyList( 'appointment' ), function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAppointmentModelFactory', [
     'CnBaseModelFactory', 'CnAppointmentAddFactory', 'CnAppointmentListFactory', 'CnAppointmentViewFactory',
-    'CnHttpFactory',
+    'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnAppointmentAddFactory, CnAppointmentListFactory, CnAppointmentViewFactory,
-              CnHttpFactory ) {
+              CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -214,11 +214,12 @@ define( cenozo.getDependencyList( 'appointment' ), function() {
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;
-          return this.loadMetadata().then( function() {
-            var parent = self.getParentIdentifier();
-            if( angular.isDefined( parent.subject ) && angular.isDefined( parent.identifier ) ) {
+          var promiseList = [ this.loadMetadata() ];
 
-              return CnHttpFactory.instance( {
+          var parent = this.getParentIdentifier();
+          if( angular.isDefined( parent.subject ) && angular.isDefined( parent.identifier ) ) {
+            promiseList.push(
+              CnHttpFactory.instance( {
                 path: [ parent.subject, parent.identifier ].join( '/' ),
                 data: { select: { column: { column: 'participant_id' } } }
               } ).query().then( function( response ) {
@@ -236,11 +237,12 @@ define( cenozo.getDependencyList( 'appointment' ), function() {
                       name: '(' + item.rank + ') ' + item.type + ': ' + item.number
                     } );
                   } );
-                } ).then( function() { self.metadata.loadingCount--; } );
-              } );
-              
-            } else self.metadata.loadingCount--;
-          } );
+                } )
+              } )
+            );
+          }
+
+          return $q.all( promiseList ).finally( function finished() { self.metadata.loadingCount--; } );
         };
       };
 

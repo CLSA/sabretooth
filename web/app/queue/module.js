@@ -85,10 +85,9 @@ define( cenozo.getDependencyList( 'queue' ), function() {
         $scope.model.updateQueueTime = true === updateQueueTime;
         $scope.isLoading = 0 < $scope.model.queueTree.length;
         $scope.isComplete = 0 < $scope.model.queueTree.length;
-        $scope.model.onView().then( function() {
-          CnSession.setBreadcrumbTrail( [ { title: 'Queue Tree' } ] );
-          $scope.isLoading = false; $scope.isComplete = true;
-        } );
+        $scope.model.onView()
+          .then( function success() { CnSession.setBreadcrumbTrail( [ { title: 'Queue Tree' } ] ) )
+          .finally( function finished() { $scope.isLoading = false; $scope.isComplete = true; } );
       };
       $scope.refresh( true );
     }
@@ -186,9 +185,9 @@ define( cenozo.getDependencyList( 'queue' ), function() {
           }
 
           // isRepopulating any queue repopulates them all
-          CnHttpFactory.instance( { path: 'queue/1?repopulate=full' } ).get().then( function() {
-            self.onView().then( function() { self.form.isRepopulating = false; } );
-          } );
+          CnHttpFactory.instance( { path: 'queue/1?repopulate=full' } ).get()
+            .then( function success() { self.onView(); } )
+            .finally( function finished() { self.form.isRepopulating = false; } );
         };
 
         this.onView = function() {
