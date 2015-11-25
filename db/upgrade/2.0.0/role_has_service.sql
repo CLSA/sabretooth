@@ -57,7 +57,7 @@ CREATE PROCEDURE patch_role_has_service()
       "AND service.id NOT IN ( ",
         "SELECT id FROM service ",
         "WHERE ( subject = 'assignment' AND method = 'POST' ) ",
-        "OR ( subject = 'phone_call' AND method != 'PATCH' ) ",
+        "OR ( subject = 'phone_call' AND method != 'DELETE' ) ",
         "OR subject = 'token' ",
       ")" );
     PREPARE statement FROM @sql;

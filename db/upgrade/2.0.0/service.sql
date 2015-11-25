@@ -183,7 +183,6 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'opal_instance', 'POST', 0, 1 ),
 ( 'phone_call', 'DELETE', 1, 1 ),
 ( 'phone_call', 'GET', 0, 0 ),
-( 'phone_call', 'GET', 1, 0 ),
 ( 'phone_call', 'PATCH', 1, 1 ),
 ( 'phone_call', 'POST', 0, 1 ),
 ( 'qnaire', 'DELETE', 1, 1 ),
