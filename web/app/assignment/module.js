@@ -1,4 +1,5 @@
-define( cenozo.getDependencyList( 'assignment' ), function() {
+// we need the participant module for the special CnAssignmentHomeFactory
+define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'assignment', true ); } catch( err ) { console.warn( err ); return; }
@@ -137,14 +138,15 @@ define( cenozo.getDependencyList( 'assignment' ), function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAssignmentViewFactory',
-    cenozo.getViewModelInjectionList( 'assignment' ).concat( function() {
+  cenozo.providers.factory( 'CnAssignmentViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel, args ); }
+      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } )
-  );
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAssignmentModelFactory', [
@@ -193,7 +195,7 @@ define( cenozo.getDependencyList( 'assignment' ), function() {
         this.application = CnSession.application.title;
         this.participantModel = CnParticipantModelFactory.instance();
         this.reset();
-        
+
         // add additional columns to the model
         this.participantModel.addColumn( 'rank', { title: 'Rank', column: 'queue.rank', type: 'rank' }, 0 );
         this.participantModel.addColumn( 'queue', { title: 'Queue', column: 'queue.name' }, 1 );

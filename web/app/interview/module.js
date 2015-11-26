@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'interview' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'interview', true ); } catch( err ) { console.warn( err ); return; }
@@ -123,13 +123,14 @@ define( cenozo.getDependencyList( 'interview' ), function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnInterviewViewFactory',
-    cenozo.getViewModelInjectionList( 'interview' ).concat( function() {
+  cenozo.providers.factory( 'CnInterviewViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
       var object = function( parentModel ) {
         var self = this;
-        CnBaseViewFactory.construct( this, parentModel, args );
+        CnBaseViewFactory.construct( this, parentModel );
 
         // override onPatch
         this.onPatch = function( data ) {
@@ -175,8 +176,8 @@ define( cenozo.getDependencyList( 'interview' ), function() {
         };
       }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } )
-  );
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnInterviewModelFactory', [
@@ -203,7 +204,7 @@ define( cenozo.getDependencyList( 'interview' ), function() {
           return $q.all( [
 
             this.loadMetadata(),
-          
+
             CnHttpFactory.instance( {
               path: 'qnaire',
               data: {

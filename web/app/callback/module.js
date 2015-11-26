@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'callback' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'callback', true ); } catch( err ) { console.warn( err ); return; }
@@ -140,7 +140,7 @@ define( cenozo.getDependencyList( 'callback' ), function() {
     function( CnBaseAddFactory ) {
       var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } 
+    }
   ] );
 
   /* ######################################################################################################## */
@@ -153,13 +153,14 @@ define( cenozo.getDependencyList( 'callback' ), function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnCallbackViewFactory',
-    cenozo.getViewModelInjectionList( 'callback' ).concat( function() {
+  cenozo.providers.factory( 'CnCallbackViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
       var object = function( parentModel ) {
         var self = this;
-        CnBaseViewFactory.construct( this, parentModel, args );
+        CnBaseViewFactory.construct( this, parentModel );
 
         this.onView = function() {
           return this.$$onView().then( function() {
@@ -170,8 +171,8 @@ define( cenozo.getDependencyList( 'callback' ), function() {
         };
       }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } )
-  );
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnCallbackModelFactory', [

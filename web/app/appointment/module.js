@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'appointment' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'appointment', true ); } catch( err ) { console.warn( err ); return; }
@@ -165,7 +165,7 @@ define( cenozo.getDependencyList( 'appointment' ), function() {
     function( CnBaseAddFactory ) {
       var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } 
+    }
   ] );
 
   /* ######################################################################################################## */
@@ -178,13 +178,14 @@ define( cenozo.getDependencyList( 'appointment' ), function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAppointmentViewFactory',
-    cenozo.getViewModelInjectionList( 'appointment' ).concat( function() {
+  cenozo.providers.factory( 'CnAppointmentViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
       var object = function( parentModel ) {
         var self = this;
-        CnBaseViewFactory.construct( this, parentModel, args );
+        CnBaseViewFactory.construct( this, parentModel );
 
         this.onView = function() {
           return this.$$onView().then( function() {
@@ -195,8 +196,8 @@ define( cenozo.getDependencyList( 'appointment' ), function() {
         };
       }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } )
-  );
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAppointmentModelFactory', [

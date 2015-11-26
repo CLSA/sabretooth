@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'qnaire' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'qnaire', true ); } catch( err ) { console.warn( err ); return; }
@@ -106,7 +106,7 @@ define( cenozo.getDependencyList( 'qnaire' ), function() {
     function( CnBaseAddFactory ) {
       var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } 
+    }
   ] );
 
   /* ######################################################################################################## */
@@ -119,12 +119,13 @@ define( cenozo.getDependencyList( 'qnaire' ), function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnQnaireViewFactory',
-    cenozo.getViewModelInjectionList( 'qnaire' ).concat( function() {
+  cenozo.providers.factory( 'CnQnaireViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
       var object = function( parentModel ) {
-        CnBaseViewFactory.construct( this, parentModel, args );
+        CnBaseViewFactory.construct( this, parentModel );
         if( angular.isDefined( this.eventTypeModel ) )
           this.eventTypeModel.heading = 'Required To Begin Event List';
         if( angular.isDefined( this.queueStateModel ) )
@@ -133,8 +134,8 @@ define( cenozo.getDependencyList( 'qnaire' ), function() {
           this.quotaModel.heading = 'Disabled Quota List';
       }
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } )
-  );
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQnaireModelFactory', [

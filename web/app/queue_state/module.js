@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'queue_state' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'queue_state', true ); } catch( err ) { console.warn( err ); return; }

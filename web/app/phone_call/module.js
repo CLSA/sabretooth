@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'phone_call' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'phone_call', true ); } catch( err ) { console.warn( err ); return; }

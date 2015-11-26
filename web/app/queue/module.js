@@ -1,4 +1,4 @@
-define( cenozo.getDependencyList( 'queue' ), function() {
+define( function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'queue', true ); } catch( err ) { console.warn( err ); return; }
@@ -49,7 +49,7 @@ define( cenozo.getDependencyList( 'queue' ), function() {
       constant: true
     }
   } );
-        
+
   module.addViewOperation( 'View Queue Tree', function( viewModel, $state ) { $state.go( 'queue.tree' ); } );
 
   /* ######################################################################################################## */
@@ -111,13 +111,12 @@ define( cenozo.getDependencyList( 'queue' ), function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnQueueViewFactory',
-    cenozo.getViewModelInjectionList( 'queue' ).concat( [ '$state', function() {
+  cenozo.providers.factory( 'CnQueueViewFactory', [
+    'CnBaseViewFactory',
+    function( CnBaseViewFactory ) {
       var args = arguments;
-      var CnBaseViewFactory = args[0];
-      var $state = args[args.length-1];
       var object = function( parentModel ) {
-        CnBaseViewFactory.construct( this, parentModel, args );
+        CnBaseViewFactory.construct( this, parentModel );
         if( angular.isDefined( this.queueStateModel ) )
           this.queueStateModel.heading = 'Disabled Questionnaire List';
 
@@ -127,8 +126,8 @@ define( cenozo.getDependencyList( 'queue' ), function() {
       };
 
       return { instance: function( parentModel ) { return new object( parentModel ); } };
-    } ] )
-  );
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQueueModelFactory', [
@@ -216,7 +215,7 @@ define( cenozo.getDependencyList( 'queue' ), function() {
               } );
             } );
           }
-          
+
           if( null == self.form.siteList && CnSession.role.allSites ) {
             CnHttpFactory.instance( {
               path: 'site',
