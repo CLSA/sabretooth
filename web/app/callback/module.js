@@ -147,7 +147,14 @@ define( function() {
   cenozo.providers.factory( 'CnCallbackListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
+      var object = function( parentModel ) {
+        CnBaseListFactory.construct( this, parentModel );
+
+        // override onDelete
+        this.onDelete = function( record ) {
+          return this.$$onDelete( record ).then( function() { self.parentModel.enableAdd( 0 == self.total ); } );
+        };
+      };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
