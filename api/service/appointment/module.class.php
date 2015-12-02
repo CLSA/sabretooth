@@ -14,6 +14,9 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  */
 class module extends \cenozo\service\module
 {
+  /**
+   * Extend parent method
+   */
   public function validate()
   {
     parent::validate();
