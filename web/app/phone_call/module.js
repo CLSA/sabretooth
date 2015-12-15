@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'phone_call', true ); } catch( err ) { console.warn( err ); return; }
-  angular.extend( module, {
+  try { cenozoApp.module( 'phone_call', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( cenozoApp.module( 'phone_call' ), {
     identifier: {
       parent: {
         subject: 'assignment',
@@ -66,13 +66,13 @@ define( function() {
     function( $state, CnBaseModelFactory, CnPhoneCallListFactory ) {
       var object = function() {
         var self = this;
-        CnBaseModelFactory.construct( this, module );
+        CnBaseModelFactory.construct( this, cenozoApp.module( 'phone_call' ) );
         this.listModel = CnPhoneCallListFactory.instance( this );
       };
 
       return {
-        root: new object(),
-        instance: function() { return new object(); }
+        root: new object( true ),
+        instance: function() { return new object( false ); }
       };
     }
   ] );

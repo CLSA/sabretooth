@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'callback', true ); } catch( err ) { console.warn( err ); return; }
-  angular.extend( module, {
+  try { cenozoApp.module( 'callback', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( cenozoApp.module( 'callback' ), {
     identifier: {
       parent: {
         subject: 'interview',
@@ -43,7 +43,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  cenozoApp.module( 'callback' ).addInputGroup( null, {
     datetime: {
       title: 'Date & Time',
       type: 'datetime',
@@ -165,9 +165,9 @@ define( function() {
     function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) {
+      var object = function( parentModel, root ) {
         var self = this;
-        CnBaseViewFactory.construct( this, parentModel );
+        CnBaseViewFactory.construct( this, parentModel, root );
 
         this.onView = function() {
           return this.$$onView().then( function() {
@@ -177,7 +177,7 @@ define( function() {
           } );
         };
       }
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
+      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 
@@ -189,7 +189,7 @@ define( function() {
               CnHttpFactory ) {
       var object = function() {
         var self = this;
-        CnBaseModelFactory.construct( this, module );
+        CnBaseModelFactory.construct( this, cenozoApp.module( 'callback' ) );
         this.addModel = CnCallbackAddFactory.instance( this );
         this.listModel = CnCallbackListFactory.instance( this );
         this.viewModel = CnCallbackViewFactory.instance( this );
@@ -230,8 +230,8 @@ define( function() {
       };
 
       return {
-        root: new object(),
-        instance: function() { return new object(); }
+        root: new object( true ),
+        instance: function() { return new object( false ); }
       };
     }
   ] );

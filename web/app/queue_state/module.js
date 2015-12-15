@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'queue_state', true ); } catch( err ) { console.warn( err ); return; }
-  angular.extend( module, {
+  try { cenozoApp.module( 'queue_state', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( cenozoApp.module( 'queue_state' ), {
     identifier: {
       parent: [ {
         subject: 'queue',
@@ -41,7 +41,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  cenozoApp.module( 'queue_state' ).addInputGroup( null, {
     queue_id: {
       title: 'Queue',
       type: 'enum'
@@ -113,7 +113,7 @@ define( function() {
               CnSession, CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
-        CnBaseModelFactory.construct( this, module );
+        CnBaseModelFactory.construct( this, cenozoApp.module( 'queue_state' ) );
         this.addModel = CnQueueStateAddFactory.instance( this );
         this.listModel = CnQueueStateListFactory.instance( this );
 
@@ -180,8 +180,8 @@ define( function() {
       };
 
       return {
-        root: new object(),
-        instance: function() { return new object(); }
+        root: new object( true ),
+        instance: function() { return new object( false ); }
       };
     }
   ] );

@@ -1,9 +1,9 @@
 // we need the participant module for the special CnAssignmentHomeFactory
-define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
+define( /*cenozoApp.module( 'participant' ).getRequiredFiles(),*/ function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'assignment', true ); } catch( err ) { console.warn( err ); return; }
-  angular.extend( module, {
+  try { cenozoApp.module( 'assignment', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( cenozoApp.module( 'assignment' ), {
     identifier: {
       parent: {
         subject: 'interview',
@@ -43,7 +43,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  cenozoApp.module( 'assignment' ).addInputGroup( null, {
     participant: {
       column: 'participant.uid',
       title: 'Participant',
@@ -143,8 +143,8 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
     function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) { CnBaseViewFactory.construct( this, parentModel ); }
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
+      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
+      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 
@@ -154,14 +154,14 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
     function( $state, CnBaseModelFactory, CnAssignmentListFactory, CnAssignmentViewFactory ) {
       var object = function() {
         var self = this;
-        CnBaseModelFactory.construct( this, module );
+        CnBaseModelFactory.construct( this, cenozoApp.module( 'assignment' ) );
         this.listModel = CnAssignmentListFactory.instance( this );
         this.viewModel = CnAssignmentViewFactory.instance( this );
       };
 
       return {
-        root: new object(),
-        instance: function() { return new object(); }
+        root: new object( true ),
+        instance: function() { return new object( false ); }
       };
     }
   ] );
@@ -502,7 +502,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         };
       };
 
-      return { instance: function() { return new object(); } };
+      return { instance: function() { return new object( false ); } };
     }
   ] );
 

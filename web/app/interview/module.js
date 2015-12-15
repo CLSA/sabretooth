@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'interview', true ); } catch( err ) { console.warn( err ); return; }
-  angular.extend( module, {
+  try { cenozoApp.module( 'interview', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( cenozoApp.module( 'interview' ), {
     identifier: {
       parent: {
         subject: 'participant',
@@ -43,7 +43,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  cenozoApp.module( 'interview' ).addInputGroup( null, {
     participant: {
       column: 'participant.uid',
       title: 'Participant',
@@ -128,9 +128,9 @@ define( function() {
     function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel ) {
+      var object = function( parentModel, root ) {
         var self = this;
-        CnBaseViewFactory.construct( this, parentModel );
+        CnBaseViewFactory.construct( this, parentModel, root );
 
         // override onPatch
         this.onPatch = function( data ) {
@@ -175,7 +175,7 @@ define( function() {
           } );
         };
       }
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
+      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
 
@@ -187,7 +187,7 @@ define( function() {
               CnHttpFactory, $q ) {
       var object = function() {
         var self = this;
-        CnBaseModelFactory.construct( this, module );
+        CnBaseModelFactory.construct( this, cenozoApp.module( 'interview' ) );
         this.listModel = CnInterviewListFactory.instance( this );
         this.viewModel = CnInterviewViewFactory.instance( this );
 
@@ -236,8 +236,8 @@ define( function() {
       };
 
       return {
-        root: new object(),
-        instance: function() { return new object(); }
+        root: new object( true ),
+        instance: function() { return new object( false ); }
       };
     }
   ] );
