@@ -223,7 +223,7 @@ define( function() {
         // extend getMetadata
         this.getMetadata = function() {
           this.metadata.loadingCount++;
-          var promiseList = [ this.loadMetadata() ];
+          var promiseList = [ this.$$getMetadata() ];
 
           var parent = this.getParentIdentifier();
           if( angular.isDefined( parent.subject ) && angular.isDefined( parent.identifier ) ) {

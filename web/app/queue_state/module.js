@@ -123,7 +123,7 @@ define( function() {
 
           var promiseList = [
 
-            this.loadMetadata(),
+            this.$$getMetadata(),
 
             CnHttpFactory.instance( {
               path: 'queue',
