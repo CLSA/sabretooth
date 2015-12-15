@@ -111,7 +111,7 @@ define( function() {
     'CnSession', 'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnQueueStateListFactory, CnQueueStateAddFactory,
               CnSession, CnHttpFactory, $q ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, cenozoApp.module( 'queue_state' ) );
         this.addModel = CnQueueStateAddFactory.instance( this );

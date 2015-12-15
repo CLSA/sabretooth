@@ -135,12 +135,12 @@ define( function() {
     'CnOpalInstanceAddFactory', 'CnOpalInstanceListFactory', 'CnOpalInstanceViewFactory',
     function( CnBaseModelFactory,
               CnOpalInstanceAddFactory, CnOpalInstanceListFactory, CnOpalInstanceViewFactory ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, cenozoApp.module( 'opal_instance' ) );
         this.addModel = CnOpalInstanceAddFactory.instance( this );
         this.listModel = CnOpalInstanceListFactory.instance( this );
-        this.viewModel = CnOpalInstanceViewFactory.instance( this );
+        this.viewModel = CnOpalInstanceViewFactory.instance( this, root );
       };
 
       return {

@@ -187,12 +187,12 @@ define( function() {
     'CnHttpFactory',
     function( CnBaseModelFactory, CnCallbackAddFactory, CnCallbackListFactory, CnCallbackViewFactory,
               CnHttpFactory ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, cenozoApp.module( 'callback' ) );
         this.addModel = CnCallbackAddFactory.instance( this );
         this.listModel = CnCallbackListFactory.instance( this );
-        this.viewModel = CnCallbackViewFactory.instance( this );
+        this.viewModel = CnCallbackViewFactory.instance( this, root );
 
         // extend getMetadata
         this.getMetadata = function() {

@@ -210,11 +210,11 @@ define( function() {
   cenozo.providers.factory( 'CnSettingModelFactory', [
     '$state', 'CnBaseModelFactory', 'CnSettingListFactory', 'CnSettingViewFactory',
     function( $state, CnBaseModelFactory, CnSettingListFactory, CnSettingViewFactory ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, cenozoApp.module( 'setting' ) );
         this.listModel = CnSettingListFactory.instance( this );
-        this.viewModel = CnSettingViewFactory.instance( this );
+        this.viewModel = CnSettingViewFactory.instance( this, root );
       };
 
       return {

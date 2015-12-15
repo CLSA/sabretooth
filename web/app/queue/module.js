@@ -135,11 +135,11 @@ define( function() {
   cenozo.providers.factory( 'CnQueueModelFactory', [
     'CnBaseModelFactory', 'CnQueueListFactory', 'CnQueueViewFactory',
     function( CnBaseModelFactory, CnQueueListFactory, CnQueueViewFactory ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, cenozoApp.module( 'queue' ) );
         this.listModel = CnQueueListFactory.instance( this );
-        this.viewModel = CnQueueViewFactory.instance( this );
+        this.viewModel = CnQueueViewFactory.instance( this, root );
       };
 
       return {
@@ -153,7 +153,7 @@ define( function() {
   cenozo.providers.factory( 'CnQueueTreeFactory', [
     '$state', 'CnSession', 'CnHttpFactory',
     function( $state, CnSession, CnHttpFactory ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
         this.queueList = []; // one-dimensional list for manipulation
         this.queueTree = []; // multi-dimensional tree for display

@@ -152,11 +152,11 @@ define( /*cenozoApp.module( 'participant' ).getRequiredFiles(),*/ function() {
   cenozo.providers.factory( 'CnAssignmentModelFactory', [
     '$state', 'CnBaseModelFactory', 'CnAssignmentListFactory', 'CnAssignmentViewFactory',
     function( $state, CnBaseModelFactory, CnAssignmentListFactory, CnAssignmentViewFactory ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, cenozoApp.module( 'assignment' ) );
         this.listModel = CnAssignmentListFactory.instance( this );
-        this.viewModel = CnAssignmentViewFactory.instance( this );
+        this.viewModel = CnAssignmentViewFactory.instance( this, root );
       };
 
       return {
@@ -172,7 +172,7 @@ define( /*cenozoApp.module( 'participant' ).getRequiredFiles(),*/ function() {
     'CnParticipantModelFactory', 'CnModalMessageFactory', 'CnModalConfirmFactory',
     function( $state, $window, CnSession, CnHttpFactory,
               CnParticipantModelFactory, CnModalMessageFactory, CnModalConfirmFactory ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
 
         this.reset = function() {

@@ -64,7 +64,7 @@ define( function() {
   cenozo.providers.factory( 'CnPhoneCallModelFactory', [
     '$state', 'CnBaseModelFactory', 'CnPhoneCallListFactory',
     function( $state, CnBaseModelFactory, CnPhoneCallListFactory ) {
-      var object = function() {
+      var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, cenozoApp.module( 'phone_call' ) );
         this.listModel = CnPhoneCallListFactory.instance( this );
