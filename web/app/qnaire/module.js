@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'qnaire', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'qnaire', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'qnaire' ), {
     identifier: { column: 'rank' },
     name: {
@@ -51,54 +51,56 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'QnaireAddCtrl', [
-    '$scope', 'CnQnaireModelFactory',
-    function( $scope, CnQnaireModelFactory ) {
-      $scope.model = CnQnaireModelFactory.root;
-      $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'add' );
-      } );
+  cenozo.providers.directive( 'cnQnaireAdd', [
+    'CnQnaireModelFactory',
+    function( CnQnaireModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnQnaireModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'QnaireListCtrl', [
-    '$scope', 'CnQnaireModelFactory',
-    function( $scope, CnQnaireModelFactory ) {
-      $scope.model = CnQnaireModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnQnaireList', [
+    'CnQnaireModelFactory',
+    function( CnQnaireModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnQnaireModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'QnaireViewCtrl', [
-    '$scope', 'CnQnaireModelFactory',
-    function( $scope, CnQnaireModelFactory ) {
-      $scope.model = CnQnaireModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnQnaireView', [
+    'CnQnaireModelFactory',
+    function( CnQnaireModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnQnaireModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnQnaireAdd', function() {
-    return {
-      templateUrl: 'app/qnaire/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnQnaireView', function() {
-    return {
-      templateUrl: 'app/qnaire/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQnaireAddFactory', [

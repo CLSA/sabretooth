@@ -1,8 +1,8 @@
 // we need the participant module for the special CnAssignmentHomeFactory
-define( /*cenozoApp.module( 'participant' ).getRequiredFiles(),*/ function() {
+define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
   'use strict';
 
-  try { cenozoApp.module( 'assignment', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'assignment', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'assignment' ), {
     identifier: {
       parent: {
@@ -90,43 +90,53 @@ define( /*cenozoApp.module( 'participant' ).getRequiredFiles(),*/ function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'AssignmentListCtrl', [
-    '$scope', 'CnAssignmentModelFactory',
-    function( $scope, CnAssignmentModelFactory ) {
-      $scope.model = CnAssignmentModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnAssignmentHome', [
+    'CnAssignmentHomeFactory',
+    function( CnAssignmentHomeFactory ) {
+      return {
+        templateUrl: url + 'home.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnAssignmentHomeFactory.instance();
+          $scope.model.onLoad(); // breadcrumbs are handled by the service
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'AssignmentViewCtrl', [
-    '$scope', 'CnAssignmentModelFactory',
-    function( $scope, CnAssignmentModelFactory ) {
-      $scope.model = CnAssignmentModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnAssignmentList', [
+    'CnAssignmentModelFactory',
+    function( CnAssignmentModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnAssignmentModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'AssignmentHomeCtrl', [
-    '$scope', 'CnAssignmentHomeFactory',
-    function( $scope, CnAssignmentHomeFactory ) {
-      $scope.model = CnAssignmentHomeFactory.instance();
-      $scope.model.onLoad(); // breadcrumbs are handled by the service
+  cenozo.providers.directive( 'cnAssignmentView', [
+    'CnAssignmentModelFactory',
+    function( CnAssignmentModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnAssignmentModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAssignmentView', function() {
-    return {
-      templateUrl: 'app/assignment/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAssignmentListFactory', [

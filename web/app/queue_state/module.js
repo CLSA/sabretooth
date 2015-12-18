@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'queue_state', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'queue_state', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'queue_state' ), {
     identifier: {
       parent: [ {
@@ -57,35 +57,39 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'QueueStateAddCtrl', [
-    '$scope', 'CnQueueStateModelFactory',
-    function( $scope, CnQueueStateModelFactory ) {
-      $scope.model = CnQueueStateModelFactory.root;
-      $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'add' );
-      } );
+  cenozo.providers.directive( 'cnQueueStateAdd', [
+    'CnQueueStateModelFactory',
+    function( CnQueueStateModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnQueueStateModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'QueueStateListCtrl', [
-    '$scope', 'CnQueueStateModelFactory',
-    function( $scope, CnQueueStateModelFactory ) {
-      $scope.model = CnQueueStateModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnQueueStateList', [
+    'CnQueueStateModelFactory',
+    function( CnQueueStateModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnQueueStateModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnQueueStateAdd', function() {
-    return {
-      templateUrl: 'app/queue_state/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQueueStateAddFactory', [

@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'appointment', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'appointment', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'appointment' ), {
     identifier: {
       parent: {
@@ -110,54 +110,56 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'AppointmentAddCtrl', [
-    '$scope', 'CnAppointmentModelFactory',
-    function( $scope, CnAppointmentModelFactory ) {
-      $scope.model = CnAppointmentModelFactory.root;
-      $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'add' );
-      } );
+  cenozo.providers.directive( 'cnAppointmentAdd', [
+    'CnAppointmentModelFactory',
+    function( CnAppointmentModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnAppointmentModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'AppointmentListCtrl', [
-    '$scope', 'CnAppointmentModelFactory',
-    function( $scope, CnAppointmentModelFactory ) {
-      $scope.model = CnAppointmentModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnAppointmentList', [
+    'CnAppointmentModelFactory',
+    function( CnAppointmentModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnAppointmentModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'AppointmentViewCtrl', [
-    '$scope', 'CnAppointmentModelFactory',
-    function( $scope, CnAppointmentModelFactory ) {
-      $scope.model = CnAppointmentModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnAppointmentView', [
+    'CnAppointmentModelFactory',
+    function( CnAppointmentModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnAppointmentModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAppointmentAdd', function() {
-    return {
-      templateUrl: 'app/appointment/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAppointmentView', function() {
-    return {
-      templateUrl: 'app/appointment/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAppointmentAddFactory', [

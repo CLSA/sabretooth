@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'setting', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'setting', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'setting' ), {
     identifier: {
       parent: {
@@ -158,33 +158,55 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'SettingListCtrl', [
-    '$scope', 'CnSettingModelFactory',
-    function( $scope, CnSettingModelFactory ) {
-      $scope.model = CnSettingModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
-    }
-  ] );
-
-  cenozo.providers.controller( 'SettingViewCtrl', [
-    '$scope', 'CnSettingModelFactory',
-    function( $scope, CnSettingModelFactory ) {
-      $scope.model = CnSettingModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnSettingList', [
+    'CnSettingModelFactory',
+    function( CnSettingModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnSettingModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSettingView', function() {
-    return {
-      templateUrl: 'app/setting/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
+  cenozo.providers.directive( 'cnSettingView', [
+    'CnSettingModelFactory',
+    function( CnSettingModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnSettingModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
+    }
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.directive( 'cnSettingView', [
+    'CnSettingModelFactory',
+    function( CnSettingModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnSettingModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnSettingListFactory', [

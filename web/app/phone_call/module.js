@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'phone_call', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'phone_call', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'phone_call' ), {
     identifier: {
       parent: {
@@ -41,13 +41,19 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'PhoneCallListCtrl', [
-    '$scope', 'CnPhoneCallModelFactory',
-    function( $scope, CnPhoneCallModelFactory ) {
-      $scope.model = CnPhoneCallModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnPhoneCallList', [
+    'CnPhoneCallModelFactory',
+    function( CnPhoneCallModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnPhoneCallModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 

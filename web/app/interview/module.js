@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'interview', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'interview', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'interview' ), {
     identifier: {
       parent: {
@@ -84,34 +84,38 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'InterviewListCtrl', [
-    '$scope', 'CnInterviewModelFactory',
-    function( $scope, CnInterviewModelFactory ) {
-      $scope.model = CnInterviewModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnInterviewList', [
+    'CnInterviewModelFactory',
+    function( CnInterviewModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnInterviewModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'InterviewViewCtrl', [
-    '$scope', 'CnInterviewModelFactory',
-    function( $scope, CnInterviewModelFactory ) {
-      $scope.model = CnInterviewModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnInterviewView', [
+    'CnInterviewModelFactory',
+    function( CnInterviewModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnInterviewModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnInterviewView', function() {
-    return {
-      templateUrl: 'app/interview/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnInterviewListFactory', [

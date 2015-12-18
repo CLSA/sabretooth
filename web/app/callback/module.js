@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'callback', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'callback', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'callback' ), {
     identifier: {
       parent: {
@@ -85,54 +85,56 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'CallbackAddCtrl', [
-    '$scope', 'CnCallbackModelFactory',
-    function( $scope, CnCallbackModelFactory ) {
-      $scope.model = CnCallbackModelFactory.root;
-      $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'add' );
-      } );
+  cenozo.providers.directive( 'cnCallbackAdd', [
+    'CnCallbackModelFactory',
+    function( CnCallbackModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnCallbackModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'CallbackListCtrl', [
-    '$scope', 'CnCallbackModelFactory',
-    function( $scope, CnCallbackModelFactory ) {
-      $scope.model = CnCallbackModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnCallbackList', [
+    'CnCallbackModelFactory',
+    function( CnCallbackModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnCallbackModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'CallbackViewCtrl', [
-    '$scope', 'CnCallbackModelFactory',
-    function( $scope, CnCallbackModelFactory ) {
-      $scope.model = CnCallbackModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnCallbackView', [
+    'CnCallbackModelFactory',
+    function( CnCallbackModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnCallbackModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnCallbackAdd', function() {
-    return {
-      templateUrl: 'app/callback/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnCallbackView', function() {
-    return {
-      templateUrl: 'app/callback/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnCallbackAddFactory', [

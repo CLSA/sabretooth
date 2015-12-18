@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'queue', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'queue', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'queue' ), {
     identifier: { column: 'name' },
     name: {
@@ -55,53 +55,63 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'QueueListCtrl', [
-    '$scope', 'CnQueueModelFactory',
-    function( $scope, CnQueueModelFactory ) {
-      $scope.model = CnQueueModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.controller( 'QueueViewCtrl', [
-    '$scope', 'CnQueueModelFactory',
-    function( $scope, CnQueueModelFactory ) {
-      $scope.model = CnQueueModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.controller( 'QueueTreeCtrl', [
-    '$scope', 'CnQueueTreeFactory', 'CnSession',
-    function( $scope, CnQueueTreeFactory, CnSession ) {
-      $scope.isLoading = false;
-      $scope.isComplete = false;
-      $scope.model = CnQueueTreeFactory.instance();
-      $scope.refresh = function( updateQueueTime ) {
-        $scope.model.updateQueueTime = true === updateQueueTime;
-        $scope.isLoading = 0 < $scope.model.queueTree.length;
-        $scope.isComplete = 0 < $scope.model.queueTree.length;
-        $scope.model.onView()
-          .then( function success() { CnSession.setBreadcrumbTrail( [ { title: 'Queue Tree' } ] ); } )
-          .finally( function finished() { $scope.isLoading = false; $scope.isComplete = true; } );
+  cenozo.providers.directive( 'cnQueueList', [
+    'CnQueueModelFactory',
+    function( CnQueueModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnQueueModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
       };
-      $scope.refresh( true );
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnQueueView', function() {
-    return {
-      templateUrl: 'app/queue/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
+  cenozo.providers.directive( 'cnQueueTree', [
+    'CnQueueTreeFactory', 'CnSession',
+    function( CnQueueTreeFactory, CnSession ) {
+      return {
+        templateUrl: url + 'tree.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.isLoading = false;
+          $scope.isComplete = false;
+          $scope.model = CnQueueTreeFactory.instance();
+          $scope.refresh = function( updateQueueTime ) {
+            $scope.model.updateQueueTime = true === updateQueueTime;
+            $scope.isLoading = 0 < $scope.model.queueTree.length;
+            $scope.isComplete = 0 < $scope.model.queueTree.length;
+            $scope.model.onView()
+              .then( function success() { CnSession.setBreadcrumbTrail( [ { title: 'Queue Tree' } ] ); } )
+              .finally( function finished() { $scope.isLoading = false; $scope.isComplete = true; } );
+          };
+          $scope.refresh( true );
+        }
+      };
+    }
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.directive( 'cnQueueView', [
+    'CnQueueModelFactory',
+    function( CnQueueModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnQueueModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
+    }
+  ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQueueListFactory', [

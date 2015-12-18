@@ -1,7 +1,7 @@
 define( function() {
   'use strict';
 
-  try { cenozoApp.module( 'opal_instance', true ); } catch( err ) { console.warn( err ); return; }
+  try { var url = cenozoApp.module( 'opal_instance', true ).url; } catch( err ) { console.warn( err ); return; }
   angular.extend( cenozoApp.module( 'opal_instance' ), {
     identifier: {}, // standard
     name: {
@@ -51,54 +51,56 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'OpalInstanceAddCtrl', [
-    '$scope', 'CnOpalInstanceModelFactory',
-    function( $scope, CnOpalInstanceModelFactory ) {
-      $scope.model = CnOpalInstanceModelFactory.root;
-      $scope.record = {};
-      $scope.model.addModel.onNew( $scope.record ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'add' );
-      } );
+  cenozo.providers.directive( 'cnOpalInstanceAdd', [
+    'CnOpalInstanceModelFactory',
+    function( CnOpalInstanceModelFactory ) {
+      return {
+        templateUrl: url + 'add.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnOpalInstanceModelFactory.root;
+          $scope.record = {};
+          $scope.model.addModel.onNew( $scope.record ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'add' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'OpalInstanceListCtrl', [
-    '$scope', 'CnOpalInstanceModelFactory',
-    function( $scope, CnOpalInstanceModelFactory ) {
-      $scope.model = CnOpalInstanceModelFactory.root;
-      $scope.model.listModel.onList( true ).then( function() {
-        $scope.model.setupBreadcrumbTrail( 'list' );
-      } );
+  cenozo.providers.directive( 'cnOpalInstanceList', [
+    'CnOpalInstanceModelFactory',
+    function( CnOpalInstanceModelFactory ) {
+      return {
+        templateUrl: url + 'list.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnOpalInstanceModelFactory.root;
+          $scope.model.listModel.onList( true ).then( function() {
+            $scope.model.setupBreadcrumbTrail( 'list' );
+          } );
+        }
+      };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.controller( 'OpalInstanceViewCtrl', [
-    '$scope', 'CnOpalInstanceModelFactory',
-    function( $scope, CnOpalInstanceModelFactory ) {
-      $scope.model = CnOpalInstanceModelFactory.root;
-      $scope.model.viewModel.onView().then( function() {
-        $scope.model.setupBreadcrumbTrail( 'view' );
-      } );
+  cenozo.providers.directive( 'cnOpalInstanceView', [
+    'CnOpalInstanceModelFactory',
+    function( CnOpalInstanceModelFactory ) {
+      return {
+        templateUrl: url + 'view.tpl.html',
+        restrict: 'E',
+        controller: function( $scope ) {
+          $scope.model = CnOpalInstanceModelFactory.root;
+          $scope.model.viewModel.onView().then( function() {
+            $scope.model.setupBreadcrumbTrail( 'view' );
+          } );
+        }
+      };
     }
   ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnOpalInstanceAdd', function() {
-    return {
-      templateUrl: 'app/opal_instance/add.tpl.html',
-      restrict: 'E'
-    };
-  } );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnOpalInstanceView', function() {
-    return {
-      templateUrl: 'app/opal_instance/view.tpl.html',
-      restrict: 'E'
-    };
-  } );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnOpalInstanceAddFactory', [
