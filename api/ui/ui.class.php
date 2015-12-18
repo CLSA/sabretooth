@@ -76,6 +76,8 @@ class ui extends \cenozo\ui\ui
       $list['Questionnaires'] = 'qnaire';
     if( array_key_exists( 'queue', $module_list ) && $module_list['queue']['list_menu'] )
       $list['Queues'] = 'queue';
+    if( array_key_exists( 'shift_template', $module_list ) && $module_list['shift_template']['list_menu'] )
+      $list['Shift Templates'] = 'shift_template';
 
     return $list;
   }
@@ -94,11 +96,13 @@ class ui extends \cenozo\ui\ui
       $list['Assignment Home'] = array( 'subject' => 'assignment', 'action' => 'home' );
     if( 2 <= $db_role->tier )
       $list['Queue Tree'] = array( 'subject' => 'queue', 'action' => 'tree' );
-    if( 2 <= $db_role->tier && !$db_role->all_sites )
+    if( true ) // TODO: supervisors only?
       $list['Site Settings'] = array(
         'subject' => 'site',
         'action' => 'view',
         'identifier' => sprintf( 'name=%s', $db_site->name ) );
+    if( !$db_role->all_sites )
+      $list['Shift Template Calendar'] = array( 'subject' => 'shift_template', 'action' => 'calendar' );
 
     return $list;
   }

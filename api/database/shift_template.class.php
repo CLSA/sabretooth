@@ -15,6 +15,20 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class shift_template extends \cenozo\database\record
 {
   /**
+   * Overrides base method
+   */
+  public function save()
+  {
+    $start = util::get_datetime_object( $this->start_time );
+    $end = util::get_datetime_object( $this->end_time );
+    if( $start > $end )
+      throw lib::create( 'exception\runtime',
+        'Shift template start_time cannot be after the end_time', __METHOD__ );
+
+    parent::save();
+  }
+
+  /**
    * Determines if the shift template lands on a particular date.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
