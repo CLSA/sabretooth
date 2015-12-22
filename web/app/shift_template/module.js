@@ -96,8 +96,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnShiftTemplateAdd', [
-    'CnShiftTemplateModelFactory',
-    function( CnShiftTemplateModelFactory ) {
+    'CnShiftTemplateModelFactory', '$timeout',
+    function( CnShiftTemplateModelFactory, $timeout ) {
       return {
         templateUrl: url + 'add.tpl.html',
         restrict: 'E',
@@ -107,6 +107,21 @@ define( function() {
           $scope.model.addModel.onNew( $scope.record ).then( function() {
             $scope.model.setupBreadcrumbTrail( 'add' );
           } );
+        },
+        link: function( scope, element, attrs ) {
+          $timeout( function() {
+            angular.element( element[0].querySelector( '#repeat_type' ) ).change( function() {
+              [].forEach.call( element[0].querySelectorAll( '.form-group' ), function( el ) {
+                if( null !== el.querySelector( '#repeat_every' ) || null !== el.querySelector( '#monday' ) ) {
+                  if( 'weekly' == scope.record.repeat_type ) {
+                    angular.element( el ).removeClass( 'collapse' );
+                  } else {
+                    angular.element( el ).addClass( 'collapse' );
+                  }
+                }
+              } );
+            } );
+          }, 200 );
         }
       };
     }
