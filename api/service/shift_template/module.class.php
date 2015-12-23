@@ -33,10 +33,6 @@ class module extends \cenozo\service\module
     // only show shift templates for the user's current site
     $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
 
-    // title is what to label events in the calendar view
-    if( $select->has_column( 'title' ) )
-      $select->add_column( 'CONCAT( operators, " operators" )', 'title', false );
-
     if( $select->has_column( 'week' ) )
     {
       // add week column

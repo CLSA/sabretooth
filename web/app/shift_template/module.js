@@ -94,10 +94,197 @@ define( function() {
     $state.go( 'shift_template.calendar' );
   } );
 
+  // function used by add and view directives (below)
+  function onRepeatTypeChange( elementList, newValue, oldValue ) {
+    elementList.forEach( function( element ) {
+      var el = angular.element( element );
+      if( 'weekly' == newValue && el.hasClass( 'collapse' )) {
+        el.removeClass( 'collapse' );
+      } else if( 'weekly' != newValue && !el.hasClass( 'collapse' ) ) {
+        el.addClass( 'collapse' );
+      }
+    } );
+  };
+
+  // converts shift templates into events for the given datespan
+  function getEventsFromShiftTemplate( item, minDate, maxDate ) {
+    var eventList = [];
+
+    // no date span means no templates to transform
+    if( null == minDate || null == maxDate ) return eventList;
+
+    // replace template record with concrete events
+    if( angular.isDefined( item.repeat_type ) ) {
+      var itemStartDate = moment( item.start_date );
+      var itemStartWeek = itemStartDate.week();
+      var itemStartWeekday = itemStartDate.weekday();
+      var itemStartDayOfMonth = itemStartDate.date();
+      var itemEndDate = moment( item.end_date );
+      var baseEvent = {
+        getIdentifier: function() { return item.getIdentifier() },
+        title: item.operators + ' operator' + ( 1 != item.operators ? 's' : '' )
+      };
+
+      if( 'weekly' == item.repeat_type ) {
+        // restrict dates to those included by the shift template's repeat_every property
+        var weekDateList = [];
+        for( var date = moment( minDate ); !date.isAfter( maxDate ); date.add( item.repeat_every, 'week' ) ) {
+          if( !date.weekday( itemStartDate.weekday() ).isBefore( itemStartDate ) ) {
+            // create an event for every day of the week the shift template belongs to
+            var colon = item.start_time.search( ':' );
+            var startDate = moment( date ).hour( item.start_time.substring( 0, colon ) )
+                                          .minute( item.start_time.substring( colon+1, colon+3 ) )
+                                          .second( 0 )
+                                          .millisecond( 0 );
+            colon = item.end_time.search( ':' );
+            var endDate = moment( date ).hour( item.end_time.substring( 0, colon ) )
+                                        .minute( item.end_time.substring( colon+1, colon+3 ) )
+                                        .second( 0 )
+                                        .millisecond( 0 );
+
+            if( item.sunday ) {
+              startDate.day( 0 );
+              endDate.day( 0 );
+              if( !startDate.isBefore( minDate ) && !startDate.isAfter( maxDate ) ) {
+                eventList.push( angular.extend( {}, baseEvent, {
+                  start: startDate.format(),
+                  end: endDate.format()
+                } ) );
+              }
+            }
+            if( item.monday ) {
+              startDate.day( 1 );
+              endDate.day( 1 );
+              if( !startDate.isBefore( minDate ) && !startDate.isAfter( maxDate ) ) {
+                eventList.push( angular.extend( {}, baseEvent, {
+                  start: startDate.format(),
+                  end: endDate.format()
+                } ) );
+              }
+            }
+            if( item.tuesday ) {
+              startDate.day( 2 );
+              endDate.day( 2 );
+              if( !startDate.isBefore( minDate ) && !startDate.isAfter( maxDate ) ) {
+                eventList.push( angular.extend( {}, baseEvent, {
+                  start: startDate.format(),
+                  end: endDate.format()
+                } ) );
+              }
+            }
+            if( item.wednesday ) {
+              startDate.day( 3 );
+              endDate.day( 3 );
+              if( !startDate.isBefore( minDate ) && !startDate.isAfter( maxDate ) ) {
+                eventList.push( angular.extend( {}, baseEvent, {
+                  start: startDate.format(),
+                  end: endDate.format()
+                } ) );
+              }
+            }
+            if( item.thursday ) {
+              startDate.day( 4 );
+              endDate.day( 4 );
+              if( !startDate.isBefore( minDate ) && !startDate.isAfter( maxDate ) ) {
+                eventList.push( angular.extend( {}, baseEvent, {
+                  start: startDate.format(),
+                  end: endDate.format()
+                } ) );
+              }
+            }
+            if( item.friday ) {
+              startDate.day( 5 );
+              endDate.day( 5 );
+              if( !startDate.isBefore( minDate ) && !startDate.isAfter( maxDate ) ) {
+                eventList.push( angular.extend( {}, baseEvent, {
+                  start: startDate.format(),
+                  end: endDate.format()
+                } ) );
+              }
+            }
+            if( item.saturday ) {
+              startDate.day( 6 );
+              endDate.day( 6 );
+              if( !startDate.isBefore( minDate ) && !startDate.isAfter( maxDate ) ) {
+                eventList.push( angular.extend( {}, baseEvent, {
+                  start: startDate.format(),
+                  end: endDate.format()
+                } ) );
+              }
+            }
+          }
+        }
+      } else {
+        var monthDateList = [];
+        for( var date = moment( minDate );
+             date.format( 'YYYYMM' ) <= maxDate.format( 'YYYYMM' );
+             date.add( 1, 'month' ) ) monthDateList.push( moment( date ) );
+
+        if( 'day of month' == item.repeat_type ) {
+          // add a monthly event for the day of month
+          monthDateList.forEach( function( date ) {
+            var colon = item.start_time.search( ':' );
+            var startDate = moment( date ).date( itemStartDayOfMonth )
+                                          .hour( item.start_time.substring( 0, colon ) )
+                                          .minute( item.start_time.substring( colon+1, colon+3 ) )
+                                          .second( 0 )
+                                          .millisecond( 0 );
+            colon = item.end_time.search( ':' );
+            var endDate = moment( date ).date( itemStartDayOfMonth )
+                                        .hour( item.end_time.substring( 0, colon ) )
+                                        .minute( item.end_time.substring( colon+1, colon+3 ) )
+                                        .second( 0 )
+                                        .millisecond( 0 );
+
+            if( !startDate.isBefore( minDate ) && !startDate.isAfter( maxDate ) ) {
+              eventList.push( angular.extend( {}, baseEvent, {
+                start: startDate.format(),
+                end: endDate.format()
+              } ) );
+            }
+          } );
+        } else { // 'day of week'
+          // add a month event for the day of week
+          var weekOfMonth = Math.ceil( itemStartDayOfMonth / 7 );
+          monthDateList.forEach( function( date ) {
+            var colon = item.start_time.search( ':' );
+            var startDate = moment( date ).date( 7*( weekOfMonth - 1 ) )
+                                          .weekday( itemStartWeekday )
+                                          .hour( item.start_time.substring( 0, colon ) )
+                                          .minute( item.start_time.substring( colon+1, colon+3 ) )
+                                          .second( 0 )
+                                          .millisecond( 0 );
+            colon = item.end_time.search( ':' );
+            var endDate = moment( date ).date( 7*( weekOfMonth - 1 ) )
+                                        .weekday( itemStartWeekday )
+                                        .hour( item.end_time.substring( 0, colon ) )
+                                        .minute( item.end_time.substring( colon+1, colon+3 ) )
+                                        .second( 0 )
+                                        .millisecond( 0 );
+
+            if( Math.ceil( startDate.date() / 7 ) < weekOfMonth ) {
+              startDate.add( 7, 'days' );
+              endDate.add( 7, 'days' );
+            }
+
+            if( !startDate.isBefore( minDate ) && !startDate.isAfter( maxDate ) ) {
+              eventList.push( angular.extend( {}, baseEvent, {
+                start: startDate.format(),
+                end: endDate.format()
+              } ) );
+            }
+          } );
+        }
+      }
+    } else { eventList.push( item ); }
+
+    return eventList;
+  };
+
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnShiftTemplateAdd', [
-    'CnShiftTemplateModelFactory', '$timeout',
-    function( CnShiftTemplateModelFactory, $timeout ) {
+    'CnShiftTemplateModelFactory', 'CnSession', '$timeout',
+    function( CnShiftTemplateModelFactory, CnSession, $timeout ) {
       return {
         templateUrl: url + 'add.tpl.html',
         restrict: 'E',
@@ -105,22 +292,26 @@ define( function() {
           $scope.model = CnShiftTemplateModelFactory.root;
           $scope.record = {};
           $scope.model.addModel.onNew( $scope.record ).then( function() {
+            if( null != $scope.model.addModel.calendarStartDate ) {
+              var addDirective = $scope.$$childHead;
+              // set the start date in the record and formatted record
+              $scope.record.start_date = moment( $scope.model.addModel.calendarStartDate ).format();
+              addDirective.formattedRecord.start_date = CnSession.formatValue(
+                $scope.model.addModel.calendarStartDate, 'date', true );
+              $scope.model.addModel.calendarStartDate = null;
+            }
             $scope.model.setupBreadcrumbTrail( 'add' );
           } );
         },
-        link: function( scope, element, attrs ) {
+        link: function( scope, element ) {
+          // watch the repeat type and hide the repeat_every and days checkboxes if the value changes from "weekly"
           $timeout( function() {
-            angular.element( element[0].querySelector( '#repeat_type' ) ).change( function() {
-              [].forEach.call( element[0].querySelectorAll( '.form-group' ), function( el ) {
-                if( null !== el.querySelector( '#repeat_every' ) || null !== el.querySelector( '#monday' ) ) {
-                  if( 'weekly' == scope.record.repeat_type ) {
-                    angular.element( el ).removeClass( 'collapse' );
-                  } else {
-                    angular.element( el ).addClass( 'collapse' );
-                  }
-                }
+            scope.$watch( 'record.repeat_type', function( newValue, oldValue ) {
+              var elementList = [].filter.call( element[0].querySelectorAll( '.form-group' ), function( el ) {
+                return null !== el.querySelector( '#repeat_every' ) || null !== el.querySelector( '#monday' );
               } );
-            } );
+              onRepeatTypeChange( elementList, newValue, oldValue );
+            } )
           }, 200 );
         }
       };
@@ -161,8 +352,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnShiftTemplateView', [
-    'CnShiftTemplateModelFactory',
-    function( CnShiftTemplateModelFactory ) {
+    'CnShiftTemplateModelFactory', '$timeout',
+    function( CnShiftTemplateModelFactory, $timeout ) {
       return {
         templateUrl: url + 'view.tpl.html',
         restrict: 'E',
@@ -171,6 +362,17 @@ define( function() {
           $scope.model.viewModel.onView().then( function() {
             $scope.model.setupBreadcrumbTrail( 'view' );
           } );
+        },
+        link: function( scope, element ) {
+          // watch the repeat type and hide the repeat_every and days checkboxes if the value changes from "weekly"
+          $timeout( function() {
+            scope.$watch( 'model.viewModel.record.repeat_type', function( newValue, oldValue ) {
+              var elementList = [].filter.call( element[0].querySelectorAll( '.form-group' ), function( el ) {
+                return null !== el.querySelector( '#repeat_every' ) || null !== el.querySelector( '#monday' );
+              } );
+              onRepeatTypeChange( elementList, newValue, oldValue );
+            } )
+          }, 200 );
         }
       };
     }
@@ -180,7 +382,25 @@ define( function() {
   cenozo.providers.factory( 'CnShiftTemplateAddFactory', [
     'CnBaseAddFactory',
     function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
+      var object = function( parentModel ) {
+        var self = this;
+        CnBaseAddFactory.construct( this, parentModel );
+
+        // used to communicate that a new shift template is being added from the calendar
+        this.calendarStartDate = null;
+
+        // add the new shift template's events to the calendar cache
+        this.onAdd = function( record ) {
+          return this.$$onAdd( record ).then( function() {
+            record.getIdentifier = function() { return parentModel.getIdentifierFromRecord( record ); };
+            var minDate = parentModel.calendarModel.cacheMinDate;
+            var maxDate = parentModel.calendarModel.cacheMaxDate;
+            parentModel.calendarModel.cache = parentModel.calendarModel.cache.concat(
+              getEventsFromShiftTemplate( record, minDate, maxDate )
+            );
+          } );
+        };
+      };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -193,110 +413,14 @@ define( function() {
         var self = this;
         CnBaseCalendarFactory.construct( this, parentModel );
 
-        // extend onList to format templates into events
+        // extend onList to transform templates into events
         this.onList = function( replace, minDate, maxDate ) {
+          // we must get the load dates before calling $$onList
+          var loadMinDate = self.getLoadMinDate( replace, minDate );
+          var loadMaxDate = self.getLoadMaxDate( replace, maxDate );
           return self.$$onList( replace, minDate, maxDate ).then( function() {
-            var weekDateList = [];
-            for( var date = moment( minDate ); !date.isAfter( maxDate ); date.add( 1, 'week' ) )
-              weekDateList.push( moment( date ) );
-
-            var monthDateList = [];
-            for( var date = moment( minDate );
-                 date.format( 'YYYYMM' ) <= maxDate.format( 'YYYYMM' );
-                 date.add( 1, 'month' ) ) monthDateList.push( moment( date ) );
-
             self.cache = self.cache.reduce( function( cache, item ) {
-              // replace template record with concrete events
-              if( angular.isDefined( item.repeat_type ) ) {
-                if( 'weekly' == item.repeat_type ) {
-                  // restrict dates to those included by the shift template's repeat_every property
-                  weekDateList.filter( function( date ) {
-                    return 0 == ( date.isoWeek() - moment( item.start_date ).isoWeek() ) % item.repeat_every;
-                  }, [] ).forEach( function( date ) {
-                    // create an event for every day of the week the shift template belongs to
-                    var colon = item.start_time.search( ':' );
-                    var startDate = moment( date ).hour( item.start_time.substring( 0, colon ) )
-                                                  .minute( item.start_time.substring( colon+1, colon+3 ) )
-                                                  .second( 0 )
-                                                  .millisecond( 0 );
-                    colon = item.end_time.search( ':' );
-                    var endDate = moment( date ).hour( item.end_time.substring( 0, colon ) )
-                                                .minute( item.end_time.substring( colon+1, colon+3 ) )
-                                                .second( 0 )
-                                                .millisecond( 0 );
-
-                    if( item.monday ) cache.push( {
-                      getIdentifier: item.getIdentifier,
-                      title: item.title,
-                      start: moment( startDate ).day( 1 ).format(),
-                      end: moment( endDate ).day( 1 ).format()
-                    } );
-                    if( item.tuesday ) cache.push( {
-                      getIdentifier: item.getIdentifier,
-                      title: item.title,
-                      start: moment( startDate ).day( 2 ).format(),
-                      end: moment( endDate ).day( 2 ).format()
-                    } );
-                    if( item.wednesday ) cache.push( {
-                      getIdentifier: item.getIdentifier,
-                      title: item.title,
-                      start: moment( startDate ).day( 3 ).format(),
-                      end: moment( endDate ).day( 3 ).format()
-                    } );
-                    if( item.thursday ) cache.push( {
-                      getIdentifier: item.getIdentifier,
-                      title: item.title,
-                      start: moment( startDate ).day( 4 ).format(),
-                      end: moment( endDate ).day( 4 ).format()
-                    } );
-                    if( item.friday ) cache.push( {
-                      getIdentifier: item.getIdentifier,
-                      title: item.title,
-                      start: moment( startDate ).day( 5 ).format(),
-                      end: moment( endDate ).day( 5 ).format()
-                    } );
-                    if( item.saturday ) cache.push( {
-                      getIdentifier: item.getIdentifier,
-                      title: item.title,
-                      start: moment( startDate ).day( 6 ).format(),
-                      end: moment( endDate ).day( 6 ).format()
-                    } );
-                    if( item.sunday ) cache.push( {
-                      getIdentifier: item.getIdentifier,
-                      title: item.title,
-                      start: moment( startDate ).day( 7 ).format(),
-                      end: moment( endDate ).day( 7 ).format()
-                    } );
-                  } );
-                } else if( 'day of month' == item.repeat_type ) {
-                  // add the day of month for each month
-                  monthDateList.forEach( function( date ) {
-                    // create an event for every day of the week the shift template belongs to
-                    var colon = item.start_time.search( ':' );
-                    var startDate = moment( date ).hour( item.start_time.substring( 0, colon ) )
-                                                  .minute( item.start_time.substring( colon+1, colon+3 ) )
-                                                  .second( 0 )
-                                                  .millisecond( 0 );
-                    colon = item.end_time.search( ':' );
-                    var endDate = moment( date ).hour( item.end_time.substring( 0, colon ) )
-                                                .minute( item.end_time.substring( colon+1, colon+3 ) )
-                                                .second( 0 )
-                                                .millisecond( 0 );
-                    var dateNumber = moment( item.start_date ).date();
-
-                    cache.push( {
-                      getIdentifier: item.getIdentifier,
-                      title: item.title,
-                      start: moment( startDate ).date( dateNumber ).format(),
-                      end: moment( endDate ).date( dateNumber ).format()
-                    } );
-                  } );
-                } else { // 'day of week'
-                  // TODO: implement
-                  console.log( 'TODO: day of week', item );
-                }
-              } else { cache.push( item ); }
-              return cache;
+              return cache.concat( getEventsFromShiftTemplate( item, loadMinDate, loadMaxDate ) );
             }, [] );
           } );
         };
@@ -310,7 +434,18 @@ define( function() {
   cenozo.providers.factory( 'CnShiftTemplateListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
+      var object = function( parentModel ) {
+        CnBaseListFactory.construct( this, parentModel );
+
+        // remove the deleted shift template from the calendar cache
+        this.onDelete = function( record ) {
+          return this.$$onDelete( record ).then( function() {
+            parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
+              return e.getIdentifier() != record.getIdentifier();
+            } );
+          } );
+        };
+      };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -321,7 +456,33 @@ define( function() {
     function( CnBaseViewFactory ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
+      var object = function( parentModel, root ) {
+        var self = this;
+        CnBaseViewFactory.construct( this, parentModel, root );
+
+        // remove the deleted shift template's events from the calendar cache
+        this.onDelete = function() {
+          return this.$$onDelete().then( function() {
+            parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
+              return e.getIdentifier() != self.record.getIdentifier();
+            } );
+          } );
+        };
+
+        // remove and re-add the shift template's events from the calendar cache
+        this.onPatch = function( data ) {
+          return this.$$onPatch( data ).then( function() {
+            var minDate = parentModel.calendarModel.cacheMinDate;
+            var maxDate = parentModel.calendarModel.cacheMaxDate;
+            parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
+              return e.getIdentifier() != self.record.getIdentifier();
+            } );
+            parentModel.calendarModel.cache = parentModel.calendarModel.cache.concat(
+              getEventsFromShiftTemplate( self.record, minDate, maxDate )
+            );
+          } );
+        };
+      }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
@@ -331,9 +492,11 @@ define( function() {
     'CnBaseModelFactory',
     'CnShiftTemplateAddFactory', 'CnShiftTemplateCalendarFactory',
     'CnShiftTemplateListFactory', 'CnShiftTemplateViewFactory',
+    '$state',
     function( CnBaseModelFactory,
               CnShiftTemplateAddFactory, CnShiftTemplateCalendarFactory,
-              CnShiftTemplateListFactory, CnShiftTemplateViewFactory ) {
+              CnShiftTemplateListFactory, CnShiftTemplateViewFactory,
+              $state ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, cenozoApp.module( 'shift_template' ) );
@@ -341,6 +504,14 @@ define( function() {
         this.calendarModel = CnShiftTemplateCalendarFactory.instance( this );
         this.listModel = CnShiftTemplateListFactory.instance( this );
         this.viewModel = CnShiftTemplateViewFactory.instance( this, root );
+
+        this.getMetadata = function() {
+          return this.$$getMetadata().then( function() {
+            self.metadata.columnList.repeat_type.enumList.forEach( function( item, index, array ) {
+              if( 'day of' == item.name.substring( 0, 6 ) ) array[index].name = 'monthly (' + item.name + ')';
+            } );
+          } );
+        };
       };
 
       return {
