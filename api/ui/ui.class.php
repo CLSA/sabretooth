@@ -99,7 +99,7 @@ class ui extends \cenozo\ui\ui
     if( 2 <= $db_role->tier )
       $list['Queue Tree'] = array( 'subject' => 'queue', 'action' => 'tree' );
     if( true ) // TODO: supervisors only?
-      $list['Site Settings'] = array(
+      $list['Site Details'] = array(
         'subject' => 'site',
         'action' => 'view',
         'identifier' => sprintf( 'name=%s', $db_site->name ) );

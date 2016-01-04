@@ -35,15 +35,6 @@ class shift extends \cenozo\database\record
     $role_class_name = lib::get_class_name( 'database\role' );
     $db_role = $role_class_name::get_unique_record( 'name', 'operator' );
     
-    // Make sure the user has the operator role at the site
-    if( !$db_user->has_access( $db_site, $db_role ) )
-    {
-      throw lib::create( 'exception\runtime',
-        sprintf( 'Cannot assign shift to "%s", user does not have operator access to %s',
-                 $db_user->name,
-                 $db_site->name ), __METHOD__ );
-    }
-
     // See if the user already has a shift at this time
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'id', '!=', $this->id );
