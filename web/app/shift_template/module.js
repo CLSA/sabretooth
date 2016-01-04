@@ -90,9 +90,11 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'shift_template' ).addViewOperation( 'Shift Template Calendar', function( viewModel, $state ) {
-    $state.go( 'shift_template.calendar' );
-  } );
+  cenozoApp.module( 'shift_template' ).addExtraOperation(
+    'list',
+    'Shift Template Calendar',
+    function( listModel, $state ) { $state.go( 'shift_template.calendar' ); }
+  );
 
   // function used by add and view directives (below)
   function onRepeatTypeChange( elementList, newValue, oldValue ) {
