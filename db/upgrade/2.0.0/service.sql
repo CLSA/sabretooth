@@ -205,4 +205,5 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'shift_template', 'GET', 0, 1 ),
 ( 'shift_template', 'GET', 1, 1 ),
 ( 'shift_template', 'PATCH', 1, 1 ),
-( 'shift_template', 'POST', 0, 1 );
+( 'shift_template', 'POST', 0, 1 ),
+( 'site_shift', 'GET', 0, 1 );

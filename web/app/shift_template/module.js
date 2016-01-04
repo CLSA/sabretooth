@@ -1,4 +1,6 @@
-define( function() {
+define( cenozoApp.module( 'shift' ).getRequiredFiles().concat(
+          cenozoApp.module( 'site_shift' ).getRequiredFiles()
+        ), function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'shift_template', true ); } catch( err ) { console.warn( err ); return; }
@@ -95,6 +97,18 @@ define( function() {
   } );
 
   module.addExtraOperation(
+    'calendar',
+    'Shift Calendar',
+    function( calendarModel, $state ) { $state.go( 'shift.calendar' ); }
+  );
+
+  module.addExtraOperation(
+    'calendar',
+    'Site Calendar',
+    function( calendarModel, $state ) { $state.go( 'site_shift.calendar' ); }
+  );
+
+  module.addExtraOperation(
     'list',
     'Shift Template Calendar',
     function( listModel, $state ) { $state.go( 'shift_template.calendar' ); }
@@ -157,8 +171,8 @@ define( function() {
               if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) &&
                   !startDate.isBefore( itemStartDate, 'day' ) && !startDate.isAfter( itemEndDate, 'day' ) ) {
                 eventList.push( angular.extend( {}, baseEvent, {
-                  start: startDate.format(),
-                  end: endDate.format()
+                  start: moment( startDate ),
+                  end: moment( endDate )
                 } ) );
               }
             }
@@ -168,8 +182,8 @@ define( function() {
               if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) &&
                   !startDate.isBefore( itemStartDate, 'day' ) && !startDate.isAfter( itemEndDate, 'day' ) ) {
                 eventList.push( angular.extend( {}, baseEvent, {
-                  start: startDate.format(),
-                  end: endDate.format()
+                  start: moment( startDate ),
+                  end: moment( endDate )
                 } ) );
               }
             }
@@ -179,8 +193,8 @@ define( function() {
               if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) &&
                   !startDate.isBefore( itemStartDate, 'day' ) && !startDate.isAfter( itemEndDate, 'day' ) ) {
                 eventList.push( angular.extend( {}, baseEvent, {
-                  start: startDate.format(),
-                  end: endDate.format()
+                  start: moment( startDate ),
+                  end: moment( endDate )
                 } ) );
               }
             }
@@ -190,8 +204,8 @@ define( function() {
               if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) &&
                   !startDate.isBefore( itemStartDate, 'day' ) && !startDate.isAfter( itemEndDate, 'day' ) ) {
                 eventList.push( angular.extend( {}, baseEvent, {
-                  start: startDate.format(),
-                  end: endDate.format()
+                  start: moment( startDate ),
+                  end: moment( endDate )
                 } ) );
               }
             }
@@ -201,8 +215,8 @@ define( function() {
               if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) &&
                   !startDate.isBefore( itemStartDate, 'day' ) && !startDate.isAfter( itemEndDate, 'day' ) ) {
                 eventList.push( angular.extend( {}, baseEvent, {
-                  start: startDate.format(),
-                  end: endDate.format()
+                  start: moment( startDate ),
+                  end: moment( endDate )
                 } ) );
               }
             }
@@ -212,8 +226,8 @@ define( function() {
               if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) &&
                   !startDate.isBefore( itemStartDate, 'day' ) && !startDate.isAfter( itemEndDate, 'day' ) ) {
                 eventList.push( angular.extend( {}, baseEvent, {
-                  start: startDate.format(),
-                  end: endDate.format()
+                  start: moment( startDate ),
+                  end: moment( endDate )
                 } ) );
               }
             }
@@ -223,8 +237,8 @@ define( function() {
               if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) &&
                   !startDate.isBefore( itemStartDate, 'day' ) && !startDate.isAfter( itemEndDate, 'day' ) ) {
                 eventList.push( angular.extend( {}, baseEvent, {
-                  start: startDate.format(),
-                  end: endDate.format()
+                  start: moment( startDate ),
+                  end: moment( endDate )
                 } ) );
               }
             }
@@ -254,8 +268,8 @@ define( function() {
 
             if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) ) {
               eventList.push( angular.extend( {}, baseEvent, {
-                start: startDate.format(),
-                end: endDate.format()
+                start: moment( startDate ),
+                end: moment( endDate )
               } ) );
             }
           } );
@@ -285,8 +299,8 @@ define( function() {
 
             if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) ) {
               eventList.push( angular.extend( {}, baseEvent, {
-                start: startDate.format(),
-                end: endDate.format()
+                start: moment( startDate ),
+                end: moment( endDate )
               } ) );
             }
           } );
@@ -336,8 +350,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnShiftTemplateCalendar', [
-    'CnShiftTemplateModelFactory', 'CnSession',
-    function( CnShiftTemplateModelFactory, CnSession ) {
+    'CnShiftTemplateModelFactory', 'CnShiftModelFactory', 'CnSiteShiftModelFactory', 'CnSession',
+    function( CnShiftTemplateModelFactory, CnShiftModelFactory, CnSiteShiftModelFactory, CnSession ) {
       return {
         templateUrl: module.url + 'calendar.tpl.html',
         restrict: 'E',
@@ -345,6 +359,25 @@ define( function() {
           $scope.model = CnShiftTemplateModelFactory.root;
           CnSession.promise.then( function() { $scope.timezone = CnSession.site.timezone; } );
           $scope.model.setupBreadcrumbTrail( 'calendar' );
+        },
+        link: function( scope ) {
+          // synchronize shift and site_shift calendar date and view
+          scope.$watch( 'model.calendarModel.currentDate', function( date ) {
+            var shiftCalendarModel = CnShiftModelFactory.root.calendarModel;
+            if( !shiftCalendarModel.currentDate.isSame( date, 'day' ) )
+              shiftCalendarModel.currentDate = date;
+            var siteShiftCalendarModel = CnSiteShiftModelFactory.root.calendarModel;
+            if( !siteShiftCalendarModel.currentDate.isSame( date, 'day' ) )
+              siteShiftCalendarModel.currentDate = date;
+          } );
+          scope.$watch( 'model.calendarModel.currentView', function( view ) {
+            var shiftCalendarModel = CnShiftModelFactory.root.calendarModel;
+            if( shiftCalendarModel.currentView != view )
+              shiftCalendarModel.currentView = view;
+            var siteShiftCalendarModel = CnSiteShiftModelFactory.root.calendarModel;
+            if( siteShiftCalendarModel.currentView != view )
+              siteShiftCalendarModel.currentView = view;
+          } );
         }
       };
     }
@@ -521,6 +554,10 @@ define( function() {
         this.calendarModel = CnShiftTemplateCalendarFactory.instance( this );
         this.listModel = CnShiftTemplateListFactory.instance( this );
         this.viewModel = CnShiftTemplateViewFactory.instance( this, root );
+
+        // We must override the getServiceCollectionPath function to ignore parent identifiers so that it
+        // can be used by the site_shift module
+        this.getServiceCollectionPath = function() { return 'shift_template'; }
         
         // add additional details to some of the help text
         CnSession.promise.then( function() {

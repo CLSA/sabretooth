@@ -1,4 +1,6 @@
-define( function() {
+define( cenozoApp.module( 'shift_template' ).getRequiredFiles().concat(
+          cenozoApp.module( 'site_shift' ).getRequiredFiles()
+        ), function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'shift', true ); } catch( err ) { console.warn( err ); return; }
@@ -75,6 +77,18 @@ define( function() {
   }
 
   module.addExtraOperation(
+    'calendar',
+    'Shift Template Calendar',
+    function( calendarModel, $state ) { $state.go( 'shift_template.calendar' ); }
+  );
+
+  module.addExtraOperation(
+    'calendar',
+    'Site Calendar',
+    function( calendarModel, $state ) { $state.go( 'site_shift.calendar' ); }
+  );
+
+  module.addExtraOperation(
     'list',
     'Shift Calendar',
     function( listModel, $state ) { $state.go( 'shift.calendar' ); }
@@ -108,14 +122,33 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnShiftCalendar', [
-    'CnShiftModelFactory',
-    function( CnShiftModelFactory ) {
+    'CnShiftModelFactory', 'CnShiftTemplateModelFactory', 'CnSiteShiftModelFactory',
+    function( CnShiftModelFactory, CnShiftTemplateModelFactory, CnSiteShiftModelFactory ) {
       return {
         templateUrl: module.url + 'calendar.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnShiftModelFactory.root;
           $scope.model.setupBreadcrumbTrail( 'calendar' );
+        },
+        link: function( scope ) {
+          // synchronize shift and site_shift calendar date and view
+          scope.$watch( 'model.calendarModel.currentDate', function( date ) {
+            var shiftTemplateCalendarModel = CnShiftTemplateModelFactory.root.calendarModel;
+            if( !shiftTemplateCalendarModel.currentDate.isSame( date, 'day' ) )
+              shiftTemplateCalendarModel.currentDate = date;
+            var siteShiftCalendarModel = CnSiteShiftModelFactory.root.calendarModel;
+            if( !siteShiftCalendarModel.currentDate.isSame( date, 'day' ) )
+              siteShiftCalendarModel.currentDate = date;
+          } );
+          scope.$watch( 'model.calendarModel.currentView', function( view ) {
+            var shiftTemplateCalendarModel = CnShiftTemplateModelFactory.root.calendarModel;
+            if( shiftTemplateCalendarModel.currentView != view )
+              shiftTemplateCalendarModel.currentView = view;
+            var siteShiftCalendarModel = CnSiteShiftModelFactory.root.calendarModel;
+            if( siteShiftCalendarModel.currentView != view )
+              siteShiftCalendarModel.currentView = view;
+          } );
         }
       };
     }
@@ -277,6 +310,10 @@ define( function() {
         this.calendarModel = CnShiftCalendarFactory.instance( this );
         this.listModel = CnShiftListFactory.instance( this );
         this.viewModel = CnShiftViewFactory.instance( this, root );
+
+        // We must override the getServiceCollectionPath function to ignore parent identifiers so that it
+        // can be used by the site_shift module
+        this.getServiceCollectionPath = function() { return 'shift'; }
       };
 
       return {
