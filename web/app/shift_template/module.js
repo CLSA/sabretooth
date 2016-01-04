@@ -516,7 +516,6 @@ define( function() {
               CnSession, $state ) {
       var object = function( root ) {
         var self = this;
-        var module = module;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnShiftTemplateAddFactory.instance( this );
         this.calendarModel = CnShiftTemplateCalendarFactory.instance( this );
