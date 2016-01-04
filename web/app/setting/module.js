@@ -192,23 +192,6 @@ define( function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSettingView', [
-    'CnSettingModelFactory',
-    function( CnSettingModelFactory ) {
-      return {
-        templateUrl: url + 'view.tpl.html',
-        restrict: 'E',
-        controller: function( $scope ) {
-          $scope.model = CnSettingModelFactory.root;
-          $scope.model.viewModel.onView().then( function() {
-            $scope.model.setupBreadcrumbTrail( 'view' );
-          } );
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnSettingListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
