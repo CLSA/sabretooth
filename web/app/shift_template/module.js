@@ -13,11 +13,13 @@ define( function() {
     columnList: {
       start_time: {
         type: 'time',
-        title: 'Start Time'
+        title: 'Start Time',
+        help: 'When the shift starts in the site\'s timezone'
       },
       end_time: {
         type: 'time',
-        title: 'End Time'
+        title: 'End Time',
+        help: 'When the shift ends in the site\'s timezone'
       },
       start_date: {
         type: 'date',
@@ -51,13 +53,13 @@ define( function() {
       title: 'Start Time',
       type: 'time',
       max: 'end_time',
-      help: 'When the shift starts (local site\'s timezone)'
+      help: 'When the shift starts in the site\'s timezone'
     },
     end_time: {
       title: 'End Time',
       type: 'time',
       min: 'start_time',
-      help: 'When the shift ends (local site\'s timezone)'
+      help: 'When the shift ends in the site\'s timezone'
     },
     start_date: {
       title: 'Start Date',
@@ -324,13 +326,14 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnShiftTemplateCalendar', [
-    'CnShiftTemplateModelFactory',
-    function( CnShiftTemplateModelFactory ) {
+    'CnShiftTemplateModelFactory', 'CnSession',
+    function( CnShiftTemplateModelFactory, CnSession ) {
       return {
         templateUrl: url + 'calendar.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnShiftTemplateModelFactory.root;
+          CnSession.promise.then( function() { $scope.timezone = CnSession.site.timezone; } );
           $scope.model.setupBreadcrumbTrail( 'calendar' );
         }
       };
@@ -496,18 +499,27 @@ define( function() {
     'CnBaseModelFactory',
     'CnShiftTemplateAddFactory', 'CnShiftTemplateCalendarFactory',
     'CnShiftTemplateListFactory', 'CnShiftTemplateViewFactory',
-    '$state',
+    'CnSession', '$state',
     function( CnBaseModelFactory,
               CnShiftTemplateAddFactory, CnShiftTemplateCalendarFactory,
               CnShiftTemplateListFactory, CnShiftTemplateViewFactory,
-              $state ) {
+              CnSession, $state ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'shift_template' ) );
+        var module = cenozoApp.module( 'shift_template' );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnShiftTemplateAddFactory.instance( this );
         this.calendarModel = CnShiftTemplateCalendarFactory.instance( this );
         this.listModel = CnShiftTemplateListFactory.instance( this );
         this.viewModel = CnShiftTemplateViewFactory.instance( this, root );
+        
+        // add additional details to some of the help text
+        CnSession.promise.then( function() {
+          module.inputGroupList[null].start_time.help += ' (' + CnSession.site.timezone + ')';
+          module.inputGroupList[null].end_time.help += ' (' + CnSession.site.timezone + ')';
+          module.columnList.start_time.help += ' (' + CnSession.site.timezone + ')';
+          module.columnList.end_time.help += ' (' + CnSession.site.timezone + ')';
+        } );
 
         this.getMetadata = function() {
           return this.$$getMetadata().then( function() {
