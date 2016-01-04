@@ -35,8 +35,11 @@ class module extends \cenozo\service\module
 
     if( $select->has_column( 'week' ) )
     {
-      // add week column
-      $select->add_column(
+      // add week column in a sub-table (so that counts work when restricting by this column)
+      $sub_sel = lib::create( 'database\select' );
+      $sub_sel->from( 'shift_template' );
+      $sub_sel->add_column( 'id' );
+      $sub_sel->add_column(
         'IF( "weekly" = repeat_type, '.
             'CONCAT( IF( monday, "M", "_" ), '.
                     'IF( tuesday, "T", "_" ), '.
@@ -48,6 +51,12 @@ class module extends \cenozo\service\module
             '"(n/a)" )',
         'week',
         false );
+
+      $modifier->join(
+        sprintf( '( %s ) AS shift_template_week', $sub_sel->get_sql() ),
+        'shift_template.id',
+        'shift_template_week.id' );
+      $select->add_column( 'shift_template_week.week', 'week', false );
     }
   }
 
