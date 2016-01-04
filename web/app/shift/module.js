@@ -50,11 +50,13 @@ define( function() {
     },
     start_datetime: {
       title: 'Start Date & Time',
-      type: 'datetime'
+      type: 'datetime',
+      max: 'end_datetime'
     },
     end_datetime: {
       title: 'End Date & Time',
-      type: 'datetime'
+      type: 'datetime',
+      min: 'start_datetime'
     },
   } );
 
