@@ -109,42 +109,44 @@ define( function() {
   };
 
   // converts shift templates into events for the given datespan
-  function getEventsFromShiftTemplate( item, minDate, maxDate ) {
+  function getEventsFromShiftTemplate( shiftTemplate, minDate, maxDate ) {
     var eventList = [];
 
     // no date span means no templates to transform
     if( null == minDate || null == maxDate ) return eventList;
 
     // replace template record with concrete events
-    if( angular.isDefined( item.repeat_type ) ) {
-      var itemStartDate = moment( item.start_date );
+    if( angular.isDefined( shiftTemplate.repeat_type ) ) {
+      var itemStartDate = moment( shiftTemplate.start_date );
       var itemStartWeek = itemStartDate.week();
       var itemStartWeekday = itemStartDate.weekday();
       var itemStartDayOfMonth = itemStartDate.date();
-      var itemEndDate = moment( item.end_date );
+      var itemEndDate = moment( shiftTemplate.end_date );
       var baseEvent = {
-        getIdentifier: function() { return item.getIdentifier() },
-        title: item.operators + ' operator' + ( 1 != item.operators ? 's' : '' )
+        getIdentifier: function() { return shiftTemplate.getIdentifier() },
+        title: shiftTemplate.operators + ' operator' + ( 1 != shiftTemplate.operators ? 's' : '' )
       };
 
-      if( 'weekly' == item.repeat_type ) {
+      if( 'weekly' == shiftTemplate.repeat_type ) {
         // restrict dates to those included by the shift template's repeat_every property
         var weekDateList = [];
-        for( var date = moment( minDate ); !date.isAfter( maxDate ); date.add( item.repeat_every, 'week' ) ) {
+        for( var date = moment( minDate );
+             !date.isAfter( maxDate );
+             date.add( shiftTemplate.repeat_every, 'week' ) ) {
           if( !date.weekday( itemStartDate.weekday() ).isBefore( itemStartDate ) ) {
             // create an event for every day of the week the shift template belongs to
-            var colon = item.start_time.search( ':' );
-            var startDate = moment( date ).hour( item.start_time.substring( 0, colon ) )
-                                          .minute( item.start_time.substring( colon+1, colon+3 ) )
+            var colon = shiftTemplate.start_time.search( ':' );
+            var startDate = moment( date ).hour( shiftTemplate.start_time.substring( 0, colon ) )
+                                          .minute( shiftTemplate.start_time.substring( colon+1, colon+3 ) )
                                           .second( 0 )
                                           .millisecond( 0 );
-            colon = item.end_time.search( ':' );
-            var endDate = moment( date ).hour( item.end_time.substring( 0, colon ) )
-                                        .minute( item.end_time.substring( colon+1, colon+3 ) )
+            colon = shiftTemplate.end_time.search( ':' );
+            var endDate = moment( date ).hour( shiftTemplate.end_time.substring( 0, colon ) )
+                                        .minute( shiftTemplate.end_time.substring( colon+1, colon+3 ) )
                                         .second( 0 )
                                         .millisecond( 0 );
 
-            if( item.sunday ) {
+            if( shiftTemplate.sunday ) {
               startDate.day( 0 );
               endDate.day( 0 );
               if( !startDate.isBefore( minDate ) && !startDate.isAfter( maxDate ) ) {
@@ -154,7 +156,7 @@ define( function() {
                 } ) );
               }
             }
-            if( item.monday ) {
+            if( shiftTemplate.monday ) {
               startDate.day( 1 );
               endDate.day( 1 );
               if( !startDate.isBefore( minDate ) && !startDate.isAfter( maxDate ) ) {
@@ -164,7 +166,7 @@ define( function() {
                 } ) );
               }
             }
-            if( item.tuesday ) {
+            if( shiftTemplate.tuesday ) {
               startDate.day( 2 );
               endDate.day( 2 );
               if( !startDate.isBefore( minDate ) && !startDate.isAfter( maxDate ) ) {
@@ -174,7 +176,7 @@ define( function() {
                 } ) );
               }
             }
-            if( item.wednesday ) {
+            if( shiftTemplate.wednesday ) {
               startDate.day( 3 );
               endDate.day( 3 );
               if( !startDate.isBefore( minDate ) && !startDate.isAfter( maxDate ) ) {
@@ -184,7 +186,7 @@ define( function() {
                 } ) );
               }
             }
-            if( item.thursday ) {
+            if( shiftTemplate.thursday ) {
               startDate.day( 4 );
               endDate.day( 4 );
               if( !startDate.isBefore( minDate ) && !startDate.isAfter( maxDate ) ) {
@@ -194,7 +196,7 @@ define( function() {
                 } ) );
               }
             }
-            if( item.friday ) {
+            if( shiftTemplate.friday ) {
               startDate.day( 5 );
               endDate.day( 5 );
               if( !startDate.isBefore( minDate ) && !startDate.isAfter( maxDate ) ) {
@@ -204,7 +206,7 @@ define( function() {
                 } ) );
               }
             }
-            if( item.saturday ) {
+            if( shiftTemplate.saturday ) {
               startDate.day( 6 );
               endDate.day( 6 );
               if( !startDate.isBefore( minDate ) && !startDate.isAfter( maxDate ) ) {
@@ -222,19 +224,19 @@ define( function() {
              date.format( 'YYYYMM' ) <= maxDate.format( 'YYYYMM' );
              date.add( 1, 'month' ) ) monthDateList.push( moment( date ) );
 
-        if( 'day of month' == item.repeat_type ) {
+        if( 'day of month' == shiftTemplate.repeat_type ) {
           // add a monthly event for the day of month
           monthDateList.forEach( function( date ) {
-            var colon = item.start_time.search( ':' );
+            var colon = shiftTemplate.start_time.search( ':' );
             var startDate = moment( date ).date( itemStartDayOfMonth )
-                                          .hour( item.start_time.substring( 0, colon ) )
-                                          .minute( item.start_time.substring( colon+1, colon+3 ) )
+                                          .hour( shiftTemplate.start_time.substring( 0, colon ) )
+                                          .minute( shiftTemplate.start_time.substring( colon+1, colon+3 ) )
                                           .second( 0 )
                                           .millisecond( 0 );
-            colon = item.end_time.search( ':' );
+            colon = shiftTemplate.end_time.search( ':' );
             var endDate = moment( date ).date( itemStartDayOfMonth )
-                                        .hour( item.end_time.substring( 0, colon ) )
-                                        .minute( item.end_time.substring( colon+1, colon+3 ) )
+                                        .hour( shiftTemplate.end_time.substring( 0, colon ) )
+                                        .minute( shiftTemplate.end_time.substring( colon+1, colon+3 ) )
                                         .second( 0 )
                                         .millisecond( 0 );
 
@@ -249,18 +251,18 @@ define( function() {
           // add a month event for the day of week
           var weekOfMonth = Math.ceil( itemStartDayOfMonth / 7 );
           monthDateList.forEach( function( date ) {
-            var colon = item.start_time.search( ':' );
+            var colon = shiftTemplate.start_time.search( ':' );
             var startDate = moment( date ).date( 7*( weekOfMonth - 1 ) )
                                           .weekday( itemStartWeekday )
-                                          .hour( item.start_time.substring( 0, colon ) )
-                                          .minute( item.start_time.substring( colon+1, colon+3 ) )
+                                          .hour( shiftTemplate.start_time.substring( 0, colon ) )
+                                          .minute( shiftTemplate.start_time.substring( colon+1, colon+3 ) )
                                           .second( 0 )
                                           .millisecond( 0 );
-            colon = item.end_time.search( ':' );
+            colon = shiftTemplate.end_time.search( ':' );
             var endDate = moment( date ).date( 7*( weekOfMonth - 1 ) )
                                         .weekday( itemStartWeekday )
-                                        .hour( item.end_time.substring( 0, colon ) )
-                                        .minute( item.end_time.substring( colon+1, colon+3 ) )
+                                        .hour( shiftTemplate.end_time.substring( 0, colon ) )
+                                        .minute( shiftTemplate.end_time.substring( colon+1, colon+3 ) )
                                         .second( 0 )
                                         .millisecond( 0 );
 
@@ -278,7 +280,7 @@ define( function() {
           } );
         }
       }
-    } else { eventList.push( item ); }
+    } else { eventList.push( shiftTemplate ); }
 
     return eventList;
   };

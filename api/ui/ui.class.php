@@ -76,6 +76,8 @@ class ui extends \cenozo\ui\ui
       $list['Questionnaires'] = 'qnaire';
     if( array_key_exists( 'queue', $module_list ) && $module_list['queue']['list_menu'] )
       $list['Queues'] = 'queue';
+    if( array_key_exists( 'shift', $module_list ) && $module_list['shift']['list_menu'] )
+      $list['Shifts'] = 'shift';
     if( array_key_exists( 'shift_template', $module_list ) && $module_list['shift_template']['list_menu'] )
       $list['Shift Templates'] = 'shift_template';
 
@@ -101,8 +103,10 @@ class ui extends \cenozo\ui\ui
         'subject' => 'site',
         'action' => 'view',
         'identifier' => sprintf( 'name=%s', $db_site->name ) );
-    if( !$db_role->all_sites )
+    if( !$db_role->all_sites ) {
+      $list['Shift Calendar'] = array( 'subject' => 'shift', 'action' => 'calendar' );
       $list['Shift Template Calendar'] = array( 'subject' => 'shift_template', 'action' => 'calendar' );
+    }
 
     return $list;
   }

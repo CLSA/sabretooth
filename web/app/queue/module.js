@@ -50,7 +50,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'queue' ).addViewOperation( 'View Queue Tree', function( viewModel, $state ) {
+  cenozoApp.module( 'queue' ).addExtraOperation( 'view', 'View Queue Tree', function( viewModel, $state ) {
     $state.go( 'queue.tree' );
   } );
 
