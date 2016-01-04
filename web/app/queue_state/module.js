@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'queue_state', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'queue_state' ), {
+  try { var module = cenozoApp.module( 'queue_state', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {
       parent: [ {
         subject: 'queue',
@@ -41,7 +41,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'queue_state' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     queue_id: {
       title: 'Queue',
       type: 'enum'
@@ -61,7 +61,7 @@ define( function() {
     'CnQueueStateModelFactory',
     function( CnQueueStateModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnQueueStateModelFactory.root;
@@ -79,7 +79,7 @@ define( function() {
     'CnQueueStateModelFactory',
     function( CnQueueStateModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnQueueStateModelFactory.root;
@@ -117,7 +117,7 @@ define( function() {
               CnSession, CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'queue_state' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnQueueStateAddFactory.instance( this );
         this.listModel = CnQueueStateListFactory.instance( this );
 

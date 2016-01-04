@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'shift', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'shift' ), {
+  try { var module = cenozoApp.module( 'shift', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {},
     name: {
       singular: 'shift',
@@ -38,7 +38,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'shift' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     user_id: {
       title: 'User',
       type: 'lookup-typeahead',
@@ -74,7 +74,7 @@ define( function() {
     }
   }
 
-  cenozoApp.module( 'shift' ).addExtraOperation(
+  module.addExtraOperation(
     'list',
     'Shift Calendar',
     function( listModel, $state ) { $state.go( 'shift.calendar' ); }
@@ -85,7 +85,7 @@ define( function() {
     'CnShiftModelFactory', 'CnSession',
     function( CnShiftModelFactory, CnSession ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnShiftModelFactory.root;
@@ -111,7 +111,7 @@ define( function() {
     'CnShiftModelFactory',
     function( CnShiftModelFactory ) {
       return {
-        templateUrl: url + 'calendar.tpl.html',
+        templateUrl: module.url + 'calendar.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnShiftModelFactory.root;
@@ -126,7 +126,7 @@ define( function() {
     'CnShiftModelFactory',
     function( CnShiftModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnShiftModelFactory.root;
@@ -143,7 +143,7 @@ define( function() {
     'CnShiftModelFactory',
     function( CnShiftModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnShiftModelFactory.root;
@@ -272,7 +272,7 @@ define( function() {
               $state ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'shift' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnShiftAddFactory.instance( this );
         this.calendarModel = CnShiftCalendarFactory.instance( this );
         this.listModel = CnShiftListFactory.instance( this );

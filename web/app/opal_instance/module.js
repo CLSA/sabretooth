@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'opal_instance', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'opal_instance' ), {
+  try { var module = cenozoApp.module( 'opal_instance', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {}, // standard
     name: {
       singular: 'opal instance',
@@ -32,7 +32,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'opal_instance' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     active: {
       title: 'Active',
       type: 'boolean'
@@ -55,7 +55,7 @@ define( function() {
     'CnOpalInstanceModelFactory',
     function( CnOpalInstanceModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnOpalInstanceModelFactory.root;
@@ -73,7 +73,7 @@ define( function() {
     'CnOpalInstanceModelFactory',
     function( CnOpalInstanceModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnOpalInstanceModelFactory.root;
@@ -90,7 +90,7 @@ define( function() {
     'CnOpalInstanceModelFactory',
     function( CnOpalInstanceModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnOpalInstanceModelFactory.root;
@@ -139,7 +139,7 @@ define( function() {
               CnOpalInstanceAddFactory, CnOpalInstanceListFactory, CnOpalInstanceViewFactory ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'opal_instance' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnOpalInstanceAddFactory.instance( this );
         this.listModel = CnOpalInstanceListFactory.instance( this );
         this.viewModel = CnOpalInstanceViewFactory.instance( this, root );

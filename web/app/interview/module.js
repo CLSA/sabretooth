@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'interview', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'interview' ), {
+  try { var module = cenozoApp.module( 'interview', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {
       parent: {
         subject: 'participant',
@@ -43,7 +43,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'interview' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     participant: {
       column: 'participant.uid',
       title: 'Participant',
@@ -88,7 +88,7 @@ define( function() {
     'CnInterviewModelFactory',
     function( CnInterviewModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnInterviewModelFactory.root;
@@ -105,7 +105,7 @@ define( function() {
     'CnInterviewModelFactory',
     function( CnInterviewModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnInterviewModelFactory.root;
@@ -191,7 +191,7 @@ define( function() {
               CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'interview' ) );
+        CnBaseModelFactory.construct( this, module );
         this.listModel = CnInterviewListFactory.instance( this );
         this.viewModel = CnInterviewViewFactory.instance( this, root );
 

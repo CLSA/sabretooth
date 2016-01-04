@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'callback', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'callback' ), {
+  try { var module = cenozoApp.module( 'callback', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {
       parent: {
         subject: 'interview',
@@ -43,7 +43,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'callback' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     datetime: {
       title: 'Date & Time',
       type: 'datetime',
@@ -89,7 +89,7 @@ define( function() {
     'CnCallbackModelFactory',
     function( CnCallbackModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnCallbackModelFactory.root;
@@ -107,7 +107,7 @@ define( function() {
     'CnCallbackModelFactory',
     function( CnCallbackModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnCallbackModelFactory.root;
@@ -124,7 +124,7 @@ define( function() {
     'CnCallbackModelFactory',
     function( CnCallbackModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnCallbackModelFactory.root;
@@ -191,7 +191,7 @@ define( function() {
               CnHttpFactory ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'callback' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnCallbackAddFactory.instance( this );
         this.listModel = CnCallbackListFactory.instance( this );
         this.viewModel = CnCallbackViewFactory.instance( this, root );

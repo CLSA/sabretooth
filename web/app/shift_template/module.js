@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'shift_template', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'shift_template' ), {
+  try { var module = cenozoApp.module( 'shift_template', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {},
     name: {
       singular: 'shift template',
@@ -48,7 +48,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'shift_template' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     start_time: {
       title: 'Start Time',
       type: 'time',
@@ -94,7 +94,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'shift_template' ).addExtraOperation(
+  module.addExtraOperation(
     'list',
     'Shift Template Calendar',
     function( listModel, $state ) { $state.go( 'shift_template.calendar' ); }
@@ -302,7 +302,7 @@ define( function() {
     'CnShiftTemplateModelFactory', 'CnSession', '$timeout',
     function( CnShiftTemplateModelFactory, CnSession, $timeout ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnShiftTemplateModelFactory.root;
@@ -339,7 +339,7 @@ define( function() {
     'CnShiftTemplateModelFactory', 'CnSession',
     function( CnShiftTemplateModelFactory, CnSession ) {
       return {
-        templateUrl: url + 'calendar.tpl.html',
+        templateUrl: module.url + 'calendar.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnShiftTemplateModelFactory.root;
@@ -355,7 +355,7 @@ define( function() {
     'CnShiftTemplateModelFactory',
     function( CnShiftTemplateModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnShiftTemplateModelFactory.root;
@@ -372,7 +372,7 @@ define( function() {
     'CnShiftTemplateModelFactory', '$timeout',
     function( CnShiftTemplateModelFactory, $timeout ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnShiftTemplateModelFactory.root;
@@ -516,7 +516,7 @@ define( function() {
               CnSession, $state ) {
       var object = function( root ) {
         var self = this;
-        var module = cenozoApp.module( 'shift_template' );
+        var module = module;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnShiftTemplateAddFactory.instance( this );
         this.calendarModel = CnShiftTemplateCalendarFactory.instance( this );

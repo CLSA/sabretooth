@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'queue', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'queue' ), {
+  try { var module = cenozoApp.module( 'queue', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: { column: 'name' },
     name: {
       singular: 'queue',
@@ -27,7 +27,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'queue' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     rank: {
       title: 'Rank',
       type: 'rank',
@@ -50,7 +50,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'queue' ).addExtraOperation( 'view', 'View Queue Tree', function( viewModel, $state ) {
+  module.addExtraOperation( 'view', 'View Queue Tree', function( viewModel, $state ) {
     $state.go( 'queue.tree' );
   } );
 
@@ -59,7 +59,7 @@ define( function() {
     'CnQueueModelFactory',
     function( CnQueueModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnQueueModelFactory.root;
@@ -76,7 +76,7 @@ define( function() {
     'CnQueueTreeFactory', 'CnSession',
     function( CnQueueTreeFactory, CnSession ) {
       return {
-        templateUrl: url + 'tree.tpl.html',
+        templateUrl: module.url + 'tree.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.isLoading = false;
@@ -101,7 +101,7 @@ define( function() {
     'CnQueueModelFactory',
     function( CnQueueModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnQueueModelFactory.root;
@@ -147,7 +147,7 @@ define( function() {
     function( CnBaseModelFactory, CnQueueListFactory, CnQueueViewFactory ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'queue' ) );
+        CnBaseModelFactory.construct( this, module );
         this.listModel = CnQueueListFactory.instance( this );
         this.viewModel = CnQueueViewFactory.instance( this, root );
       };

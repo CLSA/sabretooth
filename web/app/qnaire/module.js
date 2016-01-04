@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'qnaire', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'qnaire' ), {
+  try { var module = cenozoApp.module( 'qnaire', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: { column: 'rank' },
     name: {
       singular: 'questionnaire',
@@ -30,7 +30,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'qnaire' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     rank: {
       column: 'qnaire.rank',
       title: 'Rank',
@@ -55,7 +55,7 @@ define( function() {
     'CnQnaireModelFactory',
     function( CnQnaireModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnQnaireModelFactory.root;
@@ -73,7 +73,7 @@ define( function() {
     'CnQnaireModelFactory',
     function( CnQnaireModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnQnaireModelFactory.root;
@@ -90,7 +90,7 @@ define( function() {
     'CnQnaireModelFactory',
     function( CnQnaireModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnQnaireModelFactory.root;
@@ -147,7 +147,7 @@ define( function() {
               CnSession, CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'qnaire' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnQnaireAddFactory.instance( this );
         this.listModel = CnQnaireListFactory.instance( this );
         this.viewModel = CnQnaireViewFactory.instance( this, root );

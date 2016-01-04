@@ -2,8 +2,8 @@
 define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'assignment', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'assignment' ), {
+  try { var module = cenozoApp.module( 'assignment', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {
       parent: {
         subject: 'interview',
@@ -43,7 +43,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
     }
   } );
 
-  cenozoApp.module( 'assignment' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     participant: {
       column: 'participant.uid',
       title: 'Participant',
@@ -94,7 +94,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
     'CnAssignmentHomeFactory',
     function( CnAssignmentHomeFactory ) {
       return {
-        templateUrl: url + 'home.tpl.html',
+        templateUrl: module.url + 'home.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnAssignmentHomeFactory.instance();
@@ -109,7 +109,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
     'CnAssignmentModelFactory',
     function( CnAssignmentModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnAssignmentModelFactory.root;
@@ -126,7 +126,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
     'CnAssignmentModelFactory',
     function( CnAssignmentModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnAssignmentModelFactory.root;
@@ -164,7 +164,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
     function( $state, CnBaseModelFactory, CnAssignmentListFactory, CnAssignmentViewFactory ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'assignment' ) );
+        CnBaseModelFactory.construct( this, module );
         this.listModel = CnAssignmentListFactory.instance( this );
         this.viewModel = CnAssignmentViewFactory.instance( this, root );
       };

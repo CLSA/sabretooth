@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'appointment', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'appointment' ), {
+  try { var module = cenozoApp.module( 'appointment', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {
       parent: {
         subject: 'interview',
@@ -52,7 +52,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'appointment' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     datetime: {
       title: 'Date & Time',
       type: 'datetime',
@@ -114,7 +114,7 @@ define( function() {
     'CnAppointmentModelFactory',
     function( CnAppointmentModelFactory ) {
       return {
-        templateUrl: url + 'add.tpl.html',
+        templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnAppointmentModelFactory.root;
@@ -132,7 +132,7 @@ define( function() {
     'CnAppointmentModelFactory',
     function( CnAppointmentModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnAppointmentModelFactory.root;
@@ -149,7 +149,7 @@ define( function() {
     'CnAppointmentModelFactory',
     function( CnAppointmentModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnAppointmentModelFactory.root;
@@ -217,7 +217,7 @@ define( function() {
               CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'appointment' ) );
+        CnBaseModelFactory.construct( this, module );
         this.addModel = CnAppointmentAddFactory.instance( this );
         this.listModel = CnAppointmentListFactory.instance( this );
         this.viewModel = CnAppointmentViewFactory.instance( this, root );

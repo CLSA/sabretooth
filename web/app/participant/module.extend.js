@@ -1,7 +1,8 @@
 // extend the framework's module
-var module = cenozoApp.module( 'participant' );
-define( [ module.url + 'module.js' ], function() {
+define( [ cenozoApp.module( 'participant' ).url + 'module.js' ], function() {
+  'use strict';
 
+  var module = cenozoApp.module( 'participant' );
   module.addInputGroup( 'Queue Details', {
     title: {
       title: 'Current Questionnaire',

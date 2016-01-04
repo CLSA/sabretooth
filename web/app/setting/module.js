@@ -1,8 +1,8 @@
 define( function() {
   'use strict';
 
-  try { var url = cenozoApp.module( 'setting', true ).url; } catch( err ) { console.warn( err ); return; }
-  angular.extend( cenozoApp.module( 'setting' ), {
+  try { var module = cenozoApp.module( 'setting', true ); } catch( err ) { console.warn( err ); return; }
+  angular.extend( module, {
     identifier: {
       parent: {
         subject: 'site',
@@ -56,7 +56,7 @@ define( function() {
     }
   } );
 
-  cenozoApp.module( 'setting' ).addInputGroup( null, {
+  module.addInputGroup( null, {
     site: {
       column: 'site.name',
       title: 'Site',
@@ -162,7 +162,7 @@ define( function() {
     'CnSettingModelFactory',
     function( CnSettingModelFactory ) {
       return {
-        templateUrl: url + 'list.tpl.html',
+        templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnSettingModelFactory.root;
@@ -179,7 +179,7 @@ define( function() {
     'CnSettingModelFactory',
     function( CnSettingModelFactory ) {
       return {
-        templateUrl: url + 'view.tpl.html',
+        templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnSettingModelFactory.root;
@@ -217,7 +217,7 @@ define( function() {
     function( $state, CnBaseModelFactory, CnSettingListFactory, CnSettingViewFactory ) {
       var object = function( root ) {
         var self = this;
-        CnBaseModelFactory.construct( this, cenozoApp.module( 'setting' ) );
+        CnBaseModelFactory.construct( this, module );
         this.listModel = CnSettingListFactory.instance( this );
         this.viewModel = CnSettingViewFactory.instance( this, root );
       };
