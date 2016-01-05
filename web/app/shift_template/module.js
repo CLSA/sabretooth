@@ -322,13 +322,13 @@ define( cenozoApp.module( 'shift' ).getRequiredFiles().concat(
           $scope.model = CnShiftTemplateModelFactory.root;
           $scope.record = {};
           $scope.model.addModel.onNew( $scope.record ).then( function() {
-            if( null != $scope.model.addModel.calendarStartDate ) {
+            if( null != $scope.model.addModel.calendarDate ) {
               var addDirective = $scope.$$childHead;
               // set the start date in the record and formatted record
-              $scope.record.start_date = moment( $scope.model.addModel.calendarStartDate ).format();
+              $scope.record.start_date = moment( $scope.model.addModel.calendarDate ).format();
               addDirective.formattedRecord.start_date = CnSession.formatValue(
-                $scope.model.addModel.calendarStartDate, 'date', true );
-              $scope.model.addModel.calendarStartDate = null;
+                $scope.model.addModel.calendarDate, 'date', true );
+              $scope.model.addModel.calendarDate = null;
             }
             $scope.model.setupBreadcrumbTrail( 'add' );
           } );
@@ -437,7 +437,7 @@ define( cenozoApp.module( 'shift' ).getRequiredFiles().concat(
         CnBaseAddFactory.construct( this, parentModel );
 
         // used to communicate that a new shift template is being added from the calendar
-        this.calendarStartDate = null;
+        this.calendarDate = null;
 
         // add the new shift template's events to the calendar cache
         this.onAdd = function( record ) {
