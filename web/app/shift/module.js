@@ -1,4 +1,6 @@
-define( cenozoApp.module( 'shift_template' ).getRequiredFiles().concat(
+define( [].concat(
+          cenozoApp.module( 'appointment' ).getRequiredFiles(),
+          cenozoApp.module( 'shift_template' ).getRequiredFiles(),
           cenozoApp.module( 'site_shift' ).getRequiredFiles()
         ), function() {
   'use strict';
@@ -78,13 +80,26 @@ define( cenozoApp.module( 'shift_template' ).getRequiredFiles().concat(
 
   module.addExtraOperation(
     'calendar',
-    'Shift Template Calendar',
+    'Appointment',
+    function( calendarModel, $state ) { $state.go( 'appointment.calendar' ); }
+  );
+
+  module.addExtraOperation(
+    'calendar',
+    'Shift',
+    function( calendarModel, $state ) { $state.go( 'shift.calendar' ); },
+    true // disabled
+  );
+
+  module.addExtraOperation(
+    'calendar',
+    'Shift Template',
     function( calendarModel, $state ) { $state.go( 'shift_template.calendar' ); }
   );
 
   module.addExtraOperation(
     'calendar',
-    'Site Calendar',
+    'Availability',
     function( calendarModel, $state ) { $state.go( 'site_shift.calendar' ); }
   );
 
@@ -105,13 +120,13 @@ define( cenozoApp.module( 'shift_template' ).getRequiredFiles().concat(
           $scope.model = CnShiftModelFactory.root;
           $scope.record = {};
           $scope.model.addModel.onNew( $scope.record ).then( function() {
-            if( null != $scope.model.addModel.calendarDate ) {
+            if( angular.isDefined( $scope.model.addModel.calendarDate ) ) {
               var addDirective = $scope.$$childHead;
               // set the start date in the record and formatted record
               $scope.record.start_datetime = moment( $scope.model.addModel.calendarDate ).format();
               addDirective.formattedRecord.start_datetime = CnSession.formatValue(
                 $scope.model.addModel.calendarDate, 'datetime', true );
-              $scope.model.addModel.calendarDate = null;
+              delete $scope.model.addModel.calendarDate;
             }
             $scope.model.setupBreadcrumbTrail( 'add' );
           } );
@@ -122,8 +137,10 @@ define( cenozoApp.module( 'shift_template' ).getRequiredFiles().concat(
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnShiftCalendar', [
-    'CnShiftModelFactory', 'CnShiftTemplateModelFactory', 'CnSiteShiftModelFactory',
-    function( CnShiftModelFactory, CnShiftTemplateModelFactory, CnSiteShiftModelFactory ) {
+    'CnShiftModelFactory',
+    'CnAppointmentModelFactory', 'CnShiftTemplateModelFactory', 'CnSiteShiftModelFactory',
+    function( CnShiftModelFactory,
+              CnAppointmentModelFactory, CnShiftTemplateModelFactory, CnSiteShiftModelFactory ) {
       return {
         templateUrl: module.url + 'calendar.tpl.html',
         restrict: 'E',
@@ -132,8 +149,11 @@ define( cenozoApp.module( 'shift_template' ).getRequiredFiles().concat(
           $scope.model.setupBreadcrumbTrail( 'calendar' );
         },
         link: function( scope ) {
-          // synchronize shift and site_shift calendar date and view
+          // synchronize appointment, shift, shift_template and site_shift calendars
           scope.$watch( 'model.calendarModel.currentDate', function( date ) {
+            var appointmentCalendarModel = CnAppointmentModelFactory.root.calendarModel;
+            if( !appointmentCalendarModel.currentDate.isSame( date, 'day' ) )
+              appointmentCalendarModel.currentDate = date;
             var shiftTemplateCalendarModel = CnShiftTemplateModelFactory.root.calendarModel;
             if( !shiftTemplateCalendarModel.currentDate.isSame( date, 'day' ) )
               shiftTemplateCalendarModel.currentDate = date;
@@ -142,6 +162,9 @@ define( cenozoApp.module( 'shift_template' ).getRequiredFiles().concat(
               siteShiftCalendarModel.currentDate = date;
           } );
           scope.$watch( 'model.calendarModel.currentView', function( view ) {
+            var appointmentCalendarModel = CnAppointmentModelFactory.root.calendarModel;
+            if( appointmentCalendarModel.currentView != view )
+              appointmentCalendarModel.currentView = view;
             var shiftTemplateCalendarModel = CnShiftTemplateModelFactory.root.calendarModel;
             if( shiftTemplateCalendarModel.currentView != view )
               shiftTemplateCalendarModel.currentView = view;
@@ -195,9 +218,6 @@ define( cenozoApp.module( 'shift_template' ).getRequiredFiles().concat(
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
-
-        // used to communicate that a new shift is being added from the calendar
-        this.calendarDate = null;
 
         // add the new shift's events to the calendar cache
         this.onAdd = function( record ) {
@@ -298,11 +318,9 @@ define( cenozoApp.module( 'shift_template' ).getRequiredFiles().concat(
     'CnBaseModelFactory',
     'CnShiftAddFactory', 'CnShiftCalendarFactory',
     'CnShiftListFactory', 'CnShiftViewFactory',
-    '$state',
     function( CnBaseModelFactory,
               CnShiftAddFactory, CnShiftCalendarFactory,
-              CnShiftListFactory, CnShiftViewFactory,
-              $state ) {
+              CnShiftListFactory, CnShiftViewFactory ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -313,7 +331,11 @@ define( cenozoApp.module( 'shift_template' ).getRequiredFiles().concat(
 
         // We must override the getServiceCollectionPath function to ignore parent identifiers so that it
         // can be used by the site_shift module
-        this.getServiceCollectionPath = function() { return 'shift'; }
+        this.getServiceCollectionPath = function() {
+          var path = this.$$getServiceCollectionPath();
+          if( 'site_shift' == path.substring( 0, 10 ) ) path = 'shift';
+          return path;
+        };
       };
 
       return {

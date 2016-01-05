@@ -104,6 +104,7 @@ class ui extends \cenozo\ui\ui
         'action' => 'view',
         'identifier' => sprintf( 'name=%s', $db_site->name ) );
     if( !$db_role->all_sites ) {
+      $list['Appointment Calendar'] = array( 'subject' => 'appointment', 'action' => 'calendar' );
       $list['Shift Calendar'] = array( 'subject' => 'shift', 'action' => 'calendar' );
       $list['Shift Template Calendar'] = array( 'subject' => 'shift_template', 'action' => 'calendar' );
       $list['Site Calendar'] = array( 'subject' => 'site_shift', 'action' => 'calendar' );

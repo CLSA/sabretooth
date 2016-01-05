@@ -1,4 +1,6 @@
-define( cenozoApp.module( 'shift' ).getRequiredFiles().concat(
+define( [].concat(
+          cenozoApp.module( 'appointment' ).getRequiredFiles(),
+          cenozoApp.module( 'shift' ).getRequiredFiles(),
           cenozoApp.module( 'site_shift' ).getRequiredFiles()
         ), function() {
   'use strict';
@@ -98,13 +100,26 @@ define( cenozoApp.module( 'shift' ).getRequiredFiles().concat(
 
   module.addExtraOperation(
     'calendar',
-    'Shift Calendar',
+    'Appointment',
+    function( calendarModel, $state ) { $state.go( 'appointment.calendar' ); }
+  );
+
+  module.addExtraOperation(
+    'calendar',
+    'Shift',
     function( calendarModel, $state ) { $state.go( 'shift.calendar' ); }
   );
 
   module.addExtraOperation(
     'calendar',
-    'Site Calendar',
+    'Shift Template',
+    function( calendarModel, $state ) { $state.go( 'shift_template.calendar' ); },
+    true // disabled
+  );
+
+  module.addExtraOperation(
+    'calendar',
+    'Availability',
     function( calendarModel, $state ) { $state.go( 'site_shift.calendar' ); }
   );
 
@@ -322,13 +337,13 @@ define( cenozoApp.module( 'shift' ).getRequiredFiles().concat(
           $scope.model = CnShiftTemplateModelFactory.root;
           $scope.record = {};
           $scope.model.addModel.onNew( $scope.record ).then( function() {
-            if( null != $scope.model.addModel.calendarDate ) {
+            if( angular.isDefined( $scope.model.addModel.calendarDate ) ) {
               var addDirective = $scope.$$childHead;
               // set the start date in the record and formatted record
               $scope.record.start_date = moment( $scope.model.addModel.calendarDate ).format();
               addDirective.formattedRecord.start_date = CnSession.formatValue(
                 $scope.model.addModel.calendarDate, 'date', true );
-              $scope.model.addModel.calendarDate = null;
+              delete $scope.model.addModel.calendarDate;
             }
             $scope.model.setupBreadcrumbTrail( 'add' );
           } );
@@ -350,8 +365,10 @@ define( cenozoApp.module( 'shift' ).getRequiredFiles().concat(
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnShiftTemplateCalendar', [
-    'CnShiftTemplateModelFactory', 'CnShiftModelFactory', 'CnSiteShiftModelFactory', 'CnSession',
-    function( CnShiftTemplateModelFactory, CnShiftModelFactory, CnSiteShiftModelFactory, CnSession ) {
+    'CnShiftTemplateModelFactory',
+    'CnAppointmentModelFactory', 'CnShiftModelFactory', 'CnSiteShiftModelFactory', 'CnSession',
+    function( CnShiftTemplateModelFactory,
+              CnAppointmentModelFactory, CnShiftModelFactory, CnSiteShiftModelFactory, CnSession ) {
       return {
         templateUrl: module.url + 'calendar.tpl.html',
         restrict: 'E',
@@ -361,8 +378,11 @@ define( cenozoApp.module( 'shift' ).getRequiredFiles().concat(
           $scope.model.setupBreadcrumbTrail( 'calendar' );
         },
         link: function( scope ) {
-          // synchronize shift and site_shift calendar date and view
+          // synchronize appointment, shift, shift_template and site_shift calendars
           scope.$watch( 'model.calendarModel.currentDate', function( date ) {
+            var appointmentCalendarModel = CnAppointmentModelFactory.root.calendarModel;
+            if( !appointmentCalendarModel.currentDate.isSame( date, 'day' ) )
+              appointmentCalendarModel.currentDate = date;
             var shiftCalendarModel = CnShiftModelFactory.root.calendarModel;
             if( !shiftCalendarModel.currentDate.isSame( date, 'day' ) )
               shiftCalendarModel.currentDate = date;
@@ -371,6 +391,9 @@ define( cenozoApp.module( 'shift' ).getRequiredFiles().concat(
               siteShiftCalendarModel.currentDate = date;
           } );
           scope.$watch( 'model.calendarModel.currentView', function( view ) {
+            var appointmentCalendarModel = CnAppointmentModelFactory.root.calendarModel;
+            if( appointmentCalendarModel.currentView != view )
+              appointmentCalendarModel.currentView = view;
             var shiftCalendarModel = CnShiftModelFactory.root.calendarModel;
             if( shiftCalendarModel.currentView != view )
               shiftCalendarModel.currentView = view;
@@ -435,9 +458,6 @@ define( cenozoApp.module( 'shift' ).getRequiredFiles().concat(
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
-
-        // used to communicate that a new shift template is being added from the calendar
-        this.calendarDate = null;
 
         // add the new shift template's events to the calendar cache
         this.onAdd = function( record ) {
@@ -542,11 +562,11 @@ define( cenozoApp.module( 'shift' ).getRequiredFiles().concat(
     'CnBaseModelFactory',
     'CnShiftTemplateAddFactory', 'CnShiftTemplateCalendarFactory',
     'CnShiftTemplateListFactory', 'CnShiftTemplateViewFactory',
-    'CnSession', '$state',
+    'CnSession',
     function( CnBaseModelFactory,
               CnShiftTemplateAddFactory, CnShiftTemplateCalendarFactory,
               CnShiftTemplateListFactory, CnShiftTemplateViewFactory,
-              CnSession, $state ) {
+              CnSession ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -557,7 +577,11 @@ define( cenozoApp.module( 'shift' ).getRequiredFiles().concat(
 
         // We must override the getServiceCollectionPath function to ignore parent identifiers so that it
         // can be used by the site_shift module
-        this.getServiceCollectionPath = function() { return 'shift_template'; }
+        this.getServiceCollectionPath = function() {
+          var path = this.$$getServiceCollectionPath();
+          if( 'site_shift' == path.substring( 0, 10 ) ) path = 'shift_template';
+          return path;
+        };
         
         // add additional details to some of the help text
         CnSession.promise.then( function() {

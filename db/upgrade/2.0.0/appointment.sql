@@ -40,11 +40,11 @@ DROP PROCEDURE IF EXISTS patch_appointment;
       -- delete any remaining appointments which didn't have an interview
       DELETE FROM appointment WHERE interview_id = 0;
 
-      -- delete any appointments which are for a completed interview which is for the last qnaire
+      -- delete any unassigned appointments which are for a completed interview which is for the last qnaire
       SET @last_qnaire_id = ( SELECT id FROM qnaire WHERE rank = ( SELECT MAX( rank ) FROM qnaire ) );
-      DELETE FROM appointment WHERE interview_id IN (
-        SELECT id FROM interview WHERE qnaire_id = @last_qnaire_id
-      );
+      DELETE FROM appointment
+      WHERE assignment_id IS NULL
+      AND interview_id IN ( SELECT id FROM interview WHERE qnaire_id = @last_qnaire_id );
 
       -- determine which appointments are for completed interviews whose qnaire is not the last
       -- and whose next interview doesn't yet exist

@@ -51,6 +51,13 @@ class module extends \cenozo\service\module
 
     $session = lib::create( 'business\session' );
 
+    // restrict by date, if requested
+    $min_date = $this->get_argument( 'min_date', NULL );
+    $max_date = $this->get_argument( 'max_date', NULL );
+
+    if( !is_null( $min_date ) ) $modifier->where( 'DATE( datetime )', '>=', $min_date );
+    if( !is_null( $max_date ) ) $modifier->where( 'DATE( datetime )', '<=', $max_date );
+
     // include the user first/last/name as supplemental data
     $modifier->left_join( 'user', 'appointment.user_id', 'user.id' );
     $select->add_column(
@@ -58,20 +65,24 @@ class module extends \cenozo\service\module
       'formatted_user_id',
       false );
 
-    if( $select->has_table_columns( 'participant' ) )
-    {
-      $modifier->join( 'interview', 'appointment.interview_id', 'interview.id' );
-      $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
-    }
+    // include the participant uid and interview's qnaire rank as supplemental data
+    $modifier->join( 'interview', 'appointment.interview_id', 'interview.id' );
+    $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
+    $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
+    $select->add_table_column( 'participant', 'uid' );
+    $select->add_table_column( 'qnaire', 'rank', 'qnaire_rank' );
 
-    if( $select->has_table_columns( 'qnaire' ) || $select->has_table_columns( 'script' ) )
-    {
-      if( !$modifier->has_join( 'interview' ) )
-        $modifier->join( 'interview', 'appointment.interview_id', 'interview.id' );
-      $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
-      if( $select->has_table_columns( 'script' ) )
-        $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
-    }
+    // always restrict to the role's site
+    $participant_site_join_mod = lib::create( 'database\modifier' );
+    $participant_site_join_mod->where(
+      'interview.participant_id', '=', 'participant_site.participant_id', false );
+    $participant_site_join_mod->where(
+      'participant_site.application_id', '=', $session->get_application()->id );
+    $modifier->join_modifier( 'participant_site', $participant_site_join_mod, 'left' );
+    $modifier->where( 'participant_site.site_id', '=', $session->get_site()->id );
+
+    if( $select->has_table_columns( 'script' ) )
+      $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
 
     if( $select->has_table_columns( 'assignment_user' ) )
     {
@@ -90,14 +101,6 @@ class module extends \cenozo\service\module
     {
       if( !$modifier->has_join( 'assignment' ) )
         $modifier->left_join( 'assignment', 'appointment.assignment_id', 'assignment.id' );
-      if( !$modifier->has_join( 'interview' ) )
-        $modifier->join( 'interview', 'appointment.interview_id', 'interview.id' );
-      $participant_site_join_mod = lib::create( 'database\modifier' );
-      $participant_site_join_mod->where(
-        'interview.participant_id', '=', 'participant_site.participant_id', false );
-      $participant_site_join_mod->where(
-        'participant_site.application_id', '=', $session->get_application()->id );
-      $modifier->join_modifier( 'participant_site', $participant_site_join_mod, 'left' );
       $modifier->left_join( 'setting', 'participant_site.site_id', 'setting.site_id' );
 
       $phone_call_join_mod = lib::create( 'database\modifier' );
