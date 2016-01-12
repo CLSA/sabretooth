@@ -98,16 +98,46 @@ class ui extends \cenozo\ui\ui
       $list['Assignment Home'] = array( 'subject' => 'assignment', 'action' => 'home' );
     if( 2 <= $db_role->tier )
       $list['Queue Tree'] = array( 'subject' => 'queue', 'action' => 'tree' );
-    if( true ) // TODO: supervisors only?
+    if( !$db_role->all_sites && 1 < $db_role->tier )
+    {
       $list['Site Details'] = array(
         'subject' => 'site',
         'action' => 'view',
         'identifier' => sprintf( 'name=%s', $db_site->name ) );
-    if( !$db_role->all_sites ) {
+    }
+    if( !$db_role->all_sites )
+    {
       $list['Appointment Calendar'] = array( 'subject' => 'appointment', 'action' => 'calendar' );
-      $list['Shift Calendar'] = array( 'subject' => 'shift', 'action' => 'calendar' );
-      $list['Shift Template Calendar'] = array( 'subject' => 'shift_template', 'action' => 'calendar' );
-      $list['Site Calendar'] = array( 'subject' => 'site_shift', 'action' => 'calendar' );
+
+      if( 1 == $db_role->tier )
+      {
+        $list['Availability Calendar'] = array( 'subject' => 'availability', 'action' => 'calendar' );
+      }
+      else
+      {
+        $list['Capacity Calendar'] = array( 'subject' => 'capacity', 'action' => 'calendar' );
+        $list['Shift Calendar'] = array( 'subject' => 'shift', 'action' => 'calendar' );
+        $list['Shift Template Calendar'] = array( 'subject' => 'shift_template', 'action' => 'calendar' );
+      }
+    }
+
+    return $list;
+  }
+
+  /**
+   * Extends the parent method
+   */
+  protected function get_auxiliary_items()
+  {
+    $list = parent::get_auxiliary_items();
+
+    $db_role = lib::create( 'business\session' )->get_role();
+
+    // the availability and capacity calenders need one another
+    if( !$db_role->all_sites )
+    {
+      $list[] = 'availability';
+      $list[] = 'capacity';
     }
 
     return $list;

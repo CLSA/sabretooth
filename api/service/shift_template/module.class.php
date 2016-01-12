@@ -12,8 +12,19 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * Performs operations which effect how this module is used in a service
  */
-class module extends \cenozo\service\module
+class module extends \sabretooth\service\base_calendar_module
 {
+  /**
+   * Contructor
+   */
+  public function __construct( $index, $service )
+  {
+    parent::__construct( $index, $service );
+    // lower-end_date and upper-start_date are purposefully backward
+    $this->lower_date = array( 'null' => false, 'column' => 'end_date' );
+    $this->upper_date = array( 'null' => true, 'column' => 'start_date' );
+  }
+
   /**
    * Extend parent method
    */
@@ -21,16 +32,7 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
-    // restrict by date, if requested
-    $min_date = $this->get_argument( 'min_date', NULL );
-    $max_date = $this->get_argument( 'max_date', NULL );
-
-    if( !is_null( $min_date ) )
-      $modifier->where( sprintf( 'IFNULL( end_date, "%s" )', $min_date ), '>=', $min_date );
-    if( !is_null( $max_date ) )
-      $modifier->where( 'start_date', '<=', $max_date );
-
-    // only show shift templates for the user's current site
+    // only show shifts for the user's current site
     $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
 
     if( $select->has_column( 'week' ) )

@@ -12,8 +12,18 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * Performs operations which effect how this module is used in a service
  */
-class module extends \cenozo\service\module
+class module extends \sabretooth\service\base_calendar_module
 {
+  /**
+   * Contructor
+   */
+  public function __construct( $index, $service )
+  {
+    parent::__construct( $index, $service );
+    $this->lower_date = array( 'null' => false, 'column' => 'DATE( datetime )' );
+    $this->upper_date = array( 'null' => false, 'column' => 'DATE( datetime )' );
+  }
+
   /**
    * Extend parent method
    */
@@ -50,13 +60,6 @@ class module extends \cenozo\service\module
     parent::prepare_read( $select, $modifier );
 
     $session = lib::create( 'business\session' );
-
-    // restrict by date, if requested
-    $min_date = $this->get_argument( 'min_date', NULL );
-    $max_date = $this->get_argument( 'max_date', NULL );
-
-    if( !is_null( $min_date ) ) $modifier->where( 'DATE( datetime )', '>=', $min_date );
-    if( !is_null( $max_date ) ) $modifier->where( 'DATE( datetime )', '<=', $max_date );
 
     // include the user first/last/name as supplemental data
     $modifier->left_join( 'user', 'appointment.user_id', 'user.id' );

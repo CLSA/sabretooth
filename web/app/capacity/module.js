@@ -1,18 +1,16 @@
-define( [].concat(
-          cenozoApp.module( 'appointment' ).getRequiredFiles(),
-          cenozoApp.module( 'shift' ).getRequiredFiles(),
-          cenozoApp.module( 'shift_template' ).getRequiredFiles()
-        ), function() {
+define( [ 'appointment', 'availability', 'shift', 'shift_template' ].reduce( function( list, name ) {
+  return list.concat( cenozoApp.module( name ).getRequiredFiles() );
+}, [] ), function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'site_shift', true ); } catch( err ) { console.warn( err ); return; }
+  try { var module = cenozoApp.module( 'capacity', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {},
     name: {
-      singular: 'site shift',
-      plural: 'site shifts',
-      possessive: 'site shift\'s',
-      pluralPossessive: 'site shifts\''
+      singular: 'capacity',
+      plural: 'capacities',
+      possessive: 'capacity\'s',
+      pluralPossessive: 'capacities\''
     }
   } );
 
@@ -113,70 +111,60 @@ define( [].concat(
     return slots;
   }
 
-  module.addExtraOperation(
-    'calendar',
-    'Appointment',
-    function( calendarModel, $state ) { $state.go( 'appointment.calendar' ); }
-  );
-
-  module.addExtraOperation(
-    'calendar',
-    'Shift',
-    function( calendarModel, $state ) { $state.go( 'shift.calendar' ); }
-  );
-
-  module.addExtraOperation(
-    'calendar',
-    'Shift Template',
-    function( calendarModel, $state ) { $state.go( 'shift_template.calendar' ); }
-  );
-
-  module.addExtraOperation(
-    'calendar',
-    'Availability',
-    function( calendarModel, $state ) { $state.go( 'site_shift.calendar' ); },
-    true // disabled
-  );
+  // add an extra operation for each of the appointment-based calendars the user has access to
+  [ 'appointment', 'availability', 'capacity', 'shift', 'shift_template' ].forEach( function( name ) {
+    var calendarModule = cenozoApp.module( name );
+    if( -1 < calendarModule.actions.indexOf( 'calendar' ) ) {
+      module.addExtraOperation(
+        'calendar',
+        calendarModule.subject.snake.replace( "_", " " ).ucWords(),
+        function( $state ) { $state.go( name + '.calendar' ); },
+        'capacity' == name ? 'btn-warning' : undefined // highlight current model
+      );
+    }
+  } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSiteShiftCalendar', [
-    'CnSiteShiftModelFactory',
-    'CnAppointmentModelFactory', 'CnShiftModelFactory', 'CnShiftTemplateModelFactory',
-    'CnSession',
-    function( CnSiteShiftModelFactory,
-              CnAppointmentModelFactory, CnShiftModelFactory, CnShiftTemplateModelFactory,
-              CnSession ) {
+  cenozo.providers.directive( 'cnCapacityCalendar', [
+    'CnCapacityModelFactory',
+    'CnAppointmentModelFactory', 'CnAvailabilityModelFactory',
+    'CnShiftModelFactory', 'CnShiftTemplateModelFactory',
+    function( CnCapacityModelFactory,
+              CnAppointmentModelFactory, CnAvailabilityModelFactory,
+              CnShiftModelFactory, CnShiftTemplateModelFactory ) {
       return {
         templateUrl: module.url + 'calendar.tpl.html',
         restrict: 'E',
         controller: function( $scope ) {
-          $scope.model = CnSiteShiftModelFactory.root;
-          CnSession.promise.then( function() { $scope.timezone = CnSession.site.timezone; } );
+          $scope.model = CnCapacityModelFactory.root;
           $scope.model.setupBreadcrumbTrail( 'calendar' );
         },
         link: function( scope ) {
-          // synchronize appointment, shift, shift_template and site_shift calendars
+          // factory name -> object map used below
+          var factoryList = {
+            appointment: CnAppointmentModelFactory,
+            availability: CnAvailabilityModelFactory,
+            capacity: CnCapacityModelFactory,
+            shift: CnShiftModelFactory,
+            shift_template: CnShiftTemplateModelFactory
+          };
+
+          // synchronize appointment/shift-based calendars
           scope.$watch( 'model.calendarModel.currentDate', function( date ) {
-            var appointmentCalendarModel = CnAppointmentModelFactory.root.calendarModel;
-            if( !appointmentCalendarModel.currentDate.isSame( date, 'day' ) )
-              appointmentCalendarModel.currentDate = date;
-            var shiftCalendarModel = CnShiftModelFactory.root.calendarModel;
-            if( !shiftCalendarModel.currentDate.isSame( date, 'day' ) )
-              shiftCalendarModel.currentDate = date;
-            var shiftTemplateCalendarModel = CnShiftTemplateModelFactory.root.calendarModel;
-            if( !shiftTemplateCalendarModel.currentDate.isSame( date, 'day' ) )
-              shiftTemplateCalendarModel.currentDate = date;
+            Object.keys( factoryList ).filter( function( name ) {
+              return -1 < cenozoApp.moduleList[name].actions.indexOf( 'calendar' );
+            } ).forEach( function( name ) {
+               var calendarModel = factoryList[name].root.calendarModel;
+               if( !calendarModel.currentDate.isSame( date, 'day' ) ) calendarModel.currentDate = date;
+            } );
           } );
           scope.$watch( 'model.calendarModel.currentView', function( view ) {
-            var appointmentCalendarModel = CnAppointmentModelFactory.root.calendarModel;
-            if( appointmentCalendarModel.currentView != view )
-              appointmentCalendarModel.currentView = view;
-            var shiftCalendarModel = CnShiftModelFactory.root.calendarModel;
-            if( shiftCalendarModel.currentView != view )
-              shiftCalendarModel.currentView = view;
-            var shiftTemplateCalendarModel = CnShiftTemplateModelFactory.root.calendarModel;
-            if( shiftTemplateCalendarModel.currentView != view )
-              shiftTemplateCalendarModel.currentView = view;
+            Object.keys( factoryList ).filter( function( name ) {
+              return -1 < cenozoApp.moduleList[name].actions.indexOf( 'calendar' );
+            } ).forEach( function( name ) {
+               var calendarModel = factoryList[name].root.calendarModel;
+               if( calendarModel.currentView != view ) calendarModel.currentView = view;
+            } );
           } );
         }
       };
@@ -184,7 +172,7 @@ define( [].concat(
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnSiteShiftCalendarFactory', [
+  cenozo.providers.factory( 'CnCapacityCalendarFactory', [
     'CnBaseCalendarFactory',
     'CnAppointmentModelFactory', 'CnShiftModelFactory', 'CnShiftTemplateModelFactory',
     'CnSession', '$q',
@@ -273,13 +261,13 @@ define( [].concat(
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnSiteShiftModelFactory', [
-    'CnBaseModelFactory', 'CnSiteShiftCalendarFactory', 'CnSession',
-    function( CnBaseModelFactory, CnSiteShiftCalendarFactory, CnSession ) {
+  cenozo.providers.factory( 'CnCapacityModelFactory', [
+    'CnBaseModelFactory', 'CnCapacityCalendarFactory', 'CnSession',
+    function( CnBaseModelFactory, CnCapacityCalendarFactory, CnSession ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
-        this.calendarModel = CnSiteShiftCalendarFactory.instance( this );
+        this.calendarModel = CnCapacityCalendarFactory.instance( this );
       };
 
       return {

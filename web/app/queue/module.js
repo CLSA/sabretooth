@@ -50,9 +50,7 @@ define( function() {
     }
   } );
 
-  module.addExtraOperation( 'view', 'View Queue Tree', function( viewModel, $state ) {
-    $state.go( 'queue.tree' );
-  } );
+  module.addExtraOperation( 'view', 'View Queue Tree', function( $state ) { $state.go( 'queue.tree' ); } );
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnQueueList', [

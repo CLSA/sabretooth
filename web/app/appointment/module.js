@@ -1,8 +1,6 @@
-define( [].concat(
-          cenozoApp.module( 'shift' ).getRequiredFiles(),
-          cenozoApp.module( 'shift_template' ).getRequiredFiles(),
-          cenozoApp.module( 'site_shift' ).getRequiredFiles()
-        ), function() {
+define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( function( list, name ) {
+  return list.concat( cenozoApp.module( name ).getRequiredFiles() );
+}, [] ), function() {
   'use strict';
 
   try { var module = cenozoApp.module( 'appointment', true ); } catch( err ) { console.warn( err ); return; }
@@ -113,30 +111,18 @@ define( [].concat(
     }
   } );
 
-  module.addExtraOperation(
-    'calendar',
-    'Appointment',
-    function( calendarModel, $state ) { $state.go( 'appointment.calendar' ); },
-    true // disabled
-  );
-
-  module.addExtraOperation(
-    'calendar',
-    'Shift',
-    function( calendarModel, $state ) { $state.go( 'shift.calendar' ); }
-  );
-
-  module.addExtraOperation(
-    'calendar',
-    'Shift Template',
-    function( calendarModel, $state ) { $state.go( 'shift_template.calendar' ); }
-  );
-
-  module.addExtraOperation(
-    'calendar',
-    'Availability',
-    function( calendarModel, $state ) { $state.go( 'site_shift.calendar' ); }
-  );
+  // add an extra operation for each of the appointment-based calendars the user has access to
+  [ 'appointment', 'availability', 'capacity', 'shift', 'shift_template' ].forEach( function( name ) {
+    var calendarModule = cenozoApp.module( name );
+    if( -1 < calendarModule.actions.indexOf( 'calendar' ) ) {
+      module.addExtraOperation(
+        'calendar',
+        calendarModule.subject.snake.replace( "_", " " ).ucWords(),
+        function( $state ) { $state.go( name + '.calendar' ); },
+        'appointment' == name ? 'btn-warning' : undefined // highlight current model
+      );
+    }
+  } );
 
   // converts appointments into events
   function getEventFromAppointment( appointment, timezone, duration ) {
@@ -183,9 +169,11 @@ define( [].concat(
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAppointmentCalendar', [
     'CnAppointmentModelFactory',
-    'CnShiftModelFactory', 'CnShiftTemplateModelFactory', 'CnSiteShiftModelFactory',
+    'CnAvailabilityModelFactory', 'CnCapacityModelFactory',
+    'CnShiftModelFactory', 'CnShiftTemplateModelFactory',
     function( CnAppointmentModelFactory,
-              CnShiftModelFactory, CnShiftTemplateModelFactory, CnSiteShiftModelFactory ) {
+              CnAvailabilityModelFactory, CnCapacityModelFactory,
+              CnShiftModelFactory, CnShiftTemplateModelFactory ) {
       return {
         templateUrl: module.url + 'calendar.tpl.html',
         restrict: 'E',
@@ -194,28 +182,31 @@ define( [].concat(
           $scope.model.setupBreadcrumbTrail( 'calendar' );
         },
         link: function( scope ) {
-          // synchronize appointment, shift, shift_template and site_shift calendars
+          // factory name -> object map used below
+          var factoryList = {
+            appointment: CnAppointmentModelFactory,
+            availability: CnAvailabilityModelFactory,
+            capacity: CnCapacityModelFactory,
+            shift: CnShiftModelFactory,
+            shift_template: CnShiftTemplateModelFactory
+          };
+
+          // synchronize appointment/shift-based calendars
           scope.$watch( 'model.calendarModel.currentDate', function( date ) {
-            var shiftCalendarModel = CnShiftModelFactory.root.calendarModel;
-            if( !shiftCalendarModel.currentDate.isSame( date, 'day' ) )
-              shiftCalendarModel.currentDate = date;
-            var siteShiftCalendarModel = CnSiteShiftModelFactory.root.calendarModel;
-            if( !siteShiftCalendarModel.currentDate.isSame( date, 'day' ) )
-              siteShiftCalendarModel.currentDate = date;
-            var shiftTemplateCalendarModel = CnShiftTemplateModelFactory.root.calendarModel;
-            if( !shiftTemplateCalendarModel.currentDate.isSame( date, 'day' ) )
-              shiftTemplateCalendarModel.currentDate = date;
+            Object.keys( factoryList ).filter( function( name ) {
+              return -1 < cenozoApp.moduleList[name].actions.indexOf( 'calendar' );
+            } ).forEach( function( name ) {
+               var calendarModel = factoryList[name].root.calendarModel;
+               if( !calendarModel.currentDate.isSame( date, 'day' ) ) calendarModel.currentDate = date;
+            } );
           } );
           scope.$watch( 'model.calendarModel.currentView', function( view ) {
-            var shiftCalendarModel = CnShiftModelFactory.root.calendarModel;
-            if( shiftCalendarModel.currentView != view )
-              shiftCalendarModel.currentView = view;
-            var siteShiftCalendarModel = CnSiteShiftModelFactory.root.calendarModel;
-            if( siteShiftCalendarModel.currentView != view )
-              siteShiftCalendarModel.currentView = view;
-            var shiftTemplateCalendarModel = CnShiftTemplateModelFactory.root.calendarModel;
-            if( shiftTemplateCalendarModel.currentView != view )
-              shiftTemplateCalendarModel.currentView = view;
+            Object.keys( factoryList ).filter( function( name ) {
+              return -1 < cenozoApp.moduleList[name].actions.indexOf( 'calendar' );
+            } ).forEach( function( name ) {
+               var calendarModel = factoryList[name].root.calendarModel;
+               if( calendarModel.currentView != view ) calendarModel.currentView = view;
+            } );
           } );
         }
       };
@@ -397,10 +388,11 @@ define( [].concat(
         this.viewModel = CnAppointmentViewFactory.instance( this, root );
 
         // We must override the getServiceCollectionPath function to ignore parent identifiers so that it
-        // can be used by the site_shift module
+        // can be used by the capacity module
         this.getServiceCollectionPath = function() {
           var path = this.$$getServiceCollectionPath();
-          if( 'site_shift' == path.substring( 0, 10 ) ) path = 'appointment';
+          if( 'capacity' == path.substring( 0, 8 ) ||
+              'availability' == path.substring( 0, 12 ) ) path = 'appointment';
           return path;
         };
 

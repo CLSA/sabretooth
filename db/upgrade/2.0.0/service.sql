@@ -197,13 +197,12 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'queue_state', 'GET', 0, 1 ),
 ( 'queue_state', 'POST', 0, 1 ),
 ( 'shift', 'DELETE', 1, 1 ),
-( 'shift', 'GET', 0, 1 ),
+( 'shift', 'GET', 0, 0 ),
 ( 'shift', 'GET', 1, 1 ),
 ( 'shift', 'PATCH', 1, 1 ),
 ( 'shift', 'POST', 0, 1 ),
 ( 'shift_template', 'DELETE', 1, 1 ),
-( 'shift_template', 'GET', 0, 1 ),
+( 'shift_template', 'GET', 0, 0 ),
 ( 'shift_template', 'GET', 1, 1 ),
 ( 'shift_template', 'PATCH', 1, 1 ),
-( 'shift_template', 'POST', 0, 1 ),
-( 'site_shift', 'GET', 0, 1 );
+( 'shift_template', 'POST', 0, 1 );

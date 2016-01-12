@@ -12,21 +12,24 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * Performs operations which effect how this module is used in a service
  */
-class module extends \cenozo\service\module
+class module extends \sabretooth\service\base_calendar_module
 {
+  /**
+   * Contructor
+   */
+  public function __construct( $index, $service )
+  {
+    parent::__construct( $index, $service );
+    $this->lower_date = array( 'null' => false, 'column' => 'DATE( start_datetime )' );
+    $this->upper_date = array( 'null' => false, 'column' => 'DATE( end_datetime )' );
+  }
+
   /**
    * Extend parent method
    */
   public function prepare_read( $select, $modifier )
   {
     parent::prepare_read( $select, $modifier );
-
-    // restrict by date, if requested
-    $min_date = $this->get_argument( 'min_date', NULL );
-    $max_date = $this->get_argument( 'max_date', NULL );
-
-    if( !is_null( $min_date ) ) $modifier->where( 'DATE( end_datetime )', '>=', $min_date );
-    if( !is_null( $max_date ) ) $modifier->where( 'DATE( start_datetime )', '<=', $max_date );
 
     // only show shifts for the user's current site
     $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
