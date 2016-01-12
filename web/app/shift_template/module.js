@@ -166,9 +166,18 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
                                         .second( 0 )
                                         .millisecond( 0 );
 
-            if( shiftTemplate.sunday ) {
-              startDate.day( 0 );
-              endDate.day( 0 );
+            var dayList = [];
+            if( shiftTemplate.sunday ) dayList.push( 0 );
+            if( shiftTemplate.monday ) dayList.push( 1 );
+            if( shiftTemplate.tuesday ) dayList.push( 2 );
+            if( shiftTemplate.wednesday ) dayList.push( 3 );
+            if( shiftTemplate.thursday ) dayList.push( 4 );
+            if( shiftTemplate.friday ) dayList.push( 5 );
+            if( shiftTemplate.saturday ) dayList.push( 6 );
+
+            dayList.forEach( function( day ) {
+              startDate.day( day );
+              endDate.day( day );
               if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) &&
                   !startDate.isBefore( itemStartDate, 'day' ) && !startDate.isAfter( itemEndDate, 'day' ) ) {
                 eventList.push( angular.extend( {}, baseEvent, {
@@ -176,73 +185,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
                   end: moment( endDate )
                 } ) );
               }
-            }
-            if( shiftTemplate.monday ) {
-              startDate.day( 1 );
-              endDate.day( 1 );
-              if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) &&
-                  !startDate.isBefore( itemStartDate, 'day' ) && !startDate.isAfter( itemEndDate, 'day' ) ) {
-                eventList.push( angular.extend( {}, baseEvent, {
-                  start: moment( startDate ),
-                  end: moment( endDate )
-                } ) );
-              }
-            }
-            if( shiftTemplate.tuesday ) {
-              startDate.day( 2 );
-              endDate.day( 2 );
-              if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) &&
-                  !startDate.isBefore( itemStartDate, 'day' ) && !startDate.isAfter( itemEndDate, 'day' ) ) {
-                eventList.push( angular.extend( {}, baseEvent, {
-                  start: moment( startDate ),
-                  end: moment( endDate )
-                } ) );
-              }
-            }
-            if( shiftTemplate.wednesday ) {
-              startDate.day( 3 );
-              endDate.day( 3 );
-              if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) &&
-                  !startDate.isBefore( itemStartDate, 'day' ) && !startDate.isAfter( itemEndDate, 'day' ) ) {
-                eventList.push( angular.extend( {}, baseEvent, {
-                  start: moment( startDate ),
-                  end: moment( endDate )
-                } ) );
-              }
-            }
-            if( shiftTemplate.thursday ) {
-              startDate.day( 4 );
-              endDate.day( 4 );
-              if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) &&
-                  !startDate.isBefore( itemStartDate, 'day' ) && !startDate.isAfter( itemEndDate, 'day' ) ) {
-                eventList.push( angular.extend( {}, baseEvent, {
-                  start: moment( startDate ),
-                  end: moment( endDate )
-                } ) );
-              }
-            }
-            if( shiftTemplate.friday ) {
-              startDate.day( 5 );
-              endDate.day( 5 );
-              if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) &&
-                  !startDate.isBefore( itemStartDate, 'day' ) && !startDate.isAfter( itemEndDate, 'day' ) ) {
-                eventList.push( angular.extend( {}, baseEvent, {
-                  start: moment( startDate ),
-                  end: moment( endDate )
-                } ) );
-              }
-            }
-            if( shiftTemplate.saturday ) {
-              startDate.day( 6 );
-              endDate.day( 6 );
-              if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) &&
-                  !startDate.isBefore( itemStartDate, 'day' ) && !startDate.isAfter( itemEndDate, 'day' ) ) {
-                eventList.push( angular.extend( {}, baseEvent, {
-                  start: moment( startDate ),
-                  end: moment( endDate )
-                } ) );
-              }
-            }
+            } );
           }
         }
       } else {

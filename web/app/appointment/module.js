@@ -359,7 +359,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
 
         this.onView = function() {
           return this.$$onView().then( function() {
-            var upcoming = moment().isBefore( self.record.datetime );
+            var upcoming = moment().isBefore( self.record.datetime, 'minute' );
             parentModel.enableDelete( upcoming );
             parentModel.enableEdit( upcoming );
           } );

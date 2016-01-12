@@ -14,31 +14,31 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
     }
   } );
 
-  function getSlotsFromEvents( appointmentEvents, shiftEvents, shiftTemplateEvents, offset ) {
-    var slots = [];
+  function getAvailabilityFromEvents( appointmentEvents, shiftEvents, shiftTemplateEvents, offset ) {
+    var availability = [];
 
     // create an object grouping all events for each day
     var events = {};
     appointmentEvents.forEach( function( item ) {
-      var date = item.start.date();
+      var date = item.start.format( 'YYYY-MM-DD' );
       if( angular.isUndefined( events[date] ) )
         events[date] = { appointments: [], shifts: [], templates: [] };
       events[date].appointments.push( item );
     } );
     shiftEvents.forEach( function( item ) {
-      var date = item.start.date();
+      var date = item.start.format( 'YYYY-MM-DD' );
       if( angular.isUndefined( events[date] ) )
         events[date] = { appointments: [], shifts: [], templates: [] };
       events[date].shifts.push( item );
     } );
     shiftTemplateEvents.forEach( function( item ) {
-      var date = item.start.date();
+      var date = item.start.format( 'YYYY-MM-DD' );
       if( angular.isUndefined( events[date] ) )
         events[date] = { appointments: [], shifts: [], templates: [] };
       events[date].templates.push( item );
     } );
 
-    // now go through each day and determine the open slots
+    // now go through each day and determine the availability
     for( var date in events ) {
       // determine where the number of slots changes
       var diffs = {};
@@ -86,29 +86,36 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
       for( var i = 0; i < times.length; i++ ) {
         var time = times[i];
         number += diffs[time];
-        if( 0 > number ) {
-          number = 0; // appointments may be overloaded
-        } else if( 0 < lastNumber ) {
-          var colon = time.indexOf( ':' );
-          var lastColon = lastTime.indexOf( ':' );
-          slots.push( {
-            title: lastNumber + ' slot' + ( 1 < lastNumber ? 's' : '' ),
-            start: moment().date( date )
-                           .hour( lastTime.substring( 0, lastColon ) )
-                           .minute( lastTime.substring( lastColon + 1 ) )
-                           .second( 0 ),
-            end: moment().date( date )
-                         .hour( time.substring( 0, colon ) )
-                         .minute( time.substring( colon + 1 ) )
-                         .second( 0 )
-          } );
+        if( 0 > number ) number = 0; // appointments may be overloaded
+        
+        if( 0 < lastNumber ) {
+          if( 0 == number && null != lastTime ) {
+            var colon = time.indexOf( ':' );
+            var lastColon = lastTime.indexOf( ':' );
+            var tempDate = moment( date );
+            availability.push( {
+              start: moment().year( tempDate.year() )
+                             .month( tempDate.month() )
+                             .date( tempDate.date() )
+                             .hour( lastTime.substring( 0, lastColon ) )
+                             .minute( lastTime.substring( lastColon + 1 ) )
+                             .second( 0 ),
+              end: moment().year( tempDate.year() )
+                           .month( tempDate.month() )
+                           .date( tempDate.date() )
+                           .hour( time.substring( 0, colon ) )
+                           .minute( time.substring( colon + 1 ) )
+                           .second( 0 )
+            } );
+            lastTime = null;
+          }
         }
-        lastTime = time;
         lastNumber = number;
+        if( null == lastTime ) lastTime = time;
       }
     }
 
-    return slots;
+    return availability;
   }
 
   // add an extra operation for each of the appointment-based calendars the user has access to
@@ -189,70 +196,34 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
 
         // extend onList to transform templates into events
         this.onList = function( replace, minDate, maxDate ) {
-          // we must get the load dates before getting shifts and shift templates
-          var query = false;
-          var loadMinDate = self.getLoadMinDate( replace, minDate );
-          var loadMaxDate = self.getLoadMaxDate( replace, maxDate );
-          if( replace || null == this.cacheMinDate || null == this.cacheMaxDate ||
-              6 < Math.abs( this.cacheMinDate.diff( minDate, 'months' ) ) ) {
-            // rebuild the cache for the requested date span
-            this.cache = [];
-            this.cacheMinDate = null == loadMinDate ? null : moment( loadMinDate );
-            this.cacheMaxDate = null == loadMaxDate ? null : moment( loadMaxDate );
-            query = null != minDate && null != maxDate;
-          } else if( null != minDate && null != maxDate ) {
-            // if the min date comes after the cache's min date then load from the new min date
-            if( this.cacheMinDate.isAfter( minDate ) ) {
-              this.cacheMinDate = moment( minDate );
-              query = true;
-            }
-
-            // if the max date comes before the cache's max date then load to the new max date
-            if( this.cacheMaxDate.isBefore( maxDate ) ) {
-              this.cacheMaxDate = moment( maxDate );
-              query = true;
-            }
-          }
-
+          // unlike other calendars we don't cache events
           var appointmentCalendarModel = CnAppointmentModelFactory.root.calendarModel;
           var shiftCalendarModel = CnShiftModelFactory.root.calendarModel;
           var shiftTemplateCalendarModel = CnShiftTemplateModelFactory.root.calendarModel;
-          if( query ) {
-            // instead of calling $$onList we're going to get all shifts and shift templates instead
-            return $q.all( [
-              appointmentCalendarModel.onList( replace, minDate, maxDate ),
-              shiftCalendarModel.onList( replace, minDate, maxDate ),
-              shiftTemplateCalendarModel.onList( replace, minDate, maxDate )
-            ] ).then( function() {
-              self.cache = self.cache.concat(
-                getSlotsFromEvents(
-                  // get all appointments inside the load date span
-                  appointmentCalendarModel.cache.filter( function( item ) {
-                    return !item.start.isBefore( loadMinDate ) && !item.end.isAfter( loadMaxDate );
-                  } ),
-                  // get all shift events inside the load date span
-                  shiftCalendarModel.cache.filter( function( item ) {
-                    return !item.start.isBefore( loadMinDate ) && !item.end.isAfter( loadMaxDate );
-                  } ),
-                  // get all shift template events inside the load date span
-                  shiftTemplateCalendarModel.cache.filter( function( item ) {
-                    return !item.start.isBefore( loadMinDate ) && !item.end.isAfter( loadMaxDate );
-                  } ),
-                  // get the offset between the user's current timezone and the site's timezone
-                  moment().tz( CnSession.user.timezone ).utcOffset() -
-                  moment().tz( CnSession.site.timezone ).utcOffset()
-                )
-              );
-            } );
-          } else if( replace ) {
-            // we're replacing with no min/max date (no query) so flush the shift and shift templates as well
-            return $q.all( [
-              shiftCalendarModel.onList( true, null, null ),
-              shiftTemplateCalendarModel.onList( true, null, null )
-            ] );
-          } else {
-            return $q.all();
-          }
+          // instead of calling $$onList we're going to get all shifts and shift templates instead
+          return $q.all( [
+            appointmentCalendarModel.onList( replace, minDate, maxDate ),
+            shiftCalendarModel.onList( replace, minDate, maxDate ),
+            shiftTemplateCalendarModel.onList( replace, minDate, maxDate )
+          ] ).then( function() {
+            self.cache = getAvailabilityFromEvents(
+              // get all appointments inside the load date span
+              appointmentCalendarModel.cache.filter( function( item ) {
+                return !item.start.isBefore( minDate, 'day' ) && !item.end.isAfter( maxDate, 'day' );
+              } ),
+              // get all shift events inside the load date span
+              shiftCalendarModel.cache.filter( function( item ) {
+                return !item.start.isBefore( minDate, 'day' ) && !item.end.isAfter( maxDate, 'day' );
+              } ),
+              // get all shift template events inside the load date span
+              shiftTemplateCalendarModel.cache.filter( function( item ) {
+                return !item.start.isBefore( minDate, 'day' ) && !item.end.isAfter( maxDate, 'day' );
+              } ),
+              // get the offset between the user's current timezone and the site's timezone
+              moment().tz( CnSession.user.timezone ).utcOffset() -
+              moment().tz( CnSession.site.timezone ).utcOffset()
+            );
+          } );
         };
       };
 
