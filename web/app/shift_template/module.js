@@ -420,11 +420,11 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
         CnBaseCalendarFactory.construct( this, parentModel );
 
         // extend onList to transform templates into events
-        this.onList = function( replace, minDate, maxDate ) {
+        this.onList = function( replace, minDate, maxDate, ignoreParent ) {
           // we must get the load dates before calling $$onList
           var loadMinDate = self.getLoadMinDate( replace, minDate );
           var loadMaxDate = self.getLoadMaxDate( replace, maxDate );
-          return self.$$onList( replace, minDate, maxDate ).then( function() {
+          return self.$$onList( replace, minDate, maxDate, ignoreParent ).then( function() {
             self.cache = self.cache.reduce( function( cache, item ) {
               return cache.concat( getEventsFromShiftTemplate( item, loadMinDate, loadMaxDate ) );
             }, [] );
@@ -510,15 +510,6 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
         this.calendarModel = CnShiftTemplateCalendarFactory.instance( this );
         this.listModel = CnShiftTemplateListFactory.instance( this );
         this.viewModel = CnShiftTemplateViewFactory.instance( this, root );
-
-        // We must override the getServiceCollectionPath function to ignore parent identifiers so that it
-        // can be used by the capacity module
-        this.getServiceCollectionPath = function() {
-          var path = this.$$getServiceCollectionPath();
-          if( 'capacity' == path.substring( 0, 8 ) ||
-              'availability' == path.substring( 0, 12 ) ) path = 'shift_template';
-          return path;
-        };
         
         // add additional details to some of the help text
         CnSession.promise.then( function() {

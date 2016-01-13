@@ -195,16 +195,16 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
         delete this.settings.eventClick;
 
         // extend onList to transform templates into events
-        this.onList = function( replace, minDate, maxDate ) {
+        this.onList = function( replace, minDate, maxDate, ignoreParent ) {
           // unlike other calendars we don't cache events
           var appointmentCalendarModel = CnAppointmentModelFactory.root.calendarModel;
           var shiftCalendarModel = CnShiftModelFactory.root.calendarModel;
           var shiftTemplateCalendarModel = CnShiftTemplateModelFactory.root.calendarModel;
           // instead of calling $$onList we're going to get all shifts and shift templates instead
           return $q.all( [
-            appointmentCalendarModel.onList( replace, minDate, maxDate ),
-            shiftCalendarModel.onList( replace, minDate, maxDate ),
-            shiftTemplateCalendarModel.onList( replace, minDate, maxDate )
+            appointmentCalendarModel.onList( replace, minDate, maxDate, true ),
+            shiftCalendarModel.onList( replace, minDate, maxDate, true ),
+            shiftTemplateCalendarModel.onList( replace, minDate, maxDate, true )
           ] ).then( function() {
             self.cache = getAvailabilityFromEvents(
               // get all appointments inside the load date span
