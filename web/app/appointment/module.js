@@ -145,6 +145,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
       return {
         templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.model = CnAppointmentModelFactory.root;
           $scope.record = {};
@@ -152,7 +153,6 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
             if( angular.isDefined( $scope.model.addModel.calendarDate ) ) {
               var addDirective = $scope.$$childHead;
               // set the datetime in the record and formatted record
-              console.log( $scope.model.addModel.calendarDate.format() );
               $scope.record.datetime =
                 moment( $scope.model.addModel.calendarDate ).format();
               addDirective.formattedRecord.datetime = CnSession.formatValue(
@@ -177,6 +177,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
       return {
         templateUrl: module.url + 'calendar.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.model = CnAppointmentModelFactory.root;
           $scope.model.setupBreadcrumbTrail( 'calendar' );
@@ -220,6 +221,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
       return {
         templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.model = CnAppointmentModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {
@@ -237,6 +239,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
       return {
         templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.model = CnAppointmentModelFactory.root;
           $scope.model.viewModel.onView().then( function() {

@@ -102,6 +102,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
       return {
         templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.model = CnShiftModelFactory.root;
           $scope.record = {};
@@ -132,6 +133,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
       return {
         templateUrl: module.url + 'calendar.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.model = CnShiftModelFactory.root;
           $scope.model.setupBreadcrumbTrail( 'calendar' );
@@ -175,6 +177,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
       return {
         templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.model = CnShiftModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {
@@ -192,6 +195,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
       return {
         templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.model = CnShiftModelFactory.root;
           $scope.model.viewModel.onView().then( function() {

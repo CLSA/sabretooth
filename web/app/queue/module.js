@@ -59,6 +59,7 @@ define( function() {
       return {
         templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.model = CnQueueModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {
@@ -76,6 +77,7 @@ define( function() {
       return {
         templateUrl: module.url + 'tree.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.isLoading = false;
           $scope.isComplete = false;
@@ -101,6 +103,7 @@ define( function() {
       return {
         templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.model = CnQueueModelFactory.root;
           $scope.model.viewModel.onView().then( function() {

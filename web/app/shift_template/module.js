@@ -262,6 +262,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
       return {
         templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.model = CnShiftTemplateModelFactory.root;
           $scope.record = {};
@@ -305,6 +306,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
       return {
         templateUrl: module.url + 'calendar.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.model = CnShiftTemplateModelFactory.root;
           CnSession.promise.then( function() { $scope.timezone = CnSession.site.timezone; } );
@@ -349,6 +351,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
       return {
         templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.model = CnShiftTemplateModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {
@@ -366,6 +369,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
       return {
         templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.model = CnShiftTemplateModelFactory.root;
           $scope.model.viewModel.onView().then( function() {

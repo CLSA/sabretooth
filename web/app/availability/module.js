@@ -142,6 +142,7 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
       return {
         templateUrl: module.url + 'calendar.tpl.html',
         restrict: 'E',
+        scope: true,
         controller: function( $scope ) {
           $scope.model = CnAvailabilityModelFactory.root;
           $scope.model.setupBreadcrumbTrail( 'calendar' );
