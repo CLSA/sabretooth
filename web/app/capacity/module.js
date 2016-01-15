@@ -86,9 +86,7 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template' ].reduce( fun
       for( var i = 0; i < times.length; i++ ) {
         var time = times[i];
         number += diffs[time];
-        if( 0 > number ) {
-          number = 0; // appointments may be overloaded
-        } else if( 0 < lastNumber ) {
+        if( 0 < lastNumber ) {
           var colon = time.indexOf( ':' );
           var lastColon = lastTime.indexOf( ':' );
           var tempDate = moment( date );

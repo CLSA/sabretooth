@@ -134,11 +134,8 @@ class ui extends \cenozo\ui\ui
     $db_role = lib::create( 'business\session' )->get_role();
 
     // the availability and capacity calenders need one another
-    if( !$db_role->all_sites )
-    {
-      $list[] = 'availability';
-      $list[] = 'capacity';
-    }
+    $list[] = 'availability';
+    $list[] = 'capacity';
 
     return $list;
   }

@@ -14,8 +14,12 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
     }
   } );
 
-  function getAvailabilityFromEvents( appointmentEvents, shiftEvents, shiftTemplateEvents, offset ) {
+  function getAvailabilityFromEvents( appointmentEvents, shiftEvents, shiftTemplateEvents, CnSession ) {
     var availability = [];
+
+    // get the offset between the user's current timezone and the site's timezone
+    var offset = moment().tz( CnSession.user.timezone ).utcOffset() -
+                 moment().tz( CnSession.site.timezone ).utcOffset()
 
     // create an object grouping all events for each day
     var events = {};
@@ -53,7 +57,7 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
           diffs[time]--;
         } );
       } else {
-        // processshift templates if there are no shifts
+        // process shift templates if there are no shifts
         events[date].templates.forEach( function( shiftTemplate ) {
           var time = moment( shiftTemplate.start ).add( offset, 'minute' ).format( 'HH:mm' );
           if( angular.isUndefined( diffs[time] ) ) diffs[time] = 0;
@@ -86,7 +90,6 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
       for( var i = 0; i < times.length; i++ ) {
         var time = times[i];
         number += diffs[time];
-        if( 0 > number ) number = 0; // appointments may be overloaded
         
         if( 0 < lastNumber ) {
           if( 0 == number && null != lastTime ) {
@@ -94,13 +97,15 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
             var lastColon = lastTime.indexOf( ':' );
             var tempDate = moment( date );
             availability.push( {
-              start: moment().year( tempDate.year() )
+              start: moment().tz( CnSession.user.timezone )
+                             .year( tempDate.year() )
                              .month( tempDate.month() )
                              .date( tempDate.date() )
                              .hour( lastTime.substring( 0, lastColon ) )
                              .minute( lastTime.substring( lastColon + 1 ) )
                              .second( 0 ),
-              end: moment().year( tempDate.year() )
+              end: moment().tz( CnSession.user.timezone )
+                           .year( tempDate.year() )
                            .month( tempDate.month() )
                            .date( tempDate.date() )
                            .hour( time.substring( 0, colon ) )
@@ -111,7 +116,7 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
           }
         }
         lastNumber = number;
-        if( null == lastTime ) lastTime = time;
+        if( null == lastTime && 0 < number ) lastTime = time;
       }
     }
 
@@ -191,7 +196,7 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
         var self = this;
         CnBaseCalendarFactory.construct( this, parentModel );
 
-        // remove day and event click callbacks
+        // remove day and change event click callbacks
         delete this.settings.dayClick;
         delete this.settings.eventClick;
 
@@ -220,9 +225,7 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
               shiftTemplateCalendarModel.cache.filter( function( item ) {
                 return !item.start.isBefore( minDate, 'day' ) && !item.end.isAfter( maxDate, 'day' );
               } ),
-              // get the offset between the user's current timezone and the site's timezone
-              moment().tz( CnSession.user.timezone ).utcOffset() -
-              moment().tz( CnSession.site.timezone ).utcOffset()
+              CnSession
             );
           } );
         };

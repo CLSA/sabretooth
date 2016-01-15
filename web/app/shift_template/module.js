@@ -149,7 +149,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
       if( 'weekly' == shiftTemplate.repeat_type ) {
         // restrict dates to those included by the shift template's repeat_every property
         var weekDateList = [];
-        for( var date = moment( minDate );
+        for( var date = moment( minDate ).tz( 'Canada/Eastern' );
              !date.isAfter( maxDate, 'day' );
              date.add( 1, 'week' ) ) {
           var weekDiff = date.week() - itemStartDate.week();
@@ -432,6 +432,8 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
             self.cache = self.cache.reduce( function( cache, item ) {
               return cache.concat( getEventsFromShiftTemplate( item, loadMinDate, loadMaxDate ) );
             }, [] );
+            // make sure we make the calendar's timezone the site's (instead of the user's)
+            CnSession.promise.then( function() { self.settings.timezone = CnSession.site.timezone; } );
           } );
         };
       };
