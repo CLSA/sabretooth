@@ -74,6 +74,7 @@ class data_manager extends \cenozo\business\data_manager
         $notnull = true;
       }
 
+      $old_sid = $survey_class_name::get_sid();
       $survey_class_name::set_sid( $sid );
       $survey_mod = lib::create( 'database\modifier' );
       $survey_mod->where_bracket( true );
@@ -103,6 +104,8 @@ class data_manager extends \cenozo\business\data_manager
         }
         else $value = current( $responses );
       }
+
+      $survey_class_name::set_sid( $old_sid );
     }
     else if( 'participant' == $subject && 2 == count( $parts ) && 'override_quota()' == $parts[1] )
     {

@@ -58,6 +58,7 @@ class module extends \cenozo\service\module
         $db_interview = $record->get_interview();
         $db_participant = $db_interview->get_participant();
         $db_qnaire = $db_interview->get_qnaire();
+        $old_sid = $tokens_class_name::get_sid();
         $tokens_class_name::set_sid( $db_qnaire->get_script()->sid );
         $tokens_mod = lib::create( 'database\modifier' );
         $tokens_class_name::where_token( $tokens_mod, $db_participant, false );
@@ -97,6 +98,8 @@ class module extends \cenozo\service\module
             $this->get_status()->set_code( 409 );
           }
         }
+
+        $tokens_class_name::set_sid( $old_sid );
       }
     }
     else if( 'POST' == $method )

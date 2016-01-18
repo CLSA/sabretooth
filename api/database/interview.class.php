@@ -111,8 +111,11 @@ class interview extends \cenozo\database\record
     $now = util::get_datetime_object();
     $db_script = $this->get_qnaire()->get_script();
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-    $tokens_class_name::set_sid( $db_script->sid );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+
+    $old_tokens_sid = $tokens_class_name::get_sid();
+    $tokens_class_name::set_sid( $db_script->sid );
+    $old_survey_sid = $survey_class_name::get_sid();
     $survey_class_name::set_sid( $db_script->sid );
 
     $tokens_mod = lib::create( 'database\modifier' );
@@ -143,6 +146,9 @@ class interview extends \cenozo\database\record
 
     // finally, update the record
     $this->complete();
+
+    $tokens_class_name::set_sid( $old_tokens_sid );
+    $survey_class_name::set_sid( $old_survey_sid );
   }
 
   /**
@@ -165,8 +171,11 @@ class interview extends \cenozo\database\record
     $db_participant = $this->get_participant();
     $db_script = $this->get_qnaire()->get_script();
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-    $tokens_class_name::set_sid( $db_script->sid );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+
+    $old_tokens_sid = $tokens_class_name::get_sid();
+    $tokens_class_name::set_sid( $db_script->sid );
+    $old_survey_sid = $survey_class_name::get_sid();
     $survey_class_name::set_sid( $db_script->sid );
 
     // delete tokens
@@ -199,5 +208,8 @@ class interview extends \cenozo\database\record
     $event_mod->where( 'event_type_id', '=', $db_event_type->id );
     foreach( $db_participant->get_event_object_list( $event_mod ) as $db_event )
       $db_event->delete();
+
+    $tokens_class_name::set_sid( $old_tokens_sid );
+    $survey_class_name::set_sid( $old_survey_sid );
   }
 }
