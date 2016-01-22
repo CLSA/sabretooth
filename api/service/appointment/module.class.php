@@ -95,14 +95,14 @@ class module extends \sabretooth\service\base_calendar_module
     $select->add_table_column( 'participant', 'uid' );
     $select->add_table_column( 'qnaire', 'rank', 'qnaire_rank' );
 
-    // always restrict to the role's site
     $participant_site_join_mod = lib::create( 'database\modifier' );
     $participant_site_join_mod->where(
       'interview.participant_id', '=', 'participant_site.participant_id', false );
     $participant_site_join_mod->where(
       'participant_site.application_id', '=', $session->get_application()->id );
     $modifier->join_modifier( 'participant_site', $participant_site_join_mod, 'left' );
-    $modifier->where( 'participant_site.site_id', '=', $session->get_site()->id );
+    if( !$session->get_role()->all_sites ) // restrict to the role's site
+      $modifier->where( 'participant_site.site_id', '=', $session->get_site()->id );
 
     if( $select->has_table_columns( 'script' ) )
       $modifier->join( 'script', 'qnaire.script_id', 'script.id' );

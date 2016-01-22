@@ -32,6 +32,7 @@ DROP PROCEDURE IF EXISTS patch_service;
 
 -- rebuild the service list
 DELETE FROM service;
+ALTER TABLE service AUTO_INCREMENT = 1;
 INSERT INTO service ( subject, method, resource, restricted ) VALUES
 
 -- framework services
@@ -158,20 +159,20 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'user', 'POST', 0, 1 ),
 
 -- application services
-( 'appointment', 'DELETE', 1, 0 ),
+( 'appointment', 'DELETE', 1, 1 ),
 ( 'appointment', 'GET', 0, 0 ),
 ( 'appointment', 'GET', 1, 0 ),
-( 'appointment', 'PATCH', 1, 0 ),
-( 'appointment', 'POST', 0, 0 ),
+( 'appointment', 'PATCH', 1, 1 ),
+( 'appointment', 'POST', 0, 1 ),
 ( 'assignment', 'GET', 0, 0 ),
 ( 'assignment', 'GET', 1, 0 ),
 ( 'assignment', 'PATCH', 1, 1 ),
 ( 'assignment', 'POST', 0, 1 ),
-( 'callback', 'DELETE', 1, 0 ),
+( 'callback', 'DELETE', 1, 1 ),
 ( 'callback', 'GET', 0, 0 ),
 ( 'callback', 'GET', 1, 0 ),
-( 'callback', 'PATCH', 1, 0 ),
-( 'callback', 'POST', 0, 0 ),
+( 'callback', 'PATCH', 1, 1 ),
+( 'callback', 'POST', 0, 1 ),
 ( 'interview', 'GET', 0, 0 ),
 ( 'interview', 'GET', 1, 0 ),
 ( 'interview', 'PATCH', 1, 1 ),

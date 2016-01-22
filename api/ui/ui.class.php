@@ -108,14 +108,11 @@ class ui extends \cenozo\ui\ui
     if( !$db_role->all_sites )
     {
       $list['Appointment Calendar'] = array( 'subject' => 'appointment', 'action' => 'calendar' );
+      $list['Availability Calendar'] = array( 'subject' => 'availability', 'action' => 'calendar' );
+      $list['Capacity Calendar'] = array( 'subject' => 'capacity', 'action' => 'calendar' );
 
-      if( 1 == $db_role->tier )
+      if( 1 < $db_role->tier )
       {
-        $list['Availability Calendar'] = array( 'subject' => 'availability', 'action' => 'calendar' );
-      }
-      else
-      {
-        $list['Capacity Calendar'] = array( 'subject' => 'capacity', 'action' => 'calendar' );
         $list['Shift Calendar'] = array( 'subject' => 'shift', 'action' => 'calendar' );
         $list['Shift Template Calendar'] = array( 'subject' => 'shift_template', 'action' => 'calendar' );
       }

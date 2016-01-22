@@ -165,19 +165,21 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
         scope: true,
         controller: function( $scope ) {
           $scope.model = CnAppointmentModelFactory.root;
-          $scope.availabilityModel = CnAvailabilityModelFactory.root;
+          if( -1 < cenozoApp.module( 'availability' ).actions.indexOf( 'calendar' ) ) {
+            $scope.availabilityModel = CnAvailabilityModelFactory.root;
 
-          // connect the availability calendar's event click callback to the appointments datetime
-          $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
-            if( availability.start.isAfter( moment() ) ) {
-              // set the datetime in the record and formatted record
-              var datetime = moment( availability.start.format() );
-              $scope.record.datetime = datetime.format();
-              $scope.$$childTail.formattedRecord.datetime =
-                CnSession.formatValue( datetime, 'datetime', true );
-              $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
-            }
-          };
+            // connect the availability calendar's event click callback to the appointments datetime
+            $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
+              if( availability.start.isAfter( moment() ) ) {
+                // set the datetime in the record and formatted record
+                var datetime = moment( availability.start.format() );
+                $scope.record.datetime = datetime.format();
+                $scope.$$childTail.formattedRecord.datetime =
+                  CnSession.formatValue( datetime, 'datetime', true );
+                $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
+              }
+            };
+          }
 
           $scope.record = {};
           $scope.model.addModel.onNew( $scope.record ).then( function() {
@@ -273,23 +275,24 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
         scope: true,
         controller: function( $scope ) {
           $scope.model = CnAppointmentModelFactory.root;
-          $scope.availabilityModel = CnAvailabilityModelFactory.root;
-          $scope.model.viewModel.onView().then( function() {
-            $scope.model.setupBreadcrumbTrail( 'view' );
-          } );
+          $scope.model.viewModel.onView().then( function() { $scope.model.setupBreadcrumbTrail( 'view' ); } );
 
-          // connect the availability calendar's event click callback to the appointments datetime
-          $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
-            if( availability.start.isAfter( moment() ) ) {
-              // set the datetime in the record and formatted record
-              var datetime = moment( availability.start.format() );
-              $scope.model.viewModel.record.datetime = datetime.format();
-              $scope.model.viewModel.formattedRecord.datetime =
-                CnSession.formatValue( datetime, 'datetime', true );
-              $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
-              $scope.$$childTail.patch( 'datetime' );
-            }
-          };
+          if( -1 < cenozoApp.module( 'availability' ).actions.indexOf( 'calendar' ) ) {
+            $scope.availabilityModel = CnAvailabilityModelFactory.root;
+
+            // connect the availability calendar's event click callback to the appointments datetime
+            $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
+              if( availability.start.isAfter( moment() ) ) {
+                // set the datetime in the record and formatted record
+                var datetime = moment( availability.start.format() );
+                $scope.model.viewModel.record.datetime = datetime.format();
+                $scope.model.viewModel.formattedRecord.datetime =
+                  CnSession.formatValue( datetime, 'datetime', true );
+                $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
+                $scope.$$childTail.patch( 'datetime' );
+              }
+            };
+          }
         }
       };
     }

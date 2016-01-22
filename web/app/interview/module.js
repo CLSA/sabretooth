@@ -145,16 +145,16 @@ define( function() {
             if( angular.isDefined( data.end_datetime ) ) {
               var completed = null !== self.record.end_datetime;
               if( angular.isDefined( self.appointmentModel ) ) {
-                self.appointmentModel.enableAdd( !completed );
-                self.appointmentModel.enableDelete( !completed );
-                self.appointmentModel.enableEdit( !completed );
-                self.appointmentModel.enableView( !completed );
+                self.appointmentModel.enableAdd( !completed && appointmentModule.actions.indexOf( 'add' ) );
+                self.appointmentModel.enableDelete( !completed && appointmentModule.actions.indexOf( 'delete' ) );
+                self.appointmentModel.enableEdit( !completed && appointmentModule.actions.indexOf( 'edit' ) );
+                self.appointmentModel.enableView( !completed && appointmentModule.actions.indexOf( 'view' ) );
               }
               if( angular.isDefined( self.callbackModel ) ) {
-                self.callbackModel.enableAdd( !completed );
-                self.callbackModel.enableDelete( !completed );
-                self.callbackModel.enableEdit( !completed );
-                self.callbackModel.enableView( !completed );
+                self.callbackModel.enableAdd( !completed && callbackModule.actions.indexOf( 'add' ) );
+                self.callbackModel.enableDelete( !completed && callbackModule.actions.indexOf( 'delete' ) );
+                self.callbackModel.enableEdit( !completed && callbackModule.actions.indexOf( 'edit' ) );
+                self.callbackModel.enableView( !completed && callbackModule.actions.indexOf( 'view' ) );
               }
             }
           } );
@@ -163,20 +163,30 @@ define( function() {
         // override onView
         this.onView = function() {
           return this.$$onView().then( function() {
-            // if the end datetime has changed then reload then update the appointment/callback list actions
+            // if the end datetime has changed then update the appointment/callback list actions
             var completed = null !== self.record.end_datetime;
             var existing = 0 < self.record.open_appointment_count || 0 < self.record.open_callback_count;
             if( angular.isDefined( self.appointmentModel ) ) {
-              self.appointmentModel.enableAdd( !completed && !existing );
-              self.appointmentModel.enableDelete( !completed );
-              self.appointmentModel.enableEdit( !completed );
-              self.appointmentModel.enableView( !completed );
+              var appointmentModule = cenozoApp.module( 'appointment' );
+              self.appointmentModel.enableAdd(
+                !completed && !existing && 0 <= appointmentModule.actions.indexOf( 'add' ) );
+              self.appointmentModel.enableDelete(
+                !completed && 0 <= appointmentModule.actions.indexOf( 'delete' ) );
+              self.appointmentModel.enableEdit(
+                !completed && 0 <= appointmentModule.actions.indexOf( 'edit' ) );
+              self.appointmentModel.enableView(
+                !completed && 0 <= appointmentModule.actions.indexOf( 'view' ) );
             }
             if( angular.isDefined( self.callbackModel ) ) {
-              self.callbackModel.enableAdd( !completed && !existing );
-              self.callbackModel.enableDelete( !completed );
-              self.callbackModel.enableEdit( !completed );
-              self.callbackModel.enableView( !completed );
+              var callbackModule = cenozoApp.module( 'callback' );
+              self.callbackModel.enableAdd(
+                !completed && !existing && 0 <= callbackModule.actions.indexOf( 'add' ) );
+              self.callbackModel.enableDelete(
+                !completed && 0 <= callbackModule.actions.indexOf( 'delete' ) );
+              self.callbackModel.enableEdit(
+                !completed && 0 <= callbackModule.actions.indexOf( 'edit' ) );
+              self.callbackModel.enableView(
+                !completed && 0 <= callbackModule.actions.indexOf( 'view' ) );
             }
           } );
         };
