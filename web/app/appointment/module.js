@@ -295,7 +295,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
         // add the new appointment's events to the calendar cache
         this.onAdd = function( record ) {
           return this.$$onAdd( record ).then( function() {
-            var duration = 'full' == record.type
+            var duration = 'long' == record.type
                          ? CnSession.setting.longAppointment
                          : CnSession.setting.shortAppointment;
             record.getIdentifier = function() { return parentModel.getIdentifierFromRecord( record ); };
@@ -326,7 +326,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
           var loadMaxDate = self.getLoadMaxDate( replace, maxDate );
           return self.$$onList( replace, minDate, maxDate, ignoreParent ).then( function() {
             self.cache.forEach( function( item, index, array ) {
-              var duration = 'full' == item.type
+              var duration = 'long' == item.type
                            ? CnSession.setting.longAppointment
                            : CnSession.setting.shortAppointment;
               array[index] = getEventFromAppointment( item, CnSession.user.timezone, duration );
