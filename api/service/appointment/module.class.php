@@ -34,8 +34,9 @@ class module extends \sabretooth\service\base_calendar_module
     $service_class_name = lib::get_class_name( 'service\service' );
     $db_appointment = $this->get_resource();
     $db_interview = is_null( $db_appointment ) ? $this->get_parent_resource() : $db_appointment->get_interview();
+    $method = $this->get_method();
 
-    if( $service_class_name::is_write_method( $this->get_method() ) )
+    if( $service_class_name::is_write_method( $method ) )
     {
       // no writing of appointments if interview is completed
       if( !is_null( $db_interview ) && null !== $db_interview->end_datetime )
@@ -55,11 +56,18 @@ class module extends \sabretooth\service\base_calendar_module
         $this->set_data( 'Your role does not allow appointments to be overridden.' );
         $this->get_status()->set_code( 406 );
       }
-      // validate appointment datetime
-      else if( !$db_appointment->validate_date() )
+      else
       {
-        $this->set_data( 'There are no operators available over the requested appointment timespan.' );
-        $this->get_status()->set_code( 406 );
+        // validate if we are changing the datetime
+        if( 'POST' == $method ||
+            ( 'PATCH' == $method && array_key_exists( 'datetime', $this->get_file_as_array() ) ) )
+        {
+          if( !$db_appointment->validate_date() )
+          {
+            $this->set_data( 'There are no operators available over the requested appointment timespan.' );
+            $this->get_status()->set_code( 406 );
+          }
+        }
       }
     }
   }
