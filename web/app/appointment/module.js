@@ -61,6 +61,11 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
       min: 'now',
       help: 'Cannot be changed once the appointment has passed.'
     },
+    override: {
+      title: 'Override Calendar',
+      type: 'boolean',
+      help: 'Whether to ignore if an operator is available for the appointment'
+    },
     participant: {
       column: 'participant.uid',
       title: 'Participant',
@@ -135,12 +140,18 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
     if( angular.isDefined( appointment.start ) && angular.isDefined( appointment.end ) ) {
       return appointment;
     } else {
-      return {
+      var event = {
         getIdentifier: function() { return appointment.getIdentifier() },
-        title: appointment.uid + ' (' + appointment.qnaire_rank + ')',
+        title: ( angular.isDefined( appointment.uid ) ? appointment.uid : 'new appointment' ) +
+               ( angular.isDefined( appointment.qnaire_rank ) ? ' (' + appointment.qnaire_rank + ')' : '' ),
         start: moment( appointment.datetime ).tz( timezone ),
         end: moment( appointment.datetime ).tz( timezone ).add( duration, 'minute' )
       };
+      if( appointment.override ) {
+        event.override = true;
+        event.color = 'green';
+      }
+      return event;
     }
   }
 
@@ -411,13 +422,17 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
     'CnBaseModelFactory',
     'CnAppointmentAddFactory', 'CnAppointmentCalendarFactory',
     'CnAppointmentListFactory', 'CnAppointmentViewFactory',
-    'CnHttpFactory', '$q',
+    'CnSession', 'CnHttpFactory', '$q',
     function( CnBaseModelFactory,
               CnAppointmentAddFactory, CnAppointmentCalendarFactory,
               CnAppointmentListFactory, CnAppointmentViewFactory,
-              CnHttpFactory, $q ) {
+              CnSession, CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
+
+        // before constructing the model set whether the override input is constant
+        if( 2 > CnSession.role.tier ) module.inputGroupList[null].override.constant = true;
+
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnAppointmentAddFactory.instance( this );
         this.calendarModel = CnAppointmentCalendarFactory.instance( this );

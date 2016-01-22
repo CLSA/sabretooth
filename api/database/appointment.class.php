@@ -115,8 +115,9 @@ class appointment extends \cenozo\database\record
       throw lib::create( 'exception\runtime',
         'Cannot validate appointment date, interview id is not set.', __METHOD__ );
 
-    // appointments with past dates are always allowed
-    if( util::get_datetime_object( $this->datetime ) < util::get_datetime_object() ) return true;
+    // appointments which are overridden or with past dates are always allowed
+    if( $this->override ||
+        util::get_datetime_object( $this->datetime ) < util::get_datetime_object() ) return true;
 
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();

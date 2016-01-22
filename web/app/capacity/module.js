@@ -64,8 +64,10 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template' ].reduce( fun
         } );
       }
 
-      // remove slots taken up by appointments
-      events[date].appointments.forEach( function( appointment ) {
+      // remove slots taken up by non-overridden appointments
+      events[date].appointments.filter( function( appointment ) {
+        return !appointment.override;
+      } ).forEach( function( appointment ) {
         var time = appointment.start.format( 'HH:mm' );
         if( angular.isUndefined( diffs[time] ) ) diffs[time] = 0;
         diffs[time]--;

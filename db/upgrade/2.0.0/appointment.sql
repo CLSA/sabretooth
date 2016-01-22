@@ -85,6 +85,20 @@ DROP PROCEDURE IF EXISTS patch_appointment;
       SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
     END IF;
 
+    SELECT "Adding override column to appointment table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "appointment"
+      AND COLUMN_NAME = "override" );
+    IF @test = 0 THEN
+      ALTER TABLE appointment
+      ADD COLUMN override TINYINT(1) NOT NULL DEFAULT 0
+      AFTER datetime;
+    END IF;
+
     SELECT "Adding user_id column to appointment table" AS "";
 
     SET @test = (

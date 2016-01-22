@@ -49,10 +49,16 @@ class module extends \sabretooth\service\base_calendar_module
         $this->set_data( 'Appointments cannot be changed after they have passed.' );
         $this->get_status()->set_code( 406 );
       }
+      // don't allow tier-1 roles to override appointments
+      else if( $db_appointment->override && 1 > lib::create( 'business\session' )->get_role()->tier )
+      {
+        $this->set_data( 'Your role does not allow appointments to be overridden.' );
+        $this->get_status()->set_code( 406 );
+      }
       // validate appointment datetime
       else if( !$db_appointment->validate_date() )
       {
-        $this->set_data( 'There are no operators available at the requested appointment time.' );
+        $this->set_data( 'There are no operators available over the requested appointment timespan.' );
         $this->get_status()->set_code( 406 );
       }
     }
