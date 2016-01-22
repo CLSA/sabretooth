@@ -49,6 +49,12 @@ class module extends \sabretooth\service\base_calendar_module
         $this->set_data( 'Appointments cannot be changed after they have passed.' );
         $this->get_status()->set_code( 406 );
       }
+      // validate appointment datetime
+      else if( !$db_appointment->validate_date() )
+      {
+        $this->set_data( 'There are no operators available at the requested appointment time.' );
+        $this->get_status()->set_code( 406 );
+      }
     }
   }
 
