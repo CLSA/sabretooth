@@ -17,6 +17,40 @@ class module extends \cenozo\service\module
   /**
    * Extend parent method
    */
+  public function validate()
+  {
+    parent::validate();
+
+    $session = lib::create( 'business\session' );
+    $db_application = lib::create( 'business\session' )->get_application();
+    $db_role = $session->get_role();
+    $db_site = $session->get_site();
+
+    // make sure the application has access to the participant
+    $db_interview = $this->get_resource();
+    if( !is_null( $db_interview ) )
+    {
+      $db_participant = $this->get_resource()->get_participant();
+      if( $db_application->release_based && !is_null( $db_participant ) )
+      {
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'participant_id', '=', $db_participant->id );
+        if( 0 == $db_application->get_participant_count( $modifier ) ) $this->get_status()->set_code( 404 );
+      }
+
+      // make sure the user has access ot the participant
+      if( !is_null( $db_participant ) && !$db_role->all_sites )
+      {
+        $db_effective_site = $db_participant->get_effective_site();
+        if( is_null( $db_effective_site ) || $db_site->id != $db_effective_site->id )
+          $this->get_status()->set_code( 403 );
+      }
+    }
+  }
+
+  /**
+   * Extend parent method
+   */
   public function prepare_read( $select, $modifier )
   {
     parent::prepare_read( $select, $modifier );
