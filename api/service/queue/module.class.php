@@ -12,17 +12,13 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * Performs operations which effect how this module is used in a service
  */
-class module extends \cenozo\service\module
+class module extends \cenozo\service\site_restricted_module
 {
   /**
    * Extend parent method
    */
   public function prepare_read( $select, $modifier )
   {
-    $session = lib::create( 'business\session' );
-    $db_role = $session->get_role();
-    $db_site = $session->get_site();
-
     // if the "full" parameter isn't included then only show ranked queues
     $full = $this->get_argument( 'full', false );
     if( !$full ) $modifier->where( 'queue.rank', '!=', NULL );
@@ -73,9 +69,10 @@ class module extends \cenozo\service\module
         }
       }
 
-      // restrict to participants in this site (for some roles)
-      if( !$db_role->all_sites )
-        $join_mod->where( 'queue_has_participant.site_id', '=', $db_site->id );
+      // restrict by site
+      $db_restrict_site = $this->get_restricted_site();
+      if( !is_null( $db_restrict_site ) )
+        $join_mod->where( 'queue_has_participant.site_id', '=', $db_restrict_site->id );
 
       $modifier->left_join(
         sprintf( '( %s %s ) AS queue_join_participant', $join_sel->get_sql(), $join_mod->get_sql() ),

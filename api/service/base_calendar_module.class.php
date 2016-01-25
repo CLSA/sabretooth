@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * Performs operations which effect how this module is used in a service
  */
-abstract class base_calendar_module extends \cenozo\service\module
+abstract class base_calendar_module extends \cenozo\service\site_restricted_module
 {
   /**
    * Extend parent method

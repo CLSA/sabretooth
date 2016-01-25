@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * Performs operations which effect how this module is used in a service
  */
-class module extends \cenozo\service\module
+class module extends \cenozo\service\site_restricted_module
 {
   /**
    * Extend parent method
@@ -21,10 +21,7 @@ class module extends \cenozo\service\module
   {
     parent::validate();
 
-    $session = lib::create( 'business\session' );
     $db_application = lib::create( 'business\session' )->get_application();
-    $db_role = $session->get_role();
-    $db_site = $session->get_site();
 
     // make sure the application has access to the participant
     $db_interview = $this->get_resource();
@@ -38,11 +35,12 @@ class module extends \cenozo\service\module
         if( 0 == $db_application->get_participant_count( $modifier ) ) $this->get_status()->set_code( 404 );
       }
 
-      // make sure the user has access ot the participant
-      if( !is_null( $db_participant ) && !$db_role->all_sites )
+      // restrict by site
+      $db_restrict_site = $this->get_restricted_site();
+      if( !is_null( $db_participant ) && !is_null( $db_restrict_site ) )
       {
         $db_effective_site = $db_participant->get_effective_site();
-        if( is_null( $db_effective_site ) || $db_site->id != $db_effective_site->id )
+        if( is_null( $db_effective_site ) || $db_restrict_site->id != $db_effective_site->id )
           $this->get_status()->set_code( 403 );
       }
     }
@@ -55,22 +53,20 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
-    $session = lib::create( 'business\session' );
+    $db_application = lib::create( 'business\session' )->get_application();
 
-    if( $select->has_table_columns( 'participant' ) || !$session->get_role()->all_sites )
+    $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
+
+    // restrict by site
+    $db_restrict_site = $this->get_restricted_site();
+    if( !is_null( $db_restrict_site ) )
     {
-      $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
+      $sub_mod = lib::create( 'database\modifier' );
+      $sub_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
+      $sub_mod->where( 'participant_site.application_id', '=', $db_application->id );
 
-      // restrict to participants in this site (for some roles)
-      if( !$session->get_role()->all_sites )
-      {
-        $sub_mod = lib::create( 'database\modifier' );
-        $sub_mod->where( 'participant.id', '=', 'participant_site.participant_id', false );
-        $sub_mod->where( 'participant_site.application_id', '=', $session->get_application()->id );
-
-        $modifier->join_modifier( 'participant_site', $sub_mod );
-        $modifier->where( 'participant_site.site_id', '=', $session->get_site()->id );
-      }
+      $modifier->join_modifier( 'participant_site', $sub_mod );
+      $modifier->where( 'participant_site.site_id', '=', $db_restrict_site->id );
     }
 
     if( $select->has_table_columns( 'site' ) )

@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * Performs operations which effect how this module is used in a service
  */
-class module extends \cenozo\service\module
+class module extends \cenozo\service\site_restricted_module
 {
   /**
    * Extend parent method
@@ -21,13 +21,9 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
-    $session = lib::create( 'business\session' );
-
-    // restrict to participants in this site (for some roles)
-    if( !$session->get_role()->all_sites )
-    {
-      $modifier->where( 'opal_instance.site_id', '=', $session->get_site()->id );
-    }
+    // restrict by site
+    $db_restrict_site = $this->get_restricted_site();
+    if( !is_null( $db_restrict_site ) ) $modifier->where( 'opal_instance.site_id', '=', $db_restrict_site->id );
 
     if( $select->has_table_columns( 'participant' ) )
     {

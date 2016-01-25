@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * Performs operations which effect how this module is used in a service
  */
-class module extends \cenozo\service\module
+class module extends \cenozo\service\site_restricted_module
 {
   /**
    * Extend parent method
@@ -27,9 +27,16 @@ class module extends \cenozo\service\module
 
     $db_user = lib::create( 'business\session' )->get_user();
     $db_role = lib::create( 'business\session' )->get_role();
-
     $method = $this->get_method();
     $operation = $this->get_argument( 'operation', false );
+
+    // restrict by site
+    $db_restrict_site = $this->get_restricted_site();
+    if( !is_null( $db_restrict_site ) )
+    {
+      $record = $this->get_resource();
+      if( $record && $record->site_id != $db_restrict_site->id ) $this->get_status()->set_code( 403 );
+    }
 
     if( ( 'DELETE' == $method || 'PATCH' == $method ) &&
         3 > $db_role->tier &&
@@ -140,11 +147,9 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
-    $session = lib::create( 'business\session' );
-
-    // restrict to participants in this site (for some roles)
-    if( !$session->get_role()->all_sites )
-      $modifier->where( 'assignment.site_id', '=', $session->get_site()->id );
+    // restrict by site
+    $db_restrict_site = $this->get_restricted_site();
+    if( !is_null( $db_restrict_site ) ) $modifier->where( 'assignment.site_id', '=', $db_restrict_site->id );
 
     if( $select->has_table_columns( 'queue' ) )
       $modifier->left_join( 'queue', 'assignment.queue_id', 'queue.id' );

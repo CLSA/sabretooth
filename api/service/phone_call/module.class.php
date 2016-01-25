@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * Performs operations which effect how this module is used in a service
  */
-class module extends \cenozo\service\module
+class module extends \cenozo\service\site_restricted_module
 {
   /**
    * Extend parent method
@@ -24,6 +24,23 @@ class module extends \cenozo\service\module
     $service_class_name = lib::get_class_name( 'service\service' );
     $db_user = lib::create( 'business\session' )->get_user();
     $db_role = lib::create( 'business\session' )->get_role();
+
+    $record = $this->get_resource();
+    if( !is_null( $record ) )
+    {
+      // restrict by site
+      $db_restrict_site = $this->get_restricted_site();
+      if( !is_null( $db_restrict_site ) )
+      {
+        $db_assignment = $record->get_assignment();
+        if( !is_null( $db_assignment ) )
+        {
+          $db_participant = $db_assignment->get_interview()->get_participant();
+          if( $db_participant->get_effective_site()->id != $db_restrict_site->id )
+            $this->get_status()->set_code( 403 );
+        }
+      }
+    }
 
     $method = $this->get_method();
     $operation = $this->get_argument( 'operation', false );
@@ -37,7 +54,7 @@ class module extends \cenozo\service\module
     }
     else if( ( 'DELETE' == $method || 'PATCH' == $method ) &&
              3 > $db_role->tier &&
-             $this->get_resource()->get_assignment()->user_id != $db_user->id )
+             $record->get_assignment()->user_id != $db_user->id )
     {
       // only admins can delete or modify phone calls other than their own
       $this->get_status()->set_code( 403 );
@@ -67,13 +84,12 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
-    $session = lib::create( 'business\session' );
-
-    // restrict to participants in this site (for some roles)
-    if( !$session->get_role()->all_sites )
+    // restrict by site
+    $db_restrict_site = $this->get_restricted_site();
+    if( !is_null( $db_restrict_site ) )
     {
       $modifier->join( 'assignment', 'phone_call.assignment_id', 'assignment.id' );
-      $modifier->where( 'assignment.site_id', '=', $session->get_site()->id );
+      $modifier->where( 'assignment.site_id', '=', $db_restrict_site->id );
     }
 
     if( $select->has_table_columns( 'phone' ) )
@@ -92,9 +108,7 @@ class module extends \cenozo\service\module
     $operation = $this->get_argument( 'operation', false );
     if( 'POST' == $method && 'open' == $operation )
     {
-      $session = lib::create( 'business\session' );
-      $db_user = $session->get_user();
-
+      $db_user = lib::create( 'business\session' )->get_user();
       $post_object = $this->get_file_as_object();
       $record->assignment_id = $db_user->get_open_assignment()->id;
       $record->phone_id = $post_object->phone_id;
