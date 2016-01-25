@@ -166,7 +166,7 @@ define( function() {
         restrict: 'E',
         scope: true,
         controller: function( $scope ) {
-          $scope.model = CnSettingModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnSettingModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {
             $scope.model.setupBreadcrumbTrail( 'list' );
           } );
@@ -184,7 +184,7 @@ define( function() {
         restrict: 'E',
         scope: true,
         controller: function( $scope ) {
-          $scope.model = CnSettingModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnSettingModelFactory.root;
           $scope.model.viewModel.onView().then( function() {
             $scope.model.setupBreadcrumbTrail( 'view' );
           } );

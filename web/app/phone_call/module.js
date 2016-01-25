@@ -49,7 +49,7 @@ define( function() {
         restrict: 'E',
         scope: true,
         controller: function( $scope ) {
-          $scope.model = CnPhoneCallModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnPhoneCallModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {
             $scope.model.setupBreadcrumbTrail( 'list' );
           } );

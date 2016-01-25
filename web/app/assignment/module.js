@@ -114,7 +114,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         restrict: 'E',
         scope: true,
         controller: function( $scope ) {
-          $scope.model = CnAssignmentModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAssignmentModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {
             $scope.model.setupBreadcrumbTrail( 'list' );
           } );
@@ -132,7 +132,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         restrict: 'E',
         scope: true,
         controller: function( $scope ) {
-          $scope.model = CnAssignmentModelFactory.root;
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAssignmentModelFactory.root;
           $scope.model.viewModel.onView().then( function() {
             $scope.model.setupBreadcrumbTrail( 'view' );
           } );
