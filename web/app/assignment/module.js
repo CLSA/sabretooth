@@ -96,7 +96,6 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
       return {
         templateUrl: module.url + 'home.tpl.html',
         restrict: 'E',
-        scope: true,
         controller: function( $scope ) {
           $scope.model = CnAssignmentHomeFactory.instance();
           $scope.model.onLoad(); // breadcrumbs are handled by the service
@@ -112,7 +111,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
       return {
         templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
-        scope: true,
+        scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAssignmentModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {
@@ -130,7 +129,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
       return {
         templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
-        scope: true,
+        scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAssignmentModelFactory.root;
           $scope.model.viewModel.onView().then( function() {
