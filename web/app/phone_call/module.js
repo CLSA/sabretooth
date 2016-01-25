@@ -51,7 +51,7 @@ define( function() {
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnPhoneCallModelFactory.root;
           $scope.model.listModel.onList( true ).then( function() {
-            $scope.model.setupBreadcrumbTrail( 'list' );
+            $scope.model.setupBreadcrumbTrail();
           } );
         }
       };
