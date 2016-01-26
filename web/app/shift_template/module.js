@@ -262,9 +262,10 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
       return {
         templateUrl: module.url + 'add.tpl.html',
         restrict: 'E',
-        scope: true,
+        scope: { model: '=?' },
         controller: function( $scope ) {
-          $scope.model = CnShiftTemplateModelFactory.root;
+          if( angular.isUndefined( $scope.model ) )
+            $scope.model = CnShiftTemplateModelFactory.forSite( CnSession.site );
           $scope.record = {};
           $scope.model.addModel.onNew( $scope.record ).then( function() {
             if( angular.isDefined( $scope.model.addModel.calendarDate ) ) {
@@ -275,7 +276,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
                 $scope.model.addModel.calendarDate, 'date', true );
               delete $scope.model.addModel.calendarDate;
             }
-            $scope.model.setupBreadcrumbTrail( 'add' );
+            $scope.model.setupBreadcrumbTrail();
           } );
         },
         link: function( scope, element ) {
@@ -306,11 +307,12 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
       return {
         templateUrl: module.url + 'calendar.tpl.html',
         restrict: 'E',
-        scope: true,
+        scope: { model: '=?' },
         controller: function( $scope ) {
-          $scope.model = CnShiftTemplateModelFactory.root;
+          if( angular.isUndefined( $scope.model ) )
+            $scope.model = CnShiftTemplateModelFactory.forSite( CnSession.site );
           CnSession.promise.then( function() { $scope.timezone = CnSession.site.timezone; } );
-          $scope.model.setupBreadcrumbTrail( 'calendar' );
+          $scope.model.setupBreadcrumbTrail();
         },
         link: function( scope ) {
           // factory name -> object map used below
@@ -327,7 +329,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
             Object.keys( factoryList ).filter( function( name ) {
               return -1 < cenozoApp.moduleList[name].actions.indexOf( 'calendar' );
             } ).forEach( function( name ) {
-               var calendarModel = factoryList[name].root.calendarModel;
+               var calendarModel = factoryList[name].forSite( scope.model.site ).calendarModel;
                if( !calendarModel.currentDate.isSame( date, 'day' ) ) calendarModel.currentDate = date;
             } );
           } );
@@ -335,7 +337,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
             Object.keys( factoryList ).filter( function( name ) {
               return -1 < cenozoApp.moduleList[name].actions.indexOf( 'calendar' );
             } ).forEach( function( name ) {
-               var calendarModel = factoryList[name].root.calendarModel;
+               var calendarModel = factoryList[name].forSite( scope.model.site ).calendarModel;
                if( calendarModel.currentView != view ) calendarModel.currentView = view;
             } );
           } );
@@ -346,16 +348,17 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnShiftTemplateList', [
-    'CnShiftTemplateModelFactory',
-    function( CnShiftTemplateModelFactory ) {
+    'CnShiftTemplateModelFactory', 'CnSession',
+    function( CnShiftTemplateModelFactory, CnSession ) {
       return {
         templateUrl: module.url + 'list.tpl.html',
         restrict: 'E',
-        scope: true,
+        scope: { model: '=?' },
         controller: function( $scope ) {
-          $scope.model = CnShiftTemplateModelFactory.root;
+          if( angular.isUndefined( $scope.model ) )
+            $scope.model = CnShiftTemplateModelFactory.forSite( CnSession.site );
           $scope.model.listModel.onList( true ).then( function() {
-            $scope.model.setupBreadcrumbTrail( 'list' );
+            $scope.model.setupBreadcrumbTrail();
           } );
         }
       };
@@ -364,16 +367,17 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnShiftTemplateView', [
-    'CnShiftTemplateModelFactory', '$timeout',
-    function( CnShiftTemplateModelFactory, $timeout ) {
+    'CnShiftTemplateModelFactory', 'CnSession', '$timeout',
+    function( CnShiftTemplateModelFactory, CnSession, $timeout ) {
       return {
         templateUrl: module.url + 'view.tpl.html',
         restrict: 'E',
-        scope: true,
+        scope: { model: '=?' },
         controller: function( $scope ) {
-          $scope.model = CnShiftTemplateModelFactory.root;
+          if( angular.isUndefined( $scope.model ) )
+            $scope.model = CnShiftTemplateModelFactory.forSite( CnSession.site );
           $scope.model.viewModel.onView().then( function() {
-            $scope.model.setupBreadcrumbTrail( 'view' );
+            $scope.model.setupBreadcrumbTrail();
           } );
         },
         link: function( scope, element ) {
@@ -509,21 +513,32 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
               CnShiftTemplateAddFactory, CnShiftTemplateCalendarFactory,
               CnShiftTemplateListFactory, CnShiftTemplateViewFactory,
               CnSession ) {
-      var object = function( root ) {
+      var object = function( site ) {
+        if( !angular.isObject( site ) || angular.isUndefined( site.id ) )
+          throw new Error( 'Tried to create CnShiftTemplateModel without specifying the site.' );
+
         var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnShiftTemplateAddFactory.instance( this );
         this.calendarModel = CnShiftTemplateCalendarFactory.instance( this );
         this.listModel = CnShiftTemplateListFactory.instance( this );
-        this.viewModel = CnShiftTemplateViewFactory.instance( this, root );
+        this.viewModel = CnShiftTemplateViewFactory.instance( this, site.id == CnSession.site.id );
+        this.site = site;
         
         // add additional details to some of the help text
         CnSession.promise.then( function() {
-          module.inputGroupList[null].start_time.help += ' (' + CnSession.site.timezone + ')';
-          module.inputGroupList[null].end_time.help += ' (' + CnSession.site.timezone + ')';
-          module.columnList.start_time.help += ' (' + CnSession.site.timezone + ')';
-          module.columnList.end_time.help += ' (' + CnSession.site.timezone + ')';
+          module.inputGroupList[null].start_time.help += ' (' + self.site.timezone + ')';
+          module.inputGroupList[null].end_time.help += ' (' + self.site.timezone + ')';
+          module.columnList.start_time.help += ' (' + self.site.timezone + ')';
+          module.columnList.end_time.help += ' (' + self.site.timezone + ')';
         } );
+
+        // customize service data
+        this.getServiceData = function( type, columnRestrictLists ) {
+          var data = this.$$getServiceData( type, columnRestrictLists );
+          if( 'calendar' == type ) data.restricted_site_id = self.site.id;
+          return data;
+        };
 
         this.getMetadata = function() {
           return this.$$getMetadata().then( function() {
@@ -535,8 +550,13 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
       };
 
       return {
-        root: new object( true ),
-        instance: function() { return new object(); }
+        siteInstanceList: {},
+        forSite: function( site ) {
+          if( angular.isUndefined( this.siteInstanceList[site.id] ) )
+            this.siteInstanceList[site.id] = new object( site );
+          return this.siteInstanceList[site.id];
+        },
+        instance: function() { return this.forSite( CnSession.site ); }
       };
     }
   ] );

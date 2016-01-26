@@ -143,16 +143,23 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
     'CnAvailabilityModelFactory',
     'CnAppointmentModelFactory', 'CnCapacityModelFactory',
     'CnShiftModelFactory', 'CnShiftTemplateModelFactory',
+    'CnSession',
     function( CnAvailabilityModelFactory,
               CnAppointmentModelFactory, CnCapacityModelFactory,
-              CnShiftModelFactory, CnShiftTemplateModelFactory ) {
+              CnShiftModelFactory, CnShiftTemplateModelFactory,
+              CnSession ) {
       return {
         templateUrl: module.url + 'calendar.tpl.html',
         restrict: 'E',
-        scope: true,
+        scope: { model: '=?' },
         controller: function( $scope ) {
-          $scope.model = CnAvailabilityModelFactory.root;
-          $scope.model.setupBreadcrumbTrail( 'calendar' );
+          if( angular.isUndefined( $scope.model ) )
+            $scope.model = CnAvailabilityModelFactory.forSite( CnSession.site );
+          $scope.model.setupBreadcrumbTrail();
+          $scope.heading = 'Availability Calendar';
+          if( angular.isDefined( $scope.model.site ) &&
+              angular.isDefined( $scope.model.site.name ) )
+            $scope.heading = $scope.model.site.name.ucWords() + ' ' + $scope.heading;
         },
         link: function( scope ) {
           // factory name -> object map used below
@@ -169,7 +176,7 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
             Object.keys( factoryList ).filter( function( name ) {
               return -1 < cenozoApp.moduleList[name].actions.indexOf( 'calendar' );
             } ).forEach( function( name ) {
-               var calendarModel = factoryList[name].root.calendarModel;
+               var calendarModel = factoryList[name].forSite( scope.model.site ).calendarModel;
                if( !calendarModel.currentDate.isSame( date, 'day' ) ) calendarModel.currentDate = date;
             } );
           } );
@@ -177,7 +184,7 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
             Object.keys( factoryList ).filter( function( name ) {
               return -1 < cenozoApp.moduleList[name].actions.indexOf( 'calendar' );
             } ).forEach( function( name ) {
-               var calendarModel = factoryList[name].root.calendarModel;
+               var calendarModel = factoryList[name].forSite( scope.model.site ).calendarModel;
                if( calendarModel.currentView != view ) calendarModel.currentView = view;
             } );
           } );
@@ -194,21 +201,22 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
     function( CnBaseCalendarFactory,
               CnAppointmentModelFactory, CnShiftModelFactory, CnShiftTemplateModelFactory,
               CnSession, $q ) {
-      var object = function( parentModel ) {
+      var object = function( parentModel, site ) {
         var self = this;
         CnBaseCalendarFactory.construct( this, parentModel );
 
-        // remove day and change event click callbacks
+        // remove day and event click callbacks
         delete this.settings.dayClick;
         delete this.settings.eventClick;
 
         // extend onList to transform templates into events
         this.onList = function( replace, minDate, maxDate, ignoreParent ) {
           // unlike other calendars we don't cache events
-          var appointmentCalendarModel = CnAppointmentModelFactory.root.calendarModel;
-          var shiftCalendarModel = CnShiftModelFactory.root.calendarModel;
-          var shiftTemplateCalendarModel = CnShiftTemplateModelFactory.root.calendarModel;
-          // instead of calling $$onList we're going to get all shifts and shift templates instead
+          var appointmentCalendarModel = CnAppointmentModelFactory.forSite( parentModel.site ).calendarModel;
+          var shiftCalendarModel = CnShiftModelFactory.forSite( parentModel.site ).calendarModel;
+          var shiftTemplateCalendarModel = CnShiftTemplateModelFactory.forSite( parentModel.site ).calendarModel;
+          
+          // instead of calling $$onList we determine events from the events in other calendars
           return $q.all( [
             appointmentCalendarModel.onList( replace, minDate, maxDate, true ),
             shiftCalendarModel.onList( replace, minDate, maxDate, true ),
@@ -233,23 +241,31 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
         };
       };
 
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
+      return { instance: function( parentModel, site ) { return new object( parentModel, site ); } };
     }
   ] );
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAvailabilityModelFactory', [
-    'CnBaseModelFactory', 'CnAvailabilityCalendarFactory', 'CnSession',
-    function( CnBaseModelFactory, CnAvailabilityCalendarFactory, CnSession ) {
-      var object = function( root ) {
+    'CnBaseModelFactory', 'CnAvailabilityCalendarFactory',
+    function( CnBaseModelFactory, CnAvailabilityCalendarFactory ) {
+      var object = function( site ) {
+        if( !angular.isObject( site ) || angular.isUndefined( site.id ) )
+          throw new Error( 'Tried to create CnAvailabilityModel without specifying the site.' );
+
         var self = this;
         CnBaseModelFactory.construct( this, module );
-        this.calendarModel = CnAvailabilityCalendarFactory.instance( this );
+        this.calendarModel = CnAvailabilityCalendarFactory.instance( this, site );
+        this.site = site;
       };
 
       return {
-        root: new object( true ),
-        instance: function() { return new object(); }
+        siteInstanceList: {},
+        forSite: function( site ) {
+          if( angular.isUndefined( this.siteInstanceList[site.id] ) )
+            this.siteInstanceList[site.id] = new object( site );
+          return this.siteInstanceList[site.id];
+        }
       };
     }
   ] );

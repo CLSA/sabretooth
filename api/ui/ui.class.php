@@ -105,7 +105,7 @@ class ui extends \cenozo\ui\ui
         'action' => 'view',
         'identifier' => sprintf( 'name=%s', $db_site->name ) );
     }
-    if( !$db_role->all_sites )
+    if( !$db_role->all_sites || 'helpline' == $db_role->name )
     {
       $list['Appointment Calendar'] = array( 'subject' => 'appointment', 'action' => 'calendar' );
       $list['Availability Calendar'] = array( 'subject' => 'availability', 'action' => 'calendar' );
