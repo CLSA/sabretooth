@@ -27,12 +27,33 @@ class module extends \sabretooth\service\base_calendar_module
   /**
    * Extend parent method
    */
+  public function validate()
+  {
+    parent::validate();
+
+    $record = $this->get_resource();
+    if( !is_null( $record ) )
+    {
+      // restrict by site
+      $db_restrict_site = $this->get_restricted_site();
+      if( !is_null( $db_restrict_site ) )
+      {
+        if( $record->site_id != $db_restrict_site->id )
+          $this->get_status()->set_code( 403 );
+      }
+    }
+  }
+
+  /**
+   * Extend parent method
+   */
   public function prepare_read( $select, $modifier )
   {
     parent::prepare_read( $select, $modifier );
 
-    // only show shifts for the user's current site
-    $modifier->where( 'site_id', '=', lib::create( 'business\session' )->get_site()->id );
+    // restrict by site
+    $db_restrict_site = $this->get_restricted_site();
+    if( !is_null( $db_restrict_site ) ) $modifier->where( 'site_id', '=', $db_restrict_site->id );
 
     // include the user first/last/name as supplemental data
     $modifier->join( 'user', 'shift.user_id', 'user.id' );

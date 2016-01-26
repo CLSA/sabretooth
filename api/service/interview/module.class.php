@@ -28,7 +28,7 @@ class module extends \cenozo\service\site_restricted_module
     if( !is_null( $db_interview ) )
     {
       $db_participant = $this->get_resource()->get_participant();
-      if( $db_application->release_based && !is_null( $db_participant ) )
+      if( $db_application->release_based )
       {
         $modifier = lib::create( 'database\modifier' );
         $modifier->where( 'participant_id', '=', $db_participant->id );
@@ -37,7 +37,7 @@ class module extends \cenozo\service\site_restricted_module
 
       // restrict by site
       $db_restrict_site = $this->get_restricted_site();
-      if( !is_null( $db_participant ) && !is_null( $db_restrict_site ) )
+      if( !is_null( $db_restrict_site ) )
       {
         $db_effective_site = $db_participant->get_effective_site();
         if( is_null( $db_effective_site ) || $db_restrict_site->id != $db_effective_site->id )

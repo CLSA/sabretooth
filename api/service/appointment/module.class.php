@@ -36,6 +36,29 @@ class module extends \sabretooth\service\base_calendar_module
     $db_interview = is_null( $db_appointment ) ? $this->get_parent_resource() : $db_appointment->get_interview();
     $method = $this->get_method();
 
+    $db_application = lib::create( 'business\session' )->get_application();
+
+    // make sure the application has access to the participant
+    if( !is_null( $db_appointment ) )
+    {
+      $db_participant = $db_interview->get_participant();
+      if( $db_application->release_based )
+      {
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'participant_id', '=', $db_participant->id );
+        if( 0 == $db_application->get_participant_count( $modifier ) ) $this->get_status()->set_code( 404 );
+      }
+
+      // restrict by site
+      $db_restrict_site = $this->get_restricted_site();
+      if( !is_null( $db_restrict_site ) )
+      {
+        $db_effective_site = $db_participant->get_effective_site();
+        if( is_null( $db_effective_site ) || $db_restrict_site->id != $db_effective_site->id )
+          $this->get_status()->set_code( 403 );
+      }
+    }
+
     if( $service_class_name::is_write_method( $method ) )
     {
       // no writing of appointments if interview is completed
@@ -101,8 +124,11 @@ class module extends \sabretooth\service\base_calendar_module
     $participant_site_join_mod->where(
       'participant_site.application_id', '=', $session->get_application()->id );
     $modifier->join_modifier( 'participant_site', $participant_site_join_mod, 'left' );
-    if( !$session->get_role()->all_sites ) // restrict to the role's site
-      $modifier->where( 'participant_site.site_id', '=', $session->get_site()->id );
+
+    // restrict by site
+    $db_restricted_site = $this->get_restricted_site();
+    if( !is_null( $db_restricted_site ) )
+      $modifier->where( 'participant_site.site_id', '=', $db_restricted_site->id );
 
     if( $select->has_table_columns( 'script' ) )
       $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
