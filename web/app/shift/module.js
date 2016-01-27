@@ -83,7 +83,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
       module.addExtraOperation(
         'calendar',
         calendarModule.subject.snake.replace( "_", " " ).ucWords(),
-        function( $state ) { $state.go( name + '.calendar' ); },
+        function( $state, model ) { $state.go( name + '.calendar', { identifier: model.site.getIdentifier() } ); },
         'shift' == name ? 'btn-warning' : undefined // highlight current model
       );
     }
@@ -104,8 +104,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) )
-            $scope.model = CnShiftModelFactory.forSite( CnSession.site );
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftModelFactory.instance();
           $scope.record = {};
           $scope.model.addModel.onNew( $scope.record ).then( function() {
             if( angular.isDefined( $scope.model.addModel.calendarDate ) ) {
@@ -136,11 +135,14 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
       return {
         templateUrl: module.url + 'calendar.tpl.html',
         restrict: 'E',
-        scope: { model: '=?' },
+        scope: {
+          model: '=?',
+          preventSiteChange: '@'
+        },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) )
-            $scope.model = CnShiftModelFactory.forSite( CnSession.site );
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftModelFactory.instance();
           $scope.model.setupBreadcrumbTrail();
+          $scope.heading = $scope.model.site.name.ucWords() + ' Shift Calendar';
         },
         link: function( scope ) {
           // factory name -> object map used below
@@ -183,8 +185,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) )
-            $scope.model = CnShiftModelFactory.forSite( CnSession.site );
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftModelFactory.instance();
           $scope.model.listModel.onList( true ).then( function() {
             $scope.model.setupBreadcrumbTrail();
           } );
@@ -202,8 +203,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) )
-            $scope.model = CnShiftModelFactory.forSite( CnSession.site );
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftModelFactory.instance();
           $scope.model.viewModel.onView().then( function() {
             $scope.model.setupBreadcrumbTrail();
           } );
@@ -319,11 +319,11 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
     'CnBaseModelFactory',
     'CnShiftAddFactory', 'CnShiftCalendarFactory',
     'CnShiftListFactory', 'CnShiftViewFactory',
-    'CnSession',
+    'CnSession', '$state',
     function( CnBaseModelFactory,
               CnShiftAddFactory, CnShiftCalendarFactory,
               CnShiftListFactory, CnShiftViewFactory,
-              CnSession ) {
+              CnSession, $state ) {
       var object = function( site ) {
         if( !angular.isObject( site ) || angular.isUndefined( site.id ) )
           throw new Error( 'Tried to create CnShiftModel without specifying the site.' );
@@ -347,11 +347,27 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
       return {
         siteInstanceList: {},
         forSite: function( site ) {
+          if( !angular.isObject( site ) ) {
+            $state.go( 'error.404' );
+            throw new Error( 'Cannot find site matching identifier "' + site + '", redirecting to 404.' );
+          }
           if( angular.isUndefined( this.siteInstanceList[site.id] ) )
             this.siteInstanceList[site.id] = new object( site );
           return this.siteInstanceList[site.id];
         },
-        instance: function() { return this.forSite( CnSession.site ); }
+        instance: function() {
+          var site = null;
+          if( 'calendar' == $state.current.name.split( '.' )[1] ) {
+            var parts = $state.params.identifier.split( '=' );
+            if( 1 == parts.length && parseInt( parts[0] ) == parts[0] ) // int identifier
+              site = CnSession.siteList.findByProperty( 'id', parseInt( parts[0] ) );
+            else if( 2 == parts.length ) // key=val identifier
+              site = CnSession.siteList.findByProperty( parts[0], parts[1] );
+          } else {
+            site = CnSession.site;
+          }
+          return this.forSite( site );
+        }
       };
     }
   ] );

@@ -103,7 +103,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
       module.addExtraOperation(
         'calendar',
         calendarModule.subject.snake.replace( "_", " " ).ucWords(),
-        function( $state ) { $state.go( name + '.calendar' ); },
+        function( $state, model ) { $state.go( name + '.calendar', { identifier: model.site.getIdentifier() } ); },
         'shift_template' == name ? 'btn-warning' : undefined // highlight current model
       );
     }
@@ -264,8 +264,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) )
-            $scope.model = CnShiftTemplateModelFactory.forSite( CnSession.site );
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftTemplateModelFactory.instance();
           $scope.record = {};
           $scope.model.addModel.onNew( $scope.record ).then( function() {
             if( angular.isDefined( $scope.model.addModel.calendarDate ) ) {
@@ -307,12 +306,15 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
       return {
         templateUrl: module.url + 'calendar.tpl.html',
         restrict: 'E',
-        scope: { model: '=?' },
+        scope: {
+          model: '=?',
+          preventSiteChange: '@'
+        },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) )
-            $scope.model = CnShiftTemplateModelFactory.forSite( CnSession.site );
-          CnSession.promise.then( function() { $scope.timezone = CnSession.site.timezone; } );
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftTemplateModelFactory.instance();
           $scope.model.setupBreadcrumbTrail();
+          $scope.heading = $scope.model.site.name.ucWords() + ' Shift Template Calendar (' +
+                           $scope.model.site.timezone + ')';
         },
         link: function( scope ) {
           // factory name -> object map used below
@@ -355,8 +357,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) )
-            $scope.model = CnShiftTemplateModelFactory.forSite( CnSession.site );
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftTemplateModelFactory.instance();
           $scope.model.listModel.onList( true ).then( function() {
             $scope.model.setupBreadcrumbTrail();
           } );
@@ -374,8 +375,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) )
-            $scope.model = CnShiftTemplateModelFactory.forSite( CnSession.site );
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftTemplateModelFactory.instance();
           $scope.model.viewModel.onView().then( function() {
             $scope.model.setupBreadcrumbTrail();
           } );
@@ -437,7 +437,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
               return cache.concat( getEventsFromShiftTemplate( item, loadMinDate, loadMaxDate ) );
             }, [] );
             // make sure we make the calendar's timezone the site's (instead of the user's)
-            CnSession.promise.then( function() { self.settings.timezone = CnSession.site.timezone; } );
+            self.settings.timezone = CnSession.site.timezone;
           } );
         };
       };
@@ -508,11 +508,11 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
     'CnBaseModelFactory',
     'CnShiftTemplateAddFactory', 'CnShiftTemplateCalendarFactory',
     'CnShiftTemplateListFactory', 'CnShiftTemplateViewFactory',
-    'CnSession',
+    'CnSession', '$state',
     function( CnBaseModelFactory,
               CnShiftTemplateAddFactory, CnShiftTemplateCalendarFactory,
               CnShiftTemplateListFactory, CnShiftTemplateViewFactory,
-              CnSession ) {
+              CnSession, $state ) {
       var object = function( site ) {
         if( !angular.isObject( site ) || angular.isUndefined( site.id ) )
           throw new Error( 'Tried to create CnShiftTemplateModel without specifying the site.' );
@@ -526,12 +526,10 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
         this.site = site;
         
         // add additional details to some of the help text
-        CnSession.promise.then( function() {
-          module.inputGroupList[null].start_time.help += ' (' + self.site.timezone + ')';
-          module.inputGroupList[null].end_time.help += ' (' + self.site.timezone + ')';
-          module.columnList.start_time.help += ' (' + self.site.timezone + ')';
-          module.columnList.end_time.help += ' (' + self.site.timezone + ')';
-        } );
+        module.inputGroupList[null].start_time.help += ' (' + self.site.timezone + ')';
+        module.inputGroupList[null].end_time.help += ' (' + self.site.timezone + ')';
+        module.columnList.start_time.help += ' (' + self.site.timezone + ')';
+        module.columnList.end_time.help += ' (' + self.site.timezone + ')';
 
         // customize service data
         this.getServiceData = function( type, columnRestrictLists ) {
@@ -552,11 +550,27 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
       return {
         siteInstanceList: {},
         forSite: function( site ) {
+          if( !angular.isObject( site ) ) {
+            $state.go( 'error.404' );
+            throw new Error( 'Cannot find site matching identifier "' + site + '", redirecting to 404.' );
+          }
           if( angular.isUndefined( this.siteInstanceList[site.id] ) )
             this.siteInstanceList[site.id] = new object( site );
           return this.siteInstanceList[site.id];
         },
-        instance: function() { return this.forSite( CnSession.site ); }
+        instance: function() {
+          var site = null;
+          if( 'calendar' == $state.current.name.split( '.' )[1] ) {
+            var parts = $state.params.identifier.split( '=' );
+            if( 1 == parts.length && parseInt( parts[0] ) == parts[0] ) // int identifier
+              site = CnSession.siteList.findByProperty( 'id', parseInt( parts[0] ) );
+            else if( 2 == parts.length ) // key=val identifier
+              site = CnSession.siteList.findByProperty( parts[0], parts[1] );
+          } else {
+            site = CnSession.site;
+          }
+          return this.forSite( site );
+        }
       };
     }
   ] );

@@ -123,7 +123,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
       module.addExtraOperation(
         'calendar',
         calendarModule.subject.snake.replace( "_", " " ).ucWords(),
-        function( $state ) { $state.go( name + '.calendar' ); },
+        function( $state, model ) { $state.go( name + '.calendar', { identifier: model.site.getIdentifier() } ); },
         'appointment' == name ? 'btn-warning' : undefined // highlight current model
       );
     }
@@ -164,27 +164,43 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) )
-            $scope.model = CnAppointmentModelFactory.forSite( CnSession.site );
-          if( -1 < cenozoApp.module( 'availability' ).actions.indexOf( 'calendar' ) ) {
-            // get the availability model linked to the participant's site
-            $scope.model.getMetadata().then( function() {
-              $scope.availabilityModel =
-                CnAvailabilityModelFactory.forSite( $scope.model.metadata.participantSite );
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAppointmentModelFactory.instance();
+          $scope.model.getMetadata().then( function() {
+            if( -1 < cenozoApp.module( 'availability' ).actions.indexOf( 'calendar' ) &&
+                angular.isObject( $scope.model.metadata.participantSite ) ) {
+              // get the availability model linked to the participant's site
+              $scope.model.getMetadata().then( function() {
+                $scope.availabilityModel =
+                  CnAvailabilityModelFactory.forSite( $scope.model.metadata.participantSite );
 
-              // connect the availability calendar's event click callback to the appointments datetime
-              $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
-                if( availability.start.isAfter( moment() ) ) {
-                  // set the datetime in the record and formatted record
-                  var datetime = moment( availability.start.format() );
-                  $scope.record.datetime = datetime.format();
-                  $scope.$$childTail.formattedRecord.datetime =
-                    CnSession.formatValue( datetime, 'datetime', true );
-                  $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
-                }
-              };
-            } );
-          }
+                // connect the availability calendar's event click callback to the appointments datetime
+                $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
+                  if( availability.end.isAfter( moment() ) ) {
+                    // find which of the scope's children has the formattedRecord object
+                    var childScope = $scope.$$childHead;
+                    while( null != childScope && angular.isUndefined( childScope.formattedRecord ) )
+                      childScope = childScope.$$nextSibling;
+                    if( angular.isUndefined( childScope.formattedRecord ) )
+                      throw new Exception( 'Unable to find appointment child scope.' );
+
+                    // if the start is after the current time then use the next rounded hour
+                    var datetime = moment( availability.start.format() );
+                    if( !datetime.isAfter( moment() ) ) {
+                      datetime = moment().minute( 0 ).second( 0 ).millisecond( 0 ).add( 1, 'hours' );
+                      if( !datetime.isAfter( moment() ) )
+                        datetime = moment( availability.end.format() );
+                    }
+
+                    // set the datetime in the record and formatted record
+                    $scope.record.datetime = datetime.format();
+                    childScope.formattedRecord.datetime =
+                      CnSession.formatValue( datetime, 'datetime', true );
+                    $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
+                  }
+                };
+              } );
+            }
+          } );
 
           $scope.record = {};
           $scope.model.addModel.onNew( $scope.record ).then( function() {
@@ -217,11 +233,14 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
       return {
         templateUrl: module.url + 'calendar.tpl.html',
         restrict: 'E',
-        scope: { model: '=?' },
+        scope: {
+          model: '=?',
+          preventSiteChange: '@'
+        },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) )
-            $scope.model = CnAppointmentModelFactory.forSite( CnSession.site );
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAppointmentModelFactory.instance();
           $scope.model.setupBreadcrumbTrail();
+          $scope.heading = $scope.model.site.name.ucWords() + ' Appointment Calendar';
         },
         link: function( scope ) {
           // factory name -> object map used below
@@ -264,8 +283,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) )
-            $scope.model = CnAppointmentModelFactory.forSite( CnSession.site );
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAppointmentModelFactory.instance();
           $scope.model.listModel.onList( true ).then( function() {
             $scope.model.setupBreadcrumbTrail();
           } );
@@ -283,28 +301,43 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) )
-            $scope.model = CnAppointmentModelFactory.forSite( CnSession.site );
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAppointmentModelFactory.instance();
           $scope.model.viewModel.onView().then( function() {
-            $scope.model.setupBreadcrumbTrail();
-
-            if( -1 < cenozoApp.module( 'availability' ).actions.indexOf( 'calendar' ) ) {
+            if( -1 < cenozoApp.module( 'availability' ).actions.indexOf( 'calendar' ) &&
+                angular.isObject( $scope.model.metadata.participantSite ) ) {
+              // get the availability model linked to the participant's site
               $scope.availabilityModel =
                 CnAvailabilityModelFactory.forSite( $scope.model.metadata.participantSite );
 
               // connect the availability calendar's event click callback to the appointments datetime
               $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
-                if( availability.start.isAfter( moment() ) ) {
-                  // set the datetime in the record and formatted record
+                if( availability.end.isAfter( moment() ) ) {
+                  // find which of the scope's children has the patch function
+                  var childScope = $scope.$$childHead;
+                  while( null != childScope && angular.isUndefined( childScope.patch ) )
+                    childScope = childScope.$$nextSibling;
+                  if( angular.isUndefined( childScope.patch ) )
+                    throw new Exception( 'Unable to find appointment child scope.' );
+
+                  // if the start is after the current time then use the next rounded hour
                   var datetime = moment( availability.start.format() );
+                  if( !datetime.isAfter( moment() ) ) {
+                    datetime = moment().minute( 0 ).second( 0 ).millisecond( 0 ).add( 1, 'hours' );
+                    if( !datetime.isAfter( moment() ) )
+                      datetime = moment( availability.end.format() );
+                  }
+
+                  // set the datetime in the record and formatted record
                   $scope.model.viewModel.record.datetime = datetime.format();
                   $scope.model.viewModel.formattedRecord.datetime =
                     CnSession.formatValue( datetime, 'datetime', true );
                   $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
-                  $scope.$$childTail.patch( 'datetime' );
+                  childScope.patch( 'datetime' );
                 }
               };
             }
+
+            $scope.model.setupBreadcrumbTrail();
           } );
         }
       };
@@ -438,11 +471,11 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
     'CnBaseModelFactory',
     'CnAppointmentAddFactory', 'CnAppointmentCalendarFactory',
     'CnAppointmentListFactory', 'CnAppointmentViewFactory',
-    'CnSession', 'CnHttpFactory', '$q',
+    'CnSession', 'CnHttpFactory', '$q', '$state',
     function( CnBaseModelFactory,
               CnAppointmentAddFactory, CnAppointmentCalendarFactory,
               CnAppointmentListFactory, CnAppointmentViewFactory,
-              CnSession, CnHttpFactory, $q ) {
+              CnSession, CnHttpFactory, $q, $state ) {
       var object = function( site ) {
         if( !angular.isObject( site ) || angular.isUndefined( site.id ) )
           throw new Error( 'Tried to create CnAppointmentModel without specifying the site.' );
@@ -484,10 +517,12 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
                     path: ['participant', response.data.participant_id ].join( '/' ),
                     data: { select: { column: [
                       { table: 'site', column: 'id', alias: 'site_id' },
-                      { table: 'site', column: 'name' }
+                      { table: 'site', column: 'name' },
+                      { table: 'site', column: 'timezone' }
                     ] } }
                   } ).get().then( function( response ) {
-                    self.metadata.participantSite = { id: response.data.site_id, name: response.data.name };
+                    self.metadata.participantSite =
+                      CnSession.siteList.findByProperty( 'id', response.data.site_id );
                   } ),
 
                   CnHttpFactory.instance( {
@@ -517,11 +552,27 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
       return {
         siteInstanceList: {},
         forSite: function( site ) {
+          if( !angular.isObject( site ) ) {
+            $state.go( 'error.404' );
+            throw new Error( 'Cannot find site matching identifier "' + site + '", redirecting to 404.' );
+          }
           if( angular.isUndefined( this.siteInstanceList[site.id] ) )
             this.siteInstanceList[site.id] = new object( site );
           return this.siteInstanceList[site.id];
         },
-        instance: function() { return this.forSite( CnSession.site ); }
+        instance: function() {
+          var site = null;
+          if( 'calendar' == $state.current.name.split( '.' )[1] ) {
+            var parts = $state.params.identifier.split( '=' );
+            if( 1 == parts.length && parseInt( parts[0] ) == parts[0] ) // int identifier
+              site = CnSession.siteList.findByProperty( 'id', parseInt( parts[0] ) );
+            else if( 2 == parts.length ) // key=val identifier
+              site = CnSession.siteList.findByProperty( parts[0], parts[1] );
+          } else {
+            site = CnSession.site;
+          }
+          return this.forSite( site );
+        }
       };
     }
   ] );

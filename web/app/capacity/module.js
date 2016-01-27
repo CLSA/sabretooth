@@ -127,7 +127,7 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template' ].reduce( fun
       module.addExtraOperation(
         'calendar',
         calendarModule.subject.snake.replace( "_", " " ).ucWords(),
-        function( $state ) { $state.go( name + '.calendar' ); },
+        function( $state, model ) { $state.go( name + '.calendar', { identifier: model.site.getIdentifier() } ); },
         'capacity' == name ? 'btn-warning' : undefined // highlight current model
       );
     }
@@ -138,23 +138,22 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template' ].reduce( fun
     'CnCapacityModelFactory',
     'CnAppointmentModelFactory', 'CnAvailabilityModelFactory',
     'CnShiftModelFactory', 'CnShiftTemplateModelFactory',
-    'CnSession',
+    'CnSession', '$state',
     function( CnCapacityModelFactory,
               CnAppointmentModelFactory, CnAvailabilityModelFactory,
               CnShiftModelFactory, CnShiftTemplateModelFactory,
-              CnSession ) {
+              CnSession, $state ) {
       return {
         templateUrl: module.url + 'calendar.tpl.html',
         restrict: 'E',
-        scope: { model: '=?' },
+        scope: {
+          model: '=?',
+          preventSiteChange: '@'
+        },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) )
-            $scope.model = CnCapacityModelFactory.forSite( CnSession.site );
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnCapacityModelFactory.instance();
           $scope.model.setupBreadcrumbTrail();
-          $scope.heading = 'Capacity Calendar';
-          if( angular.isDefined( $scope.model.site ) &&
-              angular.isDefined( $scope.model.site.name ) )
-            $scope.heading = $scope.model.site.name.ucWords() + ' ' + $scope.heading;
+          $scope.heading = $scope.model.site.name.ucWords() + ' Capacity Calendar';
         },
         link: function( scope ) {
           // factory name -> object map used below
@@ -242,8 +241,8 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template' ].reduce( fun
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnCapacityModelFactory', [
-    'CnBaseModelFactory', 'CnCapacityCalendarFactory',
-    function( CnBaseModelFactory, CnCapacityCalendarFactory ) {
+    'CnBaseModelFactory', 'CnCapacityCalendarFactory', 'CnSession', '$state',
+    function( CnBaseModelFactory, CnCapacityCalendarFactory, CnSession, $state ) {
       var object = function( site ) {
         if( !angular.isObject( site ) || angular.isUndefined( site.id ) )
           throw new Error( 'Tried to create CnCapacityModel without specifying the site.' );
@@ -257,9 +256,23 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template' ].reduce( fun
       return {
         siteInstanceList: {},
         forSite: function( site ) {
+          if( !angular.isObject( site ) ) {
+            $state.go( 'error.404' );
+            throw new Error( 'Cannot find site matching identifier "' + site + '", redirecting to 404.' );
+          }
           if( angular.isUndefined( this.siteInstanceList[site.id] ) )
             this.siteInstanceList[site.id] = new object( site );
           return this.siteInstanceList[site.id];
+        },
+        instance: function() {
+          var parts = $state.params.identifier.split( '=' );
+          return this.forSite(
+              1 == parts.length && parseInt( parts[0] ) == parts[0] // int identifier
+            ? CnSession.siteList.findByProperty( 'id', parseInt( parts[0] ) )
+            : 2 == parts.length // key=val identifier
+            ? CnSession.siteList.findByProperty( parts[0], parts[1] )
+            : null
+          );
         }
       };
     }

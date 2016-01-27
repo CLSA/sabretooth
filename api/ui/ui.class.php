@@ -107,14 +107,29 @@ class ui extends \cenozo\ui\ui
     }
     if( !$db_role->all_sites || 'helpline' == $db_role->name )
     {
-      $list['Appointment Calendar'] = array( 'subject' => 'appointment', 'action' => 'calendar' );
-      $list['Availability Calendar'] = array( 'subject' => 'availability', 'action' => 'calendar' );
-      $list['Capacity Calendar'] = array( 'subject' => 'capacity', 'action' => 'calendar' );
+      $list['Appointment Calendar'] = array(
+        'subject' => 'appointment',
+        'action' => 'calendar',
+        'identifier' => sprintf( 'name=%s', $db_site->name ) );
+      $list['Availability Calendar'] = array(
+        'subject' => 'availability',
+        'action' => 'calendar',
+        'identifier' => sprintf( 'name=%s', $db_site->name ) );
+      $list['Capacity Calendar'] = array(
+        'subject' => 'capacity',
+        'action' => 'calendar',
+        'identifier' => sprintf( 'name=%s', $db_site->name ) );
 
       if( 1 < $db_role->tier )
       {
-        $list['Shift Calendar'] = array( 'subject' => 'shift', 'action' => 'calendar' );
-        $list['Shift Template Calendar'] = array( 'subject' => 'shift_template', 'action' => 'calendar' );
+        $list['Shift Calendar'] = array(
+          'subject' => 'shift',
+          'action' => 'calendar',
+          'identifier' => sprintf( 'name=%s', $db_site->name ) );
+        $list['Shift Template Calendar'] = array(
+          'subject' => 'shift_template',
+          'action' => 'calendar',
+          'identifier' => sprintf( 'name=%s', $db_site->name ) );
       }
     }
 
