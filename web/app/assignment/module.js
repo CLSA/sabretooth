@@ -256,8 +256,20 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
               { table: 'script', column: 'id', alias: 'script_id' },
               { table: 'script', column: 'name', alias: 'qnaire' },
               { table: 'queue', column: 'title', alias: 'queue' }
-            ] } }
-          } ).get().then( function success( response ) {
+            ] } },
+            onError: function( response ) {
+              if( 307 == response.status ) {
+                // 307 means the user has no active assignment, so load the participant select list
+                self.assignment = null;
+                self.participant = null;
+                self.isAssignmentLoading = false;
+                self.isPrevAssignmentLoading = false;
+                self.participantModel.listModel.onList( true ).then( function() {
+                  CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Select' } ] );
+                } );
+              } else { CnModalMessageFactory.httpError( response ); }
+            }
+          } ).get().then( function( response ) {
             self.assignment = response.data;
 
             // get the assigned participant's details
@@ -267,98 +279,86 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
                 { table: 'language', column: 'code', alias: 'language_code' },
                 { table: 'language', column: 'name', alias: 'language' }
               ] } }
-            } ).get().then( function success( response ) {
+            } ).get().then( function( response ) {
               self.participant = response.data;
               self.participant.getIdentifier = function() {
                 return self.participantModel.getIdentifierFromRecord( self.participant );
               };
               CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: self.participant.uid } ] );
               self.isAssignmentLoading = false;
-            } );
-          } ).then( function() {
-            CnHttpFactory.instance( {
-              path: 'assignment/0/phone_call',
-              data: { select: { column: [ 'end_datetime', 'status',
-                { table: 'phone', column: 'rank' },
-                { table: 'phone', column: 'type' },
-                { table: 'phone', column: 'number' }
-              ] } }
-            } ).query().then( function success( response ) {
-              self.phoneCallList = response.data;
-              var len = self.phoneCallList.length
-              self.activePhoneCall = 0 < len && null === self.phoneCallList[len-1].end_datetime
-                                   ? self.phoneCallList[len-1]
-                                   : null;
-            } );
-          } ).then( function() {
-            if( null === self.qnaireList ) {
-              // get the qnaire list and store the current and last qnaires
+            } ).then( function() {
               CnHttpFactory.instance( {
-                path: 'qnaire',
+                path: 'assignment/0/phone_call',
+                data: { select: { column: [ 'end_datetime', 'status',
+                  { table: 'phone', column: 'rank' },
+                  { table: 'phone', column: 'type' },
+                  { table: 'phone', column: 'number' }
+                ] } }
+              } ).query().then( function( response ) {
+                self.phoneCallList = response.data;
+                var len = self.phoneCallList.length
+                self.activePhoneCall = 0 < len && null === self.phoneCallList[len-1].end_datetime
+                                     ? self.phoneCallList[len-1]
+                                     : null;
+              } );
+            } ).then( function() {
+              if( null === self.qnaireList ) {
+                // get the qnaire list and store the current and last qnaires
+                CnHttpFactory.instance( {
+                  path: 'qnaire',
+                  data: {
+                    select: { column: ['id', 'rank', 'script_id', 'delay'] },
+                    modifier: { order: 'rank' }
+                  }
+                } ).query().then( function( response ) {
+                  self.qnaireList = response.data;
+                  var len = self.qnaireList.length;
+                  if( 0 < len ) {
+                    self.activeQnaire = self.qnaireList.findByProperty( 'id', self.assignment.qnaire_id );
+                    self.lastQnaire = self.qnaireList[len-1];
+                  }
+                  self.loadScriptList(); // now load the script list
+                } );
+              }
+            } ).then( function() {
+              CnHttpFactory.instance( {
+                path: 'participant/' + self.assignment.participant_id +
+                      '/interview/' + self.assignment.interview_id + '/assignment',
                 data: {
-                  select: { column: ['id', 'rank', 'script_id', 'delay'] },
+                  select: {
+                    column: [
+                      'start_datetime',
+                      'end_datetime',
+                      'phone_call_count',
+                      { table: 'last_phone_call', column: 'status' },
+                      { table: 'user', column: 'first_name' },
+                      { table: 'user', column: 'last_name' },
+                      { table: 'user', column: 'name' }
+                    ]
+                  },
+                  modifier: { order: { start_datetime: true }, offset: 1, limit: 1 }
+                }
+              } ).query().then( function( response ) {
+                self.prevAssignment = 1 == response.data.length ? response.data[0] : null;
+                self.isPrevAssignmentLoading = false;
+              } );
+            } ).then( function() {
+              CnHttpFactory.instance( {
+                path: 'participant/' + self.assignment.participant_id + '/phone',
+                data: {
+                  select: { column: [ 'id', 'rank', 'type', 'number', 'international' ] },
                   modifier: { order: 'rank' }
                 }
               } ).query().then( function( response ) {
-                self.qnaireList = response.data;
-                var len = self.qnaireList.length;
-                if( 0 < len ) {
-                  self.activeQnaire = self.qnaireList.findByProperty( 'id', self.assignment.qnaire_id );
-                  self.lastQnaire = self.qnaireList[len-1];
-                }
-                self.loadScriptList(); // now load the script list
+                self.phoneList = response.data;
               } );
-            }
-          } ).then( function() {
-            CnHttpFactory.instance( {
-              path: 'participant/' + self.assignment.participant_id +
-                    '/interview/' + self.assignment.interview_id + '/assignment',
-              data: {
-                select: {
-                  column: [
-                    'start_datetime',
-                    'end_datetime',
-                    'phone_call_count',
-                    { table: 'last_phone_call', column: 'status' },
-                    { table: 'user', column: 'first_name' },
-                    { table: 'user', column: 'last_name' },
-                    { table: 'user', column: 'name' }
-                  ]
-                },
-                modifier: { order: { start_datetime: true }, offset: 1, limit: 1 }
-              }
-            } ).query().then( function success( response ) {
-              self.prevAssignment = 1 == response.data.length ? response.data[0] : null;
-              self.isPrevAssignmentLoading = false;
-            } );
-          } ).then( function() {
-            CnHttpFactory.instance( {
-              path: 'participant/' + self.assignment.participant_id + '/phone',
-              data: {
-                select: { column: [ 'id', 'rank', 'type', 'number', 'international' ] },
-                modifier: { order: 'rank' }
-              }
-            } ).query().then( function success( response ) {
-              self.phoneList = response.data;
-            } );
-          } ).then( function() {
-            CnHttpFactory.instance( {
-              path: 'phone_call',
-              onError: function( response ) {
-                if( 307 == response.status ) {
-                  // 307 means the user has no active assignment, so load the participant select list
-                  self.assignment = null;
-                  self.participant = null;
-                  self.isAssignmentLoading = false;
-                  self.isPrevAssignmentLoading = false;
-                  self.participantModel.listModel.onList( true ).then( function() {
-                    CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Select' } ] );
-                  } );
-                } else { CnModalMessageFactory.httpError( response ); }
-              }
-            } ).head().then( function success( response ) {
-              self.phoneCallStatusList =
-                cenozo.parseEnumList( angular.fromJson( response.headers( 'Columns' ) ).status );
+            } ).then( function() {
+              CnHttpFactory.instance( {
+                path: 'phone_call'
+              } ).head().then( function( response ) {
+                self.phoneCallStatusList =
+                  cenozo.parseEnumList( angular.fromJson( response.headers( 'Columns' ) ).status );
+              } );
             } );
           } );
         };
@@ -381,7 +381,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
                 { table: 'completed_event', column: 'datetime', alias: 'completed_datetime' }
               ] }
             }
-          } ).query().then( function success( response ) {
+          } ).query().then( function( response ) {
             // put qnaire scripts in separate list and only include the current qnaire script in the main list
             self.scriptList = [];
             self.qnaireScriptList = [];
@@ -437,7 +437,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
                     modal.close();
                     CnModalMessageFactory.httpError( response );
                   }
-                } ).post().then( function success( response ) {
+                } ).post().then( function( response ) {
                   // close the wait message
                   modal.close();
 

@@ -35,7 +35,8 @@ class module extends \cenozo\service\site_restricted_module
     if( !is_null( $db_restrict_site ) )
     {
       $record = $this->get_resource();
-      if( $record && $record->site_id != $db_restrict_site->id ) $this->get_status()->set_code( 403 );
+      if( $record && $record->site_id && $record->site_id != $db_restrict_site->id )
+        $this->get_status()->set_code( 403 );
     }
 
     if( ( 'DELETE' == $method || 'PATCH' == $method ) &&
