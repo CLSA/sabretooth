@@ -105,19 +105,24 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftModelFactory.instance();
-          $scope.record = {};
-          $scope.model.addModel.onNew( $scope.record ).then( function() {
-            if( angular.isDefined( $scope.model.addModel.calendarDate ) ) {
-              var addDirective = $scope.$$childHead;
-              // set the start date in the record and formatted record
-              $scope.record.start_datetime = moment( $scope.model.addModel.calendarDate ).format();
-              addDirective.formattedRecord.start_datetime = CnSession.formatValue(
-                $scope.model.addModel.calendarDate, 'datetime', true );
-              delete $scope.model.addModel.calendarDate;
-            }
-            $scope.model.setupBreadcrumbTrail();
-          } );
         },
+        link: function( scope, element ) {
+          $timeout( function() {
+            // set the start date in the record and formatted record (if passed here from the calendar)
+            scope.model.metadata.getPromise().then( function() {
+              if( angular.isDefined( scope.model.addModel.calendarDate ) ) {
+                var cnRecordAddScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
+                if( null == cnRecordAddScope )
+                  throw new Exception( 'Unable to find shift\'s cnRecordAdd scope.' );
+
+                cnRecordAddScope.record.start_date = moment( scope.model.addModel.calendarDate ).format();
+                cnRecordAddScope.formattedRecord.start_date = CnSession.formatValue(
+                  scope.model.addModel.calendarDate, 'date', true );
+                delete scope.model.addModel.calendarDate;
+              }
+            } );
+          }, 200 );
+        }
       };
     }
   ] );
@@ -141,7 +146,6 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
         },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftModelFactory.instance();
-          $scope.model.setupBreadcrumbTrail();
           $scope.heading = $scope.model.site.name.ucWords() + ' Shift Calendar';
         },
         link: function( scope ) {
@@ -186,9 +190,6 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftModelFactory.instance();
-          $scope.model.listModel.onList( true ).then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         }
       };
     }
@@ -204,9 +205,6 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftModelFactory.instance();
-          $scope.model.viewModel.onView().then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         }
       };
     }
@@ -242,12 +240,12 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
         var self = this;
         CnBaseCalendarFactory.construct( this, parentModel );
 
-        // extend onList to transform templates into events
-        this.onList = function( replace, minDate, maxDate, ignoreParent ) {
-          // we must get the load dates before calling $$onList
+        // extend onCalendar to transform templates into events
+        this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {
+          // we must get the load dates before calling $$onCalendar
           var loadMinDate = self.getLoadMinDate( replace, minDate );
           var loadMaxDate = self.getLoadMaxDate( replace, maxDate );
-          return self.$$onList( replace, minDate, maxDate, ignoreParent ).then( function() {
+          return self.$$onCalendar( replace, minDate, maxDate, ignoreParent ).then( function() {
             self.cache.forEach( function( item, index, array ) {
               array[index] = getEventFromShift( item, CnSession.user.timezone );
             } );

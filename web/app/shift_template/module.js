@@ -265,28 +265,31 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftTemplateModelFactory.instance();
-          $scope.record = {};
-          $scope.model.addModel.onNew( $scope.record ).then( function() {
-            if( angular.isDefined( $scope.model.addModel.calendarDate ) ) {
-              var addDirective = $scope.$$childHead;
-              // set the start date in the record and formatted record
-              $scope.record.start_date = moment( $scope.model.addModel.calendarDate ).format();
-              addDirective.formattedRecord.start_date = CnSession.formatValue(
-                $scope.model.addModel.calendarDate, 'date', true );
-              delete $scope.model.addModel.calendarDate;
-            }
-            $scope.model.setupBreadcrumbTrail();
-          } );
         },
         link: function( scope, element ) {
-          // watch the repeat type and hide the repeat_every and days checkboxes if the value changes from "weekly"
           $timeout( function() {
+            // watch the repeat type and hide the repeat_every and days checkboxes
+            // if the value changes from "weekly"
             scope.$watch( 'record.repeat_type', function( newValue, oldValue ) {
               var elementList = [].filter.call( element[0].querySelectorAll( '.form-group' ), function( el ) {
                 return null !== el.querySelector( '#repeat_every' ) || null !== el.querySelector( '#monday' );
               } );
               onRepeatTypeChange( elementList, newValue, oldValue );
-            } )
+            } );
+
+            // set the start date in the record and formatted record (if passed here from the calendar)
+            scope.model.metadata.getPromise().then( function() {
+              if( angular.isDefined( scope.model.addModel.calendarDate ) ) {
+                var cnRecordAddScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
+                if( null == cnRecordAddScope )
+                  throw new Exception( 'Unable to find shift_template\'s cnRecordAdd scope.' );
+
+                cnRecordAddScope.record.start_date = moment( scope.model.addModel.calendarDate ).format();
+                cnRecordAddScope.formattedRecord.start_date = CnSession.formatValue(
+                  scope.model.addModel.calendarDate, 'date', true );
+                delete scope.model.addModel.calendarDate;
+              }
+            } );
           }, 200 );
         }
       };
@@ -312,7 +315,6 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
         },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftTemplateModelFactory.instance();
-          $scope.model.setupBreadcrumbTrail();
           $scope.heading = $scope.model.site.name.ucWords() + ' Shift Template Calendar (' +
                            $scope.model.site.timezone + ')';
         },
@@ -358,9 +360,6 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftTemplateModelFactory.instance();
-          $scope.model.listModel.onList( true ).then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         }
       };
     }
@@ -376,9 +375,6 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftTemplateModelFactory.instance();
-          $scope.model.viewModel.onView().then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         },
         link: function( scope, element ) {
           // watch the repeat type and hide the repeat_every and days checkboxes if the value changes from "weekly"
@@ -427,12 +423,12 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
         var self = this;
         CnBaseCalendarFactory.construct( this, parentModel );
 
-        // extend onList to transform templates into events
-        this.onList = function( replace, minDate, maxDate, ignoreParent ) {
-          // we must get the load dates before calling $$onList
+        // extend onCalendar to transform templates into events
+        this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {
+          // we must get the load dates before calling $$onCalendar
           var loadMinDate = self.getLoadMinDate( replace, minDate );
           var loadMaxDate = self.getLoadMaxDate( replace, maxDate );
-          return self.$$onList( replace, minDate, maxDate, ignoreParent ).then( function() {
+          return self.$$onCalendar( replace, minDate, maxDate, ignoreParent ).then( function() {
             self.cache = self.cache.reduce( function( cache, item ) {
               return cache.concat( getEventsFromShiftTemplate( item, loadMinDate, loadMaxDate ) );
             }, [] );

@@ -165,55 +165,37 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAppointmentModelFactory.instance();
-          $scope.model.getMetadata().then( function() {
+          $scope.model.addModel.afterNew( function() {
             if( -1 < cenozoApp.module( 'availability' ).actions.indexOf( 'calendar' ) &&
                 angular.isObject( $scope.model.metadata.participantSite ) ) {
               // get the availability model linked to the participant's site
-              $scope.model.getMetadata().then( function() {
-                $scope.availabilityModel =
-                  CnAvailabilityModelFactory.forSite( $scope.model.metadata.participantSite );
+              $scope.availabilityModel =
+                CnAvailabilityModelFactory.forSite( $scope.model.metadata.participantSite );
 
-                // connect the availability calendar's event click callback to the appointments datetime
-                $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
-                  if( availability.end.isAfter( moment() ) ) {
-                    // find which of the scope's children has the formattedRecord object
-                    var childScope = $scope.$$childHead;
-                    while( null != childScope && angular.isUndefined( childScope.formattedRecord ) )
-                      childScope = childScope.$$nextSibling;
-                    if( angular.isUndefined( childScope.formattedRecord ) )
-                      throw new Exception( 'Unable to find appointment child scope.' );
+              // connect the availability calendar's event click callback to the appointments datetime
+              $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
+                if( availability.end.isAfter( moment() ) ) {
+                  // find the add directive's scope
+                  var cnRecordAddScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
+                  if( null == cnRecordAddScope )
+                    throw new Exception( 'Unable to find appointment\'s cnRecordAdd scope.' );
 
-                    // if the start is after the current time then use the next rounded hour
-                    var datetime = moment( availability.start.format() );
-                    if( !datetime.isAfter( moment() ) ) {
-                      datetime = moment().minute( 0 ).second( 0 ).millisecond( 0 ).add( 1, 'hours' );
-                      if( !datetime.isAfter( moment() ) )
-                        datetime = moment( availability.end.format() );
-                    }
-
-                    // set the datetime in the record and formatted record
-                    $scope.record.datetime = datetime.format();
-                    childScope.formattedRecord.datetime =
-                      CnSession.formatValue( datetime, 'datetime', true );
-                    $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
+                  // if the start is after the current time then use the next rounded hour
+                  var datetime = moment( availability.start.format() );
+                  if( !datetime.isAfter( moment() ) ) {
+                    datetime = moment().minute( 0 ).second( 0 ).millisecond( 0 ).add( 1, 'hours' );
+                    if( !datetime.isAfter( moment() ) )
+                      datetime = moment( availability.end.format() );
                   }
-                };
-              } );
-            }
-          } );
 
-          $scope.record = {};
-          $scope.model.addModel.onNew( $scope.record ).then( function() {
-            if( angular.isDefined( $scope.model.addModel.calendarDate ) ) {
-              var addDirective = $scope.$$childHead;
-              // set the datetime in the record and formatted record
-              $scope.record.datetime =
-                moment( $scope.model.addModel.calendarDate ).format();
-              addDirective.formattedRecord.datetime = CnSession.formatValue(
-                $scope.model.addModel.calendarDate, 'datetime', true );
-              delete $scope.model.addModel.calendarDate;
+                  // set the datetime in the record and formatted record
+                  cnRecordAddScope.record.datetime = datetime.format();
+                  cnRecordAddScope.formattedRecord.datetime =
+                    CnSession.formatValue( datetime, 'datetime', true );
+                  $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
+                }
+              };
             }
-            $scope.model.setupBreadcrumbTrail();
           } );
         }
       };
@@ -239,7 +221,6 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
         },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAppointmentModelFactory.instance();
-          $scope.model.setupBreadcrumbTrail();
           $scope.heading = $scope.model.site.name.ucWords() + ' Appointment Calendar';
         },
         link: function( scope ) {
@@ -284,9 +265,6 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAppointmentModelFactory.instance();
-          $scope.model.listModel.onList( true ).then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         }
       };
     }
@@ -302,7 +280,9 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAppointmentModelFactory.instance();
-          $scope.model.viewModel.onView().then( function() {
+
+          $scope.model.viewModel.afterView( function() {
+            // no need to wait for metadata's promise to return, onView does that already
             if( -1 < cenozoApp.module( 'availability' ).actions.indexOf( 'calendar' ) &&
                 angular.isObject( $scope.model.metadata.participantSite ) ) {
               // get the availability model linked to the participant's site
@@ -312,12 +292,9 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
               // connect the availability calendar's event click callback to the appointments datetime
               $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
                 if( availability.end.isAfter( moment() ) ) {
-                  // find which of the scope's children has the patch function
-                  var childScope = $scope.$$childHead;
-                  while( null != childScope && angular.isUndefined( childScope.patch ) )
-                    childScope = childScope.$$nextSibling;
-                  if( angular.isUndefined( childScope.patch ) )
-                    throw new Exception( 'Unable to find appointment child scope.' );
+                  var cnRecordViewScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
+                  if( null == cnRecordViewScope )
+                    throw new Exception( 'Unable to find appointment\'s cnRecordView scope.' );
 
                   // if the start is after the current time then use the next rounded hour
                   var datetime = moment( availability.start.format() );
@@ -332,12 +309,10 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
                   $scope.model.viewModel.formattedRecord.datetime =
                     CnSession.formatValue( datetime, 'datetime', true );
                   $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
-                  childScope.patch( 'datetime' );
+                  cnRecordViewScope.patch( 'datetime' );
                 }
               };
             }
-
-            $scope.model.setupBreadcrumbTrail();
           } );
         }
       };
@@ -379,12 +354,12 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
         var self = this;
         CnBaseCalendarFactory.construct( this, parentModel );
 
-        // extend onList to transform templates into events
-        this.onList = function( replace, minDate, maxDate, ignoreParent ) {
-          // we must get the load dates before calling $$onList
+        // extend onCalendar to transform templates into events
+        this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {
+          // we must get the load dates before calling $$onCalendar
           var loadMinDate = self.getLoadMinDate( replace, minDate );
           var loadMaxDate = self.getLoadMaxDate( replace, maxDate );
-          return self.$$onList( replace, minDate, maxDate, ignoreParent ).then( function() {
+          return self.$$onCalendar( replace, minDate, maxDate, ignoreParent ).then( function() {
             self.cache.forEach( function( item, index, array ) {
               var duration = 'long' == item.type
                            ? CnSession.setting.longAppointment

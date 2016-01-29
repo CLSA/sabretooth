@@ -114,9 +114,6 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAssignmentModelFactory.root;
-          $scope.model.listModel.onList( true ).then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         }
       };
     }
@@ -132,9 +129,6 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAssignmentModelFactory.root;
-          $scope.model.viewModel.onView().then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         }
       };
     }

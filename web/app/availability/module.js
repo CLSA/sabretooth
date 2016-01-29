@@ -157,7 +157,6 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
         },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAvailabilityModelFactory.instance();
-          $scope.model.setupBreadcrumbTrail();
           $scope.heading = $scope.model.site.name.ucWords() + ' Availability Calendar';
         },
         link: function( scope ) {
@@ -208,18 +207,18 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
         delete this.settings.dayClick;
         delete this.settings.eventClick;
 
-        // extend onList to transform templates into events
-        this.onList = function( replace, minDate, maxDate, ignoreParent ) {
+        // extend onCalendar to transform templates into events
+        this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {
           // unlike other calendars we don't cache events
           var appointmentCalendarModel = CnAppointmentModelFactory.forSite( parentModel.site ).calendarModel;
           var shiftCalendarModel = CnShiftModelFactory.forSite( parentModel.site ).calendarModel;
           var shiftTemplateCalendarModel = CnShiftTemplateModelFactory.forSite( parentModel.site ).calendarModel;
           
-          // instead of calling $$onList we determine events from the events in other calendars
+          // instead of calling $$onCalendar we determine events from the events in other calendars
           return $q.all( [
-            appointmentCalendarModel.onList( replace, minDate, maxDate, true ),
-            shiftCalendarModel.onList( replace, minDate, maxDate, true ),
-            shiftTemplateCalendarModel.onList( replace, minDate, maxDate, true )
+            appointmentCalendarModel.onCalendar( replace, minDate, maxDate, true ),
+            shiftCalendarModel.onCalendar( replace, minDate, maxDate, true ),
+            shiftTemplateCalendarModel.onCalendar( replace, minDate, maxDate, true )
           ] ).then( function() {
             self.cache = getAvailabilityFromEvents(
               // get all appointments inside the load date span

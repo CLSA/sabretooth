@@ -93,9 +93,6 @@ define( function() {
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnInterviewModelFactory.root;
-          $scope.model.listModel.onList( true ).then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         }
       };
     }
@@ -111,9 +108,6 @@ define( function() {
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnInterviewModelFactory.root;
-          $scope.model.viewModel.onView().then( function() {
-            $scope.model.setupBreadcrumbTrail();
-          } );
         }
       };
     }
@@ -208,6 +202,7 @@ define( function() {
         this.viewModel = CnInterviewViewFactory.instance( this, root );
 
         // extend getBreadcrumbTitle
+        // (metadata's promise will have already returned so we don't have to wait for it)
         this.getBreadcrumbTitle = function() {
           var qnaire = self.metadata.columnList.qnaire_id.enumList.findByProperty(
             'value', this.viewModel.record.qnaire_id );
