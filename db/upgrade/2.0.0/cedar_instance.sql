@@ -21,12 +21,7 @@ CREATE PROCEDURE patch_cedar_instance()
       SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
       SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 
-      SET @sql = CONCAT(
-        "DELETE FROM ", @cenozo, ".access ",
-        "WHERE user_id IN ( SELECT user_id FROM cedar_instance )" );
-      PREPARE statement FROM @sql;
-      EXECUTE statement;
-      DEALLOCATE PREPARE statement;
+      DELETE FROM access WHERE user_id IN ( SELECT user_id FROM cedar_instance );
 
       SET @sql = CONCAT(
         "DELETE FROM ", @cenozo, ".activity ",

@@ -2,6 +2,7 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE access.sql;
 SOURCE cedar_instance.sql
 SOURCE queue.sql
 SOURCE queue_state.sql
@@ -37,6 +38,7 @@ SOURCE system_message.sql
 SOURCE away_time.sql
 SOURCE user_time.sql
 SOURCE shift_template.sql
+SOURCE user.sql
 
 SOURCE update_participant_last_interview.sql
 SOURCE update_interview_last_assignment.sql
