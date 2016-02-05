@@ -23,8 +23,8 @@ class delete extends \cenozo\service\delete
 
     // make note of the event_types so we can delete it after the qnaire is deleted
     $db_qnaire = $this->get_leaf_record();
-    $this->db_first_attempt_event_type = $db_qnaire->get_first_attempt_event_type();
-    $this->db_reached_event_type = $db_qnaire->get_reached_event_type();
+    $this->db_started_event_type = $db_qnaire->get_started_event_type();
+    $this->db_finished_event_type = $db_qnaire->get_finished_event_type();
   }
 
   /**
@@ -37,8 +37,8 @@ class delete extends \cenozo\service\delete
     // delete the associated event types
     try
     {
-      $this->db_first_attempt_event_type->delete();
-      $this->db_reached_event_type->delete();
+      $this->db_started_event_type->delete();
+      $this->db_finished_event_type->delete();
     }
     catch( \cenozo\exception\notice $e )
     {
@@ -62,15 +62,15 @@ class delete extends \cenozo\service\delete
 
   /**
    * Record cache
-   * @var database\first_attempt_event_type
+   * @var database\event_type
    * @access protected
    */
-  protected $db_first_attempt_event_type = NULL;
+  protected $db_started_event_type = NULL;
 
   /**
    * Record cache
-   * @var database\reached_event_type
+   * @var database\event_type
    * @access protected
    */
-  protected $db_reached_event_type = NULL;
+  protected $db_finished_event_type = NULL;
 }

@@ -9,6 +9,8 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       WHERE constraint_schema = DATABASE()
       AND constraint_name = "fk_queue_state_site_id" );
 
+    SET @limesurvey = ( SELECT CONCAT( SUBSTRING( USER(), 1, LOCATE( '@', USER() )-1 ), "_limesurvey2" ) );
+
     SELECT "Dropping prev_qnaire_id column from qnaire table" AS "";
 
     SET @test = (
@@ -41,8 +43,6 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       ALTER TABLE qnaire DROP COLUMN default_interview_method_id;
     END IF;
 
-    SELECT "Adding new constraint to script table in qnaire table" AS "";
-
     SET @test = (
       SELECT COUNT(*)
       FROM information_schema.COLUMNS
@@ -50,6 +50,8 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       AND TABLE_NAME = "qnaire"
       AND COLUMN_NAME = "script_id" );
     IF @test = 0 THEN
+      SELECT "Adding new constraint to script table in qnaire table" AS "";
+
       ALTER TABLE qnaire
       ADD COLUMN script_id INT UNSIGNED NOT NULL
       AFTER rank;
@@ -66,27 +68,49 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
         WHERE phase.id IS NULL ) AS t
       );
 
+      SELECT "Creating new script-based event_types" AS "";
+
       -- create started event_type for script to be used by each qnaire
       SET @sql = CONCAT(
         "INSERT IGNORE INTO ", @cenozo, ".event_type( name, description ) ",
-        "SELECT CONCAT( 'started (', qnaire.name, ')' ), ",
-               "CONCAT( 'Started the "', qnaire.name, '" script.' ) ",
-        "FROM qnaire" );
+        "SELECT CONCAT( type.name, ' (', surveyls_title, ')' ), ",
+               "CONCAT( type.description, ' \"', surveyls_title, '\" script.' ) ",
+        "FROM ( SELECT 'started' AS name, 'Started the' AS description UNION ",
+               "SELECT 'finished' AS name, 'Finished the' AS description ) AS type, qnaire ",
+        "JOIN phase ON qnaire.id = phase.qnaire_id ",
+        "AND phase.repeated = 0 ",
+        "JOIN ", @limesurvey, ".surveys_languagesettings ON phase.sid = surveyls_survey_id ",
+        "AND surveyls_language = 'en' "
+        "ORDER BY qnaire.rank, phase.rank, type.name DESC" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
 
-      -- now create a script to represent all qnaires
+      SELECT "Creating scripts based on existing qnaire phases" AS "";
+
       SET @sql = CONCAT(
         "INSERT INTO ", @cenozo, ".script( ",
-          "name, started_event_type_id, completed_event_type_id, sid, repeated, description ) ",
-        "SELECT qnaire.name, event_type.id, completed_event_type_id, phase.sid, phase.repeated, qnaire.description ",
+          "name, started_event_type_id, finished_event_type_id, sid, repeated, description ) ",
+        "SELECT surveyls_title, started_event_type.id, finished_event_type.id, phase.sid, 0, qnaire.description ",
         "FROM qnaire ",
-        "JOIN ", @cenozo, ".event_type ON event_type.name = CONCAT( 'started (', qnaire.name, ')' ) ",
         "JOIN phase ON qnaire.id = phase.qnaire_id ",
         "AND phase.repeated = 0 ",
-        "GROUP BY qnaire.id ",
+        "JOIN ", @limesurvey, ".surveys_languagesettings ON phase.sid = surveyls_survey_id ",
+        "AND surveyls_language = 'en' "
+        "JOIN ", @cenozo, ".event_type AS started_event_type ",
+        "ON started_event_type.name = CONVERT( CONCAT( 'started (', surveyls_title, ')' ) USING utf8 ) ",
+        "JOIN ", @cenozo, ".event_type AS finished_event_type ",
+        "ON finished_event_type.name = CONVERT( CONCAT( 'finished (', surveyls_title, ')' ) USING utf8 ) ",
         "ORDER BY qnaire.rank" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
+      SELECT "Creating qnaires linked to newly created scripts" AS "";
+
+      SET @sql = CONCAT(
+        "UPDATE qnaire JOIN ", @cenozo, ".script USING( name ) ",
+        "SET qnaire.script_id = script.id" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
@@ -97,13 +121,6 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
         "FROM ", @cenozo, ".application, ", @cenozo, ".script ",
         "JOIN qnaire ON script.id = qnaire.script_id ",
         "WHERE DATABASE() LIKE CONCAT( '%_', application.name )" );
-      PREPARE statement FROM @sql;
-      EXECUTE statement;
-      DEALLOCATE PREPARE statement;
-
-      SET @sql = CONCAT(
-        "UPDATE qnaire JOIN ", @cenozo, ".script USING( name ) ",
-        "SET qnaire.script_id = script.id" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;

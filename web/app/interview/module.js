@@ -73,7 +73,7 @@ define( function() {
       type: 'datetimesecond',
       min: 'start_datetime',
       max: 'now',
-      help: 'Will remain blank until the questionnaire is complete.'
+      help: 'Will remain blank until the questionnaire is finished.'
     },
     open_appointment_count: {
       type: 'hidden'

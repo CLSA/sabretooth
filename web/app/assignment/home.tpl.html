@@ -204,11 +204,11 @@
           </div>
           <div class="row">
             <label class="col-sm-4 control-label">
-              {{ model.activeScript.repeated ? 'Last Complete' : 'Completed' }} Date &amp; Time
+              {{ model.activeScript.repeated ? 'Last Finish' : 'Finished' }} Date &amp; Time
             </label>
             <div class="col-sm-8 form-text">
-              {{ null == model.activeScript.completed_datetime ?
-                 'Not completed' : ( model.activeScript.completed_datetime | cnDatetime:'datetimesecond' ) }}
+              {{ null == model.activeScript.finished_datetime ?
+                 'Not finished' : ( model.activeScript.finished_datetime | cnDatetime:'datetimesecond' ) }}
             </div>
           </div>
           <div class="row">
@@ -241,12 +241,12 @@
         <button ng-if="model.activeScript.id == model.assignment.script_id && model.activeQnaire.id != model.lastQnaire.id"
                 type="button"
                 class="btn btn-default pull-left"
-                ng-disabled="null == model.activeScript.completed_datetime"
+                ng-disabled="null == model.activeScript.finished_datetime"
                 tooltip="This will immediately end the current assignment and begin a new assignment for the next questionnaire without ending the current call. You should only click this button if you intend to immediately proceed with the next questionnaire."
                 ng-click="model.advanceQnaire()">Advance Questionnaire</button>
         <button type="button"
                 class="btn btn-primary"
-                ng-disabled="!model.activeScript.repeated && model.activeScript.completed_datetime"
+                ng-disabled="!model.activeScript.repeated && model.activeScript.finished_datetime"
                 ng-click="model.launchScript( model.activeScript )">Launch Script</button>
       </div>
     </div>

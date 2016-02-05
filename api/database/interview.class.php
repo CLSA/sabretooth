@@ -72,7 +72,7 @@ class interview extends \cenozo\database\record
       $this->save();
 
       // record the event
-      $db_event_type = $this->get_qnaire()->get_script()->get_completed_event_type();
+      $db_event_type = $this->get_qnaire()->get_script()->get_finished_event_type();
 
       // make sure the event doesn't already exist
       $event_mod = lib::create( 'database\modifier' );
@@ -202,8 +202,8 @@ class interview extends \cenozo\database\record
     $this->site_id = NULL;
     $this->save();
 
-    // remove completed events
-    $db_event_type = $this->get_qnaire()->get_script()->get_completed_event_type();
+    // remove finished events
+    $db_event_type = $this->get_qnaire()->get_script()->get_finished_event_type();
     $event_mod = lib::create( 'database\modifier' );
     $event_mod->where( 'event_type_id', '=', $db_event_type->id );
     foreach( $db_participant->get_event_object_list( $event_mod ) as $db_event )

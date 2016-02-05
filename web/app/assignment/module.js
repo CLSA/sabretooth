@@ -378,7 +378,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
               select: { column: [
                 'id', 'name', 'repeated', 'url', 'description',
                 { table: 'started_event', column: 'datetime', alias: 'started_datetime' },
-                { table: 'completed_event', column: 'datetime', alias: 'completed_datetime' }
+                { table: 'finished_event', column: 'datetime', alias: 'finished_datetime' }
               ] }
             }
           } ).query().then( function( response ) {
@@ -417,7 +417,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
           // first see if a token already exists
           CnHttpFactory.instance( {
             path: 'script/' + script.id + '/token/uid=' + self.participant.uid,
-            data: { select: { column: [ 'token', 'completed' ] } },
+            data: { select: { column: [ 'token', 'finished' ] } },
             onError: function( response ) {
               if( 404 == response.status ) {
                 console.info( 'The "404 (Not Found)" error found above is normal and can be ignored.' );

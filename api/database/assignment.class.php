@@ -96,7 +96,7 @@ class assignment extends \cenozo\database\record
   {
     $db_queue = $this->get_queue();
 
-    // set the assignment and reached in appointments and callbacks
+    // set the assignment and reached columns in appointments and callbacks
     if( $db_queue->from_appointment() || $db_queue->from_callback() )
     {
       $db_interview = $this->get_interview();

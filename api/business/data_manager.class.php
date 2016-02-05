@@ -120,12 +120,10 @@ class data_manager extends \cenozo\business\data_manager
       $event_class_name = lib::get_class_name( 'database\event' );
       $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
 
-      // participant.qnaire.<rank>.first_attempt_event.<column> or
-      // qnaire.<rank>.first_attempt_event.<column> or
-      // participant.qnaire.<rank>.reached_event.<column> or
-      // qnaire.<rank>.reached_event.<column> or
-      // participant.qnaire.<rank>.completed_event.<column> or
-      // qnaire.<rank>.completed_event.<column>
+      // participant.qnaire.<rank>.started_event.<column> or
+      // qnaire.<rank>.started_event.<column>
+      // participant.qnaire.<rank>.finished_event.<column> or
+      // qnaire.<rank>.finished_event.<column>
       // NOTE: response will be 'DATE UNKNOWN' if null
       if( 4 != count( $parts ) )
         throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
@@ -135,9 +133,8 @@ class data_manager extends \cenozo\business\data_manager
         throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
 
       $event_type_name = $parts[2];
-      if( 'first_attempt_event' != $event_type_name &&
-          'reached_event' != $event_type_name &&
-          'completed_event' != $event_type_name )
+      if( 'started_event' != $event_type_name &&
+          'finished_event' != $event_type_name )
         throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
       
       $column = $parts[3];
