@@ -199,7 +199,7 @@ class participant extends \cenozo\database\participant
       $db_interview = $interview_class_name::get_unique_record(
         array( 'participant_id', 'qnaire_id' ),
         array( $this->id, $this->effective_qnaire_id ) );
-      
+
       if( is_null( $db_interview ) )
       { // create the interview if it isn't found
         $db_interview = lib::create( 'database\interview' );
@@ -284,7 +284,7 @@ class participant extends \cenozo\database\participant
 
     if( count( $row ) )
     {
-      $this->current_queue_id = $row['queue_id'];     
+      $this->current_queue_id = $row['queue_id'];
       $this->effective_qnaire_id = $row['qnaire_id'];
       $this->start_qnaire_date = !$row['start_qnaire_date']
                                ? NULL

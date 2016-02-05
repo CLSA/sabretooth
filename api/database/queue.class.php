@@ -45,7 +45,7 @@ class queue extends \cenozo\database\record
     else foreach( static::$delayed_repopulate_list as $db_participant )
       static::repopulate( $db_participant );
     static::$delayed_repopulate_list = array();
-    
+
     if( 'all' == static::$delayed_repopulate_time_list )
       static::repopulate_time();
     else foreach( static::$delayed_repopulate_time_list as $db_participant )
@@ -138,7 +138,7 @@ class queue extends \cenozo\database\record
    */
   public static function repopulate( $db_participant = NULL )
   {
-    if( static::$debug ) $total_time = util::get_elapsed_time();  
+    if( static::$debug ) $total_time = util::get_elapsed_time();
 
     // block with a semaphore
     $semaphore = lib::create( 'business\semaphore', __METHOD__ );
@@ -211,7 +211,7 @@ class queue extends \cenozo\database\record
    */
   public static function repopulate_time( $db_participant = NULL )
   {
-    if( static::$debug ) $total_time = util::get_elapsed_time();  
+    if( static::$debug ) $total_time = util::get_elapsed_time();
 
     // block with a semaphore
     $semaphore = lib::create( 'business\semaphore', __METHOD__ );
@@ -245,7 +245,7 @@ class queue extends \cenozo\database\record
         'INSERT INTO queue_has_participant( participant_id, queue_id, site_id, qnaire_id, start_qnaire_date )'.
         "\n%s",
         $select->get_sql() );
-      
+
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'queue_has_participant.queue_id', '=', $db_queue->parent_queue_id );
       if( !is_null( $db_participant ) )
@@ -569,14 +569,14 @@ class queue extends \cenozo\database\record
       $modifier->where( 'participant_active', '=', false );
       return;
     }
-    
+
     if( 'refused consent' == $queue )
     {
       $modifier->where( 'participant_active', '=', true );
       $modifier->where( 'last_participation_consent_accept', '=', 0 );
       return;
     }
-    
+
     if( 'condition' == $queue )
     {
       $modifier->where( 'participant_active', '=', true );
@@ -584,7 +584,7 @@ class queue extends \cenozo\database\record
       $modifier->where( 'participant_state_id', '!=', NULL );
       return;
     }
-    
+
     if( 'no address' == $queue )
     {
       $modifier->where( 'participant_active', '=', true );
@@ -593,7 +593,7 @@ class queue extends \cenozo\database\record
       $modifier->where( 'primary_region_id', '=', NULL );
       return;
     }
-    
+
     if( 'eligible' == $queue )
     {
       // active participant who does not have a "final" state and has at least one phone number
@@ -603,13 +603,13 @@ class queue extends \cenozo\database\record
       $modifier->where( 'primary_region_id', '!=', NULL );
       return;
     }
-    
+
     if( 'qnaire' == $queue )
     {
       // no additional modifications needed
       return;
     }
-    
+
     if( 'qnaire waiting' == $queue )
     {
       // the current qnaire cannot start before start_qnaire_date
@@ -709,7 +709,7 @@ class queue extends \cenozo\database\record
     if( static::$temporary_tables_created ) return;
 
     // build first_qnaire_event_type table
-    $sql = 
+    $sql =
       'CREATE TEMPORARY TABLE IF NOT EXISTS first_qnaire_event_type '.
       'SELECT qnaire.id AS qnaire_id, '.
              'IF( qnaire_has_event_type.qnaire_id IS NULL, 0, count(*) ) AS total, '.
@@ -722,7 +722,7 @@ class queue extends \cenozo\database\record
     static::db()->execute( 'ALTER TABLE first_qnaire_event_type ADD INDEX fk_qnaire_id ( qnaire_id )' );
 
     // build next_qnaire_event_type table
-    $sql = 
+    $sql =
       'CREATE TEMPORARY TABLE IF NOT EXISTS next_qnaire_event_type '.
       'SELECT qnaire.id AS qnaire_id, '.
              'IF( qnaire_has_event_type.qnaire_id IS NULL, 0, count(*) ) AS total, '.
@@ -876,7 +876,7 @@ class queue extends \cenozo\database\record
 
   // TODO: document
   public static $delayed_repopulate_time_list = array();
-  
+
   /**
    * Whether the temporary tables has been created.
    * @var boolean

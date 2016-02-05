@@ -10,7 +10,7 @@ namespace sabretooth\service\assignment\phone_call;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
- * Special service for handling 
+ * Special service for handling
  */
 class query extends \cenozo\service\query
 {

@@ -10,7 +10,7 @@ namespace sabretooth\service\assignment;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
- * Special service for handling 
+ * Special service for handling
  */
 class get extends \cenozo\service\get
 {

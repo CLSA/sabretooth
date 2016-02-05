@@ -31,7 +31,7 @@ class module extends \cenozo\service\participant\module
       $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
       $modifier->where( 'participant.active', '=', true );
       $modifier->where( 'queue.rank', '!=', NULL );
-      
+
       $join_mod = lib::create( 'database\modifier' );
       $join_mod->where( 'queue_has_participant.queue_id', '=', 'queue_state.queue_id', false );
       $join_mod->where( 'queue_has_participant.site_id', '=', 'queue_state.site_id', false );
@@ -109,7 +109,7 @@ class module extends \cenozo\service\participant\module
             $select->add_table_column( 'qnaire', 'CONCAT( qnaire.rank, ": ", script.name )', 'title', false );
           }
 
-          // fake the qnaire start-date 
+          // fake the qnaire start-date
           if( $select->has_table_column( 'qnaire', 'start_date' ) )
             $select->add_table_column( 'qnaire', 'queue_has_participant.start_qnaire_date', 'start_date', false );
         }

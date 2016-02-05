@@ -68,7 +68,7 @@ class module extends \cenozo\service\site_restricted_module
         $data = 'Cannot create a new phone call since there is no open assignment.';
       else if( $db_user->has_open_phone_call() )
         $data = 'Cannot create a new phone call since you already have one open.';
-      
+
       if( !is_null( $data ) )
       {
         $this->set_data( $data );

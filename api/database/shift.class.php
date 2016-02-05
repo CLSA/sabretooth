@@ -34,7 +34,7 @@ class shift extends \cenozo\database\record
     $db_site = lib::create( 'database\site', $this->site_id );
     $role_class_name = lib::get_class_name( 'database\role' );
     $db_role = $role_class_name::get_unique_record( 'name', 'operator' );
-    
+
     // See if the user already has a shift at this time
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'id', '!=', $this->id );
@@ -52,7 +52,7 @@ class shift extends \cenozo\database\record
     $modifier->limit( 1 );
 
     $shift_list = static::select_objects( $modifier );
-    
+
     if( 0 < count( $shift_list ) )
     {
       $db_overlap = current( $shift_list );
@@ -63,7 +63,7 @@ class shift extends \cenozo\database\record
                  $db_overlap->end_datetime->format( 'H:i' ) ),
         __METHOD__ );
     }
-    
+
     // all is well, continue with the parent's save method
     parent::save();
   }

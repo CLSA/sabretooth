@@ -44,7 +44,7 @@ class session extends \cenozo\business\session
     if( 'operator' != $this->get_role()->name )
       throw lib::create( 'exception\runtime',
         'Tried to get assignment for non-operator.', __METHOD__ );
-    
+
     // query for assignments which do not have a end time
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'end_datetime', '=', NULL );
@@ -76,7 +76,7 @@ class session extends \cenozo\business\session
     if( 'operator' != $this->get_role()->name )
       throw lib::create( 'exception\runtime',
         'Tried to get phone call for non-operator.', __METHOD__ );
-    
+
     // without an assignment there can be no current call
     $db_assignment = $this->get_current_assignment();
     if( is_null( $db_assignment) ) return NULL;

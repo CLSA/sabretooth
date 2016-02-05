@@ -17,7 +17,7 @@ class application extends \cenozo\database\application
   /**
    * Returns a special event-type associated with the application
    * 
-   * Returns the event-type associated with 
+   * Returns the event-type associated with
    * If no event-type exists this method will return NULL.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\event_type
@@ -37,7 +37,7 @@ class application extends \cenozo\database\application
   /**
    * Returns a special event-type associated with the application
    * 
-   * Returns the event-type associated with 
+   * Returns the event-type associated with
    * If no event-type exists this method will return NULL.
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\event_type
@@ -58,13 +58,13 @@ class application extends \cenozo\database\application
    * Record cache
    * @var database\event_type
    * @access protected
-   */ 
+   */
   protected $db_first_attempt_event_type = false;
 
   /**
    * Record cache
    * @var database\event_type
    * @access protected
-   */ 
+   */
   protected $db_reached_event_type = false;
 }

@@ -42,7 +42,7 @@ class callback extends \cenozo\database\record
 
     parent::save();
   }
-  
+
   /**
    * Get the state of the callback as a string:
    *   reached: the callback was met and the participant was reached
@@ -62,14 +62,14 @@ class callback extends \cenozo\database\record
     {
       log::warning( 'Tried to determine state for callback with no primary key.' );
       return NULL;
-    } 
-    
+    }
+
     // if the callback's reached column is set, nothing else matters
     if( !is_null( $this->reached ) ) return $this->reached ? 'reached' : 'not reached';
 
     $db_participant = lib::create( 'database\participant', $this->get_interview()->participant_id );
     $status = 'unknown';
-    
+
     // settings are in minutes, time() is in seconds, so multiply by 60
     $now = util::get_datetime_object()->getTimestamp();
     $callback = $this->datetime->getTimestamp();
@@ -87,7 +87,7 @@ class callback extends \cenozo\database\record
       }
       else // assignment active
       {
-        $modifier = lib::create( 'database\modifier' ); 
+        $modifier = lib::create( 'database\modifier' );
         $modifier->where( 'end_datetime', '=', NULL );
         $open_phone_calls = $db_assignment->get_phone_call_count( $modifier );
         if( 0 < $open_phone_calls )

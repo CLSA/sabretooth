@@ -149,7 +149,7 @@ class appointment extends \cenozo\database\record
     $new_lower_sql = static::db()->format_string( $this->datetime->format( 'Y-m-d H:i:s' ) );
     $new_upper_sql = sprintf( '%s + INTERVAL %d MINUTE', $new_lower_sql, $settings[$this->type.'_appointment'] );
     $old_lower_sql = 'datetime';
-    $old_upper_sql = 
+    $old_upper_sql =
       'datetime + INTERVAL IF( type = "long", setting.long_appointment, setting.short_appointment ) MINUTE';
 
     // get all shifts which could possible fulfil this appointment
@@ -260,31 +260,31 @@ class appointment extends \cenozo\database\record
 
     // restrict to appointments overlapping with this appointment
     $appointment_mod->where_bracket( true );
-    
+
     // test if the start of any exiting appointment is inside the new appointment bounds
     $appointment_mod->where_bracket( true );
     $appointment_mod->where( $old_lower_sql, '>=', $new_lower_sql, false );
     $appointment_mod->where( $old_lower_sql, '<', $new_upper_sql, false );
     $appointment_mod->where_bracket( false );
-    
+
     // test if the end of any exiting appointment is inside the new appointment bounds
     $appointment_mod->where_bracket( true, true );
     $appointment_mod->where( $old_upper_sql, '>', $new_lower_sql, false );
     $appointment_mod->where( $old_upper_sql, '<', $new_upper_sql, false );
     $appointment_mod->where_bracket( false );
-    
+
     // test if the start of the new appointment is inside any existing appointment bounds
     $appointment_mod->where_bracket( true, true );
     $appointment_mod->where( $new_lower_sql, '>=', $old_lower_sql, false );
     $appointment_mod->where( $new_lower_sql, '<', $old_upper_sql, false );
     $appointment_mod->where_bracket( false );
-    
+
     // test if the end of the new appointment is inside any existing appointment bounds
     $appointment_mod->where_bracket( true, true );
     $appointment_mod->where( $new_upper_sql, '>', $old_lower_sql, false );
     $appointment_mod->where( $new_upper_sql, '<', $old_upper_sql, false );
     $appointment_mod->where_bracket( false );
-    
+
     $appointment_mod->where_bracket( false );
     $appointment_mod->order( 'datetime' );
 
@@ -302,7 +302,7 @@ class appointment extends \cenozo\database\record
     $appointment_list[] = array(
       'start' => util::get_datetime_object( $this->datetime ),
       'end' => $this->get_end_datetime() );
-    
+
     while( 0 < count( $appointment_list ) )
     {
       // get the first appointment in the remaining list
@@ -371,8 +371,8 @@ class appointment extends \cenozo\database\record
     {
       log::warning( 'Tried to determine state for appointment with no primary key.' );
       return NULL;
-    } 
-    
+    }
+
     // if the appointment's reached column is set, nothing else matters
     if( !is_null( $this->reached ) ) return $this->reached ? 'reached' : 'not reached';
 
@@ -380,7 +380,7 @@ class appointment extends \cenozo\database\record
     $db_setting = $db_participant->get_effective_site()->get_setting();
 
     $status = 'unknown';
-    
+
     // settings are in minutes, time() is in seconds, so multiply by 60
     $pre_window_time = 60 * $db_setting->pre_call_window;
     $post_window_time = 60 * $db_setting->post_call_window;
@@ -400,7 +400,7 @@ class appointment extends \cenozo\database\record
       }
       else // assignment active
       {
-        $modifier = lib::create( 'database\modifier' ); 
+        $modifier = lib::create( 'database\modifier' );
         $modifier->where( 'end_datetime', '=', NULL );
         $open_phone_calls = $db_assignment->get_phone_call_count( $modifier );
         if( 0 < $open_phone_calls )

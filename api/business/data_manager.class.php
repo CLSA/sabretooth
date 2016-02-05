@@ -136,7 +136,7 @@ class data_manager extends \cenozo\business\data_manager
       if( 'started_event' != $event_type_name &&
           'finished_event' != $event_type_name )
         throw lib::create( 'exception\argument', 'key', $key, __METHOD__ );
-      
+
       $column = $parts[3];
 
       $event_class_name = lib::get_class_name( 'database\event' );

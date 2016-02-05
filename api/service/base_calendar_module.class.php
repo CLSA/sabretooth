@@ -41,7 +41,7 @@ abstract class base_calendar_module extends \cenozo\service\site_restricted_modu
     parent::prepare_read( $select, $modifier );
 
     // restrict by date, if requested
-    // note: 
+    // note:
     $min_date = $this->get_argument( 'min_date', NULL );
     $max_date = $this->get_argument( 'max_date', NULL );
 
