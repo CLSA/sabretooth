@@ -52,7 +52,7 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'alternate', 'PATCH', 1, 0 ),
 ( 'alternate', 'POST', 0, 0 ),
 ( 'application', 'GET', 0, 1 ),
-( 'application', 'GET', 1, 1 ),
+( 'application', 'GET', 1, 0 ),
 ( 'application', 'PATCH', 1, 1 ),
 ( 'cohort', 'GET', 0, 0 ),
 ( 'collection', 'DELETE', 1, 1 ),
