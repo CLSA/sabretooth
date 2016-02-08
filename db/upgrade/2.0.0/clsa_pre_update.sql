@@ -31,6 +31,7 @@ CREATE PROCEDURE interview_update()
       AND constraint_name = "fk_queue_state_site_id" );
 
     SET @limesurvey = ( SELECT CONCAT( SUBSTRING( USER(), 1, LOCATE( '@', USER() )-1 ), "_limesurvey2" ) );
+    SET @application = ( SELECT SUBSTRING( DATABASE(), LOCATE( '@', USER() )+1 ) );
 
     SELECT "Creating interview records coinciding with the new qnaire records" AS "";
 
@@ -61,16 +62,69 @@ CREATE PROCEDURE interview_update()
         "JOIN qnaire ON phase.qnaire_id = qnaire.id ",
         "CROSS JOIN ", @limesurvey, ".survey_", sid_val, " AS survey "
         "JOIN ", @cenozo, ".participant ON survey.token = participant.uid ",
-        "WHERE phase.sid = '", sid_val, "' ",
+        "JOIN ", @cenozo, ".application_has_participant ",
+        "ON participant.id = application_has_participant.participant_id ",
+        "JOIN ", @cenozo, ".application ON application_has_participant.application_id = application.id ",
+        "WHERE application.name = '", @application, "' ",
+        "AND application_has_participant.datetime IS NOT NULL ",
+        "AND phase.sid = '", sid_val, "' ",
         "ON DUPLICATE KEY UPDATE completed = submitdate IS NOT NULL" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
 
+      SELECT CONCAT( "Correcting interviews previous to the existing interviews for SID ", sid_val ) AS "";
+
+      UPDATE interview i2
+      JOIN qnaire q2 ON i2.qnaire_id = q2.id
+      JOIN phase on q2.id = phase.qnaire_id
+      JOIN interview i1 USING( participant_id )
+      JOIN qnaire q1 ON i1.qnaire_id = q1.id
+      SET i1.completed = true
+      WHERE phase.sid = sid_val
+      AND q2.rank-1 = q1.rank;
+
+      SET @test = (
+        SELECT COUNT(*)
+        FROM assignment
+        JOIN interview ON assignment.interview_id = interview.id
+        JOIN qnaire ON interview.qnaire_id = qnaire.id
+        JOIN phase ON qnaire.id = phase.qnaire_id
+        WHERE phase.sid = sid_val );
+      IF @test = 0 THEN
+
+        SELECT CONCAT( "Creating mock assignments for SID ", sid_val ) AS "";
+
+        SET @sql = CONCAT(
+          "INSERT INTO assignment( user_id, site_id, interview_id, queue_id, start_datetime, end_datetime ) ",
+          "SELECT user_id, site_id, interview.id, queue.id, ",
+            "CONVERT_TZ( startdate, 'Canada/Eastern', 'UTC' ), ",
+            "CONVERT_TZ( IFNULL( submitdate, startdate ), 'Canada/Eastern', 'UTC' ) "
+          "FROM queue, assignment ",
+          "JOIN interview_last_assignment ON assignment.id = interview_last_assignment.assignment_id ",
+          "JOIN interview AS first_interview ON interview_last_assignment.interview_id = first_interview.id ",
+          "JOIN qnaire AS first_qnaire ON first_interview.qnaire_id = first_qnaire.id ",
+          "CROSS JOIN phase ",
+          "JOIN qnaire ON phase.qnaire_id = qnaire.id ",
+          "JOIN interview ON qnaire.id = interview.qnaire_id ",
+          "AND first_interview.participant_id = interview.participant_id ",
+          "JOIN ", @cenozo, ".participant ON interview.participant_id = participant.id ",
+          "JOIN ", @limesurvey, ".survey_", sid_val, " AS survey ON participant.uid = survey.token ",
+          "WHERE queue.name = 'new participant' ",
+          "AND first_qnaire.rank = 1 ",
+          "AND phase.sid = ", sid_val );
+        PREPARE statement FROM @sql;
+        EXECUTE statement;
+        DEALLOCATE PREPARE statement;
+
+      END IF;
+
       -- count the number of times looped
       SET loop_cntr = loop_cntr + 1;
 
     END LOOP the_loop;
+
+    SELECT CONCAT( "Correcting interview complete states" ) AS "";
 
   END //
 DELIMITER ;

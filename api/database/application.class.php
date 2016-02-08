@@ -29,7 +29,7 @@ class application extends \cenozo\database\application
     {
       $event_type_class_name = lib::get_class_name( 'database\event_type' );
       $this->db_first_attempt_event_type =
-        $event_type_class_name::get_unique_record( sprintf( 'first attempt (%s)', INSTANCE ) );
+        $event_type_class_name::get_unique_record( 'name', sprintf( 'first attempt (%s)', INSTANCE ) );
     }
     return $this->db_first_attempt_event_type;
   }
@@ -49,7 +49,7 @@ class application extends \cenozo\database\application
     {
       $event_type_class_name = lib::get_class_name( 'database\event_type' );
       $this->db_reached_event_type =
-        $event_type_class_name::get_unique_record( sprintf( 'reached (%s)', INSTANCE ) );
+        $event_type_class_name::get_unique_record( 'name', sprintf( 'reached (%s)', INSTANCE ) );
     }
     return $this->db_reached_event_type;
   }
