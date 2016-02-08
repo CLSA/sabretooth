@@ -449,7 +449,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
                     path: 'script/' + script.id + '/token/' + response.data
                   } ).get().then( function( response ) {
                     // launch the script
-                    url += '&token=' + response.data.token
+                    url += '&token=' + response.data.token;
                     $window.open( url, 'cenozoScript' );
                   } );
                 } );
@@ -457,7 +457,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
             }
           } ).get().then( function( response ) {
             // launch the script
-            url += '&token=' + response.data.token
+            url += '&token=' + response.data.token;
             $window.open( url, 'cenozoScript' );
           } );
         };
