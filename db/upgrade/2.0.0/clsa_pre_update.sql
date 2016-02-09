@@ -117,6 +117,26 @@ CREATE PROCEDURE interview_update()
         EXECUTE statement;
         DEALLOCATE PREPARE statement;
 
+        SELECT CONCAT( "Creating mock phone_calls for SID ", sid_val ) AS "";
+
+        INSERT INTO phone_call( assignment_id, phone_id, start_datetime, end_datetime, status )
+        SELECT assignment2.id, phone_call1.phone_id,
+               assignment2.start_datetime, assignment2.end_datetime, 'contacted'
+        FROM phase AS phase2
+        JOIN qnaire AS qnaire2 ON phase2.qnaire_id = qnaire2.id
+        JOIN interview AS interview2 ON qnaire2.id = interview2.qnaire_id
+        JOIN interview_last_assignment AS ila2 ON interview2.id = ila2.interview_id
+        JOIN assignment AS assignment2 ON ila2.assignment_id = assignment2.id
+        CROSS JOIN qnaire AS qnaire1
+        JOIN interview AS interview1 ON qnaire1.id = interview1.qnaire_id
+        AND interview2.participant_id = interview1.participant_id
+        JOIN interview_last_assignment AS ila ON interview1.id = ila.interview_id
+        JOIN assignment AS assignment1 ON ila.assignment_id = assignment1.id
+        JOIN assignment_last_phone_call AS alpc1 ON assignment1.id = alpc1.assignment_id
+        JOIN phone_call AS phone_call1 on alpc1.phone_call_id = phone_call1.id
+        WHERE phase2.sid = sid_val
+        AND qnaire1.rank = 1;
+
       END IF;
 
       -- count the number of times looped

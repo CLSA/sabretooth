@@ -1,3 +1,96 @@
+DROP PROCEDURE IF EXISTS create_events;
+DELIMITER //
+CREATE PROCEDURE create_events()
+  BEGIN
+
+    -- Declare '_val' variables to read in each record from the cursor
+    DECLARE sid_val INT(11);
+
+    -- Declare variables used just for cursor and loop control
+    DECLARE no_more_rows BOOLEAN;
+    DECLARE loop_cntr INT DEFAULT 0;
+    DECLARE num_rows INT DEFAULT 0;
+
+    -- Declare the cursor
+    DECLARE the_cursor CURSOR FOR
+    SELECT sid FROM phase WHERE repeated = false;
+
+    -- Declare 'handlers' for exceptions
+    DECLARE CONTINUE HANDLER FOR NOT FOUND
+    SET no_more_rows = TRUE;
+
+    SET @cenozo = (
+      SELECT unique_constraint_schema
+      FROM information_schema.referential_constraints
+      WHERE constraint_schema = DATABASE()
+      AND constraint_name = "fk_queue_state_site_id" );
+
+    SET @limesurvey = ( SELECT CONCAT( SUBSTRING( USER(), 1, LOCATE( '@', USER() )-1 ), "_limesurvey2" ) );
+    SET @application = ( SELECT SUBSTRING( DATABASE(), LOCATE( '@', USER() )+1 ) );
+
+    -- 'open' the cursor and capture the number of rows returned
+    -- (the 'select' gets invoked when the cursor is 'opened')
+    OPEN the_cursor;
+    select FOUND_ROWS() into num_rows;
+
+    the_loop: LOOP
+
+      FETCH  the_cursor
+      INTO   sid_val;
+
+      -- break out of the loop if
+        -- 1) there were no records, or
+        -- 2) we've processed them all
+      IF no_more_rows THEN
+          CLOSE the_cursor;
+          LEAVE the_loop;
+      END IF;
+
+      SELECT CONCAT( "Creating new started events based on the script SID ", sid_val ) AS "";
+      SET @sql = CONCAT(
+        "INSERT IGNORE INTO ", @cenozo, ".event( participant_id, event_type_id, datetime ) ",
+        "SELECT participant.id, event_type.id, CONVERT_TZ( startdate, 'Canada/Eastern', 'UTC' ) ",
+        "FROM ", @cenozo, ".script ",
+        "JOIN ", @cenozo, ".event_type ON event_type.name = CONCAT( 'started (', script.name, ')' ) ",
+        "CROSS JOIN ", @limesurvey, ".survey_", sid_val, " AS survey ",
+        "JOIN ", @cenozo, ".participant ON survey.token = participant.uid ",
+        "JOIN ", @cenozo, ".application_has_participant ",
+        "ON participant.id = application_has_participant.participant_id ",
+        "JOIN ", @cenozo, ".application ON application_has_participant.application_id = application_id ",
+        "WHERE script.sid = ", sid_val, " ",
+        "AND application.name = '", @application, "' ",
+        "AND application_has_participant.datetime IS NOT NULL" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
+      SELECT CONCAT( "Creating new finished events based on the script SID ", sid_val ) AS "";
+      SET @sql = CONCAT(
+        "INSERT IGNORE INTO ", @cenozo, ".event( participant_id, event_type_id, datetime ) ",
+        "SELECT participant.id, event_type.id, CONVERT_TZ( submitdate, 'Canada/Eastern', 'UTC' ) ",
+        "FROM ", @cenozo, ".script ",
+        "JOIN ", @cenozo, ".event_type ON event_type.name = CONCAT( 'finished (', script.name, ')' ) ",
+        "CROSS JOIN ", @limesurvey, ".survey_", sid_val, " AS survey ",
+        "JOIN ", @cenozo, ".participant ON survey.token = participant.uid ",
+        "JOIN ", @cenozo, ".application_has_participant ",
+        "ON participant.id = application_has_participant.participant_id ",
+        "JOIN ", @cenozo, ".application ON application_has_participant.application_id = application_id ",
+        "WHERE script.sid = ", sid_val, " ",
+        "AND survey.submitdate IS NOT NULL ",
+        "AND application.name = '", @application, "' ",
+        "AND application_has_participant.datetime IS NOT NULL" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
+      -- count the number of times looped
+      SET loop_cntr = loop_cntr + 1;
+
+    END LOOP the_loop;
+
+  END //
+DELIMITER ;
+
 DROP PROCEDURE IF EXISTS patch_qnaire;
   DELIMITER //
   CREATE PROCEDURE patch_qnaire()
@@ -70,7 +163,6 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
 
       SELECT "Creating new script-based event_types" AS "";
 
-      -- create started event_type for script to be used by each qnaire
       SET @sql = CONCAT(
         "INSERT IGNORE INTO ", @cenozo, ".event_type( name, description ) ",
         "SELECT CONCAT( type.name, ' (', surveyls_title, ')' ), ",
@@ -86,7 +178,7 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
 
-      SELECT "Creating scripts based on existing qnaire phases" AS "";
+      SELECT "Creating scripts based on existing non-repeating qnaire phases" AS "";
 
       SET @sql = CONCAT(
         "INSERT INTO ", @cenozo, ".script( ",
@@ -106,6 +198,22 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
 
+      SELECT "Creating scripts based on existing repeating qnaire phases" AS "";
+
+      SET @sql = CONCAT(
+        "INSERT INTO ", @cenozo, ".script( ",
+          "name, started_event_type_id, finished_event_type_id, sid, repeated, description ) ",
+        "SELECT surveyls_title, NULL, NULL, phase.sid, 1, qnaire.description ",
+        "FROM qnaire ",
+        "JOIN phase ON qnaire.id = phase.qnaire_id ",
+        "AND phase.repeated = 1 ",
+        "JOIN ", @limesurvey, ".surveys_languagesettings ON phase.sid = surveyls_survey_id ",
+        "AND surveyls_language = 'en' "
+        "ORDER BY qnaire.rank" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
       SELECT "Creating qnaires linked to newly created scripts" AS "";
 
       SET @sql = CONCAT(
@@ -119,8 +227,8 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
         "INSERT INTO ", @cenozo, ".application_has_script( application_id, script_id ) ",
         "SELECT application.id, script.id ",
         "FROM ", @cenozo, ".application, ", @cenozo, ".script ",
-        "JOIN qnaire ON script.id = qnaire.script_id ",
-        "WHERE DATABASE() LIKE CONCAT( '%_', application.name )" );
+        "WHERE sid IN ( SELECT DISTINCT sid FROM phase ) ",
+        "AND DATABASE() LIKE CONCAT( '%_', application.name )" );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
@@ -157,9 +265,18 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       AND TABLE_NAME = "qnaire"
       AND COLUMN_NAME = "completed_event_type_id" );
     IF @test = 1 THEN
-      ALTER TABLE qnaire
-      DROP FOREIGN KEY fk_qnaire_completed_event_type_id,
-      DROP INDEX fk_completed_event_type_id;
+      ALTER TABLE qnaire DROP FOREIGN KEY fk_qnaire_completed_event_type_id;
+
+      SET @sql = CONCAT(
+        "DELETE FROM ", @cenozo, ".event_type ",
+        "WHERE id IN ( ",
+          "SELECT completed_event_type_id FROM qnaire ",
+        ")" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
+      ALTER TABLE qnaire DROP INDEX fk_completed_event_type_id;
 
       ALTER TABLE qnaire DROP COLUMN completed_event_type_id;
     END IF;
@@ -188,9 +305,19 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       ALTER TABLE qnaire DROP COLUMN description;
     END IF;
 
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.TABLES
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "phase" );
+    IF @test = 1 THEN
+      CALL create_events();
+    END IF;
+
   END //
 DELIMITER ;
 
 -- now call the procedure and remove the procedure
 CALL patch_qnaire();
 DROP PROCEDURE IF EXISTS patch_qnaire;
+DROP PROCEDURE IF EXISTS create_events;
