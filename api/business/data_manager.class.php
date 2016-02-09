@@ -148,7 +148,7 @@ class data_manager extends \cenozo\business\data_manager
       {
         $db_event_type = NULL;
         $method = sprintf( 'get_%s_type', $event_type_name );
-        $db_event_type = $db_qnaire->$method();
+        $db_event_type = $db_qnaire->get_script()->$method();
 
         if( !is_null( $db_event_type ) )
         {

@@ -71,20 +71,8 @@ class interview extends \cenozo\database\record
       $this->site_id = $db_credit_site->id;
       $this->save();
 
-      // record the event
-      $db_event_type = $this->get_qnaire()->get_script()->get_finished_event_type();
-
-      // make sure the event doesn't already exist
-      $event_mod = lib::create( 'database\modifier' );
-      $event_mod->where( 'event_type_id', '=', $db_event_type->id );
-      if( 0 == $this->get_participant()->get_event_count( $event_mod ) )
-      {
-        $db_event = lib::create( 'database\event' );
-        $db_event->participant_id = $this->participant_id;
-        $db_event->event_type_id = $db_event_type->id;
-        $db_event->datetime = $now;
-        $db_event->save();
-      }
+      // record the script finished event
+      $this->get_qnaire()->get_script()->add_finished_event_types( $this->get_participant() );
     }
   }
 
@@ -152,7 +140,7 @@ class interview extends \cenozo\database\record
   }
 
   /**
-   * Forces an interview to become completed.
+   * Forces an interview to become incomplete.
    * 
    * This method will update an interview's status to be incomplete.  It will also delete the
    * correspinding limesurvey data.  This action cannot be undone.
