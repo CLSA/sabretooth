@@ -260,7 +260,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
     'CnShiftTemplateModelFactory', 'CnSession', '$timeout',
     function( CnShiftTemplateModelFactory, CnSession, $timeout ) {
       return {
-        templateUrl: module.url + 'add.tpl.html',
+        templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
@@ -307,7 +307,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
               CnCapacityModelFactory, CnShiftModelFactory,
               CnSession ) {
       return {
-        templateUrl: module.url + 'calendar.tpl.html',
+        templateUrl: module.getFileUrl( 'calendar.tpl.html' ),
         restrict: 'E',
         scope: {
           model: '=?',
@@ -355,7 +355,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
     'CnShiftTemplateModelFactory', 'CnSession',
     function( CnShiftTemplateModelFactory, CnSession ) {
       return {
-        templateUrl: module.url + 'list.tpl.html',
+        templateUrl: module.getFileUrl( 'list.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
@@ -370,7 +370,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
     'CnShiftTemplateModelFactory', 'CnSession', '$timeout',
     function( CnShiftTemplateModelFactory, CnSession, $timeout ) {
       return {
-        templateUrl: module.url + 'view.tpl.html',
+        templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {

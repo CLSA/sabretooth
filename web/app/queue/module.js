@@ -57,7 +57,7 @@ define( function() {
     'CnQueueModelFactory',
     function( CnQueueModelFactory ) {
       return {
-        templateUrl: module.url + 'list.tpl.html',
+        templateUrl: module.getFileUrl( 'list.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
@@ -72,7 +72,7 @@ define( function() {
     'CnQueueTreeFactory', 'CnSession',
     function( CnQueueTreeFactory, CnSession ) {
       return {
-        templateUrl: module.url + 'tree.tpl.html',
+        templateUrl: module.getFileUrl( 'tree.tpl.html' ),
         restrict: 'E',
         controller: function( $scope ) {
           $scope.isLoading = false;
@@ -97,7 +97,7 @@ define( function() {
     'CnQueueModelFactory',
     function( CnQueueModelFactory ) {
       return {
-        templateUrl: module.url + 'view.tpl.html',
+        templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {

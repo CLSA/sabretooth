@@ -144,7 +144,7 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template' ].reduce( fun
               CnShiftModelFactory, CnShiftTemplateModelFactory,
               CnSession, $state ) {
       return {
-        templateUrl: module.url + 'calendar.tpl.html',
+        templateUrl: module.getFileUrl( 'calendar.tpl.html' ),
         restrict: 'E',
         scope: {
           model: '=?',

@@ -9,19 +9,22 @@
 $filename = 'settings.ini.php';
 
 // validate arguments
-if( 2 != $argc )
+if( 2 < $argc )
 {
-  print "Script expects exactly one argument: the new version.\n";
+  print "Script expects one optional argument: the new version.\n";
   exit( 1 );
 }
 
 // validate new version number
-$new_version = $argv[1];
-if( preg_match( '/[^0-9a-z.]/', $new_version ) )
+$new_version = array_key_exists( 1, $argv ) ? $argv[1] : NULL;
+if( !is_null( $new_version ) && preg_match( '/[^0-9a-z.]/', $new_version ) )
 {
   print "Version numbers must only contain numbers, lowercase letters and periods.\n";
   exit( 2 );
 }
+
+// get the build number
+$new_build = exec( 'git rev-parse --short HEAD' );
 
 // make sure ini file exists (checking ./ and ../)
 if( !file_exists( $filename ) ) $filename = '../'.$filename;
@@ -32,12 +35,21 @@ if( !file_exists( $filename ) )
   exit( 3 );
 }
 
-// replace the general-version setting in the main ini file
+// replace the general-version settings in the main ini file
 $contents = file_get_contents( $filename );
-$new_contents = preg_replace( "/(SETTINGS\['general'\]\['version'\]) = '[^']+'/",
-                        "\\1 = '$new_version'",
-                        $contents,
-                        1 );
+
+$new_contents = preg_replace( "/(SETTINGS\['general'\]\['build'\]) = '[^']*'/",
+                              "\\1 = '$new_build'",
+                              $contents,
+                              1 );
+
+if( !is_null( $new_version ) )
+{
+  $new_contents = preg_replace( "/(SETTINGS\['general'\]\['version'\]) = '[^']*'/",
+                                "\\1 = '$new_version'",
+                                $contents,
+                                1 );
+}
 
 // result will be NULL if an error occurred
 if( is_null( $new_contents ) )
@@ -46,18 +58,12 @@ if( is_null( $new_contents ) )
   exit( 4 );
 }
 
-if( $contents === $new_contents )
-{
-  print "Version number not changed.\n";
-  exit( 5 );
-}
-
 // open the ini file for writing
 $handler = fopen( $filename, 'w' );
 if( !$handler )
 {
   print "Unable to open ini file for writing.\n";
-  exit( 6 );
+  exit( 5 );
 }
 
 // write the new version to the ini file
@@ -65,13 +71,14 @@ $result = fwrite( $handler, $new_contents );
 if( !$result )
 {
   print "Unable to write new version to ini file.\n";
-  exit( 7 );
+  exit( 6 );
 }
 
 if( !fclose( $handler ) )
 {
   print "Unable to close file after writing new version.\n";
-  exit( 8 );
+  exit( 7 );
 }
 
-print "Successfully bumped version to $new_version\n";
+if( !is_null( $new_version ) ) print "Successfully bumped version to $new_version\n";
+print "Build changed to $new_build\n";

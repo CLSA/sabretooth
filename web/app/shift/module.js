@@ -100,7 +100,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
     'CnShiftModelFactory', 'CnSession',
     function( CnShiftModelFactory, CnSession ) {
       return {
-        templateUrl: module.url + 'add.tpl.html',
+        templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
@@ -138,7 +138,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
               CnCapacityModelFactory, CnShiftTemplateModelFactory,
               CnSession ) {
       return {
-        templateUrl: module.url + 'calendar.tpl.html',
+        templateUrl: module.getFileUrl( 'calendar.tpl.html' ),
         restrict: 'E',
         scope: {
           model: '=?',
@@ -185,7 +185,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
     'CnShiftModelFactory', 'CnSession',
     function( CnShiftModelFactory, CnSession ) {
       return {
-        templateUrl: module.url + 'list.tpl.html',
+        templateUrl: module.getFileUrl( 'list.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
@@ -200,7 +200,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
     'CnShiftModelFactory', 'CnSession',
     function( CnShiftModelFactory, CnSession ) {
       return {
-        templateUrl: module.url + 'view.tpl.html',
+        templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {

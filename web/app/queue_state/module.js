@@ -61,7 +61,7 @@ define( function() {
     'CnQueueStateModelFactory',
     function( CnQueueStateModelFactory ) {
       return {
-        templateUrl: module.url + 'add.tpl.html',
+        templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
@@ -76,7 +76,7 @@ define( function() {
     'CnQueueStateModelFactory',
     function( CnQueueStateModelFactory ) {
       return {
-        templateUrl: module.url + 'list.tpl.html',
+        templateUrl: module.getFileUrl( 'list.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {

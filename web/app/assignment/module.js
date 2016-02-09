@@ -94,7 +94,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
     'CnAssignmentHomeFactory',
     function( CnAssignmentHomeFactory ) {
       return {
-        templateUrl: module.url + 'home.tpl.html',
+        templateUrl: module.getFileUrl( 'home.tpl.html' ),
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnAssignmentHomeFactory.instance();
@@ -109,7 +109,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
     'CnAssignmentModelFactory',
     function( CnAssignmentModelFactory ) {
       return {
-        templateUrl: module.url + 'list.tpl.html',
+        templateUrl: module.getFileUrl( 'list.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
@@ -124,7 +124,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
     'CnAssignmentModelFactory',
     function( CnAssignmentModelFactory ) {
       return {
-        templateUrl: module.url + 'view.tpl.html',
+        templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {

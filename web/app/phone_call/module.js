@@ -45,7 +45,7 @@ define( function() {
     'CnPhoneCallModelFactory',
     function( CnPhoneCallModelFactory ) {
       return {
-        templateUrl: module.url + 'list.tpl.html',
+        templateUrl: module.getFileUrl( 'list.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
