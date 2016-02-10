@@ -264,7 +264,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
                 self.participant = null;
                 self.isAssignmentLoading = false;
                 self.isPrevAssignmentLoading = false;
-                self.participantModel.listModel.onList( true ).then( function() {
+                self.participantModel.listModel.afterList( function() {
                   CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Select' } ] );
                 } );
               } else { CnModalMessageFactory.httpError( response ); }
