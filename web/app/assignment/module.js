@@ -368,6 +368,11 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
             $state.go( 'participant.notes', { identifier: self.participant.getIdentifier() } );
         };
 
+        this.openHistory = function() {
+          if( null != self.participant )
+            $state.go( 'participant.history', { identifier: self.participant.getIdentifier() } );
+        };
+
         this.loadScriptList = function() {
           self.isScriptListLoading = true;
           return CnHttpFactory.instance( {
