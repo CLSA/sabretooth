@@ -223,6 +223,8 @@ class module extends \cenozo\service\site_restricted_module
       $post_object = $this->get_file_as_object();
       $db_participant = lib::create( 'database\participant', $post_object->participant_id );
       $db_interview = $db_participant->get_effective_interview();
+      $db_interview->start_datetime = $now;
+      $db_interview->save();
 
       $record->user_id = $db_user->id;
       $record->site_id = $db_site->id;
@@ -275,16 +277,6 @@ class module extends \cenozo\service\site_restricted_module
         // mark the interview as complete and immediately update the queue
         $db_interview->complete();
         $db_participant->repopulate_queue( false );
-
-        /*
-        // get the next qnaire
-        $qnaire_sel = lib::create( 'database\select' );
-        $qnaire_sel->add_column( 'id' );
-        $qnaire_sel->from( 'qnaire' );
-        $qnaire_mod = lib::create( 'database\modifier' );
-        $qnaire_mod->where( 'rank', '=', $db_interview->get_qnaire()->rank + 1 );
-        $row = current( $qnaire_class_name->select( $qnaire_sel, $qnaire_mod ) );
-        */
 
         // now create a new interview and assign it to the same user and start a new call
         // since the interview is now complete the effective interview will be newly created
