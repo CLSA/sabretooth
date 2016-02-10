@@ -6,8 +6,8 @@ coordinates the collection of questionnaires from participants by telephone.
 Designed for large epidemiology studies, Sabretooth provides an interface for the
 management of multiple call-centres.
 
-api/
-  This is where the programming interface belongs.
+src/
+  This is where the source code belongs.
   This includes all packages, classes, functions, settings, etc.
 
 aux/
@@ -18,6 +18,9 @@ web/
 
 web/api/
   The root of the restful web API
+
+web/app/
+  This is where the client-side source code goes.
 
 web/app/
   Application-specific extensions to the Angular-based web application

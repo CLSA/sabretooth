@@ -2,7 +2,7 @@
 <?php
 /**
  * This file will search through the code to find all methods which throw exceptions.
- * It uses this information to rebuild the api/exception/error_codes.inc.php file.
+ * It uses this information to rebuild the src/exception/error_codes.inc.php file.
  */
 
 function print_exception_block( $lists, $type )
@@ -33,10 +33,10 @@ function print_exception_block( $lists, $type )
 // if we are in the aux/ directory then back out
 if( preg_match( '#/aux$#', getcwd() ) ) chdir( '..' );
 
-// grep for all method declarations and new exceptions in the api/ directory
+// grep for all method declarations and new exceptions in the src/ directory
 $return_status = -1;
 $grep_line_list = array();
-exec( sprintf( 'grep -Hrn "\(%s\)\|\(%s\)" api/*',
+exec( sprintf( 'grep -Hrn "\(%s\)\|\(%s\)" src/*',
                '^ *\(public\|private\|protected\)\( static\| final\)* function',
                "::create( 'exception" ),
       $grep_line_list,
@@ -84,7 +84,7 @@ foreach( $grep_line_list as $grep_line )
     // find the first / before the first :
     $colon_position = strpos( $grep_line, ':' );
     if( false === $colon_position ) continue;
-    $start_match = 'api/';
+    $start_match = 'src/';
     $end_match = '.class';
     $start = strpos( substr( $grep_line, 0, $colon_position ), $start_match ) +
              strlen( $start_match );

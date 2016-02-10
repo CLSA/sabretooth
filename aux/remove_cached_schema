@@ -10,7 +10,7 @@ if( '/aux' == substr( getcwd(), -4 ) ) chdir( '..' );
 
 require_once 'settings.ini.php';
 require_once 'settings.local.ini.php';
-require_once $SETTINGS['path']['CENOZO'].'/api/bootstrap.class.php';
+require_once $SETTINGS['path']['CENOZO'].'/src/bootstrap.class.php';
 $bootstrap = new \cenozo\bootstrap();
 $bootstrap->read_settings();
 
