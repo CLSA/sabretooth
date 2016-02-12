@@ -115,9 +115,54 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnInterviewListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
+    'CnBaseListFactory', 'CnHttpFactory', '$q',
+    function( CnBaseListFactory, CnHttpFactory, $q ) {
+      var object = function( parentModel ) {
+        CnBaseListFactory.construct( this, parentModel );
+
+        // enable the add button if all interviews are complete and another qnaire is available
+        var self = this;
+        this.afterList( function() {
+          if( 'participant' == self.parentModel.getSubjectFromState() ) {
+            var lastInterview = null;
+            var lastQnaireRank = null;
+            $q.all(
+
+              // get the participant's last interview
+              CnHttpFactory.instance( {
+                path: self.parentModel.getServiceCollectionPath(),
+                data: {
+                  modifier: { order: { 'qnaire.rank': true }, limit: 1 },
+                  select: { column: [ { table: 'qnaire', column: 'rank' }, 'end_datetime' ] }
+                },
+                onError: function( response ) {} // ignore errors
+              } ).query().then( function( response ) {
+                if( 0 < response.data.length ) lastInterview = response.data[0];
+              } ),
+
+              // get the rank of the last qnaire
+              CnHttpFactory.instance( {
+                path: 'qnaire',
+                data: {
+                  modifier: { order: { rank: true }, limit: 1 },
+                  select: { column: [ 'rank' ] }
+                },
+                onError: function( response ) {} // ignore errors
+              } ).query().then( function( response ) {
+                if( 0 < response.data.length ) lastQnaireRank = response.data[0].rank;
+              } )
+
+            ).then( function( response ) {
+              if( null != lastQnaireRank ) {
+                self.parentModel.enableAdd(
+                  null == lastInterview ||
+                  ( null != lastInterview.end_datetime && lastQnaireRank > lastInterview.rank )
+                );
+              }
+            } );
+          }
+        } );
+      };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -192,14 +237,39 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnInterviewModelFactory', [
     'CnBaseModelFactory', 'CnInterviewListFactory', 'CnInterviewViewFactory',
-    'CnHttpFactory', '$q',
+    'CnHttpFactory', 'CnModalMessageFactory', '$q',
     function( CnBaseModelFactory, CnInterviewListFactory, CnInterviewViewFactory,
-              CnHttpFactory, $q ) {
+              CnHttpFactory, CnModalMessageFactory, $q ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnInterviewListFactory.instance( this );
         this.viewModel = CnInterviewViewFactory.instance( this, root );
+
+        // Adding an interview is special, instead of transitioning to an add dialog a command can be
+        // sent to the server to directly add a new interview so long as there doesn't exist an incomplete
+        // interview and there is another qnaire available
+        this.transitionToAddState = function() {
+          return CnHttpFactory.instance( {
+            path: self.getServiceCollectionPath(),
+            data: {}, // no record required, the server will fill in all necessary values
+            onError: function( response ) {
+              if( 409 == response.status ) {
+                // 409 when we can't add a new interview (explanation will be provided
+                CnModalMessageFactory.instance( {
+                  title: 'Unable To Add Interview',
+                  message: response.data +
+                           ' This is likely caused by the list being out of date so it will now be refreshed.',
+                  error: true
+                } ).show().then( function() {
+                  self.listModel.onList( true );
+                } );
+              } else CnModalMessageFactory.httpError( response );
+            }
+          } ).post().then( function() {
+            self.listModel.onList( true );
+          } );
+        };
 
         // extend getBreadcrumbTitle
         // (metadata's promise will have already returned so we don't have to wait for it)

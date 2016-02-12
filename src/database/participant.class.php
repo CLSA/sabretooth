@@ -185,10 +185,11 @@ class participant extends \cenozo\database\participant
    * If their current interview is complete then a new interview is created for the next qnaire and returned,
    * and if there is no next qnaire then NULL is returned (ie: the participant has completed all interviews).
    * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $save If a new interview is created this determines whether to immediately write it to the db
    * @return database\qnaire
    * @access public
    */
-  public function get_effective_interview()
+  public function get_effective_interview( $save = true )
   {
     $interview_class_name = lib::get_class_name( 'database\interview' );
     $this->load_queue_data();
@@ -205,7 +206,7 @@ class participant extends \cenozo\database\participant
         $db_interview = lib::create( 'database\interview' );
         $db_interview->participant_id = $this->id;
         $db_interview->qnaire_id = $this->effective_qnaire_id;
-        $db_interview->save();
+        if( $save ) $db_interview->save();
       }
     }
 
