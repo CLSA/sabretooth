@@ -124,6 +124,7 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'script', 'GET', 1, 0 ),
 ( 'script', 'PATCH', 1, 1 ),
 ( 'script', 'POST', 0, 1 ),
+( 'search', 'GET', 0, 0 ),
 ( 'self', 'GET', 1, 0 ),
 ( 'self', 'PATCH', 1, 0 ),
 ( 'setting', 'GET', 0, 1 ),
