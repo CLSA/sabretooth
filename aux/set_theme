@@ -17,8 +17,8 @@ if( 'aux' == end( explode( '/', getcwd() ) ) ) chdir( '..' );
 $theme = $argv[1];
 
 // get cenozo aux directory (where the themes are)
-$cenozo_dir = str_replace( 'sabretooth', 'cenozo', getcwd() );
-$from_dir = $cenozo_dir.'/aux';
+include( 'settings.local.ini.php' );
+$from_dir = $SETTINGS['path']['CENOZO'].'/aux';
 $to_dir = 'web/css';
 
 // see if the theme exists
