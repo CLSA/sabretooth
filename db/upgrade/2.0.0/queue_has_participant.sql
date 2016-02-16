@@ -8,7 +8,7 @@ DROP PROCEDURE IF EXISTS patch_queue_has_participant;
       SELECT unique_constraint_schema
       FROM information_schema.referential_constraints
       WHERE constraint_schema = DATABASE()
-      AND constraint_name = "fk_queue_state_site_id" );
+      AND constraint_name = "fk_access_site_id" );
 
     SELECT "Dropping interview_method_id column from queue_has_participant table" AS "";
 

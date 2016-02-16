@@ -28,7 +28,7 @@ CREATE PROCEDURE interview_update()
       SELECT unique_constraint_schema
       FROM information_schema.referential_constraints
       WHERE constraint_schema = DATABASE()
-      AND constraint_name = "fk_queue_state_site_id" );
+      AND constraint_name = "fk_activity_site_id" );
 
     SET @limesurvey = ( SELECT CONCAT( SUBSTRING( USER(), 1, LOCATE( '@', USER() )-1 ), "_limesurvey2" ) );
     SET @application = ( SELECT SUBSTRING( DATABASE(), LOCATE( '@', USER() )+1 ) );
@@ -158,7 +158,7 @@ CREATE PROCEDURE clsa_pre_update()
       SELECT unique_constraint_schema
       FROM information_schema.referential_constraints
       WHERE constraint_schema = DATABASE()
-      AND constraint_name = "fk_queue_state_site_id" );
+      AND constraint_name = "fk_access_site_id" );
 
     SET @limesurvey = ( SELECT CONCAT( SUBSTRING( USER(), 1, LOCATE( '@', USER() )-1 ), "_limesurvey2" ) );
 

@@ -7,7 +7,7 @@ DROP PROCEDURE IF EXISTS patch_event_type;
       SELECT unique_constraint_schema
       FROM information_schema.referential_constraints
       WHERE constraint_schema = DATABASE()
-      AND constraint_name = 'fk_queue_state_site_id' );
+      AND constraint_name = 'fk_access_site_id' );
     SET @application = ( SELECT SUBSTRING( DATABASE(), LOCATE( '@', USER() )+1 ) );
 
     SELECT 'Changing some event_type names and descriptions' AS ''; 

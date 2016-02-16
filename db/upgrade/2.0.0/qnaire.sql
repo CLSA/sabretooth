@@ -23,7 +23,7 @@ CREATE PROCEDURE create_events()
       SELECT unique_constraint_schema
       FROM information_schema.referential_constraints
       WHERE constraint_schema = DATABASE()
-      AND constraint_name = "fk_queue_state_site_id" );
+      AND constraint_name = "fk_access_site_id" );
 
     SET @limesurvey = ( SELECT CONCAT( SUBSTRING( USER(), 1, LOCATE( '@', USER() )-1 ), "_limesurvey2" ) );
     SET @application = ( SELECT SUBSTRING( DATABASE(), LOCATE( '@', USER() )+1 ) );
@@ -100,7 +100,7 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       SELECT unique_constraint_schema
       FROM information_schema.referential_constraints
       WHERE constraint_schema = DATABASE()
-      AND constraint_name = "fk_queue_state_site_id" );
+      AND constraint_name = "fk_access_site_id" );
 
     SET @limesurvey = ( SELECT CONCAT( SUBSTRING( USER(), 1, LOCATE( '@', USER() )-1 ), "_limesurvey2" ) );
 

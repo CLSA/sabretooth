@@ -8,7 +8,7 @@ CREATE PROCEDURE patch_user()
       SELECT unique_constraint_schema
       FROM information_schema.referential_constraints
       WHERE constraint_schema = DATABASE()
-      AND constraint_name = "fk_queue_state_site_id" );
+      AND constraint_name = "fk_access_site_id" );
 
     SELECT "Setting user timezones based on single-site access" AS "";
 
