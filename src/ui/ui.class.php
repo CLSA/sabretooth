@@ -49,19 +49,6 @@ class ui extends \cenozo\ui\ui
   /**
    * Extends the parent method
    */
-  protected function get_operation_items()
-  {
-    $role = lib::create( 'business\session' )->get_role()->name;
-
-    $operation_items = parent::get_operation_items();
-    if( 'operator' == $role ) array_unshift( $operation_items, 'break' );
-
-    return $operation_items;
-  }
-
-  /**
-   * Extends the parent method
-   */
   protected function get_list_items( $module_list )
   {
     $list = parent::get_list_items( $module_list );
