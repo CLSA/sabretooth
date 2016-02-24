@@ -48,6 +48,74 @@ CREATE PROCEDURE patch_access()
     EXECUTE statement;
     DEALLOCATE PREPARE statement;
 
+    SELECT "Modifiying constraint delete rules in access table" AS "";
+
+    SET @test = (
+      SELECT DELETE_RULE
+      FROM information_schema.REFERENTIAL_CONSTRAINTS
+      WHERE CONSTRAINT_SCHEMA = DATABASE()
+      AND TABLE_NAME = "access"
+      AND REFERENCED_TABLE_NAME = "user" );
+    IF @test = "NO ACTION" THEN
+      ALTER TABLE access
+      DROP FOREIGN KEY fk_access_user_id;
+
+      SET @sql = CONCAT(
+        "ALTER TABLE access ",
+        "ADD CONSTRAINT fk_access_user_id ",
+        "FOREIGN KEY (user_id) ",
+        "REFERENCES ", @cenozo, ".user (id) ",
+        "ON DELETE CASCADE ",
+        "ON UPDATE CASCADE" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+    END IF;
+
+    SET @test = (
+      SELECT DELETE_RULE
+      FROM information_schema.REFERENTIAL_CONSTRAINTS
+      WHERE CONSTRAINT_SCHEMA = DATABASE()
+      AND TABLE_NAME = "access"
+      AND REFERENCED_TABLE_NAME = "site" );
+    IF @test = "NO ACTION" THEN
+      ALTER TABLE access
+      DROP FOREIGN KEY fk_access_site_id;
+
+      SET @sql = CONCAT(
+        "ALTER TABLE access ",
+        "ADD CONSTRAINT fk_access_site_id ",
+        "FOREIGN KEY (site_id) ",
+        "REFERENCES ", @cenozo, ".site (id) ",
+        "ON DELETE CASCADE ",
+        "ON UPDATE CASCADE" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+    END IF;
+
+    SET @test = (
+      SELECT DELETE_RULE
+      FROM information_schema.REFERENTIAL_CONSTRAINTS
+      WHERE CONSTRAINT_SCHEMA = DATABASE()
+      AND TABLE_NAME = "access"
+      AND REFERENCED_TABLE_NAME = "role" );
+    IF @test = "NO ACTION" THEN
+      ALTER TABLE access
+      DROP FOREIGN KEY fk_access_role_id;
+
+      SET @sql = CONCAT(
+        "ALTER TABLE access ",
+        "ADD CONSTRAINT fk_access_role_id ",
+        "FOREIGN KEY (role_id) ",
+        "REFERENCES ", @cenozo, ".role (id) ",
+        "ON DELETE CASCADE ",
+        "ON UPDATE CASCADE" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+    END IF;
+
   END //
 DELIMITER ;
 
