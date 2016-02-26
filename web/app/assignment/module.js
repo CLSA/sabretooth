@@ -195,6 +195,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
           self.phoneCallStatusList = null;
           self.phoneCallList = null;
           self.isAssignmentLoading = false;
+          self.isForbidden = false;
           self.isPrevAssignmentLoading = false;
         };
 
@@ -258,15 +259,18 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
               { table: 'queue', column: 'title', alias: 'queue' }
             ] } },
             onError: function( response ) {
+              self.assignment = null;
+              self.participant = null;
+              self.isAssignmentLoading = false;
+              self.isPrevAssignmentLoading = false;
+              self.isForbidden = false;
               if( 307 == response.status ) {
                 // 307 means the user has no active assignment, so load the participant select list
-                self.assignment = null;
-                self.participant = null;
-                self.isAssignmentLoading = false;
-                self.isPrevAssignmentLoading = false;
                 self.participantModel.listModel.afterList( function() {
                   CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Select' } ] );
                 } );
+              } else if( 403 == response.status ) {
+                self.isForbidden = true;
               } else { CnModalMessageFactory.httpError( response ); }
             }
           } ).get().then( function( response ) {
@@ -362,6 +366,8 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
             } );
           } );
         };
+
+        this.changeSiteRole = function() { CnSession.showSiteRoleModal(); };
 
         this.openNotes = function() {
           if( null != self.participant )
