@@ -124,18 +124,21 @@ class module extends \cenozo\service\site_restricted_module
         $post_object = $this->get_file_as_object();
         $db_participant = lib::create( 'database\participant', $post_object->participant_id );
         $db_participant->repopulate_queue( false );
-        $queue_mod = lib::create( 'database\modifier' );
-        $queue_mod->where( 'queue.rank', '!=', NULL );
-        if( 0 == $db_participant->get_queue_count( $queue_mod ) )
-        {
-          $this->set_data( 'The participant is no longer available for an interview.' );
-          $this->get_status()->set_code( 409 );
-        }
-        else if( !is_null( $db_participant->get_current_assignment() ) )
+        if( !is_null( $db_participant->get_current_assignment() ) )
         {
           $this->set_data(
             'Cannot create a new assignment since the participant is already assigned to a different user.' );
           $this->get_status()->set_code( 409 );
+        }
+        else if( 'open' == $operation )
+        {
+          $queue_mod = lib::create( 'database\modifier' );
+          $queue_mod->where( 'queue.rank', '!=', NULL );
+          if( 0 == $db_participant->get_queue_count( $queue_mod ) )
+          {
+            $this->set_data( 'The participant is no longer available for an interview.' );
+            $this->get_status()->set_code( 409 );
+          }
         }
       }
     }
