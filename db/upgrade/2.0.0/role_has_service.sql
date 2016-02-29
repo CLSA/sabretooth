@@ -60,6 +60,7 @@ CREATE PROCEDURE patch_role_has_service()
         "OR subject = 'callback' ",
         "OR ( subject = 'assignment' AND method = 'POST' ) ",
         "OR ( subject = 'phone_call' AND method != 'DELETE' ) ",
+        "OR ( subject = 'queue' AND method = 'PATCH' ) ",
         "OR subject IN( 'shift', 'shift_template', 'token' ) ",
       ")" );
     PREPARE statement FROM @sql;
@@ -108,6 +109,7 @@ CREATE PROCEDURE patch_role_has_service()
         "WHERE subject IN( ",
           "'address', 'application', 'collection', 'event', 'interview', 'jurisdiction', 'language', ",
           "'opal_instance', 'phase', 'phone', 'qnaire', 'quota', 'region_site', 'script', 'source', 'state' ) ",
+        "OR ( subject = 'queue' AND method = 'PATCH' ) ",
         "OR ( subject = 'setting' AND method = 'GET' ) ",
         "OR ( subject = 'site' AND method IN ( 'DELETE', 'POST' ) ) ",
       ")" );

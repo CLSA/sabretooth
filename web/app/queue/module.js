@@ -122,13 +122,24 @@ define( function() {
     function( CnBaseViewFactory ) {
       var args = arguments;
       var object = function( parentModel, root ) {
+        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
         if( angular.isDefined( this.queueStateModel ) )
           this.queueStateModel.heading = 'Disabled Questionnaire List';
 
+        // make sure users can edit the queue restriction list despite the queue being read-only
+        this.deferred.promise.then( function() {
+          if( angular.isDefined( self.queueStateModel ) ) {
+            var queueStateModule = cenozoApp.module( 'queue_state' );
+            self.queueStateModel.enableAdd( 0 <= queueStateModule.actions.indexOf( 'add' ) );
+            self.queueStateModel.enableDelete( 0 <= queueStateModule.actions.indexOf( 'delete' ) );
+          }
+        } );
+
         // make sure users can't add/remove participants from queues
-        if( angular.isDefined( this.participantModel ) )
-          this.participantModel.enableChoose( false );
+        this.deferred.promise.then( function() {
+//          if( angular.isDefined( self.participantModel ) ) self.participantModel.enableChoose( false );
+        } );
       };
 
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
