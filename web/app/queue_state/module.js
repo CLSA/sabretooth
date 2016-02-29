@@ -152,7 +152,7 @@ define( function() {
 
           ];
 
-          if( !CnSession.role.all_sites ) {
+          if( !CnSession.role.allSites ) {
             self.metadata.columnList.site_id.enumList = [ {
               value: CnSession.site.id,
               name: CnSession.site.name
