@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class post extends \cenozo\service\post
 {
   /**
-   * Override parent method
+   * Replace parent method
    */
   protected function validate()
   {
