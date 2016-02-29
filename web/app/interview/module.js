@@ -115,8 +115,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnInterviewListFactory', [
-    'CnBaseListFactory', 'CnHttpFactory', '$q',
-    function( CnBaseListFactory, CnHttpFactory, $q ) {
+    'CnBaseListFactory', 'CnHttpFactory',
+    function( CnBaseListFactory, CnHttpFactory ) {
       var object = function( parentModel ) {
         CnBaseListFactory.construct( this, parentModel );
 
@@ -124,41 +124,47 @@ define( function() {
         var self = this;
         this.afterList( function() {
           if( 'participant' == self.parentModel.getSubjectFromState() ) {
+            self.parentModel.enableAdd( false );
+
+            var queueRank = null;
+            var qnaireRank = null;
             var lastInterview = null;
-            var lastQnaireRank = null;
-            $q.all(
+            // get the participant's last interview
+            CnHttpFactory.instance( {
+              path: self.parentModel.getServiceCollectionPath(),
+              data: {
+                modifier: { order: { 'qnaire.rank': true }, limit: 1 },
+                select: { column: [ { table: 'qnaire', column: 'rank' }, 'end_datetime' ] }
+              },
+              onError: function( response ) {} // ignore errors
+            } ).query().then( function( response ) {
+              if( 0 < response.data.length ) lastInterview = response.data[0];
 
-              // get the participant's last interview
-              CnHttpFactory.instance( {
-                path: self.parentModel.getServiceCollectionPath(),
+              // get the participant's current queue rank
+              return CnHttpFactory.instance( {
+                path: self.parentModel.getServiceCollectionPath().replace( '/interview', '' ),
                 data: {
-                  modifier: { order: { 'qnaire.rank': true }, limit: 1 },
-                  select: { column: [ { table: 'qnaire', column: 'rank' }, 'end_datetime' ] }
+                  select: { column: [
+                    { table: 'queue', column: 'rank', alias: 'queueRank' },
+                    { table: 'qnaire', column: 'rank', alias: 'qnaireRank' }
+                  ] }
                 },
                 onError: function( response ) {} // ignore errors
               } ).query().then( function( response ) {
-                if( 0 < response.data.length ) lastInterview = response.data[0];
-              } ),
-
-              // get the rank of the last qnaire
-              CnHttpFactory.instance( {
-                path: 'qnaire',
-                data: {
-                  modifier: { order: { rank: true }, limit: 1 },
-                  select: { column: [ 'rank' ] }
-                },
-                onError: function( response ) {} // ignore errors
-              } ).query().then( function( response ) {
-                if( 0 < response.data.length ) lastQnaireRank = response.data[0].rank;
-              } )
-
-            ).then( function( response ) {
-              if( null != lastQnaireRank ) {
-                self.parentModel.enableAdd(
-                  null == lastInterview ||
-                  ( null != lastInterview.end_datetime && lastQnaireRank > lastInterview.rank )
-                );
-              }
+                queueRank = response.data.queueRank;
+                qnaireRank = response.data.qnaireRank;
+              } );
+            } ).then( function( response ) {
+              console.log( queueRank, qnaireRank, lastInterview );
+              self.parentModel.enableAdd(
+                null != queueRank &&
+                null != qnaireRank && (
+                  null == lastInterview || (
+                    null != lastInterview.end_datetime &&
+                    lastInterview.rank != qnaireRank
+                  )
+                )
+              );
             } );
           }
         } );
