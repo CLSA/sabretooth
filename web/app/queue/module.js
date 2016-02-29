@@ -138,7 +138,7 @@ define( function() {
 
         // make sure users can't add/remove participants from queues
         this.deferred.promise.then( function() {
-//          if( angular.isDefined( self.participantModel ) ) self.participantModel.enableChoose( false );
+          if( angular.isDefined( self.participantModel ) ) self.participantModel.enableChoose( false );
         } );
       };
 
