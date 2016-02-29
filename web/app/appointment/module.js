@@ -70,12 +70,14 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
       column: 'participant.uid',
       title: 'Participant',
       type: 'string',
+      exclude: 'add',
       constant: true
     },
     qnaire: {
       column: 'script.name',
       title: 'Questionnaire',
       type: 'string',
+      exclude: 'add',
       constant: true
     },
     phone_id: {
@@ -100,6 +102,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
       column: 'assignment_user.name',
       title: 'Assigned to',
       type: 'string',
+      exclude: 'add',
       constant: true,
       help: 'This will remain blank until the appointment has been assigned. The assigned user can only be ' +
             ' different from the reserved user when the appointment was missed.'
@@ -107,6 +110,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
     state: {
       title: 'State',
       type: 'string',
+      exclude: 'add',
       constant: true,
       help: 'One of reached, not reached, upcoming, assignable, missed, incomplete, assigned or in progress'
     },

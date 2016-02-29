@@ -54,12 +54,14 @@ define( function() {
       column: 'participant.uid',
       title: 'Participant',
       type: 'string',
+      exclude: 'add',
       constant: true
     },
     qnaire: {
       column: 'script.name',
       title: 'Questionnaire',
       type: 'string',
+      exclude: 'add',
       constant: true
     },
     phone_id: {
@@ -72,6 +74,7 @@ define( function() {
       column: 'assignment_user.name',
       title: 'Assigned to',
       type: 'string',
+      exclude: 'add',
       constant: true,
       help: 'This will remain blank until the callback has been assigned. The assigned user can only be ' +
             ' different from the reserved user when the callback was missed.'
@@ -79,6 +82,7 @@ define( function() {
     state: {
       title: 'State',
       type: 'string',
+      exclude: 'add',
       constant: true,
       help: 'One of reached, not reached, upcoming, assignable, missed, incomplete, assigned or in progress'
     }
