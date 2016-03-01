@@ -144,8 +144,6 @@ CREATE PROCEDURE interview_update()
 
     END LOOP the_loop;
 
-    SELECT CONCAT( "Correcting interview complete states" ) AS "";
-
   END //
 DELIMITER ;
 

@@ -99,3 +99,65 @@ DELIMITER ;
 -- now call the procedure and remove the procedure
 CALL patch_callback();
 DROP PROCEDURE IF EXISTS patch_callback;
+
+SELECT "Delete callbacks for participants who have completed all interviews" AS "";
+
+DELETE FROM callback
+WHERE id IN (
+  SELECT id FROM (
+    SELECT callback.id
+    FROM callback
+    JOIN interview ON callback.interview_id = interview.id
+    JOIN participant_last_interview on interview.participant_id = participant_last_interview.participant_id
+    JOIN interview last_interview on participant_last_interview.interview_id = last_interview.id
+    JOIN qnaire ON last_interview.qnaire_id = qnaire.id
+    WHERE qnaire.rank = ( SELECT MAX( rank ) FROM qnaire )
+    AND last_interview.end_datetime IS NOT NULL
+    AND callback.assignment_id IS NULL
+  ) AS temp
+);
+
+SELECT "Create new interviews for participants with orphaned callbacks which have no open interviews" AS "";
+
+INSERT INTO interview( qnaire_id, participant_id, start_datetime )
+SELECT qnaire_id+1, interview.participant_id, end_datetime
+FROM interview
+WHERE qnaire_id = (
+  SELECT MAX( qnaire_id )
+  FROM interview AS interview2
+  WHERE interview.participant_id = interview2.participant_id
+  GROUP BY interview2.participant_id
+  LIMIT 1
+)
+AND interview.participant_id IN (
+  SELECT DISTINCT participant_id
+  FROM interview
+  WHERE end_datetime IS NOT NULL
+  AND participant_id IN (
+    SELECT participant_id FROM callback
+    JOIN interview ON callback.interview_id = interview.id
+    WHERE callback.assignment_id IS NULL
+    AND interview.end_datetime IS NOT NULL
+  )
+  AND participant_id NOT IN (
+    SELECT DISTINCT participant_id
+    FROM interview
+    WHERE end_datetime IS NULL
+    AND participant_id IN (
+      SELECT participant_id FROM callback
+      JOIN interview ON callback.interview_id = interview.id
+      WHERE callback.assignment_id IS NULL
+      AND interview.end_datetime IS NOT NULL
+    )
+  )
+);
+
+SELECT "Re-associate orphaned callbacks with unfinished interviews" AS "";
+
+UPDATE callback
+JOIN interview ON callback.interview_id = interview.id
+JOIN participant_last_interview ON interview.participant_id = participant_last_interview.participant_id
+SET callback.interview_id = participant_last_interview.interview_id
+WHERE callback.assignment_id IS NULL
+AND interview.end_datetime IS NOT NULL
+AND participant_last_interview.interview_id != interview.id;

@@ -28,6 +28,18 @@ DROP PROCEDURE IF EXISTS patch_interview;
       ADD INDEX dk_start_datetime ( start_datetime ASC ),
       ADD INDEX dk_end_datetime ( end_datetime ASC );
 
+      -- remove interviews with no assignments
+      DELETE FROM interview
+      WHERE id IN (
+        SELECT id FROM (
+          SELECT interview.id
+          FROM interview
+          LEFT JOIN assignment ON assignment.interview_id = interview.id
+          WHERE assignment.id IS NULL
+          GROUP BY interview.id
+        )
+      AS temp );
+
       -- fill in the new start_datetime and end_datetime columns
       UPDATE interview 
       LEFT JOIN assignment ON interview.id = assignment.interview_id

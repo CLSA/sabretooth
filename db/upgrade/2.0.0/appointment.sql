@@ -185,3 +185,65 @@ DELIMITER ;
 -- now call the procedure and remove the procedure
 CALL patch_appointment();
 DROP PROCEDURE IF EXISTS patch_appointment;
+
+SELECT "Delete appointments for participants who have completed all interviews" AS "";
+
+DELETE FROM appointment
+WHERE id IN (
+  SELECT id FROM (
+    SELECT appointment.id
+    FROM appointment
+    JOIN interview ON appointment.interview_id = interview.id
+    JOIN participant_last_interview on interview.participant_id = participant_last_interview.participant_id
+    JOIN interview last_interview on participant_last_interview.interview_id = last_interview.id
+    JOIN qnaire ON last_interview.qnaire_id = qnaire.id
+    WHERE qnaire.rank = ( SELECT MAX( rank ) FROM qnaire )
+    AND last_interview.end_datetime IS NOT NULL
+    AND appointment.assignment_id IS NULL
+  ) AS temp
+);
+
+SELECT "Create new interviews for participants with orphaned appointments which have no open interviews" AS "";
+
+INSERT INTO interview( qnaire_id, participant_id, start_datetime )
+SELECT qnaire_id+1, interview.participant_id, end_datetime
+FROM interview
+WHERE qnaire_id = (
+  SELECT MAX( qnaire_id )
+  FROM interview AS interview2
+  WHERE interview.participant_id = interview2.participant_id
+  GROUP BY interview2.participant_id
+  LIMIT 1
+)
+AND interview.participant_id IN (
+  SELECT DISTINCT participant_id
+  FROM interview
+  WHERE end_datetime IS NOT NULL
+  AND participant_id IN (
+    SELECT participant_id FROM appointment
+    JOIN interview ON appointment.interview_id = interview.id
+    WHERE appointment.assignment_id IS NULL
+    AND interview.end_datetime IS NOT NULL
+  )
+  AND participant_id NOT IN (
+    SELECT DISTINCT participant_id
+    FROM interview
+    WHERE end_datetime IS NULL
+    AND participant_id IN (
+      SELECT participant_id FROM appointment
+      JOIN interview ON appointment.interview_id = interview.id
+      WHERE appointment.assignment_id IS NULL
+      AND interview.end_datetime IS NOT NULL
+    )
+  )
+);
+
+SELECT "Re-associate orphaned appointments with unfinished interviews" AS "";
+
+UPDATE appointment
+JOIN interview ON appointment.interview_id = interview.id
+JOIN participant_last_interview ON interview.participant_id = participant_last_interview.participant_id
+SET appointment.interview_id = participant_last_interview.interview_id
+WHERE appointment.assignment_id IS NULL
+AND interview.end_datetime IS NOT NULL
+AND participant_last_interview.interview_id != interview.id;
