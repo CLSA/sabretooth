@@ -12,23 +12,41 @@ DROP PROCEDURE IF EXISTS patch_event_type;
 
     SELECT 'Changing some event_type names and descriptions' AS ''; 
 
-    SET @sql = CONCAT(
-      "UPDATE qnaire ",
-      "JOIN ", @cenozo, ".event_type ON qnaire.first_attempt_event_type_id = event_type.id ",
-      "SET event_type.name = 'first attempt (", @application, ")', ",
-          "event_type.description = 'First attempt to contact the participant using ", @application, ".'" );
-    PREPARE statement FROM @sql;
-    EXECUTE statement;
-    DEALLOCATE PREPARE statement;
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "qnaire"
+      AND COLUMN_NAME = "first_attempt_event_type_id" );
+    IF @test = 1 THEN
+      SET @sql = CONCAT(
+        "UPDATE qnaire ",
+        "JOIN ", @cenozo, ".event_type ON qnaire.first_attempt_event_type_id = event_type.id ",
+        "SET event_type.name = 'first attempt (", @application, ")', ",
+            "event_type.description = 'First attempt to contact the participant using ", @application, ".' ",
+        "WHERE qnaire.rank = 1" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+    END IF;
 
-    SET @sql = CONCAT(
-      "UPDATE qnaire ",
-      "JOIN ", @cenozo, ".event_type ON qnaire.reached_event_type_id = event_type.id ",
-      "SET event_type.name = 'reached (", @application, ")', ",
-          "event_type.description = 'First time reaching the participant using ", @application, ".'" );
-    PREPARE statement FROM @sql;
-    EXECUTE statement;
-    DEALLOCATE PREPARE statement;
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "qnaire"
+      AND COLUMN_NAME = "reached_event_type_id" );
+    IF @test = 1 THEN
+      SET @sql = CONCAT(
+        "UPDATE qnaire ",
+        "JOIN ", @cenozo, ".event_type ON qnaire.reached_event_type_id = event_type.id ",
+        "SET event_type.name = 'reached (", @application, ")', ",
+            "event_type.description = 'First time reaching the participant using ", @application, ".' ",
+        "WHERE qnaire.rank = 1" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+    END IF;
 
   END //
 DELIMITER ;

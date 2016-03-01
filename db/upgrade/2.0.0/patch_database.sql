@@ -2,15 +2,23 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE participant_last_interview.sql
+SOURCE update_participant_last_interview.sql
+SOURCE interview_last_assignment.sql
+SOURCE update_interview_last_assignment.sql
+SOURCE assignment_last_phone_call.sql
+SOURCE update_assignment_last_phone_call.sql
+SOURCE participant_last_appointment.sql
+
 SOURCE access.sql;
 SOURCE cedar_instance.sql
 SOURCE queue.sql
 SOURCE queue_state.sql
 SOURCE interview.sql
+SOURCE event_type.sql
 SOURCE qnaire.sql
 SOURCE source_survey.sql
 SOURCE phase.sql
-SOURCE event_type.sql
 SOURCE queue_has_participant.sql
 SOURCE qnaire_has_interview_method.sql
 SOURCE interview_method.sql
@@ -21,13 +29,9 @@ SOURCE writelog.sql
 SOURCE prerecruit.sql
 SOURCE ivr_appointment.sql
 SOURCE source_withdraw.sql
-SOURCE participant_last_interview.sql
 SOURCE interview_phone_call_status_count.sql
-SOURCE interview_last_assignment.sql
-SOURCE assignment_last_phone_call.sql
 SOURCE callback.sql
 SOURCE appointment.sql
-SOURCE participant_last_appointment.sql
 SOURCE service.sql
 SOURCE role_has_operation.sql
 SOURCE role_has_service.sql
@@ -39,10 +43,6 @@ SOURCE away_time.sql
 SOURCE user_time.sql
 SOURCE shift_template.sql
 SOURCE user.sql
-
-SOURCE update_participant_last_interview.sql
-SOURCE update_interview_last_assignment.sql
-SOURCE update_assignment_last_phone_call.sql
 
 SOURCE table_character_sets.sql
 SOURCE column_character_sets.sql

@@ -120,6 +120,38 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       ALTER TABLE qnaire DROP COLUMN prev_qnaire_id;
     END IF;
 
+    SELECT "Dropping first_attempt_event_type_id column from qnaire table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "qnaire"
+      AND COLUMN_NAME = "first_attempt_event_type_id" );
+    IF @test = 1 THEN
+      ALTER TABLE qnaire
+      DROP FOREIGN KEY fk_qnaire_first_attempt_event_type_id,
+      DROP INDEX fk_first_attempt_event_type_id;
+
+      ALTER TABLE qnaire DROP COLUMN first_attempt_event_type_id;
+    END IF;
+
+    SELECT "Dropping reached_event_type_id column from qnaire table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "qnaire"
+      AND COLUMN_NAME = "reached_event_type_id" );
+    IF @test = 1 THEN
+      ALTER TABLE qnaire
+      DROP FOREIGN KEY fk_qnaire_reached_event_type_id,
+      DROP INDEX fk_reached_event_type_id;
+
+      ALTER TABLE qnaire DROP COLUMN reached_event_type_id;
+    END IF;
+
     SELECT "Dropping default_interview_method_id column from qnaire table" AS "";
 
     SET @test = (
@@ -181,7 +213,7 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       SELECT "Creating scripts based on existing non-repeating qnaire phases" AS "";
 
       SET @sql = CONCAT(
-        "INSERT INTO ", @cenozo, ".script( ",
+        "INSERT IGNORE INTO ", @cenozo, ".script( ",
           "name, started_event_type_id, finished_event_type_id, sid, repeated, description ) ",
         "SELECT surveyls_title, started_event_type.id, finished_event_type.id, phase.sid, 0, qnaire.description ",
         "FROM qnaire ",
@@ -201,7 +233,7 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       SELECT "Creating scripts based on existing repeating qnaire phases" AS "";
 
       SET @sql = CONCAT(
-        "INSERT INTO ", @cenozo, ".script( ",
+        "INSERT IGNORE INTO ", @cenozo, ".script( ",
           "name, started_event_type_id, finished_event_type_id, sid, repeated, description ) ",
         "SELECT surveyls_title, NULL, NULL, phase.sid, 1, qnaire.description ",
         "FROM qnaire ",
@@ -224,7 +256,7 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       DEALLOCATE PREPARE statement;
 
       SET @sql = CONCAT(
-        "INSERT INTO ", @cenozo, ".application_has_script( application_id, script_id ) ",
+        "INSERT IGNORE INTO ", @cenozo, ".application_has_script( application_id, script_id ) ",
         "SELECT application.id, script.id ",
         "FROM ", @cenozo, ".application, ", @cenozo, ".script ",
         "WHERE sid IN ( SELECT DISTINCT sid FROM phase ) ",
