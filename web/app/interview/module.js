@@ -155,7 +155,6 @@ define( function() {
                 qnaireRank = response.data.qnaireRank;
               } );
             } ).then( function( response ) {
-              console.log( queueRank, qnaireRank, lastInterview );
               self.parentModel.enableAdd(
                 null != queueRank &&
                 null != qnaireRank && (
