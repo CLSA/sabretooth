@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * Performs operations which effect how this module is used in a service
  */
-class module extends \sabretooth\service\base_calendar_module
+class module extends \cenozo\service\base_calendar_module
 {
   /**
    * Contructor
