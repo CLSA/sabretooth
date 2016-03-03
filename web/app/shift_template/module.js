@@ -149,7 +149,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
       if( 'weekly' == shiftTemplate.repeat_type ) {
         // restrict dates to those included by the shift template's repeat_every property
         var weekDateList = [];
-        for( var date = moment( minDate ).tz( 'Canada/Eastern' );
+        for( var date = moment( minDate );
              !date.isAfter( maxDate, 'day' );
              date.add( 1, 'week' ) ) {
           var weekDiff = date.week() - itemStartDate.week();
@@ -270,7 +270,8 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
           $timeout( function() {
             // watch the repeat type and hide the repeat_every and days checkboxes
             // if the value changes from "weekly"
-            scope.$watch( 'record.repeat_type', function( newValue, oldValue ) {
+            scope.$watch( '$$childHead.record.repeat_type', function( newValue, oldValue ) {
+              console.log( oldValue, newValue );
               var elementList = [].filter.call( element[0].querySelectorAll( '.form-group' ), function( el ) {
                 return null !== el.querySelector( '#repeat_every' ) || null !== el.querySelector( '#monday' );
               } );
@@ -280,7 +281,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
             // set the start date in the record and formatted record (if passed here from the calendar)
             scope.model.metadata.getPromise().then( function() {
               if( angular.isDefined( scope.model.addModel.calendarDate ) ) {
-                var cnRecordAddScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
+                var cnRecordAddScope = cenozo.findChildDirectiveScope( scope, 'cnRecordAdd' );
                 if( null == cnRecordAddScope )
                   throw new Exception( 'Unable to find shift_template\'s cnRecordAdd scope.' );
 

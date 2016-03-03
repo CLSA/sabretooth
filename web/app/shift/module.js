@@ -67,11 +67,12 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
     if( angular.isDefined( shift.start ) && angular.isDefined( shift.end ) ) {
       return shift;
     } else {
+      var offset = moment.tz.zone( timezone ).offset( moment( shift.start_datetime ).unix() );
       return {
         getIdentifier: function() { return shift.getIdentifier() },
         title: shift.username,
-        start: moment( shift.start_datetime ).tz( timezone ),
-        end: moment( shift.end_datetime ).tz( timezone )
+        start: moment( shift.start_datetime ).subtract( offset, 'minutes' ),
+        end: moment( shift.end_datetime ).subtract( offset, 'minutes' )
       };
     }
   }
@@ -111,7 +112,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
             // set the start date in the record and formatted record (if passed here from the calendar)
             scope.model.metadata.getPromise().then( function() {
               if( angular.isDefined( scope.model.addModel.calendarDate ) ) {
-                var cnRecordAddScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
+                var cnRecordAddScope = cenozo.findChildDirectiveScope( scope, 'cnRecordAdd' );
                 if( null == cnRecordAddScope )
                   throw new Exception( 'Unable to find shift\'s cnRecordAdd scope.' );
 
@@ -249,6 +250,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
             self.cache.forEach( function( item, index, array ) {
               array[index] = getEventFromShift( item, CnSession.user.timezone );
             } );
+            console.log( self.cache );
           } );
         };
       };

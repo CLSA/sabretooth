@@ -144,12 +144,13 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
     if( angular.isDefined( appointment.start ) && angular.isDefined( appointment.end ) ) {
       return appointment;
     } else {
+      var offset = moment.tz.zone( timezone ).offset( moment( appointment.datetime ).unix() );
       var event = {
         getIdentifier: function() { return appointment.getIdentifier() },
         title: ( angular.isDefined( appointment.uid ) ? appointment.uid : 'new appointment' ) +
                ( angular.isDefined( appointment.qnaire_rank ) ? ' (' + appointment.qnaire_rank + ')' : '' ),
-        start: moment( appointment.datetime ).tz( timezone ),
-        end: moment( appointment.datetime ).tz( timezone ).add( duration, 'minute' )
+        start: moment( appointment.datetime ).subtract( offset, 'minutes' ),
+        end: moment( appointment.datetime ).subtract( offset, 'minutes' ).add( duration, 'minute' )
       };
       if( appointment.override ) {
         event.override = true;
@@ -178,18 +179,21 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
 
               // connect the availability calendar's event click callback to the appointments datetime
               $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
-                if( availability.end.isAfter( moment() ) ) {
+                var offset = moment.tz.zone( CnSession.user.timezone ).offset( availability.start.unix() );
+                var availabilityStart = moment( availability.start ).add( offset, 'minutes' );
+                var availabilityEnd = moment( availability.end ).add( offset, 'minutes' );
+                if( availabilityEnd.isAfter( moment() ) ) {
                   // find the add directive's scope
                   var cnRecordAddScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
                   if( null == cnRecordAddScope )
                     throw new Exception( 'Unable to find appointment\'s cnRecordAdd scope.' );
 
                   // if the start is after the current time then use the next rounded hour
-                  var datetime = moment( availability.start.format() );
+                  var datetime = moment( availabilityStart );
                   if( !datetime.isAfter( moment() ) ) {
                     datetime = moment().minute( 0 ).second( 0 ).millisecond( 0 ).add( 1, 'hours' );
                     if( !datetime.isAfter( moment() ) )
-                      datetime = moment( availability.end.format() );
+                      datetime = moment( availabilityEnd.format() );
                   }
 
                   // set the datetime in the record and formatted record
@@ -295,17 +299,20 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
 
               // connect the availability calendar's event click callback to the appointments datetime
               $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
-                if( availability.end.isAfter( moment() ) ) {
+                var offset = moment.tz.zone( CnSession.user.timezone ).offset( availability.start.unix() );
+                var availabilityStart = moment( availability.start ).add( offset, 'minutes' );
+                var availabilityEnd = moment( availability.end ).add( offset, 'minutes' );
+                if( availabilityEnd.isAfter( moment() ) ) {
                   var cnRecordViewScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
                   if( null == cnRecordViewScope )
                     throw new Exception( 'Unable to find appointment\'s cnRecordView scope.' );
 
                   // if the start is after the current time then use the next rounded hour
-                  var datetime = moment( availability.start.format() );
+                  var datetime = moment( availabilityStart.format() );
                   if( !datetime.isAfter( moment() ) ) {
                     datetime = moment().minute( 0 ).second( 0 ).millisecond( 0 ).add( 1, 'hours' );
                     if( !datetime.isAfter( moment() ) )
-                      datetime = moment( availability.end.format() );
+                      datetime = moment( availabilityEnd.format() );
                   }
 
                   // set the datetime in the record and formatted record
@@ -357,6 +364,9 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
       var object = function( parentModel ) {
         var self = this;
         CnBaseCalendarFactory.construct( this, parentModel );
+
+        // remove day click callback
+        delete this.settings.dayClick;
 
         // extend onCalendar to transform templates into events
         this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {

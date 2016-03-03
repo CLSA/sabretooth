@@ -18,8 +18,8 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
     var availability = [];
 
     // get the offset between the user's current timezone and the site's timezone
-    var offset = moment().tz( CnSession.user.timezone ).utcOffset() -
-                 moment().tz( CnSession.site.timezone ).utcOffset()
+    var userSiteOffset = moment().tz( CnSession.user.timezone ).utcOffset() -
+                         moment().tz( CnSession.site.timezone ).utcOffset()
 
     // create an object grouping all events for each day
     var events = {};
@@ -59,10 +59,10 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
       } else {
         // process shift templates if there are no shifts
         events[date].templates.forEach( function( shiftTemplate ) {
-          var time = moment( shiftTemplate.start ).add( offset, 'minute' ).format( 'HH:mm' );
+          var time = moment( shiftTemplate.start ).add( userSiteOffset, 'minute' ).format( 'HH:mm' );
           if( angular.isUndefined( diffs[time] ) ) diffs[time] = 0;
           diffs[time] += parseInt( shiftTemplate.title );
-          var time = moment( shiftTemplate.end ).add( offset, 'minute' ).format( 'HH:mm' );
+          var time = moment( shiftTemplate.end ).add( userSiteOffset, 'minute' ).format( 'HH:mm' );
           if( angular.isUndefined( diffs[time] ) ) diffs[time] = 0;
           diffs[time] -= parseInt( shiftTemplate.title );
         } );
@@ -86,6 +86,7 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
       times.sort();
 
       // now go through all diffs to determine the slots
+      var offset = moment.tz.zone( CnSession.user.timezone ).offset( moment( date ).unix() );
       var lastTime = null;
       var lastNumber = 0;
       var number = 0;
@@ -99,15 +100,13 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
             var lastColon = lastTime.indexOf( ':' );
             var tempDate = moment( date );
             availability.push( {
-              start: moment().tz( CnSession.user.timezone )
-                             .year( tempDate.year() )
+              start: moment().year( tempDate.year() )
                              .month( tempDate.month() )
                              .date( tempDate.date() )
                              .hour( lastTime.substring( 0, lastColon ) )
                              .minute( lastTime.substring( lastColon + 1 ) )
                              .second( 0 ),
-              end: moment().tz( CnSession.user.timezone )
-                           .year( tempDate.year() )
+              end: moment().year( tempDate.year() )
                            .month( tempDate.month() )
                            .date( tempDate.date() )
                            .hour( time.substring( 0, colon ) )

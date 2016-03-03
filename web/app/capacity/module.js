@@ -18,8 +18,8 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template' ].reduce( fun
     var slots = [];
 
     // get the offset between the user's current timezone and the site's timezone
-    var offset = moment().tz( CnSession.user.timezone ).utcOffset() -
-                 moment().tz( CnSession.site.timezone ).utcOffset()
+    var userSiteOffset = moment().tz( CnSession.user.timezone ).utcOffset() -
+                         moment().tz( CnSession.site.timezone ).utcOffset()
 
     // create an object grouping all events for each day
     var events = {};
@@ -59,10 +59,10 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template' ].reduce( fun
       } else {
         // process shift templates if there are no shifts
         events[date].templates.forEach( function( shiftTemplate ) {
-          var time = moment( shiftTemplate.start ).add( offset, 'minute' ).format( 'HH:mm' );
+          var time = moment( shiftTemplate.start ).add( userSiteOffset, 'minute' ).format( 'HH:mm' );
           if( angular.isUndefined( diffs[time] ) ) diffs[time] = 0;
           diffs[time] += parseInt( shiftTemplate.title );
-          var time = moment( shiftTemplate.end ).add( offset, 'minute' ).format( 'HH:mm' );
+          var time = moment( shiftTemplate.end ).add( userSiteOffset, 'minute' ).format( 'HH:mm' );
           if( angular.isUndefined( diffs[time] ) ) diffs[time] = 0;
           diffs[time] -= parseInt( shiftTemplate.title );
         } );
