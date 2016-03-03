@@ -2,6 +2,7 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE interview.sql
 SOURCE participant_last_interview.sql
 SOURCE update_participant_last_interview.sql
 SOURCE interview_last_assignment.sql
@@ -14,7 +15,6 @@ SOURCE access.sql;
 SOURCE cedar_instance.sql
 SOURCE queue.sql
 SOURCE queue_state.sql
-SOURCE interview.sql
 SOURCE event_type.sql
 SOURCE qnaire.sql
 SOURCE source_survey.sql
