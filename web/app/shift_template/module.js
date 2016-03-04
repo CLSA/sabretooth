@@ -271,7 +271,6 @@ define( [ 'appointment', 'availability', 'capacity', 'shift' ].reduce( function(
             // watch the repeat type and hide the repeat_every and days checkboxes
             // if the value changes from "weekly"
             scope.$watch( '$$childHead.record.repeat_type', function( newValue, oldValue ) {
-              console.log( oldValue, newValue );
               var elementList = [].filter.call( element[0].querySelectorAll( '.form-group' ), function( el ) {
                 return null !== el.querySelector( '#repeat_every' ) || null !== el.querySelector( '#monday' );
               } );

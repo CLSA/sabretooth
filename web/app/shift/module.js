@@ -250,7 +250,6 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
             self.cache.forEach( function( item, index, array ) {
               array[index] = getEventFromShift( item, CnSession.user.timezone );
             } );
-            console.log( self.cache );
           } );
         };
       };
