@@ -100,23 +100,22 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
   [ 'appointment', 'availability', 'capacity', 'shift', 'shift_template' ].forEach( function( name ) {
     var calendarModule = cenozoApp.module( name );
     if( -1 < calendarModule.actions.indexOf( 'calendar' ) ) {
-      module.addExtraOperation(
-        'calendar',
-        calendarModule.subject.snake.replace( "_", " " ).ucWords(),
-        function( $state, model ) { $state.go( name + '.calendar', { identifier: model.site.getIdentifier() } ); },
-        'shift_template' == name ? 'btn-warning' : undefined // highlight current model
-      );
+      module.addExtraOperation( 'calendar', {
+        title: calendarModule.subject.snake.replace( "_", " " ).ucWords(),
+        operation: function( $state, model ) {
+          $state.go( name + '.calendar', { identifier: model.site.getIdentifier() } );
+        },
+        classes: 'shift_template' == name ? 'btn-warning' : undefined // highlight current model
+      } );
     }
   } );
 
-  module.addExtraOperation(
-    'list',
-    'Shift Template Calendar',
-    function( $state, model ) {
-      console.log( model.site );
+  module.addExtraOperation( 'list', {
+    title: 'Shift Template Calendar',
+    operation: function( $state, model ) {
       $state.go( 'shift_template.calendar', { identifier: model.site.getIdentifier() } );
     }
-  );
+  } );
 
   // function used by add and view directives (below)
   function onRepeatTypeChange( elementList, newValue, oldValue ) {

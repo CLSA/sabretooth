@@ -124,12 +124,13 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template', 'site' ].red
   [ 'appointment', 'availability', 'capacity', 'shift', 'shift_template' ].forEach( function( name ) {
     var calendarModule = cenozoApp.module( name );
     if( -1 < calendarModule.actions.indexOf( 'calendar' ) ) {
-      module.addExtraOperation(
-        'calendar',
-        calendarModule.subject.snake.replace( "_", " " ).ucWords(),
-        function( $state, model ) { $state.go( name + '.calendar', { identifier: model.site.getIdentifier() } ); },
-        'capacity' == name ? 'btn-warning' : undefined // highlight current model
-      );
+      module.addExtraOperation( 'calendar', {
+        title: calendarModule.subject.snake.replace( "_", " " ).ucWords(),
+        operation: function( $state, model ) {
+          $state.go( name + '.calendar', { identifier: model.site.getIdentifier() } );
+        },
+        classes: 'capacity' == name ? 'btn-warning' : undefined // highlight current model
+      } );
     }
   } );
 
