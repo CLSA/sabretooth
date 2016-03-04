@@ -251,16 +251,16 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
             Object.keys( factoryList ).filter( function( name ) {
               return -1 < cenozoApp.moduleList[name].actions.indexOf( 'calendar' );
             } ).forEach( function( name ) {
-               var calendarModel = factoryList[name].forSite( scope.model.site ).calendarModel;
-               if( !calendarModel.currentDate.isSame( date, 'day' ) ) calendarModel.currentDate = date;
+              var calendarModel = factoryList[name].forSite( scope.model.site ).calendarModel;
+              if( !calendarModel.currentDate.isSame( date, 'day' ) ) calendarModel.currentDate = date;
             } );
           } );
           scope.$watch( 'model.calendarModel.currentView', function( view ) {
             Object.keys( factoryList ).filter( function( name ) {
               return -1 < cenozoApp.moduleList[name].actions.indexOf( 'calendar' );
             } ).forEach( function( name ) {
-               var calendarModel = factoryList[name].forSite( scope.model.site ).calendarModel;
-               if( calendarModel.currentView != view ) calendarModel.currentView = view;
+              var calendarModel = factoryList[name].forSite( scope.model.site ).calendarModel;
+              if( calendarModel.currentView != view ) calendarModel.currentView = view;
             } );
           } );
         }
