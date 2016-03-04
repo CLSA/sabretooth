@@ -1,4 +1,4 @@
-define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( function( list, name ) {
+define( [ 'appointment', 'capacity', 'shift', 'shift_template', 'site' ].reduce( function( list, name ) {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [] ), function() {
   'use strict';
@@ -256,6 +256,10 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
         this.site = site;
       };
 
+      // get the siteColumn to be used by a site's identifier
+      var siteModule = cenozoApp.module( 'site' );
+      var siteColumn = angular.isDefined( siteModule.identifier.column ) ? siteModule.identifier.column : 'id';
+
       return {
         siteInstanceList: {},
         forSite: function( site ) {
@@ -263,8 +267,11 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template' ].reduce( functio
             $state.go( 'error.404' );
             throw new Error( 'Cannot find site matching identifier "' + site + '", redirecting to 404.' );
           }
-          if( angular.isUndefined( this.siteInstanceList[site.id] ) )
+          if( angular.isUndefined( this.siteInstanceList[site.id] ) ) {
+            if( angular.isUndefined( site.getIdentifier ) )
+              site.getIdentifier = function() { return siteColumn + '=' + this[siteColumn]; };
             this.siteInstanceList[site.id] = new object( site );
+          }
           return this.siteInstanceList[site.id];
         },
         instance: function() {

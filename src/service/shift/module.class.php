@@ -36,7 +36,7 @@ class module extends \cenozo\service\base_calendar_module
     {
       // restrict by site
       $db_restrict_site = $this->get_restricted_site();
-      if( !is_null( $db_restrict_site ) )
+      if( !is_null( $db_restrict_site ) && !is_null( $record->site_id ) )
       {
         if( $record->site_id != $db_restrict_site->id )
           $this->get_status()->set_code( 403 );

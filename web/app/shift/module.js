@@ -1,4 +1,4 @@
-define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( function( list, name ) {
+define( [ 'appointment', 'availability', 'capacity', 'shift_template', 'site' ].reduce( function( list, name ) {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [] ), function() {
   'use strict';
@@ -93,13 +93,13 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
   module.addExtraOperation(
     'list',
     'Shift Calendar',
-    function( $state ) { $state.go( 'shift.calendar' ); }
+    function( $state, model ) { $state.go( 'shift.calendar', { identifier: model.site.getIdentifier() } ); }
   );
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnShiftAdd', [
-    'CnShiftModelFactory', 'CnSession',
-    function( CnShiftModelFactory, CnSession ) {
+    'CnShiftModelFactory', 'CnSession', '$timeout',
+    function( CnShiftModelFactory, CnSession, $timeout ) {
       return {
         templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
@@ -116,9 +116,10 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
                 if( null == cnRecordAddScope )
                   throw new Exception( 'Unable to find shift\'s cnRecordAdd scope.' );
 
-                cnRecordAddScope.record.start_date = moment( scope.model.addModel.calendarDate ).format();
-                cnRecordAddScope.formattedRecord.start_date = CnSession.formatValue(
-                  scope.model.addModel.calendarDate, 'date', true );
+                cnRecordAddScope.record.start_datetime =
+                  moment( scope.model.addModel.calendarDate ).format();
+                cnRecordAddScope.formattedRecord.start_datetime = CnSession.formatValue(
+                  scope.model.addModel.calendarDate, 'datetime', true );
                 delete scope.model.addModel.calendarDate;
               }
             } );
@@ -213,8 +214,8 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnShiftAddFactory', [
-    'CnBaseAddFactory', 'CnSession',
-    function( CnBaseAddFactory, CnSession ) {
+    'CnBaseAddFactory', 'CnSession', 'CnHttpFactory',
+    function( CnBaseAddFactory, CnSession, CnHttpFactory ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
@@ -223,9 +224,17 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
         this.onAdd = function( record ) {
           return this.$$onAdd( record ).then( function() {
             record.getIdentifier = function() { return parentModel.getIdentifierFromRecord( record ); };
-            var minDate = parentModel.calendarModel.cacheMinDate;
-            var maxDate = parentModel.calendarModel.cacheMaxDate;
-            parentModel.calendarModel.cache.push( getEventFromShift( record, CnSession.user.timezone ) );
+            
+            // fill in the user name so that it shows in the calendar
+            return CnHttpFactory.instance( {
+              path: 'user/' + record.user_id,
+              data: { select: { column: [ 'name' ] } }
+            } ).get().then( function( response ) {
+              record.username = response.data.name;
+              var minDate = parentModel.calendarModel.cacheMinDate;
+              var maxDate = parentModel.calendarModel.cacheMaxDate;
+              return parentModel.calendarModel.cache.push( getEventFromShift( record, CnSession.user.timezone ) );
+            } );
           } );
         };
       };
@@ -343,6 +352,10 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
         };
       };
 
+      // get the siteColumn to be used by a site's identifier
+      var siteModule = cenozoApp.module( 'site' );
+      var siteColumn = angular.isDefined( siteModule.identifier.column ) ? siteModule.identifier.column : 'id';
+
       return {
         siteInstanceList: {},
         forSite: function( site ) {
@@ -350,8 +363,11 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template' ].reduce( 
             $state.go( 'error.404' );
             throw new Error( 'Cannot find site matching identifier "' + site + '", redirecting to 404.' );
           }
-          if( angular.isUndefined( this.siteInstanceList[site.id] ) )
+          if( angular.isUndefined( this.siteInstanceList[site.id] ) ) {
+            if( angular.isUndefined( site.getIdentifier ) )
+              site.getIdentifier = function() { return siteColumn + '=' + this[siteColumn]; };
             this.siteInstanceList[site.id] = new object( site );
+          }
           return this.siteInstanceList[site.id];
         },
         instance: function() {

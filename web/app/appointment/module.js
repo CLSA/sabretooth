@@ -1,4 +1,4 @@
-define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( function( list, name ) {
+define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce( function( list, name ) {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [] ), function() {
   'use strict';
@@ -126,7 +126,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
     if( -1 < calendarModule.actions.indexOf( 'calendar' ) ) {
       module.addExtraOperation(
         'calendar',
-        calendarModule.subject.snake.replace( "_", " " ).ucWords(),
+        calendarModule.subject.snake.replace( '_', ' ' ).ucWords(),
         function( $state, model ) { $state.go( name + '.calendar', { identifier: model.site.getIdentifier() } ); },
         'appointment' == name ? 'btn-warning' : undefined // highlight current model
       );
@@ -136,7 +136,9 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
   module.addExtraOperation(
     'view',
     'Appointment Calendar',
-    function( $state ) { $state.go( 'appointment.calendar' ); }
+    function( $state, model ) {
+      $state.go( 'appointment.calendar', { identifier: model.metadata.participantSite.getIdentifier() } );
+    }
   );
 
   // converts appointments into events
@@ -173,36 +175,39 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
           $scope.model.addModel.afterNew( function() {
             if( -1 < cenozoApp.module( 'availability' ).actions.indexOf( 'calendar' ) &&
                 angular.isObject( $scope.model.metadata.participantSite ) ) {
-              // get the availability model linked to the participant's site
-              $scope.availabilityModel =
-                CnAvailabilityModelFactory.forSite( $scope.model.metadata.participantSite );
 
-              // connect the availability calendar's event click callback to the appointments datetime
-              $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
-                var offset = moment.tz.zone( CnSession.user.timezone ).offset( availability.start.unix() );
-                var availabilityStart = moment( availability.start ).add( offset, 'minutes' );
-                var availabilityEnd = moment( availability.end ).add( offset, 'minutes' );
-                if( availabilityEnd.isAfter( moment() ) ) {
-                  // find the add directive's scope
-                  var cnRecordAddScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
-                  if( null == cnRecordAddScope )
-                    throw new Exception( 'Unable to find appointment\'s cnRecordAdd scope.' );
+              $scope.model.getMetadata().then( function() {
+                // get the availability model linked to the participant's site
+                $scope.availabilityModel =
+                  CnAvailabilityModelFactory.forSite( $scope.model.metadata.participantSite );
 
-                  // if the start is after the current time then use the next rounded hour
-                  var datetime = moment( availabilityStart );
-                  if( !datetime.isAfter( moment() ) ) {
-                    datetime = moment().minute( 0 ).second( 0 ).millisecond( 0 ).add( 1, 'hours' );
-                    if( !datetime.isAfter( moment() ) )
-                      datetime = moment( availabilityEnd.format() );
+                // connect the availability calendar's event click callback to the appointments datetime
+                $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
+                  var offset = moment.tz.zone( CnSession.user.timezone ).offset( availability.start.unix() );
+                  var availabilityStart = moment( availability.start ).add( offset, 'minutes' );
+                  var availabilityEnd = moment( availability.end ).add( offset, 'minutes' );
+                  if( availabilityEnd.isAfter( moment() ) ) {
+                    // find the add directive's scope
+                    var cnRecordAddScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
+                    if( null == cnRecordAddScope )
+                      throw new Exception( 'Unable to find appointment\'s cnRecordAdd scope.' );
+
+                    // if the start is after the current time then use the next rounded hour
+                    var datetime = moment( availabilityStart );
+                    if( !datetime.isAfter( moment() ) ) {
+                      datetime = moment().minute( 0 ).second( 0 ).millisecond( 0 ).add( 1, 'hours' );
+                      if( !datetime.isAfter( moment() ) )
+                        datetime = moment( availabilityEnd.format() );
+                    }
+
+                    // set the datetime in the record and formatted record
+                    cnRecordAddScope.record.datetime = datetime.format();
+                    cnRecordAddScope.formattedRecord.datetime =
+                      CnSession.formatValue( datetime, 'datetime', true );
+                    $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
                   }
-
-                  // set the datetime in the record and formatted record
-                  cnRecordAddScope.record.datetime = datetime.format();
-                  cnRecordAddScope.formattedRecord.datetime =
-                    CnSession.formatValue( datetime, 'datetime', true );
-                  $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
-                }
-              };
+                };
+              } );
             }
           } );
         }
@@ -293,36 +298,38 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
             // no need to wait for metadata's promise to return, onView does that already
             if( -1 < cenozoApp.module( 'availability' ).actions.indexOf( 'calendar' ) &&
                 angular.isObject( $scope.model.metadata.participantSite ) ) {
-              // get the availability model linked to the participant's site
-              $scope.availabilityModel =
-                CnAvailabilityModelFactory.forSite( $scope.model.metadata.participantSite );
+              $scope.model.getMetadata().then( function() {
+                // get the availability model linked to the participant's site
+                $scope.availabilityModel =
+                  CnAvailabilityModelFactory.forSite( $scope.model.metadata.participantSite );
 
-              // connect the availability calendar's event click callback to the appointments datetime
-              $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
-                var offset = moment.tz.zone( CnSession.user.timezone ).offset( availability.start.unix() );
-                var availabilityStart = moment( availability.start ).add( offset, 'minutes' );
-                var availabilityEnd = moment( availability.end ).add( offset, 'minutes' );
-                if( availabilityEnd.isAfter( moment() ) ) {
-                  var cnRecordViewScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
-                  if( null == cnRecordViewScope )
-                    throw new Exception( 'Unable to find appointment\'s cnRecordView scope.' );
+                // connect the availability calendar's event click callback to the appointments datetime
+                $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
+                  var offset = moment.tz.zone( CnSession.user.timezone ).offset( availability.start.unix() );
+                  var availabilityStart = moment( availability.start ).add( offset, 'minutes' );
+                  var availabilityEnd = moment( availability.end ).add( offset, 'minutes' );
+                  if( availabilityEnd.isAfter( moment() ) ) {
+                    var cnRecordViewScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
+                    if( null == cnRecordViewScope )
+                      throw new Exception( 'Unable to find appointment\'s cnRecordView scope.' );
 
-                  // if the start is after the current time then use the next rounded hour
-                  var datetime = moment( availabilityStart.format() );
-                  if( !datetime.isAfter( moment() ) ) {
-                    datetime = moment().minute( 0 ).second( 0 ).millisecond( 0 ).add( 1, 'hours' );
-                    if( !datetime.isAfter( moment() ) )
-                      datetime = moment( availabilityEnd.format() );
+                    // if the start is after the current time then use the next rounded hour
+                    var datetime = moment( availabilityStart.format() );
+                    if( !datetime.isAfter( moment() ) ) {
+                      datetime = moment().minute( 0 ).second( 0 ).millisecond( 0 ).add( 1, 'hours' );
+                      if( !datetime.isAfter( moment() ) )
+                        datetime = moment( availabilityEnd.format() );
+                    }
+
+                    // set the datetime in the record and formatted record
+                    $scope.model.viewModel.record.datetime = datetime.format();
+                    $scope.model.viewModel.formattedRecord.datetime =
+                      CnSession.formatValue( datetime, 'datetime', true );
+                    $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
+                    cnRecordViewScope.patch( 'datetime' );
                   }
-
-                  // set the datetime in the record and formatted record
-                  $scope.model.viewModel.record.datetime = datetime.format();
-                  $scope.model.viewModel.formattedRecord.datetime =
-                    CnSession.formatValue( datetime, 'datetime', true );
-                  $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
-                  cnRecordViewScope.patch( 'datetime' );
-                }
-              };
+                };
+              } );
             }
           } );
         }
@@ -538,6 +545,10 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
         };
       };
 
+      // get the siteColumn to be used by a site's identifier
+      var siteModule = cenozoApp.module( 'site' );
+      var siteColumn = angular.isDefined( siteModule.identifier.column ) ? siteModule.identifier.column : 'id';
+
       return {
         siteInstanceList: {},
         forSite: function( site ) {
@@ -545,8 +556,12 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template' ].reduce( functi
             $state.go( 'error.404' );
             throw new Error( 'Cannot find site matching identifier "' + site + '", redirecting to 404.' );
           }
-          if( angular.isUndefined( this.siteInstanceList[site.id] ) )
+          if( angular.isUndefined( this.siteInstanceList[site.id] ) ) {
+            if( angular.isUndefined( site.getIdentifier ) )
+              site.getIdentifier = function() { return siteColumn + '=' + this[siteColumn]; };
             this.siteInstanceList[site.id] = new object( site );
+          }
+
           return this.siteInstanceList[site.id];
         },
         instance: function() {
