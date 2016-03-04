@@ -183,9 +183,9 @@ define( function() {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnCallbackModelFactory', [
     'CnBaseModelFactory', 'CnCallbackAddFactory', 'CnCallbackListFactory', 'CnCallbackViewFactory',
-    'CnHttpFactory',
+    'CnHttpFactory', '$q',
     function( CnBaseModelFactory, CnCallbackAddFactory, CnCallbackListFactory, CnCallbackViewFactory,
-              CnHttpFactory ) {
+              CnHttpFactory, $q ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -195,7 +195,6 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = function() {
-          this.metadata.loadingCount++;
           var promiseList = [ this.$$getMetadata() ];
 
           var parent = this.getParentIdentifier();
@@ -224,7 +223,7 @@ define( function() {
             );
           }
 
-          return $q.all( promiseList ).finally( function finished() { self.metadata.loadingCount--; } );
+          return $q.all( promiseList );
         };
       };
 

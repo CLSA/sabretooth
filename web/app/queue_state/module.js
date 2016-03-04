@@ -118,7 +118,6 @@ define( function() {
 
         // extend getMetadata
         this.getMetadata = function() {
-          this.metadata.loadingCount++;
 
           var promiseList = [
 
@@ -174,7 +173,7 @@ define( function() {
             );
           }
 
-          return $q.all( promiseList ).finally( function finished() { self.metadata.loadingCount--; } );
+          return $q.all( promiseList );
         };
       };
 

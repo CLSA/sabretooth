@@ -497,7 +497,6 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
 
         // extend getMetadata
         this.getMetadata = function() {
-          this.metadata.loadingCount++;
           var promiseList = [ this.$$getMetadata() ];
 
           var parent = this.getParentIdentifier();
@@ -541,7 +540,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
             );
           }
 
-          return $q.all( promiseList ).finally( function finished() { self.metadata.loadingCount--; } );
+          return $q.all( promiseList );
         };
       };
 
