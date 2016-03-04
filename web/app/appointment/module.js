@@ -175,8 +175,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
           $scope.model.addModel.afterNew( function() {
             if( -1 < cenozoApp.module( 'availability' ).actions.indexOf( 'calendar' ) &&
                 angular.isObject( $scope.model.metadata.participantSite ) ) {
-
-              $scope.model.getMetadata().then( function() {
+              $scope.model.metadata.getPromise().then( function() {
                 // get the availability model linked to the participant's site
                 $scope.availabilityModel =
                   CnAvailabilityModelFactory.forSite( $scope.model.metadata.participantSite );
@@ -298,7 +297,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
             // no need to wait for metadata's promise to return, onView does that already
             if( -1 < cenozoApp.module( 'availability' ).actions.indexOf( 'calendar' ) &&
                 angular.isObject( $scope.model.metadata.participantSite ) ) {
-              $scope.model.getMetadata().then( function() {
+              $scope.model.metadata.getPromise().then( function() {
                 // get the availability model linked to the participant's site
                 $scope.availabilityModel =
                   CnAvailabilityModelFactory.forSite( $scope.model.metadata.participantSite );
