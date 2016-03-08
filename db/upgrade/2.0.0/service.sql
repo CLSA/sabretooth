@@ -46,7 +46,7 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'address', 'PATCH', 1, 0 ),
 ( 'address', 'POST', 0, 0 ),
 ( 'age_group', 'GET', 0, 0 ),
-( 'alternate', 'DELETE', 1, 0 ),
+( 'alternate', 'DELETE', 1, 1 ),
 ( 'alternate', 'GET', 0, 0 ),
 ( 'alternate', 'GET', 1, 0 ),
 ( 'alternate', 'PATCH', 1, 0 ),
