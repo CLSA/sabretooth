@@ -482,7 +482,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         this.startCall = function( phone ) {
           if( CnSession.voipEnabled && !phone.international ) {
             CnHttpFactory.instance( {
-              path: 'voip'
+              path: 'voip',
               data: { action: 'call', number: phone.number }
             } ).post();
           }
