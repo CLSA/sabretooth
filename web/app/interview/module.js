@@ -120,12 +120,14 @@ define( function() {
       var object = function( parentModel ) {
         CnBaseListFactory.construct( this, parentModel );
 
-        // enable the add button if all interviews are complete and another qnaire is available
+        // enable the add button if:
+        //   1) the interview list's parent is a participant model
+        //   2) all interviews are complete for this participant
+        //   3) another qnaire is available for this participant
         var self = this;
         this.afterList( function() {
+          self.parentModel.enableAdd( false );
           if( 'participant' == self.parentModel.getSubjectFromState() ) {
-            self.parentModel.enableAdd( false );
-
             var queueRank = null;
             var qnaireRank = null;
             var lastInterview = null;

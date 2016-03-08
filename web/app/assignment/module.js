@@ -480,8 +480,11 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         };
 
         this.startCall = function( phone ) {
-          if( CnSession.voip_enabled && !phone.international ) {
-            // TODO VOIP: start call
+          if( CnSession.voipEnabled && !phone.international ) {
+            CnHttpFactory.instance( {
+              path: 'voip'
+              data: { action: 'call', number: phone.number }
+            } ).post();
           }
 
           CnHttpFactory.instance( {
@@ -491,8 +494,10 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         };
 
         this.endCall = function( status ) {
-          if( CnSession.voip_enabled && !phone.international ) {
-            // TODO VOIP: end call
+          if( CnSession.voipEnabled && !phone.international ) {
+            CnHttpFactory.instance( {
+              path: 'voip/0'
+            } ).delete();
           }
 
           CnHttpFactory.instance( {

@@ -160,6 +160,11 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'user', 'GET', 1, 1 ),
 ( 'user', 'PATCH', 1, 1 ),
 ( 'user', 'POST', 0, 1 ),
+( 'voip', 'DELETE', 1, 0 ),
+( 'voip', 'GET', 0, 0 ),
+( 'voip', 'GET', 1, 0 ),
+( 'voip', 'PATCH', 1, 0 ),
+( 'voip', 'POST', 0, 0 ),
 
 -- application services
 ( 'appointment', 'DELETE', 1, 1 ),
