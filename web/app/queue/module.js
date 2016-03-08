@@ -130,17 +130,20 @@ define( function() {
         if( angular.isDefined( this.queueStateModel ) )
           this.queueStateModel.heading = 'Disabled Questionnaire List';
 
-        // make sure users can edit the queue restriction list despite the queue being read-only
+        // only ranked queues have queue states
+        this.afterView( function() { self.queueStateModel.show = null != self.record.rank; } );
+
         this.deferred.promise.then( function() {
+          self.queueStateModel.show = false;
+
+          // make sure users can edit the queue restriction list despite the queue being read-only
           if( angular.isDefined( self.queueStateModel ) ) {
             var queueStateModule = cenozoApp.module( 'queue_state' );
             self.queueStateModel.enableAdd( 0 <= queueStateModule.actions.indexOf( 'add' ) );
             self.queueStateModel.enableDelete( 0 <= queueStateModule.actions.indexOf( 'delete' ) );
           }
-        } );
 
-        // make sure users can't add/remove participants from queues
-        this.deferred.promise.then( function() {
+          // make sure users can't add/remove participants from queues
           if( angular.isDefined( self.participantModel ) ) self.participantModel.enableChoose( false );
         } );
       };
