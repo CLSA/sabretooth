@@ -28,8 +28,8 @@ DROP PROCEDURE IF EXISTS patch_setting;
           "create_timestamp TIMESTAMP NOT NULL, ",
           "site_id INT UNSIGNED NOT NULL, ",
           "survey_without_sip TINYINT(1) NOT NULL DEFAULT 0, ",
-          "calling_start_time TIME NOT NULL DEFAULT '9:00', ",
-          "calling_end_time TIME NOT NULL DEFAULT '21:00', ",
+          "calling_start_time TIME NOT NULL, ",
+          "calling_end_time TIME NOT NULL, ",
           "short_appointment INT UNSIGNED NOT NULL DEFAULT 30, ",
           "long_appointment INT UNSIGNED NOT NULL DEFAULT 60, ",
           "pre_call_window INT UNSIGNED NOT NULL DEFAULT 5, ",
@@ -62,15 +62,27 @@ DROP PROCEDURE IF EXISTS patch_setting;
       WHERE old_setting_value.category = "voip"
       AND old_setting_value.name = "survey without sip";
 
-      UPDATE setting JOIN old_setting_value USING( site_id )
-      SET calling_start_time = value
-      WHERE old_setting_value.category = "calling"
-      AND old_setting_value.name = "start time";
+      -- start time needs to be converted to UTC
+      SET @sql = CONCAT(
+        "UPDATE setting JOIN old_setting_value USING( site_id ) ",
+        "JOIN ", @cenozo, ".site ON old_setting_value.site_id = site.id ",
+        "SET calling_start_time = TIME( CONVERT_TZ( CONCAT( '2000-01-01 ', value ), site.timezone, 'UTC' ) ) ",
+        "WHERE old_setting_value.category = 'calling' ",
+        "AND old_setting_value.name = 'start time'" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
 
-      UPDATE setting JOIN old_setting_value USING( site_id )
-      SET calling_end_time = value
-      WHERE old_setting_value.category = "calling"
-      AND old_setting_value.name = "end time";
+      -- start time needs to be converted to UTC
+      SET @sql = CONCAT(
+        "UPDATE setting JOIN old_setting_value USING( site_id ) ",
+        "JOIN ", @cenozo, ".site ON old_setting_value.site_id = site.id ",
+        "SET calling_end_time = TIME( CONVERT_TZ( CONCAT( '2000-01-01 ', value ), site.timezone, 'UTC' ) ) ",
+        "WHERE old_setting_value.category = 'calling' ",
+        "AND old_setting_value.name = 'end time'" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
 
       UPDATE setting JOIN old_setting_value USING( site_id )
       SET short_appointment = value

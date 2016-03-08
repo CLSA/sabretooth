@@ -16,12 +16,12 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
       start_time: {
         type: 'time',
         title: 'Start Time',
-        help: 'When the shift starts in the site\'s timezone'
+        help: 'When the shift starts'
       },
       end_time: {
         type: 'time',
         title: 'End Time',
-        help: 'When the shift ends in the site\'s timezone'
+        help: 'When the shift ends'
       },
       start_date: {
         type: 'date',
@@ -55,13 +55,13 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
       title: 'Start Time',
       type: 'time',
       max: 'end_time',
-      help: 'When the shift starts in the site\'s timezone'
+      help: 'When the shift starts'
     },
     end_time: {
       title: 'End Time',
       type: 'time',
       min: 'start_time',
-      help: 'When the shift ends in the site\'s timezone'
+      help: 'When the shift ends'
     },
     start_date: {
       title: 'Start Date',
@@ -130,11 +130,13 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
   };
 
   // converts shift templates into events for the given datespan
-  function getEventsFromShiftTemplate( shiftTemplate, minDate, maxDate ) {
+  function getEventsFromShiftTemplate( shiftTemplate, minDate, maxDate, timezone ) {
     var eventList = [];
 
     // no date span means no templates to transform
     if( null == minDate || null == maxDate ) return eventList;
+
+    var offset = moment.tz.zone( timezone ).offset( moment( shiftTemplate.start_date ).unix() );
 
     // replace template record with concrete events
     if( angular.isDefined( shiftTemplate.repeat_type ) ) {
@@ -161,12 +163,14 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
             var startDate = moment( date ).hour( shiftTemplate.start_time.substring( 0, colon ) )
                                           .minute( shiftTemplate.start_time.substring( colon+1, colon+3 ) )
                                           .second( 0 )
-                                          .millisecond( 0 );
+                                          .millisecond( 0 )
+                                          .subtract( offset, 'minutes' );
             colon = shiftTemplate.end_time.search( ':' );
             var endDate = moment( date ).hour( shiftTemplate.end_time.substring( 0, colon ) )
                                         .minute( shiftTemplate.end_time.substring( colon+1, colon+3 ) )
                                         .second( 0 )
-                                        .millisecond( 0 );
+                                        .millisecond( 0 )
+                                        .subtract( offset, 'minutes' );
 
             var dayList = [];
             if( shiftTemplate.sunday ) dayList.push( 0 );
@@ -317,8 +321,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
         },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftTemplateModelFactory.instance();
-          $scope.heading = $scope.model.site.name.ucWords() + ' Shift Template Calendar (' +
-                           $scope.model.site.timezone + ')';
+          $scope.heading = $scope.model.site.name.ucWords() + ' Shift Template Calendar';
         },
         link: function( scope ) {
           // factory name -> object map used below
@@ -395,8 +398,8 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnShiftTemplateAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
+    'CnBaseAddFactory', 'CnSession',
+    function( CnBaseAddFactory, CnSession ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
@@ -408,7 +411,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
             var minDate = parentModel.calendarModel.cacheMinDate;
             var maxDate = parentModel.calendarModel.cacheMaxDate;
             parentModel.calendarModel.cache = parentModel.calendarModel.cache.concat(
-              getEventsFromShiftTemplate( record, minDate, maxDate )
+              getEventsFromShiftTemplate( record, minDate, maxDate, CnSession.user.timezone )
             );
           } );
         };
@@ -432,7 +435,9 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
           var loadMaxDate = self.getLoadMaxDate( replace, maxDate );
           return self.$$onCalendar( replace, minDate, maxDate, ignoreParent ).then( function() {
             self.cache = self.cache.reduce( function( cache, item ) {
-              return cache.concat( getEventsFromShiftTemplate( item, loadMinDate, loadMaxDate ) );
+              return cache.concat(
+                getEventsFromShiftTemplate( item, loadMinDate, loadMaxDate, CnSession.user.timezone )
+              );
             }, [] );
             // make sure we make the calendar's timezone the site's (instead of the user's)
             self.settings.timezone = CnSession.site.timezone;
@@ -466,8 +471,8 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnShiftTemplateViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
+    'CnBaseViewFactory', 'CnSession',
+    function( CnBaseViewFactory, CnSession ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
       var object = function( parentModel, root ) {
@@ -492,7 +497,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
               return e.getIdentifier() != self.record.getIdentifier();
             } );
             parentModel.calendarModel.cache = parentModel.calendarModel.cache.concat(
-              getEventsFromShiftTemplate( self.record, minDate, maxDate )
+              getEventsFromShiftTemplate( self.record, minDate, maxDate, CnSession.user.timezone )
             );
           } );
         };
@@ -523,12 +528,6 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
         this.viewModel = CnShiftTemplateViewFactory.instance( this, site.id == CnSession.site.id );
         this.site = site;
         
-        // add additional details to some of the help text
-        module.inputGroupList[null].start_time.help += ' (' + self.site.timezone + ')';
-        module.inputGroupList[null].end_time.help += ' (' + self.site.timezone + ')';
-        module.columnList.start_time.help += ' (' + self.site.timezone + ')';
-        module.columnList.end_time.help += ' (' + self.site.timezone + ')';
-
         // customize service data
         this.getServiceData = function( type, columnRestrictLists ) {
           var data = this.$$getServiceData( type, columnRestrictLists );

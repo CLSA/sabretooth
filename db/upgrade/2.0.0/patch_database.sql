@@ -41,7 +41,6 @@ SOURCE setting.sql
 SOURCE system_message.sql
 SOURCE away_time.sql
 SOURCE user_time.sql
-SOURCE shift_template.sql
 SOURCE user.sql
 
 SOURCE table_character_sets.sql

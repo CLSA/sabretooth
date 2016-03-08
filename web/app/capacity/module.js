@@ -14,12 +14,8 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template', 'site' ].red
     }
   } );
 
-  function getSlotsFromEvents( appointmentEvents, shiftEvents, shiftTemplateEvents, CnSession ) {
+  function getSlotsFromEvents( appointmentEvents, shiftEvents, shiftTemplateEvents ) {
     var slots = [];
-
-    // get the offset between the user's current timezone and the site's timezone
-    var userSiteOffset = moment().tz( CnSession.user.timezone ).utcOffset() -
-                         moment().tz( CnSession.site.timezone ).utcOffset()
 
     // create an object grouping all events for each day
     var events = {};
@@ -59,10 +55,10 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template', 'site' ].red
       } else {
         // process shift templates if there are no shifts
         events[date].templates.forEach( function( shiftTemplate ) {
-          var time = moment( shiftTemplate.start ).add( userSiteOffset, 'minute' ).format( 'HH:mm' );
+          var time = moment( shiftTemplate.start ).format( 'HH:mm' );
           if( angular.isUndefined( diffs[time] ) ) diffs[time] = 0;
           diffs[time] += parseInt( shiftTemplate.title );
-          var time = moment( shiftTemplate.end ).add( userSiteOffset, 'minute' ).format( 'HH:mm' );
+          var time = moment( shiftTemplate.end ).format( 'HH:mm' );
           if( angular.isUndefined( diffs[time] ) ) diffs[time] = 0;
           diffs[time] -= parseInt( shiftTemplate.title );
         } );
@@ -139,11 +135,9 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template', 'site' ].red
     'CnCapacityModelFactory',
     'CnAppointmentModelFactory', 'CnAvailabilityModelFactory',
     'CnShiftModelFactory', 'CnShiftTemplateModelFactory',
-    'CnSession', '$state',
     function( CnCapacityModelFactory,
               CnAppointmentModelFactory, CnAvailabilityModelFactory,
-              CnShiftModelFactory, CnShiftTemplateModelFactory,
-              CnSession, $state ) {
+              CnShiftModelFactory, CnShiftTemplateModelFactory ) {
       return {
         templateUrl: module.getFileUrl( 'calendar.tpl.html' ),
         restrict: 'E',
@@ -190,11 +184,9 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template', 'site' ].red
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnCapacityCalendarFactory', [
     'CnBaseCalendarFactory',
-    'CnAppointmentModelFactory', 'CnShiftModelFactory', 'CnShiftTemplateModelFactory',
-    'CnSession', '$q',
+    'CnAppointmentModelFactory', 'CnShiftModelFactory', 'CnShiftTemplateModelFactory', '$q',
     function( CnBaseCalendarFactory,
-              CnAppointmentModelFactory, CnShiftModelFactory, CnShiftTemplateModelFactory,
-              CnSession, $q ) {
+              CnAppointmentModelFactory, CnShiftModelFactory, CnShiftTemplateModelFactory, $q ) {
       var object = function( parentModel, site ) {
         var self = this;
         CnBaseCalendarFactory.construct( this, parentModel );
@@ -228,8 +220,7 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template', 'site' ].red
               // get all shift template events inside the load date span
               shiftTemplateCalendarModel.cache.filter( function( item ) {
                 return !item.start.isBefore( minDate, 'day' ) && !item.end.isAfter( maxDate, 'day' );
-              } ),
-              CnSession
+              } )
             );
           } );
         };
