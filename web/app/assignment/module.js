@@ -485,7 +485,9 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
             CnHttpFactory.instance( {
               path: 'voip',
               data: { action: 'call', number: phone.number }
-            } ).post();
+            } ).post().then( function( response ) {
+              console.log( response );
+            } );
           }
 
           CnHttpFactory.instance( {

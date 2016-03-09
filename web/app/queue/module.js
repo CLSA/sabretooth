@@ -52,7 +52,7 @@ define( function() {
 
   module.addExtraOperation( 'view', {
     title: 'View Queue Tree',
-    operator: function( $state ) { $state.go( 'queue.tree' ); }
+    operation: function( $state ) { $state.go( 'queue.tree' ); }
   } );
 
   /* ######################################################################################################## */
