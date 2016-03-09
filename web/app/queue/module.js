@@ -130,6 +130,12 @@ define( function() {
         if( angular.isDefined( this.queueStateModel ) )
           this.queueStateModel.heading = 'Disabled Questionnaire List';
 
+        this.deferred.promise.then( function() {
+          // add additional columns to the model
+          self.participantModel.addColumn( 'qnaire', { title: 'Questionnaire', column: 'script.name' }, 0 );
+          self.participantModel.addColumn( 'language', { title: 'Language', column: 'language.name' }, 1 );
+        } );
+
         // only ranked queues have queue states
         this.afterView( function() { self.queueStateModel.show = null != self.record.rank; } );
 
