@@ -27,11 +27,11 @@ define( function() {
       },
       calling_start_time: {
         title: 'Start Call',
-        type: 'time'
+        type: 'time_notz'
       },
       calling_end_time: {
         title: 'End Call',
-        type: 'time'
+        type: 'time_notz'
       },
       short_appointment: {
         title: 'Short Ap.',
@@ -70,12 +70,12 @@ define( function() {
     },
     calling_start_time: {
       title: 'Earliest Call Time',
-      type: 'time',
+      type: 'time_notz',
       help: 'The earliest time to assign participants (in their local time)'
     },
     calling_end_time: {
       title: 'Latest Call Time',
-      type: 'time',
+      type: 'time_notz',
       help: 'The latest time to assign participants (in their local time)'
     },
     short_appointment: {
@@ -198,11 +198,16 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnSettingViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
+    'CnBaseViewFactory', 'CnSession',
+    function( CnBaseViewFactory, CnSession ) {
       var args = arguments;
       var CnBaseViewFactory = args[0];
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
+      var object = function( parentModel, root ) {
+        CnBaseViewFactory.construct( this, parentModel, root );
+
+        // update the session data after patching settings
+        this.afterPatch( function() { CnSession.updateData(); } );
+      }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );

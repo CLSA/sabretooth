@@ -58,86 +58,74 @@ DROP PROCEDURE IF EXISTS patch_setting;
       INSERT INTO setting( site_id ) SELECT DISTINCT site_id FROM old_setting_value ORDER BY site_id;
 
       UPDATE setting JOIN old_setting_value USING( site_id )
-      SET survey_without_sip = "true" = old_setting_value.value
-      WHERE old_setting_value.category = "voip"
-      AND old_setting_value.name = "survey without sip";
+      SET survey_without_sip = "true" = value
+      WHERE category = "voip"
+      AND name = "survey without sip";
 
-      -- start time needs to be converted to UTC
-      SET @sql = CONCAT(
-        "UPDATE setting JOIN old_setting_value USING( site_id ) ",
-        "JOIN ", @cenozo, ".site ON old_setting_value.site_id = site.id ",
-        "SET calling_start_time = TIME( CONVERT_TZ( CONCAT( '2000-01-01 ', value ), site.timezone, 'UTC' ) ) ",
-        "WHERE old_setting_value.category = 'calling' ",
-        "AND old_setting_value.name = 'start time'" );
-      PREPARE statement FROM @sql;
-      EXECUTE statement;
-      DEALLOCATE PREPARE statement;
+      UPDATE setting JOIN old_setting_value USING( site_id )
+      SET calling_start_time = value
+      WHERE category = "calling"
+      AND name = "start time";
 
-      -- start time needs to be converted to UTC
-      SET @sql = CONCAT(
-        "UPDATE setting JOIN old_setting_value USING( site_id ) ",
-        "JOIN ", @cenozo, ".site ON old_setting_value.site_id = site.id ",
-        "SET calling_end_time = TIME( CONVERT_TZ( CONCAT( '2000-01-01 ', value ), site.timezone, 'UTC' ) ) ",
-        "WHERE old_setting_value.category = 'calling' ",
-        "AND old_setting_value.name = 'end time'" );
-      PREPARE statement FROM @sql;
-      EXECUTE statement;
-      DEALLOCATE PREPARE statement;
+      UPDATE setting JOIN old_setting_value USING( site_id )
+      SET calling_end_time = value
+      WHERE category = "calling"
+      AND name = "end time";
 
       UPDATE setting JOIN old_setting_value USING( site_id )
       SET short_appointment = value
-      WHERE old_setting_value.category = "appointment"
-      AND old_setting_value.name = "half duration";
+      WHERE category = "appointment"
+      AND name = "half duration";
 
       UPDATE setting JOIN old_setting_value USING( site_id )
       SET long_appointment = value
-      WHERE old_setting_value.category = "appointment"
-      AND old_setting_value.name = "full duration";
+      WHERE category = "appointment"
+      AND name = "full duration";
 
       UPDATE setting JOIN old_setting_value USING( site_id )
       SET pre_call_window = value
-      WHERE old_setting_value.category = "appointment"
-      AND old_setting_value.name = "call pre-window";
+      WHERE category = "appointment"
+      AND name = "call pre-window";
 
       UPDATE setting JOIN old_setting_value USING( site_id )
       SET post_call_window = value
-      WHERE old_setting_value.category = "appointment"
-      AND old_setting_value.name = "call post-window";
+      WHERE category = "appointment"
+      AND name = "call post-window";
 
       UPDATE setting JOIN old_setting_value USING( site_id )
       SET contacted_wait = value
-      WHERE old_setting_value.category = "callback timing"
-      AND old_setting_value.name = "contacted";
+      WHERE category = "callback timing"
+      AND name = "contacted";
 
       UPDATE setting JOIN old_setting_value USING( site_id )
       SET busy_wait = value
-      WHERE old_setting_value.category = "callback timing"
-      AND old_setting_value.name = "busy";
+      WHERE category = "callback timing"
+      AND name = "busy";
 
       UPDATE setting JOIN old_setting_value USING( site_id )
       SET fax_wait = value
-      WHERE old_setting_value.category = "callback timing"
-      AND old_setting_value.name = "fax";
+      WHERE category = "callback timing"
+      AND name = "fax";
 
       UPDATE setting JOIN old_setting_value USING( site_id )
       SET no_answer_wait = value
-      WHERE old_setting_value.category = "callback timing"
-      AND old_setting_value.name = "no answer";
+      WHERE category = "callback timing"
+      AND name = "no answer";
 
       UPDATE setting JOIN old_setting_value USING( site_id )
       SET not_reached_wait = value
-      WHERE old_setting_value.category = "callback timing"
-      AND old_setting_value.name = "not reached";
+      WHERE category = "callback timing"
+      AND name = "not reached";
 
       UPDATE setting JOIN old_setting_value USING( site_id )
       SET hang_up_wait = value
-      WHERE old_setting_value.category = "callback timing"
-      AND old_setting_value.name = "hang up";
+      WHERE category = "callback timing"
+      AND name = "hang up";
 
       UPDATE setting JOIN old_setting_value USING( site_id )
       SET soft_refusal_wait = value
-      WHERE old_setting_value.category = "callback timing"
-      AND old_setting_value.name = "soft refusal";
+      WHERE category = "callback timing"
+      AND name = "soft refusal";
 
       DROP TABLE old_setting_value;
 
