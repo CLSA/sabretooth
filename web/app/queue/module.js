@@ -131,6 +131,11 @@ define( function() {
           this.queueStateModel.heading = 'Disabled Questionnaire List';
 
         this.deferred.promise.then( function() {
+          // override model functions
+          self.participantModel.getServiceCollectionPath = function() {
+            return self.participantModel.$$getServiceCollectionPath() + '?repopulate=time';
+          };
+
           // add additional columns to the model
           self.participantModel.addColumn( 'qnaire', { title: 'Questionnaire', column: 'script.name' }, 0 );
           self.participantModel.addColumn( 'language', { title: 'Language', column: 'language.name' }, 1 );
