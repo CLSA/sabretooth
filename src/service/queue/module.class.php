@@ -19,13 +19,18 @@ class module extends \cenozo\service\site_restricted_module
    */
   public function prepare_read( $select, $modifier )
   {
-    // if the "full" parameter isn't included then only show ranked queues
+    $repopulate = $this->get_argument( 'repopulate', false );
     $full = $this->get_argument( 'full', false );
+
+    // if the "full" parameter isn't included then only show ranked queues
     if( !$full ) $modifier->where( 'queue.rank', '!=', NULL );
 
     // add the total number of participants
     if( $select->has_column( 'participant_count' ) )
     {
+      // repopulate the time queues
+      if( !$repopulate ) $repopulate = 'time';
+
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'queue' );
       $join_sel->add_column( 'id', 'queue_id' );
@@ -82,8 +87,7 @@ class module extends \cenozo\service\site_restricted_module
       $select->add_column( 'IFNULL( participant_count, 0 )', 'participant_count', false );
     }
 
-    // if requested, repopulate queue immediately
-    $repopulate = $this->get_argument( 'repopulate', false );
+    // now repopulate the queue, if necessary
     if( $repopulate )
     {
       $queue_class_name = lib::get_class_name( 'database\queue' );
@@ -99,5 +103,6 @@ class module extends \cenozo\service\site_restricted_module
           $queue_class_name::repopulate_time();
       }
     }
+
   }
 }
