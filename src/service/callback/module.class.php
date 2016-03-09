@@ -47,16 +47,13 @@ class module extends \cenozo\service\module
     parent::prepare_read( $select, $modifier );
 
     $session = lib::create( 'business\session' );
+    $modifier->join( 'interview', 'callback.interview_id', 'interview.id' );
 
     if( $select->has_table_columns( 'participant' ) )
-    {
-      $modifier->join( 'interview', 'callback.interview_id', 'interview.id' );
       $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
-    }
 
     if( $select->has_table_columns( 'qnaire' ) || $select->has_table_columns( 'script' ) )
     {
-      $modifier->join( 'interview', 'callback.interview_id', 'interview.id' );
       $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
       if( $select->has_table_columns( 'script' ) )
         $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
@@ -79,8 +76,6 @@ class module extends \cenozo\service\module
     {
       if( !$modifier->has_join( 'assignment' ) )
         $modifier->left_join( 'assignment', 'callback.assignment_id', 'assignment.id' );
-      if( !$modifier->has_join( 'interview' ) )
-        $modifier->join( 'interview', 'callback.interview_id', 'interview.id' );
 
       $phone_call_join_mod = lib::create( 'database\modifier' );
       $phone_call_join_mod->where( 'assignment.id', '=', 'phone_call.assignment_id', false );
