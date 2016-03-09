@@ -213,7 +213,6 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         this.participantModel.listModel.orderBy( 'rank', true );
 
         // override model functions
-        // TODO: override getServiceData instead of getServiceCollectionPath
         this.participantModel.getServiceCollectionPath = function() { return 'participant?assignment=true'; }
 
         // override the onChoose function
