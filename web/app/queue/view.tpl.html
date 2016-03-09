@@ -4,7 +4,8 @@
                          model.viewModel[child.subject.camel+'Model'].show"
                   model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
 </div>
-<cn-record-list model="model.viewModel.participantModel"
+<cn-record-list ng-if="model.viewModel.participantModel"
+                model="model.viewModel.participantModel"
                 heading="Participant List"
                 remove-columns="active cohort source"></cn-record-list>
 <div class="vertical-spacer" ng-repeat="child in model.module.choosing">
