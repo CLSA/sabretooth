@@ -178,10 +178,13 @@ class appointment extends \cenozo\database\record
       $shift_template_sel = lib::create( 'database\select' );
       $shift_template_sel->from( 'shift_template' );
       $shift_template_sel->add_column(
-        sprintf( 'CONVERT_TZ( CONCAT( "%s ", start_time ), "%s", "UTC" )', $appointment_date, $db_site->timezone ),
+        sprintf( 'CONCAT( "%s ", start_time )', $appointment_date, $db_site->timezone ),
         'start_datetime', false );
+      // add a day to the end datetime if the end is before the start (looping over midnight)
       $shift_template_sel->add_column(
-        sprintf( 'CONVERT_TZ( CONCAT( "%s ", end_time ), "%s", "UTC" )', $appointment_date, $db_site->timezone ),
+        sprintf( 'CONCAT( "%s ", end_time ) + INTERVAL IF( end_time < start_time, 1, 0 ) DAY',
+                 $appointment_date,
+                 $db_site->timezone ),
         'end_datetime', false );
       $shift_template_sel->add_column( 'operators' );
 

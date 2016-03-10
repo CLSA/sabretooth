@@ -154,23 +154,27 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
         // restrict dates to those included by the shift template's repeat_every property
         var weekDateList = [];
         for( var date = moment( minDate );
-             !date.isAfter( maxDate, 'day' );
+             date.isBefore( maxDate, 'day' );
              date.add( 1, 'week' ) ) {
           var weekDiff = date.week() - itemStartDate.week();
           if( 0 <= weekDiff && 0 == weekDiff % shiftTemplate.repeat_every ) {
+
             // create an event for every day of the week the shift template belongs to
             var colon = shiftTemplate.start_time.search( ':' );
             var startDate = moment( date ).hour( shiftTemplate.start_time.substring( 0, colon ) )
                                           .minute( shiftTemplate.start_time.substring( colon+1, colon+3 ) )
                                           .second( 0 )
                                           .millisecond( 0 )
-                                          .subtract( offset, 'minutes' );
+                                          .subtract( offset, 'minutes' )
+                                          .date( date.date() );
             colon = shiftTemplate.end_time.search( ':' );
+
             var endDate = moment( date ).hour( shiftTemplate.end_time.substring( 0, colon ) )
                                         .minute( shiftTemplate.end_time.substring( colon+1, colon+3 ) )
                                         .second( 0 )
                                         .millisecond( 0 )
-                                        .subtract( offset, 'minutes' );
+                                        .subtract( offset, 'minutes' )
+                                        .date( date.date() );
 
             var dayList = [];
             if( shiftTemplate.sunday ) dayList.push( 0 );
@@ -184,12 +188,15 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
             dayList.forEach( function( day ) {
               startDate.day( day );
               endDate.day( day );
+
               if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) &&
                   !startDate.isBefore( itemStartDate, 'day' ) && !startDate.isAfter( itemEndDate, 'day' ) ) {
-                eventList.push( angular.extend( {}, baseEvent, {
-                  start: moment( startDate ),
-                  end: moment( endDate )
-                } ) );
+                eventList.push(
+                  angular.extend( {}, baseEvent, {
+                    start: moment( startDate ),
+                    end: moment( endDate )
+                  } )
+                );
               }
             } );
           }
