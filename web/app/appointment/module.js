@@ -189,13 +189,12 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
 
                 // connect the availability calendar's event click callback to the appointments datetime
                 $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
-
                   var date = moment( availability.start );
-                  var offset = moment.tz.zone( timezone ).offset( date.unix() );
+                  var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
 
                   // adjust to/from daylight saving time
-                  var isNowDST = moment().tz( timezone ).isDST();
-                  var isDST = date.tz( timezone ).isDST();
+                  var isNowDST = moment().tz( CnSession.user.timezone ).isDST();
+                  var isDST = date.tz( CnSession.user.timezone ).isDST();
                   if( isNowDST != isDST ) offset += ( isNowDST ? 1 : -1 ) * 60;
 
                   var availabilityStart = moment( availability.start ).add( offset, 'minutes' );
@@ -319,8 +318,14 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
 
                 // connect the availability calendar's event click callback to the appointments datetime
                 $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
-                  var offset = moment.tz.zone( CnSession.user.timezone ).offset( availability.start.unix() )
-                             - ( moment( availability.start ).tz( CnSession.user.timezone ).isDST() ? 60 : 0 );
+                  var date = moment( availability.start );
+                  var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
+
+                  // adjust to/from daylight saving time
+                  var isNowDST = moment().tz( CnSession.user.timezone ).isDST();
+                  var isDST = date.tz( CnSession.user.timezone ).isDST();
+                  if( isNowDST != isDST ) offset += ( isNowDST ? 1 : -1 ) * 60;
+
                   var availabilityStart = moment( availability.start ).add( offset, 'minutes' );
                   var availabilityEnd = moment( availability.end ).add( offset, 'minutes' );
                   if( availabilityEnd.isAfter( moment() ) ) {

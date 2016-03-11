@@ -480,19 +480,31 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         };
 
         this.startCall = function( phone ) {
+          function postCall() {
+            CnHttpFactory.instance( {
+              path: 'phone_call?operation=open',
+              data: { phone_id: phone.id }
+            } ).post().then( function() { self.onLoad( false ); } );
+          }
+
           if( CnSession.voip.enabled && !phone.international ) {
             CnHttpFactory.instance( {
               path: 'voip',
               data: { action: 'call', phone_id: phone.id }
             } ).post().then( function( response ) {
-              console.log( response );
+              if( 201 == response.status ) {
+                console.log( 'voip_call', response.data );
+                // postCall();
+              } else {
+                CnModalMessageFactory.instance( {
+                  title: 'Webphone Error',
+                  message: 'The webphone was unable to place your call, please try again. ' +
+                           'If this problem persists then please contact support.',
+                  error: true
+                } ).show();
+              }
             } );
-          }
-
-          CnHttpFactory.instance( {
-            path: 'phone_call?operation=open',
-            data: { phone_id: phone.id }
-          } ).post().then( function() { self.onLoad( false ); } );
+          } else { postCall(); }
         };
 
         this.endCall = function( status ) {
