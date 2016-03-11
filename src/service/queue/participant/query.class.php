@@ -23,7 +23,7 @@ class query extends \cenozo\service\query
 
     $this->modifier->join( 'queue_has_participant', 'participant.id', 'queue_has_participant.participant_id' );
     $this->modifier->join( 'queue', 'queue_has_participant.queue_id', 'queue.id' );
-    $this->modifier->join( 'qnaire', 'queue_has_participant.qnaire_id', 'qnaire.id' );
-    $this->modifier->join( 'script', 'qnaire.script_id', 'script.id' );
+    $this->modifier->left_join( 'qnaire', 'queue_has_participant.qnaire_id', 'qnaire.id' );
+    $this->modifier->left_join( 'script', 'qnaire.script_id', 'script.id' );
   }
 }
