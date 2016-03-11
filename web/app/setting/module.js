@@ -105,7 +105,10 @@ define( function() {
       format: 'integer',
       minValue: 0,
       help: 'How many minutes after an appointment before it is considered missed'
-    },
+    }
+  } );
+
+  module.addInputGroup( 'Last Call Wait Times', {
     contacted_wait: {
       title: 'Contacted Wait',
       type: 'string',
