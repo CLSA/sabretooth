@@ -146,7 +146,9 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
     if( angular.isDefined( appointment.start ) && angular.isDefined( appointment.end ) ) {
       return appointment;
     } else {
-      var offset = moment.tz.zone( timezone ).offset( moment( appointment.datetime ).unix() );
+      var date = moment( appointment.datetime );
+      var offset = moment.tz.zone( timezone ).offset( date.unix() ) - ( date.tz( timezone ).isDST() ? 60 : 0 );
+
       var event = {
         getIdentifier: function() { return appointment.getIdentifier() },
         title: ( angular.isDefined( appointment.uid ) ? appointment.uid : 'new appointment' ) +
@@ -182,7 +184,8 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
 
                 // connect the availability calendar's event click callback to the appointments datetime
                 $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
-                  var offset = moment.tz.zone( CnSession.user.timezone ).offset( availability.start.unix() );
+                  var offset = moment.tz.zone( CnSession.user.timezone ).offset( availability.start.unix() )
+                             - ( moment( availability.start ).tz( CnSession.user.timezone ).isDST() ? 60 : 0 );
                   var availabilityStart = moment( availability.start ).add( offset, 'minutes' );
                   var availabilityEnd = moment( availability.end ).add( offset, 'minutes' );
                   if( availabilityEnd.isAfter( moment() ) ) {
@@ -304,7 +307,8 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
 
                 // connect the availability calendar's event click callback to the appointments datetime
                 $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
-                  var offset = moment.tz.zone( CnSession.user.timezone ).offset( availability.start.unix() );
+                  var offset = moment.tz.zone( CnSession.user.timezone ).offset( availability.start.unix() )
+                             - ( moment( availability.start ).tz( CnSession.user.timezone ).isDST() ? 60 : 0 );
                   var availabilityStart = moment( availability.start ).add( offset, 'minutes' );
                   var availabilityEnd = moment( availability.end ).add( offset, 'minutes' );
                   if( availabilityEnd.isAfter( moment() ) ) {

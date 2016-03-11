@@ -122,15 +122,10 @@ class appointment extends \cenozo\database\record
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
 
-    // get the participant's site and timezone offset in minutes
+    // get the participant's site
     $db_participant = $this->get_interview()->get_participant();
     $db_site = $db_participant->get_effective_site();
     if( is_null( $db_site ) ) $db_site = $session->get_site();
-    $db_first_address = $db_participant->get_first_address();
-    $timezone_offset = is_null( $db_first_address )
-                     ? util::get_timezone_offset( $this->datetime )
-                     : $db_participant->get_first_address()->timezone_offset;
-    $timezone_offset *= 60;
 
     // get the site's long and short appointment durations
     $setting_sel = lib::create( 'database\select' );
@@ -138,10 +133,8 @@ class appointment extends \cenozo\database\record
     $setting_sel->add_column( 'long_appointment' );
     $settings = current( $db_site->get_setting_list( $setting_sel ) );
 
-    // get the date of the appointment (adjusted for the timezone offset)
+    // get the date of the appointment
     $date = util::get_datetime_object( $this->datetime );
-    if( 0 > $timezone_offset ) $date->sub( new \DateInterval( sprintf( 'PT%dM', abs( $timezone_offset ) ) ) );
-    else $date->add( new \DateInterval( sprintf( 'PT%dM', $timezone_offset ) ) );
     $day_of_week = $date->format( 'l' );
     $appointment_date = $date->format( 'Y-m-d' );
 
@@ -152,15 +145,14 @@ class appointment extends \cenozo\database\record
     $old_upper_sql =
       'datetime + INTERVAL IF( type = "long", setting.long_appointment, setting.short_appointment ) MINUTE';
 
-    // get all shifts which could possible fulfil this appointment
+    // get all shifts which could possibly fulfil this appointment
     $shift_sel = lib::create( 'database\select' );
     $shift_sel->from( 'shift' );
     $shift_sel->add_column( 'start_datetime' );
     $shift_sel->add_column( 'end_datetime' );
     $shift_mod = lib::create( 'database\modifier' );
-    $shift_mod->where(
-      sprintf( 'DATE( CONVERT_TZ( start_datetime, "UTC", "%s" ) )', $db_site->timezone ),
-      '=', $appointment_date );
+    $shift_mod->where( 'start_datetime', '<=', $this->datetime );
+    $shift_mod->where( 'end_datetime', '>=', $this->datetime );
     $shift_mod->order( 'start_datetime' );
 
     $operator_list = array();
@@ -178,12 +170,22 @@ class appointment extends \cenozo\database\record
       $shift_template_sel = lib::create( 'database\select' );
       $shift_template_sel->from( 'shift_template' );
       $shift_template_sel->add_column(
-        sprintf( 'CONCAT( "%s ", start_time )', $appointment_date, $db_site->timezone ),
+        sprintf( 'CONCAT( "%s ", start_time ) - '.
+                 'INTERVAL IF( TIME( CONVERT_TZ( "%s", "UTC", "%s" ) ) - '.
+                              'TIME( CONVERT_TZ( "2000-01-01", "UTC", "%s" ) ), 1, 0 ) HOUR',
+                 $appointment_date,
+                 $appointment_date,
+                 $db_site->timezone, 
+                 $db_site->timezone ),
         'start_datetime', false );
       // add a day to the end datetime if the end is before the start (looping over midnight)
       $shift_template_sel->add_column(
-        sprintf( 'CONCAT( "%s ", end_time ) + INTERVAL IF( end_time < start_time, 1, 0 ) DAY',
+        sprintf( 'CONCAT( "%s ", end_time ) + INTERVAL IF( end_time < start_time, 1, 0 ) DAY - '.
+                 'INTERVAL IF( TIME( CONVERT_TZ( "%s", "UTC", "%s" ) ) - '.
+                              'TIME( CONVERT_TZ( "2000-01-01", "UTC", "%s" ) ), 1, 0 ) HOUR',
                  $appointment_date,
+                 $appointment_date,
+                 $db_site->timezone, 
                  $db_site->timezone ),
         'end_datetime', false );
       $shift_template_sel->add_column( 'operators' );

@@ -67,7 +67,9 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template', 'site' ].
     if( angular.isDefined( shift.start ) && angular.isDefined( shift.end ) ) {
       return shift;
     } else {
-      var offset = moment.tz.zone( timezone ).offset( moment( shift.start_datetime ).unix() );
+      var date = moment( shift.start_datetime );
+      var offset = moment.tz.zone( timezone ).offset( date.unix() ) - ( date.tz( timezone ).isDST() ? 60 : 0 );
+
       return {
         getIdentifier: function() { return shift.getIdentifier() },
         title: shift.username,

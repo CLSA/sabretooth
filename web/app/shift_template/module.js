@@ -136,6 +136,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
     // no date span means no templates to transform
     if( null == minDate || null == maxDate ) return eventList;
 
+    // do not adjust for daylight savings
     var offset = moment.tz.zone( timezone ).offset( moment( shiftTemplate.start_date ).unix() );
 
     // replace template record with concrete events
@@ -215,13 +216,15 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
                                           .hour( shiftTemplate.start_time.substring( 0, colon ) )
                                           .minute( shiftTemplate.start_time.substring( colon+1, colon+3 ) )
                                           .second( 0 )
-                                          .millisecond( 0 );
+                                          .millisecond( 0 )
+                                          .subtract( offset, 'minutes' );
             colon = shiftTemplate.end_time.search( ':' );
             var endDate = moment( date ).date( itemStartDayOfMonth )
                                         .hour( shiftTemplate.end_time.substring( 0, colon ) )
                                         .minute( shiftTemplate.end_time.substring( colon+1, colon+3 ) )
                                         .second( 0 )
-                                        .millisecond( 0 );
+                                        .millisecond( 0 )
+                                        .subtract( offset, 'minutes' );
 
             if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) ) {
               eventList.push( angular.extend( {}, baseEvent, {
@@ -240,14 +243,16 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
                                           .hour( shiftTemplate.start_time.substring( 0, colon ) )
                                           .minute( shiftTemplate.start_time.substring( colon+1, colon+3 ) )
                                           .second( 0 )
-                                          .millisecond( 0 );
+                                          .millisecond( 0 )
+                                          .subtract( offset, 'minutes' );
             colon = shiftTemplate.end_time.search( ':' );
             var endDate = moment( date ).date( 7*( weekOfMonth - 1 ) )
                                         .weekday( itemStartWeekday )
                                         .hour( shiftTemplate.end_time.substring( 0, colon ) )
                                         .minute( shiftTemplate.end_time.substring( colon+1, colon+3 ) )
                                         .second( 0 )
-                                        .millisecond( 0 );
+                                        .millisecond( 0 )
+                                        .subtract( offset, 'minutes' );
 
             if( Math.ceil( startDate.date() / 7 ) < weekOfMonth ) {
               startDate.add( 7, 'days' );
