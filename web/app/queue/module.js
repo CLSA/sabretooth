@@ -130,7 +130,12 @@ define( function() {
         if( angular.isDefined( this.queueStateModel ) )
           this.queueStateModel.heading = 'Disabled Questionnaire List';
 
+        // only ranked queues have queue states
+        this.afterView( function() { self.queueStateModel.show = null != self.record.rank; } );
+
         this.deferred.promise.then( function() {
+          self.queueStateModel.show = false;
+
           // override model functions
           self.participantModel.getServiceCollectionPath = function() {
             return self.participantModel.$$getServiceCollectionPath() + '?repopulate=time';
@@ -139,13 +144,6 @@ define( function() {
           // add additional columns to the model
           self.participantModel.addColumn( 'qnaire', { title: 'Questionnaire', column: 'script.name' }, 0 );
           self.participantModel.addColumn( 'language', { title: 'Language', column: 'language.name' }, 1 );
-        } );
-
-        // only ranked queues have queue states
-        this.afterView( function() { self.queueStateModel.show = null != self.record.rank; } );
-
-        this.deferred.promise.then( function() {
-          self.queueStateModel.show = false;
 
           // make sure users can edit the queue restriction list despite the queue being read-only
           if( angular.isDefined( self.queueStateModel ) ) {
