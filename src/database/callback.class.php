@@ -40,7 +40,20 @@ class callback extends \cenozo\database\record
           'Cannot have more than one unassigned appointment or callback per interview.', __METHOD__ );
     }
 
+    // if we changed certain columns then update the queue
+    $update_queue = $this->has_column_changed( array( 'assignment_id', 'datetime' ) );
     parent::save();
+    if( $update_queue ) $this->get_interview()->get_participant()->repopulate_queue( true );
+  }
+
+  /**
+   * Override the parent method
+   */
+  public function delete()
+  {
+    $db_participant = $this->get_interview()->get_participant();
+    parent::delete();
+    $db_participant->repopulate_queue( true );
   }
 
   /**

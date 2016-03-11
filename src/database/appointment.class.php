@@ -23,7 +23,7 @@ class appointment extends \cenozo\database\record
   {
     $callback_class_name = lib::get_class_name( 'database\callback' );
 
-    // make sure there is a maximum of 1 unassigned appointment per interview
+    // make sure there is a maximum of 1 unassigned appointment or callback per interview
     if( is_null( $this->id ) && is_null( $this->assignment_id ) )
     {
       $appointment_mod = lib::create( 'database\modifier' );
