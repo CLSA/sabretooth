@@ -68,7 +68,13 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template', 'site' ].
       return shift;
     } else {
       var date = moment( shift.start_datetime );
-      var offset = moment.tz.zone( timezone ).offset( date.unix() ) - ( date.tz( timezone ).isDST() ? 60 : 0 );
+      var offset = moment.tz.zone( timezone ).offset( date.unix() );
+
+      // adjust to/from daylight saving time
+      var isNowDST = moment().tz( timezone ).isDST();
+      var isDST = date.tz( timezone ).isDST();
+      if( isNowDST != isDST ) offset += ( isNowDST ? 1 : -1 ) * 60;
+
 
       return {
         getIdentifier: function() { return shift.getIdentifier() },
