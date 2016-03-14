@@ -418,6 +418,17 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
 
         // add the new shift template's events to the calendar cache
         this.onAdd = function( record ) {
+          // shift templates are tricky: we need to ignore the DST shift in order for them to display correctly
+          // across both standard and daylight savings time
+          if( moment().tz( CnSession.user.timezone ).isDST() ) {
+            record.start_time = moment(
+              new Date( moment().format( 'YYYY-MM-DD' ) + 'T' + record.start_time + 'Z' )
+            ).add( 1, 'hours' ).format( 'HH:mm' );
+            record.end_time = moment(
+              new Date( moment().format( 'YYYY-MM-DD' ) + 'T' + record.end_time + 'Z' )
+            ).add( 1, 'hours' ).format( 'HH:mm' );
+          }
+
           return this.$$onAdd( record ).then( function() {
             record.getIdentifier = function() { return parentModel.getIdentifierFromRecord( record ); };
             var minDate = parentModel.calendarModel.cacheMinDate;
@@ -463,10 +474,34 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnShiftTemplateListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
+    'CnBaseListFactory', 'CnSession',
+    function( CnBaseListFactory, CnSession ) {
       var object = function( parentModel ) {
+        var self = this;
         CnBaseListFactory.construct( this, parentModel );
+
+        // adjust for DST
+        this.onList = function( replace ) {
+          return this.$$onList( replace ).then( function() {
+            // shift templates are tricky: we need to ignore the DST shift in order for them to display correctly
+            // across both standard and daylight savings time
+            if( moment().tz( CnSession.user.timezone ).isDST() ) {
+              self.cache.filter( function( record ) {
+                return true !== record.adjustedForDST;
+              } ).forEach( function( record ) {
+                record.start_time = moment(
+                  new Date( moment().format( 'YYYY-MM-DD' ) + 'T' + record.start_time + 'Z' )
+                ).subtract( 1, 'hours' ).format( 'HH:mm' );
+
+                record.end_time = moment(
+                  new Date( moment().format( 'YYYY-MM-DD' ) + 'T' + record.end_time + 'Z' )
+                ).subtract( 1, 'hours' ).format( 'HH:mm' );
+
+                record.adjustedForDST = true;
+              } );
+            }
+          } );
+        };
 
         // remove the deleted shift template from the calendar cache
         this.onDelete = function( record ) {
@@ -490,6 +525,27 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
+
+        // adjust for DST
+        this.onView = function() {
+          return this.$$onView().then( function() {
+            // shift templates are tricky: we need to ignore the DST shift in order for them to display correctly
+            // across both standard and daylight savings time
+            if( moment().tz( CnSession.user.timezone ).isDST() ) {
+              self.record.start_time = moment(
+                new Date( moment().format( 'YYYY-MM-DD' ) + 'T' + self.record.start_time + 'Z' )
+              ).subtract( 1, 'hours' ).format( 'HH:mm' );
+              self.backupRecord.start_time = self.record.start_time;
+              self.updateFormattedRecord( 'start_time' );
+
+              self.record.end_time = moment(
+                new Date( moment().format( 'YYYY-MM-DD' ) + 'T' + self.record.end_time + 'Z' )
+              ).subtract( 1, 'hours' ).format( 'HH:mm' );
+              self.backupRecord.end_time = self.record.end_time;
+              self.updateFormattedRecord( 'end_time' );
+            }
+          } );
+        };
 
         // remove the deleted shift template's events from the calendar cache
         this.onDelete = function() {
