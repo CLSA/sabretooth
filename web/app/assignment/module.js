@@ -522,8 +522,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
                   data: { action: 'call', phone_id: phone.id }
                 } ).post().then( function( response ) {
                   if( 201 == response.status ) {
-                    console.log( 'voip_call', response.data );
-                    // postCall();
+                    postCall();
                   } else {
                     CnModalMessageFactory.instance( {
                       title: 'Webphone Error',
@@ -539,9 +538,14 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         };
 
         this.endCall = function( status ) {
-          if( CnSession.voip.enabled && !phone.international ) {
+          if( CnSession.voip.enabled && CnSession.voip.info && !this.activePhoneCall.international ) {
             CnHttpFactory.instance( {
-              path: 'voip/0'
+              path: 'voip/0',
+              onError: function( response ) {
+                if( 404 == response.status ) {
+                  // ignore 404 errors, it just means there was no phone call found to hang up
+                } else { CnModalMessageFactory.httpError( response ); }
+              }
             } ).delete();
           }
 
