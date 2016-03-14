@@ -487,24 +487,55 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
             } ).post().then( function() { self.onLoad( false ); } );
           }
 
-          if( CnSession.voip.enabled && !phone.international ) {
-            CnHttpFactory.instance( {
-              path: 'voip',
-              data: { action: 'call', phone_id: phone.id }
-            } ).post().then( function( response ) {
-              if( 201 == response.status ) {
-                console.log( 'voip_call', response.data );
-                // postCall();
-              } else {
-                CnModalMessageFactory.instance( {
-                  title: 'Webphone Error',
-                  message: 'The webphone was unable to place your call, please try again. ' +
-                           'If this problem persists then please contact support.',
-                  error: true
-                } ).show();
+          if( !CnSession.voip.enabled ) {
+            postCall();
+          } else {
+            if( !CnSession.voip.info ) {
+              if( !phone.international ) {
+                CnModalConfirmFactory.instance( {
+                  title: 'Webphone Not Found',
+                  message: 'You are about to place a call with no webphone connection. ' +
+                           'If you choose to proceed you will have to contact the participant without the use ' +
+                           'of the software-based telephone system. ' +
+                           'If you wish to use the built-in telephone system click "No", then click on the ' +
+                           '"Webphone" link under the "Utilities" submenu to connect to the webphone.\n\n' +
+                           'Do you wish to proceed without a webphone connection?',
+                } ).show().then( function( response ) {
+                  if( response ) postCall();
+                } );
               }
-            } );
-          } else { postCall(); }
+            } else {
+              if( phone.international ) {
+                CnModalConfirmFactory.instance( {
+                  title: 'International Phone Number',
+                  message: 'The phone number you are about to call is international. ' +
+                           'The VoIP system cannot place international calls so if you choose to proceed you ' +
+                           'will have to contact the participant without the use of the software-based ' +
+                           'telephone system.\n\n' +
+                           'Do you wish to proceed without a webphone connection?',
+                } ).show().then( function( response ) {
+                  if( response ) postCall();
+                } );
+              } else {
+                CnHttpFactory.instance( {
+                  path: 'voip',
+                  data: { action: 'call', phone_id: phone.id }
+                } ).post().then( function( response ) {
+                  if( 201 == response.status ) {
+                    console.log( 'voip_call', response.data );
+                    // postCall();
+                  } else {
+                    CnModalMessageFactory.instance( {
+                      title: 'Webphone Error',
+                      message: 'The webphone was unable to place your call, please try again. ' +
+                               'If this problem persists then please contact support.',
+                      error: true
+                    } ).show();
+                  }
+                } );
+              }
+            }
+          }
         };
 
         this.endCall = function( status ) {
