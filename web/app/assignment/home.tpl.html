@@ -36,12 +36,18 @@
         <div class="form-horizontal">
           <div class="container-fluid form-body allow-select">
             <div class="row">
+              <label class="col-sm-4 control-label">UID</label>
+              <div class="col-sm-8 form-text">
+                  {{ model.participant.uid }}
+              </div>
+            </div>
+            <div class="row">
               <label class="col-sm-4 control-label">Participant</label>
               <div class="col-sm-8 form-text">
+                  {{ model.participant.honorific }}
                   {{ model.participant.first_name }}
                   {{ model.participant.other_name ? '(' + model.participant.other_name + ')' : '' }}
                   {{ model.participant.last_name }}
-                  ({{ model.participant.uid }})
               </div>
             </div>
             <div class="row">
