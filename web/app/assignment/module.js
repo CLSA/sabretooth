@@ -352,7 +352,10 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
                 path: 'participant/' + self.assignment.participant_id + '/phone',
                 data: {
                   select: { column: [ 'id', 'rank', 'type', 'number', 'international' ] },
-                  modifier: { order: 'rank' }
+                  modifier: {
+                    where: { column: 'phone.active', operator: '=', value: true },
+                    order: 'rank'
+                  }
                 }
               } ).query().then( function( response ) {
                 self.phoneList = response.data;
