@@ -270,6 +270,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
                   CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Select' } ] );
                 } );
               } else if( 403 == response.status ) {
+                CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Wrong Site' } ] );
                 self.isForbidden = true;
               } else { CnModalMessageFactory.httpError( response ); }
             }
