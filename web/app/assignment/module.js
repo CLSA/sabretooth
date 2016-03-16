@@ -401,7 +401,8 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
             self.scriptList = [];
             self.qnaireScriptList = [];
             response.data.forEach( function( item ) {
-              if( null != self.qnaireList.findByProperty( 'script_id', item.id ) ) {
+              if( angular.isArray( self.qnaireList ) &&
+                  null != self.qnaireList.findByProperty( 'script_id', item.id ) ) {
                 self.qnaireScriptList.push( item );
                 if( item.id == self.assignment.script_id ) self.scriptList.unshift( item );
               } else {
