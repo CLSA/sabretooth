@@ -40,11 +40,6 @@ class session extends \cenozo\business\session
    */
   public function get_current_assignment()
   {
-    // make sure the user is an operator
-    if( 'operator' != $this->get_role()->name )
-      throw lib::create( 'exception\runtime',
-        'Tried to get assignment for non-operator.', __METHOD__ );
-
     // query for assignments which do not have a end time
     $modifier = lib::create( 'database\modifier' );
     $modifier->where( 'end_datetime', '=', NULL );
@@ -53,10 +48,7 @@ class session extends \cenozo\business\session
 
     // only one assignment should ever be open at a time, warn if this isn't the case
     if( 1 < count( $assignment_list ) )
-      log::crit(
-        sprintf( 'Current operator (id: %d, name: %s), has more than one active assignment!',
-                 $this->get_user()->id,
-                 $this->get_user()->name ) );
+      log::crit( sprintf( 'User "%s" has more than one active assignment!', $this->get_user()->name ) );
 
     return 1 <= count( $assignment_list ) ? current( $assignment_list ) : NULL;
   }
@@ -72,11 +64,6 @@ class session extends \cenozo\business\session
    */
   public function get_current_phone_call()
   {
-    // make sure the user is an operator
-    if( 'operator' != $this->get_role()->name )
-      throw lib::create( 'exception\runtime',
-        'Tried to get phone call for non-operator.', __METHOD__ );
-
     // without an assignment there can be no current call
     $db_assignment = $this->get_current_assignment();
     if( is_null( $db_assignment) ) return NULL;
@@ -89,10 +76,7 @@ class session extends \cenozo\business\session
 
     // only one phone call should ever be open at a time, warn if this isn't the case
     if( 1 < count( $phone_call_list ) )
-      log::crit(
-        sprintf( 'Current operator (id: %d, name: %s), has more than one active phone call!',
-                 $this->get_user()->id,
-                 $this->get_user()->name ) );
+      log::crit( sprintf( 'User "%s" has more than one active phone call!', $this->get_user()->name ) );
 
     return 1 <= count( $phone_call_list ) ? current( $phone_call_list ) : NULL;
   }
