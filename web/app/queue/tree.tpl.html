@@ -29,9 +29,8 @@
                   type="button"
                   cn-really-title="Warning!"
                   cn-really-message="Are you sure you wish to repopulate all queues?
-                    This will prevent assignments from being started or finished and generally slow down
-                    all applications until it is finished processing.This may cause applications to slow
-                    down until the processing is complete."
+
+This will prevent assignments from being started or finished and generally slow down all applications until it is finished processing.This may cause applications to slow down until the processing is complete."
                   cn-really-click="model.repopulate()">Re-populate</button>
           <progressbar ng-if="model.form.isRepopulating"
                        class="progress-striped active"
