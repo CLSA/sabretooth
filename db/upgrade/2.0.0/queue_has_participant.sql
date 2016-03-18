@@ -10,6 +10,8 @@ DROP PROCEDURE IF EXISTS patch_queue_has_participant;
       WHERE constraint_schema = DATABASE()
       AND constraint_name = "fk_access_site_id" );
 
+    TRUNCATE queue_has_participant;
+
     SELECT "Dropping interview_method_id column from queue_has_participant table" AS "";
 
     SET @test = (

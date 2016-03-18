@@ -8,7 +8,8 @@ CREATE PROCEDURE patch_access()
       SELECT unique_constraint_schema
       FROM information_schema.referential_constraints
       WHERE constraint_schema = DATABASE()
-      AND constraint_name = "fk_access_site_id" );
+      AND constraint_name IN ( "fk_activity_site_id", "fk_access_site_id" )
+      GROUP BY unique_constraint_schema );
 
     SELECT "Creating new access table" AS "";
 
