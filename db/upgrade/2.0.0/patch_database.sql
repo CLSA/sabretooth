@@ -37,6 +37,7 @@ SOURCE service.sql
 SOURCE role_has_operation.sql
 SOURCE role_has_service.sql
 SOURCE operation.sql
+SOURCE site.sql
 SOURCE setting_value.sql
 SOURCE setting.sql
 SOURCE system_message.sql
@@ -45,7 +46,6 @@ SOURCE user_time.sql
 SOURCE user.sql
 SOURCE recording.sql
 SOURCE recording_file.sql
-SOURCE site.sql
 
 SOURCE table_character_sets.sql
 SOURCE column_character_sets.sql
