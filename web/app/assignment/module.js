@@ -498,7 +498,14 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
               postCall();
             } else {
               if( !CnSession.voip.info ) {
-                if( !phone.international ) {
+                if( !CnSession.settings.callWithoutWebphone ) {
+                  CnModalConfirmFactory.instance( {
+                    title: 'Webphone Not Found',
+                    message: 'You cannot start a call without a webphone connection. ' +
+                             'To use the built-in telephone system click on the ' +
+                             '"Webphone" link under the "Utilities" submenu to connect to the webphone.'
+                  } ).show();
+                } else if( !phone.international ) {
                   CnModalConfirmFactory.instance( {
                     title: 'Webphone Not Found',
                     message: 'You are about to place a call with no webphone connection. ' +
