@@ -90,6 +90,32 @@ CREATE PROCEDURE patch_queue()
         description = "Participants who are unreachable since they currently have no active address.";
     END IF;
 
+    SELECT "Adding no site queue" AS "";
+
+    SET @test = ( SELECT COUNT(*) FROM queue WHERE name = "no site" );
+    IF @test = 0 THEN
+      -- increment all queue ids by 1 from the quota disabled queue onward
+      SET @id = ( SELECT MAX( id ) FROM queue );
+      SET @min_id = ( SELECT id FROM queue WHERE name = "quota disabled" );
+      WHILE @id >= @min_id DO
+        CALL set_queue_id( @id, @id + 1 );
+        SET @id = @id - 1;
+      END WHILE;
+
+      SET @parent_queue_id = ( SELECT id FROM queue WHERE name = "qnaire" );
+
+      -- add the new no active address queue
+      INSERT INTO queue SET
+        id = @min_id,
+        name = "no site",
+        title = "Participants who have no site",
+        rank = NULL,
+        qnaire_specific = 0,
+        time_specific = 0,
+        parent_queue_id = @parent_queue_id,
+        description = "Participants who will not be assigned since they do not belong to any site.";
+    END IF;
+
     SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
     SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
   END //
