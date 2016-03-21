@@ -11,6 +11,8 @@ CREATE PROCEDURE patch_site()
       AND constraint_name = "fk_access_site_id"
       GROUP BY unique_constraint_schema );
 
+    SET @application = ( SELECT SUBSTRING( DATABASE(), LOCATE( '@', USER() )+1 ) );
+
     SELECT "Removing application site relationship if there are no access records for that site" AS "";
 
     SET @sql = CONCAT(
@@ -21,6 +23,9 @@ CREATE PROCEDURE patch_site()
           "LEFT JOIN access on site.id = access.site_id ",
           "WHERE access.id IS NULL "
         ") AS temp ",
+      ") ",
+      "AND application_id = ( ",
+        "SELECT id FROM ", @cenozo, ".application WHERE name = '", @application, "' ",
       ")" );
     PREPARE statement FROM @sql;
     EXECUTE statement;
