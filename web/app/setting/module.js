@@ -21,7 +21,7 @@ define( function() {
         column: 'site.name',
         title: 'Site'
       },
-      survey_without_sip: {
+      call_without_webphone: {
         title: 'No-Call',
         type: 'boolean'
       },
@@ -63,7 +63,7 @@ define( function() {
       type: 'string',
       constant: true
     },
-    survey_without_sip: {
+    call_without_webphone: {
       title: 'Allow No-Call Interviewing',
       type: 'boolean',
       help: 'Allow operators to interview participants without being in an active VoIP call'

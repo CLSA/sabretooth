@@ -1043,7 +1043,7 @@ CREATE TABLE IF NOT EXISTS `sabretooth`.`setting` (
   `update_timestamp` TIMESTAMP NOT NULL,
   `create_timestamp` TIMESTAMP NOT NULL,
   `site_id` INT UNSIGNED NOT NULL,
-  `survey_without_sip` TINYINT(1) NOT NULL DEFAULT 0,
+  `call_without_webphone` TINYINT(1) NOT NULL DEFAULT 0,
   `calling_start_time` TIME NOT NULL,
   `calling_end_time` TIME NOT NULL,
   `short_appointment` INT UNSIGNED NOT NULL DEFAULT 30,
