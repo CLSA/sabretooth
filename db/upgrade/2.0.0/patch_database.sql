@@ -25,6 +25,7 @@ SOURCE interview_method.sql
 SOURCE assignment.sql
 SOURCE phone_call.sql
 SOURCE activity.sql
+SOURCE opal_data.sql
 SOURCE writelog.sql
 SOURCE prerecruit.sql
 SOURCE ivr_appointment.sql
