@@ -141,18 +141,14 @@
         <div class="form-footer rounded-bottom bg-info">
           <div class="btn-group btn-group-justified vertical-spacer">
             <div class="btn-group">
-              <button type="button"
-                      class="btn btn-default"
-                      ui-sref="participant.view({ identifier: model.participant.getIdentifier() })">
-                View Participant
-              </button>
+              <a class="btn btn-default"
+                      ui-sref="participant.view({ identifier: model.participant.getIdentifier() })"
+                      href="#">View Participant</a>
             </div>
             <div class="btn-group">
-              <button type="button"
-                      class="btn btn-default"
-                      ui-sref="interview.view({ identifier: model.assignment.interview_id })">
-                View Interview
-              </button>
+              <a class="btn btn-default"
+                      ui-sref="interview.view({ identifier: model.assignment.interview_id })"
+                      href="#">View Interview</a>
             </div>
             <div class="btn-group">
               <button type="button" class="btn btn-default" ng-click="model.openNotes()">Notes</button>
