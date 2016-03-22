@@ -544,7 +544,10 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
                     path: ['participant', response.data.participant_id, 'phone' ].join( '/' ),
                     data: {
                       select: { column: [ 'id', 'rank', 'type', 'number' ] },
-                      modifier: { order: { rank: false } }
+                      modifier: {
+                        where: { column: 'phone.active', operator: '=', value: true },
+                        order: { rank: false }
+                      }
                     }
                   } ).query().then( function( response ) {
                     self.metadata.columnList.phone_id.enumList = [];
