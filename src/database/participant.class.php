@@ -145,7 +145,7 @@ class participant extends \cenozo\database\participant
   /**
    * Returns the participant's current queue.
    * 
-   * The "current" queue is only set if the participant is in a ranked queue.
+   * The "current" queue is always a leaf-queue (queue of deepest level)
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\queue
    * @access public
@@ -278,8 +278,7 @@ class participant extends \cenozo\database\participant
     $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'queue', 'queue_has_participant.queue_id', 'queue.id' );
     $modifier->where( 'participant_id', '=', $this->id );
-    $modifier->where( 'queue.rank', '!=', NULL );
-    $modifier->order( 'queue.rank' );
+    $modifier->order_desc( 'queue.id' );
     $modifier->limit( 1 );
     $row = static::db()->get_row( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
 
