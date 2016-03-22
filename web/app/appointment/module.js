@@ -187,7 +187,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
                 $scope.availabilityModel =
                   CnAvailabilityModelFactory.forSite( $scope.model.metadata.participantSite );
 
-                // connect the availability calendar's event click callback to the appointments datetime
+                // connect the availability calendar's event click callback to the appointment's datetime
                 $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
                   var date = moment( availability.start );
                   var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
@@ -316,7 +316,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
                 $scope.availabilityModel =
                   CnAvailabilityModelFactory.forSite( $scope.model.metadata.participantSite );
 
-                // connect the availability calendar's event click callback to the appointments datetime
+                // connect the availability calendar's event click callback to the appointment's datetime
                 $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
                   var date = moment( availability.start );
                   var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
