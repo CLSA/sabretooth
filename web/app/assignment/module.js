@@ -498,7 +498,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
               postCall();
             } else {
               if( !CnSession.voip.info ) {
-                if( !CnSession.settings.callWithoutWebphone ) {
+                if( !CnSession.setting.callWithoutWebphone ) {
                   CnModalConfirmFactory.instance( {
                     title: 'Webphone Not Found',
                     message: 'You cannot start a call without a webphone connection. ' +
