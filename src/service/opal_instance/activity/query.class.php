@@ -30,7 +30,9 @@ class query extends \cenozo\service\query
    */
   protected function get_record_count()
   {
-    return $this->get_parent_record()->get_user()->get_activity_count( clone $this->modifier );
+    $modifier = clone $this->modifier;
+    $this->select->apply_aliases_to_modifier( $modifier );
+    return $this->get_parent_record()->get_user()->get_activity_count( $modifier );
   }
 
   /**
@@ -38,6 +40,8 @@ class query extends \cenozo\service\query
    */
   protected function get_record_list()
   {
-    return $this->get_parent_record()->get_user()->get_activity_list( $this->select, clone $this->modifier );
+    $modifier = clone $this->modifier;
+    $this->select->apply_aliases_to_modifier( $modifier );
+    return $this->get_parent_record()->get_user()->get_activity_list( $this->select, $modifier );
   }
 }
