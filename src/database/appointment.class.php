@@ -381,9 +381,7 @@ class appointment extends \cenozo\database\record
     // if the appointment's reached column is set, nothing else matters
     if( !is_null( $this->reached ) ) return $this->reached ? 'reached' : 'not reached';
 
-    $db_participant = lib::create( 'database\participant', $this->get_interview()->participant_id );
-    $db_setting = $db_participant->get_effective_site()->get_setting();
-
+    $db_setting = $this->get_interview()->get_participant()->get_effective_site()->get_setting();
     $status = 'unknown';
 
     // settings are in minutes, time() is in seconds, so multiply by 60

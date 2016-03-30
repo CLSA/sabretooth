@@ -80,7 +80,6 @@ class callback extends \cenozo\database\record
     // if the callback's reached column is set, nothing else matters
     if( !is_null( $this->reached ) ) return $this->reached ? 'reached' : 'not reached';
 
-    $db_participant = lib::create( 'database\participant', $this->get_interview()->participant_id );
     $status = 'unknown';
 
     // settings are in minutes, time() is in seconds, so multiply by 60
