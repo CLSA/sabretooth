@@ -110,7 +110,7 @@ class assignment extends \cenozo\database\record
         $linked_record = current( $record_list );
         $modifier = lib::create( 'database\modifier' );
         $modifier->where( 'status', '=', 'contacted' );
-        $linked_record->reached = 0 < $record->get_phone_call_count( $modifier );
+        $linked_record->reached = 0 < $this->get_phone_call_count( $modifier );
         $linked_record->assignment_id = $db_assignment->id;
         $linked_record->save();
       }
