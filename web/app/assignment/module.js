@@ -414,7 +414,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
               self.activeScript = null;
             } else {
               if( null == self.activeScript ||
-                  null == self.scriptList.findByProperty( 'script_id', self.activeScript.id ) ) {
+                  null == self.scriptList.findByProperty( 'id', self.activeScript.id ) ) {
                 self.activeScript = self.scriptList[0];
               } else {
                 var activeScriptName = self.activeScript.name;

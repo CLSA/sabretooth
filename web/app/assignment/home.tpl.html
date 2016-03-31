@@ -215,19 +215,15 @@
                 </div>
               </div>
             </div>
-            <div class="row">
-              <label class="col-sm-4 control-label">
-                {{ model.activeScript.repeated ? 'Last Start' : 'Started' }} Date &amp; Time
-              </label>
+            <div class="row" ng-if="!model.activeScript.repeated">
+              <label class="col-sm-4 control-label">Started Date &amp; Time</label>
               <div class="col-sm-8 form-text">
                 {{ null == model.activeScript.started_datetime ?
                    'Not started' : ( model.activeScript.started_datetime | cnDatetime:'datetimesecond' ) }}
               </div>
             </div>
-            <div class="row">
-              <label class="col-sm-4 control-label">
-                {{ model.activeScript.repeated ? 'Last Finish' : 'Finished' }} Date &amp; Time
-              </label>
+            <div class="row" ng-if="!model.activeScript.repeated">
+              <label class="col-sm-4 control-label">Finished Date &amp; Time</label>
               <div class="col-sm-8 form-text">
                 {{ null == model.activeScript.finished_datetime ?
                    'Not finished' : ( model.activeScript.finished_datetime | cnDatetime:'datetimesecond' ) }}
