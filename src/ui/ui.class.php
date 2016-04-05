@@ -26,8 +26,6 @@ class ui extends \cenozo\ui\ui
       $module_list['assignment']['children'] = array( 'phone_call' );
     if( array_key_exists( 'interview', $module_list ) )
       $module_list['interview']['children'] = array( 'assignment', 'appointment', 'callback' );
-    if( array_key_exists( 'opal_instance', $module_list ) )
-      $module_list['opal_instance']['children'] = array( 'activity' );
     if( array_key_exists( 'participant', $module_list ) )
       array_unshift( $module_list['participant']['children'], 'interview' );
     if( array_key_exists( 'qnaire', $module_list ) )
@@ -57,8 +55,6 @@ class ui extends \cenozo\ui\ui
     // add application-specific states to the base list
     if( array_key_exists( 'interview', $module_list ) && $module_list['interview']['list_menu'] )
       $list['Interviews'] = 'interview';
-    if( array_key_exists( 'opal_instance', $module_list ) && $module_list['opal_instance']['list_menu'] )
-      $list['Opal Instances'] = 'opal_instance';
     if( array_key_exists( 'qnaire', $module_list ) && $module_list['qnaire']['list_menu'] )
       $list['Questionnaires'] = 'qnaire';
     if( array_key_exists( 'queue', $module_list ) && $module_list['queue']['list_menu'] )

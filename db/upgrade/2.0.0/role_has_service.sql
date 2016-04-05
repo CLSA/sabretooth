@@ -94,9 +94,6 @@ CREATE PROCEDURE patch_role_has_service()
     EXECUTE statement;
     DEALLOCATE PREPARE statement;
 
-    -- opal
-    -- no access to restricted services required
-
     -- supervisor
     SET @sql = CONCAT(
       "INSERT INTO role_has_service( role_id, service_id ) ",
@@ -108,7 +105,7 @@ CREATE PROCEDURE patch_role_has_service()
         "SELECT id FROM service ",
         "WHERE subject IN( ",
           "'address', 'alternate', 'application', 'collection', 'consent', 'event', 'interview', ",
-          "'jurisdiction', 'language', 'opal_instance', 'phase', 'phone', 'qnaire', 'quota', ",
+          "'jurisdiction', 'language', 'phase', 'phone', 'qnaire', 'quota', ",
           "'recording', 'recording_file', 'region_site', 'script', 'source', 'state' ) ",
         "OR ( subject = 'queue' AND method = 'PATCH' ) ",
         "OR ( subject = 'setting' AND method = 'GET' ) ",

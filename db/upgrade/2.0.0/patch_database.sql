@@ -13,6 +13,7 @@ SOURCE update_assignment_last_phone_call.sql
 SOURCE participant_last_appointment.sql
 
 SOURCE cedar_instance.sql
+SOURCE opal_instance.sql
 SOURCE queue.sql
 SOURCE queue_state.sql
 SOURCE event_type.sql
@@ -35,6 +36,8 @@ SOURCE callback.sql
 SOURCE appointment.sql
 SOURCE service.sql
 SOURCE role_has_operation.sql
+SOURCE application_has_role.sql
+SOURCE role.sql
 SOURCE role_has_service.sql
 SOURCE operation.sql
 SOURCE site.sql
