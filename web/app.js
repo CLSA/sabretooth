@@ -11,7 +11,10 @@ cenozo.controller( 'HeaderCtrl', [
     // add custom operations here by adding a new property to $scope.operationList
 
     CnSession.promise.then( function() {
-      CnSession.showAlertHeader = CnSession.user.hasAssignment;
+      CnSession.alertHeader = CnSession.user.hasAssignment
+                            ? 'You are currently in an assignment'
+                            : undefined;
+      CnSession.onAlertHeader = function() { $state.go( 'assignment.home' ); };
     } );
 
     // don't allow users to log out if they have an active assignment
