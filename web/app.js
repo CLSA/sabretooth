@@ -10,6 +10,10 @@ cenozo.controller( 'HeaderCtrl', [
 
     // add custom operations here by adding a new property to $scope.operationList
 
+    CnSession.promise.then( function() {
+      CnSession.showAlertHeader = CnSession.user.hasAssignment;
+    } );
+
     // don't allow users to log out if they have an active assignment
     var logoutFunction = $scope.operationList.logout.execute;
     $scope.operationList.logout.execute = function() {

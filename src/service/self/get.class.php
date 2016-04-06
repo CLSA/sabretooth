@@ -19,12 +19,15 @@ class get extends \cenozo\service\self\get
    */
   protected function create_resource( $index )
   {
+    $session = lib::create( 'business\session' );
     $resource = parent::create_resource( $index );
 
     $setting_sel = lib::create( 'database\select' );
     $setting_sel->from( 'setting' );
     $setting_sel->add_all_table_columns();
-    $resource['setting'] = lib::create( 'business\session' )->get_setting()->get_column_values( $setting_sel );
+    $resource['setting'] = $session->get_setting()->get_column_values( $setting_sel );
+
+    $resource['user']['has_assignment'] = $session->get_user()->has_open_assignment();
 
     return $resource;
   }

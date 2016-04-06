@@ -266,16 +266,19 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
               self.isForbidden = false;
               if( 307 == response.status ) {
                 // 307 means the user has no active assignment, so load the participant select list
+                CnSession.showAlertHeader = false;
                 self.participantModel.listModel.afterList( function() {
                   CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Select' } ] );
                 } );
               } else if( 403 == response.status ) {
+                CnSession.showAlertHeader = true;
                 CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Wrong Site' } ] );
                 self.isForbidden = true;
               } else { CnModalMessageFactory.httpError( response ); }
             }
           } ).get().then( function( response ) {
             self.assignment = response.data;
+            CnSession.showAlertHeader = true;
 
             // get the assigned participant's details
             CnHttpFactory.instance( {
