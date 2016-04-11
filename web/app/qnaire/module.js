@@ -120,13 +120,17 @@ define( function() {
       var args = arguments;
       var CnBaseViewFactory = args[0];
       var object = function( parentModel, root ) {
+        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
-        if( angular.isDefined( this.eventTypeModel ) )
-          this.eventTypeModel.heading = 'Required To Begin Event List';
-        if( angular.isDefined( this.queueStateModel ) )
-          this.queueStateModel.heading = 'Disabled Queue List';
-        if( angular.isDefined( this.quotaModel ) )
-          this.quotaModel.heading = 'Disabled Quota List';
+
+        this.deferred.promise.then( function() {
+          if( angular.isDefined( self.eventTypeModel ) )
+            self.eventTypeModel.heading = 'Required To Begin Event List';
+          if( angular.isDefined( self.queueStateModel ) )
+            self.queueStateModel.heading = 'Disabled Queue List';
+          if( angular.isDefined( self.quotaModel ) )
+            self.quotaModel.heading = 'Disabled Quota List';
+        } );
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
