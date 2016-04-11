@@ -142,7 +142,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
   } );
 
   // converts appointments into events
-  function getEventFromAppointment( appointment, timezone, duration ) {
+  function getEventFromAppointment( appointment, timezone ) {
     if( angular.isDefined( appointment.start ) && angular.isDefined( appointment.end ) ) {
       return appointment;
     } else {
@@ -157,7 +157,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
         title: ( angular.isDefined( appointment.uid ) ? appointment.uid : 'new appointment' ) +
                ( angular.isDefined( appointment.qnaire_rank ) ? ' (' + appointment.qnaire_rank + ')' : '' ),
         start: moment( appointment.datetime ).subtract( offset, 'minutes' ),
-        end: moment( appointment.datetime ).subtract( offset, 'minutes' ).add( duration, 'minute' )
+        end: moment( appointment.datetime ).subtract( offset, 'minutes' ).add( appointment.duration, 'minute' )
       };
       if( appointment.override ) {
         event.override = true;
@@ -362,14 +362,11 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
         // add the new appointment's events to the calendar cache
         this.onAdd = function( record ) {
           return this.$$onAdd( record ).then( function() {
-            var duration = 'long' == record.type
-                         ? CnSession.setting.longAppointment
-                         : CnSession.setting.shortAppointment;
             record.getIdentifier = function() { return parentModel.getIdentifierFromRecord( record ); };
             var minDate = parentModel.calendarModel.cacheMinDate;
             var maxDate = parentModel.calendarModel.cacheMaxDate;
             parentModel.calendarModel.cache.push(
-              getEventFromAppointment( record, CnSession.user.timezone, duration )
+              getEventFromAppointment( record, CnSession.user.timezone )
             );
           } );
         };
@@ -396,10 +393,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
           var loadMaxDate = self.getLoadMaxDate( replace, maxDate );
           return self.$$onCalendar( replace, minDate, maxDate, ignoreParent ).then( function() {
             self.cache.forEach( function( item, index, array ) {
-              var duration = 'long' == item.type
-                           ? CnSession.setting.longAppointment
-                           : CnSession.setting.shortAppointment;
-              array[index] = getEventFromAppointment( item, CnSession.user.timezone, duration );
+              array[index] = getEventFromAppointment( item, CnSession.user.timezone );
             } );
           } );
         };
@@ -466,9 +460,9 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
 
         this.onView = function() {
           return this.$$onView().then( function() {
-            var upcoming = moment().isBefore( self.record.datetime, 'minute' );
-            parentModel.enableDelete( upcoming );
-            parentModel.enableEdit( upcoming );
+            var assigned = moment().isBefore( self.record.datetime, 'minute' );
+            parentModel.enableDelete( null == self.record.assignment_user && module.actions.indexOf( 'delete' ) );
+            parentModel.enableEdit( null == self.record.assignment_user && module.actions.indexOf( 'edit' ) );
           } );
         };
       }
@@ -526,8 +520,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
                     path: ['participant', response.data.participant_id ].join( '/' ),
                     data: { select: { column: [
                       { table: 'site', column: 'id', alias: 'site_id' },
-                      { table: 'site', column: 'name' },
-                      { table: 'site', column: 'timezone' }
+                      { table: 'site', column: 'name' }
                     ] } }
                   } ).get().then( function( response ) {
                     self.metadata.participantSite =

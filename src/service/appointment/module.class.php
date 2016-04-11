@@ -67,10 +67,10 @@ class module extends \cenozo\service\base_calendar_module
         $this->set_data( 'Appointments cannot be changed after an interview is complete.' );
         $this->get_status()->set_code( 406 );
       }
-      // no writing of appointments if it has passed
-      else if( !is_null( $db_appointment ) && $db_appointment->datetime < util::get_datetime_object() )
+      // no writing of appointments if it is assigned
+      else if( !is_null( $db_appointment ) && !is_null( $db_appointment->assignment_id ) )
       {
-        $this->set_data( 'Appointments cannot be changed after they have passed.' );
+        $this->set_data( 'Appointments cannot be changed once they have been assigned.' );
         $this->get_status()->set_code( 406 );
       }
       // don't allow tier-1 roles to override appointments
@@ -125,6 +125,11 @@ class module extends \cenozo\service\base_calendar_module
       'participant_site.application_id', '=', $session->get_application()->id );
     $modifier->join_modifier( 'participant_site', $participant_site_join_mod, 'left' );
 
+    // add the appointment's duration
+    $modifier->join( 'setting', 'participant_site.site_id', 'setting.site_id' );
+    $select->add_column(
+      'IF( "long" = appointment.type, setting.long_appointment, setting.short_appointment )', 'duration', false );
+
     // restrict by site
     $db_restricted_site = $this->get_restricted_site();
     if( !is_null( $db_restricted_site ) )
@@ -150,7 +155,6 @@ class module extends \cenozo\service\base_calendar_module
     {
       if( !$modifier->has_join( 'assignment' ) )
         $modifier->left_join( 'assignment', 'appointment.assignment_id', 'assignment.id' );
-      $modifier->left_join( 'setting', 'participant_site.site_id', 'setting.site_id' );
 
       $phone_call_join_mod = lib::create( 'database\modifier' );
       $phone_call_join_mod->where( 'assignment.id', '=', 'phone_call.assignment_id', false );

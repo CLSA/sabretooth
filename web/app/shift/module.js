@@ -70,11 +70,8 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template', 'site' ].
       var date = moment( shift.start_datetime );
       var offset = moment.tz.zone( timezone ).offset( date.unix() );
 
-      // adjust to/from daylight saving time
-      var isNowDST = moment().tz( timezone ).isDST();
-      var isDST = date.tz( timezone ).isDST();
-      if( isNowDST != isDST ) offset += ( isNowDST ? 1 : -1 ) * 60;
-
+      // adjust the appointment for daylight savings time
+      if( date.tz( timezone ).isDST() ) offset += -60;
 
       return {
         getIdentifier: function() { return shift.getIdentifier() },

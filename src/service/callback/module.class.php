@@ -30,10 +30,10 @@ class module extends \cenozo\service\module
         $this->set_data( 'Callbacks cannot be changed after an interview is complete.' );
         $this->get_status()->set_code( 406 );
       }
-      // no writing of callbacks if it has passed
-      else if( !is_null( $db_callback ) && $db_callback->datetime < util::get_datetime_object() )
+      // no writing of callbacks if it is assigned
+      else if( !is_null( $db_callback ) && !is_null( $db_callback->assignment_id ) )
       {
-        $this->set_data( 'Callbacks cannot be changed after they have passed.' );
+        $this->set_data( 'Callbacks cannot be changed after they have been assigned.' );
         $this->get_status()->set_code( 406 );
       }
     }
