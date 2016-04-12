@@ -460,9 +460,14 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
 
         this.onView = function() {
           return this.$$onView().then( function() {
-            var assigned = moment().isBefore( self.record.datetime, 'minute' );
-            parentModel.enableDelete( null == self.record.assignment_user && module.actions.indexOf( 'delete' ) );
-            parentModel.enableEdit( null == self.record.assignment_user && module.actions.indexOf( 'edit' ) );
+            // only allow delete if the appointment is in the future
+            parentModel.enableDelete(
+              moment().isBefore( self.record.datetime ) &&
+              module.actions.indexOf( 'delete' ) );
+            // only allow edit if the appointment hasn't been assigned
+            parentModel.enableEdit(
+              null == self.record.assignment_user &&
+              module.actions.indexOf( 'edit' ) );
           } );
         };
       }

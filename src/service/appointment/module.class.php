@@ -79,6 +79,12 @@ class module extends \cenozo\service\base_calendar_module
         $this->set_data( 'Your role does not allow appointments to be overridden.' );
         $this->get_status()->set_code( 406 );
       }
+      // no deleting of appointments if it has passed
+      else if( 'DELETE' == $method && $db_appointment->datetime < util::get_datetime_object() )
+      {
+        $this->set_data( 'Appointments cannot be deleted once they have passed.' );
+        $this->get_status()->set_code( 406 );
+      }
       else
       {
         // validate if we are changing the datetime

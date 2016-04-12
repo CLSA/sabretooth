@@ -171,9 +171,14 @@ define( function() {
 
         this.onView = function() {
           return this.$$onView().then( function() {
-            var upcoming = moment().isBefore( self.record.datetime );
-            parentModel.enableDelete( upcoming );
-            parentModel.enableEdit( upcoming );
+            // only allow delete if the callback is in the future
+            parentModel.enableDelete(
+              moment().isBefore( self.record.datetime ) &&
+              module.actions.indexOf( 'delete' ) );
+            // only allow edit if the callback hasn't been assigned
+            parentModel.enableEdit(
+              null == self.record.assignment_user &&
+              module.actions.indexOf( 'edit' ) );
           } );
         };
       }
