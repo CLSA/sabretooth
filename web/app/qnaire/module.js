@@ -125,11 +125,11 @@ define( function() {
 
         this.deferred.promise.then( function() {
           if( angular.isDefined( self.eventTypeModel ) )
-            self.eventTypeModel.heading = 'Required To Begin Event List';
+            self.eventTypeModel.listModel.heading = 'Required To Begin Event List';
           if( angular.isDefined( self.queueStateModel ) )
-            self.queueStateModel.heading = 'Disabled Queue List';
+            self.queueStateModel.listModel.heading = 'Disabled Queue List';
           if( angular.isDefined( self.quotaModel ) )
-            self.quotaModel.heading = 'Disabled Quota List';
+            self.quotaModel.listModel.heading = 'Disabled Quota List';
         } );
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };

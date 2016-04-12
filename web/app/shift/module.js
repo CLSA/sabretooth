@@ -155,7 +155,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template', 'site' ].
         },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftModelFactory.instance();
-          $scope.model.heading = $scope.model.site.name.ucWords() + ' Shift Calendar';
+          $scope.model.calendarModel.heading = $scope.model.site.name.ucWords() + ' Shift Calendar';
         },
         link: function( scope ) {
           // factory name -> object map used below

@@ -149,7 +149,7 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template', 'site' ].reduce(
         },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAvailabilityModelFactory.instance();
-          $scope.model.heading = $scope.model.site.name.ucWords() + ' Availability Calendar';
+          $scope.model.calendarModel.heading = $scope.model.site.name.ucWords() + ' Availability Calendar';
         },
         link: function( scope ) {
           // factory name -> object map used below
