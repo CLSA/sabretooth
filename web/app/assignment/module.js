@@ -1,4 +1,4 @@
-// we need the participant module for the special CnAssignmentHomeFactory
+// we need the participant module for the special CnAssignmentControlFactory
 define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
   'use strict';
 
@@ -90,14 +90,14 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAssignmentHome', [
-    'CnAssignmentHomeFactory',
-    function( CnAssignmentHomeFactory ) {
+  cenozo.providers.directive( 'cnAssignmentControl', [
+    'CnAssignmentControlFactory',
+    function( CnAssignmentControlFactory ) {
       return {
-        templateUrl: module.getFileUrl( 'home.tpl.html' ),
+        templateUrl: module.getFileUrl( 'control.tpl.html' ),
         restrict: 'E',
         controller: function( $scope ) {
-          $scope.model = CnAssignmentHomeFactory.instance();
+          $scope.model = CnAssignmentControlFactory.instance();
           $scope.model.onLoad(); // breadcrumbs are handled by the service
         }
       };
@@ -173,7 +173,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAssignmentHomeFactory', [
+  cenozo.providers.factory( 'CnAssignmentControlFactory', [
     '$state', '$window', 'CnSession', 'CnHttpFactory',
     'CnParticipantModelFactory', 'CnModalMessageFactory', 'CnModalConfirmFactory',
     function( $state, $window, CnSession, CnHttpFactory,
@@ -209,8 +209,9 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         this.participantModel.addColumn( 'qnaire', { title: 'Questionnaire', column: 'script.name' }, 2 );
         this.participantModel.addColumn( 'language', { title: 'Language', column: 'language.name' }, 3 );
 
-        // override the default order
+        // override the default order and set the heading
         this.participantModel.listModel.orderBy( 'rank', true );
+        this.participantModel.listModel.heading = 'Participant Selection List';
 
         // override model functions
         this.participantModel.getServiceCollectionPath = function() { return 'participant?assignment=true'; }

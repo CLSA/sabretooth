@@ -191,16 +191,24 @@ define( function() {
             if( angular.isDefined( data.end_datetime ) ) {
               var completed = null !== self.record.end_datetime;
               if( angular.isDefined( self.appointmentModel ) ) {
-                self.appointmentModel.enableAdd( !completed && appointmentModule.actions.indexOf( 'add' ) );
-                self.appointmentModel.enableDelete( !completed && appointmentModule.actions.indexOf( 'delete' ) );
-                self.appointmentModel.enableEdit( !completed && appointmentModule.actions.indexOf( 'edit' ) );
-                self.appointmentModel.enableView( !completed && appointmentModule.actions.indexOf( 'view' ) );
+                self.appointmentModel.enableAdd(
+                  !completed && angular.isDefined( appointmentModule.actions.add ) );
+                self.appointmentModel.enableDelete(
+                  !completed && angular.isDefined( appointmentModule.actions.delete ) );
+                self.appointmentModel.enableEdit(
+                  !completed && angular.isDefined( appointmentModule.actions.edit ) );
+                self.appointmentModel.enableView(
+                  !completed && angular.isDefined( appointmentModule.actions.view ) );
               }
               if( angular.isDefined( self.callbackModel ) ) {
-                self.callbackModel.enableAdd( !completed && callbackModule.actions.indexOf( 'add' ) );
-                self.callbackModel.enableDelete( !completed && callbackModule.actions.indexOf( 'delete' ) );
-                self.callbackModel.enableEdit( !completed && callbackModule.actions.indexOf( 'edit' ) );
-                self.callbackModel.enableView( !completed && callbackModule.actions.indexOf( 'view' ) );
+                self.callbackModel.enableAdd(
+                  !completed && angular.isDefined( callbackModule.actions.add ) );
+                self.callbackModel.enableDelete(
+                  !completed && angular.isDefined( callbackModule.actions.delete ) );
+                self.callbackModel.enableEdit(
+                  !completed && angular.isDefined( callbackModule.actions.edit ) );
+                self.callbackModel.enableView(
+                  !completed && angular.isDefined( callbackModule.actions.view ) );
               }
             }
           } );
@@ -215,24 +223,24 @@ define( function() {
             if( angular.isDefined( self.appointmentModel ) ) {
               var appointmentModule = cenozoApp.module( 'appointment' );
               self.appointmentModel.enableAdd(
-                !completed && !existing && 0 <= appointmentModule.actions.indexOf( 'add' ) );
+                !completed && !existing && 0 <= angular.isDefined( appointmentModule.actions.add ) );
               self.appointmentModel.enableDelete(
-                !completed && 0 <= appointmentModule.actions.indexOf( 'delete' ) );
+                !completed && 0 <= angular.isDefined( appointmentModule.actions.delete ) );
               self.appointmentModel.enableEdit(
-                !completed && 0 <= appointmentModule.actions.indexOf( 'edit' ) );
+                !completed && 0 <= angular.isDefined( appointmentModule.actions.edit ) );
               self.appointmentModel.enableView(
-                !completed && 0 <= appointmentModule.actions.indexOf( 'view' ) );
+                !completed && 0 <= angular.isDefined( appointmentModule.actions.view ) );
             }
             if( angular.isDefined( self.callbackModel ) ) {
               var callbackModule = cenozoApp.module( 'callback' );
               self.callbackModel.enableAdd(
-                !completed && !existing && 0 <= callbackModule.actions.indexOf( 'add' ) );
+                !completed && !existing && 0 <= angular.isDefined( callbackModule.actions.add ) );
               self.callbackModel.enableDelete(
-                !completed && 0 <= callbackModule.actions.indexOf( 'delete' ) );
+                !completed && 0 <= angular.isDefined( callbackModule.actions.delete ) );
               self.callbackModel.enableEdit(
-                !completed && 0 <= callbackModule.actions.indexOf( 'edit' ) );
+                !completed && 0 <= angular.isDefined( callbackModule.actions.edit ) );
               self.callbackModel.enableView(
-                !completed && 0 <= callbackModule.actions.indexOf( 'view' ) );
+                !completed && 0 <= angular.isDefined( callbackModule.actions.view ) );
             }
           } );
         };

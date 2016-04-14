@@ -174,11 +174,11 @@ define( function() {
             // only allow delete if the callback is in the future
             parentModel.enableDelete(
               moment().isBefore( self.record.datetime ) &&
-              module.actions.indexOf( 'delete' ) );
+              angular.isDefined( module.actions.delete ) );
             // only allow edit if the callback hasn't been assigned
             parentModel.enableEdit(
               null == self.record.assignment_user &&
-              module.actions.indexOf( 'edit' ) );
+              angular.isDefined( module.actions.edit ) );
           } );
         };
       }

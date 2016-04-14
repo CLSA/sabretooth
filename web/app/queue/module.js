@@ -150,8 +150,8 @@ define( function() {
           // make sure users can edit the queue restriction list despite the queue being read-only
           if( angular.isDefined( self.queueStateModel ) ) {
             var queueStateModule = cenozoApp.module( 'queue_state' );
-            self.queueStateModel.enableAdd( 0 <= queueStateModule.actions.indexOf( 'add' ) );
-            self.queueStateModel.enableDelete( 0 <= queueStateModule.actions.indexOf( 'delete' ) );
+            self.queueStateModel.enableAdd( angular.isDefined( queueStateModule.actions.add ) );
+            self.queueStateModel.enableDelete( angular.isDefined( queueStateModule.actions.delete ) );
           }
 
           // make sure users can't add/remove participants from queues

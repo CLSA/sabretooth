@@ -78,7 +78,7 @@ class ui extends \cenozo\ui\ui
 
     // add application-specific states to the base list
     if( in_array( $db_role->name, array( 'helpline', 'operator', 'supervisor' ) ) )
-      $list['Assignment Home'] = array( 'subject' => 'assignment', 'action' => 'home' );
+      $list['Assignment Control'] = array( 'subject' => 'assignment', 'action' => 'control' );
     if( 2 <= $db_role->tier )
       $list['Queue Tree'] = array( 'subject' => 'queue', 'action' => 'tree' );
     if( !$db_role->all_sites && 1 < $db_role->tier )
@@ -86,33 +86,39 @@ class ui extends \cenozo\ui\ui
       $list['Site Details'] = array(
         'subject' => 'site',
         'action' => 'view',
-        'identifier' => sprintf( 'name=%s', $db_site->name ) );
+        'query' => '/{identifier}',
+        'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
     }
     if( !$db_role->all_sites || 'helpline' == $db_role->name )
     {
       $list['Appointment Calendar'] = array(
         'subject' => 'appointment',
         'action' => 'calendar',
-        'identifier' => sprintf( 'name=%s', $db_site->name ) );
+        'query' => '/{identifier}',
+        'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
       $list['Availability Calendar'] = array(
         'subject' => 'availability',
         'action' => 'calendar',
-        'identifier' => sprintf( 'name=%s', $db_site->name ) );
+        'query' => '/{identifier}',
+        'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
       $list['Capacity Calendar'] = array(
         'subject' => 'capacity',
         'action' => 'calendar',
-        'identifier' => sprintf( 'name=%s', $db_site->name ) );
+        'query' => '/{identifier}',
+        'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
 
       if( 1 < $db_role->tier )
       {
         $list['Shift Calendar'] = array(
           'subject' => 'shift',
           'action' => 'calendar',
-          'identifier' => sprintf( 'name=%s', $db_site->name ) );
+          'query' => '/{identifier}',
+          'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
         $list['Shift Template Calendar'] = array(
           'subject' => 'shift_template',
           'action' => 'calendar',
-          'identifier' => sprintf( 'name=%s', $db_site->name ) );
+          'query' => '/{identifier}',
+          'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
       }
     }
 

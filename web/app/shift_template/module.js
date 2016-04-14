@@ -99,7 +99,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
   // add an extra operation for each of the appointment-based calendars the user has access to
   [ 'appointment', 'availability', 'capacity', 'shift', 'shift_template' ].forEach( function( name ) {
     var calendarModule = cenozoApp.module( name );
-    if( -1 < calendarModule.actions.indexOf( 'calendar' ) ) {
+    if( angular.isDefined( calendarModule.actions.calendar ) ) {
       module.addExtraOperation( 'calendar', {
         title: calendarModule.subject.snake.replace( "_", " " ).ucWords(),
         operation: function( $state, model ) {
@@ -348,7 +348,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
           // synchronize appointment/shift-based calendars
           scope.$watch( 'model.calendarModel.currentDate', function( date ) {
             Object.keys( factoryList ).filter( function( name ) {
-              return -1 < cenozoApp.moduleList[name].actions.indexOf( 'calendar' );
+              return angular.isDefined( cenozoApp.moduleList[name].actions.calendar );
             } ).forEach( function( name ) {
                var calendarModel = factoryList[name].forSite( scope.model.site ).calendarModel;
                if( !calendarModel.currentDate.isSame( date, 'day' ) ) calendarModel.currentDate = date;
@@ -356,7 +356,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
           } );
           scope.$watch( 'model.calendarModel.currentView', function( view ) {
             Object.keys( factoryList ).filter( function( name ) {
-              return -1 < cenozoApp.moduleList[name].actions.indexOf( 'calendar' );
+              return angular.isDefined( cenozoApp.moduleList[name].actions.calendar );
             } ).forEach( function( name ) {
                var calendarModel = factoryList[name].forSite( scope.model.site ).calendarModel;
                if( calendarModel.currentView != view ) calendarModel.currentView = view;
@@ -633,11 +633,11 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
         instance: function() {
           var site = null;
           if( 'calendar' == $state.current.name.split( '.' )[1] ) {
-            var parts = $state.params.identifier.split( '=' );
-            if( 1 == parts.length && parseInt( parts[0] ) == parts[0] ) // int identifier
-              site = CnSession.siteList.findByProperty( 'id', parseInt( parts[0] ) );
-            else if( 2 == parts.length ) // key=val identifier
-              site = CnSession.siteList.findByProperty( parts[0], parts[1] );
+            if( angular.isDefined( $state.params.identifier ) ) {
+              var identifier = $state.params.identifier.split( '=' );
+              if( 2 == identifier.length )
+                site = CnSession.siteList.findByProperty( identifier[0], identifier[1] );
+            }
           } else {
             site = CnSession.site;
           }
