@@ -2,7 +2,7 @@
 
 SET AUTOCOMMIT=0;
 
-SOURCE access.sql;
+SOURCE access.sql
 SOURCE interview.sql
 SOURCE participant_last_interview.sql
 SOURCE update_participant_last_interview.sql
