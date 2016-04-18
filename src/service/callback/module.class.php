@@ -12,8 +12,21 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * Performs operations which effect how this module is used in a service
  */
-class module extends \cenozo\service\module
+class module extends \cenozo\service\base_calendar_module
 {
+  /**
+   * Contructor
+   */
+  public function __construct( $index, $service )
+  {
+    parent::__construct( $index, $service );
+    $this->lower_date = array( 'null' => false, 'column' => 'DATE( datetime )' );
+    $this->upper_date = array( 'null' => false, 'column' => 'DATE( datetime )' );
+  }
+
+  /**
+   * Extend parent method
+   */
   public function validate()
   {
     parent::validate();
@@ -21,8 +34,32 @@ class module extends \cenozo\service\module
     $service_class_name = lib::get_class_name( 'service\service' );
     $db_callback = $this->get_resource();
     $db_interview = is_null( $db_callback ) ? $this->get_parent_resource() : $db_callback->get_interview();
+    $method = $this->get_method();
 
-    if( $service_class_name::is_write_method( $this->get_method() ) )
+    $db_application = lib::create( 'business\session' )->get_application();
+
+    // make sure the application has access to the participant
+    if( !is_null( $db_callback ) ) 
+    {   
+      $db_participant = $db_interview->get_participant();
+      if( $db_application->release_based )
+      {   
+        $modifier = lib::create( 'database\modifier' );
+        $modifier->where( 'participant_id', '=', $db_participant->id );
+        if( 0 == $db_application->get_participant_count( $modifier ) ) $this->get_status()->set_code( 404 );
+      }   
+
+      // restrict by site
+      $db_restrict_site = $this->get_restricted_site();
+      if( !is_null( $db_restrict_site ) ) 
+      {   
+        $db_effective_site = $db_participant->get_effective_site();
+        if( is_null( $db_effective_site ) || $db_restrict_site->id != $db_effective_site->id )
+          $this->get_status()->set_code( 403 );
+      }   
+    }   
+
+    if( $service_class_name::is_write_method( $method ) ) 
     {
       // no writing of callbacks if interview is completed
       if( !is_null( $db_interview ) && null !== $db_interview->end_datetime )
@@ -54,16 +91,25 @@ class module extends \cenozo\service\module
 
     $session = lib::create( 'business\session' );
     $modifier->join( 'interview', 'callback.interview_id', 'interview.id' );
+    $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
+    $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
+    $select->add_table_column( 'participant', 'uid' );
+    $select->add_table_column( 'qnaire', 'rank', 'qnaire_rank' );
 
-    if( $select->has_table_columns( 'participant' ) )
-      $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
+    $participant_site_join_mod = lib::create( 'database\modifier' );
+    $participant_site_join_mod->where(
+      'interview.participant_id', '=', 'participant_site.participant_id', false );
+    $participant_site_join_mod->where(
+      'participant_site.application_id', '=', $session->get_application()->id );
+    $modifier->join_modifier( 'participant_site', $participant_site_join_mod, 'left' );
 
-    if( $select->has_table_columns( 'qnaire' ) || $select->has_table_columns( 'script' ) )
-    {
-      $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
-      if( $select->has_table_columns( 'script' ) )
-        $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
-    }
+    // restrict by site
+    $db_restricted_site = $this->get_restricted_site();
+    if( !is_null( $db_restricted_site ) )
+      $modifier->where( 'participant_site.site_id', '=', $db_restricted_site->id );
+
+    if( $select->has_table_columns( 'script' ) )
+      $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
 
     if( $select->has_table_columns( 'assignment_user' ) )
     {

@@ -101,6 +101,11 @@ class ui extends \cenozo\ui\ui
         'action' => 'calendar',
         'query' => '/{identifier}',
         'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
+      $list['Callback Calendar'] = array(
+        'subject' => 'callback',
+        'action' => 'calendar',
+        'query' => '/{identifier}',
+        'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
       $list['Capacity Calendar'] = array(
         'subject' => 'capacity',
         'action' => 'calendar',
