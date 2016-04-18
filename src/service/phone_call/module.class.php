@@ -140,25 +140,8 @@ class module extends \cenozo\service\site_restricted_module
     $operation = $this->get_argument( 'operation', false );
     if( 'POST' == $this->get_method() && 'open' == $operation )
     {
-      $db_assignment = $record->get_assignment();
-      $db_queue = $db_assignment->get_queue();
-
-      // set the assignment in appointments and callbacks
-      if( $db_queue->from_appointment() || $db_queue->from_callback() )
-      {
-        $db_interview = $db_assignment->get_interview();
-        $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'assignment_id', '=', NULL );
-        $record_list = $db_queue->from_appointment()
-                     ? $db_interview->get_appointment_object_list( $modifier )
-                     : $db_interview->get_callback_object_list( $modifier );
-        if( count( $record_list ) )
-        {
-          $linked_record = current( $record_list );
-          $linked_record->assignment_id = $db_assignment->id;
-          $linked_record->save();
-        }
-      }
+      // update this assignment's appointments or callbacks (pre-complete)
+      $record->get_assignment()->process_appointments_and_callbacks( false );
     }
     else if( 'PATCH' == $this->get_method() && 'close' == $operation )
     {

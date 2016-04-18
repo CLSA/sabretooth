@@ -353,8 +353,8 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAppointmentAddFactory', [
-    'CnBaseAddFactory', 'CnSession',
-    function( CnBaseAddFactory, CnSession ) {
+    'CnBaseAddFactory', 'CnSession', 'CnHttpFactory',
+    function( CnBaseAddFactory, CnSession, CnHttpFactory ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
@@ -362,12 +362,19 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
         // add the new appointment's events to the calendar cache
         this.onAdd = function( record ) {
           return this.$$onAdd( record ).then( function() {
-            record.getIdentifier = function() { return parentModel.getIdentifierFromRecord( record ); };
-            var minDate = parentModel.calendarModel.cacheMinDate;
-            var maxDate = parentModel.calendarModel.cacheMaxDate;
-            parentModel.calendarModel.cache.push(
-              getEventFromAppointment( record, CnSession.user.timezone )
-            );
+            CnHttpFactory.instance( {
+              path: 'appointment/' + record.id
+            } ).get().then( function( response ) {
+              record.uid = response.data.uid;
+              record.qnaire_rank = response.data.qnaire_rank;
+              record.duration = response.data.duration;
+              record.getIdentifier = function() { return parentModel.getIdentifierFromRecord( record ); };
+              var minDate = parentModel.calendarModel.cacheMinDate;
+              var maxDate = parentModel.calendarModel.cacheMaxDate;
+              parentModel.calendarModel.cache.push(
+                getEventFromAppointment( record, CnSession.user.timezone )
+              );
+            } );
           } );
         };
       };

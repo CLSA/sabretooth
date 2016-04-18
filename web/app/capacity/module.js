@@ -197,6 +197,9 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template', 'site' ].red
 
         // extend onCalendar to transform templates into events
         this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {
+          // always replace, otherwise the calendar won't update when new appointments/shifts/etc are made
+          replace = true;
+
           // unlike other calendars we don't cache events
           var appointmentCalendarModel = CnAppointmentModelFactory.forSite( parentModel.site ).calendarModel;
           var shiftCalendarModel = CnShiftModelFactory.forSite( parentModel.site ).calendarModel;

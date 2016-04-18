@@ -273,7 +273,7 @@ class module extends \cenozo\service\site_restricted_module
         $db_site = $session->get_site();
 
         // update any appointments or callbacks associated with this assignment
-        $record->process_appointments_and_callbacks();
+        $record->process_appointments_and_callbacks( true );
         $db_interview = $record->get_interview();
         $db_participant = $db_interview->get_participant();
 
@@ -309,7 +309,7 @@ class module extends \cenozo\service\site_restricted_module
         else
         {
           // update any appointments or callbacks associated with this assignment
-          $record->process_appointments_and_callbacks();
+          $record->process_appointments_and_callbacks( true );
 
           // mark the interview as complete if the survey is complete
           if( $this->is_survey_complete ) $record->get_interview()->complete();

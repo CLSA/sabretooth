@@ -17,6 +17,7 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template', 'site' ].reduce(
   function getAvailabilityFromEvents( appointmentEvents, shiftEvents, shiftTemplateEvents ) {
     var availability = [];
 
+    // create an object grouping all events for each day
     var events = {};
     appointmentEvents.forEach( function( item ) {
       var date = item.start.format( 'YYYY-MM-DD' );
@@ -87,9 +88,8 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template', 'site' ].reduce(
       for( var i = 0; i < times.length; i++ ) {
         var time = times[i];
         number += diffs[time];
-        
         if( 0 < lastNumber ) {
-          if( 0 == number && null != lastTime ) {
+          if( 0 >= number && null != lastTime ) {
             var colon = time.indexOf( ':' );
             var lastColon = lastTime.indexOf( ':' );
             var tempDate = moment( date );
@@ -200,7 +200,10 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template', 'site' ].reduce(
         delete this.settings.eventClick;
 
         // extend onCalendar to transform templates into events
-        this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {
+        this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {_
+          // always replace, otherwise the calendar won't update when new appointments/shifts/etc are made
+          replace = true;
+
           // unlike other calendars we don't cache events
           var appointmentCalendarModel = CnAppointmentModelFactory.forSite( parentModel.site ).calendarModel;
           var shiftCalendarModel = CnShiftModelFactory.forSite( parentModel.site ).calendarModel;
