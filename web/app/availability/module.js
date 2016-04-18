@@ -200,7 +200,7 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template', 'site' ].reduce(
         delete this.settings.eventClick;
 
         // extend onCalendar to transform templates into events
-        this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {_
+        this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {
           // always replace, otherwise the calendar won't update when new appointments/shifts/etc are made
           replace = true;
 
