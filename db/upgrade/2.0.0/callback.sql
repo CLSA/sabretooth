@@ -161,3 +161,15 @@ SET callback.interview_id = participant_last_interview.interview_id
 WHERE callback.assignment_id IS NULL
 AND interview.end_datetime IS NOT NULL
 AND participant_last_interview.interview_id != interview.id;
+
+SELECT "Delete unassigned callbacks for participants who already have unassigned appointments" AS "";
+
+DELETE FROM callback
+WHERE id IN ( SELECT id FROM (
+  SELECT callback.id
+  FROM interview
+  JOIN appointment ON interview.id = appointment.interview_id
+  JOIN callback ON interview.id = callback.interview_id
+  WHERE appointment.assignment_id IS NULL
+  AND callback.assignment_id IS NULL
+) AS temp );
