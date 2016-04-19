@@ -271,8 +271,6 @@ define( [ 'site' ].reduce( function( list, name ) {
   cenozo.providers.factory( 'CnCallbackViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      var args = arguments;
-      var CnBaseViewFactory = args[0];
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );

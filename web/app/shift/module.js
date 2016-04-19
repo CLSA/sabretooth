@@ -298,8 +298,6 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template', 'site' ].
   cenozo.providers.factory( 'CnShiftViewFactory', [
     'CnBaseViewFactory', 'CnSession',
     function( CnBaseViewFactory, CnSession ) {
-      var args = arguments;
-      var CnBaseViewFactory = args[0];
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );

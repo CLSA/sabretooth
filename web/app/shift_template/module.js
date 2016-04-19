@@ -520,8 +520,6 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
   cenozo.providers.factory( 'CnShiftTemplateViewFactory', [
     'CnBaseViewFactory', 'CnSession',
     function( CnBaseViewFactory, CnSession ) {
-      var args = arguments;
-      var CnBaseViewFactory = args[0];
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );

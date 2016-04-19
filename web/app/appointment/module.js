@@ -436,8 +436,6 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
   cenozo.providers.factory( 'CnAppointmentViewFactory', [
     'CnBaseViewFactory', 'CnSession',
     function( CnBaseViewFactory, CnSession ) {
-      var args = arguments;
-      var CnBaseViewFactory = args[0];
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );

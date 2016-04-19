@@ -210,8 +210,6 @@ define( function() {
   cenozo.providers.factory( 'CnSettingViewFactory', [
     'CnBaseViewFactory', 'CnSession',
     function( CnBaseViewFactory, CnSession ) {
-      var args = arguments;
-      var CnBaseViewFactory = args[0];
       var object = function( parentModel, root ) {
         CnBaseViewFactory.construct( this, parentModel, root );
 

@@ -123,7 +123,6 @@ define( function() {
   cenozo.providers.factory( 'CnQueueViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
-      var args = arguments;
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
