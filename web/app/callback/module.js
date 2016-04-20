@@ -114,10 +114,6 @@ define( [ 'site' ].reduce( function( list, name ) {
                ( angular.isDefined( callback.qnaire_rank ) ? ' (' + callback.qnaire_rank + ')' : '' ),
         start: moment( callback.datetime ).subtract( offset, 'minutes' )
       };  
-      if( callback.override ) { 
-        event.override = true;
-        event.color = 'green';
-      }   
       return event;
     }   
   }
@@ -330,9 +326,6 @@ define( [ 'site' ].reduce( function( list, name ) {
           throw new Error( 'Tried to create CnCallbackModel without specifying the site.' );
 
         var self = this;
-
-        // before constructing the model set whether the override input is constant
-        if( 2 > CnSession.role.tier ) module.inputGroupList[null].override.constant = true;
 
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnCallbackAddFactory.instance( this );
