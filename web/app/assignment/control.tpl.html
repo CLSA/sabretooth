@@ -18,9 +18,7 @@
   </div>
   <div ng-if="!model.isForbidden">
     <div ng-if="!model.assignment">
-      <cn-record-list model="model.participantModel"
-                      heading="Assignable Participant List"
-                      remove-columns="active cohort source"></cn-record-list>
+      <cn-record-list model="model.participantModel" remove-columns="active cohort source"></cn-record-list>
     </div>
     <div ng-if="model.assignment">
       <div class="utility-view rounded">
