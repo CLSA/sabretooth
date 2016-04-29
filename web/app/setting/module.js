@@ -63,7 +63,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     site: {
       column: 'site.name',
       title: 'Site',

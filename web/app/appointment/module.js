@@ -54,7 +54,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
     }
   } );
 
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     datetime: {
       title: 'Date & Time',
       type: 'datetime',
@@ -497,7 +497,9 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
         var self = this;
 
         // before constructing the model set whether the override input is constant
-        if( 2 > CnSession.role.tier ) module.inputGroupList[null].override.constant = true;
+        if( 2 > CnSession.role.tier ) {
+          module.inputGroupList.findByProperty( 'title', '' ).inputList.override.constant = true;
+        }
 
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnAppointmentAddFactory.instance( this );

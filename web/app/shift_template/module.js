@@ -50,7 +50,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
     }
   } );
 
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     start_time: {
       title: 'Start Time',
       type: 'time',

@@ -45,7 +45,7 @@ define( [ 'site' ].reduce( function( list, name ) {
     }
   } );
 
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     datetime: {
       title: 'Date & Time',
       type: 'datetime',

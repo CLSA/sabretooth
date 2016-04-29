@@ -43,7 +43,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     participant: {
       column: 'participant.uid',
       title: 'Participant',

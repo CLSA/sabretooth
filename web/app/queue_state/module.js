@@ -41,7 +41,7 @@ define( function() {
     }
   } );
 
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     queue_id: {
       title: 'Queue',
       type: 'enum'

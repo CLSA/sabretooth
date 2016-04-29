@@ -40,7 +40,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template', 'site' ].
     }
   } );
 
-  module.addInputGroup( null, {
+  module.addInputGroup( '', {
     user_id: {
       title: 'User',
       type: 'lookup-typeahead',
