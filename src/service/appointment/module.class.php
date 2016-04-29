@@ -31,70 +31,80 @@ class module extends \cenozo\service\base_calendar_module
   {
     parent::validate();
 
-    $service_class_name = lib::get_class_name( 'service\service' );
-    $db_appointment = $this->get_resource();
-    $db_interview = is_null( $db_appointment ) ? $this->get_parent_resource() : $db_appointment->get_interview();
-    $method = $this->get_method();
-
-    $db_application = lib::create( 'business\session' )->get_application();
-
-    // make sure the application has access to the participant
-    if( !is_null( $db_appointment ) )
+    if( 300 > $this->get_status()->get_code() )
     {
-      $db_participant = $db_interview->get_participant();
-      if( $db_application->release_based )
-      {
-        $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'participant_id', '=', $db_participant->id );
-        if( 0 == $db_application->get_participant_count( $modifier ) ) $this->get_status()->set_code( 404 );
-      }
+      $service_class_name = lib::get_class_name( 'service\service' );
+      $db_appointment = $this->get_resource();
+      $db_interview = is_null( $db_appointment ) ? $this->get_parent_resource() : $db_appointment->get_interview();
+      $method = $this->get_method();
 
-      // restrict by site
-      $db_restrict_site = $this->get_restricted_site();
-      if( !is_null( $db_restrict_site ) )
-      {
-        $db_effective_site = $db_participant->get_effective_site();
-        if( is_null( $db_effective_site ) || $db_restrict_site->id != $db_effective_site->id )
-          $this->get_status()->set_code( 403 );
-      }
-    }
+      $db_application = lib::create( 'business\session' )->get_application();
 
-    if( $service_class_name::is_write_method( $method ) )
-    {
-      // no writing of appointments if interview is completed
-      if( !is_null( $db_interview ) && null !== $db_interview->end_datetime )
+      // make sure the application has access to the participant
+      if( !is_null( $db_appointment ) )
       {
-        $this->set_data( 'Appointments cannot be changed after an interview is complete.' );
-        $this->get_status()->set_code( 406 );
-      }
-      // no writing of appointments if it is assigned
-      else if( !is_null( $db_appointment ) && !is_null( $db_appointment->assignment_id ) )
-      {
-        $this->set_data( 'Appointments cannot be changed once they have been assigned.' );
-        $this->get_status()->set_code( 406 );
-      }
-      // don't allow tier-1 roles to override appointments
-      else if( $db_appointment->override && 1 > lib::create( 'business\session' )->get_role()->tier )
-      {
-        $this->set_data( 'Your role does not allow appointments to be overridden.' );
-        $this->get_status()->set_code( 406 );
-      }
-      // no deleting of appointments if it has passed
-      else if( 'DELETE' == $method && $db_appointment->datetime < util::get_datetime_object() )
-      {
-        $this->set_data( 'Appointments cannot be deleted once they have passed.' );
-        $this->get_status()->set_code( 406 );
-      }
-      else
-      {
-        // validate if we are changing the datetime
-        if( 'POST' == $method ||
-            ( 'PATCH' == $method && array_key_exists( 'datetime', $this->get_file_as_array() ) ) )
+        $db_participant = $db_interview->get_participant();
+        if( $db_application->release_based )
         {
-          if( !$db_appointment->validate_date() )
+          $modifier = lib::create( 'database\modifier' );
+          $modifier->where( 'participant_id', '=', $db_participant->id );
+          if( 0 == $db_application->get_participant_count( $modifier ) )
           {
-            $this->set_data( 'There are no operators available over the requested appointment timespan.' );
-            $this->get_status()->set_code( 406 );
+            $this->get_status()->set_code( 404 );
+            return;
+          }
+        }
+
+        // restrict by site
+        $db_restrict_site = $this->get_restricted_site();
+        if( !is_null( $db_restrict_site ) )
+        {
+          $db_effective_site = $db_participant->get_effective_site();
+          if( is_null( $db_effective_site ) || $db_restrict_site->id != $db_effective_site->id )
+          {
+            $this->get_status()->set_code( 403 );
+            return;
+          }
+        }
+      }
+
+      if( $service_class_name::is_write_method( $method ) )
+      {
+        // no writing of appointments if interview is completed
+        if( !is_null( $db_interview ) && null !== $db_interview->end_datetime )
+        {
+          $this->set_data( 'Appointments cannot be changed after an interview is complete.' );
+          $this->get_status()->set_code( 406 );
+        }
+        // no writing of appointments if it is assigned
+        else if( !is_null( $db_appointment ) && !is_null( $db_appointment->assignment_id ) )
+        {
+          $this->set_data( 'Appointments cannot be changed once they have been assigned.' );
+          $this->get_status()->set_code( 406 );
+        }
+        // don't allow tier-1 roles to override appointments
+        else if( $db_appointment->override && 1 > lib::create( 'business\session' )->get_role()->tier )
+        {
+          $this->set_data( 'Your role does not allow appointments to be overridden.' );
+          $this->get_status()->set_code( 406 );
+        }
+        // no deleting of appointments if it has passed
+        else if( 'DELETE' == $method && $db_appointment->datetime < util::get_datetime_object() )
+        {
+          $this->set_data( 'Appointments cannot be deleted once they have passed.' );
+          $this->get_status()->set_code( 406 );
+        }
+        else
+        {
+          // validate if we are changing the datetime
+          if( 'POST' == $method ||
+              ( 'PATCH' == $method && array_key_exists( 'datetime', $this->get_file_as_array() ) ) )
+          {
+            if( !$db_appointment->validate_date() )
+            {
+              $this->set_data( 'There are no operators available over the requested appointment timespan.' );
+              $this->get_status()->set_code( 406 );
+            }
           }
         }
       }

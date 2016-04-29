@@ -32,15 +32,18 @@ class module extends \cenozo\service\base_calendar_module
   {
     parent::validate();
 
-    $record = $this->get_resource();
-    if( !is_null( $record ) )
+    if( 300 > $this->get_status()->get_code() )
     {
-      // restrict by site
-      $db_restrict_site = $this->get_restricted_site();
-      if( !is_null( $db_restrict_site ) && !is_null( $record->site_id ) )
+      $record = $this->get_resource();
+      if( !is_null( $record ) )
       {
-        if( $record->site_id != $db_restrict_site->id )
-          $this->get_status()->set_code( 403 );
+        // restrict by site
+        $db_restrict_site = $this->get_restricted_site();
+        if( !is_null( $db_restrict_site ) && !is_null( $record->site_id ) )
+        {
+          if( $record->site_id != $db_restrict_site->id )
+            $this->get_status()->set_code( 403 );
+        }
       }
     }
   }

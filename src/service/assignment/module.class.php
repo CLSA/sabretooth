@@ -21,123 +21,129 @@ class module extends \cenozo\service\site_restricted_module
   {
     parent::validate();
 
-    $service_class_name = lib::get_class_name( 'service\service' );
-    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
-    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
-
-    $db_user = lib::create( 'business\session' )->get_user();
-    $db_role = lib::create( 'business\session' )->get_role();
-    $method = $this->get_method();
-    $operation = $this->get_argument( 'operation', false );
-
-    // restrict by site
-    $db_restrict_site = $this->get_restricted_site();
-    if( !is_null( $db_restrict_site ) )
+    if( 300 > $this->get_status()->get_code() )
     {
-      $record = $this->get_resource();
-      if( $record && $record->site_id && $record->site_id != $db_restrict_site->id )
-        $this->get_status()->set_code( 403 );
-    }
+      $service_class_name = lib::get_class_name( 'service\service' );
+      $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
+      $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
 
-    if( ( 'DELETE' == $method || 'PATCH' == $method ) &&
-        3 > $db_role->tier &&
-        $this->get_resource()->user_id != $db_user->id )
-    {
-      // only admins can delete or modify assignments other than their own
-        $this->get_status()->set_code( 403 );
-    }
-    else if( 'PATCH' == $method && ( 'advance' == $operation || 'close' == $operation ) )
-    {
-      $record = $this->get_resource();
+      $db_user = lib::create( 'business\session' )->get_user();
+      $db_role = lib::create( 'business\session' )->get_role();
+      $method = $this->get_method();
+      $operation = $this->get_argument( 'operation', false );
 
-      if( 0 < count( $this->get_file_as_array() ) )
+      // restrict by site
+      $db_restrict_site = $this->get_restricted_site();
+      if( !is_null( $db_restrict_site ) )
       {
-        $this->set_data( 'Patch data must be empty when advancing or closing an assignment.' );
-        $this->get_status()->set_code( 400 );
-      }
-      else if( !is_null( $record->end_datetime ) )
-      {
-        $this->set_data( 'Cannot advance or close the assignment since it is already closed.' );
-        $this->get_status()->set_code( 409 );
-      }
-      else
-      {
-        // check if the qnaire script is complete or not (used below)
-        $db_interview = $record->get_interview();
-        $db_participant = $db_interview->get_participant();
-        $db_qnaire = $db_interview->get_qnaire();
-        $old_sid = $tokens_class_name::get_sid();
-        $tokens_class_name::set_sid( $db_qnaire->get_script()->sid );
-        $tokens_mod = lib::create( 'database\modifier' );
-        $tokens_class_name::where_token( $tokens_mod, $db_participant, false );
-        $tokens_mod->where( 'completed', '!=', 'N' );
-        $this->is_survey_complete = 0 < $tokens_class_name::count( $tokens_mod );
-
-        $has_open_phone_call = $record->has_open_phone_call();
-        if( 'advance' == $operation )
+        $record = $this->get_resource();
+        if( $record && $record->site_id && $record->site_id != $db_restrict_site->id )
         {
-          if( 0 == $has_open_phone_call )
+          $this->get_status()->set_code( 403 );
+          return;
+        }
+      }
+
+      if( ( 'DELETE' == $method || 'PATCH' == $method ) &&
+          3 > $db_role->tier &&
+          $this->get_resource()->user_id != $db_user->id )
+      {
+        // only admins can delete or modify assignments other than their own
+          $this->get_status()->set_code( 403 );
+      }
+      else if( 'PATCH' == $method && ( 'advance' == $operation || 'close' == $operation ) )
+      {
+        $record = $this->get_resource();
+
+        if( 0 < count( $this->get_file_as_array() ) )
+        {
+          $this->set_data( 'Patch data must be empty when advancing or closing an assignment.' );
+          $this->get_status()->set_code( 400 );
+        }
+        else if( !is_null( $record->end_datetime ) )
+        {
+          $this->set_data( 'Cannot advance or close the assignment since it is already closed.' );
+          $this->get_status()->set_code( 409 );
+        }
+        else
+        {
+          // check if the qnaire script is complete or not (used below)
+          $db_interview = $record->get_interview();
+          $db_participant = $db_interview->get_participant();
+          $db_qnaire = $db_interview->get_qnaire();
+          $old_sid = $tokens_class_name::get_sid();
+          $tokens_class_name::set_sid( $db_qnaire->get_script()->sid );
+          $tokens_mod = lib::create( 'database\modifier' );
+          $tokens_class_name::where_token( $tokens_mod, $db_participant, false );
+          $tokens_mod->where( 'completed', '!=', 'N' );
+          $this->is_survey_complete = 0 < $tokens_class_name::count( $tokens_mod );
+
+          $has_open_phone_call = $record->has_open_phone_call();
+          if( 'advance' == $operation )
           {
-            $this->set_data( 'An assignment can only be advanced during an open call.' );
-            $this->get_status()->set_code( 409 );
-          }
-          else if( !$this->is_survey_complete )
-          {
-            $this->set_data( 'The assignment cannot be advanced as the questionnaire is not complete.' );
-            $this->get_status()->set_code( 409 );
-          }
-          else
-          {
-            // make sure there is another questionnaire after the current one
-            $qnaire_mod = lib::create( 'database\modifier' );
-            $qnaire_mod->where( 'rank', '=', $db_qnaire->rank + 1 );
-            if( 0 == $qnaire_class_name::count( $qnaire_mod ) )
+            if( 0 == $has_open_phone_call )
             {
-              $this->set_data( 'There are no other questionnaires to advance to.' );
+              $this->set_data( 'An assignment can only be advanced during an open call.' );
+              $this->get_status()->set_code( 409 );
+            }
+            else if( !$this->is_survey_complete )
+            {
+              $this->set_data( 'The assignment cannot be advanced as the questionnaire is not complete.' );
+              $this->get_status()->set_code( 409 );
+            }
+            else
+            {
+              // make sure there is another questionnaire after the current one
+              $qnaire_mod = lib::create( 'database\modifier' );
+              $qnaire_mod->where( 'rank', '=', $db_qnaire->rank + 1 );
+              if( 0 == $qnaire_class_name::count( $qnaire_mod ) )
+              {
+                $this->set_data( 'There are no other questionnaires to advance to.' );
+                $this->get_status()->set_code( 409 );
+              }
+            }
+          }
+          else if( 'close' == $operation )
+          {
+            if( 0 < $has_open_phone_call )
+            {
+              $this->set_data( 'An assignment cannot be closed during an open call.' );
               $this->get_status()->set_code( 409 );
             }
           }
-        }
-        else if( 'close' == $operation )
-        {
-          if( 0 < $has_open_phone_call )
-          {
-            $this->set_data( 'An assignment cannot be closed during an open call.' );
-            $this->get_status()->set_code( 409 );
-          }
-        }
 
-        $tokens_class_name::set_sid( $old_sid );
+          $tokens_class_name::set_sid( $old_sid );
+        }
       }
-    }
-    else if( 'POST' == $method )
-    {
-      // do not allow more than one open assignment
-      if( $db_user->has_open_assignment() )
+      else if( 'POST' == $method )
       {
-        $this->set_data( 'Cannot create a new assignment since you already have one open.' );
-        $this->get_status()->set_code( 409 );
-      }
-      else
-      {
-        // repopulate the participant immediately to make sure they are still available for an assignment
-        $post_object = $this->get_file_as_object();
-        $db_participant = lib::create( 'database\participant', $post_object->participant_id );
-        $db_participant->repopulate_queue( false );
-        if( !is_null( $db_participant->get_current_assignment() ) )
+        // do not allow more than one open assignment
+        if( $db_user->has_open_assignment() )
         {
-          $this->set_data(
-            'Cannot create a new assignment since the participant is already assigned to a different user.' );
+          $this->set_data( 'Cannot create a new assignment since you already have one open.' );
           $this->get_status()->set_code( 409 );
         }
-        else if( 'open' == $operation )
+        else
         {
-          $queue_mod = lib::create( 'database\modifier' );
-          $queue_mod->where( 'queue.rank', '!=', NULL );
-          if( 0 == $db_participant->get_queue_count( $queue_mod ) )
+          // repopulate the participant immediately to make sure they are still available for an assignment
+          $post_object = $this->get_file_as_object();
+          $db_participant = lib::create( 'database\participant', $post_object->participant_id );
+          $db_participant->repopulate_queue( false );
+          if( !is_null( $db_participant->get_current_assignment() ) )
           {
-            $this->set_data( 'The participant is no longer available for an interview.' );
+            $this->set_data(
+              'Cannot create a new assignment since the participant is already assigned to a different user.' );
             $this->get_status()->set_code( 409 );
+          }
+          else if( 'open' == $operation )
+          {
+            $queue_mod = lib::create( 'database\modifier' );
+            $queue_mod->where( 'queue.rank', '!=', NULL );
+            if( 0 == $db_participant->get_queue_count( $queue_mod ) )
+            {
+              $this->set_data( 'The participant is no longer available for an interview.' );
+              $this->get_status()->set_code( 409 );
+            }
           }
         }
       }

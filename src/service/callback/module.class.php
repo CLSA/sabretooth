@@ -31,53 +31,63 @@ class module extends \cenozo\service\base_calendar_module
   {
     parent::validate();
 
-    $service_class_name = lib::get_class_name( 'service\service' );
-    $db_callback = $this->get_resource();
-    $db_interview = is_null( $db_callback ) ? $this->get_parent_resource() : $db_callback->get_interview();
-    $method = $this->get_method();
-
-    $db_application = lib::create( 'business\session' )->get_application();
-
-    // make sure the application has access to the participant
-    if( !is_null( $db_callback ) ) 
-    {   
-      $db_participant = $db_interview->get_participant();
-      if( $db_application->release_based )
-      {   
-        $modifier = lib::create( 'database\modifier' );
-        $modifier->where( 'participant_id', '=', $db_participant->id );
-        if( 0 == $db_application->get_participant_count( $modifier ) ) $this->get_status()->set_code( 404 );
-      }   
-
-      // restrict by site
-      $db_restrict_site = $this->get_restricted_site();
-      if( !is_null( $db_restrict_site ) ) 
-      {   
-        $db_effective_site = $db_participant->get_effective_site();
-        if( is_null( $db_effective_site ) || $db_restrict_site->id != $db_effective_site->id )
-          $this->get_status()->set_code( 403 );
-      }   
-    }   
-
-    if( $service_class_name::is_write_method( $method ) ) 
+    if( 300 > $this->get_status()->get_code() )
     {
-      // no writing of callbacks if interview is completed
-      if( !is_null( $db_interview ) && null !== $db_interview->end_datetime )
+      $service_class_name = lib::get_class_name( 'service\service' );
+      $db_callback = $this->get_resource();
+      $db_interview = is_null( $db_callback ) ? $this->get_parent_resource() : $db_callback->get_interview();
+      $method = $this->get_method();
+
+      $db_application = lib::create( 'business\session' )->get_application();
+
+      // make sure the application has access to the participant
+      if( !is_null( $db_callback ) ) 
+      {   
+        $db_participant = $db_interview->get_participant();
+        if( $db_application->release_based )
+        {   
+          $modifier = lib::create( 'database\modifier' );
+          $modifier->where( 'participant_id', '=', $db_participant->id );
+          if( 0 == $db_application->get_participant_count( $modifier ) )
+          {
+            $this->get_status()->set_code( 404 );
+            return;
+          }
+        }   
+
+        // restrict by site
+        $db_restrict_site = $this->get_restricted_site();
+        if( !is_null( $db_restrict_site ) ) 
+        {   
+          $db_effective_site = $db_participant->get_effective_site();
+          if( is_null( $db_effective_site ) || $db_restrict_site->id != $db_effective_site->id )
+          {
+            $this->get_status()->set_code( 403 );
+            return;
+          }
+        }   
+      }   
+
+      if( $service_class_name::is_write_method( $method ) ) 
       {
-        $this->set_data( 'Callbacks cannot be changed after an interview is complete.' );
-        $this->get_status()->set_code( 406 );
-      }
-      // no writing of callbacks if it is assigned
-      else if( !is_null( $db_callback ) && !is_null( $db_callback->assignment_id ) )
-      {
-        $this->set_data( 'Callbacks cannot be changed after they have been assigned.' );
-        $this->get_status()->set_code( 406 );
-      }
-      // no deleting of callbacks if it has passed
-      else if( 'DELETE' == $method && $db_callback->datetime < util::get_datetime_object() )
-      {
-        $this->set_data( 'Callbacks cannot be deleted once they have passed.' );
-        $this->get_status()->set_code( 406 );
+        // no writing of callbacks if interview is completed
+        if( !is_null( $db_interview ) && null !== $db_interview->end_datetime )
+        {
+          $this->set_data( 'Callbacks cannot be changed after an interview is complete.' );
+          $this->get_status()->set_code( 406 );
+        }
+        // no writing of callbacks if it is assigned
+        else if( !is_null( $db_callback ) && !is_null( $db_callback->assignment_id ) )
+        {
+          $this->set_data( 'Callbacks cannot be changed after they have been assigned.' );
+          $this->get_status()->set_code( 406 );
+        }
+        // no deleting of callbacks if it has passed
+        else if( 'DELETE' == $method && $db_callback->datetime < util::get_datetime_object() )
+        {
+          $this->set_data( 'Callbacks cannot be deleted once they have passed.' );
+          $this->get_status()->set_code( 406 );
+        }
       }
     }
   }
