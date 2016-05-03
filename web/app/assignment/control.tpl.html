@@ -60,6 +60,12 @@
               <label class="col-sm-4 control-label">Questionnaire</label>
               <div class="col-sm-8 form-text">{{ model.assignment.qnaire }}</div>
             </div>
+            <div class="row">
+              <label class="col-sm-4 control-label">Special Notes</label>
+              <div class="col-sm-8 form-text">
+                <span style="white-space: pre-wrap;">{{ model.participant.note ? model.participant.note : '(none)' }}</span>
+              </div>
+            </div>
           </div>
           <hr />
           <div class="container-fluid">

@@ -279,7 +279,8 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
             // get the assigned participant's details
             CnHttpFactory.instance( {
               path: 'participant/' + self.assignment.participant_id,
-              data: { select: { column: [ 'id', 'uid', 'honorific', 'first_name', 'other_name', 'last_name',
+              data: { select: { column: [
+                'id', 'uid', 'honorific', 'first_name', 'other_name', 'last_name', 'note',
                 { table: 'language', column: 'code', alias: 'language_code' },
                 { table: 'language', column: 'name', alias: 'language' }
               ] } }
