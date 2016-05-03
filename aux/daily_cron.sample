@@ -1,0 +1,136 @@
+#!/usr/bin/php
+<?php
+/**
+ * Utility script which should be ran once a day, ideally when the application is under light use.
+ * Author: Patrick Emond <emondpd@mcmaster.ca>
+ */
+
+/**
+ * Make sure to fill in the following
+ */
+
+define( 'URL', 'https://localhost/<PATH-TO-SABRETOOTH>/api/' );
+define( 'USER', '<ADMIN_USERNAME>' );
+define( 'PASS', '<ADMIN_PASSWORD>' );
+
+/**
+ * Do not edit any of the following lines
+ */
+
+// get the location of the application's log file
+chdir( dirname( __FILE__ ).'/../' );
+require_once 'settings.ini.php';
+require_once 'settings.local.ini.php';
+define( 'LOG', $SETTINGS['path']['LOG_FILE'] );
+
+// function for writing to the log
+function write_log( $message )
+{
+  file_put_contents(
+    LOG,
+    sprintf( "%s  [cron] <%s> %s\n\n", date( 'Y-m-d (D) H:i:s' ), USER, $message ),
+    FILE_APPEND
+  );
+}
+
+$session_id = null;
+
+/**
+ * Login to the application's web API and get the session_id
+ */
+
+$curl = curl_init();
+curl_setopt( $curl, CURLOPT_POST, true );
+curl_setopt( $curl, CURLOPT_URL, URL.'self/0' );
+curl_setopt( $curl, CURLOPT_SSL_VERIFYHOST, false );
+curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
+curl_setopt( $curl, CURLOPT_VERBOSE, false );
+curl_setopt( $curl, CURLOPT_HEADER, true );
+curl_setopt( $curl, CURLOPT_HTTPHEADER,
+  array( sprintf(
+    'Authorization: Basic %s',
+    base64_encode( sprintf( '%s:%s', USER, PASS ) )
+  ) )
+);
+
+$response = curl_exec( $curl );
+if( curl_errno( $curl ) )
+{
+  write_log( sprintf(
+    "Returned error code %s when trying to connect to application's web API\nMessage: %s",
+    curl_errno( $curl ),
+    curl_error( $curl )
+  ) );
+}
+else
+{
+  $code = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
+  if( 202 == $code )
+  {
+    write_log( sprintf(
+      'Failed to authenticate user %s, either the credentials are invalid or the account has been disabled',
+      USER
+    ) );
+  }
+  else if( 201 == $code )
+  {
+    // get the session id
+    $header_size = curl_getinfo( $curl, CURLINFO_HEADER_SIZE );
+    $header = substr( $response, 0, $header_size );
+    $matches = array();
+    $preg = preg_match( '/PHPSESSID=([^;]+)/', $header, $matches );
+    if( 1 !== $preg )
+    {
+      write_log( 'Sesssion based error while authenticating with the application\'s web API' );
+    }
+    else
+    {
+      $session_id = $matches[0];
+    }
+  }
+  else
+  {
+    write_log( sprintf(
+      'Application API returned unexpected HTTP code "%s"',
+      $code
+    ) );
+  }
+}
+curl_close( $curl );
+
+/**
+ * Send a command to refresh the queue tree
+ */
+if( !is_null( $session_id ) )
+{
+  write_log( 'Re-populating queue tree' );
+
+  $curl = curl_init();
+  curl_setopt( $curl, CURLOPT_URL, URL.'queue/1?repopulate=full' );
+  curl_setopt( $curl, CURLOPT_SSL_VERIFYHOST, false );
+  curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
+  curl_setopt( $curl, CURLOPT_COOKIE, $session_id );
+
+  curl_exec( $curl );
+  if( curl_errno( $curl ) )
+  {
+    write_log( sprintf(
+      "Returned error code %s when trying to repopulate the queue tree\nMessage: %s",
+      curl_errno( $curl ),
+      curl_error( $curl )
+    ) );
+  }
+  else
+  {
+    $code = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
+    if( 200 != $code )
+    {
+      write_log( sprintf( 'Failed to repopulate the queue tree (response code: %s)', $code ) );
+    }
+    else
+    {
+      write_log( 'Queue tree has been successfully repopulated' );
+    }
+  }
+  curl_close( $curl );
+}
