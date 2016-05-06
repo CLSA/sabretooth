@@ -26,9 +26,11 @@ class module extends \cenozo\service\site_restricted_module
       $service_class_name = lib::get_class_name( 'service\service' );
       $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
       $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+      $participant_class_name = lib::get_class_name( 'database\participant' );
+      $queue_class_name = lib::get_class_name( 'database\queue' );
 
+      $session = lib::create( 'business\session' );
       $db_user = lib::create( 'business\session' )->get_user();
-      $db_role = lib::create( 'business\session' )->get_role();
       $method = $this->get_method();
       $operation = $this->get_argument( 'operation', false );
 
@@ -45,7 +47,7 @@ class module extends \cenozo\service\site_restricted_module
       }
 
       if( ( 'DELETE' == $method || 'PATCH' == $method ) &&
-          3 > $db_role->tier &&
+          3 > $session->get_role()->tier &&
           $this->get_resource()->user_id != $db_user->id )
       {
         // only admins can delete or modify assignments other than their own
@@ -69,12 +71,12 @@ class module extends \cenozo\service\site_restricted_module
         {
           // check if the qnaire script is complete or not (used below)
           $db_interview = $record->get_interview();
-          $db_participant = $db_interview->get_participant();
+          $this->db_participant = $db_interview->get_participant();
           $db_qnaire = $db_interview->get_qnaire();
           $old_sid = $tokens_class_name::get_sid();
           $tokens_class_name::set_sid( $db_qnaire->get_script()->sid );
           $tokens_mod = lib::create( 'database\modifier' );
-          $tokens_class_name::where_token( $tokens_mod, $db_participant, false );
+          $tokens_class_name::where_token( $tokens_mod, $this->db_participant, false );
           $tokens_mod->where( 'completed', '!=', 'N' );
           $this->is_survey_complete = 0 < $tokens_class_name::count( $tokens_mod );
 
@@ -127,22 +129,69 @@ class module extends \cenozo\service\site_restricted_module
         {
           // repopulate the participant immediately to make sure they are still available for an assignment
           $post_object = $this->get_file_as_object();
-          $db_participant = lib::create( 'database\participant', $post_object->participant_id );
-          $db_participant->repopulate_queue( false );
-          if( !is_null( $db_participant->get_current_assignment() ) )
+          if( is_object( $post_object ) && property_exists( $post_object, 'participant_id' ) )
           {
-            $this->set_data(
-              'Cannot create a new assignment since the participant is already assigned to a different user.' );
-            $this->get_status()->set_code( 409 );
-          }
-          else if( 'open' == $operation )
-          {
-            $queue_mod = lib::create( 'database\modifier' );
-            $queue_mod->where( 'queue.rank', '!=', NULL );
-            if( 0 == $db_participant->get_queue_count( $queue_mod ) )
+            $this->db_participant = lib::create( 'database\participant', $post_object->participant_id );
+            $this->db_participant->repopulate_queue( false );
+            if( !is_null( $this->db_participant->get_current_assignment() ) )
             {
-              $this->set_data( 'The participant is no longer available for an interview.' );
+              $this->set_data(
+                'Cannot create a new assignment since the participant is already assigned to a different user.' );
               $this->get_status()->set_code( 409 );
+            }
+            else if( 'open' == $operation )
+            {
+              $queue_mod = lib::create( 'database\modifier' );
+              $queue_mod->where( 'queue.rank', '!=', NULL );
+              if( 0 == $this->db_participant->get_queue_count( $queue_mod ) )
+              {
+                $this->set_data( 'The participant is no longer available for an interview.' );
+                $this->get_status()->set_code( 409 );
+              }
+            }
+          }
+          else
+          {
+            // get the highest ranking participant in the queue after repopulating if it is out of date
+            $interval = $queue_class_name::get_interval_since_last_repopulate();
+            if( is_null( $interval ) || 0 < $interval->days || 22 < $interval->h )
+            { // it's been at least 23 hours since the non time-based queues have been repopulated
+              $queue_class_name::repopulate();
+              $queue_class_name::repopulate_time();
+            }
+            else
+            {
+              $interval = $queue_class_name::get_interval_since_last_repopulate_time();
+              if( is_null( $interval ) || 0 < $interval->days || 0 < $interval->h || 0 < $interval->i )
+              { // it's been at least one minute since the time-based queues have been repopulated
+                $queue_class_name::repopulate_time();
+              }
+            }
+
+            $participant_mod = lib::create( 'database\modifier' );
+            $participant_mod->join(
+              'queue_has_participant', 'participant.id', 'queue_has_participant.participant_id' );
+            $participant_mod->join( 'queue', 'queue_has_participant.queue_id', 'queue.id' );
+            $participant_mod->join( 'qnaire', 'queue_has_participant.qnaire_id', 'qnaire.id' );
+            $participant_mod->where( 'queue.rank', '!=', NULL );
+            $participant_mod->where( 'queue_has_participant.site_id', '=', $session->get_site()->id );
+            $participant_mod->order( 'qnaire.rank' );
+            $participant_mod->order( 'queue.rank' );
+
+            $participant_sel = lib::create( 'database\select' );
+            $participant_sel->from( 'participant' );
+            $participant_sel->add_column( 'id' );
+
+            $rows = $participant_class_name::select( $participant_sel, $participant_mod );
+            if( 0 == count( $rows ) )
+            {
+              $this->set_data( 'There are no participants available for an assignment at this time, '.
+                               'please try again later.' );
+              $this->get_status()->set_code( 408 );
+            }
+            else
+            {
+              $this->db_participant = lib::create( 'database\participant', current( $rows )['id'] );
             }
           }
         }
@@ -222,23 +271,19 @@ class module extends \cenozo\service\site_restricted_module
 
     $now = util::get_datetime_object();
     $operation = $this->get_argument( 'operation', false );
+
     if( 'POST' == $this->get_method() && 'open' == $operation )
     {
       $session = lib::create( 'business\session' );
-      $db_user = $session->get_user();
-      $db_site = $session->get_site();
 
-      // use the post object to fill in the record columns
-      $post_object = $this->get_file_as_object();
-      $db_participant = lib::create( 'database\participant', $post_object->participant_id );
-      $db_interview = $db_participant->get_effective_interview();
+      $db_interview = $this->db_participant->get_effective_interview();
       $db_interview->start_datetime = $now;
       $db_interview->save();
 
-      $record->user_id = $db_user->id;
-      $record->site_id = $db_site->id;
+      $record->user_id = $session->get_user()->id;
+      $record->site_id = $session->get_site()->id;
       $record->interview_id = $db_interview->id;
-      $record->queue_id = $db_participant->current_queue_id;
+      $record->queue_id = $this->db_participant->current_queue_id;
       $record->start_datetime = $now;
     }
     else if( 'PATCH' == $this->get_method() && ( 'advance' == $operation || 'close' == $operation ) )
@@ -275,28 +320,26 @@ class module extends \cenozo\service\site_restricted_module
       {
         $session = lib::create( 'business\session' );
         $now = util::get_datetime_object();
-        $db_user = $session->get_user();
-        $db_site = $session->get_site();
 
         // update any appointments or callbacks associated with this assignment
         $record->process_appointments_and_callbacks( true );
         $db_interview = $record->get_interview();
-        $db_participant = $db_interview->get_participant();
+        $this->db_participant = $db_interview->get_participant();
 
         // mark the interview as complete and immediately update the queue
         $db_interview->complete();
-        $db_participant->repopulate_queue( false );
+        $this->db_participant->repopulate_queue( false );
 
         // now create a new interview and assign it to the same user and start a new call
         // since the interview is now complete the effective interview will be newly created
         // by the participant record's get_effective_interview() method
-        $db_next_interview = $db_participant->get_effective_interview();
+        $db_next_interview = $this->db_participant->get_effective_interview();
         $db_next_interview->start_datetime = $now;
         $db_next_interview->save();
 
         $db_assignment = lib::create( 'database\assignment' );
-        $db_assignment->user_id = $db_user->id;
-        $db_assignment->site_id = $db_site->id;
+        $db_assignment->user_id = $session->get_user()->id;
+        $db_assignment->site_id = $session->get_site()->id;
         $db_assignment->interview_id = $db_next_interview->id;
         $db_assignment->queue_id = $record->queue_id;
         $db_assignment->start_datetime = $now;
@@ -323,6 +366,9 @@ class module extends \cenozo\service\site_restricted_module
       }
     }
   }
+
+  // TODO: document
+  protected $db_participant = NULL;
 
   // TODO: document
   protected $is_survey_complete = NULL;

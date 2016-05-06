@@ -21,6 +21,11 @@ class ui extends \cenozo\ui\ui
   {
     $module_list = parent::get_module_list( $modifier );
 
+    $db_role = lib::create( 'business\session' )->get_role();
+
+    // remove all lists from the operator role
+    if( 'operator' == $db_role->name ) foreach( $module_list as &$module ) $module['list_menu'] = false;
+
     // add child actions to certain modules
     if( array_key_exists( 'assignment', $module_list ) )
       $module_list['assignment']['children'] = array( 'phone_call' );
@@ -41,6 +46,11 @@ class ui extends \cenozo\ui\ui
     }
     if( array_key_exists( 'site', $module_list ) )
       array_unshift( $module_list['site']['children'], 'queue_state' );
+    if( array_key_exists( 'state', $module_list ) )
+    {
+      // remove the state list from the operator+ role
+      if( 'operator+' == $db_role->name ) $module_list['state']['list_menu'] = false;
+    }
 
     return $module_list;
   }
@@ -77,56 +87,78 @@ class ui extends \cenozo\ui\ui
     $db_site = lib::create( 'business\session' )->get_site();
     $db_role = lib::create( 'business\session' )->get_role();
 
-    // add application-specific states to the base list
-    if( in_array( $db_role->name, array( 'helpline', 'operator', 'supervisor' ) ) )
-      $list['Assignment Control'] = array( 'subject' => 'assignment', 'action' => 'control' );
-    if( 2 <= $db_role->tier )
-      $list['Queue Tree'] = array( 'subject' => 'queue', 'action' => 'tree' );
-    if( !$db_role->all_sites && 1 < $db_role->tier )
+    // operators get no list items
+    if( 'operator' == $db_role->name )
     {
-      $list['Site Details'] = array(
-        'subject' => 'site',
-        'action' => 'view',
-        'query' => '/{identifier}',
-        'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
+      $list = array( 'Assignment Control' => array( 'subject' => 'assignment', 'action' => 'control' ) );
     }
-    if( !$db_role->all_sites || 'helpline' == $db_role->name )
+    else
     {
-      $list['Appointment Calendar'] = array(
-        'subject' => 'appointment',
-        'action' => 'calendar',
-        'query' => '/{identifier}',
-        'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
-      $list['Availability Calendar'] = array(
-        'subject' => 'availability',
-        'action' => 'calendar',
-        'query' => '/{identifier}',
-        'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
-      $list['Callback Calendar'] = array(
-        'subject' => 'callback',
-        'action' => 'calendar',
-        'query' => '/{identifier}',
-        'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
-      $list['Capacity Calendar'] = array(
-        'subject' => 'capacity',
-        'action' => 'calendar',
-        'query' => '/{identifier}',
-        'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
-
-      if( 1 < $db_role->tier )
+      // add application-specific states to the base list
+      if( in_array( $db_role->name, array( 'helpline', 'operator+', 'supervisor' ) ) )
+        $list['Assignment Control'] = array( 'subject' => 'assignment', 'action' => 'control' );
+      if( 2 <= $db_role->tier )
+        $list['Queue Tree'] = array( 'subject' => 'queue', 'action' => 'tree' );
+      if( !$db_role->all_sites && 1 < $db_role->tier )
       {
-        $list['Shift Calendar'] = array(
-          'subject' => 'shift',
-          'action' => 'calendar',
-          'query' => '/{identifier}',
-          'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
-        $list['Shift Template Calendar'] = array(
-          'subject' => 'shift_template',
-          'action' => 'calendar',
+        $list['Site Details'] = array(
+          'subject' => 'site',
+          'action' => 'view',
           'query' => '/{identifier}',
           'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
       }
+      if( !$db_role->all_sites || 'helpline' == $db_role->name )
+      {
+        $list['Appointment Calendar'] = array(
+          'subject' => 'appointment',
+          'action' => 'calendar',
+          'query' => '/{identifier}',
+          'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
+        $list['Availability Calendar'] = array(
+          'subject' => 'availability',
+          'action' => 'calendar',
+          'query' => '/{identifier}',
+          'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
+        $list['Callback Calendar'] = array(
+          'subject' => 'callback',
+          'action' => 'calendar',
+          'query' => '/{identifier}',
+          'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
+        $list['Capacity Calendar'] = array(
+          'subject' => 'capacity',
+          'action' => 'calendar',
+          'query' => '/{identifier}',
+          'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
+
+        if( 1 < $db_role->tier )
+        {
+          $list['Shift Calendar'] = array(
+            'subject' => 'shift',
+            'action' => 'calendar',
+            'query' => '/{identifier}',
+            'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
+          $list['Shift Template Calendar'] = array(
+            'subject' => 'shift_template',
+            'action' => 'calendar',
+            'query' => '/{identifier}',
+            'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
+        }
+      }
     }
+
+    return $list;
+  }
+
+  /**
+   * Extends the parent method
+   */
+  protected function get_report_items()
+  {
+    $list = parent::get_report_items();
+    $db_role = lib::create( 'business\session' )->get_role();
+
+    // operators get no list items
+    if( 'operator' == $db_role->name ) $list = array();
 
     return $list;
   }

@@ -20,6 +20,18 @@ CREATE PROCEDURE patch_application_has_role()
     EXECUTE statement;
     DEALLOCATE PREPARE statement;
 
+    SELECT "Adding new operator+ role to application_has_role" AS "";
+
+    SET @sql = CONCAT(
+      "INSERT IGNORE INTO ", @cenozo, ".application_has_role ( application_id, role_id ) ",
+      "SELECT application.id, role.id ",
+      "FROM ", @cenozo, ".application, ", @cenozo, ".role ",
+      "WHERE application.type = 'sabretooth' ",
+      "AND role.name = 'operator+'" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement;
+    DEALLOCATE PREPARE statement;
+
   END //
 DELIMITER ;
 

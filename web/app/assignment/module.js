@@ -197,7 +197,10 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
           self.isPrevAssignmentLoading = false;
         };
 
-        this.application = CnSession.application.title;
+        CnSession.promise.then( function() {
+          self.application = CnSession.application.title;
+          self.showSelectionList = 'operator' != CnSession.role.name;
+        } );
         this.participantModel = CnParticipantModelFactory.instance();
         this.reset();
 
@@ -214,34 +217,57 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         this.participantModel.listModel.heading = 'Participant Selection List';
 
         // override model functions
-        this.participantModel.getServiceCollectionPath = function() { return 'participant?assignment=true'; }
+        this.participantModel.getServiceCollectionPath = function() { return 'participant'; }
+        this.participantModel.getServiceData = function( type, columnRestrictList ) {
+          var data = this.$$getServiceData( type, columnRestrictList );
+          data.assignment = true;
+          return data;
+        };
 
-        // override the onChoose function
-        this.participantModel.listModel.onSelect = function( record ) {
+        // start a new assignment with a participant (provided by record) or whoever is available next
+        this.beginAssignment = function( record ) {
           // attempt to assign the participant to the user
           CnModalConfirmFactory.instance( {
             title: 'Begin Assignment',
-            message: 'Are you sure you wish to start a new assignment with participant ' + record.uid + '?'
+            message: angular.isDefined( record ) ?
+              'Are you sure you wish to start a new assignment with participant ' + record.uid + '?' :
+              'Are you sure you wish to start a new assignment with the next available participant?'
           } ).show().then( function( response ) {
             if( response ) {
               self.isAssignmentLoading = true; // show loading screen right away
               CnHttpFactory.instance( {
                 path: 'assignment?operation=open',
-                data: { participant_id: record.id },
+                data: angular.isDefined( record ) ? { participant_id: record.id } : undefined,
                 onError: function( response ) {
-                  if( 409 == response.status ) {
-                    // 409 means there is a conflict (the assignment can't be made)
+                  if( 408 == response.status ) {
+                    // 408 means there are currently no participants available (this only happens with no record)
                     CnModalMessageFactory.instance( {
-                      title: 'Unable to start assignment with ' + record.uid,
+                      title: 'No participants available',
                       message: response.data,
                       error: true
                     } ).show().then( self.onLoad );
-                  } else { CnModalMessageFactory.httpError( response ); }
+                  } else if( 409 == response.status ) {
+                    // 409 means there is a conflict (the assignment can't be made)
+                    CnModalMessageFactory.instance( {
+                      title: angular.isDefined( record ) ?
+                        'Unable to start assignment with ' + record.uid :
+                        'Unable to start a new assignment',
+                      message: response.data,
+                      error: true
+                    } ).show().then( self.onLoad );
+                  } else {
+                    CnModalMessageFactory.httpError( response ).then( function() {
+                      self.isAssignmentLoading = false;
+                    } );
+                  }
                 }
               } ).post().then( self.onLoad );
             }
           } );
-        };
+        }
+
+        // override the onChoose function
+        this.participantModel.listModel.onSelect = this.beginAssignment;
 
         this.onLoad = function() {
           self.reset();
@@ -265,9 +291,13 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
               if( 307 == response.status ) {
                 // 307 means the user has no active assignment, so load the participant select list
                 CnSession.alertHeader = undefined;
-                self.participantModel.listModel.afterList( function() {
+                if( 'operator' == CnSession.role.name ) {
                   CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Select' } ] );
-                } );
+                } else {
+                  self.participantModel.listModel.afterList( function() {
+                    CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Select' } ] );
+                  } );
+                }
               } else if( 403 == response.status ) {
                 CnSession.alertHeader = 'You are currently in an assignment';
                 CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Wrong Site' } ] );
