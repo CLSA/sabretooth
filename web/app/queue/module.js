@@ -138,8 +138,10 @@ define( function() {
 
         this.deferred.promise.then( function() {
           // override model functions
-          self.participantModel.getServiceCollectionPath = function() {
-            return self.participantModel.$$getServiceCollectionPath() + '?repopulate=time';
+          self.participantModel.getServiceData = function( type, columnRestrictList ) {
+            var data = this.$$getServiceData( type, columnRestrictList );
+            if( 'list' == type ) data.repopulate = true;
+            return data;
           };
 
           // add additional columns to the model
