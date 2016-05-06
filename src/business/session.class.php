@@ -31,7 +31,6 @@ class session extends \cenozo\business\session
 
   /**
    * Get the user's current assignment.
-   * Should only be called if the user is an operator, otherwise an exception will be thrown.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\assignment
@@ -55,7 +54,6 @@ class session extends \cenozo\business\session
 
   /**
    * Get the user's current phone call.
-   * Should only be called if the user is an operator, otherwise an exception will be thrown.
    * 
    * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\phone_call
