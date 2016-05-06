@@ -132,11 +132,11 @@ define( function() {
         } );
 
         // only ranked queues have queue states
-        this.afterView( function() { self.queueStateModel.show = null != self.record.rank; } );
+        this.afterView( function() {
+          if( angular.isDefined( self.queueStateModel ) ) self.queueStateModel.show = null != self.record.rank;
+        } );
 
         this.deferred.promise.then( function() {
-          self.queueStateModel.show = false;
-
           // override model functions
           self.participantModel.getServiceCollectionPath = function() {
             return self.participantModel.$$getServiceCollectionPath() + '?repopulate=time';
@@ -149,6 +149,7 @@ define( function() {
           // make sure users can edit the queue restriction list despite the queue being read-only
           if( angular.isDefined( self.queueStateModel ) ) {
             var queueStateModule = cenozoApp.module( 'queue_state' );
+            self.queueStateModel.show = false;
             self.queueStateModel.enableAdd( angular.isDefined( queueStateModule.actions.add ) );
             self.queueStateModel.enableDelete( angular.isDefined( queueStateModule.actions.delete ) );
           }

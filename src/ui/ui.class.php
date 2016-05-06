@@ -35,6 +35,7 @@ class ui extends \cenozo\ui\ui
     }
     if( array_key_exists( 'queue', $module_list ) )
     {
+      $module_list['queue']['list_menu'] = true; // always show the queue list
       $module_list['queue']['children'] = array( 'queue_state' );
       $module_list['queue']['choosing'] = array( 'participant' );
     }
