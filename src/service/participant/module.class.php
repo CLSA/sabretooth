@@ -23,7 +23,8 @@ class module extends \cenozo\service\participant\module
 
     if( $this->get_argument( 'assignment', false ) )
     {
-      $user_id = lib::create( 'business\session' )->get_user()->id;
+      $session = lib::create( 'business\session' );
+      $user_id = $session->get_user()->id;
 
       $modifier->join( 'queue_has_participant', 'participant.id', 'queue_has_participant.participant_id' );
       $modifier->join( 'queue', 'queue_has_participant.queue_id', 'queue.id' );
@@ -67,6 +68,23 @@ class module extends \cenozo\service\participant\module
         { // it's been at least one minute since the time-based queues have been repopulated
           $queue_class_name::repopulate_time();
         }
+      }
+
+      // only provide the highest ranking participants to operators
+      $role = $session->get_role()->name;
+      if( 'operator' == $role || 'operator+' == $role )
+      {
+        $sub_modifier = clone $modifier;
+        $sub_select = lib::create( 'database\select' );
+        $sub_select->from( 'participant' );
+        $sub_select->add_column( 'MIN( queue.rank )', 'min_rank', false );
+        $modifier->where(
+          'queue.rank', '=', sprintf( '( %s %s )', $sub_select->get_sql(), $sub_modifier->get_sql() ), false );
+      }
+      
+      if( 'operator' == $role )
+      { // make sure to only provide one participant to operators
+        $modifier->limit( 1 );
       }
     }
     else

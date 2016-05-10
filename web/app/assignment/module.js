@@ -180,6 +180,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         var self = this;
 
         this.reset = function() {
+          self.isOperator = false;
           self.assignment = null;
           self.prevAssignment = null;
           self.participant = null;
@@ -198,22 +199,36 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         };
 
         CnSession.promise.then( function() {
+          self.isOperator = 'operator' == CnSession.role.name || 'operator+' == CnSession.role.name;
           self.application = CnSession.application.title;
           self.showSelectionList = 'operator' != CnSession.role.name;
+
+          // add additional columns to the model
+          var index = 0;
+          self.participantModel.addColumn( 'rank', {
+            title: 'Rank',
+            column: 'queue.rank',
+            type: 'rank',
+            type: self.isOperator ? 'hidden' : 'string'
+          }, index++ );
+          self.participantModel.addColumn( 'queue', {
+            title: 'Queue',
+            column: 'queue.name',
+            type: self.isOperator ? 'hidden' : 'string'
+          }, index++ );
+          self.participantModel.addColumn(
+            'qnaire', { title: 'Questionnaire', column: 'script.name' }, index++ );
+          self.participantModel.addColumn(
+            'language', { title: 'Language', column: 'language.name' }, index++ );
+          self.participantModel.addColumn(
+            'availability', { title: 'Availability', column: 'availability_type.name' } );
         } );
+
         this.participantModel = CnParticipantModelFactory.instance();
         this.reset();
 
-        // add additional columns to the model
-        this.participantModel.addColumn( 'rank', { title: 'Rank', column: 'queue.rank', type: 'rank' }, 0 );
-        this.participantModel.addColumn( 'queue', { title: 'Queue', column: 'queue.name' }, 1 );
-        this.participantModel.addColumn( 'qnaire', { title: 'Questionnaire', column: 'script.name' }, 2 );
-        this.participantModel.addColumn( 'language', { title: 'Language', column: 'language.name' }, 3 );
-        this.participantModel.addColumn(
-          'availability', { title: 'Availability', column: 'availability_type.name' } );
-
         // override the default order and set the heading
-        this.participantModel.listModel.orderBy( 'rank', true );
+        this.participantModel.listModel.orderBy( 'queue.rank', true );
         this.participantModel.listModel.heading = 'Participant Selection List';
 
         // override model functions
@@ -295,6 +310,10 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
                   CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Select' } ] );
                 } else {
                   self.participantModel.listModel.afterList( function() {
+                    if( self.isOperator && 0 < self.participantModel.listModel.cache.length ) {
+                      self.participantModel.listModel.heading =
+                        'Participant Selection List (' + self.participantModel.listModel.cache[0].queue + ')';
+                    }
                     CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Select' } ] );
                   } );
                 }
