@@ -20,7 +20,11 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
     columnList: {
       user: {
         column: 'user.name',
-        title: 'Operator'
+        title: 'User'
+      },
+      role: {
+        column: 'role.name',
+        title: 'Role'
       },
       site: {
         column: 'site.name',
@@ -59,6 +63,12 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
     user: {
       column: 'user.name',
       title: 'User',
+      type: 'string',
+      constant: true
+    },
+    role: {
+      column: 'role.name',
+      title: 'Role',
       type: 'string',
       constant: true
     },

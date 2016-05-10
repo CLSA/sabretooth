@@ -281,6 +281,7 @@ class module extends \cenozo\service\site_restricted_module
       $db_interview->save();
 
       $record->user_id = $session->get_user()->id;
+      $record->role_id = $session->get_role()->id;
       $record->site_id = $session->get_site()->id;
       $record->interview_id = $db_interview->id;
       $record->queue_id = $this->db_participant->current_queue_id;
@@ -339,6 +340,7 @@ class module extends \cenozo\service\site_restricted_module
 
         $db_assignment = lib::create( 'database\assignment' );
         $db_assignment->user_id = $session->get_user()->id;
+        $db_assignment->role_id = $session->get_role()->id;
         $db_assignment->site_id = $session->get_site()->id;
         $db_assignment->interview_id = $db_next_interview->id;
         $db_assignment->queue_id = $record->queue_id;
