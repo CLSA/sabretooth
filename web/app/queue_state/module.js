@@ -120,35 +120,35 @@ define( function() {
         this.getMetadata = function() {
 
           var promiseList = [
+            this.$$getMetadata().then( function() {
+              return $q.all( [
+                CnHttpFactory.instance( {
+                  path: 'queue',
+                  data: {
+                    select: { column: [ 'id', 'title' ] },
+                    modifier: { order: { name: false } }
+                  }
+                } ).query().then( function success( response ) {
+                  self.metadata.columnList.queue_id.enumList = [];
+                  response.data.forEach( function( item ) {
+                    self.metadata.columnList.queue_id.enumList.push( { value: item.id, name: item.title } );
+                  } );
+                } ),
 
-            this.$$getMetadata(),
-
-            CnHttpFactory.instance( {
-              path: 'queue',
-              data: {
-                select: { column: [ 'id', 'title' ] },
-                modifier: { order: { name: false } }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.queue_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.queue_id.enumList.push( { value: item.id, name: item.title } );
-              } );
-            } ),
-
-            CnHttpFactory.instance( {
-              path: 'qnaire',
-              data: {
-                select: { column: [ 'id', { table: 'script', column: 'name' } ] },
-                modifier: { order: 'rank' }
-              }
-            } ).query().then( function success( response ) {
-              self.metadata.columnList.qnaire_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.qnaire_id.enumList.push( { value: item.id, name: item.name } );
-              } );
+                CnHttpFactory.instance( {
+                  path: 'qnaire',
+                  data: {
+                    select: { column: [ 'id', { table: 'script', column: 'name' } ] },
+                    modifier: { order: 'rank' }
+                  }
+                } ).query().then( function success( response ) {
+                  self.metadata.columnList.qnaire_id.enumList = [];
+                  response.data.forEach( function( item ) {
+                    self.metadata.columnList.qnaire_id.enumList.push( { value: item.id, name: item.name } );
+                  } );
+                } )
+              ] );
             } )
-
           ];
 
           if( !CnSession.role.allSites ) {
