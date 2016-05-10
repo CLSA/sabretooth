@@ -72,6 +72,10 @@ define( function() {
         var self = this;
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnPhoneCallListFactory.instance( this );
+
+        // need to explicitely disable the add and delete options
+        this.enableAdd( false );
+        this.enableDelete( false );
       };
 
       return {

@@ -13,7 +13,7 @@ global $SETTINGS;
 $SETTINGS['general']['application_name'] = 'sabretooth';
 $SETTINGS['general']['instance_name'] = $SETTINGS['general']['application_name'];
 $SETTINGS['general']['version'] = '2.0.0';
-$SETTINGS['general']['build'] = '3967dfc';
+$SETTINGS['general']['build'] = 'b2aa8fb';
 
 // always leave as false when running as production server
 $SETTINGS['general']['development_mode'] = false;
