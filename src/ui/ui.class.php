@@ -51,6 +51,11 @@ class ui extends \cenozo\ui\ui
       // remove the state list from the operator+ role
       if( 'operator+' == $db_role->name ) $module_list['state']['list_menu'] = false;
     }
+    if( array_key_exists( 'user', $module_list ) )
+    {
+      // remove the state list from the operator+ role
+      if( 'operator+' == $db_role->name ) $module_list['user']['list_menu'] = false;
+    }
 
     return $module_list;
   }
@@ -90,7 +95,8 @@ class ui extends \cenozo\ui\ui
     // operators get no list items
     if( 'operator' == $db_role->name )
     {
-      $list = array( 'Assignment Control' => array( 'subject' => 'assignment', 'action' => 'control' ) );
+      unset( $list['Participant Search'] );
+      $list['Assignment Control'] = array( 'subject' => 'assignment', 'action' => 'control' );
     }
     else
     {
