@@ -164,10 +164,9 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAssignmentModelFactory', [
-    '$state', 'CnBaseModelFactory', 'CnAssignmentListFactory', 'CnAssignmentViewFactory',
-    function( $state, CnBaseModelFactory, CnAssignmentListFactory, CnAssignmentViewFactory ) {
+    'CnBaseModelFactory', 'CnAssignmentListFactory', 'CnAssignmentViewFactory',
+    function( CnBaseModelFactory, CnAssignmentListFactory, CnAssignmentViewFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnAssignmentListFactory.instance( this );
         this.viewModel = CnAssignmentViewFactory.instance( this, root );
@@ -594,7 +593,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
                 } else {
                   CnHttpFactory.instance( {
                     path: 'voip',
-                    data: { action: 'call', phone_id: phone.id }
+                    data: { phone_id: phone.id }
                   } ).post().then( function( response ) {
                     if( 201 == response.status ) {
                       postCall();
