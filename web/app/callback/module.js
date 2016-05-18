@@ -229,7 +229,6 @@ define( [ 'site' ].reduce( function( list, name ) {
           var loadMinDate = self.getLoadMinDate( replace, minDate );
           var loadMaxDate = self.getLoadMaxDate( replace, maxDate );
           return self.$$onCalendar( replace, minDate, maxDate, ignoreParent ).then( function() {
-            console.log( self.cache );
             self.cache.forEach( function( item, index, array ) {
               array[index] = getEventFromCallback( item, CnSession.user.timezone );
             } );
