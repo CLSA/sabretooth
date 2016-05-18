@@ -32,7 +32,12 @@ class ui extends \cenozo\ui\ui
     if( array_key_exists( 'interview', $module_list ) )
       $module_list['interview']['children'] = array( 'assignment', 'appointment', 'callback' );
     if( array_key_exists( 'participant', $module_list ) )
+    {
       array_unshift( $module_list['participant']['children'], 'interview' );
+
+      // add extra types to history
+      $module_list['participant']['actions']['history'] .= '&{appointment}&{assignment}&{callback}';
+    }
     if( array_key_exists( 'qnaire', $module_list ) )
     {
       $module_list['qnaire']['children'] = array( 'queue_state' );
