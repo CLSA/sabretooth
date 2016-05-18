@@ -234,10 +234,15 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         } );
 
         this.participantModel = CnParticipantModelFactory.instance();
+        // map assignment-control query parameters to participant-list
+        this.participantModel.queryParameterSubject = 'assignment';
+
+        // override the default column order for the participant list to rank
+        this.participantModel.listModel.order = { column: 'rank', reverse: false };
+
         this.reset();
 
         // override the default order and set the heading
-        this.participantModel.listModel.orderBy( 'queue.rank', true );
         this.participantModel.listModel.heading = 'Participant Selection List';
 
         // override model functions

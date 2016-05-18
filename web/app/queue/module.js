@@ -126,10 +126,6 @@ define( function() {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
-        this.deferred.promise.then( function() {
-          if( angular.isDefined( self.queueStateModel ) )
-            self.queueStateModel.listModel.heading = 'Disabled Questionnaire List';
-        } );
 
         // only ranked queues have queue states
         this.afterView( function() {
@@ -137,27 +133,35 @@ define( function() {
         } );
 
         this.deferred.promise.then( function() {
-          // override model functions
-          self.participantModel.getServiceData = function( type, columnRestrictList ) {
-            var data = this.$$getServiceData( type, columnRestrictList );
-            if( 'list' == type ) data.repopulate = true;
-            return data;
-          };
+          if( angular.isDefined( self.participantModel ) ) {
+            // map queue-view query parameters to participant-list
+            self.participantModel.queryParameterSubject = 'queue';
 
-          // add additional columns to the model
-          self.participantModel.addColumn( 'qnaire', { title: 'Questionnaire', column: 'script.name' }, 0 );
-          self.participantModel.addColumn( 'language', { title: 'Language', column: 'language.name' }, 1 );
+            // override model functions
+            self.participantModel.getServiceData = function( type, columnRestrictList ) {
+              var data = this.$$getServiceData( type, columnRestrictList );
+              if( 'list' == type ) data.repopulate = true;
+              return data;
+            };
 
-          // make sure users can edit the queue restriction list despite the queue being read-only
+            // add additional columns to the model
+            self.participantModel.addColumn( 'qnaire', { title: 'Questionnaire', column: 'script.name' }, 0 );
+            self.participantModel.addColumn( 'language', { title: 'Language', column: 'language.name' }, 1 );
+
+            // make sure users can't add/remove participants from queues
+            self.participantModel.enableChoose( false );
+          }
+
           if( angular.isDefined( self.queueStateModel ) ) {
+            // set a custom heading for the queue state list model
+            self.queueStateModel.listModel.heading = 'Disabled Questionnaire List';
+
+            // make sure users can edit the queue restriction list despite the queue being read-only
             var queueStateModule = cenozoApp.module( 'queue_state' );
             self.queueStateModel.show = false;
             self.queueStateModel.enableAdd( angular.isDefined( queueStateModule.actions.add ) );
             self.queueStateModel.enableDelete( angular.isDefined( queueStateModule.actions.delete ) );
           }
-
-          // make sure users can't add/remove participants from queues
-          if( angular.isDefined( self.participantModel ) ) self.participantModel.enableChoose( false );
         } );
       };
 
