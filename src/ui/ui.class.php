@@ -51,7 +51,7 @@ class ui extends \cenozo\ui\ui
 
       // add special query parameters to queue-view
       if( array_key_exists( 'view', $module_list['queue']['actions'] ) )
-        $module_list['queue']['actions']['view'] .= '?{order}&{reverse}';
+        $module_list['queue']['actions']['view'] .= '?{restrict}&{order}&{reverse}';
     }
     if( array_key_exists( 'site', $module_list ) )
       array_unshift( $module_list['site']['children'], 'queue_state' );
@@ -108,7 +108,7 @@ class ui extends \cenozo\ui\ui
       $list['Assignment Control'] = array(
         'subject' => 'assignment',
         'action' => 'control',
-        'query' => '?{order}&{reverse}' );
+        'query' => '?{restrict}&{order}&{reverse}' );
     }
     else
     {
@@ -117,7 +117,7 @@ class ui extends \cenozo\ui\ui
         $list['Assignment Control'] = array(
           'subject' => 'assignment',
           'action' => 'control',
-          'query' => '?{order}&{reverse}' );
+          'query' => '?{restrict}&{order}&{reverse}' );
       if( 2 <= $db_role->tier )
         $list['Queue Tree'] = array( 'subject' => 'queue', 'action' => 'tree' );
       if( !$db_role->all_sites && 1 < $db_role->tier )
