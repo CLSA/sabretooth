@@ -52,7 +52,25 @@ define( function() {
 
   module.addExtraOperation( 'view', {
     title: 'View Queue Tree',
-    operation: function( $state ) { $state.go( 'queue.tree' ); }
+    operation: function( $state, model ) {
+      // if the queue's participant list has restrictions on qnaire, site or language then apply them
+      var restrictList = model.viewModel.participantModel.listModel.columnRestrictLists;
+      var params = {};
+      if( angular.isDefined( restrictList.qnaire ) ) {
+        var restrict = restrictList.qnaire.findByProperty( 'test', '<=>' );
+        params.qnaire = restrict.value;
+      }
+      if( angular.isDefined( restrictList.site ) ) {
+        var restrict = restrictList.site.findByProperty( 'test', '<=>' );
+        params.site = restrict.value;
+      }
+      if( angular.isDefined( restrictList.language ) ) {
+        var restrict = restrictList.language.findByProperty( 'test', '<=>' );
+        params.language = restrict.value;
+      }
+
+      $state.go( 'queue.tree', params );
+    }
   } );
 
   /* ######################################################################################################## */
@@ -78,18 +96,11 @@ define( function() {
         templateUrl: module.getFileUrl( 'tree.tpl.html' ),
         restrict: 'E',
         controller: function( $scope ) {
-          $scope.isLoading = false;
-          $scope.isComplete = false;
           $scope.model = CnQueueTreeFactory.instance();
-          $scope.refresh = function( updateQueueTime ) {
-            $scope.model.updateQueueTime = true === updateQueueTime;
-            $scope.isLoading = 0 < $scope.model.queueTree.length;
-            $scope.isComplete = 0 < $scope.model.queueTree.length;
-            $scope.model.onView()
-              .then( function success() { CnSession.setBreadcrumbTrail( [ { title: 'Queue Tree' } ] ); } )
-              .finally( function finished() { $scope.isLoading = false; $scope.isComplete = true; } );
-          };
-          $scope.refresh( true );
+          $scope.isLoading = true;
+          $scope.model.onView( true )
+            .then( function success() { CnSession.setBreadcrumbTrail( [ { title: 'Queue Tree' } ] ); } )
+            .finally( function finished() { $scope.isLoading = false; } );
         }
       };
     }
@@ -189,24 +200,24 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQueueTreeFactory', [
-    '$state', 'CnSession', 'CnHttpFactory',
-    function( $state, CnSession, CnHttpFactory ) {
+    '$q', '$state', 'CnQueueModelFactory', 'CnSession', 'CnHttpFactory',
+    function( $q, $state, CnQueueModelFactory, CnSession, CnHttpFactory ) {
       var object = function( root ) {
         var self = this;
         this.queueList = []; // one-dimensional list for manipulation
         this.queueTree = []; // multi-dimensional tree for display
-        this.updateQueueTime = true; // repopulate the time queue the first time we load
+        this.queueModel = CnQueueModelFactory.root;
 
         this.form = {
           canRepopulate: 3 <= CnSession.role.tier,
           lastRepopulation: null,
           isRepopulating: false,
           qnaire_id: undefined,
-          qnaireList: null,
+          qnaireList: [],
           site_id: undefined,
-          siteList: null,
+          siteList: [],
           language_id: undefined,
-          languageList: null
+          languageList: []
         };
 
         this.repopulate = function() {
@@ -229,7 +240,35 @@ define( function() {
             .finally( function finished() { self.form.isRepopulating = false; } );
         };
 
-        this.onView = function() {
+        this.refreshState = function() {
+          var qnaireName = undefined;
+          if( angular.isDefined( this.form.qnaire_id ) ) {
+            var qnaire = this.form.qnaireList.findByProperty( 'value', this.form.qnaire_id );
+            if( qnaire ) qnaireName = qnaire.name;
+          }
+          this.queueModel.setQueryParameter( 'qnaire', qnaireName );
+
+          var siteName = undefined;
+          if( angular.isDefined( this.form.site_id ) ) {
+            var site = this.form.siteList.findByProperty( 'value', this.form.site_id );
+            if( site ) siteName = site.name;
+          }
+          this.queueModel.setQueryParameter( 'site', siteName );
+
+          var languageName = undefined;
+          if( angular.isDefined( this.form.language_id ) ) {
+            var language = this.form.languageList.findByProperty( 'value', this.form.language_id );
+            if( language ) languageName = language.name;
+          }
+          this.queueModel.setQueryParameter( 'language', languageName );
+
+          return $q.all( [
+            this.queueModel.reloadState( false, true ),
+            this.onView( false )
+          ] );
+        };
+
+        this.onView = function( updateQueue ) {
           // blank out the button title if the tree is already built
           if( 0 < self.queueTree.length ) {
             self.queueList.forEach( function( item, index, array ) {
@@ -241,132 +280,174 @@ define( function() {
             } );
           }
 
-          if( null == self.form.qnaireList ) {
-            CnHttpFactory.instance( {
-              path: 'qnaire',
-              data: {
-                select: { column: [ 'id', { table: 'script', column: 'name' } ] },
-                modifier: { order: 'rank' }
-              }
-            } ).query().then( function( response ) {
-              self.form.qnaireList = [ { value: undefined, name: 'Any' } ];
-              response.data.forEach( function( item ) {
-                self.form.qnaireList.push( { value: item.id, name: item.name } );
-              } );
-            } );
-          }
+          var promiseList = [];
 
-          if( null == self.form.siteList && CnSession.role.allSites ) {
-            CnHttpFactory.instance( {
-              path: 'site',
-              data: { select: { column: [ 'id', 'name' ] }, modifier: { order: 'name' } }
-            } ).query().then( function( response ) {
-              self.form.siteList = [ { value: undefined, name: 'All' } ];
-              response.data.forEach( function( item ) {
-                self.form.siteList.push( { value: item.id, name: item.name } );
-              } );
-            } );
-          }
-
-          if( null == self.form.languageList ) {
-            CnHttpFactory.instance( {
-              path: 'language',
-              data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: { where: { column: 'active', operator: '=', value: true }, order: 'name' }
-              }
-            } ).query().then( function( response ) {
-              self.form.languageList = [ { value: undefined, name: 'Any' } ];
-              response.data.forEach( function( item ) {
-                self.form.languageList.push( { value: item.id, name: item.name } );
-              } );
-            } );
-          }
-
-          var whereList = [];
-          if( angular.isDefined( self.form.qnaire_id ) )
-            whereList.push( { column: 'qnaire_id', operator: '=', value: self.form.qnaire_id } );
-          if( angular.isDefined( self.form.site_id ) )
-            whereList.push( { column: 'site_id', operator: '=', value: self.form.site_id } );
-          if( angular.isDefined( self.form.language_id ) )
-            whereList.push( { column: 'language_id', operator: '=', value: self.form.language_id } );
-
-          return CnHttpFactory.instance( {
-            path: 'queue?full=1' + ( self.updateQueueTime ? '&repopulate=time' : '' ),
-            data: {
-              modifier: {
-                order: 'id',
-                where: whereList
-              },
-              select: { column: [ "id", "parent_queue_id", "rank", "name", "title", "participant_count" ] }
-            }
-          } ).query().then( function( response ) {
-            if( self.updateQueueTime ) self.updateQueueTime = false;
-            if( 0 < self.queueTree.length ) {
-              // don't rebuild the queue, just update the participant totals
-              response.data.forEach( function( item ) {
-                var queue = self.queueList[item.id];
-                queue.participant_count = item.participant_count;
-                queue.button.name = item.participant_count;
-                queue.last_repopulation = item.last_repopulation;
-              } );
-            } else {
-              // create an array containing all branches and add their child branches as we go
-              var eligibleQueueId = null;
-              var oldParticipantQueueId = null;
-              response.data.forEach( function( item ) {
-                // make note of certain queues
-                if( null === eligibleQueueId && 'eligible' == item.name )
-                  eligibleQueueId = item.id;
-                if( null === oldParticipantQueueId && 'old participant' == item.name )
-                  oldParticipantQueueId = item.id;
-
-                // add all branches to the root, for now
-                item.branchList = []; // will be filled in if the branch has any children
-                item.initialOpen = null === oldParticipantQueueId ||
-                                               oldParticipantQueueId > item.id;
-                item.open = item.initialOpen;
-                item.button = {
-                  id: item.id,
-                  name: item.participant_count,
-                  go: function() { $state.go( 'queue.view', { identifier: this.id } ); }
-                };
-                if( null !== item.rank ) {
-                  item.title = 'Q' + item.rank + ': ' + item.title;
-                  item.color = 'success';
+          if( 0 == self.form.qnaireList.length ) {
+            promiseList.push(
+              CnHttpFactory.instance( {
+                path: 'qnaire',
+                data: {
+                  select: { column: [ 'id', { table: 'script', column: 'name' } ] },
+                  modifier: { order: 'rank' }
                 }
-                self.queueList[item.id] = item;
-                if( null !== item.parent_queue_id && 'qnaire' != item.name ) {
-                  if( 'qnaire' == self.queueList[item.parent_queue_id].name )
-                    item.parent_queue_id = eligibleQueueId;
-                  self.queueList[item.parent_queue_id].branchList.push( item );
-                }
-              } );
+              } ).query().then( function( response ) {
+                self.form.qnaireList = [ { value: undefined, name: 'Any' } ];
+                response.data.forEach( function( item ) {
+                  self.form.qnaireList.push( { value: item.id, name: item.name } );
+                } );
+              } )
+            );
+          }
 
-              // now put all root branches into the queue tree
-              self.queueList.forEach( function( item ) {
-                if( angular.isDefined( item ) && null === item.parent_queue_id ) self.queueTree.push( item );
-              } );
+          if( 0 == self.form.siteList.length && CnSession.role.allSites ) {
+            promiseList.push(
+              CnHttpFactory.instance( {
+                path: 'site',
+                data: { select: { column: [ 'id', 'name' ] }, modifier: { order: 'name' } }
+              } ).query().then( function( response ) {
+                self.form.siteList = [ { value: undefined, name: 'All' } ];
+                response.data.forEach( function( item ) {
+                  self.form.siteList.push( { value: item.id, name: item.name } );
+                } );
+              } )
+            );
+          }
+
+          if( 0 == self.form.languageList.length ) {
+            promiseList.push(
+              CnHttpFactory.instance( {
+                path: 'language',
+                data: {
+                  select: { column: [ 'id', 'name' ] },
+                  modifier: { where: { column: 'active', operator: '=', value: true }, order: 'name' }
+                }
+              } ).query().then( function( response ) {
+                self.form.languageList = [ { value: undefined, name: 'Any' } ];
+                response.data.forEach( function( item ) {
+                  self.form.languageList.push( { value: item.id, name: item.name } );
+                } );
+              } )
+            );
+          }
+
+          return $q.all( promiseList ).then( function() {
+            // determine the qnaire, site and language from the query parameters
+            var qnaireName = self.queueModel.getQueryParameter( 'qnaire' );
+            if( angular.isDefined( qnaireName ) ) {
+              var qnaire = self.form.qnaireList.findByProperty( 'name', qnaireName );
+              self.form.qnaire_id = qnaire ? qnaire.value : undefined;
             }
 
-            // now check for count errors
-            self.queueList.forEach( function( queue, index, array ) {
-              if( 'all' == queue.name )
-                self.form.lastRepopulation =
-                  CnSession.formatValue( queue.last_repopulation, 'datetimesecond', false );
+            var siteName = self.queueModel.getQueryParameter( 'site' );
+            if( angular.isDefined( siteName ) ) {
+              var site = self.form.siteList.findByProperty( 'name', siteName );
+              self.form.site_id = site ? site.value : undefined;
+            }
 
-              if( angular.isDefined( queue ) && 0 < queue.branchList.length ) {
-                var count = 0;
-                queue.branchList.forEach( function( branch ) { count += branch.participant_count; } );
-                array[index].childTotal = count;
+            var languageName = self.queueModel.getQueryParameter( 'language' );
+            if( angular.isDefined( languageName ) ) {
+              var language = self.form.languageList.findByProperty( 'name', languageName );
+              self.form.language_id = language ? language.value : undefined;
+            }
 
-                if( queue.childTotal != queue.participant_count )
-                  console.error(
-                    'Queue "' + queue.title +
-                    '" has ' + queue.participant_count +
-                    ' participants but child queues add up to ' + queue.childTotal +
-                    ' (they should be equal)' );
+            // build a where statement based on the qnaire, site and language parameters
+            var whereList = [];
+            if( angular.isDefined( self.form.qnaire_id ) )
+              whereList.push( { column: 'qnaire_id', operator: '=', value: self.form.qnaire_id } );
+            if( angular.isDefined( self.form.site_id ) )
+              whereList.push( { column: 'site_id', operator: '=', value: self.form.site_id } );
+            if( angular.isDefined( self.form.language_id ) )
+              whereList.push( { column: 'language_id', operator: '=', value: self.form.language_id } );
+
+            return CnHttpFactory.instance( {
+              path: 'queue?full=1' + ( updateQueue ? '&repopulate=time' : '' ),
+              data: {
+                modifier: {
+                  order: 'id',
+                  where: whereList
+                },
+                select: { column: [ "id", "parent_queue_id", "rank", "name", "title", "participant_count" ] }
               }
+            } ).query().then( function( response ) {
+              if( 0 < self.queueTree.length ) {
+                // don't rebuild the queue, just update the participant totals
+                response.data.forEach( function( item ) {
+                  var queue = self.queueList[item.id];
+                  queue.participant_count = item.participant_count;
+                  queue.button.name = item.participant_count;
+                  queue.last_repopulation = item.last_repopulation;
+                } );
+              } else {
+                // create an array containing all branches and add their child branches as we go
+                var eligibleQueueId = null;
+                var oldParticipantQueueId = null;
+                response.data.forEach( function( item ) {
+                  // make note of certain queues
+                  if( null === eligibleQueueId && 'eligible' == item.name )
+                    eligibleQueueId = item.id;
+                  if( null === oldParticipantQueueId && 'old participant' == item.name )
+                    oldParticipantQueueId = item.id;
+
+                  // add all branches to the root, for now
+                  item.branchList = []; // will be filled in if the branch has any children
+                  item.initialOpen = null === oldParticipantQueueId ||
+                                                 oldParticipantQueueId > item.id;
+                  item.open = item.initialOpen;
+                  item.button = {
+                    id: item.id,
+                    name: item.participant_count,
+                    go: function() {
+                      var restrict = {};
+                      var qnaireName = self.queueModel.getQueryParameter( 'qnaire' );
+                      if( qnaireName ) restrict.qnaire = [ { test: "<=>", value: qnaireName } ];
+                      var siteName = self.queueModel.getQueryParameter( 'site' );
+                      if( siteName ) restrict.site = [ { test: "<=>", value: siteName } ];
+                      var languageName = self.queueModel.getQueryParameter( 'language' );
+                      if( languageName ) restrict.language = [ { test: "<=>", value: languageName } ];
+
+                      var params = { identifier: this.id };
+                      if( 0 < Object.keys( restrict ).length ) params.restrict = angular.toJson( restrict );
+
+                      $state.go( 'queue.view', params );
+                    }
+                  };
+                  if( null !== item.rank ) {
+                    item.title = 'Q' + item.rank + ': ' + item.title;
+                    item.color = 'success';
+                  }
+                  self.queueList[item.id] = item;
+                  if( null !== item.parent_queue_id && 'qnaire' != item.name ) {
+                    if( 'qnaire' == self.queueList[item.parent_queue_id].name )
+                      item.parent_queue_id = eligibleQueueId;
+                    self.queueList[item.parent_queue_id].branchList.push( item );
+                  }
+                } );
+
+                // now put all root branches into the queue tree
+                self.queueList.forEach( function( item ) {
+                  if( angular.isDefined( item ) && null === item.parent_queue_id ) self.queueTree.push( item );
+                } );
+              }
+
+              // now check for count errors
+              self.queueList.forEach( function( queue, index, array ) {
+                if( 'all' == queue.name )
+                  self.form.lastRepopulation =
+                    CnSession.formatValue( queue.last_repopulation, 'datetimesecond', false );
+
+                if( angular.isDefined( queue ) && 0 < queue.branchList.length ) {
+                  var count = 0;
+                  queue.branchList.forEach( function( branch ) { count += branch.participant_count; } );
+                  array[index].childTotal = count;
+
+                  if( queue.childTotal != queue.participant_count )
+                    console.error(
+                      'Queue "' + queue.title +
+                      '" has ' + queue.participant_count +
+                      ' participants but child queues add up to ' + queue.childTotal +
+                      ' (they should be equal)' );
+                }
+              } );
             } );
           } );
         };

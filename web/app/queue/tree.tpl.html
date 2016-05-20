@@ -2,8 +2,8 @@
   <div class="container-fluid bg-primary rounded-top">
     <h4>
       <i class="glyphicon glyphicon-refresh glyph-hover rounded pull-right btn-primary"
-         ng-if="isComplete && !isLoading && !model.form.isRepopulating"
-         ng-click="refresh( true )"
+         ng-if="!isLoading && !model.form.isRepopulating"
+         ng-click="model.onView( true )"
          tooltip="Click to refresh data"
          tooltip-placement="left"></i>
       Queue Tree
@@ -12,8 +12,7 @@
     </h4>
   </div>
   <div class="container-fluid">
-    <cn-loading ng-if="!isComplete"></cn-loading>
-    <div class="spacer row" ng-if="isComplete">
+    <div class="spacer row">
       <div class="col-sm-4">
         <div class="form-group">
           <label for="lastRepopulation" class="control-label">Last re-population</label>
@@ -58,7 +57,7 @@ This will prevent assignments from being started or finished and generally slow 
           <label for="qnaire_id" class="control-label">Questionnaire</label>
           <select id="qnaire_id"
                   ng-model="model.form.qnaire_id"
-                  ng-change="refresh()"
+                  ng-change="model.refreshState()"
                   class="form-control"
                   ng-disabled="model.form.isRepopulating"
                   ng-options="item.value as item.name for item in model.form.qnaireList">
@@ -68,7 +67,7 @@ This will prevent assignments from being started or finished and generally slow 
           <label for="site_id" class="control-label">Site</label>
           <select id="site_id"
                   ng-model="model.form.site_id"
-                  ng-change="refresh()"
+                  ng-change="model.refreshState()"
                   class="form-control"
                   ng-disabled="model.form.isRepopulating"
                   ng-options="item.value as item.name for item in model.form.siteList">
@@ -78,7 +77,7 @@ This will prevent assignments from being started or finished and generally slow 
           <label for="language_id" class="control-label">Participant Language</label>
           <select id="language_id"
                   ng-model="model.form.language_id"
-                  ng-change="refresh()"
+                  ng-change="model.refreshState()"
                   class="form-control"
                   ng-disabled="model.form.isRepopulating"
                   ng-options="item.value as item.name for item in model.form.languageList">
@@ -96,6 +95,7 @@ This will prevent assignments from being started or finished and generally slow 
         </div>
       </div>
       <div class="col-sm-8" style="padding-right: 0px;">
+        <cn-loading ng-if="0 == model.queueTree.length"></cn-loading>
         <cn-tree model="model.queueTree"></cn-tree>
       </div>
     </div>

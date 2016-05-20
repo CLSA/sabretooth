@@ -119,7 +119,14 @@ class ui extends \cenozo\ui\ui
           'action' => 'control',
           'query' => '?{restrict}&{order}&{reverse}' );
       if( 2 <= $db_role->tier )
-        $list['Queue Tree'] = array( 'subject' => 'queue', 'action' => 'tree' );
+      {
+        $query = '?{qnaire}&{language}';
+        if( $db_role->all_sites ) $query .= '&{site}';
+        $list['Queue Tree'] = array(
+          'subject' => 'queue',
+          'action' => 'tree',
+          'query' => $query );
+      }
       if( !$db_role->all_sites && 1 < $db_role->tier )
       {
         $list['Site Details'] = array(
