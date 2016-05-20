@@ -32,8 +32,8 @@ SOURCE prerecruit.sql
 SOURCE ivr_appointment.sql
 SOURCE source_withdraw.sql
 SOURCE interview_phone_call_status_count.sql
-SOURCE callback.sql
 SOURCE appointment.sql
+SOURCE callback.sql
 SOURCE service.sql
 SOURCE role_has_operation.sql
 SOURCE application_has_role.sql
