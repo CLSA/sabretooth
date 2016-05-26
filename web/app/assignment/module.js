@@ -238,7 +238,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         this.participantModel.queryParameterSubject = 'assignment';
 
         // override the default column order for the participant list to rank
-        this.participantModel.listModel.order = { column: 'rank', reverse: false };
+        this.participantModel.listModel.order = { column: 'queue.rank', reverse: false };
 
         this.reset();
 
