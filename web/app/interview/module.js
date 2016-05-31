@@ -221,24 +221,24 @@ define( function() {
             if( angular.isDefined( self.appointmentModel ) ) {
               var appointmentModule = cenozoApp.module( 'appointment' );
               self.appointmentModel.enableAdd(
-                !completed && !existing && 0 <= angular.isDefined( appointmentModule.actions.add ) );
+                !completed && !existing && angular.isDefined( appointmentModule.actions.add ) );
               self.appointmentModel.enableDelete(
-                !completed && 0 <= angular.isDefined( appointmentModule.actions.delete ) );
+                !completed && angular.isDefined( appointmentModule.actions.delete ) );
               self.appointmentModel.enableEdit(
-                !completed && 0 <= angular.isDefined( appointmentModule.actions.edit ) );
+                !completed && angular.isDefined( appointmentModule.actions.edit ) );
               self.appointmentModel.enableView(
-                !completed && 0 <= angular.isDefined( appointmentModule.actions.view ) );
+                !completed && angular.isDefined( appointmentModule.actions.view ) );
             }
             if( angular.isDefined( self.callbackModel ) ) {
               var callbackModule = cenozoApp.module( 'callback' );
               self.callbackModel.enableAdd(
-                !completed && !existing && 0 <= angular.isDefined( callbackModule.actions.add ) );
+                !completed && !existing && angular.isDefined( callbackModule.actions.add ) );
               self.callbackModel.enableDelete(
-                !completed && 0 <= angular.isDefined( callbackModule.actions.delete ) );
+                !completed && angular.isDefined( callbackModule.actions.delete ) );
               self.callbackModel.enableEdit(
-                !completed && 0 <= angular.isDefined( callbackModule.actions.edit ) );
+                !completed && angular.isDefined( callbackModule.actions.edit ) );
               self.callbackModel.enableView(
-                !completed && 0 <= angular.isDefined( callbackModule.actions.view ) );
+                !completed && angular.isDefined( callbackModule.actions.view ) );
             }
           } );
         };
