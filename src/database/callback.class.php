@@ -35,7 +35,7 @@ class callback extends \cenozo\database\record
       $appointment_mod->where( 'interview_id', '=', $this->interview_id );
       $appointment_mod->where( 'assignment_id', '=', NULL );
 
-      if( 0 < static::count( $appointment_mod ) || 0 < $appointment_class_name::count( $appointment_mod ) )
+      if( 0 < static::count( $callback_mod ) || 0 < $appointment_class_name::count( $appointment_mod ) )
         throw lib::create( 'exception\notice',
           'Cannot have more than one unassigned appointment or callback per interview.', __METHOD__ );
     }
