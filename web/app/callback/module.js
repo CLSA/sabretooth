@@ -90,16 +90,23 @@ define( [ 'site' ].reduce( function( list, name ) {
     }
   } );
 
+  module.addExtraOperation( 'add', {
+    title: 'Callback Calendar',
+    operation: function( $state, model ) {
+      $state.go( 'callback.calendar', { identifier: model.metadata.participantSite.getIdentifier() } );
+    }
+  } );
+
   module.addExtraOperation( 'view', {
     title: 'Callback Calendar',
-    operation: function( $state, model ) { 
+    operation: function( $state, model ) {
       $state.go( 'callback.calendar', { identifier: model.metadata.participantSite.getIdentifier() } );
-    }   
+    }
   } );
 
   // converts callbacks into events
-  function getEventFromCallback( callback, timezone ) { 
-    if( angular.isDefined( callback.start ) ) { 
+  function getEventFromCallback( callback, timezone ) {
+    if( angular.isDefined( callback.start ) ) {
       return callback;
     } else {
       var date = moment( callback.datetime );
@@ -108,14 +115,14 @@ define( [ 'site' ].reduce( function( list, name ) {
       // adjust the callback for daylight savings time
       if( date.tz( timezone ).isDST() ) offset += -60;
 
-      var event = { 
+      var event = {
         getIdentifier: function() { return callback.getIdentifier() },
-        title: ( angular.isDefined( callback.uid ) ? callback.uid : 'new callback' ) + 
+        title: ( angular.isDefined( callback.uid ) ? callback.uid : 'new callback' ) +
                ( angular.isDefined( callback.qnaire_rank ) ? ' (' + callback.qnaire_rank + ')' : '' ),
         start: moment( callback.datetime ).subtract( offset, 'minutes' )
-      };  
+      };
       return event;
-    }   
+    }
   }
 
   /* ######################################################################################################## */
@@ -351,21 +358,35 @@ define( [ 'site' ].reduce( function( list, name ) {
                 path: [ parent.subject, parent.identifier ].join( '/' ),
                 data: { select: { column: { column: 'participant_id' } } }
               } ).query().then( function( response ) {
-                return CnHttpFactory.instance( {
-                  path: ['participant', response.data.participant_id, 'phone' ].join( '/' ),
-                  data: {
-                    select: { column: [ 'id', 'rank', 'type', 'number' ] },
-                    modifier: { order: { rank: false } }
-                  }
-                } ).query().then( function( response ) {
-                  self.metadata.columnList.phone_id.enumList = [];
-                  response.data.forEach( function( item ) {
-                    self.metadata.columnList.phone_id.enumList.push( {
-                      value: item.id,
-                      name: '(' + item.rank + ') ' + item.type + ': ' + item.number
+                // get the participant's effective site and list of phone numbers
+                return $q.all( [
+                  CnHttpFactory.instance( {
+                    path: ['participant', response.data.participant_id ].join( '/' ),
+                    data: { select: { column: [
+                      { table: 'site', column: 'id', alias: 'site_id' },
+                      { table: 'site', column: 'name' }
+                    ] } }
+                  } ).get().then( function( response ) {
+                    self.metadata.participantSite =
+                      CnSession.siteList.findByProperty( 'id', response.data.site_id );
+                  } ),
+
+                  CnHttpFactory.instance( {
+                    path: ['participant', response.data.participant_id, 'phone' ].join( '/' ),
+                    data: {
+                      select: { column: [ 'id', 'rank', 'type', 'number' ] },
+                      modifier: { order: { rank: false } }
+                    }
+                  } ).query().then( function( response ) {
+                    self.metadata.columnList.phone_id.enumList = [];
+                    response.data.forEach( function( item ) {
+                      self.metadata.columnList.phone_id.enumList.push( {
+                        value: item.id,
+                        name: '(' + item.rank + ') ' + item.type + ': ' + item.number
+                      } );
                     } );
-                  } );
-                } )
+                  } )
+                ] );
               } )
             );
           }
