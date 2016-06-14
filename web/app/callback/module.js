@@ -271,8 +271,8 @@ define( [ 'site' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnCallbackViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
+    'CnBaseViewFactory', 'CnSession',
+    function( CnBaseViewFactory, CnSession ) {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
@@ -302,10 +302,6 @@ define( [ 'site' ].reduce( function( list, name ) {
 
         this.onView = function() {
           return this.$$onView().then( function() {
-            // only allow delete if the callback is in the future
-            parentModel.enableDelete(
-              moment().isBefore( self.record.datetime ) &&
-              angular.isDefined( module.actions.delete ) );
             // only allow edit if the callback hasn't been assigned
             parentModel.enableEdit(
               null == self.record.assignment_user &&
