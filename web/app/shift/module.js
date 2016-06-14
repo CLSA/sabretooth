@@ -355,6 +355,23 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template', 'site' ].
           if( 'calendar' == type ) data.restricted_site_id = self.site.id;
           return data;
         };
+
+        // extend getTypeaheadData
+        this.getTypeaheadData = function( input, viewValue ) {
+          var data = this.$$getTypeaheadData( input, viewValue );
+
+          // only include active users
+          if( 'user' == input.typeahead.table ) {
+            data.modifier.where.unshift( { bracket: true, open: true } );
+            data.modifier.where.push( { bracket: true, open: false } );
+            data.modifier.where.push( { column: 'active', operator: '=', value: true } );
+
+            // restrict to the current site
+            data.restricted_site_id = CnSession.site.id;
+          }
+
+          return data;
+        };
       };
 
       // get the siteColumn to be used by a site's identifier
