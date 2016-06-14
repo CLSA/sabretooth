@@ -48,6 +48,9 @@ SOURCE user_time.sql
 SOURCE user.sql
 SOURCE recording.sql
 SOURCE recording_file.sql
+SOURCE report_type.sql
+SOURCE application_type_has_report_type.sql
+SOURCE role_has_report_type.sql
 
 SOURCE table_character_sets.sql
 SOURCE column_character_sets.sql

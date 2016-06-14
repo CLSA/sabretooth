@@ -25,8 +25,9 @@ CREATE PROCEDURE patch_application_has_role()
     SET @sql = CONCAT(
       "INSERT IGNORE INTO ", @cenozo, ".application_has_role ( application_id, role_id ) ",
       "SELECT application.id, role.id ",
-      "FROM ", @cenozo, ".application, ", @cenozo, ".role ",
-      "WHERE application.type = 'sabretooth' ",
+      "FROM ", @cenozo, ".role, ", @cenozo, ".application ",
+      "JOIN ", @cenozo, ".application_type ON application.application_type_id = application_type.id ",
+      "WHERE application_type.name = 'sabretooth' ",
       "AND role.name = 'operator+'" );
     PREPARE statement FROM @sql;
     EXECUTE statement;
