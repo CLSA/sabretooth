@@ -74,25 +74,25 @@ class module extends \cenozo\service\base_calendar_module
         if( !is_null( $db_interview ) && null !== $db_interview->end_datetime )
         {
           $this->set_data( 'Appointments cannot be changed after an interview is complete.' );
-          $this->get_status()->set_code( 406 );
+          $this->get_status()->set_code( 306 );
         }
         // no writing of appointments if it is assigned
         else if( !is_null( $db_appointment ) && !is_null( $db_appointment->assignment_id ) )
         {
           $this->set_data( 'Appointments cannot be changed once they have been assigned.' );
-          $this->get_status()->set_code( 406 );
+          $this->get_status()->set_code( 306 );
         }
         // don't allow tier-1 roles to override appointments
         else if( $db_appointment->override && 1 > lib::create( 'business\session' )->get_role()->tier )
         {
           $this->set_data( 'Your role does not allow appointments to be overridden.' );
-          $this->get_status()->set_code( 406 );
+          $this->get_status()->set_code( 306 );
         }
         // no deleting of appointments if it has passed
         else if( 'DELETE' == $method && $db_appointment->datetime < util::get_datetime_object() )
         {
           $this->set_data( 'Appointments cannot be deleted once they have passed.' );
-          $this->get_status()->set_code( 406 );
+          $this->get_status()->set_code( 306 );
         }
         else
         {
@@ -103,7 +103,7 @@ class module extends \cenozo\service\base_calendar_module
             if( !$db_appointment->validate_date() )
             {
               $this->set_data( 'There are no operators available over the requested appointment timespan.' );
-              $this->get_status()->set_code( 406 );
+              $this->get_status()->set_code( 306 );
             }
           }
         }

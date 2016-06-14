@@ -74,19 +74,19 @@ class module extends \cenozo\service\base_calendar_module
         if( !is_null( $db_interview ) && null !== $db_interview->end_datetime )
         {
           $this->set_data( 'Callbacks cannot be changed after an interview is complete.' );
-          $this->get_status()->set_code( 406 );
+          $this->get_status()->set_code( 306 );
         }
         // no writing of callbacks if it is assigned
         else if( !is_null( $db_callback ) && !is_null( $db_callback->assignment_id ) )
         {
           $this->set_data( 'Callbacks cannot be changed after they have been assigned.' );
-          $this->get_status()->set_code( 406 );
+          $this->get_status()->set_code( 306 );
         }
         // no deleting of callbacks if it has passed
         else if( 'DELETE' == $method && $db_callback->datetime < util::get_datetime_object() )
         {
           $this->set_data( 'Callbacks cannot be deleted once they have passed.' );
-          $this->get_status()->set_code( 406 );
+          $this->get_status()->set_code( 306 );
         }
       }
     }
