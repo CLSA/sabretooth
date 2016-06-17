@@ -35,7 +35,7 @@ class ui extends \cenozo\ui\ui
     {
       array_unshift( $module_list['participant']['children'], 'interview' );
 
-      // add extra types to history
+      // add extra query variables to history action
       $module_list['participant']['actions']['history'] .= '&{appointment}&{assignment}&{callback}';
     }
     if( array_key_exists( 'qnaire', $module_list ) )
@@ -64,6 +64,17 @@ class ui extends \cenozo\ui\ui
     {
       // remove the state list from the operator+ role
       if( 'operator+' == $db_role->name ) $module_list['user']['list_menu'] = false;
+
+      // remove the user view action from operator roles (it is for viewing personal calendar only)
+      if( 'operator' == $db_role->name || 'operator+' == $db_role->name )
+      {
+        unset( $module_list['user']['actions']['list'] );
+        unset( $module_list['user']['actions']['view'] );
+      }
+
+      // add calendar to user actions
+      if( in_array( $db_role->name, array( 'helpline', 'operator', 'operator+', 'supervisor' ) ) )
+        $module_list['user']['actions']['calendar'] = '/{identifier}';
     }
 
     return $module_list;
@@ -98,8 +109,11 @@ class ui extends \cenozo\ui\ui
   protected function get_utility_items()
   {
     $list = parent::get_utility_items();
-    $db_site = lib::create( 'business\session' )->get_site();
-    $db_role = lib::create( 'business\session' )->get_role();
+
+    $session = lib::create( 'business\session' );
+    $db_site = $session->get_site();
+    $db_role = $session->get_role();
+    $db_user = $session->get_user();
 
     // operators get no list items
     if( 'operator' == $db_role->name )
@@ -110,31 +124,46 @@ class ui extends \cenozo\ui\ui
         'action' => 'control',
         'query' => '?{restrict}&{order}&{reverse}' );
     }
-    else
+
+    if( in_array( $db_role->name, array( 'operator', 'operator+' ) ) )
     {
-      // add application-specific states to the base list
-      if( in_array( $db_role->name, array( 'helpline', 'operator+', 'supervisor' ) ) )
-        $list['Assignment Control'] = array(
-          'subject' => 'assignment',
-          'action' => 'control',
-          'query' => '?{restrict}&{order}&{reverse}' );
-      if( 2 <= $db_role->tier )
-      {
-        $query = '?{qnaire}&{language}';
-        if( $db_role->all_sites ) $query .= '&{site}';
-        $list['Queue Tree'] = array(
-          'subject' => 'queue',
-          'action' => 'tree',
-          'query' => $query );
-      }
-      if( !$db_role->all_sites && 1 < $db_role->tier )
-      {
-        $list['Site Details'] = array(
-          'subject' => 'site',
-          'action' => 'view',
-          'query' => '/{identifier}',
-          'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
-      }
+      $list['Personal Calendar'] = array(
+        'subject' => 'user',
+        'action' => 'calendar',
+        'query' => '/{identifier}',
+        'values' => sprintf( '{identifier:"name=%s"}', $db_user->name ) );
+    }
+
+    // add application-specific states to the base list
+    if( in_array( $db_role->name, array( 'helpline', 'operator+', 'supervisor' ) ) )
+    {
+      $list['Assignment Control'] = array(
+        'subject' => 'assignment',
+        'action' => 'control',
+        'query' => '?{restrict}&{order}&{reverse}' );
+    }
+
+    if( 2 <= $db_role->tier )
+    {
+      $query = '?{qnaire}&{language}';
+      if( $db_role->all_sites ) $query .= '&{site}';
+      $list['Queue Tree'] = array(
+        'subject' => 'queue',
+        'action' => 'tree',
+        'query' => $query );
+    }
+
+    if( !$db_role->all_sites && 1 < $db_role->tier )
+    {
+      $list['Site Details'] = array(
+        'subject' => 'site',
+        'action' => 'view',
+        'query' => '/{identifier}',
+        'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
+    }
+
+    if( 'operator' != $db_role->name )
+    {
       if( !$db_role->all_sites || 'helpline' == $db_role->name )
       {
         $list['Appointment Calendar'] = array(

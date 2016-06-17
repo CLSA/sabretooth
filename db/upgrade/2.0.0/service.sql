@@ -196,7 +196,7 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'token', 'POST', 0, 1 ),
 ( 'user', 'DELETE', 1, 1 ),
 ( 'user', 'GET', 0, 0 ),
-( 'user', 'GET', 1, 1 ),
+( 'user', 'GET', 1, 0 ),
 ( 'user', 'PATCH', 1, 1 ),
 ( 'user', 'POST', 0, 1 ),
 ( 'voip', 'DELETE', 1, 0 ),

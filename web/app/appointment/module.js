@@ -134,12 +134,14 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
     }
   } );
 
-  module.addExtraOperation( 'view', {
-    title: 'Appointment Calendar',
-    operation: function( $state, model ) {
-      $state.go( 'appointment.calendar', { identifier: model.metadata.participantSite.getIdentifier() } );
-    }
-  } );
+  if( angular.isDefined( module.actions.calendar ) ) {
+    module.addExtraOperation( 'view', {
+      title: 'Appointment Calendar',
+      operation: function( $state, model ) {
+        $state.go( 'appointment.calendar', { identifier: model.metadata.participantSite.getIdentifier() } );
+      }
+    } );
+  };
 
   // converts appointments into events
   function getEventFromAppointment( appointment, timezone ) {
@@ -589,6 +591,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
 
       return {
         siteInstanceList: {},
+        userInstanceList: {},
         forSite: function( site ) {
           if( !angular.isObject( site ) ) {
             $state.go( 'error.404' );
@@ -601,6 +604,19 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
           }
 
           return this.siteInstanceList[site.id];
+        },
+        forUser: function( user ) {
+          if( !angular.isObject( user ) ) {
+            $state.go( 'error.404' );
+            throw new Error( 'Cannot find user matching identifier "' + user + '", redirecting to 404.' );
+          }
+          if( angular.isUndefined( this.userInstanceList[user.id] ) ) {
+            var site = CnSession.site;
+            if( angular.isUndefined( site.getIdentifier ) )
+              site.getIdentifier = function() { return siteColumn + '=' + this[siteColumn]; };
+            this.userInstanceList[user.id] = new object( site );
+          }
+          return this.userInstanceList[user.id];
         },
         instance: function() {
           var site = null;

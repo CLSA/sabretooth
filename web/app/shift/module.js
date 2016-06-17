@@ -96,12 +96,14 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template', 'site' ].
     }
   } );
 
-  module.addExtraOperation( 'list', {
-    title: 'Shift Calendar',
-    operation: function( $state, model ) {
-      $state.go( 'shift.calendar', { identifier: model.site.getIdentifier() } );
-    }
-  } );
+  if( angular.isDefined( module.actions.calendar ) ) {
+    module.addExtraOperation( 'list', {
+      title: 'Shift Calendar',
+      operation: function( $state, model ) {
+        $state.go( 'shift.calendar', { identifier: model.site.getIdentifier() } );
+      }
+    } );
+  }
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnShiftAdd', [
@@ -380,6 +382,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template', 'site' ].
 
       return {
         siteInstanceList: {},
+        userInstanceList: {},
         forSite: function( site ) {
           if( !angular.isObject( site ) ) {
             $state.go( 'error.404' );
@@ -391,6 +394,19 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template', 'site' ].
             this.siteInstanceList[site.id] = new object( site );
           }
           return this.siteInstanceList[site.id];
+        },
+        forUser: function( user ) {
+          if( !angular.isObject( user ) ) {
+            $state.go( 'error.404' );
+            throw new Error( 'Cannot find user matching identifier "' + user + '", redirecting to 404.' );
+          }
+          if( angular.isUndefined( this.userInstanceList[user.id] ) ) {
+            var site = CnSession.site;
+            if( angular.isUndefined( site.getIdentifier ) )
+              site.getIdentifier = function() { return siteColumn + '=' + this[siteColumn]; };
+            this.userInstanceList[user.id] = new object( site );
+          }
+          return this.userInstanceList[user.id];
         },
         instance: function() {
           var site = null;
