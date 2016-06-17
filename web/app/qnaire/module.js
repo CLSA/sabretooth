@@ -165,7 +165,7 @@ define( function() {
                 self.metadata.columnList.script_id.enumList.push( { value: item.id, name: item.name } );
               } );
             } );
-          ] );
+          } );
         };
       };
 
