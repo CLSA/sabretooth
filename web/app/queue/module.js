@@ -50,28 +50,30 @@ define( function() {
     }
   } );
 
-  module.addExtraOperation( 'view', {
-    title: 'View Queue Tree',
-    operation: function( $state, model ) {
-      // if the queue's participant list has restrictions on qnaire, site or language then apply them
-      var restrictList = model.viewModel.participantModel.listModel.columnRestrictLists;
-      var params = {};
-      if( angular.isDefined( restrictList.qnaire ) ) {
-        var restrict = restrictList.qnaire.findByProperty( 'test', '<=>' );
-        params.qnaire = restrict.value;
-      }
-      if( angular.isDefined( restrictList.site ) ) {
-        var restrict = restrictList.site.findByProperty( 'test', '<=>' );
-        params.site = restrict.value;
-      }
-      if( angular.isDefined( restrictList.language ) ) {
-        var restrict = restrictList.language.findByProperty( 'test', '<=>' );
-        params.language = restrict.value;
-      }
+  if( angular.isDefined( module.actions.tree ) ) {
+    module.addExtraOperation( 'view', {
+      title: 'View Queue Tree',
+      operation: function( $state, model ) {
+        // if the queue's participant list has restrictions on qnaire, site or language then apply them
+        var restrictList = model.viewModel.participantModel.listModel.columnRestrictLists;
+        var params = {};
+        if( angular.isDefined( restrictList.qnaire ) ) {
+          var restrict = restrictList.qnaire.findByProperty( 'test', '<=>' );
+          params.qnaire = restrict.value;
+        }
+        if( angular.isDefined( restrictList.site ) ) {
+          var restrict = restrictList.site.findByProperty( 'test', '<=>' );
+          params.site = restrict.value;
+        }
+        if( angular.isDefined( restrictList.language ) ) {
+          var restrict = restrictList.language.findByProperty( 'test', '<=>' );
+          params.language = restrict.value;
+        }
 
-      $state.go( 'queue.tree', params );
-    }
-  } );
+        $state.go( 'queue.tree', params );
+      }
+    } );
+  }
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnQueueList', [

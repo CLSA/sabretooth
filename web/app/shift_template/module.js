@@ -110,12 +110,14 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
     }
   } );
 
-  module.addExtraOperation( 'list', {
-    title: 'Shift Template Calendar',
-    operation: function( $state, model ) {
-      $state.go( 'shift_template.calendar', { identifier: model.site.getIdentifier() } );
-    }
-  } );
+  if( angular.isDefined( module.actions.calendar ) ) {
+    module.addExtraOperation( 'list', {
+      title: 'Shift Template Calendar',
+      operation: function( $state, model ) {
+        $state.go( 'shift_template.calendar', { identifier: model.site.getIdentifier() } );
+      }
+    } );
+  }
 
   // function used by add and view directives (below)
   function onRepeatTypeChange( elementList, newValue, oldValue ) {

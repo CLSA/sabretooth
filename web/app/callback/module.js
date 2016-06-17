@@ -90,19 +90,21 @@ define( [ 'site' ].reduce( function( list, name ) {
     }
   } );
 
-  module.addExtraOperation( 'add', {
-    title: 'Callback Calendar',
-    operation: function( $state, model ) {
-      $state.go( 'callback.calendar', { identifier: model.metadata.participantSite.getIdentifier() } );
-    }
-  } );
+  if( angular.isDefined( module.actions.calendar ) ) {
+    module.addExtraOperation( 'add', {
+      title: 'Callback Calendar',
+      operation: function( $state, model ) {
+        $state.go( 'callback.calendar', { identifier: model.metadata.participantSite.getIdentifier() } );
+      }
+    } );
 
-  module.addExtraOperation( 'view', {
-    title: 'Callback Calendar',
-    operation: function( $state, model ) {
-      $state.go( 'callback.calendar', { identifier: model.metadata.participantSite.getIdentifier() } );
-    }
-  } );
+    module.addExtraOperation( 'view', {
+      title: 'Callback Calendar',
+      operation: function( $state, model ) {
+        $state.go( 'callback.calendar', { identifier: model.metadata.participantSite.getIdentifier() } );
+      }
+    } );
+  }
 
   // converts callbacks into events
   function getEventFromCallback( callback, timezone ) {
