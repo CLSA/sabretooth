@@ -175,8 +175,8 @@ class module extends \cenozo\service\site_restricted_module
             $participant_mod->join( 'qnaire', 'queue_has_participant.qnaire_id', 'qnaire.id' );
             $participant_mod->where( 'queue.rank', '!=', NULL );
             $participant_mod->where( 'queue_has_participant.site_id', '=', $session->get_site()->id );
-            $participant_mod->order( 'qnaire.rank' );
             $participant_mod->order( 'queue.rank' );
+            $participant_mod->order( 'qnaire.rank' );
 
             $participant_sel = lib::create( 'database\select' );
             $participant_sel->from( 'participant' );
