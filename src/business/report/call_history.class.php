@@ -67,7 +67,7 @@ class call_history extends \cenozo\business\report\base_report
 
     $select = lib::create( 'database\select' );
     $select->from( 'phone_call' );
-    $select->add_table_column( 'site', 'name', 'Site' );
+    if( $this->db_role->all_sites ) $select->add_table_column( 'site', 'name', 'Site' );
     $select->add_table_column( 'participant', 'uid', 'UID' );
     $select->add_table_column( 'participant', 'sex', 'Sex' );
     $select->add_table_column( 'age_group', 'CONCAT( lower, " to ", upper )', 'Age Group', false );
