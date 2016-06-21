@@ -49,6 +49,7 @@ SOURCE user.sql
 SOURCE recording.sql
 SOURCE recording_file.sql
 SOURCE report_type.sql
+SOURCE report_restriction.sql
 SOURCE application_type_has_report_type.sql
 SOURCE role_has_report_type.sql
 
