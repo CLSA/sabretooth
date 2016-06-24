@@ -23,7 +23,7 @@ class call_history extends \cenozo\business\report\base_report
    */
   protected function build()
   {
-    $phone_call_class_name = lib::get_class_name( 'database\participant' );
+    $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
 
     $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'assignment', 'phone_call.assignment_id', 'assignment.id' );
