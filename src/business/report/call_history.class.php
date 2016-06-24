@@ -76,6 +76,7 @@ class call_history extends \cenozo\business\report\base_report
     $select->add_column( 'DATE( phone_call.start_datetime )', 'Date', false );
     $select->add_column( 'TIME( phone_call.start_datetime )', 'Call Start', false );
     $select->add_column( 'TIME( phone_call.end_datetime )', 'Call End', false );
+    $select->add_column( 'TIMEDIFF( phone_call.end_datetime, phone_call.start_datetime )', 'Elapsed', false );
     $select->add_column( 'status', 'Call Result' );
 
     $header = array();
