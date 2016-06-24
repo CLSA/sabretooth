@@ -32,12 +32,9 @@ define( [ 'appointment', 'shift', 'user' ].reduce( function( list, name ) {
         title: ( angular.isDefined( appointment.uid ) ? appointment.uid : 'new appointment' ) + 
                ( angular.isDefined( appointment.qnaire_rank ) ? ' (' + appointment.qnaire_rank + ')' : '' ),
         start: moment( appointment.datetime ).subtract( offset, 'minutes' ),
-        end: moment( appointment.datetime ).subtract( offset - appointment.duration, 'minutes' )
+        end: moment( appointment.datetime ).subtract( offset - appointment.duration, 'minutes' ),
+        color: 'green'
       };  
-      if( appointment.override ) { 
-        event.override = true;
-        event.color = 'green';
-      }   
       return event;
     }   
   }
