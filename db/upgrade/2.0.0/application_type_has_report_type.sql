@@ -17,7 +17,7 @@ DROP PROCEDURE IF EXISTS patch_application_type_has_report_type;
       "SELECT application_type.id, report_type.id ",
       "FROM ", @cenozo, ".application_type, ", @cenozo, ".report_type ",
       "WHERE application_type.name = 'sabretooth' ",
-      "AND report_type.name IN( 'call_history', 'contact', 'email' )" );
+      "AND report_type.name IN( 'call_history', 'contact', 'email', 'progress' )" );
     PREPARE statement FROM @sql;
     EXECUTE statement;
     DEALLOCATE PREPARE statement;

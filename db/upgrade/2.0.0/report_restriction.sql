@@ -101,6 +101,63 @@ DROP PROCEDURE IF EXISTS patch_report_restriction;
     PREPARE statement FROM @sql;
     EXECUTE statement;
     DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "INSERT IGNORE INTO ", @cenozo, ".report_restriction ( ",
+        "report_type_id, rank, name, title, mandatory, restriction_type, custom, ",
+        "subject, operator, enum_list, description ) ",
+      "SELECT report_type.id, rank, restriction.name, restriction.title, mandatory, type, custom, ",
+             "restriction.subject, operator, enum_list, restriction.description ",
+      "FROM ", @cenozo, ".report_type, ( ",
+        "SELECT ",
+          "1 AS rank, ",
+          "'collection' AS name, ",
+          "'Collection' AS title, ",
+          "0 AS mandatory, ",
+          "'table' AS type, ",
+          "0 AS custom, ",
+          "'collection' AS subject, ",
+          "NULL AS operator, ",
+          "NULL AS enum_list, ",
+          "'Restrict to a particular collection.' AS description ",
+        "UNION SELECT ",
+          "2 AS rank, ",
+          "'qnaire' AS name, ",
+          "'Questionnaire' AS title, ",
+          "0 AS mandatory, ",
+          "'table' AS type, ",
+          "0 AS custom, ",
+          "'qnaire' AS subject, ",
+          "NULL AS operator, ",
+          "NULL AS enum_list, ",
+          "'Restrict to calls from a particular questionnaire.' AS description ",
+        "UNION SELECT ",
+          "3 AS rank, ",
+          "'complete' AS name, ",
+          "'Completed Interviews' AS title, ",
+          "0 AS mandatory, ",
+          "'boolean' AS type, ",
+          "0 AS custom, ",
+          "'interview.end_datetime IS NOT NULL' AS subject, ",
+          "NULL AS operator, ",
+          "NULL AS enum_list, ",
+          "'Restrict to calls from complete or incomplete interviews.' AS description ",
+        "UNION SELECT ",
+          "4 AS rank, ",
+          "'site' AS name, ",
+          "'Site' AS title, ",
+          "0 AS mandatory, ",
+          "'table' AS type, ",
+          "0 AS custom, ",
+          "'site' AS subject, ",
+          "NULL AS operator, ",
+          "NULL AS enum_list, ",
+          "'Restrict to a particular site.' AS description ",
+      ") AS restriction ",
+      "WHERE report_type.name = 'progress'" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement;
+    DEALLOCATE PREPARE statement;
   END //
 DELIMITER ;
 
