@@ -28,6 +28,8 @@ class call_history extends \cenozo\business\report\base_report
     $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'assignment', 'phone_call.assignment_id', 'assignment.id' );
     $modifier->join( 'interview', 'assignment.interview_id', 'interview.id' );
+    $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
+    $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
     $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
     $modifier->left_join( 'site', 'assignment.site_id', 'site.id' );
     $modifier->left_join( 'age_group', 'participant.age_group_id', 'age_group.id' );
@@ -48,7 +50,17 @@ class call_history extends \cenozo\business\report\base_report
 
     foreach( $restriction_list as $restriction )
     {
-      if( 'site' == $restriction['name'] )
+      if( 'collection' == $restriction['name'] )
+      {
+        $modifier->join(
+          'collection_has_participant', 'participant.id', 'collection_has_participant.participant_id' );
+        $modifier->where( 'collection_has_participant.collection_id', '=', $restriction['value'] );
+      }
+      else if( 'qnaire' == $restriction['name'] )
+      {
+        $modifier->where( 'qnaire.id', '=', $restriction['value'] );
+      }
+      else if( 'site' == $restriction['name'] )
       {
         $modifier->where( 'assignment.site_id', '=', $restriction['value'] );
       }
@@ -73,6 +85,7 @@ class call_history extends \cenozo\business\report\base_report
     $select->add_table_column( 'age_group', 'CONCAT( lower, " to ", upper )', 'Age Group', false );
     $select->add_table_column( 'user', 'CONCAT( user.first_name, " ", user.last_name )', 'User', false );
     $select->add_table_column( 'assignment', 'id', 'Assignment ID' );
+    $select->add_table_column( 'script', 'name', 'Questionnaire' );
     $select->add_column( 'DATE( phone_call.start_datetime )', 'Date', false );
     $select->add_column( 'TIME( phone_call.start_datetime )', 'Call Start', false );
     $select->add_column( 'TIME( phone_call.end_datetime )', 'Call End', false );
