@@ -86,9 +86,9 @@ class call_history extends \cenozo\business\report\base_report
     $select->add_table_column( 'user', 'CONCAT( user.first_name, " ", user.last_name )', 'User', false );
     $select->add_table_column( 'assignment', 'id', 'Assignment ID' );
     $select->add_table_column( 'script', 'name', 'Questionnaire' );
-    $select->add_column( 'DATE( phone_call.start_datetime )', 'Date', false );
-    $select->add_column( 'TIME( phone_call.start_datetime )', 'Call Start', false );
-    $select->add_column( 'TIME( phone_call.end_datetime )', 'Call End', false );
+    $select->add_column( $this->get_datetime_column( 'phone_call.start_datetime', 'date' ), 'Date', false );
+    $select->add_column( $this->get_datetime_column( 'phone_call.start_datetime', 'time' ), 'Call Start', false );
+    $select->add_column( $this->get_datetime_column( 'phone_call.end_datetime', 'time' ), 'Call End', false );
     $select->add_column( 'TIMEDIFF( phone_call.end_datetime, phone_call.start_datetime )', 'Elapsed', false );
     $select->add_column( 'status', 'Call Result' );
 
