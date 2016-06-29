@@ -193,8 +193,8 @@ define( [ 'site' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnCallbackAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
+    'CnBaseAddFactory', 'CnHttpFactory',
+    function( CnBaseAddFactory, CnHttpFactory ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
