@@ -254,7 +254,7 @@ define( [ 'site' ].reduce( function( list, name ) {
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
       var object = function( parentModel ) {
-      var self = this;
+        var self = this;
         CnBaseListFactory.construct( this, parentModel );
 
         // override onDelete
