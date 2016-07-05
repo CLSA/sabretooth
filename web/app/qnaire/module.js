@@ -122,8 +122,6 @@ define( function() {
         CnBaseViewFactory.construct( this, parentModel, root );
 
         this.deferred.promise.then( function() {
-          if( angular.isDefined( self.eventTypeModel ) )
-            self.eventTypeModel.listModel.heading = 'Required To Begin Event List';
           if( angular.isDefined( self.siteModel ) )
             self.siteModel.listModel.heading = 'Disabled Site List';
           if( angular.isDefined( self.quotaModel ) )

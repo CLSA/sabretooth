@@ -29,8 +29,6 @@ class ui extends \cenozo\ui\ui
     // add child actions to certain modules
     if( array_key_exists( 'assignment', $module_list ) )
       $module_list['assignment']['children'] = array( 'phone_call' );
-    if( array_key_exists( 'event_type', $module_list ) )
-      $module_list['event_type']['choosing'] = array( 'qnaire' );
     if( array_key_exists( 'interview', $module_list ) )
       $module_list['interview']['children'] = array( 'assignment', 'appointment', 'callback' );
     if( array_key_exists( 'participant', $module_list ) )
@@ -41,7 +39,7 @@ class ui extends \cenozo\ui\ui
       $module_list['participant']['actions']['history'] .= '&{appointment}&{assignment}&{callback}';
     }
     if( array_key_exists( 'qnaire', $module_list ) )
-      $module_list['qnaire']['choosing'] = array( 'event_type', 'site', 'quota' );
+      $module_list['qnaire']['choosing'] = array( 'site', 'quota' );
     if( array_key_exists( 'queue', $module_list ) )
     {
       $module_list['queue']['list_menu'] = true; // always show the queue list

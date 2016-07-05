@@ -718,32 +718,6 @@ class queue extends \cenozo\database\record
 
     if( static::$temporary_tables_created ) return;
 
-    // build first_qnaire_event_type table
-    $sql =
-      'CREATE TEMPORARY TABLE IF NOT EXISTS first_qnaire_event_type '.
-      'SELECT qnaire.id AS qnaire_id, '.
-             'IF( qnaire_has_event_type.qnaire_id IS NULL, 0, count(*) ) AS total, '.
-             'GROUP_CONCAT( qnaire_has_event_type.event_type_id ) AS list '.
-      'FROM qnaire '.
-      'LEFT JOIN qnaire_has_event_type ON qnaire.id = qnaire_has_event_type.qnaire_id '.
-      'GROUP BY qnaire.id';
-    static::db()->execute( 'DROP TABLE IF EXISTS first_qnaire_event_type' );
-    static::db()->execute( $sql );
-    static::db()->execute( 'ALTER TABLE first_qnaire_event_type ADD INDEX fk_qnaire_id ( qnaire_id )' );
-
-    // build next_qnaire_event_type table
-    $sql =
-      'CREATE TEMPORARY TABLE IF NOT EXISTS next_qnaire_event_type '.
-      'SELECT qnaire.id AS qnaire_id, '.
-             'IF( qnaire_has_event_type.qnaire_id IS NULL, 0, count(*) ) AS total, '.
-             'GROUP_CONCAT( qnaire_has_event_type.event_type_id ) AS list '.
-      'FROM qnaire '.
-      'LEFT JOIN qnaire_has_event_type ON qnaire.id = qnaire_has_event_type.qnaire_id '.
-      'GROUP BY qnaire.id';
-    static::db()->execute( 'DROP TABLE IF EXISTS next_qnaire_event_type' );
-    static::db()->execute( $sql );
-    static::db()->execute( 'ALTER TABLE next_qnaire_event_type ADD INDEX fk_qnaire_id ( qnaire_id )' );
-
     // build temp_participant table
     $sql = sprintf( 'CREATE TEMPORARY TABLE IF NOT EXISTS temp_participant '.
                     static::$temp_participant_sql,
@@ -941,20 +915,11 @@ IF
   IF
   (
     current_interview.id IS NULL,
-    IF
-    (
-      first_qnaire_event_type.total,
-      IFNULL( first_event.datetime, UTC_TIMESTAMP() ) + INTERVAL first_qnaire.delay WEEK,
-      NULL
-    ),
+    NULL,
     IF
     (
       current_interview.end_datetime IS NOT NULL,
-      GREATEST
-      (
-        IFNULL( next_event.datetime, "" ),
-        IFNULL( current_assignment.end_datetime, "" )
-      ) + INTERVAL next_qnaire.delay WEEK,
+      IFNULL( current_assignment.end_datetime, "" ) + INTERVAL next_qnaire.delay WEEK,
       NULL
     )
   )
@@ -999,26 +964,8 @@ ON interview_current_assignment.assignment_id = current_assignment.id
 
 CROSS JOIN qnaire AS first_qnaire
 ON first_qnaire.rank = 1
-LEFT JOIN first_qnaire_event_type
-ON first_qnaire.id = first_qnaire_event_type.qnaire_id
-LEFT JOIN event AS first_event
-ON participant.id = first_event.participant_id
-AND IF(
-  first_qnaire_event_type.total,
-  0 < FIND_IN_SET( first_event.event_type_id, first_qnaire_event_type.list ),
-  false
-)
 
 LEFT JOIN qnaire AS next_qnaire
 ON next_qnaire.rank = ( current_qnaire.rank + 1 )
-LEFT JOIN next_qnaire_event_type
-ON next_qnaire.id = next_qnaire_event_type.qnaire_id
-LEFT JOIN event AS next_event
-ON participant.id = next_event.participant_id
-AND IF(
-  next_qnaire_event_type.total,
-  0 < FIND_IN_SET( next_event.event_type_id, next_qnaire_event_type.list ),
-  false
-)
 SQL;
 }

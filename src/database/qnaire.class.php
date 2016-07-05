@@ -17,36 +17,6 @@ class qnaire extends \cenozo\database\has_rank
   /**
    * Extend parent method
    */
-  public function add_event_type( $ids )
-  {
-    parent::add_event_type( $ids );
-    $queue_class_name = lib::get_class_name( 'database\queue' );
-    $queue_class_name::repopulate();
-  }
-
-  /**
-   * Extend parent method
-   */
-  public function remove_event_type( $ids )
-  {
-    parent::remove_event_type( $ids );
-    $queue_class_name = lib::get_class_name( 'database\queue' );
-    $queue_class_name::repopulate();
-  }
-
-  /**
-   * Extend parent method
-   */
-  public function replace_event_type( $ids )
-  {
-    parent::replace_event_type( $ids );
-    $queue_class_name = lib::get_class_name( 'database\queue' );
-    $queue_class_name::repopulate();
-  }
-
-  /**
-   * Extend parent method
-   */
   public function add_quota( $ids )
   {
     parent::add_quota( $ids );
