@@ -80,21 +80,6 @@ class queue extends \cenozo\database\record
   }
 
   /**
-   * Returns whether a queue is enabled or not for a given site and qnaire.
-   * @auther Patrick Emond <emondpd@mcmaster.ca>
-   * @access public
-   * @return boolean
-   */
-  public function get_enabled( $db_site, $db_qnaire )
-  {
-    $queue_state_class_name = lib::get_class_name( 'database\queue_state' );
-    $db_queue_state = $queue_state_class_name::get_unique_record(
-      array( 'queue_id', 'site_id', 'qnaire_id' ),
-      array( $this->id, $db_site->id, $db_qnaire->id ) );
-    return is_null( $db_queue_state );
-  }
-
-  /**
    * Generates the query list.
    * 
    * This method is called internally by the {@link repopulate} method in order to generate
@@ -688,6 +673,21 @@ class queue extends \cenozo\database\record
 
     // make sure the participant has a site
     $modifier->where( 'participant_site_id', '!=', NULL );
+
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'qnaire_has_site.qnaire_id', '=', 'effective_qnaire_id', false );
+    $join_mod->where( 'qnaire_has_site.site_id', '=', 'participant_site_id', false );
+    $modifier->join_modifier( 'qnaire_has_site', $join_mod, 'left' );
+
+    if( 'qnaire disabled' == $queue )
+    {   
+      // make sure there is a row in qnaire_has_site
+      $modifier->where( 'qnaire_has_site.qnaire_id', '!=', NULL );
+      return;
+    }   
+
+    // make sure there is no row in qnaire_has_site
+    $modifier->where( 'qnaire_has_site.qnaire_id', '!=', NULL );
 
     if( 'quota disabled' == $queue )
     {

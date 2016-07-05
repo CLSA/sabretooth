@@ -140,11 +140,6 @@ define( function() {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
 
-        // only ranked queues have queue states
-        this.afterView( function() {
-          if( angular.isDefined( self.queueStateModel ) ) self.queueStateModel.show = null != self.record.rank;
-        } );
-
         this.deferred.promise.then( function() {
           if( angular.isDefined( self.participantModel ) ) {
             // map queue-view query parameters to participant-list
@@ -163,17 +158,6 @@ define( function() {
 
             // make sure users can't add/remove participants from queues
             self.participantModel.enableChoose( false );
-          }
-
-          if( angular.isDefined( self.queueStateModel ) ) {
-            // set a custom heading for the queue state list model
-            self.queueStateModel.listModel.heading = 'Disabled Questionnaire List';
-
-            // make sure users can edit the queue restriction list despite the queue being read-only
-            var queueStateModule = cenozoApp.module( 'queue_state' );
-            self.queueStateModel.show = false;
-            self.queueStateModel.enableAdd( angular.isDefined( queueStateModule.actions.add ) );
-            self.queueStateModel.enableDelete( angular.isDefined( queueStateModule.actions.delete ) );
           }
         } );
       };

@@ -3,16 +3,15 @@ DROP PROCEDURE IF EXISTS patch_queue_state;
   CREATE PROCEDURE patch_queue_state()
   BEGIN
 
-    SELECT "Removing enabled column from queue_state table" AS "";
+    SELECT "Dropping defunct queue_state table" AS "";
 
     SET @test = (
       SELECT COUNT(*)
-      FROM information_schema.COLUMNS
+      FROM information_schema.TABLES
       WHERE TABLE_SCHEMA = DATABASE()
-      AND TABLE_NAME = "queue_state"
-      AND COLUMN_NAME = "enabled" );
+      AND TABLE_NAME = "queue_state" );
     IF @test = 1 THEN
-      ALTER TABLE queue_state DROP COLUMN enabled;
+      DROP TABLE queue_state;
     END IF;
   END //
 DELIMITER ;

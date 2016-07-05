@@ -33,13 +33,6 @@ class module extends \cenozo\service\participant\module
       $modifier->where( 'participant.active', '=', true );
       $modifier->where( 'queue.rank', '!=', NULL );
 
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'queue_has_participant.queue_id', '=', 'queue_state.queue_id', false );
-      $join_mod->where( 'queue_has_participant.site_id', '=', 'queue_state.site_id', false );
-      $join_mod->where( 'queue_has_participant.qnaire_id', '=', 'queue_state.qnaire_id', false );
-      $modifier->join_modifier( 'queue_state', $join_mod, 'left' );
-      $modifier->where( 'queue_state.id', '=', NULL );
-
       // only show reserved appointments to the reserved user
       $modifier->left_join(
         'participant_last_interview', 'participant.id', 'participant_last_interview.participant_id' );
