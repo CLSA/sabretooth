@@ -30,13 +30,13 @@ class ui extends \cenozo\ui\ui
     if( array_key_exists( 'assignment', $module_list ) )
       $module_list['assignment']['children'] = array( 'phone_call' );
     if( array_key_exists( 'interview', $module_list ) )
-      $module_list['interview']['children'] = array( 'assignment', 'appointment', 'callback' );
+      $module_list['interview']['children'] = array( 'assignment', 'appointment' );
     if( array_key_exists( 'participant', $module_list ) )
     {
       array_unshift( $module_list['participant']['children'], 'interview' );
 
       // add extra query variables to history action
-      $module_list['participant']['actions']['history'] .= '&{appointment}&{assignment}&{callback}';
+      $module_list['participant']['actions']['history'] .= '&{appointment}&{assignment}';
     }
     if( array_key_exists( 'qnaire', $module_list ) )
       $module_list['qnaire']['choosing'] = array( 'site', 'quota' );
@@ -171,11 +171,6 @@ class ui extends \cenozo\ui\ui
           'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
         $list['Availability Calendar'] = array(
           'subject' => 'availability',
-          'action' => 'calendar',
-          'query' => '/{identifier}',
-          'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
-        $list['Callback Calendar'] = array(
-          'subject' => 'callback',
           'action' => 'calendar',
           'query' => '/{identifier}',
           'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );

@@ -322,7 +322,7 @@ class module extends \cenozo\service\site_restricted_module
         $session = lib::create( 'business\session' );
         $now = util::get_datetime_object();
 
-        // update any appointments or callbacks associated with this assignment
+        // update any appointments or callbacks
         $record->process_appointments_and_callbacks( true );
         $db_interview = $record->get_interview();
         $this->db_participant = $db_interview->get_participant();
@@ -355,11 +355,11 @@ class module extends \cenozo\service\site_restricted_module
       }
       else if( 'close' == $operation )
       {
-        // delete the assignment if there are no phone calls, or set appointment/callback reached if there are
+        // delete the assignment if there are no phone calls, or set appointment reached if there are
         if( 0 == $record->get_phone_call_count() ) $record->delete();
         else
         {
-          // update any appointments or callbacks associated with this assignment
+          // update any appointments or callbacks
           $record->process_appointments_and_callbacks( true );
 
           // mark the interview as complete if the survey is complete

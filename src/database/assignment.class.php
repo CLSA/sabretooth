@@ -96,36 +96,43 @@ class assignment extends \cenozo\database\record
   function process_appointments_and_callbacks( $completed )
   {
     $db_queue = $this->get_queue();
+    $db_interview = $this->get_interview();
+    $db_participant = $db_interview->get_participant();
 
-    // set the assignment and reached columns in appointments and callbacks
-    if( $db_queue->from_appointment() || $db_queue->from_callback() )
+    // set the assignment and reached columns in appointments
+    if( $db_queue->from_appointment() )
     {
-      $db_interview = $this->get_interview();
       $modifier = lib::create( 'database\modifier' );
+      $modifier->order_desc( 'datetime' );
 
-      // if the assignment is complete then the appointment/callback is already associated with it
+      // if the assignment is complete then the appointment is already associated with it
       if( $completed ) $modifier->where( 'assignment_id', '=', $this->id );
-      // if the assignmetn is not complete then we have to find the unassigned appointment/callback
+      // if the assignmetn is not complete then we have to find the unassigned appointment
       else $modifier->where( 'assignment_id', '=', NULL );
 
-      $record_list = $db_queue->from_appointment()
-                   ? $db_interview->get_appointment_object_list( $modifier )
-                   : $db_interview->get_callback_object_list( $modifier );
-      if( count( $record_list ) )
+      $appointment_list = $db_interview->get_appointment_object_list( $modifier );
+      if( count( $appointment_list ) )
       {
-        $linked_record = current( $record_list );
+        $db_appointment = current( $appointment_list );
 
-        // if the assignment is complete then set the appointment/callback's reached property
+        // if the assignment is complete then set the appointment's reached property
         if( $completed )
         {
           $modifier = lib::create( 'database\modifier' );
           $modifier->where( 'status', '=', 'contacted' );
-          $linked_record->reached = 0 < $this->get_phone_call_count( $modifier );
+          $db_appointment->reached = 0 < $this->get_phone_call_count( $modifier );
         }
-        // if the assignment is not complete then just set the appointment/callback's assignment
-        else $linked_record->assignment_id = $this->id;
-        $linked_record->save();
+        // if the assignment is not complete then just set the appointment's assignment
+        else $db_appointment->assignment_id = $this->id;
+        $db_appointment->save();
       }
+    }
+
+    // delete the participant's callback if it has passed
+    if( !is_null( $db_participant->callback ) && $db_participant->callback < util::get_datetime_object() )
+    {
+      $db_participant->callback = NULL;
+      $db_participant->save();
     }
   }
 }

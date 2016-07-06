@@ -103,23 +103,5 @@ class module extends \cenozo\service\site_restricted_module
         'interview_join_appointment.interview_id' );
       $select->add_column( 'IFNULL( open_appointment_count, 0 )', 'open_appointment_count', false );
     }
-
-    if( $select->has_column( 'open_callback_count' ) )
-    {
-      $join_sel = lib::create( 'database\select' );
-      $join_sel->from( 'callback' );
-      $join_sel->add_column( 'interview_id' );
-      $join_sel->add_column( 'COUNT( * )', 'open_callback_count', false );
-
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'assignment_id', '=', NULL );
-      $join_mod->group( 'interview_id' );
-
-      $modifier->left_join(
-        sprintf( '( %s %s ) AS interview_join_callback', $join_sel->get_sql(), $join_mod->get_sql() ),
-        'interview.id',
-        'interview_join_callback.interview_id' );
-      $select->add_column( 'IFNULL( open_callback_count, 0 )', 'open_callback_count', false );
-    }
   }
 }

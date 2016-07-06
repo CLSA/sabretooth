@@ -57,7 +57,6 @@ CREATE PROCEDURE patch_role_has_service()
       "AND service.id NOT IN ( ",
         "SELECT id FROM service ",
         "WHERE subject = 'appointment' ",
-        "OR subject = 'callback' ",
         "OR ( subject = 'assignment' AND method = 'POST' ) ",
         "OR ( subject = 'phone_call' AND method != 'DELETE' ) ",
         "OR ( subject = 'queue' AND method = 'PATCH' ) ",
@@ -92,7 +91,7 @@ CREATE PROCEDURE patch_role_has_service()
       "FROM ", @cenozo, ".role, service ",
       "WHERE role.name IN( 'helpline', 'operator', 'operator+' ) ",
       "AND service.restricted = 1 ",
-      "AND service.subject IN ( 'appointment', 'assignment', 'callback', 'participant', 'phone_call', 'token' )" );
+      "AND service.subject IN ( 'appointment', 'assignment', 'participant', 'phone_call', 'token' )" );
     PREPARE statement FROM @sql;
     EXECUTE statement;
     DEALLOCATE PREPARE statement;

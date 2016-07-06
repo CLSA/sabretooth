@@ -77,9 +77,6 @@ define( function() {
     },
     open_appointment_count: {
       type: 'hidden'
-    },
-    open_callback_count: {
-      type: 'hidden'
     }
   } );
 
@@ -185,7 +182,7 @@ define( function() {
         // override onPatch
         this.onPatch = function( data ) {
           return this.$$onPatch( data ).then( function() {
-            // if the end datetime has changed then reload then update the appointment/callback list actions
+            // if the end datetime has changed then reload and update the appointment list actions
             if( angular.isDefined( data.end_datetime ) ) {
               var completed = null !== self.record.end_datetime;
               if( angular.isDefined( self.appointmentModel ) ) {
@@ -198,16 +195,6 @@ define( function() {
                 self.appointmentModel.enableView(
                   !completed && angular.isDefined( appointmentModule.actions.view ) );
               }
-              if( angular.isDefined( self.callbackModel ) ) {
-                self.callbackModel.enableAdd(
-                  !completed && angular.isDefined( callbackModule.actions.add ) );
-                self.callbackModel.enableDelete(
-                  !completed && angular.isDefined( callbackModule.actions.delete ) );
-                self.callbackModel.enableEdit(
-                  !completed && angular.isDefined( callbackModule.actions.edit ) );
-                self.callbackModel.enableView(
-                  !completed && angular.isDefined( callbackModule.actions.view ) );
-              }
             }
           } );
         };
@@ -215,30 +202,21 @@ define( function() {
         // override onView
         this.onView = function() {
           return this.$$onView().then( function() {
-            // if the end datetime has changed then update the appointment/callback list actions
+            // if the end datetime has changed then update the appointment list actions
             var completed = null !== self.record.end_datetime;
-            var existing = 0 < self.record.open_appointment_count || 0 < self.record.open_callback_count;
             if( angular.isDefined( self.appointmentModel ) ) {
               var appointmentModule = cenozoApp.module( 'appointment' );
               self.appointmentModel.enableAdd(
-                !completed && !existing && angular.isDefined( appointmentModule.actions.add ) );
+                !completed &&
+                0 == self.record.open_appointment_count
+                && angular.isDefined( appointmentModule.actions.add )
+              );
               self.appointmentModel.enableDelete(
                 !completed && angular.isDefined( appointmentModule.actions.delete ) );
               self.appointmentModel.enableEdit(
                 !completed && angular.isDefined( appointmentModule.actions.edit ) );
               self.appointmentModel.enableView(
                 !completed && angular.isDefined( appointmentModule.actions.view ) );
-            }
-            if( angular.isDefined( self.callbackModel ) ) {
-              var callbackModule = cenozoApp.module( 'callback' );
-              self.callbackModel.enableAdd(
-                !completed && !existing && angular.isDefined( callbackModule.actions.add ) );
-              self.callbackModel.enableDelete(
-                !completed && angular.isDefined( callbackModule.actions.delete ) );
-              self.callbackModel.enableEdit(
-                !completed && angular.isDefined( callbackModule.actions.edit ) );
-              self.callbackModel.enableView(
-                !completed && angular.isDefined( callbackModule.actions.view ) );
             }
           } );
         };

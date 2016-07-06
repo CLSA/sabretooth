@@ -232,6 +232,7 @@ class queue extends \cenozo\database\record
         $select->get_sql() );
 
       $modifier = lib::create( 'database\modifier' );
+      $modifier->join( 'participant', 'queue_has_participant.participant_id', 'participant.id' );
       $modifier->where( 'queue_has_participant.queue_id', '=', $db_queue->parent_queue_id );
       if( !is_null( $db_participant ) )
         $modifier->where( 'queue_has_participant.participant_id', '=', $db_participant->id );
@@ -285,21 +286,15 @@ class queue extends \cenozo\database\record
           $join_mod->where( 'queue_has_participant.qnaire_id', '=', 'interview.qnaire_id', false );
           $modifier->join_modifier( 'interview', $join_mod, 'left' );
 
-          // link to callback table
-          // (by design, there can only ever one unassigned callback per participant)
-          $join_mod = lib::create( 'database\modifier' );
-          $join_mod->where( 'interview.id', '=', 'callback.interview_id', false );
-          $join_mod->where( 'callback.assignment_id', '=', NULL );
-
           if( 'callback' == $db_queue->name )
           {
-            $modifier->join_modifier( 'callback', $join_mod );
+            // Make sure there is a callback
+            $modifier->where( 'participant.callback', '!=', NULL );
           }
           else
           {
-            // Make sure there is no unassigned callback
-            $modifier->join_modifier( 'callback', $join_mod, 'left' );
-            $modifier->where( 'callback.id', '=', NULL );
+            // Make sure there is no callback
+            $modifier->where( 'participant.callback', '=', NULL );
 
             if( 'new participant' == $db_queue->name )
             {
@@ -393,21 +388,11 @@ class queue extends \cenozo\database\record
       // populate callback upcoming/assignable queues
       else if( ' callback' == substr( $db_queue->name, -9 ) )
       {
-        $modifier->left_join( 'setting', 'queue_has_participant.site_id', 'setting.site_id' );
-
-        $join_mod = lib::create( 'database\modifier' );
-        $join_mod->where( 'queue_has_participant.participant_id', '=', 'interview.participant_id', false );
-        $join_mod->where( 'queue_has_participant.qnaire_id', '=', 'interview.qnaire_id', false );
-        $modifier->join_modifier( 'interview', $join_mod );
-
-        $join_mod = lib::create( 'database\modifier' );
-        $join_mod->where( 'interview.id', '=', 'callback.interview_id', false );
-        $join_mod->where( 'callback.assignment_id', '=', NULL );
-        $modifier->join_modifier( 'callback', $join_mod );
-
-        $pre_call = 'callback.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE';
-        $test = 'upcoming callback' == $db_queue->name ? '<' : '>=';
-        $modifier->where( 'UTC_TIMESTAMP()', $test, $pre_call, false );
+        $modifier->where(
+          'UTC_TIMESTAMP()',
+          'upcoming callback' == $db_queue->name ? '<' : '>=',
+          'participant.callback',
+          false );
 
         static::db()->execute( sprintf( '%s %s', $base_sql, $modifier->get_sql() ) );
       }
@@ -470,19 +455,6 @@ class queue extends \cenozo\database\record
                                          'upcoming appointment',
                                          'assignable appointment',
                                          'missed appointment' ) );
-  }
-
-  /**
-   * Get whether this queue is related to a callback
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return boolean
-   * @access public
-   */
-  public function from_callback()
-  {
-    return in_array( $this->name, array( 'callback',
-                                         'upcoming callback',
-                                         'assignable callback' ) );
   }
 
   /**

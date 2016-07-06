@@ -30,9 +30,8 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
 
   angular.extend( module.historyCategoryList, {
 
-    // appointments and callbacks are added in the assignment's promise function below
+    // appointments are added in the assignment's promise function below
     Appointment: { active: true },
-    Callback: { active: true },
 
     Assignment: {
       active: true,
@@ -134,31 +133,6 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
                                    'from the "' + item.queue + '" queue.'
                     } );
                   }
-                } );
-              } )
-            );
-
-            // callbacks
-            promiseArray.push(
-              CnHttpFactory.instance( {
-                path: 'interview/' + item.id + '/callback',
-                data: {
-                  modifier: { order: { start_datetime: true } },
-                  select: { column: [ 'datetime', 'reached', 'assignment_id' ] }
-                }
-              } ).query().then( function( response ) {
-                response.data.forEach( function( item ) {
-                  var description = 'A callback scheduled for this time has ';
-                  description += item.assignment_id
-                               ? 'been met.\nDuring the call the participant was ' +
-                                 ( item.reached ? 'reached' : 'not reached' ) + '.\n'
-                               : 'not yet been met.';
-                  historyList.push( {
-                    datetime: item.datetime,
-                    category: 'Callback',
-                    title: 'scheduled',
-                    description: description
-                  } );
                 } );
               } )
             );

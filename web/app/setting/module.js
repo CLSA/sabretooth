@@ -49,7 +49,7 @@ define( function() {
       pre_call_window: {
         title: 'Pre-Call',
         type: 'number',
-        help: 'How many minutes before an appointment or callback that a participant can be assigned'
+        help: 'How many minutes before an appointment that a participant can be assigned'
       },
       post_call_window: {
         title: 'Post-Call',
@@ -104,7 +104,7 @@ define( function() {
       type: 'string',
       format: 'integer',
       minValue: 0,
-      help: 'How many minutes before an appointment or callback that a participant can be assigned'
+      help: 'How many minutes before an appointment that a participant can be assigned'
     },
     post_call_window: {
       title: 'Post-Appointment Window',
