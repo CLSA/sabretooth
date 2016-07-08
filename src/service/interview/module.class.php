@@ -86,22 +86,42 @@ class module extends \cenozo\service\site_restricted_module
         $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
     }
 
-    if( $select->has_column( 'open_appointment_count' ) )
+    if( $select->has_column( 'future_appointment' ) )
     {
       $join_sel = lib::create( 'database\select' );
       $join_sel->from( 'appointment' );
       $join_sel->add_column( 'interview_id' );
-      $join_sel->add_column( 'COUNT( * )', 'open_appointment_count', false );
+      $join_sel->add_column( 'COUNT( * ) > 0', 'future_appointment', false );
 
       $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'assignment_id', '=', NULL );
+      $join_mod->where( 'datetime', '>', 'UTC_TIMESTAMP()', false );
       $join_mod->group( 'interview_id' );
 
       $modifier->left_join(
         sprintf( '( %s %s ) AS interview_join_appointment', $join_sel->get_sql(), $join_mod->get_sql() ),
         'interview.id',
         'interview_join_appointment.interview_id' );
-      $select->add_column( 'IFNULL( open_appointment_count, 0 )', 'open_appointment_count', false );
+      $select->add_column( 'IFNULL( future_appointment, false )', 'future_appointment', false, 'boolean' );
+    }
+
+    if( $select->has_column( 'missed_appointment' ) )
+    {
+      $join_sel = lib::create( 'database\select' );
+      $join_sel->from( 'appointment' );
+      $join_sel->add_column( 'interview_id' );
+      $join_sel->add_column( 'COUNT( * ) > 0', 'missed_appointment', false );
+
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'datetime', '<', 'UTC_TIMESTAMP()', false );
+      $join_mod->where( 'assignment_id', '=', NULL );
+      $join_mod->where( 'outcome', '=', NULL );
+      $join_mod->group( 'interview_id' );
+
+      $modifier->left_join(
+        sprintf( '( %s %s ) AS interview_join_appointment', $join_sel->get_sql(), $join_mod->get_sql() ),
+        'interview.id',
+        'interview_join_appointment.interview_id' );
+      $select->add_column( 'IFNULL( missed_appointment, false )', 'missed_appointment', false, 'boolean' );
     }
   }
 }

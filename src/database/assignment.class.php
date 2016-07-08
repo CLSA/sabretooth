@@ -99,7 +99,7 @@ class assignment extends \cenozo\database\record
     $db_interview = $this->get_interview();
     $db_participant = $db_interview->get_participant();
 
-    // set the assignment and reached columns in appointments
+    // set the assignment and outcome columns in appointments
     if( $db_queue->from_appointment() )
     {
       $modifier = lib::create( 'database\modifier' );
@@ -115,12 +115,12 @@ class assignment extends \cenozo\database\record
       {
         $db_appointment = current( $appointment_list );
 
-        // if the assignment is complete then set the appointment's reached property
+        // if the assignment is complete then set the appointment's outcome property
         if( $completed )
         {
           $modifier = lib::create( 'database\modifier' );
           $modifier->where( 'status', '=', 'contacted' );
-          $db_appointment->reached = 0 < $this->get_phone_call_count( $modifier );
+          $db_appointment->outcome = 0 < $this->get_phone_call_count( $modifier ) ? 'reached' : 'not reached';
         }
         // if the assignment is not complete then just set the appointment's assignment
         else $db_appointment->assignment_id = $this->id;

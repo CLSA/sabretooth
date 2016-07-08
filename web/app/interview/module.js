@@ -75,7 +75,7 @@ define( function() {
       max: 'now',
       help: 'Will remain blank until the questionnaire is finished.'
     },
-    open_appointment_count: {
+    future_appointment: {
       type: 'hidden'
     }
   } );
@@ -123,7 +123,7 @@ define( function() {
         //   3) another qnaire is available for this participant
         var self = this;
         this.afterList( function() {
-          self.parentModel.enableAdd( false );
+          self.parentModel.getAddEnabled = function() { return false; };
           if( 'participant' == self.parentModel.getSubjectFromState() ) {
             var queueRank = null;
             var qnaireRank = null;
@@ -154,15 +154,16 @@ define( function() {
                 qnaireRank = response.data.qnaireRank;
               } );
             } ).then( function( response ) {
-              self.parentModel.enableAdd(
-                null != queueRank &&
-                null != qnaireRank && (
-                  null == lastInterview || (
-                    null != lastInterview.end_datetime &&
-                    lastInterview.rank != qnaireRank
-                  )
-                )
-              );
+              self.parentModel.getAddEnabled = function() {
+                return self.parentModel.$$getAddEnabled() &&
+                       null != queueRank &&
+                       null != qnaireRank && (
+                         null == lastInterview || (
+                           null != lastInterview.end_datetime &&
+                           lastInterview.rank != qnaireRank
+                         )
+                       );
+              };
             } );
           }
         } );
@@ -179,47 +180,38 @@ define( function() {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
 
-        // override onPatch
-        this.onPatch = function( data ) {
-          return this.$$onPatch( data ).then( function() {
-            // if the end datetime has changed then reload and update the appointment list actions
-            if( angular.isDefined( data.end_datetime ) ) {
-              var completed = null !== self.record.end_datetime;
-              if( angular.isDefined( self.appointmentModel ) ) {
-                self.appointmentModel.enableAdd(
-                  !completed && angular.isDefined( appointmentModule.actions.add ) );
-                self.appointmentModel.enableDelete(
-                  !completed && angular.isDefined( appointmentModule.actions.delete ) );
-                self.appointmentModel.enableEdit(
-                  !completed && angular.isDefined( appointmentModule.actions.edit ) );
-                self.appointmentModel.enableView(
-                  !completed && angular.isDefined( appointmentModule.actions.view ) );
-              }
-            }
-          } );
-        };
+        function getAppointmentEnabled( type ) {
+          var completed = null !== self.record.end_datetime;
+          var future = self.record.future_appointment;
+          return 'add' == type ? ( !completed && !future ) : future;
+        }
+
+        function updateEnableFunctions() {
+          self.appointmentModel.getAddEnabled = function() {
+            return angular.isDefined( self.appointmentModel.module.actions.add ) &&
+                   getAppointmentEnabled( 'add' );
+          };
+          self.appointmentModel.getDeleteEnabled = function() {
+            return angular.isDefined( self.appointmentModel.module.actions.delete ) &&
+                   getAppointmentEnabled( 'delete' );
+          };
+        }
 
         // override onView
         this.onView = function() {
           return this.$$onView().then( function() {
-            // if the end datetime has changed then update the appointment list actions
-            var completed = null !== self.record.end_datetime;
-            if( angular.isDefined( self.appointmentModel ) ) {
-              var appointmentModule = cenozoApp.module( 'appointment' );
-              self.appointmentModel.enableAdd(
-                !completed &&
-                0 == self.record.open_appointment_count
-                && angular.isDefined( appointmentModule.actions.add )
-              );
-              self.appointmentModel.enableDelete(
-                !completed && angular.isDefined( appointmentModule.actions.delete ) );
-              self.appointmentModel.enableEdit(
-                !completed && angular.isDefined( appointmentModule.actions.edit ) );
-              self.appointmentModel.enableView(
-                !completed && angular.isDefined( appointmentModule.actions.view ) );
-            }
+            if( angular.isDefined( self.appointmentModel ) ) updateEnableFunctions();
           } );
         };
+
+        // override appointment list's onDelete
+        this.deferred.promise.then( function() {
+          if( angular.isDefined( self.appointmentModel ) ) {
+            self.appointmentModel.listModel.onDelete = function( record ) {
+              return self.appointmentModel.listModel.$$onDelete( record ).then( function() { self.onView(); } );
+            };
+          }
+        } );
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }

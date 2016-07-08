@@ -45,7 +45,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
       state: {
         type: 'string',
         title: 'State',
-        help: 'One of reached, not reached, upcoming, assignable, missed, incomplete, assigned or in progress'
+        help: 'Will either be reached, not reached, upcoming, assignable, missed, incomplete, assigned or in progress'
       }
     },
     defaultOrder: {
@@ -171,14 +171,43 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAppointmentAdd', [
-    'CnAppointmentModelFactory', 'CnAvailabilityModelFactory', 'CnSession',
-    function( CnAppointmentModelFactory, CnAvailabilityModelFactory, CnSession ) {
+    'CnAppointmentModelFactory', 'CnAvailabilityModelFactory',
+    'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', '$q',
+    function( CnAppointmentModelFactory, CnAvailabilityModelFactory,
+              CnSession, CnHttpFactory, CnModalConfirmFactory, $q ) {
       return {
         templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAppointmentModelFactory.instance();
+
+          $scope.model.addModel.afterNew( function() {
+            // warn if old appointment will be cancelled
+            var addDirective = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
+            if( null == addDirective ) throw new Exception( 'Unable to find appointment\'s cnRecordAdd scope.' );
+            var saveFn = addDirective.save;
+            addDirective.save = function() {
+              CnHttpFactory.instance( {
+                path: 'interview/' + $scope.model.getParentIdentifier().identifier,
+                data: { select: { column: [ 'missed_appointment' ] } }
+              } ).get().then( function( response ) {
+                var proceed = false;
+                var promise =
+                  response.data.missed_appointment ?
+                  CnModalConfirmFactory.instance( {
+                    title: 'Cancel Missed Appointment?',
+                    message: 'There already exists a passed appointment for this interview, ' +
+                             'do you wish to cancel it and create a new one?'
+                  } ).show().then( function( response ) { proceed = response; } ) :
+                  $q.all().then( function() { proceed = true; } );
+
+                // proceed with the usual save function if we are told to proceed
+                promise.then( function() { if( proceed ) saveFn(); } );
+              } );
+            };
+          } );
+
           $scope.model.addModel.afterNew( function() {
             if( angular.isDefined( cenozoApp.module( 'availability' ).actions.calendar ) &&
                 angular.isObject( $scope.model.metadata.participantSite ) ) {
@@ -426,7 +455,8 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
             parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
               return e.getIdentifier() != record.getIdentifier();
             } );
-            self.parentModel.enableAdd( 0 == self.total );
+            console.log( 'TODO: need to reset add enabled state?' );
+            //self.parentModel.getAddEnabled = function() { return 0 == self.total; };
           } );
         };
       };
@@ -467,14 +497,10 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
 
         this.onView = function() {
           return this.$$onView().then( function() {
-            // only allow delete if the appointment is in the future
-            parentModel.enableDelete(
-              moment().isBefore( self.record.datetime ) &&
-              angular.isDefined( module.actions.delete ) );
-            // only allow edit if the appointment hasn't been assigned
-            parentModel.enableEdit(
-              null == self.record.assignment_user &&
-              angular.isDefined( module.actions.edit ) );
+            // only allow delete/edit if the appointment is in the future
+            var upcoming = moment().isBefore( self.record.datetime, 'minute' );
+            parentModel.getDeleteEnabled = function() { return parentModel.$$getDeleteEnabled() && upcoming; };
+            parentModel.getEditEnabled = function() { return parentModel.$$getEditEnabled() && upcoming; };
           } );
         };
       }

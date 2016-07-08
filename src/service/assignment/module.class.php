@@ -355,7 +355,7 @@ class module extends \cenozo\service\site_restricted_module
       }
       else if( 'close' == $operation )
       {
-        // delete the assignment if there are no phone calls, or set appointment reached if there are
+        // delete the assignment if there are no phone calls, or process appointments and callbacks of there are
         if( 0 == $record->get_phone_call_count() ) $record->delete();
         else
         {

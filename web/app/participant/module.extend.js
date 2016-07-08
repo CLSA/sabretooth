@@ -52,7 +52,7 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
                 data: {
                   modifier: { order: { start_datetime: true } },
                   select: {
-                    column: [ 'datetime', 'type', 'reached', 'assignment_id', 'user_id', {
+                    column: [ 'datetime', 'type', 'outcome', 'assignment_id', 'user_id', {
                       table: 'user',
                       column: 'first_name',
                       alias: 'user_first'
@@ -66,10 +66,13 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
               } ).query().then( function( response ) {
                 response.data.forEach( function( item ) {
                   var description = 'A ' + item.type + ' appointment scheduled for this time has ';
-                  description += item.assignment_id
-                               ? 'been met.\nDuring the call the participant was ' +
-                                 ( item.reached ? 'reached' : 'not reached' ) + '.\n'
-                               : 'not yet been met.';
+                  if( 'cancelled' == item.outcome ) {
+                    description += 'been cancelled.';
+                  } else {
+                    description += item.assignment_id
+                                 ? 'been met.\nDuring the call the participant was ' + item.outcome + '.\n'
+                                 : 'not yet been met.';
+                  }
                   historyList.push( {
                     datetime: item.datetime,
                     category: 'Appointment',

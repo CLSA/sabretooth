@@ -30,7 +30,7 @@ class ui extends \cenozo\ui\ui
     if( array_key_exists( 'assignment', $module_list ) )
       $module_list['assignment']['children'] = array( 'phone_call' );
     if( array_key_exists( 'interview', $module_list ) )
-      $module_list['interview']['children'] = array( 'assignment', 'appointment' );
+      $module_list['interview']['children'] = array( 'appointment', 'assignment' );
     if( array_key_exists( 'participant', $module_list ) )
     {
       array_unshift( $module_list['participant']['children'], 'interview' );

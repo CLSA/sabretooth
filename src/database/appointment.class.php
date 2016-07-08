@@ -21,21 +21,32 @@ class appointment extends \cenozo\database\record
    */
   public function save()
   {
-    // make sure there is a maximum of 1 unassigned appointment per interview
+    // make sure there is a maximum of 1 unresolved appointment per interview
     if( is_null( $this->id ) && is_null( $this->assignment_id ) )
     {
       $appointment_mod = lib::create( 'database\modifier' );
-      $appointment_mod->where( 'interview_id', '=', $this->interview_id );
-      $appointment_mod->where( 'assignment_id', '=', NULL );
+      $appointment_mod->where( 'outcome', '=', NULL );
       if( !is_null( $this->id ) ) $appointment_mod->where( 'id', '!=', $this->id );
+      $appointment_mod->order( 'datetime' );
 
-      if( 0 < static::count( $appointment_mod ) )
-        throw lib::create( 'exception\notice',
-          'Cannot have more than one unassigned appointment per interview.', __METHOD__ );
+      // cancel any missed appointments
+      foreach( $this->get_interview()->get_appointment_object_list( $appointment_mod ) as $db_appointment )
+      {
+        if( $db_appointment->datetime < util::get_datetime_object() )
+        {
+          $db_appointment->outcome = 'cancelled';
+          $db_appointment->save();
+        }
+        else
+        {
+          throw lib::create( 'exception\notice',
+            'Cannot have more than one unassigned appointment per interview.', __METHOD__ );
+        }
+      }
     }
 
     // if we changed certain columns then update the queue
-    $update_queue = $this->has_column_changed( array( 'assignment_id', 'datetime' ) );
+    $update_queue = $this->has_column_changed( array( 'assignment_id', 'datetime', 'outcome' ) );
     parent::save();
     if( $update_queue ) $this->get_interview()->get_participant()->repopulate_queue( true );
   }
@@ -354,6 +365,7 @@ class appointment extends \cenozo\database\record
    * Get the state of the appointment as a string:
    *   reached: the appointment was met and the participant was reached
    *   not reached: the appointment was met but the participant was not reached
+   *   cancelled: the appointment was cancelled (never used)
    *   upcoming: the appointment's date/time has not yet occurred
    *   assignable: the appointment is ready to be assigned, but hasn't been
    *   missed: the appointment was missed (never assigned) and the call window has passed
@@ -372,8 +384,8 @@ class appointment extends \cenozo\database\record
       return NULL;
     }
 
-    // if the appointment's reached column is set, nothing else matters
-    if( !is_null( $this->reached ) ) return $this->reached ? 'reached' : 'not reached';
+    // if the appointment's outcome column is set, nothing else matters
+    if( !is_null( $this->outcome ) ) return $this->outcome;
 
     $db_setting = $this->get_interview()->get_participant()->get_effective_site()->get_setting();
     $status = 'unknown';

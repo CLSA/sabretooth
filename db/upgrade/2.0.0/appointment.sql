@@ -141,6 +141,27 @@ DROP PROCEDURE IF EXISTS patch_appointment;
       MODIFY COLUMN type enum('long','short') NOT NULL DEFAULT 'long';
     END IF;
 
+    SELECT "Replacing reached column with outcome in appointment table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "appointment"
+      AND COLUMN_NAME = "reached" );
+    IF @test = 1 THEN
+      ALTER TABLE appointment
+      ADD COLUMN outcome ENUM('reached', 'not reached', 'cancelled') NULL DEFAULT NULL,
+      ADD INDEX dk_outcome (outcome ASC);
+
+      UPDATE appointment SET outcome = IF( reached, 'reached', 'not reached' )
+      WHERE reached IS NOT NULL;
+
+      ALTER TABLE appointment
+      DROP INDEX dk_reached,
+      DROP COLUMN reached;
+    END IF;
+
     SELECT "Modifiying constraint delete rules in appointment table" AS "";
 
     SET @test = (
