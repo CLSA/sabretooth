@@ -99,6 +99,16 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
     }
   } );
 
+  module.addExtraOperation( 'view', {
+    title: 'Force Close',
+    operation: function( $state, model ) { model.viewModel.forceClose(); },
+    isDisabled: function( $state, model ) { return null !== model.viewModel.record.end_datetime; },
+    isIncluded: function( $state, model ) { return model.viewModel.forceCloseAllowed; },
+    help: 'Closes the interview along with any open calls. ' +
+          'Note that this will not disconnect active VoIP calls, nor will it prevent the user from continuing ' +
+          'to answer questionnaires.'
+  } );
+
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAssignmentControl', [
     'CnAssignmentControlFactory',
@@ -155,9 +165,50 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAssignmentViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); }
+    'CnBaseViewFactory', 'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory',
+    function( CnBaseViewFactory, CnSession, CnHttpFactory, CnModalConfirmFactory, CnModalMessageFactory ) {
+      var object = function( parentModel, root ) {
+        var self = this;
+        CnBaseViewFactory.construct( this, parentModel, root );
+        this.forceCloseAllowed = 1 < CnSession.role.tier;
+        this.forceClose = function() {
+          CnModalConfirmFactory.instance( {
+            title: 'Force Close Assignment?',
+            message: 'Are you sure you wish to force-close the assignment?\n\n' +
+                     'Note that this will not disconnect active VoIP calls, nor will it prevent the user from ' +
+                     'continuing to answer questionnaires.'
+          } ).show().then( function( response ) {
+            function refreshView() {
+              // the assignment may no longer exist, so go back to the interview if it's gone
+              CnHttpFactory.instance( {
+                path: 'assignment/' + self.record.id,
+                data: { select: { column: [ 'id' ] } },
+                onError: function( response ) {
+                  if( 404 == response.status ) {
+                    self.transitionOnDelete();
+                  } else { CnModalMessageFactory.httpError( response ); }
+                }
+              } ).get().then( function() { self.onView(); } );
+            }
+
+            if( response ) {
+              CnHttpFactory.instance( {
+                path: 'assignment/' + self.record.id + '?operation=force_close',
+                data: {},
+                onError: function( response ) {
+                  if( 404 == response.status ) {
+                    // 404 means the assignment no longer exists
+                    self.transitionOnDelete();
+                  } else if( 409 == response.status ) {
+                    // 409 means the assignment is already closed
+                    refreshView();
+                  } else { CnModalMessageFactory.httpError( response ); }
+                }
+              } ).patch().then( refreshView );
+            }
+          } );
+        };
+      }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );

@@ -31,6 +31,7 @@ class module extends \cenozo\service\site_restricted_module
 
       $session = lib::create( 'business\session' );
       $db_user = lib::create( 'business\session' )->get_user();
+      $db_role = lib::create( 'business\session' )->get_role();
       $method = $this->get_method();
       $operation = $this->get_argument( 'operation', false );
 
@@ -47,13 +48,14 @@ class module extends \cenozo\service\site_restricted_module
       }
 
       if( ( 'DELETE' == $method || 'PATCH' == $method ) &&
-          3 > $session->get_role()->tier &&
+          3 > $db_role->tier &&
           $this->get_resource()->user_id != $db_user->id )
       {
         // only admins can delete or modify assignments other than their own
           $this->get_status()->set_code( 403 );
       }
-      else if( 'PATCH' == $method && ( 'advance' == $operation || 'close' == $operation ) )
+      else if( 'PATCH' == $method &&
+               ( 'advance' == $operation || 'close' == $operation || 'force_close' == $operation ) )
       {
         $record = $this->get_resource();
 
@@ -112,6 +114,10 @@ class module extends \cenozo\service\site_restricted_module
               $this->set_data( 'An assignment cannot be closed during an open call.' );
               $this->get_status()->set_code( 409 );
             }
+          }
+          else if( 'force_close' == $operation )
+          {
+            if( 2 > $db_role->tier ) $this->get_status()->set_code( 403 );
           }
 
           $tokens_class_name::set_sid( $old_sid );
@@ -287,7 +293,8 @@ class module extends \cenozo\service\site_restricted_module
       $record->queue_id = $this->db_participant->current_queue_id;
       $record->start_datetime = $now;
     }
-    else if( 'PATCH' == $this->get_method() && ( 'advance' == $operation || 'close' == $operation ) )
+    else if( 'PATCH' == $this->get_method() &&
+             ( 'advance' == $operation || 'close' == $operation || 'force_close' == $operation ) )
     {
       // whether advancing or closing, the assignment is done
       $record->end_datetime = $now;
@@ -316,11 +323,11 @@ class module extends \cenozo\service\site_restricted_module
 
     if( 'PATCH' == $this->get_method() )
     {
+      $now = util::get_datetime_object();
       $operation = $this->get_argument( 'operation', false );
       if( 'advance' == $operation )
       {
         $session = lib::create( 'business\session' );
-        $now = util::get_datetime_object();
 
         // update any appointments or callbacks
         $record->process_appointments_and_callbacks( true );
@@ -353,8 +360,22 @@ class module extends \cenozo\service\site_restricted_module
         $db_phone_call->start_datetime = $now;
         $db_phone_call->save();
       }
-      else if( 'close' == $operation )
+      else if( 'close' == $operation || 'force_close' == $operation )
       {
+        if( 'force_close' == $operation )
+        {
+          // end any active phone calls
+          $phone_call_mod = lib::create( 'database\modifier' );
+          $phone_call_mod->where( 'phone_call.end_datetime', '=', NULL );
+          foreach( $record->get_phone_call_object_list( $phone_call_mod ) as $db_phone_call )
+          {
+            $db_phone_call->end_datetime = $now;
+            $db_phone_call->status = 'contacted';
+            $db_phone_call->save();
+            $db_phone_call->process_events();
+          }
+        }
+
         // delete the assignment if there are no phone calls, or process appointments and callbacks of there are
         if( 0 == $record->get_phone_call_count() ) $record->delete();
         else
