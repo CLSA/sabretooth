@@ -74,8 +74,8 @@ define( function() {
         this.listModel = CnPhoneCallListFactory.instance( this );
 
         // need to explicitely disable the add and delete options
-        this.enableAdd( false );
-        this.enableDelete( false );
+        this.getAddEnabled = function() { return false; };
+        this.getDeleteEnabled = function() { return false; };
       };
 
       return {

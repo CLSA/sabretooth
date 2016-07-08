@@ -98,13 +98,13 @@ define( [ 'appointment', 'shift', 'user' ].reduce( function( list, name ) {
         // Use the view model's onView function to get the record and create shift and appointment models from it.
         // Note that to do this we must make sure that viewing has been enabled in the parent-model, even if only
         // temporarily.
-        var viewEnabled = parentModel.viewEnabled;
-        parentModel.enableView( true );
+        var getViewEnabled = parentModel.getViewEnabled;
+        parentModel.getViewEnabled = function() { return true; };
         var promise = parentModel.viewModel.onView().then( function() {
           shiftModel = CnShiftModelFactory.forUser( parentModel.viewModel.record );
           appointmentModel = CnAppointmentModelFactory.forUser( parentModel.viewModel.record );
         } );
-        parentModel.enableView( parentModel.viewModel.viewEnabled );
+        parentModel.getViewEnabled = getViewEnabled;
 
         // remove day click callback
         delete this.settings.dayClick;

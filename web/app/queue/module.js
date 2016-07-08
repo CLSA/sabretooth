@@ -157,7 +157,7 @@ define( function() {
             self.participantModel.addColumn( 'language', { title: 'Language', column: 'language.name' }, 1 );
 
             // make sure users can't add/remove participants from queues
-            self.participantModel.enableChoose( false );
+            self.participantModel.getChooseEnabled = function() { return false; };
           }
         } );
       };
