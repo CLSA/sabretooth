@@ -22,6 +22,7 @@ chdir( dirname( __FILE__ ).'/../' );
 require_once 'settings.ini.php';
 require_once 'settings.local.ini.php';
 define( 'LOG', $SETTINGS['path']['LOG_FILE'] );
+define( 'AUTH', array( sprintf( 'Authorization: Basic %s', base64_encode( sprintf( '%s:%s', USER, PASS ) ) ) ) );
 
 // function for writing to the log
 function write_log( $message )
@@ -33,31 +34,22 @@ function write_log( $message )
   );
 }
 
-$session_id = null;
-
 /**
- * Login to the application's web API and get the session_id
+ * Send a command to refresh the queue tree
  */
+write_log( 'Re-populating queue tree' );
 
 $curl = curl_init();
-curl_setopt( $curl, CURLOPT_POST, true );
-curl_setopt( $curl, CURLOPT_URL, URL.'self/0' );
+curl_setopt( $curl, CURLOPT_URL, URL.'queue/1?repopulate=full' );
 curl_setopt( $curl, CURLOPT_SSL_VERIFYHOST, false );
 curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
-curl_setopt( $curl, CURLOPT_VERBOSE, false );
-curl_setopt( $curl, CURLOPT_HEADER, true );
-curl_setopt( $curl, CURLOPT_HTTPHEADER,
-  array( sprintf(
-    'Authorization: Basic %s',
-    base64_encode( sprintf( '%s:%s', USER, PASS ) )
-  ) )
-);
+curl_setopt( $curl, CURLOPT_HTTPHEADER, AUTH );
 
-$response = curl_exec( $curl );
+curl_exec( $curl );
 if( curl_errno( $curl ) )
 {
   write_log( sprintf(
-    "Returned error code %s when trying to connect to application's web API\nMessage: %s",
+    "Returned error code %s when trying to repopulate the queue tree\nMessage: %s",
     curl_errno( $curl ),
     curl_error( $curl )
   ) );
@@ -65,72 +57,47 @@ if( curl_errno( $curl ) )
 else
 {
   $code = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
-  if( 202 == $code )
+  if( 200 != $code )
   {
-    write_log( sprintf(
-      'Failed to authenticate user %s, either the credentials are invalid or the account has been disabled',
-      USER
-    ) );
-  }
-  else if( 201 == $code )
-  {
-    // get the session id
-    $header_size = curl_getinfo( $curl, CURLINFO_HEADER_SIZE );
-    $header = substr( $response, 0, $header_size );
-    $matches = array();
-    $preg = preg_match( '/PHPSESSID=([^;]+)/', $header, $matches );
-    if( 1 !== $preg )
-    {
-      write_log( 'Sesssion based error while authenticating with the application\'s web API' );
-    }
-    else
-    {
-      $session_id = $matches[0];
-    }
+    write_log( sprintf( 'Failed to repopulate the queue tree (response code: %s)', $code ) );
   }
   else
   {
-    write_log( sprintf(
-      'Application API returned unexpected HTTP code "%s"',
-      $code
-    ) );
+    write_log( 'Queue tree has been successfully repopulated' );
   }
 }
 curl_close( $curl );
 
 /**
- * Send a command to refresh the queue tree
+ * Send a command to run all scheduled reports
  */
-if( !is_null( $session_id ) )
+write_log( 'Updating all scheduled reports' );
+
+$curl = curl_init();
+curl_setopt( $curl, CURLOPT_URL, URL.'report_schedule?update=1' );
+curl_setopt( $curl, CURLOPT_SSL_VERIFYHOST, false );
+curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
+curl_setopt( $curl, CURLOPT_HTTPHEADER, AUTH );
+
+curl_exec( $curl );
+if( curl_errno( $curl ) )
 {
-  write_log( 'Re-populating queue tree' );
-
-  $curl = curl_init();
-  curl_setopt( $curl, CURLOPT_URL, URL.'queue/1?repopulate=full' );
-  curl_setopt( $curl, CURLOPT_SSL_VERIFYHOST, false );
-  curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
-  curl_setopt( $curl, CURLOPT_COOKIE, $session_id );
-
-  curl_exec( $curl );
-  if( curl_errno( $curl ) )
+  write_log( sprintf(
+    "Returned error code %s when trying to update scheduled reports\nMessage: %s",
+    curl_errno( $curl ),
+    curl_error( $curl )
+  ) );
+}
+else
+{
+  $code = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
+  if( 200 != $code )
   {
-    write_log( sprintf(
-      "Returned error code %s when trying to repopulate the queue tree\nMessage: %s",
-      curl_errno( $curl ),
-      curl_error( $curl )
-    ) );
+    write_log( sprintf( 'Failed to update scheduled reports (response code: %s)', $code ) );
   }
   else
   {
-    $code = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
-    if( 200 != $code )
-    {
-      write_log( sprintf( 'Failed to repopulate the queue tree (response code: %s)', $code ) );
-    }
-    else
-    {
-      write_log( 'Queue tree has been successfully repopulated' );
-    }
+    write_log( 'Scheduled reports have been successfully updated' );
   }
-  curl_close( $curl );
 }
+curl_close( $curl );
