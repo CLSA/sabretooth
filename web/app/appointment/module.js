@@ -344,36 +344,38 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
                   CnAvailabilityModelFactory.forSite( $scope.model.metadata.participantSite );
 
                 // connect the availability calendar's event click callback to the appointment's datetime
-                $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
-                  var date = moment( availability.start );
-                  var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
+                if( $scope.model.getEditEnabled() ) {
+                  $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
+                    var date = moment( availability.start );
+                    var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
 
-                  // adjust the appointment for daylight savings time
-                  if( date.tz( CnSession.user.timezone ).isDST() ) offset += -60;
+                    // adjust the appointment for daylight savings time
+                    if( date.tz( CnSession.user.timezone ).isDST() ) offset += -60;
 
-                  var availabilityStart = moment( availability.start ).add( offset, 'minutes' );
-                  var availabilityEnd = moment( availability.end ).add( offset, 'minutes' );
-                  if( availabilityEnd.isAfter( moment() ) ) {
-                    var cnRecordViewScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
-                    if( null == cnRecordViewScope )
-                      throw new Exception( 'Unable to find appointment\'s cnRecordView scope.' );
+                    var availabilityStart = moment( availability.start ).add( offset, 'minutes' );
+                    var availabilityEnd = moment( availability.end ).add( offset, 'minutes' );
+                    if( availabilityEnd.isAfter( moment() ) ) {
+                      var cnRecordViewScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
+                      if( null == cnRecordViewScope )
+                        throw new Exception( 'Unable to find appointment\'s cnRecordView scope.' );
 
-                    // if the start is after the current time then use the next rounded hour
-                    var datetime = moment( availabilityStart.format() );
-                    if( !datetime.isAfter( moment() ) ) {
-                      datetime = moment().minute( 0 ).second( 0 ).millisecond( 0 ).add( 1, 'hours' );
-                      if( !datetime.isAfter( moment() ) )
-                        datetime = moment( availabilityEnd.format() );
+                      // if the start is after the current time then use the next rounded hour
+                      var datetime = moment( availabilityStart.format() );
+                      if( !datetime.isAfter( moment() ) ) {
+                        datetime = moment().minute( 0 ).second( 0 ).millisecond( 0 ).add( 1, 'hours' );
+                        if( !datetime.isAfter( moment() ) )
+                          datetime = moment( availabilityEnd.format() );
+                      }
+
+                      // set the datetime in the record and formatted record
+                      $scope.model.viewModel.record.datetime = datetime.format();
+                      $scope.model.viewModel.formattedRecord.datetime =
+                        CnSession.formatValue( datetime, 'datetime', true );
+                      $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
+                      cnRecordViewScope.patch( 'datetime' );
                     }
-
-                    // set the datetime in the record and formatted record
-                    $scope.model.viewModel.record.datetime = datetime.format();
-                    $scope.model.viewModel.formattedRecord.datetime =
-                      CnSession.formatValue( datetime, 'datetime', true );
-                    $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
-                    cnRecordViewScope.patch( 'datetime' );
-                  }
-                };
+                  };
+                }
               } );
             }
           } );
