@@ -22,7 +22,7 @@ chdir( dirname( __FILE__ ).'/../' );
 require_once 'settings.ini.php';
 require_once 'settings.local.ini.php';
 define( 'LOG', $SETTINGS['path']['LOG_FILE'] );
-define( 'AUTH', array( sprintf( 'Authorization: Basic %s', base64_encode( sprintf( '%s:%s', USER, PASS ) ) ) ) );
+define( 'AUTH', sprintf( 'Authorization: Basic %s', base64_encode( sprintf( '%s:%s', USER, PASS ) ) ) );
 
 // function for writing to the log
 function write_log( $message )
@@ -43,7 +43,7 @@ $curl = curl_init();
 curl_setopt( $curl, CURLOPT_URL, URL.'queue/1?repopulate=full' );
 curl_setopt( $curl, CURLOPT_SSL_VERIFYHOST, false );
 curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
-curl_setopt( $curl, CURLOPT_HTTPHEADER, AUTH );
+curl_setopt( $curl, CURLOPT_HTTPHEADER, array( AUTH ) );
 
 curl_exec( $curl );
 if( curl_errno( $curl ) )
@@ -77,7 +77,7 @@ $curl = curl_init();
 curl_setopt( $curl, CURLOPT_URL, URL.'report_schedule?update=1' );
 curl_setopt( $curl, CURLOPT_SSL_VERIFYHOST, false );
 curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
-curl_setopt( $curl, CURLOPT_HTTPHEADER, AUTH );
+curl_setopt( $curl, CURLOPT_HTTPHEADER, array( AUTH ) );
 
 curl_exec( $curl );
 if( curl_errno( $curl ) )
