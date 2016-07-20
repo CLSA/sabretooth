@@ -19,4 +19,4 @@ $SETTINGS['general']['build'] = 'd8cb786';
 $SETTINGS['general']['development_mode'] = false;
 
 // the location of sabretooth internal path
-$SETTINGS['path']['APPLICATION'] = '/usr/local/lib/sabretooth';
+$SETTINGS['path']['APPLICATION'] = str_replace( '/settings.ini.php', '', __FILE__ );

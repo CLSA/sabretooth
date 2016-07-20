@@ -11,9 +11,8 @@ global $SETTINGS;
 // whether or not to run the application in development mode
 $SETTINGS['general']['development_mode'] = false;
 
-// the file path to the framework and application
+// the file path to the framework
 $SETTINGS['path']['CENOZO'] = '/path/to/cenozo';
-$SETTINGS['path']['APPLICATION'] = '/path/to/sabretooth';
 
 // the path to the log file
 $SETTINGS['path']['LOG_FILE'] = $SETTINGS['path']['APPLICATION'].'/log';
