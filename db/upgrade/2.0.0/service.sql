@@ -88,6 +88,7 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'event_type', 'POST', 0, 1 ),
 ( 'form', 'GET', 0, 0 ),
 ( 'form', 'GET', 1, 0 ),
+( 'form_association', 'GET', 0, 0 ),
 ( 'form_type', 'GET', 0, 0 ),
 ( 'form_type', 'GET', 1, 0 ),
 ( 'hin', 'DELETE', 1, 1 ),
