@@ -28,6 +28,7 @@ DROP PROCEDURE IF EXISTS patch_callback;
           "FROM callback AS c1 ",
           "WHERE c1.participant_id = participant.id ",
         ") ",
+        "SET participant.callback = callback.datetime ",
         "WHERE callback.reached IS NULL ",
         "AND ( participant.callback IS NULL OR callback.datetime > participant.callback )" );
       PREPARE statement FROM @sql;
