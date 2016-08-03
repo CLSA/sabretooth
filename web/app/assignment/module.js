@@ -111,14 +111,20 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAssignmentControl', [
-    'CnAssignmentControlFactory',
-    function( CnAssignmentControlFactory ) {
+    'CnAssignmentControlFactory', '$window',
+    function( CnAssignmentControlFactory, $window ) {
       return {
         templateUrl: module.getFileUrl( 'control.tpl.html' ),
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnAssignmentControlFactory.instance();
           $scope.model.onLoad(); // breadcrumbs are handled by the service
+        },
+        link: function( scope ) {
+          // update the script list whenever we regain focus since there may have been script activity
+          var focusFn = function() { scope.model.loadScriptList(); };
+          var win = angular.element( $window ).on( 'focus', focusFn );
+          scope.$on( '$destroy', function() { win.off( 'focus', focusFn ); } );
         }
       };
     }
