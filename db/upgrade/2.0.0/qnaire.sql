@@ -210,6 +210,19 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
 
+      SELECT "Creating script based on qnaire withdraw script" AS "";
+
+      SET @sql = CONCAT(
+        "INSERT IGNORE INTO ", @cenozo, ".script( ",
+          "name, started_event_type_id, finished_event_type_id, sid, repeated, withdraw, description ) ",
+        "SELECT surveyls_title, NULL, NULL, withdraw_sid, 0, 1, qnaire.description ",
+        "FROM qnaire ",
+        "JOIN ", @limesurvey, ".surveys_languagesettings ON withdraw_sid = surveyls_survey_id ",
+        "AND surveyls_language = 'en'" );
+      PREPARE statement FROM @sql;
+      EXECUTE statement;
+      DEALLOCATE PREPARE statement;
+
       SELECT "Creating scripts based on existing non-repeating qnaire phases" AS "";
 
       SET @sql = CONCAT(
@@ -259,7 +272,7 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
         "INSERT IGNORE INTO ", @cenozo, ".application_has_script( application_id, script_id ) ",
         "SELECT application.id, script.id ",
         "FROM ", @cenozo, ".application, ", @cenozo, ".script ",
-        "WHERE sid IN ( SELECT DISTINCT sid FROM phase ) ",
+        "WHERE sid IN ( SELECT DISTINCT sid FROM phase UNION SELECT DISTINCT withdraw_sid FROM qnaire ) ",
         "AND DATABASE() LIKE CONCAT( '%_', application.name )" );
       PREPARE statement FROM @sql;
       EXECUTE statement;

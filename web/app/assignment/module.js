@@ -238,10 +238,10 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAssignmentControlFactory', [
-    '$state', '$window', 'CnSession', 'CnHttpFactory',
-    'CnParticipantModelFactory', 'CnModalMessageFactory', 'CnModalConfirmFactory',
-    function( $state, $window, CnSession, CnHttpFactory,
-              CnParticipantModelFactory, CnModalMessageFactory, CnModalConfirmFactory ) {
+    '$state', 'CnSession', 'CnHttpFactory',
+    'CnParticipantModelFactory', 'CnScriptLauncherFactory', 'CnModalMessageFactory', 'CnModalConfirmFactory',
+    function( $state, CnSession, CnHttpFactory,
+              CnParticipantModelFactory, CnScriptLauncherFactory, CnModalMessageFactory, CnModalConfirmFactory ) {
       var object = function( root ) {
         var self = this;
 
@@ -550,54 +550,11 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         };
 
         this.launchScript = function( script ) {
-          var url = script.url + '&lang=' + self.participant.language_code + '&newtest=Y';
-
-          // first see if a token already exists
-          CnHttpFactory.instance( {
-            path: 'script/' + script.id + '/token/uid=' + self.participant.uid,
-            data: { select: { column: [ 'token', 'finished' ] } },
-            onError: function( response ) {
-              if( 404 == response.status ) {
-                console.info( 'The "404 (Not Found)" error found above is normal and can be ignored.' );
-
-                // the token doesn't exist so create it
-                var modal = CnModalMessageFactory.instance( {
-                  title: 'Please Wait',
-                  message: 'Please wait while the participant\'s data is retrieved.',
-                  block: true
-                } );
-                modal.show();
-
-                CnHttpFactory.instance( {
-                  path: 'script/' + script.id + '/token',
-                  data: { uid: self.participant.uid },
-                  onError: function( response ) {
-                    modal.close();
-                    CnModalMessageFactory.httpError( response );
-                  }
-                } ).post().then( function( response ) {
-                  // close the wait message
-                  modal.close();
-
-                  // update the script list to reflect the new start datetime
-                  self.loadScriptList();
-
-                  // now get the new token string we just created and use it to open the script window
-                  CnHttpFactory.instance( {
-                    path: 'script/' + script.id + '/token/' + response.data
-                  } ).get().then( function( response ) {
-                    // launch the script
-                    url += '&token=' + response.data.token;
-                    $window.open( url, 'cenozoScript' );
-                  } );
-                } );
-              } else CnModalMessageFactory.httpError( response );
-            }
-          } ).get().then( function( response ) {
-            // launch the script
-            url += '&token=' + response.data.token;
-            $window.open( url, 'cenozoScript' );
-          } );
+          CnScriptLauncherFactory.instance( {
+            script: script,
+            uid: self.participant.uid,
+            lang: self.participant.language_code
+          } ).launch().then( function() { self.loadScriptList(); } );
         };
 
         this.advanceQnaire = function() {
