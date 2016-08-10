@@ -511,7 +511,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
             path: 'application/' + CnSession.application.id +
                   '/script?participant_id=' + self.assignment.participant_id,
             data: {
-              modifier: { order: 'name' },
+              modifier: { order: ['repeated','name'] },
               select: { column: [
                 'id', 'name', 'repeated', 'url', 'description',
                 { table: 'started_event', column: 'datetime', alias: 'started_datetime' },
