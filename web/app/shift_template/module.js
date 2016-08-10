@@ -304,9 +304,10 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
                 if( null == cnRecordAddScope )
                   throw new Exception( 'Unable to find shift_template\'s cnRecordAdd scope.' );
 
-                cnRecordAddScope.record.start_date = moment( scope.model.addModel.calendarDate ).format();
+                cnRecordAddScope.record.start_date = moment.tz(
+                  scope.model.addModel.calendarDate + ' 12:00:00', CnSession.user.timezone );
                 cnRecordAddScope.formattedRecord.start_date = CnSession.formatValue(
-                  scope.model.addModel.calendarDate, 'date', true );
+                  cnRecordAddScope.record.start_date, 'date', true );
                 delete scope.model.addModel.calendarDate;
               }
             } );
