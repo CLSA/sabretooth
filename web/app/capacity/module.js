@@ -195,6 +195,13 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template', 'site' ].red
         delete this.settings.dayClick;
         delete this.settings.eventClick;
 
+        // show to-from times in month view
+        if( angular.isUndefined( this.settings.views ) )
+          this.settings.views = {};
+        if( angular.isUndefined( this.settings.views.month ) )
+          this.settings.views.month = {};
+        this.settings.views.month.displayEventEnd = true;
+
         // extend onCalendar to transform templates into events
         this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {
           // always replace, otherwise the calendar won't update when new appointments/shifts/etc are made
