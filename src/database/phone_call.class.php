@@ -40,7 +40,10 @@ class phone_call extends \cenozo\database\record
   {
     if( !is_null( $this->end_datetime ) )
     {
-      $db_application = lib::create( 'business\session' )->get_application();
+      $session = lib::create( 'business\session' );
+      $db_application = $session->get_application();
+      $db_site = $session->get_site();
+      $db_user = $session->get_user();
       $db_interview = $this->get_assignment()->get_interview();
       $db_participant = $db_interview->get_participant();
       $db_qnaire = $db_interview->get_qnaire();
@@ -56,6 +59,8 @@ class phone_call extends \cenozo\database\record
           $db_event = lib::create( 'database\event' );
           $db_event->participant_id = $db_participant->id;
           $db_event->event_type_id = $db_first_attempt_event_type->id;
+          $db_event->site_id = $db_site->id;
+          $db_event->user_id = $db_user->id;
           $db_event->datetime = $this->start_datetime;
           $db_event->save();
         }
@@ -72,6 +77,8 @@ class phone_call extends \cenozo\database\record
           $db_event = lib::create( 'database\event' );
           $db_event->participant_id = $db_participant->id;
           $db_event->event_type_id = $db_reached_event_type->id;
+          $db_event->site_id = $db_site->id;
+          $db_event->user_id = $db_user->id;
           $db_event->datetime = $this->start_datetime;
           $db_event->save();
         }
