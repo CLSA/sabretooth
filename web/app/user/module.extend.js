@@ -16,9 +16,9 @@ define( [ 'appointment', 'shift', 'user' ].reduce( function( list, name ) {
   }
 
   // converts appointments into events
-  function getEventFromAppointment( appointment, timezone ) { 
+  function getEventFromAppointment( appointment, timezone ) {
     if( angular.isUndefined( appointment.subject ) ) appointment.subject = 'appointment';
-    if( angular.isDefined( appointment.start ) && angular.isDefined( appointment.end ) ) { 
+    if( angular.isDefined( appointment.start ) && angular.isDefined( appointment.end ) ) {
       return appointment;
     } else {
       var date = moment( appointment.datetime );
@@ -27,16 +27,16 @@ define( [ 'appointment', 'shift', 'user' ].reduce( function( list, name ) {
       // adjust the appointment for daylight savings time
       if( date.tz( timezone ).isDST() ) offset += -60;
 
-      var event = { 
+      var event = {
         getIdentifier: function() { return appointment.getIdentifier() },
-        title: ( angular.isDefined( appointment.uid ) ? appointment.uid : 'new appointment' ) + 
+        title: ( angular.isDefined( appointment.uid ) ? appointment.uid : 'new appointment' ) +
                ( angular.isDefined( appointment.qnaire_rank ) ? ' (' + appointment.qnaire_rank + ')' : '' ),
         start: moment( appointment.datetime ).subtract( offset, 'minutes' ),
         end: moment( appointment.datetime ).subtract( offset - appointment.duration, 'minutes' ),
         color: 'green'
-      };  
+      };
       return event;
-    }   
+    }
   }
 
   // converts shifts into events

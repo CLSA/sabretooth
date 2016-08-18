@@ -596,7 +596,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
         this.listModel = CnShiftTemplateListFactory.instance( this );
         this.viewModel = CnShiftTemplateViewFactory.instance( this, site.id == CnSession.site.id );
         this.site = site;
-        
+
         // customize service data
         this.getServiceData = function( type, columnRestrictLists ) {
           var data = this.$$getServiceData( type, columnRestrictLists );

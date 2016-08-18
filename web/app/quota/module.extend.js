@@ -15,5 +15,5 @@ define( [ cenozoApp.module( 'quota' ).getFileUrl( 'module.js' ) ], function() {
     };
     return $delegate;
   } );
-  
+
 } );

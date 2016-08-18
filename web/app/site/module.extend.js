@@ -15,5 +15,5 @@ define( [ cenozoApp.module( 'site' ).getFileUrl( 'module.js' ) ], function() {
     };
     return $delegate;
   } );
-  
+
 } );

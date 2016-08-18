@@ -233,7 +233,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template', 'site' ].
         this.onAdd = function( record ) {
           return this.$$onAdd( record ).then( function() {
             record.getIdentifier = function() { return parentModel.getIdentifierFromRecord( record ); };
-            
+
             // fill in the user name so that it shows in the calendar
             return CnHttpFactory.instance( {
               path: 'user/' + record.user_id,

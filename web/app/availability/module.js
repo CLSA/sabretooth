@@ -215,7 +215,7 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template', 'site' ].reduce(
           var appointmentCalendarModel = CnAppointmentModelFactory.forSite( parentModel.site ).calendarModel;
           var shiftCalendarModel = CnShiftModelFactory.forSite( parentModel.site ).calendarModel;
           var shiftTemplateCalendarModel = CnShiftTemplateModelFactory.forSite( parentModel.site ).calendarModel;
-          
+
           // instead of calling $$onCalendar we determine events from the events in other calendars
           return $q.all( [
             appointmentCalendarModel.onCalendar( replace, minDate, maxDate, true ),
