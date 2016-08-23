@@ -457,8 +457,6 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
             parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
               return e.getIdentifier() != record.getIdentifier();
             } );
-            console.log( 'TODO: need to reset add enabled state?' );
-            //self.parentModel.getAddEnabled = function() { return 0 == self.total; };
           } );
         };
       };
@@ -543,6 +541,11 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
           var data = this.$$getServiceData( type, columnRestrictLists );
           if( 'calendar' == type ) data.restricted_site_id = self.site.id;
           return data;
+        };
+
+        // don't show add button when viewing full appointment list
+        this.getAddEnabled = function() {
+          return 'appointment' != this.getSubjectFromState() && this.$$getAddEnabled();
         };
 
         // extend getMetadata
