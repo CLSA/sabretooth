@@ -220,8 +220,6 @@ class ui extends \cenozo\ui\ui
   {
     $list = parent::get_auxiliary_items();
 
-    $db_role = lib::create( 'business\session' )->get_role();
-
     // the availability and capacity calenders need one another
     $list[] = 'availability';
     $list[] = 'capacity';
