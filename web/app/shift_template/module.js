@@ -454,6 +454,11 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
         var self = this;
         CnBaseCalendarFactory.construct( this, parentModel );
 
+        // show to-from times in month view
+        if( angular.isUndefined( this.settings.views ) ) this.settings.views = {};
+        if( angular.isUndefined( this.settings.views.month ) ) this.settings.views.month = {};
+        this.settings.views.month.displayEventEnd = true;
+
         // extend onCalendar to transform templates into events
         this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {
           // we must get the load dates before calling $$onCalendar
