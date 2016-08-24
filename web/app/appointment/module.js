@@ -215,7 +215,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
                   }
                 };
 
-                listener(); // cancel the watch
+                listener(); // your watch has ended
               }
             } );
           }
@@ -366,7 +366,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
                   }
                 };
 
-                listener(); // cancel the watch
+                listener(); // your watch has ended
               }
             } );
           }
