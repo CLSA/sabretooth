@@ -39,7 +39,6 @@ SOURCE appointment.sql
 SOURCE callback.sql
 SOURCE service.sql
 SOURCE role_has_operation.sql
-SOURCE application_has_role.sql
 SOURCE role_has_service.sql
 SOURCE role_has_state.sql
 SOURCE operation.sql
