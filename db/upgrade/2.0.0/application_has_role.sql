@@ -10,16 +10,6 @@ CREATE PROCEDURE patch_application_has_role()
       WHERE constraint_schema = DATABASE()
       AND constraint_name = "fk_access_site_id" );
 
-    SELECT "Removing defunct roles from application_has_role (cedar)" AS "";
-
-    SET @sql = CONCAT(
-      "DELETE FROM ", @cenozo, ".application_has_role WHERE role_id IN ( ",
-        "SELECT id FROM ", @cenozo, ".role WHERE name IN ( 'cedar' ) ",
-      ")" );
-    PREPARE statement FROM @sql;
-    EXECUTE statement;
-    DEALLOCATE PREPARE statement;
-
     SELECT "Adding new operator+ role to application_has_role" AS "";
 
     SET @sql = CONCAT(
