@@ -200,10 +200,8 @@ define( [ 'appointment', 'capacity', 'shift', 'shift_template', 'site' ].reduce(
         delete this.settings.eventClick;
 
         // show to-from times in month view
-        if( angular.isUndefined( this.settings.views ) )
-          this.settings.views = {};
-        if( angular.isUndefined( this.settings.views.month ) )
-          this.settings.views.month = {};
+        if( angular.isUndefined( this.settings.views ) ) this.settings.views = {};
+        if( angular.isUndefined( this.settings.views.month ) ) this.settings.views.month = {};
         this.settings.views.month.displayEventEnd = true;
 
         // extend onCalendar to transform templates into events

@@ -89,6 +89,11 @@ define( [ 'appointment', 'shift', 'user' ].reduce( function( list, name ) {
         var self = this;
         CnBaseCalendarFactory.construct( this, parentModel );
 
+        // show to-from times in month view
+        if( angular.isUndefined( this.settings.views ) ) this.settings.views = {};
+        if( angular.isUndefined( this.settings.views.month ) ) this.settings.views.month = {};
+        this.settings.views.month.displayEventEnd = true;
+
         // create instances of shift and appointment models
         var shiftModule = cenozoApp.module( 'shift' );
         var appointmentModule = cenozoApp.module( 'appointment' );
