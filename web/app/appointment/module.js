@@ -171,10 +171,8 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAppointmentAdd', [
-    'CnAppointmentModelFactory', 'CnAvailabilityModelFactory',
-    'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', '$q',
-    function( CnAppointmentModelFactory, CnAvailabilityModelFactory,
-              CnSession, CnHttpFactory, CnModalConfirmFactory, $q ) {
+    'CnAppointmentModelFactory', 'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', '$q',
+    function( CnAppointmentModelFactory, CnSession, CnHttpFactory, CnModalConfirmFactory, $q ) {
       return {
         templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
@@ -182,42 +180,11 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAppointmentModelFactory.instance();
 
-          $scope.model.addModel.afterNew( function() {
-            // warn if old appointment will be cancelled
-            var addDirective = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
-            if( null == addDirective ) throw new Exception( 'Unable to find appointment\'s cnRecordAdd scope.' );
-            var saveFn = addDirective.save;
-            addDirective.save = function() {
-              CnHttpFactory.instance( {
-                path: 'interview/' + $scope.model.getParentIdentifier().identifier,
-                data: { select: { column: [ 'missed_appointment' ] } }
-              } ).get().then( function( response ) {
-                var proceed = false;
-                var promise =
-                  response.data.missed_appointment ?
-                  CnModalConfirmFactory.instance( {
-                    title: 'Cancel Missed Appointment?',
-                    message: 'There already exists a passed appointment for this interview, ' +
-                             'do you wish to cancel it and create a new one?'
-                  } ).show().then( function( response ) { proceed = response; } ) :
-                  $q.all().then( function() { proceed = true; } );
-
-                // proceed with the usual save function if we are told to proceed
-                promise.then( function() { if( proceed ) saveFn(); } );
-              } );
-            };
-          } );
-
-          $scope.model.addModel.afterNew( function() {
-            if( angular.isDefined( cenozoApp.module( 'availability' ).actions.calendar ) &&
-                angular.isObject( $scope.model.metadata.participantSite ) ) {
-              $scope.model.metadata.getPromise().then( function() {
-                // get the availability model linked to the participant's site
-                $scope.availabilityModel =
-                  CnAvailabilityModelFactory.forSite( $scope.model.metadata.participantSite );
-
-                // connect the availability calendar's event click callback to the appointment's datetime
-                $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
+          // connect the availability calendar's event click callback to the appointment's datetime
+          if( $scope.model.getEditEnabled() ) {
+            var listener = $scope.$watch( 'model.addModel.availabilityModel', function( availabilityModel ) {
+              if( angular.isDefined( availabilityModel ) ) {
+                availabilityModel.calendarModel.settings.eventClick = function( availability ) {
                   var date = moment( availability.start );
                   var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
 
@@ -247,8 +214,36 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
                     $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
                   }
                 };
+
+                listener(); // cancel the watch
+              }
+            } );
+          }
+
+          $scope.model.addModel.afterNew( function() {
+            // warn if old appointment will be cancelled
+            var addDirective = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
+            if( null == addDirective ) throw new Exception( 'Unable to find appointment\'s cnRecordAdd scope.' );
+            var saveFn = addDirective.save;
+            addDirective.save = function() {
+              CnHttpFactory.instance( {
+                path: 'interview/' + $scope.model.getParentIdentifier().identifier,
+                data: { select: { column: [ 'missed_appointment' ] } }
+              } ).get().then( function( response ) {
+                var proceed = false;
+                var promise =
+                  response.data.missed_appointment ?
+                  CnModalConfirmFactory.instance( {
+                    title: 'Cancel Missed Appointment?',
+                    message: 'There already exists a passed appointment for this interview, ' +
+                             'do you wish to cancel it and create a new one?'
+                  } ).show().then( function( response ) { proceed = response; } ) :
+                  $q.all().then( function() { proceed = true; } );
+
+                // proceed with the usual save function if we are told to proceed
+                promise.then( function() { if( proceed ) saveFn(); } );
               } );
-            }
+            };
           } );
         }
       };
@@ -325,8 +320,8 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAppointmentView', [
-    'CnAppointmentModelFactory', 'CnAvailabilityModelFactory', 'CnSession',
-    function( CnAppointmentModelFactory, CnAvailabilityModelFactory, CnSession ) {
+    'CnAppointmentModelFactory', 'CnSession',
+    function( CnAppointmentModelFactory, CnSession ) {
       return {
         templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
@@ -334,39 +329,33 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAppointmentModelFactory.instance();
 
-          $scope.model.viewModel.afterView( function() {
-            // no need to wait for metadata's promise to return, onView does that already
-            if( angular.isDefined( cenozoApp.module( 'availability' ).actions.calendar ) &&
-                angular.isObject( $scope.model.metadata.participantSite ) ) {
-              $scope.model.metadata.getPromise().then( function() {
-                // get the availability model linked to the participant's site
-                $scope.availabilityModel =
-                  CnAvailabilityModelFactory.forSite( $scope.model.metadata.participantSite );
+          // connect the availability calendar's event click callback to the appointment's datetime
+          if( $scope.model.getEditEnabled() ) {
+            var listener = $scope.$watch( 'model.viewModel.availabilityModel', function( availabilityModel ) {
+              if( angular.isDefined( availabilityModel ) ) {
+                availabilityModel.calendarModel.settings.eventClick = function( availability ) {
+                  var date = moment( availability.start );
+                  var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
 
-                // connect the availability calendar's event click callback to the appointment's datetime
-                if( $scope.model.getEditEnabled() ) {
-                  $scope.availabilityModel.calendarModel.settings.eventClick = function( availability ) {
-                    var date = moment( availability.start );
-                    var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
+                  // adjust the appointment for daylight savings time
+                  if( date.tz( CnSession.user.timezone ).isDST() ) offset += -60;
 
-                    // adjust the appointment for daylight savings time
-                    if( date.tz( CnSession.user.timezone ).isDST() ) offset += -60;
+                  var availabilityStart = moment( availability.start ).add( offset, 'minutes' );
+                  var availabilityEnd = moment( availability.end ).add( offset, 'minutes' );
+                  if( availabilityEnd.isAfter( moment() ) ) {
+                    var cnRecordViewScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
+                    if( null == cnRecordViewScope )
+                      throw new Exception( 'Unable to find appointment\'s cnRecordView scope.' );
 
-                    var availabilityStart = moment( availability.start ).add( offset, 'minutes' );
-                    var availabilityEnd = moment( availability.end ).add( offset, 'minutes' );
-                    if( availabilityEnd.isAfter( moment() ) ) {
-                      var cnRecordViewScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
-                      if( null == cnRecordViewScope )
-                        throw new Exception( 'Unable to find appointment\'s cnRecordView scope.' );
+                    // if the start is after the current time then use the next rounded hour
+                    var datetime = moment( availabilityStart.format() );
+                    if( !datetime.isAfter( moment() ) ) {
+                      datetime = moment().minute( 0 ).second( 0 ).millisecond( 0 ).add( 1, 'hours' );
+                      if( !datetime.isAfter( moment() ) )
+                        datetime = moment( availabilityEnd.format() );
+                    }
 
-                      // if the start is after the current time then use the next rounded hour
-                      var datetime = moment( availabilityStart.format() );
-                      if( !datetime.isAfter( moment() ) ) {
-                        datetime = moment().minute( 0 ).second( 0 ).millisecond( 0 ).add( 1, 'hours' );
-                        if( !datetime.isAfter( moment() ) )
-                          datetime = moment( availabilityEnd.format() );
-                      }
-
+                    if( !datetime.isSame( moment( $scope.model.viewModel.record.datetime ) ) ) {
                       // set the datetime in the record and formatted record
                       $scope.model.viewModel.record.datetime = datetime.format();
                       $scope.model.viewModel.formattedRecord.datetime =
@@ -374,11 +363,13 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
                       $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
                       cnRecordViewScope.patch( 'datetime' );
                     }
-                  };
-                }
-              } );
-            }
-          } );
+                  }
+                };
+
+                listener(); // cancel the watch
+              }
+            } );
+          }
         }
       };
     }
@@ -386,8 +377,8 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAppointmentAddFactory', [
-    'CnBaseAddFactory', 'CnSession', 'CnHttpFactory',
-    function( CnBaseAddFactory, CnSession, CnHttpFactory ) {
+    'CnBaseAddFactory', 'CnSession', 'CnHttpFactory', '$injector',
+    function( CnBaseAddFactory, CnSession, CnHttpFactory, $injector ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
@@ -408,6 +399,21 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
                 getEventFromAppointment( record, CnSession.user.timezone )
               );
             } );
+          } );
+        };
+
+        this.onNew = function( record ) {
+          return this.$$onNew( record ).then( function() {
+            if( angular.isUndefined( self.availabilityModel ) &&
+                angular.isDefined( cenozoApp.module( 'availability' ).actions.calendar ) &&
+                angular.isObject( parentModel.metadata.participantSite ) ) {
+              // to avoid a circular dependency we have to get the CnAvailabilityModelFactory here instead of
+              // in this service's injection list
+              var CnAvailabilityModelFactory = $injector.get( 'CnAvailabilityModelFactory' );
+
+              // get the availability model linked to the participant's site
+              self.availabilityModel = CnAvailabilityModelFactory.forSite( parentModel.metadata.participantSite );
+            }
           } );
         };
       };
@@ -466,8 +472,8 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAppointmentViewFactory', [
-    'CnBaseViewFactory', 'CnSession',
-    function( CnBaseViewFactory, CnSession ) {
+    'CnBaseViewFactory', '$injector', 'CnSession',
+    function( CnBaseViewFactory, $injector, CnSession ) {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
@@ -501,6 +507,17 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
             var upcoming = moment().isBefore( self.record.datetime, 'minute' );
             parentModel.getDeleteEnabled = function() { return parentModel.$$getDeleteEnabled() && upcoming; };
             parentModel.getEditEnabled = function() { return parentModel.$$getEditEnabled() && upcoming; };
+
+            if( angular.isUndefined( self.availabilityModel ) &&
+                angular.isDefined( cenozoApp.module( 'availability' ).actions.calendar ) &&
+                angular.isObject( parentModel.metadata.participantSite ) ) {
+              // to avoid a circular dependency we have to get the CnAvailabilityModelFactory here instead of
+              // in this service's injection list
+              var CnAvailabilityModelFactory = $injector.get( 'CnAvailabilityModelFactory' );
+
+              // get the availability model linked to the participant's site
+              self.availabilityModel = CnAvailabilityModelFactory.forSite( parentModel.metadata.participantSite );
+            }
           } );
         };
       }

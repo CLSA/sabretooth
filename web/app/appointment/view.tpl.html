@@ -8,7 +8,7 @@
                   model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
 </div>
 <div class="vertical-spacer">
-  <cn-availability-calendar ng-if="availabilityModel"
-                            model="availabilityModel"
+  <cn-availability-calendar ng-if="model.viewModel.availabilityModel"
+                            model="model.viewModel.availabilityModel"
                             prevent-site-change="true"></cn-availability-calendar>
 </div>
