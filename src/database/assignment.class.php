@@ -16,8 +16,6 @@ class assignment extends \cenozo\database\record
 {
   /**
    * Overrides the parent save method.
-   * @author Patrick Emond
-   * @access public
    */
   public function save()
   {
@@ -54,7 +52,11 @@ class assignment extends \cenozo\database\record
   }
 
   /**
-   * TODO: document
+   * Determines whether this assignment has an open phone call
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
    */
   function has_open_phone_call()
   {
@@ -71,7 +73,11 @@ class assignment extends \cenozo\database\record
   }
 
   /**
-   * TODO: document
+   * Returns this assignment's open phone call, or NULL if it has no open phone calls
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\phone_call
+   * @access public
    */
   function get_open_phone_call()
   {
@@ -91,8 +97,13 @@ class assignment extends \cenozo\database\record
     return 0 < count( $phone_call_list ) ? current( $phone_call_list ) : NULL;
   }
 
-  // TODO: document
-  // @param boolean $completed Whether the assignment is being closed
+  /**
+   * Processes changes to appointments and callbacks based on this assignment
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param boolean $completed Whether the assignment is being closed
+   * @access public
+   */
   function process_appointments_and_callbacks( $completed )
   {
     $db_queue = $this->get_queue();

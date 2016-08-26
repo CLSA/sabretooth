@@ -15,7 +15,11 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class user extends \cenozo\database\user
 {
   /**
-   * TODO: document
+   * Determines whether this user has an open assignment
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
    */
   function has_open_assignment()
   {
@@ -32,7 +36,11 @@ class user extends \cenozo\database\user
   }
 
   /**
-   * TODO: document
+   * Returns this user's open assignment, or NULL if there is no open assignment
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\assignment
+   * @access public
    */
   function get_open_assignment()
   {
@@ -53,7 +61,11 @@ class user extends \cenozo\database\user
   }
 
   /**
-   * TODO: document
+   * Determines whether this user has an open phone call
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
    */
   function has_open_phone_call()
   {
@@ -71,7 +83,11 @@ class user extends \cenozo\database\user
   }
 
   /**
-   * TODO: document
+   * Returns this user's open phone call, or NULL if there is no open phone call
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return database\phone_call
+   * @access public
    */
   function get_open_phone_call()
   {

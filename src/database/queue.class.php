@@ -14,7 +14,14 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  */
 class queue extends \cenozo\database\record
 {
-  // TODO: document
+  /**
+   * Adds a participant to the list of those to run repopulate() on during shutdown
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\participant $db_participant If NULL then all participants will be included
+   * @access public
+   * @static
+   */
   public static function delayed_repopulate( $db_participant = NULL )
   {
     if( 'all' != static::$delayed_repopulate_list )
@@ -25,7 +32,14 @@ class queue extends \cenozo\database\record
     }
   }
 
-  // TODO: document
+  /**
+   * Adds a participant to the list of those to run repopulate_time() on during shutdown
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @param database\participant $db_participant If NULL then all participants will be included
+   * @access public
+   * @static
+   */
   public static function delayed_repopulate_time( $db_participant = NULL )
   {
     if( 'all' != static::$delayed_repopulate_time_list )
@@ -36,7 +50,13 @@ class queue extends \cenozo\database\record
     }
   }
 
-  // TODO: document
+  /**
+   * Executes all delayed repopulate() and repopulate_time() methods
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   * @static
+   */
   public static function execute_delayed()
   {
     static::$temporary_tables_created = false; // force rebuild temporary tables
@@ -53,7 +73,14 @@ class queue extends \cenozo\database\record
     static::$delayed_repopulate_time_list = array();
   }
 
-  // TODO: document
+  /**
+   * Returns the time since the last time repopulate() was called
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return datetime
+   * @access public
+   * @static
+   */
   public static function get_interval_since_last_repopulate()
   {
     $select = lib::create( 'database\select' );
@@ -66,7 +93,14 @@ class queue extends \cenozo\database\record
     return $datetime ? util::get_interval( $datetime ) : NULL;
   }
 
-  // TODO: document
+  /**
+   * Retuns the time since the last repopulate_time() was called
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return datetime
+   * @access public
+   * @static
+   */
   public static function get_interval_since_last_repopulate_time()
   {
     $select = lib::create( 'database\select' );
@@ -829,11 +863,21 @@ class queue extends \cenozo\database\record
    */
   public static $debug = false;
 
-  // TODO: document
-  public static $delayed_repopulate_list = array();
+  /**
+   * A list of all participants to repopulate() during shutdown
+   * @var array|"all" $delayed_repopulate_list
+   * @access protected
+   * @static
+   */
+  protected static $delayed_repopulate_list = array();
 
-  // TODO: document
-  public static $delayed_repopulate_time_list = array();
+  /**
+   * A list of all participants to repopulate_time() during shutdown
+   * @var array|"all" $delayed_repopulate_time_list
+   * @access protected
+   * @static
+   */
+  protected static $delayed_repopulate_time_list = array();
 
   /**
    * Whether the temporary tables has been created.

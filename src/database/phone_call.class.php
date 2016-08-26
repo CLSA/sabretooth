@@ -35,7 +35,12 @@ class phone_call extends \cenozo\database\record
     parent::save();
   }
 
-  // TODO: document
+  /**
+   * Processes application-based events based on this phone call
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @access public
+   */
   public function process_events()
   {
     if( !is_null( $this->end_datetime ) )

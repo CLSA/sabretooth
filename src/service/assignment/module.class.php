@@ -390,12 +390,24 @@ class module extends \cenozo\service\site_restricted_module
     }
   }
 
-  // TODO: document
-  protected $db_participant = NULL;
+  /**
+   * A temporary variable used for caching
+   * @var database\participant $db_participant
+   * @access private
+   */
+  private $db_participant = NULL;
 
-  // TODO: document
-  protected $is_survey_complete = NULL;
+  /**
+   * A temporary variable used for caching
+   * @var boolean $is_survey_complete
+   * @access private
+   */
+  private $is_survey_complete = NULL;
 
-  // TODO: document
-  protected $current_phone_id = NULL;
+  /**
+   * A temporary variable used for caching
+   * @var integer $current_phone_id
+   * @access private
+   */
+  private $current_phone_id = NULL;
 }
