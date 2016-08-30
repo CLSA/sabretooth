@@ -551,7 +551,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         this.launchScript = function( script ) {
           CnScriptLauncherFactory.instance( {
             script: script,
-            uid: self.participant.uid,
+            identifier: 'uid=' + self.participant.uid,
             lang: self.participant.language_code
           } ).launch().then( function() { self.loadScriptList(); } );
         };
