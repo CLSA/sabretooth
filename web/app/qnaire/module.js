@@ -134,10 +134,8 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQnaireModelFactory', [
-    'CnBaseModelFactory', 'CnQnaireAddFactory', 'CnQnaireListFactory', 'CnQnaireViewFactory',
-    'CnSession', 'CnHttpFactory',
-    function( CnBaseModelFactory, CnQnaireAddFactory, CnQnaireListFactory, CnQnaireViewFactory,
-              CnSession, CnHttpFactory ) {
+    'CnBaseModelFactory', 'CnQnaireAddFactory', 'CnQnaireListFactory', 'CnQnaireViewFactory', 'CnHttpFactory',
+    function( CnBaseModelFactory, CnQnaireAddFactory, CnQnaireListFactory, CnQnaireViewFactory, CnHttpFactory ) {
       var object = function( root ) {
         var self = this;
         CnBaseModelFactory.construct( this, module );
@@ -149,7 +147,7 @@ define( function() {
         this.getMetadata = function() {
           return this.$$getMetadata().then( function() {
             return CnHttpFactory.instance( {
-              path: 'application/' + CnSession.application.id + '/script',
+              path: 'application/0/script',
               data: {
                 select: { column: [ 'id', 'name' ] },
                 modifier: {

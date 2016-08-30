@@ -508,8 +508,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         this.loadScriptList = function() {
           self.isScriptListLoading = true;
           return CnHttpFactory.instance( {
-            path: 'application/' + CnSession.application.id +
-                  '/script?participant_id=' + self.assignment.participant_id,
+            path: 'application/0/script?participant_id=' + self.assignment.participant_id,
             data: {
               modifier: { order: ['repeated','name'] },
               select: { column: [
