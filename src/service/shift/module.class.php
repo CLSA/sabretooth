@@ -20,8 +20,15 @@ class module extends \cenozo\service\base_calendar_module
   public function __construct( $index, $service )
   {
     parent::__construct( $index, $service );
-    $this->lower_date = array( 'null' => false, 'column' => 'DATE( start_datetime )' );
-    $this->upper_date = array( 'null' => false, 'column' => 'DATE( end_datetime )' );
+    $db_user = lib::create( 'business\session' )->get_user();
+    $this->lower_date = array(
+      'null' => false,
+      'column' => sprintf( 'DATE( CONVERT_TZ( start_datetime, "UTC", "%s" ) )', $db_user->timezone )
+    );
+    $this->upper_date = array(
+      'null' => false,
+      'column' => sprintf( 'DATE( CONVERT_TZ( end_datetime, "UTC", "%s" ) )', $db_user->timezone )
+    );
   }
 
   /**
@@ -58,13 +65,17 @@ class module extends \cenozo\service\base_calendar_module
     $db_restrict_site = $this->get_restricted_site();
     if( !is_null( $db_restrict_site ) ) $modifier->where( 'site_id', '=', $db_restrict_site->id );
 
-    // include the user first/last/name as supplemental data
     $modifier->join( 'user', 'shift.user_id', 'user.id' );
     $select->add_table_column( 'user', 'name', 'username' );
-    $select->add_column(
-      'CONCAT( user.first_name, " ", user.last_name, " (", user.name, ")" )',
-      'formatted_user_id',
-      false );
+
+    if( !is_null( $this->get_resource() ) )
+    {
+      // include the user first/last/name as supplemental data
+      $select->add_column(
+        'CONCAT( user.first_name, " ", user.last_name, " (", user.name, ")" )',
+        'formatted_user_id',
+        false );
+    }
   }
 
   /**
