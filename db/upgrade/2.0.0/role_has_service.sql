@@ -45,7 +45,7 @@ CREATE PROCEDURE patch_role_has_service()
     END IF;
 
     -- populate table
-    DELETE FROM role_has_service;
+    TRUNCATE role_has_service;
 
     -- administrator
     SET @sql = CONCAT(
