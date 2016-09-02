@@ -125,7 +125,6 @@ define( function() {
         this.afterList( function() {
           self.parentModel.getAddEnabled = function() { return false; };
           if( 'participant' == self.parentModel.getSubjectFromState() ) {
-            var queueRank = null;
             var qnaireRank = null;
             var lastInterview = null;
             // get the participant's last interview
@@ -142,21 +141,14 @@ define( function() {
               // get the participant's current queue rank
               return CnHttpFactory.instance( {
                 path: self.parentModel.getServiceCollectionPath().replace( '/interview', '' ),
-                data: {
-                  select: { column: [
-                    { table: 'queue', column: 'rank', alias: 'queueRank' },
-                    { table: 'qnaire', column: 'rank', alias: 'qnaireRank' }
-                  ] }
-                },
+                data: { select: { column: [ { table: 'qnaire', column: 'rank', alias: 'qnaireRank' } ] } },
                 onError: function( response ) {} // ignore errors
               } ).query().then( function( response ) {
-                queueRank = response.data.queueRank;
                 qnaireRank = response.data.qnaireRank;
               } );
             } ).then( function( response ) {
               self.parentModel.getAddEnabled = function() {
                 return self.parentModel.$$getAddEnabled() &&
-                       null != queueRank &&
                        null != qnaireRank && (
                          null == lastInterview || (
                            null != lastInterview.end_datetime &&
