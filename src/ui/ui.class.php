@@ -221,8 +221,8 @@ class ui extends \cenozo\ui\ui
     $list = parent::get_auxiliary_items();
 
     // the availability and capacity calenders need one another
-    $list[] = 'availability';
-    $list[] = 'capacity';
+    $list['availability'] = array( 'actions' => array( 'calendar' => '/{identifier}' ) );
+    $list['capacity'] = array();
 
     return $list;
   }
