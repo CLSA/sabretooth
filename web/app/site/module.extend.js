@@ -3,7 +3,7 @@ define( [ cenozoApp.module( 'site' ).getFileUrl( 'module.js' ) ], function() {
   'use strict';
 
   // extend the view factory
-  cenozo.providers.decorator( 'CnSiteViewFactory',
+  cenozo.providers.decorator( 'CnSiteViewFactory', [
     '$delegate',
     function( $delegate ) {
       var instance = $delegate.instance;
