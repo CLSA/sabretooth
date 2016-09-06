@@ -1,112 +1,24 @@
 // we need the participant module for the special CnAssignmentControlFactory
-define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
+define( [ 'participant' ].reduce( function( list, name ) {
+  return list.concat( cenozoApp.module( name ).getRequiredFiles() );
+}, [ cenozoApp.module( 'assignment' ).getFileUrl( 'module.js' ) ] ), function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'assignment', true ); } catch( err ) { console.warn( err ); return; }
-  angular.extend( module, {
-    identifier: {
-      parent: {
-        subject: 'interview',
-        column: 'interview_id',
-        friendly: 'qnaire'
-      }
-    },
-    name: {
-      singular: 'assignment',
-      plural: 'assignments',
-      possessive: 'assignment\'s',
-      pluralPossessive: 'assignments\''
-    },
-    columnList: {
-      user: {
-        column: 'user.name',
-        title: 'User'
-      },
-      role: {
-        column: 'role.name',
-        title: 'Role'
-      },
-      site: {
-        column: 'site.name',
-        title: 'Site'
-      },
-      start_datetime: {
-        column: 'assignment.start_datetime',
-        title: 'Start',
-        type: 'datetimesecond'
-      },
-      end_datetime: {
-        column: 'assignment.end_datetime',
-        title: 'End',
-        type: 'datetimesecond'
-      }
-    },
-    defaultOrder: {
-      column: 'start_datetime',
-      reverse: true
-    }
-  } );
+  var module = cenozoApp.module( 'assignment' );
 
-  module.addInputGroup( '', {
-    participant: {
-      column: 'participant.uid',
-      title: 'Participant',
-      type: 'string',
-      constant: true
-    },
-    qnaire: {
-      column: 'script.name',
-      title: 'Questionnaire',
-      type: 'string',
-      constant: true
-    },
-    user: {
-      column: 'user.name',
-      title: 'User',
-      type: 'string',
-      constant: true
-    },
-    role: {
-      column: 'role.name',
-      title: 'Role',
-      type: 'string',
-      constant: true
-    },
-    site: {
-      column: 'site.name',
-      title: 'Site',
-      type: 'string',
-      constant: true
-    },
-    queue: {
-      column: 'queue.title',
-      title: 'Queue',
-      type: 'string',
-      constant: true
-    },
-    start_datetime: {
-      column: 'assignment.start_datetime',
-      title: 'Start Date & Time',
-      type: 'datetimesecond',
-      max: 'end_datetime'
-    },
-    end_datetime: {
-      column: 'assignment.end_datetime',
-      title: 'End Date & Time',
-      type: 'datetimesecond',
-      min: 'start_datetime',
-      max: 'now'
-    }
-  } );
+  module.identifier.parent.friendly = 'qnaire';
 
-  module.addExtraOperation( 'view', {
-    title: 'Force Close',
-    operation: function( $state, model ) { model.viewModel.forceClose(); },
-    isDisabled: function( $state, model ) { return null !== model.viewModel.record.end_datetime; },
-    isIncluded: function( $state, model ) { return model.viewModel.forceCloseAllowed; },
-    help: 'Closes the interview along with any open calls. ' +
-          'Note that this will not disconnect active VoIP calls, nor will it prevent the user from continuing ' +
-          'to answer questionnaires.'
+  module.addInputAfter( '', 'participant', 'qnaire', {
+    column: 'script.name',
+    title: 'Questionnaire',
+    type: 'string',
+    constant: true
+  } );
+  module.addInputAfter( '', 'site', 'queue', {
+    column: 'queue.title',
+    title: 'Queue',
+    type: 'string',
+    constant: true
   } );
 
   /* ######################################################################################################## */
@@ -114,7 +26,7 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
     'CnAssignmentControlFactory', '$window',
     function( CnAssignmentControlFactory, $window ) {
       return {
-        templateUrl: module.getFileUrl( 'control.tpl.html' ),
+        templateUrl: cenozoApp.getFileUrl( 'assignment', 'control.tpl.html' ),
         restrict: 'E',
         controller: function( $scope ) {
           $scope.model = CnAssignmentControlFactory.instance();
@@ -126,112 +38,6 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
           var win = angular.element( $window ).on( 'focus', focusFn );
           scope.$on( '$destroy', function() { win.off( 'focus', focusFn ); } );
         }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAssignmentList', [
-    'CnAssignmentModelFactory',
-    function( CnAssignmentModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAssignmentModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAssignmentView', [
-    'CnAssignmentModelFactory',
-    function( CnAssignmentModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAssignmentModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAssignmentListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAssignmentViewFactory', [
-    'CnBaseViewFactory', 'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory',
-    function( CnBaseViewFactory, CnSession, CnHttpFactory, CnModalConfirmFactory, CnModalMessageFactory ) {
-      var object = function( parentModel, root ) {
-        var self = this;
-        CnBaseViewFactory.construct( this, parentModel, root );
-        this.forceCloseAllowed = 1 < CnSession.role.tier;
-        this.forceClose = function() {
-          CnModalConfirmFactory.instance( {
-            title: 'Force Close Assignment?',
-            message: 'Are you sure you wish to force-close the assignment?\n\n' +
-                     'Note that this will not disconnect active VoIP calls, nor will it prevent the user from ' +
-                     'continuing to answer questionnaires.'
-          } ).show().then( function( response ) {
-            function refreshView() {
-              // the assignment may no longer exist, so go back to the interview if it's gone
-              CnHttpFactory.instance( {
-                path: 'assignment/' + self.record.id,
-                data: { select: { column: [ 'id' ] } },
-                onError: function( response ) {
-                  if( 404 == response.status ) {
-                    self.transitionOnDelete();
-                  } else { CnModalMessageFactory.httpError( response ); }
-                }
-              } ).get().then( function() { self.onView(); } );
-            }
-
-            if( response ) {
-              CnHttpFactory.instance( {
-                path: 'assignment/' + self.record.id + '?operation=force_close',
-                data: {},
-                onError: function( response ) {
-                  if( 404 == response.status ) {
-                    // 404 means the assignment no longer exists
-                    self.transitionOnDelete();
-                  } else if( 409 == response.status ) {
-                    // 409 means the assignment is already closed
-                    refreshView();
-                  } else { CnModalMessageFactory.httpError( response ); }
-                }
-              } ).patch().then( refreshView );
-            }
-          } );
-        };
-      }
-      return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAssignmentModelFactory', [
-    'CnBaseModelFactory', 'CnAssignmentListFactory', 'CnAssignmentViewFactory',
-    function( CnBaseModelFactory, CnAssignmentListFactory, CnAssignmentViewFactory ) {
-      var object = function( root ) {
-        CnBaseModelFactory.construct( this, module );
-        this.listModel = CnAssignmentListFactory.instance( this );
-        this.viewModel = CnAssignmentViewFactory.instance( this, root );
-      };
-
-      return {
-        root: new object( true ),
-        instance: function() { return new object( false ); }
       };
     }
   ] );
@@ -506,46 +312,48 @@ define( cenozoApp.module( 'participant' ).getRequiredFiles(), function() {
         };
 
         this.loadScriptList = function() {
-          self.isScriptListLoading = true;
-          return CnHttpFactory.instance( {
-            path: 'application/0/script?participant_id=' + self.assignment.participant_id,
-            data: {
-              modifier: { order: ['repeated','name'] },
-              select: { column: [
-                'id', 'name', 'repeated', 'url', 'description',
-                { table: 'started_event', column: 'datetime', alias: 'started_datetime' },
-                { table: 'finished_event', column: 'datetime', alias: 'finished_datetime' }
-              ] }
-            }
-          } ).query().then( function( response ) {
-            // put qnaire scripts in separate list and only include the current qnaire script in the main list
-            self.scriptList = [];
-            self.qnaireScriptList = [];
-            response.data.forEach( function( item ) {
-              if( angular.isArray( self.qnaireList ) &&
-                  null != self.qnaireList.findByProperty( 'script_id', item.id ) ) {
-                self.qnaireScriptList.push( item );
-                if( item.id == self.assignment.script_id ) self.scriptList.unshift( item );
-              } else {
-                self.scriptList.push( item );
+          if( null != self.assignment ) {
+            self.isScriptListLoading = true;
+            return CnHttpFactory.instance( {
+              path: 'application/0/script?participant_id=' + self.assignment.participant_id,
+              data: {
+                modifier: { order: ['repeated','name'] },
+                select: { column: [
+                  'id', 'name', 'repeated', 'url', 'description',
+                  { table: 'started_event', column: 'datetime', alias: 'started_datetime' },
+                  { table: 'finished_event', column: 'datetime', alias: 'finished_datetime' }
+                ] }
               }
-            } );
+            } ).query().then( function( response ) {
+              // put qnaire scripts in separate list and only include the current qnaire script in the main list
+              self.scriptList = [];
+              self.qnaireScriptList = [];
+              response.data.forEach( function( item ) {
+                if( angular.isArray( self.qnaireList ) &&
+                    null != self.qnaireList.findByProperty( 'script_id', item.id ) ) {
+                  self.qnaireScriptList.push( item );
+                  if( item.id == self.assignment.script_id ) self.scriptList.unshift( item );
+                } else {
+                  self.scriptList.push( item );
+                }
+              } );
 
-            if( 0 == self.scriptList.length ) {
-              self.activeScript = null;
-            } else {
-              if( null == self.activeScript ||
-                  null == self.scriptList.findByProperty( 'id', self.activeScript.id ) ) {
-                self.activeScript = self.scriptList[0];
+              if( 0 == self.scriptList.length ) {
+                self.activeScript = null;
               } else {
-                var activeScriptName = self.activeScript.name;
-                self.scriptList.forEach( function( item ) {
-                  if( activeScriptName == item.name ) self.activeScript = item;
-                } );
+                if( null == self.activeScript ||
+                    null == self.scriptList.findByProperty( 'id', self.activeScript.id ) ) {
+                  self.activeScript = self.scriptList[0];
+                } else {
+                  var activeScriptName = self.activeScript.name;
+                  self.scriptList.forEach( function( item ) {
+                    if( activeScriptName == item.name ) self.activeScript = item;
+                  } );
+                }
               }
-            }
-            self.isScriptListLoading = false;
-          } );
+              self.isScriptListLoading = false;
+            } );
+          }
         };
 
         this.launchScript = function( script ) {

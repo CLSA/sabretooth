@@ -27,19 +27,20 @@ class ui extends \cenozo\ui\ui
     if( 'operator' == $db_role->name ) foreach( $module_list as &$module ) $module['list_menu'] = false;
 
     // add child actions to certain modules
-    if( array_key_exists( 'assignment', $module_list ) )
-      $module_list['assignment']['children'] = array( 'phone_call' );
     if( array_key_exists( 'interview', $module_list ) )
-      $module_list['interview']['children'] = array( 'appointment', 'assignment' );
+    {
+      array_unshift( $module_list['interview']['children'], 'appointment' );
+    }
     if( array_key_exists( 'participant', $module_list ) )
     {
-      array_unshift( $module_list['participant']['children'], 'interview' );
-
       // add extra query variables to history action
-      $module_list['participant']['actions']['history'] .= '&{appointment}&{assignment}';
+      $module_list['participant']['actions']['history'] .= '&{appointment}';
     }
+
     if( array_key_exists( 'qnaire', $module_list ) )
+    {
       $module_list['qnaire']['choosing'] = array( 'site', 'quota' );
+    }
     if( array_key_exists( 'queue', $module_list ) )
     {
       $module_list['queue']['list_menu'] = true; // always show the queue list
@@ -50,9 +51,13 @@ class ui extends \cenozo\ui\ui
         $module_list['queue']['actions']['view'] .= '?{restrict}&{order}&{reverse}';
     }
     if( array_key_exists( 'quota', $module_list ) )
+    {
       $module_list['quota']['choosing'] = array( 'qnaire' );
+    }
     if( array_key_exists( 'site', $module_list ) )
+    {
       $module_list['site']['choosing'] = array( 'qnaire' );
+    }
     if( array_key_exists( 'state', $module_list ) )
     {
       // remove the state list from the operator+ role
@@ -87,8 +92,6 @@ class ui extends \cenozo\ui\ui
     $db_role = lib::create( 'business\session' )->get_role();
 
     // add application-specific states to the base list
-    if( array_key_exists( 'interview', $module_list ) && $module_list['interview']['list_menu'] )
-      $list['Interviews'] = 'interview';
     if( array_key_exists( 'qnaire', $module_list ) && $module_list['qnaire']['list_menu'] )
       $list['Questionnaires'] = 'qnaire';
     if( array_key_exists( 'queue', $module_list ) && $module_list['queue']['list_menu'] )

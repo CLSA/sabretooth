@@ -13,10 +13,13 @@ global $SETTINGS;
 $SETTINGS['general']['application_name'] = 'sabretooth';
 $SETTINGS['general']['instance_name'] = $SETTINGS['general']['application_name'];
 $SETTINGS['general']['version'] = '2.0.0';
-$SETTINGS['general']['build'] = '88b53bb';
+$SETTINGS['general']['build'] = '5295f85';
 
 // always leave as false when running as production server
 $SETTINGS['general']['development_mode'] = false;
 
 // the location of sabretooth internal path
 $SETTINGS['path']['APPLICATION'] = str_replace( '/settings.ini.php', '', __FILE__ );
+
+// add the interview module
+$SETTINGS['module']['interview'] = true;
