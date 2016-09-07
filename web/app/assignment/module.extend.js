@@ -34,7 +34,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
         },
         link: function( scope ) {
           // update the script list whenever we regain focus since there may have been script activity
-          var focusFn = function() { scope.model.loadScriptList(); };
+          var focusFn = function() { if( null != scope.model.assignment ) scope.model.loadScriptList(); };
           var win = angular.element( $window ).on( 'focus', focusFn );
           scope.$on( '$destroy', function() { win.off( 'focus', focusFn ); } );
         }
