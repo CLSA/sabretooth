@@ -11,10 +11,12 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
       constant: true
     },
     start_date: {
-      title: 'Questionnaire Start',
+      title: 'Delayed Until',
       column: 'qnaire.start_date',
       type: 'date',
-      constant: true
+      constant: true,
+      help: 'If not empty then the participant will not be permitted to begin this questionnaire until the ' +
+            'date shown is reached.'
     },
     queue: {
       title: 'Current Queue',
