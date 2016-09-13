@@ -157,10 +157,12 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
       var event = {
         getIdentifier: function() { return appointment.getIdentifier() },
         title: ( angular.isDefined( appointment.uid ) ? appointment.uid : 'new appointment' ) +
-               ( angular.isDefined( appointment.qnaire_rank ) ? ' (' + appointment.qnaire_rank + ')' : '' ),
+               ( angular.isDefined( appointment.qnaire_rank ) ? ' (' + appointment.qnaire_rank + ')' : '' ) +
+               ( null != appointment.username ? '\nfor ' + appointment.username : '' ),
         start: moment( appointment.datetime ).subtract( offset, 'minutes' ),
         end: moment( appointment.datetime ).subtract( offset - appointment.duration, 'minutes' )
       };
+
       if( appointment.override ) {
         event.override = true;
         event.color = 'green';

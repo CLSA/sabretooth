@@ -123,6 +123,7 @@ class module extends \cenozo\service\base_calendar_module
     $session = lib::create( 'business\session' );
 
     $modifier->left_join( 'user', 'appointment.user_id', 'user.id' );
+    $select->add_table_column( 'user', 'name', 'username' );
 
     if( !is_null( $this->get_resource() ) )
     {

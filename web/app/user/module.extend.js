@@ -17,9 +17,11 @@ define( [ 'appointment', 'shift' ].reduce( function( list, name ) {
 
   // converts appointments into events
   function getEventFromAppointment( appointment, timezone ) {
+    var event = {};
     if( angular.isUndefined( appointment.subject ) ) appointment.subject = 'appointment';
+
     if( angular.isDefined( appointment.start ) && angular.isDefined( appointment.end ) ) {
-      return appointment;
+      event = appointment;
     } else {
       var date = moment( appointment.datetime );
       var offset = moment.tz.zone( timezone ).offset( date.unix() );
@@ -27,23 +29,29 @@ define( [ 'appointment', 'shift' ].reduce( function( list, name ) {
       // adjust the appointment for daylight savings time
       if( date.tz( timezone ).isDST() ) offset += -60;
 
-      var event = {
-        getIdentifier: function() { return appointment.getIdentifier() },
+      event = {
         title: ( angular.isDefined( appointment.uid ) ? appointment.uid : 'new appointment' ) +
                ( angular.isDefined( appointment.qnaire_rank ) ? ' (' + appointment.qnaire_rank + ')' : '' ),
+        getIdentifier: function() { return appointment.getIdentifier() },
         start: moment( appointment.datetime ).subtract( offset, 'minutes' ),
-        end: moment( appointment.datetime ).subtract( offset - appointment.duration, 'minutes' ),
-        color: 'green'
+        end: moment( appointment.datetime ).subtract( offset - appointment.duration, 'minutes' )
       };
-      return event;
     }
+
+    angular.extend( event, {
+      title: event.title.replace( /\nfor .+$/, '' ),
+      color: undefined
+    } );
+
+    return event;
   }
 
   // converts shifts into events
   function getEventFromShift( shift, timezone ) {
+    var event = {};
     if( angular.isUndefined( shift.subject ) ) shift.subject = 'shift';
     if( angular.isDefined( shift.start ) && angular.isDefined( shift.end ) ) {
-      return shift;
+      event = shift;
     } else {
       var date = moment( shift.start_datetime );
       var offset = moment.tz.zone( timezone ).offset( date.unix() );
@@ -51,13 +59,19 @@ define( [ 'appointment', 'shift' ].reduce( function( list, name ) {
       // adjust the appointment for daylight savings time
       if( date.tz( timezone ).isDST() ) offset += -60;
 
-      return {
+      event = {
         getIdentifier: function() { return shift.getIdentifier() },
-        title: shift.username,
         start: moment( shift.start_datetime ).subtract( offset, 'minutes' ),
         end: moment( shift.end_datetime ).subtract( offset, 'minutes' )
       };
     }
+
+    angular.extend( event, {
+      title: 'shift',
+      color: 'gray'
+    } );
+
+    return event;
   }
 
   /* ######################################################################################################## */
