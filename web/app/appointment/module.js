@@ -199,7 +199,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
                     // find the add directive's scope
                     var cnRecordAddScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
                     if( null == cnRecordAddScope )
-                      throw new Exception( 'Unable to find appointment\'s cnRecordAdd scope.' );
+                      throw new Error( 'Unable to find appointment\'s cnRecordAdd scope.' );
 
                     // if the start is after the current time then use the next rounded hour
                     var datetime = moment( availabilityStart );
@@ -225,7 +225,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
           $scope.model.addModel.afterNew( function() {
             // warn if old appointment will be cancelled
             var addDirective = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
-            if( null == addDirective ) throw new Exception( 'Unable to find appointment\'s cnRecordAdd scope.' );
+            if( null == addDirective ) throw new Error( 'Unable to find appointment\'s cnRecordAdd scope.' );
             var saveFn = addDirective.save;
             addDirective.save = function() {
               CnHttpFactory.instance( {
@@ -347,7 +347,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
                   if( availabilityEnd.isAfter( moment() ) ) {
                     var cnRecordViewScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
                     if( null == cnRecordViewScope )
-                      throw new Exception( 'Unable to find appointment\'s cnRecordView scope.' );
+                      throw new Error( 'Unable to find appointment\'s cnRecordView scope.' );
 
                     // if the start is after the current time then use the next rounded hour
                     var datetime = moment( availabilityStart.format() );

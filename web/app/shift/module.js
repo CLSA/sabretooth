@@ -123,7 +123,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift_template', 'site' ].
               if( angular.isDefined( scope.model.addModel.calendarDate ) ) {
                 var cnRecordAddScope = cenozo.findChildDirectiveScope( scope, 'cnRecordAdd' );
                 if( null == cnRecordAddScope )
-                  throw new Exception( 'Unable to find shift\'s cnRecordAdd scope.' );
+                  throw new Error( 'Unable to find shift\'s cnRecordAdd scope.' );
 
                 cnRecordAddScope.record.start_datetime = moment.tz(
                   scope.model.addModel.calendarDate + ' 12:00:00', CnSession.user.timezone );
