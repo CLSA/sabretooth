@@ -19,7 +19,7 @@ class interview extends \cenozo\database\interview
    */
   public function complete( $db_credit_site = NULL )
   {
-    parent::completed( $db_credit_site );
+    parent::complete( $db_credit_site );
 
     if( is_null( $this->end_datetime ) )
     {
