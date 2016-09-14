@@ -17,91 +17,81 @@ class ui extends \cenozo\ui\ui
   /**
    * Extends the parent method
    */
-  protected function get_module_list( $modifier = NULL )
+  protected function build_module_list()
   {
-    $module_list = parent::get_module_list( $modifier );
+    parent::build_module_list();
 
     $db_role = lib::create( 'business\session' )->get_role();
 
     // remove all lists from the operator role
-    if( 'operator' == $db_role->name ) foreach( $module_list as &$module ) $module['list_menu'] = false;
+    if( 'operator' == $db_role->name ) $this->set_all_list_menu( false );
 
     // add child actions to certain modules
-    if( array_key_exists( 'interview', $module_list ) )
+
+    $module = $this->get_module( 'interview' );
+    if( !is_null( $module ) ) $module->add_child( 'appointment' );
+
+    $module = $this->get_module( 'participant' );
+    if( !is_null( $module ) ) $module->append_action_query( 'history', '&{appointment}' );
+
+    $module = $this->get_module( 'qnaire' );
+    if( !is_null( $module ) )
     {
-      array_unshift( $module_list['interview']['children'], 'appointment' );
-    }
-    if( array_key_exists( 'participant', $module_list ) )
-    {
-      // add extra query variables to history action
-      $module_list['participant']['actions']['history'] .= '&{appointment}';
+      $module->add_choose( 'site' );
+      $module->add_choose( 'quota' );
     }
 
-    if( array_key_exists( 'qnaire', $module_list ) )
+    $module = $this->get_module( 'queue' );
+    if( !is_null( $module ) )
     {
-      $module_list['qnaire']['choosing'] = array( 'site', 'quota' );
-    }
-    if( array_key_exists( 'queue', $module_list ) )
-    {
-      $module_list['queue']['list_menu'] = true; // always show the queue list
-      $module_list['queue']['choosing'] = array( 'participant' );
+      $module->set_list_menu( true ); // always show the queue list
+      $module->add_choose( 'participant' );
 
       // add special query parameters to queue-view
-      if( array_key_exists( 'view', $module_list['queue']['actions'] ) )
-        $module_list['queue']['actions']['view'] .= '?{restrict}&{order}&{reverse}';
+      $module->append_action_query( 'view', '?{restrict}&{order}&{reverse}' );
     }
-    if( array_key_exists( 'quota', $module_list ) )
-    {
-      $module_list['quota']['choosing'] = array( 'qnaire' );
-    }
-    if( array_key_exists( 'site', $module_list ) )
-    {
-      $module_list['site']['choosing'] = array( 'qnaire' );
-    }
-    if( array_key_exists( 'state', $module_list ) )
-    {
-      // remove the state list from the operator+ role
-      if( 'operator+' == $db_role->name ) $module_list['state']['list_menu'] = false;
-    }
-    if( array_key_exists( 'user', $module_list ) )
+
+    $module = $this->get_module( 'quota' );
+    if( !is_null( $module ) ) $module->add_choose( 'qnaire' );
+
+    $module = $this->get_module( 'site' );
+    if( !is_null( $module ) ) $module->add_choose( 'qnaire' );
+
+    // remove the state list from the operator+ role
+    $module = $this->get_module( 'state' );
+    if( !is_null( $module ) && 'operator+' == $db_role->name ) $module->set_list_menu( false );
+
+    $module = $this->get_module( 'user' );
+    if( !is_null( $module ) )
     {
       // remove the state list from the operator+ role
-      if( 'operator+' == $db_role->name ) $module_list['user']['list_menu'] = false;
+      if( 'operator+' == $db_role->name ) $module->set_list_menu( false );
 
       // remove the user view action from operator roles (it is for viewing personal calendar only)
       if( 'operator' == $db_role->name || 'operator+' == $db_role->name )
       {
-        unset( $module_list['user']['actions']['list'] );
-        unset( $module_list['user']['actions']['view'] );
+        $module->remove_action( 'list' );
+        $module->remove_action( 'view' );
       }
 
       // add calendar to user actions
       if( in_array( $db_role->name, array( 'helpline', 'operator', 'operator+', 'supervisor' ) ) )
-        $module_list['user']['actions']['calendar'] = '/{identifier}';
+        $module->add_action( 'calendar', '/{identifier}' );
     }
-
-    return $module_list;
   }
 
   /**
    * Extends the parent method
    */
-  protected function get_list_items( $module_list )
+  protected function build_listitem_list()
   {
-    $list = parent::get_list_items( $module_list );
-    $db_role = lib::create( 'business\session' )->get_role();
+    parent::build_listitem_list();
 
     // add application-specific states to the base list
-    if( array_key_exists( 'qnaire', $module_list ) && $module_list['qnaire']['list_menu'] )
-      $list['Questionnaires'] = 'qnaire';
-    if( array_key_exists( 'queue', $module_list ) && $module_list['queue']['list_menu'] )
-      $list['Queues'] = 'queue';
-    if( array_key_exists( 'shift', $module_list ) && $module_list['shift']['list_menu'] )
-      $list['Shifts'] = 'shift';
-    if( array_key_exists( 'shift_template', $module_list ) && $module_list['shift_template']['list_menu'] )
-      $list['Shift Templates'] = 'shift_template';
-
-    return $list;
+    $this->add_listitem( 'Questionnaires', 'qnaire' );
+    $this->add_listitem( 'Queues', 'queue' );
+    $this->add_listitem( 'Shifts', 'shift' );
+    $this->add_listitem( 'Shift Templates', 'shift_template' );
   }
 
   /**
@@ -212,20 +202,6 @@ class ui extends \cenozo\ui\ui
 
     // operators get no list items
     if( 'operator' == $db_role->name ) $list = array();
-
-    return $list;
-  }
-
-  /**
-   * Extends the parent method
-   */
-  protected function get_auxiliary_items()
-  {
-    $list = parent::get_auxiliary_items();
-
-    // the availability and capacity calenders need one another
-    $list['availability'] = array( 'actions' => array( 'calendar' => '/{identifier}' ) );
-    $list['capacity'] = array();
 
     return $list;
   }
