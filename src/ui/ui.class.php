@@ -28,8 +28,13 @@ class ui extends \cenozo\ui\ui
 
     // add child actions to certain modules
 
+    $module = $this->assert_module( 'availability' );
+    $module->add_action( 'calendar', '/{identifier}' );
+    
+    $this->assert_module( 'capacity' );
+
     $module = $this->get_module( 'interview' );
-    if( !is_null( $module ) ) $module->add_child( 'appointment' );
+    if( !is_null( $module ) ) $module->add_child( 'appointment', 0 );
 
     $module = $this->get_module( 'participant' );
     if( !is_null( $module ) ) $module->append_action_query( 'history', '&{appointment}' );
