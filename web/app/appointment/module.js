@@ -379,8 +379,8 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAppointmentAddFactory', [
-    'CnBaseAddFactory', 'CnSession', 'CnHttpFactory', '$injector',
-    function( CnBaseAddFactory, CnSession, CnHttpFactory, $injector ) {
+    'CnBaseAddFactory', 'CnSession', 'CnHttpFactory', '$q', '$injector',
+    function( CnBaseAddFactory, CnSession, CnHttpFactory, $q, $injector ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
@@ -405,17 +405,59 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
         };
 
         this.onNew = function( record ) {
-          return this.$$onNew( record ).then( function() {
-            if( angular.isUndefined( self.availabilityModel ) &&
-                angular.isDefined( cenozoApp.module( 'availability' ).actions.calendar ) &&
-                angular.isObject( parentModel.metadata.participantSite ) ) {
-              // to avoid a circular dependency we have to get the CnAvailabilityModelFactory here instead of
-              // in this service's injection list
-              var CnAvailabilityModelFactory = $injector.get( 'CnAvailabilityModelFactory' );
+          var parent = parentModel.getParentIdentifier();
+          return CnHttpFactory.instance( {
+            path: [ parent.subject, parent.identifier ].join( '/' ),
+            data: { select: { column: { column: 'participant_id' } } }
+          } ).query().then( function( response ) {
+            // get the participant's effective site and list of phone numbers
+            return $q.all( [
+              CnHttpFactory.instance( {
+                path: ['participant', response.data.participant_id ].join( '/' ),
+                data: { select: { column: [
+                  { table: 'site', column: 'id', alias: 'site_id' },
+                  { table: 'site', column: 'name' }
+                ] } }
+              } ).get().then( function( response ) {
+                parentModel.metadata.participantSite =
+                  CnSession.siteList.findByProperty( 'id', response.data.site_id );
+              } ),
 
-              // get the availability model linked to the participant's site
-              self.availabilityModel = CnAvailabilityModelFactory.forSite( parentModel.metadata.participantSite );
-            }
+              CnHttpFactory.instance( {
+                path: ['participant', response.data.participant_id, 'phone' ].join( '/' ),
+                data: {
+                  select: { column: [ 'id', 'rank', 'type', 'number' ] },
+                  modifier: {
+                    where: { column: 'phone.active', operator: '=', value: true },
+                    order: { rank: false }
+                  }
+                }
+              } ).query().then( function( response ) {
+                parentModel.metadata.getPromise().then( function() {
+                  parentModel.metadata.columnList.phone_id.enumList = [];
+                  response.data.forEach( function( item ) {
+                    parentModel.metadata.columnList.phone_id.enumList.push( {
+                      value: item.id,
+                      name: '(' + item.rank + ') ' + item.type + ': ' + item.number
+                    } );
+                  } );
+                } );
+              } )
+            ] ).then( function() {
+              return self.$$onNew( record ).then( function() {
+                if( angular.isUndefined( self.availabilityModel ) &&
+                    angular.isDefined( cenozoApp.module( 'availability' ).actions.calendar ) &&
+                    angular.isObject( parentModel.metadata.participantSite ) ) {
+                  // to avoid a circular dependency we have to get the CnAvailabilityModelFactory here instead of
+                  // in this service's injection list
+                  var CnAvailabilityModelFactory = $injector.get( 'CnAvailabilityModelFactory' );
+
+                  // get the availability model linked to the participant's site
+                  self.availabilityModel =
+                    CnAvailabilityModelFactory.forSite( parentModel.metadata.participantSite );
+                }
+              } );
+            } );
           } );
         };
       };
@@ -474,8 +516,8 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAppointmentViewFactory', [
-    'CnBaseViewFactory', '$injector', 'CnSession',
-    function( CnBaseViewFactory, $injector, CnSession ) {
+    'CnBaseViewFactory', '$injector', '$q', 'CnSession', 'CnHttpFactory',
+    function( CnBaseViewFactory, $injector, $q, CnSession, CnHttpFactory ) {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
@@ -520,6 +562,47 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
               // get the availability model linked to the participant's site
               self.availabilityModel = CnAvailabilityModelFactory.forSite( parentModel.metadata.participantSite );
             }
+
+            // update the phone list based on the parent interview
+            return CnHttpFactory.instance( {
+              path: 'interview/' + self.record.interview_id,
+              data: { select: { column: { column: 'participant_id' } } }
+            } ).query().then( function( response ) {
+              // get the participant's effective site and list of phone numbers
+              return $q.all( [
+                CnHttpFactory.instance( {
+                  path: ['participant', response.data.participant_id ].join( '/' ),
+                  data: { select: { column: [
+                    { table: 'site', column: 'id', alias: 'site_id' },
+                    { table: 'site', column: 'name' }
+                  ] } }
+                } ).get().then( function( response ) {
+                  parentModel.metadata.participantSite =
+                    CnSession.siteList.findByProperty( 'id', response.data.site_id );
+                } ),
+
+                CnHttpFactory.instance( {
+                  path: ['participant', response.data.participant_id, 'phone' ].join( '/' ),
+                  data: {
+                    select: { column: [ 'id', 'rank', 'type', 'number' ] },
+                    modifier: {
+                      where: { column: 'phone.active', operator: '=', value: true },
+                      order: { rank: false }
+                    }
+                  }
+                } ).query().then( function( response ) {
+                  parentModel.metadata.getPromise().then( function() {
+                    parentModel.metadata.columnList.phone_id.enumList = [];
+                    response.data.forEach( function( item ) {
+                      parentModel.metadata.columnList.phone_id.enumList.push( {
+                        value: item.id,
+                        name: '(' + item.rank + ') ' + item.type + ': ' + item.number
+                      } );
+                    } );
+                  } );
+                } )
+              ] );
+            } );
           } );
         };
       }
@@ -532,11 +615,11 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
     'CnBaseModelFactory',
     'CnAppointmentAddFactory', 'CnAppointmentCalendarFactory',
     'CnAppointmentListFactory', 'CnAppointmentViewFactory',
-    'CnSession', 'CnHttpFactory', '$q', '$state',
+    'CnSession', 'CnHttpFactory', '$state',
     function( CnBaseModelFactory,
               CnAppointmentAddFactory, CnAppointmentCalendarFactory,
               CnAppointmentListFactory, CnAppointmentViewFactory,
-              CnSession, CnHttpFactory, $q, $state ) {
+              CnSession, CnHttpFactory, $state ) {
       var object = function( site ) {
         if( !angular.isObject( site ) || angular.isUndefined( site.id ) )
           throw new Error( 'Tried to create CnAppointmentModel without specifying the site.' );
@@ -562,59 +645,10 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
           return data;
         };
 
-        // don't show add button when viewing full appointment list
-        this.getAddEnabled = function() {
-          return 'appointment' != this.getSubjectFromState() && this.$$getAddEnabled();
-        };
-
-        // extend getMetadata
-        this.getMetadata = function() {
-          var promiseList = [ this.$$getMetadata() ];
-
-          var parent = this.getParentIdentifier();
-          if( angular.isDefined( parent.subject ) && angular.isDefined( parent.identifier ) ) {
-            promiseList.push(
-              CnHttpFactory.instance( {
-                path: [ parent.subject, parent.identifier ].join( '/' ),
-                data: { select: { column: { column: 'participant_id' } } }
-              } ).query().then( function( response ) {
-                // get the participant's effective site and list of phone numbers
-                return $q.all( [
-                  CnHttpFactory.instance( {
-                    path: ['participant', response.data.participant_id ].join( '/' ),
-                    data: { select: { column: [
-                      { table: 'site', column: 'id', alias: 'site_id' },
-                      { table: 'site', column: 'name' }
-                    ] } }
-                  } ).get().then( function( response ) {
-                    self.metadata.participantSite =
-                      CnSession.siteList.findByProperty( 'id', response.data.site_id );
-                  } ),
-
-                  CnHttpFactory.instance( {
-                    path: ['participant', response.data.participant_id, 'phone' ].join( '/' ),
-                    data: {
-                      select: { column: [ 'id', 'rank', 'type', 'number' ] },
-                      modifier: {
-                        where: { column: 'phone.active', operator: '=', value: true },
-                        order: { rank: false }
-                      }
-                    }
-                  } ).query().then( function( response ) {
-                    self.metadata.columnList.phone_id.enumList = [];
-                    response.data.forEach( function( item ) {
-                      self.metadata.columnList.phone_id.enumList.push( {
-                        value: item.id,
-                        name: '(' + item.rank + ') ' + item.type + ': ' + item.number
-                      } );
-                    } );
-                  } )
-                ] );
-              } )
-            );
-          }
-
-          return $q.all( promiseList );
+        // don't show add button when viewing full appointment list (must override root $$ function)
+        this.$$getAddEnabled = function() {
+          return !( 'appointment' == this.getSubjectFromState() && 'list' == this.getActionFromState() ) &&
+                 angular.isDefined( module.actions.add );
         };
 
         // extend getTypeaheadData
