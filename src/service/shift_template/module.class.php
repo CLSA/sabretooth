@@ -21,8 +21,8 @@ class module extends \cenozo\service\base_calendar_module
   {
     parent::__construct( $index, $service );
     // lower-end_date and upper-start_date are purposefully backward
-    $this->lower_date = array( 'null' => false, 'column' => 'end_date' );
-    $this->upper_date = array( 'null' => true, 'column' => 'start_date' );
+    $this->lower_date = array( 'null' => true, 'column' => 'end_date' );
+    $this->upper_date = array( 'null' => false, 'column' => 'start_date' );
   }
 
   /**
