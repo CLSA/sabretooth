@@ -92,10 +92,6 @@ class call_history extends \cenozo\business\report\base_report
     $select->add_column( 'TIMEDIFF( phone_call.end_datetime, phone_call.start_datetime )', 'Elapsed', false );
     $select->add_column( 'status', 'Call Result' );
 
-    $header = array();
-    $content = array();
-    $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );
-
     $this->add_table_from_select( NULL, $phone_call_class_name::select( $select, $modifier ) );
   }
 }
