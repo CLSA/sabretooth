@@ -166,6 +166,9 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
       if( appointment.override ) {
         event.override = true;
         event.color = 'green';
+      } else if( null != appointment.outcome ) {
+        if( 'cancelled' == appointment.outcome ) event.className = 'calendar-event-cancelled';
+        event.textColor = 'lightgray';
       }
       return event;
     }
