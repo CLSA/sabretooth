@@ -196,8 +196,8 @@ DROP PROCEDURE IF EXISTS patch_qnaire;
       SELECT "Creating new script-based event_types" AS "";
 
       SET @sql = CONCAT(
-        "INSERT IGNORE INTO ", @cenozo, ".event_type( name, description ) ",
-        "SELECT CONCAT( type.name, ' (', surveyls_title, ')' ), ",
+        "INSERT IGNORE INTO ", @cenozo, ".event_type( name, record_address, description ) ",
+        "SELECT CONCAT( type.name, ' (', surveyls_title, ')' ), true, ",
                "CONCAT( type.description, ' \"', surveyls_title, '\" script.' ) ",
         "FROM ( SELECT 'started' AS name, 'Started the' AS description UNION ",
                "SELECT 'finished' AS name, 'Finished the' AS description ) AS type, qnaire ",
