@@ -21,11 +21,8 @@ class interview extends \cenozo\database\interview
   {
     parent::complete( $db_credit_site );
 
-    if( is_null( $this->end_datetime ) )
-    {
-      // record the script finished event
-      $this->get_qnaire()->get_script()->add_finished_event_types( $this->get_participant() );
-    }
+    // record the script finished event
+    $this->get_qnaire()->get_script()->add_finished_event_types( $this->get_participant() );
   }
 
   /**
