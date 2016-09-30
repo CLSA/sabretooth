@@ -55,6 +55,9 @@ SOURCE report_type.sql
 SOURCE report_restriction.sql
 SOURCE application_type_has_report_type.sql
 SOURCE role_has_report_type.sql
+SOURCE export.sql
+SOURCE export_column.sql
+SOURCE export_restriction.sql
 
 SOURCE table_character_sets.sql
 SOURCE column_character_sets.sql
