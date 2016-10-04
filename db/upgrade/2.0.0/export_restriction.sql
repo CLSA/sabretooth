@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS export_restriction (
   column_name VARCHAR(45) NOT NULL,
   logic ENUM('or', 'and') NOT NULL DEFAULT 'and',
   test ENUM('<=>', '<>', '<', '>', 'like', 'not like') NOT NULL DEFAULT '<=>',
-  value VARCHAR(255) NOT NULL,
+  value VARCHAR(255) NULL DEFAULT NULL,
   PRIMARY KEY (id),
   UNIQUE INDEX uq_export_id_rank (export_id ASC, rank ASC))
 ENGINE = InnoDB;
