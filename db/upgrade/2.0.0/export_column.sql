@@ -10,5 +10,11 @@ CREATE TABLE IF NOT EXISTS export_column (
   column_name VARCHAR(45) NOT NULL,
   subtype VARCHAR(45) NULL DEFAULT NULL,
   PRIMARY KEY (id),
-  UNIQUE INDEX uq_export_id_rank (export_id ASC, rank ASC))
+  INDEX fk_export_id (export_id ASC),
+  UNIQUE INDEX uq_export_id_rank (export_id ASC, rank ASC),
+  CONSTRAINT fk_export_column_export_id
+    FOREIGN KEY (export_id)
+    REFERENCES export (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
 ENGINE = InnoDB;

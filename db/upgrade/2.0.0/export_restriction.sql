@@ -12,5 +12,18 @@ CREATE TABLE IF NOT EXISTS export_restriction (
   test ENUM('<=>', '<>', '<', '>', 'like', 'not like') NOT NULL DEFAULT '<=>',
   value VARCHAR(255) NULL DEFAULT NULL,
   PRIMARY KEY (id),
-  UNIQUE INDEX uq_export_id_rank (export_id ASC, rank ASC))
+  INDEX fk_export_id (export_id ASC),
+  UNIQUE INDEX uq_export_id_rank (export_id ASC, rank ASC),
+  INDEX fk_export_restriction_export_column_id (export_column_id ASC),
+  CONSTRAINT fk_export_restriction_export_id
+    FOREIGN KEY (export_id)
+    REFERENCES export (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_export_restriction_export_column_id
+    FOREIGN KEY (export_column_id)
+    REFERENCES export_column (id)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+
 ENGINE = InnoDB;
