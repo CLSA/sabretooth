@@ -38,6 +38,7 @@ class module extends \cenozo\service\assignment\module
 
         // check if the qnaire script is complete or not (used below)
         $db_interview = $record->get_interview();
+        $this->db_participant = $db_interview->get_participant();
         $db_qnaire = $db_interview->get_qnaire();
         $old_sid = $tokens_class_name::get_sid();
         $tokens_class_name::set_sid( $db_qnaire->get_script()->sid );
@@ -180,21 +181,19 @@ class module extends \cenozo\service\assignment\module
     {
       $record->queue_id = $this->db_participant->current_queue_id;
     }
-    else if( 'PATCH' == $this->get_method() &&
-             ( 'advance' == $operation || 'close' == $operation || 'force_close' == $operation ) )
+    else if( 'PATCH' == $this->get_method() && 'advance' == $operation )
     {
-      if( 'advance' == $operation )
-      {
-        // end the phone call now
-        $db_phone_call = $record->get_open_phone_call();
-        $db_phone_call->end_datetime = $now;
-        $db_phone_call->status = 'contacted';
-        $db_phone_call->save();
-        $db_phone_call->process_events();
+      // end the phone call now
+      $db_phone_call = $record->get_open_phone_call();
+      $db_phone_call->end_datetime = $now;
+      $db_phone_call->status = 'contacted';
+      $db_phone_call->save();
+      $db_phone_call->process_events();
 
-        // make a note of which phone was called
-        $this->current_phone_id = $db_phone_call->phone_id;
-      }
+      // make a note of which phone was called
+      $this->current_phone_id = $db_phone_call->phone_id;
+
+      $record->end_datetime = $now;
     }
   }
 
@@ -214,7 +213,7 @@ class module extends \cenozo\service\assignment\module
         $session = lib::create( 'business\session' );
 
         // update any appointments or callbacks
-        $record->process_appointments_and_callbacks( true );
+        $record->post_process( true );
         $db_interview = $record->get_interview();
         $this->db_participant = $db_interview->get_participant();
 
