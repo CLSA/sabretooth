@@ -10,9 +10,7 @@ namespace sabretooth\business\report;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
- * Mailout required report data.
- * 
- * @abstract
+ * Progress report
  */
 class progress extends \cenozo\business\report\base_report
 {
@@ -39,19 +37,7 @@ class progress extends \cenozo\business\report\base_report
     $qnaire_mod->join( 'script', 'qnaire.script_id', 'script.id' );
     $qnaire_mod->order( 'qnaire.rank' );
 
-    // restriction which qnaire to show if there is a restriction on qnaire
-    $report_restriction_sel = lib::create( 'database\select' );
-    $report_restriction_sel->add_table_column( 'report_has_report_restriction', 'value' );
-    $report_restriction_sel->add_column( 'name' );
-    $report_restriction_sel->add_column( 'restriction_type' );
-    $report_restriction_sel->add_column( 'subject' );
-    $report_restriction_sel->add_column( 'operator' );
-    $report_restriction_mod = lib::create( 'database\modifier' );
-    $report_restriction_mod->where( 'custom', '=', true );
-    $restriction_list =
-      $this->db_report->get_report_restriction_list( $report_restriction_sel, $report_restriction_mod );
-
-    foreach( $restriction_list as $restriction )
+    foreach( $this->get_restriction_list() as $restriction )
       if( 'qnaire' == $restriction['name'] )
         $qnaire_mod->where( 'qnaire.id', '=', $restriction['value'] );
 
@@ -69,16 +55,12 @@ class progress extends \cenozo\business\report\base_report
     // set up requirements
     $this->apply_restrictions( $modifier );
 
-    $header = array();
-    $content = array();
-    $sql = sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() );
-    $rows = $participant_class_name::select( $select, $modifier );
-
     // create totals table
+    $rows = $participant_class_name::select( $select, $modifier );
     if( count( $rows ) )
     {
       $totals = array_fill( 0, count( $rows[0] ), 0 );
-      
+
       foreach( $rows as $row )
       {
         $index = 0;

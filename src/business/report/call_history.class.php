@@ -10,9 +10,7 @@ namespace sabretooth\business\report;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
- * Mailout required report data.
- * 
- * @abstract
+ * Call history report
  */
 class call_history extends \cenozo\business\report\base_report
 {
@@ -36,19 +34,7 @@ class call_history extends \cenozo\business\report\base_report
     $modifier->join( 'user', 'assignment.user_id', 'user.id' );
     $modifier->order( 'phone_call.start_datetime' );
 
-    $report_restriction_sel = lib::create( 'database\select' );
-    $report_restriction_sel->add_table_column( 'report_has_report_restriction', 'value' );
-    $report_restriction_sel->add_column( 'name' );
-    $report_restriction_sel->add_column( 'restriction_type' );
-    $report_restriction_sel->add_column( 'subject' );
-    $report_restriction_sel->add_column( 'operator' );
-    $report_restriction_mod = lib::create( 'database\modifier' );
-    $report_restriction_mod->where( 'custom', '=', true );
-    $report_restriction_mod->or_where( 'subject', '=', 'site' );
-    $restriction_list =
-      $this->db_report->get_report_restriction_list( $report_restriction_sel, $report_restriction_mod );
-
-    foreach( $restriction_list as $restriction )
+    foreach( $this->get_restriction_list() as $restriction )
     {
       if( 'collection' == $restriction['name'] )
       {
@@ -60,10 +46,6 @@ class call_history extends \cenozo\business\report\base_report
       {
         $modifier->where( 'qnaire.id', '=', $restriction['value'] );
       }
-      else if( 'site' == $restriction['name'] )
-      {
-        $modifier->where( 'assignment.site_id', '=', $restriction['value'] );
-      }
       else if( 'last_call' == $restriction['name'] && $restriction['value'] )
       {
         // join to assignment_last_phone_call so that only the last call is included in the query
@@ -73,7 +55,25 @@ class call_history extends \cenozo\business\report\base_report
         $modifier->join_modifier( 'assignment_last_phone_call', $join_mod );
       }
     }
-    
+
+    // we need to get the site restriction in order to restrict the assignment by its value
+    $report_restriction_sel = lib::create( 'database\select' );
+    $report_restriction_sel->add_table_column( 'report_has_report_restriction', 'value' );
+    $report_restriction_sel->add_column( 'name' );
+    $report_restriction_sel->add_column( 'restriction_type' );
+    $report_restriction_sel->add_column( 'subject' );
+    $report_restriction_sel->add_column( 'operator' );
+    $report_restriction_mod = lib::create( 'database\modifier' );
+    $report_restriction_mod->where( 'subject', '=', 'site' );
+    $restriction_list =
+      $this->db_report->get_report_restriction_list( $report_restriction_sel, $report_restriction_mod );
+
+    if( 0 < count( $restriction_list ) )
+    {
+      $restriction = current( $restriction_list );
+      $modifier->where( 'assignment.site_id', '=', $restriction['value'] );
+    }
+
     // set up requirements
     $this->apply_restrictions( $modifier );
 
