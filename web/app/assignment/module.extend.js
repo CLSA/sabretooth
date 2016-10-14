@@ -279,7 +279,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
               CnHttpFactory.instance( {
                 path: 'participant/' + self.assignment.participant_id + '/phone',
                 data: {
-                  select: { column: [ 'id', 'rank', 'type', 'number', 'international' ] },
+                  select: { column: [ 'id', 'rank', 'type', 'number', 'international', 'note' ] },
                   modifier: {
                     where: { column: 'phone.active', operator: '=', value: true },
                     order: 'rank'
