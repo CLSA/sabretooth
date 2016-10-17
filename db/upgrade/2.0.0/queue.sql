@@ -52,7 +52,7 @@ CREATE PROCEDURE patch_queue()
 
     SET @test = ( SELECT COUNT(*) FROM queue WHERE name = "no address" );
     IF @test = 0 THEN
-      -- increment all queue ids by 1 from the eligible queue onward
+      -- increment all queue ids by 2 from the eligible queue onward
       SET @id = ( SELECT MAX( id ) FROM queue );
       SET @min_id = ( SELECT id FROM queue WHERE name = "eligible" );
       WHILE @id >= @min_id DO
@@ -71,6 +71,31 @@ CREATE PROCEDURE patch_queue()
         time_specific = 0,
         parent_queue_id = @parent_queue_id,
         description = "Participants who are not eligible because they do not have an address.";
+    END IF;
+
+    SELECT "Adding no phone queue" AS "";
+
+    SET @test = ( SELECT COUNT(*) FROM queue WHERE name = "no phone" );
+    IF @test = 0 THEN
+      -- increment all queue ids by 1 from the eligible queue onward
+      SET @id = ( SELECT MAX( id ) FROM queue );
+      SET @min_id = ( SELECT id FROM queue WHERE name = "eligible" );
+      WHILE @id >= @min_id DO
+        CALL set_queue_id( @id, @id + 1 );
+        SET @id = @id - 1;
+      END WHILE;
+
+      SET @parent_queue_id = ( SELECT id FROM queue WHERE name = "ineligible" );
+
+      -- add the new no active phone queue
+      INSERT INTO queue SET
+        id = @min_id,
+        name = "no phone",
+        title = "Participants with no phone",
+        rank = NULL,
+        time_specific = 0,
+        parent_queue_id = @parent_queue_id,
+        description = "Participants who are not eligible because they do not have an phone number.";
     END IF;
 
     SELECT "Adding no active address queue" AS "";

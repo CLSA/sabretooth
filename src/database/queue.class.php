@@ -553,6 +553,7 @@ class queue extends \cenozo\database\record
       $modifier->or_where( 'participant_state_id', '!=', NULL );
       $modifier->or_where( 'last_participation_consent_accept', '=', 0 );
       $modifier->or_where( 'primary_region_id', '=', NULL );
+      $modifier->or_where( 'has_phone', '=', false );
       $modifier->where_bracket( false );
       return;
     }
@@ -587,6 +588,16 @@ class queue extends \cenozo\database\record
       return;
     }
 
+    if( 'no phone' == $queue )
+    {
+      $modifier->where( 'participant_active', '=', true );
+      $modifier->where( 'IFNULL( last_participation_consent_accept = 1, true )', '=', true );
+      $modifier->where( 'participant_state_id', '=', NULL );
+      $modifier->where( 'primary_region_id', '!=', NULL );
+      $modifier->where( 'has_phone', '=', false );
+      return;
+    }
+
     if( 'eligible' == $queue )
     {
       // active participant who does not have a "final" state and has at least one phone number
@@ -594,6 +605,7 @@ class queue extends \cenozo\database\record
       $modifier->where( 'participant_state_id', '=', NULL );
       $modifier->where( 'IFNULL( last_participation_consent_accept = 1, true )', '=', true );
       $modifier->where( 'primary_region_id', '!=', NULL );
+      $modifier->where( 'has_phone', '=', true );
       return;
     }
 
@@ -917,6 +929,7 @@ participant.state_id AS participant_state_id,
 participant.override_quota AS participant_override_quota,
 source.override_quota AS source_override_quota,
 primary_region.id AS primary_region_id,
+participant_has_phone.has_phone,
 last_participation_consent.accept AS last_participation_consent_accept,
 current_interview.id AS current_interview_id,
 current_qnaire.id AS current_qnaire_id,
@@ -959,6 +972,15 @@ LEFT JOIN address AS primary_address
 ON participant_primary_address.address_id = primary_address.id
 LEFT JOIN region AS primary_region
 ON primary_address.region_id = primary_region.id
+
+JOIN (
+  SELECT participant.id, phone.id IS NOT NULL has_phone
+  FROM participant
+  LEFT JOIN phone
+  ON participant.id = phone.participant_id
+  AND phone.active = true
+  GROUP BY participant.id
+) as participant_has_phone ON participant.id = participant_has_phone.id
 
 JOIN participant_last_consent
 ON participant.id = participant_last_consent.participant_id
