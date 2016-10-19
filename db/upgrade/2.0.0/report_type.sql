@@ -21,6 +21,7 @@ DROP PROCEDURE IF EXISTS patch_report_type;
     SET @sql = CONCAT(
       "INSERT IGNORE INTO ", @cenozo, ".report_type ( name, title, subject, description ) VALUES ",
       "( 'call_history', 'Call History', 'phone_call', 'This report chronologically lists call attempts.' ), ",
+      "( 'productivity', 'Productivity', 'interview', 'Lists operator interviewing productivity.' ), ",
       "( 'progress', 'Progress', 'participant', 'Shows when participants completed each questionnaire.' )" );
     PREPARE statement FROM @sql;
     EXECUTE statement;
