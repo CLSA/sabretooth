@@ -1,6 +1,6 @@
 <?php
 /**
- * progress.class.php
+ * sample.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
@@ -12,7 +12,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 /**
  * Progress report
  */
-class progress extends \cenozo\business\report\base_report
+class sample extends \cenozo\business\report\base_report
 {
   /**
    * Build the report
@@ -36,10 +36,6 @@ class progress extends \cenozo\business\report\base_report
     $qnaire_mod = lib::create( 'database\modifier' );
     $qnaire_mod->join( 'script', 'qnaire.script_id', 'script.id' );
     $qnaire_mod->order( 'qnaire.rank' );
-
-    foreach( $this->get_restriction_list() as $restriction )
-      if( 'qnaire' == $restriction['name'] )
-        $qnaire_mod->where( 'qnaire.id', '=', $restriction['value'] );
 
     foreach( $qnaire_class_name::select( $qnaire_sel, $qnaire_mod ) as $qnaire )
     {
