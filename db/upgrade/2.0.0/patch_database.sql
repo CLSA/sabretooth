@@ -55,9 +55,6 @@ SOURCE report_type.sql
 SOURCE report_restriction.sql
 SOURCE application_type_has_report_type.sql
 SOURCE role_has_report_type.sql
-SOURCE export.sql
-SOURCE export_column.sql
-SOURCE export_restriction.sql
 SOURCE overview.sql
 SOURCE application_type_has_overview.sql
 SOURCE role_has_overview.sql
