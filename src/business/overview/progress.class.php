@@ -206,26 +206,33 @@ class progress extends \cenozo\business\overview\base_overview
 
     // create summary node and finish
     /////////////////////////////////////////////////////////////////////////////////////////////
+    $first_node = NULL;
     if( $db_role->all_sites )
     {
       // create a summary node of all sites
       $first_node = $this->root_node->get_summary_node();
-      $first_node->set_label( 'Summary of All Sites' );
-      $this->root_node->add_child( $first_node, true );
+      if( !is_null( $first_node ) )
+      {
+        $first_node->set_label( 'Summary of All Sites' );
+        $this->root_node->add_child( $first_node, true );
+      }
     }
     else
     {
       $first_node = $this->root_node->find_node( $db_site->name );
     }
 
-    // go through the first node and remove all states with a value of 0
-    $state_node = $first_node->find_node( 'Conditions' );
-    $removed_label_list = $state_node->remove_empty_children();
+    if( !is_null( $first_node ) )
+    {
+      // go through the first node and remove all states with a value of 0
+      $state_node = $first_node->find_node( 'Conditions' );
+      $removed_label_list = $state_node->remove_empty_children();
 
-    // and remove them from other nodes as well
-    $this->root_node->each( function( $node ) use( $removed_label_list ) {
-      $state_node = $node->find_node( 'Conditions' );
-      $state_node->remove_child_by_label( $removed_label_list );
-    } );
+      // and remove them from other nodes as well
+      $this->root_node->each( function( $node ) use( $removed_label_list ) {
+        $state_node = $node->find_node( 'Conditions' );
+        $state_node->remove_child_by_label( $removed_label_list );
+      } );
+    }
   }
 }
