@@ -55,6 +55,7 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'application', 'GET', 1, 0 ),
 ( 'application', 'PATCH', 1, 1 ),
 ( 'application_type', 'GET', 0, 0 ),
+( 'application_type', 'GET', 1, 0 ),
 ( 'availability_type', 'DELETE', 1, 1 ),
 ( 'availability_type', 'GET', 0, 0 ),
 ( 'availability_type', 'GET', 1, 0 ),
