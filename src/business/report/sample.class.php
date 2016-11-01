@@ -32,9 +32,10 @@ class sample extends \cenozo\business\report\base_report
     $qnaire_mod = lib::create( 'database\modifier' );
     $qnaire_mod->join( 'script', 'qnaire.script_id', 'script.id' );
     $qnaire_mod->order( 'qnaire.rank' );
+    $qnaire_list = $qnaire_class_name::select( $qnaire_sel, $qnaire_mod );
 
     $appointment_column_list = array();
-    foreach( $qnaire_class_name::select( $qnaire_sel, $qnaire_mod ) as $qnaire )
+    foreach( $qnaire_list as $qnaire )
     {
       $interview_data = sprintf( 'interview_data_%d', $qnaire['id'] );
 
@@ -101,15 +102,8 @@ class sample extends \cenozo\business\report\base_report
     $modifier->left_join( 'region', 'address.region_id', 'region.id' );
 
     // join to each interview for each qnaire
-    $qnaire_sel = lib::create( 'database\select' );
-    $qnaire_sel->add_column( 'id' );
-    $qnaire_sel->add_table_column( 'script', 'name' );
-    $qnaire_mod = lib::create( 'database\modifier' );
-    $qnaire_mod->join( 'script', 'qnaire.script_id', 'script.id' );
-    $qnaire_mod->order( 'qnaire.rank' );
-
     $postfix = '';
-    foreach( $qnaire_class_name::select( $qnaire_sel, $qnaire_mod ) as $qnaire )
+    foreach( $qnaire_list as $qnaire )
     {
       $interview = sprintf( 'interview_%d', $qnaire['id'] );
       $interview_data = sprintf( 'interview_data_%d', $qnaire['id'] );

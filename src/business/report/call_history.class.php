@@ -79,13 +79,13 @@ class call_history extends \cenozo\business\report\base_report
 
     $select = lib::create( 'database\select' );
     $select->from( 'phone_call' );
-    if( $this->db_role->all_sites ) $select->add_table_column( 'site', 'name', 'Site' );
-    $select->add_table_column( 'participant', 'uid', 'UID' );
-    $select->add_table_column( 'participant', 'sex', 'Sex' );
-    $select->add_table_column( 'age_group', 'CONCAT( lower, " to ", upper )', 'Age Group', false );
-    $select->add_table_column( 'user', 'CONCAT( user.first_name, " ", user.last_name )', 'User', false );
-    $select->add_table_column( 'assignment', 'id', 'Assignment ID' );
-    $select->add_table_column( 'script', 'name', 'Questionnaire' );
+    if( $this->db_role->all_sites ) $select->add_column( 'site.name', 'Site', false );
+    $select->add_column( 'participant.uid', 'UID', false );
+    $select->add_column( 'participant.sex', 'Sex', false );
+    $select->add_column( 'CONCAT( lower, " to ", upper )', 'Age Group', false );
+    $select->add_column( 'CONCAT( user.first_name, " ", user.last_name )', 'User', false );
+    $select->add_column( 'assignment.id', 'Assignment ID', false );
+    $select->add_column( 'script.name', 'Questionnaire', false );
     $select->add_column( $this->get_datetime_column( 'phone_call.start_datetime', 'date' ), 'Date', false );
     $select->add_column( $this->get_datetime_column( 'phone_call.start_datetime', 'time' ), 'Call Start', false );
     $select->add_column( $this->get_datetime_column( 'phone_call.end_datetime', 'time' ), 'Call End', false );
