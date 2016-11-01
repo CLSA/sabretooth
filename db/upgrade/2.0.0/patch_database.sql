@@ -59,6 +59,9 @@ SOURCE overview.sql
 SOURCE application_type_has_overview.sql
 SOURCE role_has_overview.sql
 
+SOURCE interview_last_appointment.sql
+SOURCE update_interview_last_appointment.sql
+
 SOURCE table_character_sets.sql
 SOURCE column_character_sets.sql
 
