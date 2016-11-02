@@ -64,7 +64,7 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'cohort', 'GET', 0, 0 ),
 ( 'collection', 'DELETE', 1, 1 ),
 ( 'collection', 'GET', 0, 0 ),
-( 'collection', 'GET', 1, 0 ),
+( 'collection', 'GET', 1, 1 ),
 ( 'collection', 'PATCH', 1, 1 ),
 ( 'collection', 'POST', 0, 1 ),
 ( 'consent', 'DELETE', 1, 1 ),

@@ -96,6 +96,18 @@ CREATE PROCEDURE patch_role_has_service()
     EXECUTE statement;
     DEALLOCATE PREPARE statement;
 
+    -- remove participant list from operator role
+    SET @sql = CONCAT(
+      "DELETE FROM role_has_service ",
+      "WHERE role_id = ( SELECT id FROM ", @cenozo, ".role WHERE name = 'operator' ) ",
+      "AND service_id = ( ",
+        "SELECT id FROM service ",
+        "WHERE subject = 'participant' AND method = 'GET' AND resource = 0",
+      ")" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement;
+    DEALLOCATE PREPARE statement;
+
     -- supervisor
     SET @sql = CONCAT(
       "INSERT INTO role_has_service( role_id, service_id ) ",
@@ -116,6 +128,25 @@ CREATE PROCEDURE patch_role_has_service()
         "OR ( subject = 'setting' AND method = 'GET' ) ",
         "OR ( subject = 'site' AND method IN ( 'DELETE', 'POST' ) ) ",
       ")" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement;
+    DEALLOCATE PREPARE statement;
+
+    -- only tier > 1 can view collections
+    SET @sql = CONCAT(
+      "INSERT IGNORE INTO role_has_service( role_id, service_id ) ",
+      "SELECT role.id, service.id ",
+      "FROM service, ", @cenozo, ".role ",
+      "JOIN ", @cenozo, ".application_type_has_role ",
+        "ON role.id = application_type_has_role.role_id ",
+      "JOIN ", @cenozo, ".application_type ",
+        "ON application_type_has_role.application_type_id = application_type.id ",
+        "AND application_type.name = 'sabretooth' ",
+      "WHERE role.tier > 1 ",
+      "AND service.restricted = 1 ",
+      "AND service.subject = 'collection' ",
+      "AND service.method = 'GET' ",
+      "AND service.resource = 1" );
     PREPARE statement FROM @sql;
     EXECUTE statement;
     DEALLOCATE PREPARE statement;

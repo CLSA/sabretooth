@@ -17,6 +17,40 @@ class module extends \cenozo\service\participant\module
   /**
    * Extend parent method
    */
+  public function validate()
+  {
+    parent::validate();
+
+    if( 300 > $this->get_status()->get_code() )
+    {
+      // make sure that operators can only see the participant they are currently assigned to
+      $db_participant = NULL;
+      if( 'participant' == $this->get_subject() ) $db_participant = $this->get_resource();
+      else if( 'participant' == $this->get_parent_subject() ) $db_participant = $this->get_parent_resource();
+
+      if( !is_null( $db_participant ) )
+      {
+        $session = lib::create( 'business\session' );
+        $db_user = $session->get_user();
+        $db_role = $session->get_role();
+
+        if( 'operator' == $db_role->name )
+        {
+          $status = 403;
+
+          $db_assignment = $db_user->get_open_assignment();
+          if( !is_null( $db_assignment ) &&
+              $db_participant->id == $db_assignment->get_interview()->participant_id ) $status = 200;
+
+          $this->get_status()->set_code( $status );
+        }
+      }
+    }
+  }
+
+  /**
+   * Extend parent method
+   */
   public function prepare_read( $select, $modifier )
   {
     parent::prepare_read( $select, $modifier );
