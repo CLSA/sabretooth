@@ -216,7 +216,7 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'state', 'POST', 0, 1 ),
 ( 'survey', 'GET', 0, 0 ),
 ( 'system_message', 'DELETE', 1, 1 ),
-( 'system_message', 'GET', 0, 1 ),
+( 'system_message', 'GET', 0, 0 ),
 ( 'system_message', 'GET', 1, 1 ),
 ( 'system_message', 'PATCH', 1, 1 ),
 ( 'system_message', 'POST', 0, 1 ),
