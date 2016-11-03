@@ -47,9 +47,9 @@ define( [ 'participant' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAssignmentControlFactory', [
-    '$state', 'CnSession', 'CnHttpFactory',
+    '$state', '$window', 'CnSession', 'CnHttpFactory',
     'CnParticipantModelFactory', 'CnScriptLauncherFactory', 'CnModalMessageFactory', 'CnModalConfirmFactory',
-    function( $state, CnSession, CnHttpFactory,
+    function( $state, $window, CnSession, CnHttpFactory,
               CnParticipantModelFactory, CnScriptLauncherFactory, CnModalMessageFactory, CnModalConfirmFactory ) {
       var object = function( root ) {
         var self = this;
@@ -316,6 +316,14 @@ define( [ 'participant' ].reduce( function( list, name ) {
         this.openHistory = function() {
           if( null != self.participant )
             $state.go( 'participant.history', { identifier: self.participant.getIdentifier() } );
+        };
+
+        this.useTimezone = function() {
+          if( null != self.participant ) {
+            CnSession.setTimezone( { 'participant_id': this.participant.id } ).then( function() {
+              $state.go( 'self.wait' ).then( function() { $window.location.reload(); } );
+            } );
+          }
         };
 
         this.loadScriptList = function() {
