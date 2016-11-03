@@ -223,7 +223,24 @@
           </div>
         </div>
       </div>
-      <div class="utility-view rounded vertical-spacer" ng-if="model.activePhoneCall">
+      <div class="utility-view rounded vertical-spacer"
+           ng-if="model.activePhoneCall && model.participant.withdrawn">
+        <div class="container-fluid bg-primary rounded-top">
+          <h4>Script Launcher</h4>
+        </div>
+        <div class="form-horizontal">
+          <div class="container-fluid">
+            <div class="vertical-spacer text-warning">
+              <i class="glyphicon glyphicon-exclamation-sign"></i>
+              You may not launch any scripts for this participant since they have withdrawn from the study.
+            </div>
+          </div>
+        </div>
+        <div class="form-footer text-right rounded-bottom bg-info">
+        </div>
+      </div>
+      <div class="utility-view rounded vertical-spacer"
+           ng-if="model.activePhoneCall && !model.participant.withdrawn">
         <div class="container-fluid bg-primary rounded-top">
           <h4>
             <i class="glyphicon glyphicon-refresh glyph-hover rounded pull-right btn-primary"
