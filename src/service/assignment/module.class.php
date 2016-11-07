@@ -101,6 +101,10 @@ class module extends \cenozo\service\assignment\module
         }
         else
         {
+          $session = lib::create( 'business\session' );
+          $db_user = $session->get_user();
+          $db_site = $session->get_site();
+
           // get the highest ranking participant in the queue after repopulating if it is out of date
           $interval = $queue_class_name::get_interval_since_last_repopulate();
           if( is_null( $interval ) || 0 < $interval->days || 22 < $interval->h )
@@ -123,8 +127,16 @@ class module extends \cenozo\service\assignment\module
           $participant_mod->join( 'queue', 'queue_has_participant.queue_id', 'queue.id' );
           $participant_mod->join( 'qnaire', 'queue_has_participant.qnaire_id', 'qnaire.id' );
           $participant_mod->where( 'queue.rank', '!=', NULL );
-          $participant_mod->where(
-            'queue_has_participant.site_id', '=', lib::create( 'business\session' )->get_site()->id );
+          $participant_mod->where( 'queue_has_participant.site_id', '=', $db_site->id );
+
+          // restrict by user language
+          $language_sel = lib::create( 'database\select' );
+          $language_sel->add_column( 'id' );
+          $user_language_list = array();
+          foreach( $db_user->get_language_list( $language_sel ) as $language )
+            $user_language_list[] = $language['id'];
+          if( 0 < count( $user_language_list ) )
+            $participant_mod->where( 'participant.language_id', 'IN', $user_language_list );
           $participant_mod->order( 'queue.rank' );
           $participant_mod->order( 'qnaire.rank' );
 
