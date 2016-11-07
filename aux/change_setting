@@ -1,0 +1,76 @@
+#!/usr/bin/php
+<?php
+/** 
+ * Utility which changes a setting in settings.local.ini.php
+ * @author Patrick Emond <emondpd@mcmaster.ca>
+ * @param string category
+ * @param string name
+ * @param string value
+ */
+
+$filename = 'settings.local.ini.php';
+
+// validate arguments
+if( 4 < $argc )
+{
+  print "Script expects three arguments: category name value\n";
+  exit( 1 );
+}
+
+$category = $argv[1];
+$name = $argv[2];
+$value = $argv[3];
+
+// make sure ini file exists (checking ./ and ../)
+if( !file_exists( $filename ) ) $filename = '../'.$filename;
+
+if( !file_exists( $filename ) )
+{
+  print "Cannot find ini file.\n";
+  exit( 3 );
+}
+
+$contents = file_get_contents( $filename );
+
+$new_contents = preg_replace( sprintf( "/(SETTINGS\['%s'\]\['%s'\]) = [^;]+/", $category, $name ),
+                              sprintf( "\\1 = %s", $value ),
+                              $contents,
+                              1 );
+
+// result will be NULL if an error occurred
+if( is_null( $new_contents ) )
+{
+  print "The script failed to change the setting.\n";
+  exit( 4 );
+}
+
+// see if any change was made
+if( $contents === $new_contents )
+{
+  print "New setting resulted in no change to settings file.\n";
+  exit( 0 );
+}
+
+// open the ini file for writing
+$handler = fopen( $filename, 'w' );
+if( !$handler )
+{
+  print "Unable to open ini file for writing.\n";
+  exit( 5 );
+}
+
+// write the new version to the ini file
+$result = fwrite( $handler, $new_contents );
+if( !$result )
+{
+  print "Unable to write new version to ini file.\n";
+  exit( 6 );
+}
+
+if( !fclose( $handler ) )
+{
+  print "Unable to close file after writing new version.\n";
+  exit( 7 );
+}
+
+printf( "Setting [%s][%s] changed to %s\n", $category, $name, $value );
