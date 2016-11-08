@@ -47,6 +47,7 @@ class interview extends \cenozo\database\interview
     $util_class_name = lib::get_class_name( 'util' );
     $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
+    $db_participant = $this->get_participant();
 
     // update the token and survey associated with this interview
     $now = $util_class_name::get_datetime_object();
