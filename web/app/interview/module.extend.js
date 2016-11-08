@@ -17,6 +17,17 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
     constant: true
   } );
 
+  module.addExtraOperation( 'view', {
+    title: 'Force Complete',
+    operation: function( $state, model ) { model.viewModel.forceComplete(); },
+    isDisabled: function( $state, model ) { return null !== model.viewModel.record.end_datetime; },
+    isIncluded: function( $state, model ) { return model.viewModel.forceCompleteAllowed; },
+    help: 'Force completes the interview. ' +
+          'This will end the interview\'s questionnaire leaving any remaining questions unanswered. ' +
+          'You should only force-close an interview when you are sure that as many questions in the ' +
+          'questionnaire has been answered as possible and there is no reason to re-assign the participant.'
+  } );
+
   // extend the list factory
   cenozo.providers.decorator( 'CnInterviewListFactory', [
     '$delegate', 'CnHttpFactory',
@@ -83,11 +94,38 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
 
   // extend the view factory
   cenozo.providers.decorator( 'CnInterviewViewFactory', [
-    '$delegate',
-    function( $delegate ) {
+    '$delegate', 'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory',
+    function( $delegate, CnSession, CnHttpFactory, CnModalConfirmFactory, CnModalMessageFactory ) {
       var instance = $delegate.instance;
       $delegate.instance = function( parentModel, root ) {
         var object = instance( parentModel, root );
+
+        object.forceCompleteAllowed = 2 < CnSession.role.tier;
+        object.forceComplete = function() {
+          CnModalConfirmFactory.instance( {
+            title: 'Force Complete Interview?',
+            message: 'Are you sure you wish to force-complete the interview?\n\n' +
+                     'Note that the interview\'s questionnaire will be closed and unanswered questions will ' +
+                     'no longer be accessible.  This operation cannot be undone.'
+          } ).show().then( function( response ) {
+            if( response ) {
+              CnHttpFactory.instance( {
+                path: 'interview/' + object.record.id + '?operation=force_complete',
+                data: {},
+                onError: function( response ) {
+                  if( 409 == response.status ) {
+                    // 409 means there is an open assignment (or some other problem which we can report)
+                    CnModalMessageFactory.instance( {
+                      title: 'Unable to close interview',
+                      message: response.data,
+                      error: true
+                    } ).show();
+                  } else { CnModalMessageFactory.httpError( response ); }
+                }
+              } ).patch().then( object.onView );
+            }
+          } );
+        };
 
         function getAppointmentEnabled( type ) {
           var completed = null !== object.record.end_datetime;

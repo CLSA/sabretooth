@@ -17,6 +17,45 @@ class module extends \cenozo\service\interview\module
   /**
    * Extend parent method
    */
+  public function validate()
+  {
+    parent::validate();
+
+    if( 300 > $this->get_status()->get_code() )
+    {
+      $operation = $this->get_argument( 'operation', false );
+      if( 'force_complete' == $operation )
+      {
+        $db_interview = $this->get_resource();
+
+        if( 3 > lib::create( 'business\session' )->get_role()->tier )
+        {
+          $this->get_status()->set_code( 403 );
+        }
+        // make sure the interview isn't already complete
+        else if( !is_null( $db_interview->end_datetime ) )
+        {
+          $this->set_data( 'The interview has already been marked as complete.' );
+          $this->get_status()->set_code( 409 );
+        }
+        else
+        {
+          // only force complete if there are no open assignments
+          $modifier = lib::create( 'database\modifier' );
+          $modifier->where( 'assignment.end_datetime', '=', NULL );
+          if( 0 < $db_interview->get_assignment_count( $modifier ) )
+          {
+            $this->set_data( 'Interviews cannot be force-closed while there is an open assignment.' );
+            $this->get_status()->set_code( 409 );
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Extend parent method
+   */
   public function prepare_read( $select, $modifier )
   {
     parent::prepare_read( $select, $modifier );
@@ -62,5 +101,22 @@ class module extends \cenozo\service\interview\module
     $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
     if( $select->has_table_columns( 'script' ) )
       $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
+  }
+
+  /**
+   * Extend parent method
+   */
+  public function post_write( $record )
+  {
+    parent::post_write( $record );
+
+    if( 'PATCH' == $this->get_method() )
+    {
+      if( 'force_complete' == $this->get_argument( 'operation', false ) )
+      {
+        $record->force_complete();
+        $record->get_participant()->repopulate_queue( true );
+      }
+    }
   }
 }
