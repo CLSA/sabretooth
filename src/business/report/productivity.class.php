@@ -83,9 +83,9 @@ class productivity extends \cenozo\business\report\base_report
 
     $select = lib::create( 'database\select' );
     $select->from( 'interview' );
-    $select->add_column( 'user.id', 'user_id', true );
-    $select->add_column( 'user.name', 'user', true );
-    $select->add_column( 'script.name', 'script', true );
+    $select->add_column( 'user.id', 'user_id', false );
+    $select->add_column( 'user.name', 'user', false );
+    $select->add_column( 'script.name', 'script', false );
     $select->add_column( 'COUNT(*)', 'total', false );
 
     $site_sel = lib::create( 'database\select' );
