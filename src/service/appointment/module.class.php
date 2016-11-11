@@ -134,11 +134,13 @@ class module extends \cenozo\service\base_calendar_module
         false );
     }
 
-    // include the participant uid and interview's qnaire rank as supplemental data
+    // include the participant uid, language and interview's qnaire rank as supplemental data
     $modifier->join( 'interview', 'appointment.interview_id', 'interview.id' );
     $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
+    $modifier->join( 'language', 'participant.language_id', 'language.id' );
     $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
     $select->add_table_column( 'participant', 'uid' );
+    $select->add_table_column( 'language', 'code', 'language_code' );
     $select->add_table_column( 'qnaire', 'rank', 'qnaire_rank' );
 
     $participant_site_join_mod = lib::create( 'database\modifier' );

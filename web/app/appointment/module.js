@@ -23,6 +23,12 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
         type: 'datetime',
         title: 'Date & Time'
       },
+      language: {
+        column: 'language.name',
+        type: 'string',
+        title: 'Language',
+        isIncluded: function( $state, model ) { return 'appointment' == model.getSubjectFromState(); }
+      },
       phone: {
         column: 'phone.name',
         type: 'string',
@@ -157,6 +163,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
       var event = {
         getIdentifier: function() { return appointment.getIdentifier() },
         title: ( angular.isDefined( appointment.uid ) ? appointment.uid : 'new appointment' ) +
+               ( angular.isDefined( appointment.language_code ) ? ' (' + appointment.language_code + ')' : '' ) +
                ( angular.isDefined( appointment.qnaire_rank ) ? ' (' + appointment.qnaire_rank + ')' : '' ) +
                ( null != appointment.username ? '\nfor ' + appointment.username : '' ),
         start: moment( appointment.datetime ).subtract( offset, 'minutes' ),
