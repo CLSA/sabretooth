@@ -60,6 +60,7 @@ class module extends \cenozo\service\interview\module
   {
     parent::prepare_read( $select, $modifier );
 
+    // count how many future, unassigned appointments the interview has
     if( $select->has_column( 'future_appointment' ) )
     {
       $join_sel = lib::create( 'database\select' );
@@ -69,6 +70,7 @@ class module extends \cenozo\service\interview\module
 
       $join_mod = lib::create( 'database\modifier' );
       $join_mod->where( 'datetime', '>', 'UTC_TIMESTAMP()', false );
+      $join_mod->where( 'assignment_id', '=', NULL );
       $join_mod->group( 'interview_id' );
 
       $modifier->left_join(

@@ -25,6 +25,7 @@ class appointment extends \cenozo\database\record
     if( is_null( $this->id ) && is_null( $this->assignment_id ) )
     {
       $appointment_mod = lib::create( 'database\modifier' );
+      $appointment_mod->where( 'assignment_id', '=', NULL );
       $appointment_mod->where( 'outcome', '=', NULL );
       if( !is_null( $this->id ) ) $appointment_mod->where( 'id', '!=', $this->id );
       $appointment_mod->order( 'datetime' );
