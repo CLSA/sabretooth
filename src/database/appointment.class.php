@@ -370,7 +370,7 @@ class appointment extends \cenozo\database\record
    *   upcoming: the appointment's date/time has not yet occurred
    *   assignable: the appointment is ready to be assigned, but hasn't been
    *   missed: the appointment was missed (never assigned) and the call window has passed
-   *   incomplete: the appointment was assigned but the assignment never closed (an error)
+   *   error: the appointment was assigned but the assignment never closed (an error)
    *   assigned: the appointment is currently assigned
    *   in progress: the appointment is currently assigned and currently in a call
    * @author Patrick Emond <emondpd@mcmaster.ca>
@@ -406,7 +406,7 @@ class appointment extends \cenozo\database\record
         log::crit(
           sprintf( 'Appointment %d has assignment which is closed but no status was set.',
                    $this->id ) );
-        $status = 'incomplete';
+        $status = 'error';
       }
       else // assignment active
       {

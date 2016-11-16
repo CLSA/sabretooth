@@ -51,7 +51,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
       state: {
         type: 'string',
         title: 'State',
-        help: 'Will either be reached, not reached, upcoming, assignable, missed, incomplete, assigned or in progress'
+        help: 'Will either be reached, not reached, upcoming, assignable, missed, assigned or in progress'
       }
     },
     defaultOrder: {
@@ -118,7 +118,7 @@ define( [ 'availability', 'capacity', 'shift', 'shift_template', 'site' ].reduce
       type: 'string',
       exclude: 'add',
       constant: true,
-      help: 'One of reached, not reached, upcoming, assignable, missed, incomplete, assigned or in progress'
+      help: 'One of reached, not reached, upcoming, assignable, missed, assigned or in progress'
     },
     type: {
       title: 'Type',

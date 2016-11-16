@@ -204,9 +204,9 @@ class module extends \cenozo\service\base_calendar_module
             // the appointment hasn't yet been fulfilled
             'IF( appointment.assignment_id IS NOT NULL, '.
                 // the appointment has been assigned
-                'IF( assignment.end_datetime IS NULL, '.
+                'IF( assignment.end_datetime IS NOT NULL, '.
                     // the assignment is finished (the appointment should be fulfilled, this is an error)
-                    '"incomplete", '.
+                    '"error", '.
                     // the assignment is in progress (either in phone call or not)
                     'IF( phone_call.id IS NOT NULL, "in progress", "assigned" ) '.
                 '), '.
