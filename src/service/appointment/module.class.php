@@ -98,8 +98,18 @@ class module extends \cenozo\service\base_calendar_module
         }
         else
         {
+          // no new appointments if the script is complete
+          if( $db_interview->is_survey_complete() )
+          {
+            $this->set_data(
+              'Appointments cannot be created or changed for this interview since the associated survey has '.
+              'been completed.  The participant must be advanced to the next interview before a new appointment '.
+              'can be created.'
+            );
+            $this->get_status()->set_code( 306 );
+          }
           // validate if we are changing the datetime
-          if( 'POST' == $method ||
+          else if( 'POST' == $method ||
               ( 'PATCH' == $method && array_key_exists( 'datetime', $this->get_file_as_array() ) ) )
           {
             if( !$db_appointment->validate_date() )

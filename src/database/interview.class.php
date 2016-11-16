@@ -15,6 +15,27 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class interview extends \cenozo\database\interview
 {
   /**
+   * Determines whether the script associated with this interview has been completed
+   * 
+   * @author Patrick Emond <emondpd@mcmaster.ca>
+   * @return boolean
+   * @access public
+   */
+  public function is_survey_complete()
+  {
+    $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
+    $old_sid = $tokens_class_name::get_sid();
+    $tokens_class_name::set_sid( $this->get_qnaire()->get_script()->sid );
+    $tokens_mod = lib::create( 'database\modifier' );
+    $tokens_class_name::where_token( $tokens_mod, $this->get_participant(), false );
+    $tokens_mod->where( 'completed', '!=', 'N' );
+    $is_complete = 0 < $tokens_class_name::count( $tokens_mod );
+    $tokens_class_name::set_sid( $old_sid );
+
+    return $is_complete;
+  }
+
+  /**
    * Extends parent method
    */
   public function complete( $db_credit_site = NULL )

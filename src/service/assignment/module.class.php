@@ -24,7 +24,6 @@ class module extends \cenozo\service\assignment\module
     if( 300 > $this->get_status()->get_code() )
     {
       $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
-      $tokens_class_name = lib::get_class_name( 'database\limesurvey\tokens' );
       $participant_class_name = lib::get_class_name( 'database\participant' );
       $queue_class_name = lib::get_class_name( 'database\queue' );
 
@@ -36,16 +35,11 @@ class module extends \cenozo\service\assignment\module
       {
         $record = $this->get_resource();
 
-        // check if the qnaire script is complete or not (used below)
+        // check if the qnaire script is complete or not (used below and in the parent class)
         $db_interview = $record->get_interview();
+        $this->is_survey_complete = $db_interview->is_survey_complete();
         $this->db_participant = $db_interview->get_participant();
         $db_qnaire = $db_interview->get_qnaire();
-        $old_sid = $tokens_class_name::get_sid();
-        $tokens_class_name::set_sid( $db_qnaire->get_script()->sid );
-        $tokens_mod = lib::create( 'database\modifier' );
-        $tokens_class_name::where_token( $tokens_mod, $this->db_participant, false );
-        $tokens_mod->where( 'completed', '!=', 'N' );
-        $this->is_survey_complete = 0 < $tokens_class_name::count( $tokens_mod );
 
         $has_open_phone_call = $record->has_open_phone_call();
         if( 'advance' == $operation )
@@ -72,8 +66,6 @@ class module extends \cenozo\service\assignment\module
             }
           }
         }
-
-        $tokens_class_name::set_sid( $old_sid );
       }
       else if( 'POST' == $method )
       {
