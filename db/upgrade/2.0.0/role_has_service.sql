@@ -96,6 +96,18 @@ CREATE PROCEDURE patch_role_has_service()
     EXECUTE statement;
     DEALLOCATE PREPARE statement;
 
+    -- helpline can edit notes
+    SET @sql = CONCAT(
+      "INSERT INTO role_has_service( role_id, service_id ) ",
+      "SELECT role.id, service.id ",
+      "FROM ", @cenozo, ".role, service ",
+      "WHERE role.name = 'helpline' ",
+      "AND service.restricted = 1 ",
+      "AND service.subject  = 'note'" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement;
+    DEALLOCATE PREPARE statement;
+
     -- remove participant list from operator role
     SET @sql = CONCAT(
       "DELETE FROM role_has_service ",
