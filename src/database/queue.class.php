@@ -186,6 +186,7 @@ class queue extends \cenozo\database\record
 
       $queue_sel = static::$query_object_list[ $db_queue->name ]['select'];
       $queue_mod = static::$query_object_list[ $db_queue->name ]['modifier'];
+      if( !is_null( $db_participant ) ) $queue_mod->where( 'temp_participant.id', '=', $db_participant->id );
 
       $queue_sel->set_distinct( true );
       $queue_sel->add_table_column( 'temp_participant', 'id' );
