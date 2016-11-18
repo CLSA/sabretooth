@@ -1,4 +1,4 @@
-define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( function( list, name ) {
+define( [ 'appointment', 'capacity', 'shift', 'site' ].reduce( function( list, name ) {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [] ), function() {
   'use strict';
@@ -97,7 +97,7 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
   } );
 
   // add an extra operation for each of the appointment-based calendars the user has access to
-  [ 'appointment', 'availability', 'capacity', 'shift', 'shift_template' ].forEach( function( name ) {
+  [ 'appointment', 'capacity', 'shift', 'shift_template' ].forEach( function( name ) {
     var calendarModule = cenozoApp.module( name );
     if( angular.isDefined( calendarModule.actions.calendar ) ) {
       module.addExtraOperation( 'calendar', {
@@ -319,13 +319,9 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnShiftTemplateCalendar', [
-    'CnShiftTemplateModelFactory',
-    'CnAppointmentModelFactory', 'CnAvailabilityModelFactory',
-    'CnCapacityModelFactory', 'CnShiftModelFactory',
+    'CnShiftTemplateModelFactory', 'CnAppointmentModelFactory', 'CnCapacityModelFactory', 'CnShiftModelFactory',
     'CnSession',
-    function( CnShiftTemplateModelFactory,
-              CnAppointmentModelFactory, CnAvailabilityModelFactory,
-              CnCapacityModelFactory, CnShiftModelFactory,
+    function( CnShiftTemplateModelFactory, CnAppointmentModelFactory, CnCapacityModelFactory, CnShiftModelFactory,
               CnSession ) {
       return {
         templateUrl: module.getFileUrl( 'calendar.tpl.html' ),
@@ -342,7 +338,6 @@ define( [ 'appointment', 'availability', 'capacity', 'shift', 'site' ].reduce( f
           // factory name -> object map used below
           var factoryList = {
             appointment: CnAppointmentModelFactory,
-            availability: CnAvailabilityModelFactory,
             capacity: CnCapacityModelFactory,
             shift: CnShiftModelFactory,
             shift_template: CnShiftTemplateModelFactory

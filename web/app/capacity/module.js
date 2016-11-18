@@ -1,4 +1,4 @@
-define( [ 'appointment', 'availability', 'shift', 'shift_template', 'site' ].reduce( function( list, name ) {
+define( [ 'appointment', 'shift', 'shift_template', 'site' ].reduce( function( list, name ) {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [] ), function() {
   'use strict';
@@ -117,7 +117,7 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template', 'site' ].red
   }
 
   // add an extra operation for each of the appointment-based calendars the user has access to
-  [ 'appointment', 'availability', 'capacity', 'shift', 'shift_template' ].forEach( function( name ) {
+  [ 'appointment', 'capacity', 'shift', 'shift_template' ].forEach( function( name ) {
     var calendarModule = cenozoApp.module( name );
     if( angular.isDefined( calendarModule.actions.calendar ) ) {
       module.addExtraOperation( 'calendar', {
@@ -132,11 +132,9 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template', 'site' ].red
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnCapacityCalendar', [
-    'CnCapacityModelFactory',
-    'CnAppointmentModelFactory', 'CnAvailabilityModelFactory',
+    'CnCapacityModelFactory', 'CnAppointmentModelFactory',
     'CnShiftModelFactory', 'CnShiftTemplateModelFactory',
-    function( CnCapacityModelFactory,
-              CnAppointmentModelFactory, CnAvailabilityModelFactory,
+    function( CnCapacityModelFactory, CnAppointmentModelFactory,
               CnShiftModelFactory, CnShiftTemplateModelFactory ) {
       return {
         templateUrl: module.getFileUrl( 'calendar.tpl.html' ),
@@ -153,7 +151,6 @@ define( [ 'appointment', 'availability', 'shift', 'shift_template', 'site' ].red
           // factory name -> object map used below
           var factoryList = {
             appointment: CnAppointmentModelFactory,
-            availability: CnAvailabilityModelFactory,
             capacity: CnCapacityModelFactory,
             shift: CnShiftModelFactory,
             shift_template: CnShiftTemplateModelFactory
