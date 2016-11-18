@@ -261,6 +261,7 @@ class appointment extends \cenozo\database\record
     $appointment_sel->add_column( $old_upper_sql, 'end_datetime', false );
     $appointment_mod = lib::create( 'database\modifier' );
     if( !is_null( $this->id ) ) $appointment_mod->where( 'appointment.id', '!=', $this->id );
+    $appointment_mod->where( 'override', '=', false );
     $appointment_mod->join( 'interview', 'appointment.interview_id', 'interview.id' );
     $join_mod = lib::create( 'database\modifier' );
     $join_mod->where( 'interview.participant_id', '=', 'participant_site.participant_id', false );
