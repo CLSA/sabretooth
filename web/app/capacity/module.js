@@ -17,100 +17,165 @@ define( [ 'appointment', 'shift', 'shift_template', 'site' ].reduce( function( l
   function getSlotsFromEvents( appointmentEvents, shiftEvents, shiftTemplateEvents ) {
     var slots = [];
 
+    // function that sorts events by their start time
+    var sortByStart = function( a, b ) {
+      return a.start.isBefore( b.start ) ? -1
+           : a.start.isAfter( b.start ) ? 1
+           : 0;
+    };
+
     // create an object grouping all events for each day
     var events = {};
-    appointmentEvents.forEach( function( item ) {
+    appointmentEvents.sort( sortByStart ).forEach( function( item ) {
       var date = item.start.format( 'YYYY-MM-DD' );
-      if( angular.isUndefined( events[date] ) )
-        events[date] = { appointments: [], shifts: [], templates: [] };
+      if( angular.isUndefined( events[date] ) ) events[date] = { appointments: [], shifts: [], templates: [] };
       events[date].appointments.push( item );
     } );
-    shiftEvents.forEach( function( item ) {
+    shiftEvents.sort( sortByStart ).forEach( function( item ) {
       var date = item.start.format( 'YYYY-MM-DD' );
-      if( angular.isUndefined( events[date] ) )
-        events[date] = { appointments: [], shifts: [], templates: [] };
+      if( angular.isUndefined( events[date] ) ) events[date] = { appointments: [], shifts: [], templates: [] };
       events[date].shifts.push( item );
     } );
-    shiftTemplateEvents.forEach( function( item ) {
+    shiftTemplateEvents.sort( sortByStart ).forEach( function( item ) {
       var date = item.start.format( 'YYYY-MM-DD' );
-      if( angular.isUndefined( events[date] ) )
-        events[date] = { appointments: [], shifts: [], templates: [] };
+      if( angular.isUndefined( events[date] ) ) events[date] = { appointments: [], shifts: [], templates: [] };
       events[date].templates.push( item );
     } );
 
     // now go through each day and determine the open slots
     for( var date in events ) {
-      // determine where the number of slots changes
-      var diffs = {};
+      var tempDate = moment( date );
+      var eventList = [];
+
+      // get all shifts for today (or shift templates if there are no shifts
+      var lastEvent = null;
       if( 0 < events[date].shifts.length ) {
-        // process shifts
         events[date].shifts.forEach( function( shift ) {
-          var time = shift.start.format( 'HH:mm' );
-          if( angular.isUndefined( diffs[time] ) ) diffs[time] = 0;
-          diffs[time]++;
-          var time = shift.end.format( 'HH:mm' );
-          if( angular.isUndefined( diffs[time] ) ) diffs[time] = 0;
-          diffs[time]--;
+          var event = {
+            start: shift.start.format( 'HH:mm' ),
+            end: shift.end.format( 'HH:mm' ),
+            slots: 1
+          };
+          if( null != lastEvent && lastEvent.start == event.start && lastEvent.end == event.end ) {
+            lastEvent.slots++;
+          } else {
+            eventList.push( event );
+            lastEvent = event;
+          }
         } );
       } else {
         // process shift templates if there are no shifts
         events[date].templates.forEach( function( shiftTemplate ) {
-          var time = moment( shiftTemplate.start ).format( 'HH:mm' );
-          if( angular.isUndefined( diffs[time] ) ) diffs[time] = 0;
-          diffs[time] += parseInt( shiftTemplate.title );
-          var time = moment( shiftTemplate.end ).format( 'HH:mm' );
-          if( angular.isUndefined( diffs[time] ) ) diffs[time] = 0;
-          diffs[time] -= parseInt( shiftTemplate.title );
+          var event = {
+            start: shiftTemplate.start.format( 'HH:mm' ),
+            end: shiftTemplate.end.format( 'HH:mm' ),
+            slots: parseInt( shiftTemplate.title )
+          };
+          if( null != lastEvent && lastEvent.start == event.start && lastEvent.end == event.end ) {
+            lastEvent.slots++;
+          } else {
+            eventList.push( event );
+            lastEvent = event;
+          }
         } );
       }
+
+      // convert start/end times to moment objects
+      eventList.forEach( function( event ) {
+        var startColon = event.start.indexOf( ':' );
+        var endColon = event.end.indexOf( ':' );
+        event.start = moment()
+          .year( tempDate.year() )
+          .month( tempDate.month() )
+          .date( tempDate.date() )
+          .hour( event.start.substring( 0, startColon ) )
+          .minute( event.start.substring( startColon + 1 ) )
+          .second( 0 );
+        event.end = moment()
+          .year( tempDate.year() )
+          .month( tempDate.month() )
+          .date( tempDate.date() )
+          .hour( event.end.substring( 0, endColon ) )
+          .minute( event.end.substring( endColon + 1 ) )
+          .second( 0 );
+      } );
 
       // remove slots taken up by non-overridden appointments
       events[date].appointments.filter( function( appointment ) {
         return !appointment.override;
       } ).forEach( function( appointment ) {
-        var time = appointment.start.format( 'HH:mm' );
-        if( angular.isUndefined( diffs[time] ) ) diffs[time] = 0;
-        diffs[time]--;
-        var time = appointment.end.format( 'HH:mm' );
-        if( angular.isUndefined( diffs[time] ) ) diffs[time] = 0;
-        diffs[time]++;
+        // find the shortest slot that fits the appointment
+        var workingIndex = null;
+        var workingEvent = null;
+        var workingLength = 0;
+        eventList.forEach( function( event, index ) {
+          if( event.start.isSameOrBefore( appointment.start, 'minute' ) &&
+              event.end.isSameOrAfter( appointment.end, 'minute' ) ) {
+            var length = event.end.diff( event.start, 'minutes' );
+            if( length > workingLength ) {
+              workingIndex = index;
+              workingEvent = event;
+              workingLength = workingLength;
+            }
+          }
+        } );
+
+        if( null != workingEvent ) {
+          // found an event to remove the appointment from
+          if( workingEvent.slots > 1 ) {
+            // remove one of the slots and make that the working event
+            workingEvent.slots--;
+            workingEvent = angular.copy( workingEvent );
+            workingEvent.slots = 1;
+          } else {
+            // remove the whole event
+            eventList.splice( workingIndex, 1 );
+          }
+
+          // splice the working event based on the appointment's time span
+          if( workingEvent.start.isBefore( appointment.start, 'minute' ) ) {
+            // create a new event that comes before the appointment
+            var beforeEvent = {
+              start: angular.copy( workingEvent.start ),
+              end: angular.copy( appointment.start ),
+              slots: 1
+            };
+            // see if this already exists in the event list
+            if( !eventList.some( function( checkEvent ) {
+              if( checkEvent.start.isSame( beforeEvent.start, 'minute' ) &&
+                  checkEvent.end.isSame( beforeEvent.end, 'minute' ) ) {
+                checkEvent.slots++;
+                return true;
+              }
+            } ) ) eventList.push( beforeEvent );
+          }
+          if( workingEvent.end.isAfter( appointment.end, 'minute' ) ) {
+            // create a new event that comes after the appointment
+            var afterEvent = {
+              start: angular.copy( appointment.end ),
+              end: angular.copy( workingEvent.end ),
+              slots: 1
+            };
+            // see if this already exists in the event list
+            if( !eventList.some( function( checkEvent ) {
+              if( checkEvent.start.isSame( afterEvent.start, 'minute' ) &&
+                  checkEvent.end.isSame( afterEvent.end, 'minute' ) ) {
+                checkEvent.slots++;
+                return true;
+              }
+            } ) ) eventList.push( afterEvent );
+          }
+        }
       } );
 
-      // get an ordered list of all keys in the diffs array
-      var times = [];
-      for( var time in diffs ) if( diffs.hasOwnProperty( time ) ) times.push( time );
-      times.sort();
-
-      // now go through all diffs to determine the slots
-      var lastTime = null;
-      var lastNumber = 0;
-      var number = 0;
-      for( var i = 0; i < times.length; i++ ) {
-        var time = times[i];
-        number += diffs[time];
-        if( 0 < lastNumber ) {
-          var colon = time.indexOf( ':' );
-          var lastColon = lastTime.indexOf( ':' );
-          var tempDate = moment( date );
-          slots.push( {
-            title: lastNumber + ' slot' + ( 1 < lastNumber ? 's' : '' ),
-            start: moment().year( tempDate.year() )
-                           .month( tempDate.month() )
-                           .date( tempDate.date() )
-                           .hour( lastTime.substring( 0, lastColon ) )
-                           .minute( lastTime.substring( lastColon + 1 ) )
-                           .second( 0 ),
-            end: moment().year( tempDate.year() )
-                         .month( tempDate.month() )
-                         .date( tempDate.date() )
-                         .hour( time.substring( 0, colon ) )
-                         .minute( time.substring( colon + 1 ) )
-                         .second( 0 )
-          } );
-        }
-        lastTime = time;
-        lastNumber = number;
-      }
+      // now create the slots
+      eventList.sort( sortByStart ).forEach( function( event ) {
+        slots.push( {
+          title: event.slots + ' slot' + ( 1 < event.slots ? 's' : '' ),
+          start: event.start,
+          end: event.end
+        } );
+      } );
     }
 
     return slots;
