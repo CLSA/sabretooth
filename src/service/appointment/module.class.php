@@ -73,7 +73,7 @@ class module extends \cenozo\service\base_calendar_module
       if( $service_class_name::is_write_method( $method ) )
       {
         // no writing of appointments if interview is completed
-        if( !is_null( $db_interview ) && null !== $db_interview->end_datetime )
+        if( !is_null( $db_interview ) && !is_null( $db_interview->end_datetime ) )
         {
           $this->set_data( 'Appointments cannot be changed after an interview is complete.' );
           $this->get_status()->set_code( 306 );
