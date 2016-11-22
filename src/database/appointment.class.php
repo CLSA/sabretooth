@@ -127,6 +127,7 @@ class appointment extends \cenozo\database\record
 
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
+    $db_user = $session->get_user();
 
     // get the participant's site
     $db_participant = $this->get_interview()->get_participant();
@@ -138,11 +139,6 @@ class appointment extends \cenozo\database\record
     $setting_sel->add_column( 'short_appointment' );
     $setting_sel->add_column( 'long_appointment' );
     $settings = current( $db_site->get_setting_list( $setting_sel ) );
-
-    // get the date of the appointment
-    $date = util::get_datetime_object( $this->datetime );
-    $day_of_week = $date->format( 'l' );
-    $appointment_date = $date->format( 'Y-m-d' );
 
     // get the lower/upper datetime of the new and existing appointments as sql
     $new_lower_sql = static::db()->format_string( $this->datetime->format( 'Y-m-d H:i:s' ) );
@@ -173,6 +169,12 @@ class appointment extends \cenozo\database\record
 
     if( 0 == count( $operator_list ) ) // no shifts, get shift templates instead
     {
+      // get the date of the appointment in the user's timezone (since shift templates dates absolute)
+      $date = util::get_datetime_object( $this->datetime );
+      $date->setTimezone( new \DateTimeZone( $db_user->timezone ) );
+      $appointment_date = $date->format( 'Y-m-d' );
+      $day_of_week = $date->format( 'l' );
+
       $shift_template_sel = lib::create( 'database\select' );
       $shift_template_sel->from( 'shift_template' );
       $shift_template_sel->add_column(
@@ -181,7 +183,7 @@ class appointment extends \cenozo\database\record
                               'TIME( CONVERT_TZ( "2000-01-01", "UTC", "%s" ) ), 1, 0 ) HOUR',
                  $appointment_date,
                  $appointment_date,
-                 $db_site->timezone, 
+                 $db_site->timezone,
                  $db_site->timezone ),
         'start_datetime', false );
       // add a day to the end datetime if the end is before the start (looping over midnight)
@@ -191,7 +193,7 @@ class appointment extends \cenozo\database\record
                               'TIME( CONVERT_TZ( "2000-01-01", "UTC", "%s" ) ), 1, 0 ) HOUR',
                  $appointment_date,
                  $appointment_date,
-                 $db_site->timezone, 
+                 $db_site->timezone,
                  $db_site->timezone ),
         'end_datetime', false );
       $shift_template_sel->add_column( 'operators' );
