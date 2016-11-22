@@ -191,6 +191,7 @@ define( [ 'appointment', 'capacity', 'shift', 'site' ].reduce( function( list, n
             dayList.forEach( function( day ) {
               startDate.day( day );
               endDate.day( day );
+              if( endDate.isBefore( startDate ) ) endDate.add( 1, 'days' );
 
               if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) &&
                   !startDate.isBefore( itemStartDate, 'day' ) && !startDate.isAfter( itemEndDate, 'day' ) ) {
