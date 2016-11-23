@@ -190,7 +190,7 @@ class productivity extends \cenozo\business\report\base_report
           $survey_time_mod = lib::create( 'database\modifier' );
           $survey_time_mod->where( 'token', 'IN', $token_list );
           $data[$row['user']][$db_qnaire->get_script()->name.' Avg Length'] =
-            $survey_class_name::get_total_time( $survey_time_mod );
+            $survey_class_name::get_total_time( $survey_time_mod ) / 60;
 
           $survey_class_name::set_sid( $old_sid );
         }
@@ -200,7 +200,7 @@ class productivity extends \cenozo\business\report\base_report
       foreach( $data as $user => $row )
       {
         // convert the total time to minutes
-        $data[$user]['Total Time'] = sprintf( '%0.2f', $row['Total Time'] / 60 );
+        $data[$user]['Total Time'] = sprintf( '%0.2f', $row['Total Time'] );
 
         foreach( $qnaire_list as $db_qnaire )
         {
@@ -208,7 +208,7 @@ class productivity extends \cenozo\business\report\base_report
           $comp_name = $script.' CompPH';
           $avg_name = $script.' Avg Length';
           $data[$user][$comp_name] = 0 < $row['Total Time']
-                                   ? sprintf( '%0.2f', $row[$script] / $row['Total Time'] )
+                                   ? sprintf( '%0.2f', $row[$script] / $row['Total Time'] / 60 )
                                    : '';
           $data[$user][$avg_name] = 0 < $row[$script]
                                   ? sprintf( '%0.2f', $row[$avg_name] / $row[$script] / 60 )
