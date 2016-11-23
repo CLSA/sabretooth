@@ -208,7 +208,7 @@ class productivity extends \cenozo\business\report\base_report
           $comp_name = $script.' CompPH';
           $avg_name = $script.' Avg Length';
           $data[$user][$comp_name] = 0 < $row['Total Time']
-                                   ? sprintf( '%0.2f', $row[$script] / $row['Total Time'] / 60 )
+                                   ? sprintf( '%0.2f', $row[$script] / $row['Total Time'] * 60 )
                                    : '';
           $data[$user][$avg_name] = 0 < $row[$script]
                                   ? sprintf( '%0.2f', $row[$avg_name] / $row[$script] / 60 )
