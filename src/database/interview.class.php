@@ -40,10 +40,44 @@ class interview extends \cenozo\database\interview
    */
   public function complete( $db_credit_site = NULL )
   {
+    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
+
     parent::complete( $db_credit_site );
 
+    $db_participant = $this->get_participant();
+
     // record the script finished event
-    $this->get_qnaire()->get_script()->add_finished_event_types( $this->get_participant() );
+    $this->get_qnaire()->get_script()->add_finished_event_types( $db_participant );
+
+    // If there are any appointments belonging to this interview which are unassigned then immediately
+    // create make the next interview an reassign it (or delete it if this is the last interview)
+    $appointment_mod = lib::create( 'database\modifier' );
+    $appointment_mod->where( 'appointment.assignment_id', '=', NULL );
+    $appointment_mod->where( 'appointment.outcome', '=', NULL );
+    if( 0 < $this->get_appointment_count( clone $appointment_mod ) )
+    {
+      // see if there is a next qnaire
+      $db_interview = NULL;
+      $db_next_qnaire = $qnaire_class_name::get_unique_record( 'rank', $this->get_qnaire()->rank + 1 );
+      if( !is_null( $db_next_qnaire ) )
+      {
+        $db_interview = new static();
+        $db_interview->qnaire_id = $db_next_qnaire->id;
+        $db_interview->participant_id = $db_participant->id;
+        $db_interview->start_datetime = util::get_datetime_object();
+        $db_interview->save();
+      }
+
+      foreach( $this->get_appointment_object_list( $appointment_mod ) as $db_appointment )
+      {
+        if( is_null( $db_next_qnaire ) ) $db_appointment->delete();
+        else
+        {
+          $db_appointment->interview_id = $db_interview->id;
+          $db_appointment->save();
+        }
+      }
+    }
   }
 
   /**
