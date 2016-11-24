@@ -44,6 +44,7 @@ class assignment extends \cenozo\database\assignment
   {
     parent::post_process( $completed );
 
+    $db_application = lib::create( 'business\session' )->get_application();
     $db_queue = $this->get_queue();
     $db_interview = $this->get_interview();
     $db_participant = $db_interview->get_participant();
@@ -52,12 +53,26 @@ class assignment extends \cenozo\database\assignment
     if( $db_queue->from_appointment() )
     {
       $modifier = lib::create( 'database\modifier' );
-      $modifier->order_desc( 'datetime' );
+      $modifier->order( 'datetime' );
 
       // if the assignment is complete then the appointment is already associated with it
       if( $completed ) $modifier->where( 'assignment_id', '=', $this->id );
-      // if the assignmetn is not complete then we have to find the unassigned appointment
-      else $modifier->where( 'assignment_id', '=', NULL );
+      // if the assignment is not complete then we have to find the unassigned appointment
+      else
+      {
+        // get the pre-call window setting
+        $db_site = $db_participant->get_effective_site();
+        $pre_call_window = is_null( $db_site ) ? 0 : $db_site->get_setting()->pre_call_window;
+
+        // make sure not to select future appointments
+        $join_mod = lib::create( 'database\modifier' );
+        $modifier->where(
+          sprintf( 'appointment.datetime - INTERVAL %d MINUTE', $pre_call_window ),
+          '<=',
+          $this->start_datetime->format( 'Y-m-d H:i:s' )
+        );
+        $modifier->where( 'assignment_id', '=', NULL );
+      }
 
       $appointment_list = $db_interview->get_appointment_object_list( $modifier );
       if( count( $appointment_list ) )
