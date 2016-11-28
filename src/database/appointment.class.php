@@ -162,7 +162,6 @@ class appointment extends \cenozo\database\record
     {
       $operator_list[] = array(
         'appointment' => NULL,
-        'locked' => false,
         'start' => util::get_datetime_object( $shift['start_datetime'] ),
         'end' => util::get_datetime_object( $shift['end_datetime'] ) );
     }
@@ -249,8 +248,7 @@ class appointment extends \cenozo\database\record
         // add the shift template's operators number of mock-operators to the operator list
         for( $i = 0; $i < $shift_template['operators']; $i++ )
           $operator_list[] = array(
-            'appointment' => NULL,
-            'locked' => false,
+            'appointment_list' => array(),
             'start' => util::get_datetime_object( $shift_template['start_datetime'] ),
             'end' => util::get_datetime_object( $shift_template['end_datetime'] ) );
       }
@@ -320,37 +318,29 @@ class appointment extends \cenozo\database\record
     while( 0 < count( $appointment_list ) )
     {
       // get the first appointment in the remaining list
-      $appointment = array_pop( $appointment_list );
+      $appointment = array_shift( $appointment_list );
       $assigned = false;
 
       // and try to find an empty operator to pair it with
       foreach( $operator_list as $index => $operator )
       {
-        if( is_null( $operator['appointment'] ) &&
-            $appointment['start'] >= $operator['start'] &&
-            $appointment['end'] <= $operator['end'] )
+        if( $appointment['start'] >= $operator['start'] && $appointment['end'] <= $operator['end'] )
         {
-          $operator_list[$index]['appointment'] = $appointment;
-          $operator_list[$index]['locked'] = false;
-          $assigned = true;
-          break;
-        }
-      }
-
-      if( !$assigned )
-      {
-        // if no operators match then look for operators who are already assigned but not locked
-        foreach( $operator_list as $index => $operator )
-        {
-          if( !is_null( $operator['appointment'] ) &&
-              !$operator['locked'] &&
-              $appointment['start'] >= $operator['start'] &&
-              $appointment['end'] <= $operator['end'] )
+          // check to see if any part of timespan is already assigned
+          $available = true;
+          foreach( $operator['appointment_list'] as $a )
           {
-            // swap out the unlocked appointment and lock the current one here
-            $appointment_list[] = $operator_list[$index]['appointment'];
-            $operator_list[$index]['appointment'] = $appointment;
-            $operator_list[$index]['locked'] = true;
+            // does the existing appointment overlap?
+            if( $a['end'] > $appointment['start'] && $a['start'] < $appointment['end'] )
+            {
+              $available = false;
+              break;
+            }
+          }
+
+          if( $available )
+          {
+            $operator_list[$index]['appointment_list'][] = $appointment;
             $assigned = true;
             break;
           }
