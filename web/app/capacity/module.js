@@ -171,7 +171,7 @@ define( [ 'appointment', 'shift', 'shift_template', 'site' ].reduce( function( l
       // now create the slots
       eventList.sort( sortByStart ).forEach( function( event ) {
         slots.push( {
-          title: event.slots + ' slot' + ( 1 < event.slots ? 's' : '' ),
+          title: event.slots + ' opeartor' + ( 1 < event.slots ? 's' : '' ),
           start: event.start,
           end: event.end
         } );
