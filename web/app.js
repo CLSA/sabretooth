@@ -13,9 +13,9 @@ cenozo.controller( 'HeaderCtrl', [
     // add custom operations here by adding a new property to $scope.operationList
 
     CnSession.promise.then( function() {
-      CnSession.alertHeader = CnSession.user.hasAssignment
-                            ? 'You are currently in an assignment'
-                            : undefined;
+      CnSession.alertHeader = null == CnSession.user.assignment
+                            ? undefined
+                            : 'You are currently in an assignment';
       CnSession.onAlertHeader = function() {
         if( angular.isDefined( cenozoApp.module( 'assignment' ).actions.control ) ) {
           $state.go( 'assignment.control' );
