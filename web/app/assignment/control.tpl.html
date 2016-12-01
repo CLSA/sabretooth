@@ -201,6 +201,9 @@
                 <li ng-if="model.activePhoneCall" ng-repeat="status in model.phoneCallStatusList">
                   <a ng-click="model.endCall( status )">{{ status }}</a>
                 </li>
+                <li ng-if="!model.activePhoneCall && 0 == model.phoneList.length">
+                  There are no phone numbers available.
+                <li>
                 <li ng-if="!model.activePhoneCall" ng-repeat="phone in model.phoneList">
                   <a ng-click="model.startCall( phone )">
                     <div class="row"
