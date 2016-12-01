@@ -73,6 +73,7 @@ class module extends \cenozo\service\participant\module
       $join_mod = lib::create( 'database\modifier' );
       $join_mod->where( 'participant_last_interview.interview_id', '=', 'appointment.interview_id', false );
       $join_mod->where( 'appointment.assignment_id', '=', NULL );
+      $join_mod->where( 'appointment.outcome', '=', NULL );
       $modifier->join_modifier( 'appointment', $join_mod, 'left' );
 
       $modifier->where_bracket( true );
