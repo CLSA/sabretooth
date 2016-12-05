@@ -85,12 +85,12 @@ define( [ 'participant' ].reduce( function( list, name ) {
             title: 'Rank',
             column: 'queue.rank',
             type: 'rank',
-            type: self.isOperator ? 'hidden' : 'string'
+            type: 'string'
           }, index++ );
           self.participantModel.addColumn( 'queue', {
             title: 'Queue',
             column: 'queue.name',
-            type: self.isOperator ? 'hidden' : 'string'
+            type: 'string'
           }, index++ );
           self.participantModel.addColumn(
             'qnaire', { title: 'Questionnaire', column: 'script.name' }, index++ );
