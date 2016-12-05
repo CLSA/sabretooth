@@ -75,7 +75,7 @@ CREATE PROCEDURE patch_role_has_service()
       "AND service.restricted = 1 ",
       "AND ( ",
         "service.subject IN ( ",
-          "'address', 'alternate', 'consent', 'event', 'form', 'jurisdiction', 'language', 'note', ",
+          "'address', 'alternate', 'callback', 'consent', 'event', 'form', 'jurisdiction', 'language', 'note', ",
           "'participant', 'phone', 'region_site', 'report', 'report_type', 'source', 'state', 'token' ",
         ") ",
         "OR ( subject = 'report_restriction' AND method = 'GET' ) ",
@@ -91,7 +91,7 @@ CREATE PROCEDURE patch_role_has_service()
       "FROM ", @cenozo, ".role, service ",
       "WHERE role.name IN( 'helpline', 'operator', 'operator+' ) ",
       "AND service.restricted = 1 ",
-      "AND service.subject IN ( 'appointment', 'assignment', 'participant', 'phone_call', 'token' )" );
+      "AND service.subject IN ( 'appointment', 'assignment', 'callback', 'participant', 'phone_call', 'token' )" );
     PREPARE statement FROM @sql;
     EXECUTE statement;
     DEALLOCATE PREPARE statement;
@@ -108,13 +108,13 @@ CREATE PROCEDURE patch_role_has_service()
     EXECUTE statement;
     DEALLOCATE PREPARE statement;
 
-    -- remove participant list from operator role
+    -- remove callback and participant list from operator role
     SET @sql = CONCAT(
       "DELETE FROM role_has_service ",
       "WHERE role_id = ( SELECT id FROM ", @cenozo, ".role WHERE name = 'operator' ) ",
-      "AND service_id = ( ",
+      "AND service_id IN ( ",
         "SELECT id FROM service ",
-        "WHERE subject = 'participant' AND method = 'GET' AND resource = 0",
+        "WHERE ( subject = 'participant' AND method = 'GET' AND resource = 0 ) OR subject = 'callback' ",
       ")" );
     PREPARE statement FROM @sql;
     EXECUTE statement;

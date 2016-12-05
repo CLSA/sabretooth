@@ -98,8 +98,8 @@ define( [ 'capacity', 'shift', 'shift_template', 'site' ].reduce( function( list
       type: 'lookup-typeahead',
       typeahead: {
         table: 'user',
-        select: 'CONCAT( first_name, " ", last_name, " (", name, ")" )',
-        where: [ 'first_name', 'last_name', 'name' ]
+        select: 'CONCAT( user.first_name, " ", user.last_name, " (", user.name, ")" )',
+        where: [ 'user.first_name', 'user.last_name', 'user.name' ]
       },
       help: 'The user the appointment is specifically reserved for. ' +
             'Cannot be changed once the appointment has passed.'
@@ -664,7 +664,7 @@ define( [ 'capacity', 'shift', 'shift_template', 'site' ].reduce( function( list
           if( 'user' == input.typeahead.table ) {
             data.modifier.where.unshift( { bracket: true, open: true } );
             data.modifier.where.push( { bracket: true, open: false } );
-            data.modifier.where.push( { column: 'active', operator: '=', value: true } );
+            data.modifier.where.push( { column: 'user.active', operator: '=', value: true } );
 
             // restrict to the current site
             if( this.site ) data.restricted_site_id = this.site.id;

@@ -61,6 +61,7 @@ INSERT INTO service ( subject, method, resource, restricted ) VALUES
 ( 'availability_type', 'GET', 1, 0 ),
 ( 'availability_type', 'PATCH', 1, 1 ),
 ( 'availability_type', 'POST', 0, 1 ),
+( 'callback', 'GET', 0, 1 ),
 ( 'cohort', 'GET', 0, 0 ),
 ( 'collection', 'DELETE', 1, 1 ),
 ( 'collection', 'GET', 0, 0 ),
