@@ -57,7 +57,7 @@ define( [ 'appointment', 'shift', 'shift_template', 'site' ].reduce( function( l
             slots: 1
           };
           if( null != lastEvent && lastEvent.start == event.start && lastEvent.end == event.end ) {
-            lastEvent.slots++;
+            lastEvent.slots += event.slots;
           } else {
             eventList.push( event );
             lastEvent = event;
@@ -72,7 +72,7 @@ define( [ 'appointment', 'shift', 'shift_template', 'site' ].reduce( function( l
             slots: parseInt( shiftTemplate.title )
           };
           if( null != lastEvent && lastEvent.start == event.start && lastEvent.end == event.end ) {
-            lastEvent.slots++;
+            lastEvent.slots += event.slots;
           } else {
             eventList.push( event );
             lastEvent = event;
