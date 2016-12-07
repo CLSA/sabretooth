@@ -52,6 +52,7 @@ class assignment extends \cenozo\database\assignment
     // set the assignment and outcome columns in appointments
     if( $db_queue->from_appointment() )
     {
+      $modifier2 = NULL;
       $modifier = lib::create( 'database\modifier' );
       $modifier->order( 'datetime' );
       $modifier->limit( 1 );
@@ -83,7 +84,7 @@ class assignment extends \cenozo\database\assignment
       $appointment_list = $db_interview->get_appointment_object_list( $modifier );
       $db_appointment = NULL;
       if( count( $appointment_list ) ) $db_appointment = current( $appointment_list );
-      else
+      else if( !is_null( $modifier2 ) )
       {
         // no appointment found, check to see if there is an appointment in a "broken" state
         // Broken appointments are assigned to completed assignements but have no outcome
