@@ -54,6 +54,7 @@ class assignment extends \cenozo\database\assignment
     {
       $modifier = lib::create( 'database\modifier' );
       $modifier->order( 'datetime' );
+      $modifier->limit( 1 );
 
       // if the assignment is complete then the appointment is already associated with it
       if( $completed ) $modifier->where( 'assignment_id', '=', $this->id );
@@ -65,17 +66,44 @@ class assignment extends \cenozo\database\assignment
         $pre_call_window = is_null( $db_site ) ? 0 : $db_site->get_setting()->pre_call_window;
 
         // make sure not to select future appointments
-        $join_mod = lib::create( 'database\modifier' );
         $modifier->where(
           sprintf( 'appointment.datetime - INTERVAL %d MINUTE', $pre_call_window ),
           '<=',
           $this->start_datetime->format( 'Y-m-d H:i:s' )
         );
+
+        // make a copy of the modifier to use below, if needed
+        $modifier2 = clone $modifier;
+
+        // only select unassigned appointments
         $modifier->where( 'assignment_id', '=', NULL );
       }
 
+
       $appointment_list = $db_interview->get_appointment_object_list( $modifier );
-      if( count( $appointment_list ) )
+      $db_appointment = NULL;
+      if( count( $appointment_list ) ) $db_appointment = current( $appointment_list );
+      else
+      {
+        // no appointment found, check to see if there is an appointment in a "broken" state
+        // Broken appointments are assigned to completed assignements but have no outcome
+        $modifier2->order_desc( 'datetime' );
+        $appointment_list = $db_interview->get_appointment_object_list( $modifier2 );
+        if( count( $appointment_list ) )
+        {
+          $db_possible_appointment = current( $appointment_list );
+          if( is_null( $db_possible_appointment->outcome ) )
+          {
+            $db_old_assignment = $db_possible_appointment->get_assignment();
+            // use this appointment if it is already assigned to this assignment, or the assignment
+            // it is assigned to has ended (since the appointment has no outcome)
+            if( $db_old_assignment->id == $this->id || !is_null( $db_old_assignment->end_datetime ) )
+              $db_appointment = $db_possible_appointment;
+          }
+        }
+      }
+
+      if( !is_null( $db_appointment ) )
       {
         $db_appointment = current( $appointment_list );
 
