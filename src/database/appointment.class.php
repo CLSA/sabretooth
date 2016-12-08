@@ -161,7 +161,7 @@ class appointment extends \cenozo\database\record
     foreach( $db_site->get_shift_list( $shift_sel, $shift_mod ) as $shift )
     {
       $operator_list[] = array(
-        'appointment' => NULL,
+        'appointment_list' => array(),
         'start' => util::get_datetime_object( $shift['start_datetime'] ),
         'end' => util::get_datetime_object( $shift['end_datetime'] ) );
     }
