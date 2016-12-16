@@ -161,24 +161,6 @@ define( [ 'appointment', 'capacity', 'shift', 'site' ].reduce( function( list, n
              date.add( 1, 'week' ) ) {
           var weekDiff = date.week() - itemStartDate.week();
           if( 0 <= weekDiff && 0 == weekDiff % shiftTemplate.repeat_every ) {
-
-            // create an event for every day of the week the shift template belongs to
-            var colon = shiftTemplate.start_time.search( ':' );
-            var startDate = moment( date ).hour( shiftTemplate.start_time.substring( 0, colon ) )
-                                          .minute( shiftTemplate.start_time.substring( colon+1, colon+3 ) )
-                                          .second( 0 )
-                                          .millisecond( 0 )
-                                          .subtract( offset, 'minutes' )
-                                          .date( date.date() );
-            colon = shiftTemplate.end_time.search( ':' );
-
-            var endDate = moment( date ).hour( shiftTemplate.end_time.substring( 0, colon ) )
-                                        .minute( shiftTemplate.end_time.substring( colon+1, colon+3 ) )
-                                        .second( 0 )
-                                        .millisecond( 0 )
-                                        .subtract( offset, 'minutes' )
-                                        .date( date.date() );
-
             var dayList = [];
             if( shiftTemplate.sunday ) dayList.push( 0 );
             if( shiftTemplate.monday ) dayList.push( 1 );
@@ -189,8 +171,23 @@ define( [ 'appointment', 'capacity', 'shift', 'site' ].reduce( function( list, n
             if( shiftTemplate.saturday ) dayList.push( 6 );
 
             dayList.forEach( function( day ) {
-              startDate.day( day );
-              endDate.day( day );
+              // create an event for every day of the week the shift template belongs to
+              var colon = shiftTemplate.start_time.search( ':' );
+              var startDate = moment( date ).day( day )
+                                            .hour( shiftTemplate.start_time.substring( 0, colon ) )
+                                            .minute( shiftTemplate.start_time.substring( colon+1, colon+3 ) )
+                                            .second( 0 )
+                                            .millisecond( 0 )
+                                            .subtract( offset, 'minutes' );
+
+              colon = shiftTemplate.end_time.search( ':' );
+              var endDate = moment( date ).day( day )
+                                          .hour( shiftTemplate.end_time.substring( 0, colon ) )
+                                          .minute( shiftTemplate.end_time.substring( colon+1, colon+3 ) )
+                                          .second( 0 )
+                                          .millisecond( 0 )
+                                          .subtract( offset, 'minutes' );
+
               if( endDate.isBefore( startDate ) ) endDate.add( 1, 'days' );
 
               if( !startDate.isBefore( minDate, 'day' ) && !startDate.isAfter( maxDate, 'day' ) &&
