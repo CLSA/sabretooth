@@ -42,13 +42,17 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
         //   3) another qnaire is available for this participant
         object.afterList( function() {
           object.parentModel.getAddEnabled = function() { return false; };
-          if( 'participant' == object.parentModel.getSubjectFromState() ) {
+
+          var path = object.parentModel.getServiceCollectionPath();
+          if( 'participant' == object.parentModel.getSubjectFromState() &&
+              null !== path.match( /participant\/[^\/]+\/interview/ ) ) {
             var queueRank = null;
             var qnaireRank = null;
             var lastInterview = null;
+
             // get the participant's last interview
             CnHttpFactory.instance( {
-              path: object.parentModel.getServiceCollectionPath(),
+              path: path,
               data: {
                 modifier: { order: { 'qnaire.rank': true }, limit: 1 },
                 select: { column: [ { table: 'qnaire', column: 'rank' }, 'end_datetime' ] }
@@ -59,7 +63,7 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
 
               // get the participant's current queue rank
               return CnHttpFactory.instance( {
-                path: object.parentModel.getServiceCollectionPath().replace( '/interview', '' ),
+                path: path.replace( '/interview', '' ),
                 data: {
                   select: { column: [
                     { table: 'queue', column: 'rank', alias: 'queueRank' },
