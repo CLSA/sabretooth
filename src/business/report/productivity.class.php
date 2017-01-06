@@ -33,14 +33,18 @@ class productivity extends \cenozo\business\report\base_report
     $qnaire_mod->order( 'script.name' );
     $qnaire_list = array();
     foreach( $qnaire_class_name::select_objects( $qnaire_mod ) as $db_qnaire ) $qnaire_list[] = $db_qnaire;
+    $script_list = array();
+    foreach( $qnaire_list as $db_qnaire ) $script_list[] = $db_qnaire->get_script();
 
     $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'interview_last_assignment', 'interview.id', 'interview_last_assignment.interview_id' );
     $modifier->join( 'assignment', 'interview_last_assignment.assignment_id', 'assignment.id' );
+    $modifier->join( 'role', 'assignment.role_id', 'role.id' );
     $modifier->join( 'user', 'assignment.user_id', 'user.id' );
     $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
     $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
     $modifier->where( 'interview.end_datetime', '!=', NULL );
+    $modifier->where( 'role.name', 'IN', array( 'operator', 'operator+' ) );
     $modifier->group( 'assignment.user_id' );
     $modifier->group( 'qnaire.id' );
 
@@ -128,9 +132,9 @@ class productivity extends \cenozo\business\report\base_report
         {
           if( !array_key_exists( $row['user'], $data ) )
           {
-            foreach( array( '', ' CompPH', ' Avg Length' ) as $type )
-              foreach( $qnaire_list as $db_qnaire )
-                $data[$row['user']][($db_qnaire->get_script()->name).$type] = 0;
+            foreach( array( ' Completes', ' CompPH', ' Avg Length', ' Time' ) as $type )
+              foreach( $script_list as $db_script )
+                $data[$row['user']][($db_script->name).$type] = 0;
             $data[$row['user']]['Total Time'] = $row['time'];
             if( $single_date )
             {
@@ -153,9 +157,9 @@ class productivity extends \cenozo\business\report\base_report
       {
         if( !array_key_exists( $row['user'], $data ) )
         {
-          foreach( array( '', ' CompPH', ' Avg Length' ) as $type )
-            foreach( $qnaire_list as $db_qnaire )
-              $data[$row['user']][($db_qnaire->get_script()->name).$type] = 0;
+          foreach( array( ' Completes', ' CompPH', ' Avg Length', ' Time' ) as $type )
+            foreach( $script_list as $db_script )
+              $data[$row['user']][($db_script->name).$type] = 0;
           $data[$row['user']]['Total Time'] = 0;
           if( $single_date )
           {
@@ -164,73 +168,156 @@ class productivity extends \cenozo\business\report\base_report
           }
         }
 
-        $data[$row['user']][$row['script']] += $row['total'];
-        foreach( $qnaire_list as $db_qnaire )
+        $data[$row['user']][$row['script'].' Completes'] += $row['total'];
+        foreach( $qnaire_list as $index => $db_qnaire )
         {
+          $db_script = $script_list[$index];
           $old_sid = $survey_class_name::get_sid();
-          $survey_class_name::set_sid( $db_qnaire->get_script()->sid );
-
-          // get script time for this user
-          $token_sel = lib::create( 'database\select' );
-          $token_sel->add_column( 'uid' );
-          $token_mod = lib::create( 'database\modifier' );
-          $token_mod->join( 'interview', 'participant.id', 'interview.participant_id' );
-          $token_mod->join(
-            'interview_last_assignment', 'interview.id', 'interview_last_assignment.interview_id' );
-          $token_mod->join( 'assignment', 'interview_last_assignment.assignment_id', 'assignment.id' );
-          $token_mod->where( 'assignment.user_id', '=', $row['user_id'] );
-          $token_mod->where( 'assignment.site_id', '=', $site['id'] );
-          $token_mod->where( 'interview.qnaire_id', '=', $db_qnaire->id );
-          $token_mod->order( 'uid' );
-
-          $token_list = array();
-          foreach( $participant_class_name::select( $token_sel, $token_mod ) as $participant )
-            $token_list[] = $participant['uid'];
+          $survey_class_name::set_sid( $db_script->sid );
 
           $survey_time_mod = lib::create( 'database\modifier' );
-          $survey_time_mod->where( 'token', 'IN', $token_list );
-          $data[$row['user']][$db_qnaire->get_script()->name.' Avg Length'] =
+          $survey_time_mod->join(
+            'release_cenozo.participant',
+            'token',
+            'participant.uid'
+          );
+          $survey_time_mod->join(
+            'release_sabretooth_f1.interview',
+            'participant.id',
+            'interview.participant_id'
+          );
+          $survey_time_mod->join(
+            'release_sabretooth_f1.interview_last_assignment',
+            'interview.id',
+            'interview_last_assignment.interview_id'
+          );
+          $survey_time_mod->join(
+            'release_sabretooth_f1.assignment',
+            'interview_last_assignment.assignment_id',
+            'assignment.id'
+          );
+          $survey_time_mod->where( 'assignment.user_id', '=', $row['user_id'] );
+          $survey_time_mod->where( 'assignment.site_id', '=', $site['id'] );
+          $survey_time_mod->where( 'interview.qnaire_id', '=', $db_qnaire->id );
+
+          if( !is_null( $start_date ) )
+          {
+            $survey_time_mod->where(
+              sprintf( 'DATE( CONVERT_TZ( interview.end_datetime, "UTC", "%s" ) )', $this->db_user->timezone ),
+              '>=',
+              $start_date
+            );
+          }
+
+          if( !is_null( $end_date ) )
+          {
+            $survey_time_mod->where(
+              sprintf( 'DATE( CONVERT_TZ( interview.end_datetime, "UTC", "%s" ) )', $this->db_user->timezone ),
+              '<=',
+              $end_date
+            );
+          }
+
+          // limesurvey tracks time in seconds so we divide by 60 to convert to minutes
+          $data[$row['user']][$db_qnaire->get_script()->name.' Time'] =
             $survey_class_name::get_total_time( $survey_time_mod ) / 60;
 
           $survey_class_name::set_sid( $old_sid );
         }
       }
 
+      // track overall data for all scripts
+      $overall_completes = array();
+      $overall_time = array();
+      $overall_total_time = 0;
+
       // add the completes per hour (CompPH)
       foreach( $data as $user => $row )
       {
-        // convert the total time to minutes
         $data[$user]['Total Time'] = sprintf( '%0.2f', $row['Total Time'] );
 
+        $user_total_time = 0;
         foreach( $qnaire_list as $db_qnaire )
         {
           $script = $db_qnaire->get_script()->name;
-          $comp_name = $script.' CompPH';
+          $comp_name = $script.' Completes';
+          $cph_name = $script.' CompPH';
+          $time_name = $script.' Time';
           $avg_name = $script.' Avg Length';
-          $data[$user][$comp_name] = 0 < $row['Total Time']
-                                   ? sprintf( '%0.2f', $row[$script] / $row['Total Time'] * 60 )
+
+          // keep track of the total time
+          $user_total_time += $row[$time_name];
+
+          // completes per hour === number of completes / total time (in minutes) * 60 (minutes/hour)
+          $data[$user][$cph_name] = 0 < $row[$time_name]
+                                   ? sprintf( '%0.2f', $row[$comp_name] / $row[$time_name] * 60 )
                                    : '';
-          $data[$user][$avg_name] = 0 < $row[$script]
-                                  ? sprintf( '%0.2f', $row[$avg_name] / $row[$script] / 60 )
+
+          // average length === total time (in minutes) / number of completes
+          $data[$user][$avg_name] = 0 < $row[$comp_name]
+                                  ? sprintf( '%0.2f', $row[$time_name] / $row[$comp_name] )
                                   : '';
+
+          // add to the overall data
+          if( !array_key_exists( $script, $overall_completes ) ) $overall_completes[$script] = 0;
+          $overall_completes[$script] += $row[$comp_name];
+          if( !array_key_exists( $script, $overall_time ) ) $overall_time[$script] = 0;
+          $overall_time[$script] += $row[$time_name];
+
+          // remove the total time
+          unset( $data[$user][$time_name] );
         }
+
+        // remove user if all times are 0
+        if( 0 == $user_total_time ) unset( $data[$user] );
+        else $overall_total_time += $row['Total Time'];
       }
 
       // create a table from this site's data
       $header = array_keys( $data );
+      array_unshift( $header, 'overall' );
       array_unshift( $header, '' );
       $contents = array();
 
-      $first = true;
-      foreach( $data as $user => $user_data )
+      // first column has headings
+      foreach( array( ' Completes', ' CompPH', ' Avg Length' ) as $type )
       {
-        if( $first )
+        foreach( $qnaire_list as $db_qnaire )
         {
-          foreach( $user_data as $key => $value ) $contents[$key] = array( $key, $value );
-          $first = false;
+          $key = $db_qnaire->get_script()->name.$type;
+          $contents[$key] = array( $key );
         }
-        else foreach( $user_data as $key => $value ) $contents[$key][] = $value;
       }
+      $contents['Total Time'] = array( 'Total Time' );
+      if( $single_date )
+      {
+        $contents['Start Time'] = array( 'Start Time' );
+        $contents['End Time'] = array( 'End Time' );
+      }
+      
+      // second column is overall data
+      foreach( array( ' Completes', ' CompPH', ' Avg Length' ) as $type )
+      {
+        foreach( $qnaire_list as $db_qnaire )
+        {
+          $script = $db_qnaire->get_script()->name;
+          $key = $script.$type;
+          if( ' Completes' == $type ) $contents[$key][] = $overall_completes[$script];
+          else if( ' CompPH' == $type ) $contents[$key][] = 0 < $overall_time[$script] ?
+            sprintf( '%0.2f', $overall_completes[$script] / $overall_time[$script] * 60 ) : '';
+          else if( ' Avg Length' == $type ) $contents[$key][] = 0 < $overall_completes[$script] ?
+            sprintf( '%0.2f', $overall_time[$script] / $overall_completes[$script] ) : '';
+        }
+      }
+      $contents['Total Time'][] = $overall_total_time;
+      if( $single_date )
+      {
+        $contents['Start Time'][] = '';
+        $contents['End Time'][] = '';
+      }
+
+      foreach( $data as $user => $user_data )
+        foreach( $user_data as $key => $value ) $contents[$key][] = $value;
       $this->add_table( $site['name'], $header, $contents );
     }
   }
