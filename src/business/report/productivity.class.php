@@ -177,22 +177,23 @@ class productivity extends \cenozo\business\report\base_report
 
           $survey_time_mod = lib::create( 'database\modifier' );
           $survey_time_mod->join(
-            'release_cenozo.participant',
+            sprintf( '%s.participant',
+                     str_replace( INSTANCE, 'cenozo', $participant_class_name::db()->get_name() ) ),
             'token',
             'participant.uid'
           );
           $survey_time_mod->join(
-            'release_sabretooth_f1.interview',
+            sprintf( '%s.interview', $participant_class_name::db()->get_name() ),
             'participant.id',
             'interview.participant_id'
           );
           $survey_time_mod->join(
-            'release_sabretooth_f1.interview_last_assignment',
+            sprintf( '%s.interview_last_assignment', $participant_class_name::db()->get_name() ),
             'interview.id',
             'interview_last_assignment.interview_id'
           );
           $survey_time_mod->join(
-            'release_sabretooth_f1.assignment',
+            sprintf( '%s.assignment', $participant_class_name::db()->get_name() ),
             'interview_last_assignment.assignment_id',
             'assignment.id'
           );
@@ -302,11 +303,15 @@ class productivity extends \cenozo\business\report\base_report
         {
           $script = $db_qnaire->get_script()->name;
           $key = $script.$type;
-          if( ' Completes' == $type ) $contents[$key][] = $overall_completes[$script];
-          else if( ' CompPH' == $type ) $contents[$key][] = 0 < $overall_time[$script] ?
-            sprintf( '%0.2f', $overall_completes[$script] / $overall_time[$script] * 60 ) : '';
-          else if( ' Avg Length' == $type ) $contents[$key][] = 0 < $overall_completes[$script] ?
-            sprintf( '%0.2f', $overall_time[$script] / $overall_completes[$script] ) : '';
+          if( !array_key_exists( $script, $overall_completes ) ) $contents[$key][] = '';
+          else
+          {
+            if( ' Completes' == $type ) $contents[$key][] = $overall_completes[$script];
+            else if( ' CompPH' == $type ) $contents[$key][] = 0 < $overall_time[$script] ?
+              sprintf( '%0.2f', $overall_completes[$script] / $overall_time[$script] * 60 ) : '';
+            else if( ' Avg Length' == $type ) $contents[$key][] = 0 < $overall_completes[$script] ?
+              sprintf( '%0.2f', $overall_time[$script] / $overall_completes[$script] ) : '';
+          }
         }
       }
       $contents['Total Time'][] = $overall_total_time;
