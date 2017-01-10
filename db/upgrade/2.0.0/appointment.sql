@@ -268,3 +268,27 @@ SET appointment.interview_id = participant_last_interview.interview_id
 WHERE appointment.assignment_id IS NULL
 AND interview.end_datetime IS NOT NULL
 AND participant_last_interview.interview_id != interview.id;
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS appointment_AFTER_INSERT $$
+CREATE DEFINER = CURRENT_USER TRIGGER appointment_AFTER_INSERT AFTER INSERT ON appointment FOR EACH ROW
+BEGIN
+  CALL update_interview_last_appointment( NEW.interview_id );
+END;$$
+
+
+DROP TRIGGER IF EXISTS appointment_AFTER_UPDATE $$
+CREATE DEFINER = CURRENT_USER TRIGGER appointment_AFTER_UPDATE AFTER UPDATE ON appointment FOR EACH ROW
+BEGIN
+  CALL update_interview_last_appointment( NEW.interview_id );
+END;$$
+
+
+DROP TRIGGER IF EXISTS appointment_AFTER_DELETE $$
+CREATE DEFINER = CURRENT_USER TRIGGER appointment_AFTER_DELETE AFTER DELETE ON appointment FOR EACH ROW
+BEGIN
+  CALL update_interview_last_appointment( OLD.interview_id );
+END;$$
+
+DELIMITER ;
