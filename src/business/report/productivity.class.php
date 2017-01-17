@@ -44,7 +44,6 @@ class productivity extends \cenozo\business\report\base_report
     $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
     $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
     $modifier->where( 'interview.end_datetime', '!=', NULL );
-    $modifier->where( 'role.name', 'IN', array( 'operator', 'operator+' ) );
     $modifier->group( 'assignment.user_id' );
     $modifier->group( 'qnaire.id' );
 
@@ -82,7 +81,7 @@ class productivity extends \cenozo\business\report\base_report
 
     $single_date = !is_null( $start_date ) && !is_null( $end_date ) && $start_date == $end_date;
 
-    // set up requirements
+    // set up restrictions
     $this->apply_restrictions( $modifier );
 
     $select = lib::create( 'database\select' );
@@ -98,7 +97,7 @@ class productivity extends \cenozo\business\report\base_report
     $site_mod = lib::create( 'database\modifier' );
     if( !is_null( $restrict_site_id ) ) $site_mod->where( 'site.id', '=', $restrict_site_id );
     $site_mod->order( 'site.name' );
-    
+
     foreach( $this->db_application->get_site_list( $site_sel, $site_mod ) as $site )
     {
       $data = array();
@@ -116,7 +115,7 @@ class productivity extends \cenozo\business\report\base_report
         'time',
         false
       );
-      
+
       $activity_mod = clone $base_activity_mod;
       $activity_mod->join( 'user', 'activity.user_id', 'user.id' );
       $activity_mod->join( 'role', 'activity.role_id', 'role.id' );
@@ -144,7 +143,6 @@ class productivity extends \cenozo\business\report\base_report
           }
           else
           {
-            // extend the end time to 
             if( $single_date ) $data[$row['user']]['End Time'] = $row['end'];
             $data[$row['user']]['Total Time'] += $row['time'];
           }
@@ -295,7 +293,7 @@ class productivity extends \cenozo\business\report\base_report
         $contents['Start Time'] = array( 'Start Time' );
         $contents['End Time'] = array( 'End Time' );
       }
-      
+
       // second column is overall data
       foreach( array( ' Completes', ' CompPH', ' Avg Length' ) as $type )
       {
