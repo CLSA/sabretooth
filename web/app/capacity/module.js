@@ -120,6 +120,23 @@ define( [ 'appointment', 'shift', 'shift_template', 'site' ].reduce( function( l
           }
         } );
 
+        if( null == workingEvent ) {
+          // see if there is a shift that partially covers this appointment
+          eventList.forEach( function( event, index ) {
+            if( ( event.start.isSameOrBefore( appointment.start, 'minute' ) &&
+                  event.end.isAfter( appointment.start, 'minute' ) ) ||
+                ( event.start.isBefore( appointment.end, 'minute' ) &&
+                  event.end.isSameOrAfter( appointment.end, 'minute' ) ) ) {
+              var length = event.end.diff( event.start, 'minutes' );
+              if( length > workingLength ) {
+                workingIndex = index;
+                workingEvent = event;
+                workingLength = workingLength;
+              }
+            }
+          } );
+        }
+
         if( null != workingEvent ) {
           // found an event to remove the appointment from
           if( workingEvent.slots > 1 ) {
