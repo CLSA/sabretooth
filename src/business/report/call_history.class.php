@@ -48,7 +48,12 @@ class call_history extends \cenozo\business\report\base_report
       }
       else if( 'last_call' == $restriction['name'] && $restriction['value'] )
       {
-        // join to assignment_last_phone_call so that only the last call is included in the query
+        // join to interview_last_assignment and assignment_last_phone_call so that only the interview's
+        // last call is included in the query
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'interview.id', '=', 'interview_last_assignment.interview_id', false );
+        $join_mod->where( 'assignment.id', '=', 'interview_last_assignment.assignment_id', false );
+        $modifier->join_modifier( 'interview_last_assignment', $join_mod );
         $join_mod = lib::create( 'database\modifier' );
         $join_mod->where( 'assignment.id', '=', 'assignment_last_phone_call.assignment_id', false );
         $join_mod->where( 'phone_call.id', '=', 'assignment_last_phone_call.phone_call_id', false );
