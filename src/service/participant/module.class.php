@@ -107,7 +107,11 @@ class module extends \cenozo\service\participant\module
         $sub_select->from( 'participant' );
         $sub_select->add_column( 'MIN( queue.rank )', 'min_rank', false );
         $modifier->where(
-          'queue.rank', '=', sprintf( '( %s %s )', $sub_select->get_sql(), $sub_modifier->get_sql() ), false );
+          'queue.rank',
+          '=',
+          sprintf( '( %s %s )', $sub_select->get_sql(), $sub_modifier->get_sql( true ) ),
+          false
+        );
       }
       
       if( 'operator' == $role )
