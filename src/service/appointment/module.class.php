@@ -150,6 +150,7 @@ class module extends \cenozo\service\base_calendar_module
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
     $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
     $select->add_table_column( 'participant', 'uid' );
+    $select->add_table_column( 'participant', 'global_note', 'help' );
     $select->add_table_column( 'language', 'code', 'language_code' );
     $select->add_table_column( 'qnaire', 'rank', 'qnaire_rank' );
 

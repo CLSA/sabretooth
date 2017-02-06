@@ -170,7 +170,8 @@ define( [ 'capacity', 'shift', 'shift_template', 'site' ].reduce( function( list
                ( angular.isDefined( appointment.qnaire_rank ) ? ' (' + appointment.qnaire_rank + ')' : '' ) +
                ( null != appointment.username ? '\nfor ' + appointment.username : '' ),
         start: moment( appointment.datetime ).subtract( offset, 'minutes' ),
-        end: moment( appointment.datetime ).subtract( offset - appointment.duration, 'minutes' )
+        end: moment( appointment.datetime ).subtract( offset - appointment.duration, 'minutes' ),
+        help: appointment.help
       };
 
       if( appointment.override ) {
