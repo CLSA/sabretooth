@@ -98,14 +98,18 @@ define( [ 'participant' ].reduce( function( list, name ) {
             'language', { title: 'Language', column: 'language.name' }, index++ );
           self.participantModel.addColumn(
             'availability', { title: 'Availability', column: 'availability_type.name' } );
+
+          // add the reserved row as a hidden column to be used for highlighting reserved appointments
+          self.participantModel.addColumn( 'reserved', { type: 'hidden', highlight: true } );
         } );
 
         this.participantModel = CnParticipantModelFactory.instance();
+
         // map assignment-control query parameters to participant-list
         this.participantModel.queryParameterSubject = 'assignment';
 
         // override the default column order for the participant list to rank
-        this.participantModel.listModel.order = { column: 'queue.rank', reverse: false };
+        this.participantModel.listModel.order = { column: 'rank', reverse: false };
 
         this.reset();
 

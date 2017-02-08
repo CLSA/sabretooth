@@ -81,6 +81,9 @@ class module extends \cenozo\service\participant\module
       $modifier->or_where( sprintf( 'IFNULL( appointment.user_id, %d )', $user_id ), '=', $user_id );
       $modifier->where_bracket( false );
 
+      // add a variable defining whether this is a reserved appointment
+      $select->add_column( 'appointment.user_id IS NOT NULL', 'reserved', false, 'boolean' );
+
       // repopulate queue if it is out of date
       $queue_class_name = lib::get_class_name( 'database\queue' );
       $interval = $queue_class_name::get_interval_since_last_repopulate();
