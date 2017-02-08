@@ -40,7 +40,10 @@ class module extends \cenozo\service\base_calendar_module
       $db_interview = is_null( $db_appointment ) ? $this->get_parent_resource() : $db_appointment->get_interview();
       $method = $this->get_method();
 
-      $db_application = lib::create( 'business\session' )->get_application();
+      $session = lib::create( 'business\session' );
+      $db_application = $session->get_application();
+      $db_user = $session->get_user();
+      $db_role = $session->get_role();
 
       // make sure the application has access to the participant
       if( !is_null( $db_appointment ) )
@@ -63,6 +66,18 @@ class module extends \cenozo\service\base_calendar_module
         {
           $db_effective_site = $db_participant->get_effective_site();
           if( is_null( $db_effective_site ) || $db_restrict_site->id != $db_effective_site->id )
+          {
+            $this->get_status()->set_code( 403 );
+            return;
+          }
+        }
+
+        // restrict operators to viewing appointments they are currently
+        if( 'operator' == $db_role->name )
+        {
+          $db_assignment = $db_user->get_open_assignment();
+          if( is_null( $db_assignment ) ||
+              $db_participant->id != $db_assignment->get_interview()->participant_id )
           {
             $this->get_status()->set_code( 403 );
             return;

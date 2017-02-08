@@ -36,18 +36,22 @@ class module extends \cenozo\service\participant\module
         if( !is_null( $db_participant ) )
         {
           // make sure that operators can only see the participant they are currently assigned to
-          $status = 403;
-
           $db_assignment = $db_user->get_open_assignment();
-          if( !is_null( $db_assignment ) &&
-              $db_participant->id == $db_assignment->get_interview()->participant_id ) $status = 200;
-
-          $this->get_status()->set_code( $status );
+          if( is_null( $db_assignment ) ||
+              $db_participant->id != $db_assignment->get_interview()->participant_id )
+          {
+            $this->get_status()->set_code( 403 );
+            return;
+          }
         }
         else
         {
           // make sure that operators can only see participant lists when in assignment mode
-          if( !$this->get_argument( 'assignment', false ) ) $this->get_status()->set_code( 403 );
+          if( !$this->get_argument( 'assignment', false ) )
+          {
+            $this->get_status()->set_code( 403 );
+            return;
+          }
         }
       }
     }

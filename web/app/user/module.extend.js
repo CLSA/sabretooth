@@ -131,7 +131,7 @@ define( [ 'appointment', 'shift' ].reduce( function( list, name ) {
           return promise.then( function() {
             if( angular.isUndefined( record.subject ) ) {
               console.warn( 'Clicked on personal calendar event which is neither an appointment or a shift.' );
-            } else if( 'operator' != CnSession.role.name ) {
+            } else if( appointmentModel.getViewEnabled() ) {
               if( ( 'appointment' == record.subject && angular.isDefined( appointmentModule.actions.view ) ) ||
                   ( 'shift' == record.subject && angular.isDefined( shiftModule.actions.view ) ) )
                 return $state.go( record.subject + '.view', { identifier: record.getIdentifier() } );

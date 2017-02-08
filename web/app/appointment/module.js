@@ -676,11 +676,6 @@ define( [ 'capacity', 'shift', 'shift_template', 'site' ].reduce( function( list
 
           return data;
         };
-
-        // don't allow operators to see appointments other than their own
-        this.transitionToViewState = function( record ) {
-          return 'operator' == CnSession.role.name ? $q.all() : this.$$transitionToViewState( record );
-        };
       };
 
       // get the siteColumn to be used by a site's identifier
