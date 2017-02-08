@@ -636,7 +636,7 @@ define( [ 'capacity', 'shift', 'shift_template', 'site' ].reduce( function( list
         var self = this;
 
         // before constructing the model set whether the override input is constant
-        if( 2 > CnSession.role.tier ) {
+        if( 2 > CnSession.role.tier && 'operator+' != CnSession.role.name ) {
           module.inputGroupList.findByProperty( 'title', '' ).inputList.override.constant = true;
         }
 

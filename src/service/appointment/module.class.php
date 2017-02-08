@@ -87,6 +87,8 @@ class module extends \cenozo\service\base_calendar_module
 
       if( $service_class_name::is_write_method( $method ) )
       {
+        $db_role = lib::create( 'business\session' )->get_role();
+
         // no writing of appointments if interview is completed
         if( !is_null( $db_interview ) && !is_null( $db_interview->end_datetime ) )
         {
@@ -105,8 +107,8 @@ class module extends \cenozo\service\base_calendar_module
           $this->set_data( 'Appointments cannot be changed once they have been assigned.' );
           $this->get_status()->set_code( 306 );
         }
-        // don't allow tier-1 roles to override appointments
-        else if( $db_appointment->override && 1 > lib::create( 'business\session' )->get_role()->tier )
+        // don't allow tier-1 roles to override appointments (except for operator+)
+        else if( $db_appointment->override && 1 > $db_role->tier && 'operator+' != $db_role->name )
         {
           $this->set_data( 'Your role does not allow appointments to be overridden.' );
           $this->get_status()->set_code( 306 );
