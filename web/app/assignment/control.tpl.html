@@ -18,26 +18,8 @@
   </div>
   <div ng-if="!model.isForbidden">
     <div ng-if="!model.assignment">
-      <cn-record-list ng-if="model.showSelectionList"
-                      model="model.participantModel"
+      <cn-record-list model="model.participantModel"
                       remove-columns="active cohort source"></cn-record-list>
-      <div ng-if="!model.showSelectionList" class="utility-view rounded">
-        <div class="container-fluid bg-primary rounded-top">
-          <h4>Assignment Control</h4>
-        </div>
-        <div class="container-fluid form-body">
-          <div class="text-info">
-            Click below if you wish to begin an assignment with the next available participant.
-          </div>
-          <div class="vertical-spacer">
-            <button class="btn btn-warning full-width"
-                    type="button"
-                    ng-click="model.beginAssignment()">Begin Assignment</button>
-          </div>
-        </div>
-        <div class="form-footer rounded-bottom bg-info">
-        </div>
-      </div>
     </div>
     <div ng-if="model.assignment">
       <div class="utility-view rounded">

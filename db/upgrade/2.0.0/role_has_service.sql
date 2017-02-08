@@ -109,18 +109,6 @@ CREATE PROCEDURE patch_role_has_service()
     EXECUTE statement;
     DEALLOCATE PREPARE statement;
 
-    -- remove participant list from operator role
-    SET @sql = CONCAT(
-      "DELETE FROM role_has_service ",
-      "WHERE role_id = ( SELECT id FROM ", @cenozo, ".role WHERE name = 'operator' ) ",
-      "AND service_id IN ( ",
-        "SELECT id FROM service ",
-        "WHERE subject = 'participant' AND method = 'GET' AND resource = 0 ",
-      ")" );
-    PREPARE statement FROM @sql;
-    EXECUTE statement;
-    DEALLOCATE PREPARE statement;
-
     -- supervisor
     SET @sql = CONCAT(
       "INSERT INTO role_has_service( role_id, service_id ) ",

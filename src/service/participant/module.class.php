@@ -23,19 +23,19 @@ class module extends \cenozo\service\participant\module
 
     if( 300 > $this->get_status()->get_code() )
     {
-      // make sure that operators can only see the participant they are currently assigned to
+      $session = lib::create( 'business\session' );
+      $db_user = $session->get_user();
+      $db_role = $session->get_role();
+
       $db_participant = NULL;
       if( 'participant' == $this->get_subject() ) $db_participant = $this->get_resource();
       else if( 'participant' == $this->get_parent_subject() ) $db_participant = $this->get_parent_resource();
 
-      if( !is_null( $db_participant ) )
+      if( 'operator' == $db_role->name )
       {
-        $session = lib::create( 'business\session' );
-        $db_user = $session->get_user();
-        $db_role = $session->get_role();
-
-        if( 'operator' == $db_role->name )
+        if( !is_null( $db_participant ) )
         {
+          // make sure that operators can only see the participant they are currently assigned to
           $status = 403;
 
           $db_assignment = $db_user->get_open_assignment();
@@ -43,6 +43,11 @@ class module extends \cenozo\service\participant\module
               $db_participant->id == $db_assignment->get_interview()->participant_id ) $status = 200;
 
           $this->get_status()->set_code( $status );
+        }
+        else
+        {
+          // make sure that operators can only see participant lists when in assignment mode
+          if( !$this->get_argument( 'assignment', false ) ) $this->get_status()->set_code( 403 );
         }
       }
     }
@@ -115,11 +120,6 @@ class module extends \cenozo\service\participant\module
           sprintf( '( %s %s )', $sub_select->get_sql(), $sub_modifier->get_sql( true ) ),
           false
         );
-      }
-      
-      if( 'operator' == $role )
-      { // make sure to only provide one participant to operators
-        $modifier->limit( 1 );
       }
     }
     else

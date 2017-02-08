@@ -113,10 +113,6 @@ class ui extends \cenozo\ui\ui
     if( 'operator' == $db_role->name )
     {
       unset( $list['Participant Search'] );
-      $list['Assignment Control'] = array(
-        'subject' => 'assignment',
-        'action' => 'control',
-        'query' => '?{restrict}&{order}&{reverse}' );
     }
 
     if( in_array( $db_role->name, array( 'operator', 'operator+' ) ) )
@@ -129,7 +125,7 @@ class ui extends \cenozo\ui\ui
     }
 
     // add application-specific states to the base list
-    if( in_array( $db_role->name, array( 'helpline', 'operator+', 'supervisor' ) ) )
+    if( in_array( $db_role->name, array( 'helpline', 'operator', 'operator+', 'supervisor' ) ) )
     {
       $list['Assignment Control'] = array(
         'subject' => 'assignment',
@@ -156,34 +152,31 @@ class ui extends \cenozo\ui\ui
         'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
     }
 
-    if( 'operator' != $db_role->name )
+    if( !$db_role->all_sites || 'helpline' == $db_role->name )
     {
-      if( !$db_role->all_sites || 'helpline' == $db_role->name )
-      {
-        $list['Appointment Calendar'] = array(
-          'subject' => 'appointment',
-          'action' => 'calendar',
-          'query' => '/{identifier}',
-          'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
-        $list['Capacity Calendar'] = array(
-          'subject' => 'capacity',
-          'action' => 'calendar',
-          'query' => '/{identifier}',
-          'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
+      $list['Appointment Calendar'] = array(
+        'subject' => 'appointment',
+        'action' => 'calendar',
+        'query' => '/{identifier}',
+        'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
+      $list['Capacity Calendar'] = array(
+        'subject' => 'capacity',
+        'action' => 'calendar',
+        'query' => '/{identifier}',
+        'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
 
-        if( 1 < $db_role->tier )
-        {
-          $list['Shift Calendar'] = array(
-            'subject' => 'shift',
-            'action' => 'calendar',
-            'query' => '/{identifier}',
-            'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
-          $list['Shift Template Calendar'] = array(
-            'subject' => 'shift_template',
-            'action' => 'calendar',
-            'query' => '/{identifier}',
-            'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
-        }
+      if( 1 < $db_role->tier )
+      {
+        $list['Shift Calendar'] = array(
+          'subject' => 'shift',
+          'action' => 'calendar',
+          'query' => '/{identifier}',
+          'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
+        $list['Shift Template Calendar'] = array(
+          'subject' => 'shift_template',
+          'action' => 'calendar',
+          'query' => '/{identifier}',
+          'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
       }
     }
 

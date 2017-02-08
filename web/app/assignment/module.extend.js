@@ -77,7 +77,6 @@ define( [ 'participant' ].reduce( function( list, name ) {
         CnSession.promise.then( function() {
           self.isOperator = 'operator' == CnSession.role.name || 'operator+' == CnSession.role.name;
           self.application = CnSession.application.title;
-          self.showSelectionList = 'operator' != CnSession.role.name;
 
           // add additional columns to the model
           var index = 0;
@@ -195,17 +194,13 @@ define( [ 'participant' ].reduce( function( list, name ) {
                 if( 307 == response.status ) {
                   // 307 means the user has no active assignment, so load the participant select list
                   CnSession.alertHeader = undefined;
-                  if( 'operator' == CnSession.role.name ) {
+                  self.participantModel.listModel.afterList( function() {
+                    if( self.isOperator && 0 < self.participantModel.listModel.cache.length ) {
+                      self.participantModel.listModel.heading =
+                        'Participant Selection List (' + self.participantModel.listModel.cache[0].queue + ')';
+                    }
                     CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Select' } ] );
-                  } else {
-                    self.participantModel.listModel.afterList( function() {
-                      if( self.isOperator && 0 < self.participantModel.listModel.cache.length ) {
-                        self.participantModel.listModel.heading =
-                          'Participant Selection List (' + self.participantModel.listModel.cache[0].queue + ')';
-                      }
-                      CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Select' } ] );
-                    } );
-                  }
+                  } );
                 } else if( 403 == response.status ) {
                   CnSession.alertHeader = 'You are currently in an assignment';
                   CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: 'Wrong Site' } ] );

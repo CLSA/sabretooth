@@ -624,11 +624,11 @@ define( [ 'capacity', 'shift', 'shift_template', 'site' ].reduce( function( list
     'CnBaseModelFactory',
     'CnAppointmentAddFactory', 'CnAppointmentCalendarFactory',
     'CnAppointmentListFactory', 'CnAppointmentViewFactory',
-    'CnSession', 'CnHttpFactory', '$state',
+    'CnSession', 'CnHttpFactory', '$q', '$state',
     function( CnBaseModelFactory,
               CnAppointmentAddFactory, CnAppointmentCalendarFactory,
               CnAppointmentListFactory, CnAppointmentViewFactory,
-              CnSession, CnHttpFactory, $state ) {
+              CnSession, CnHttpFactory, $q, $state ) {
       var object = function( site ) {
         if( !angular.isObject( site ) || angular.isUndefined( site.id ) )
           throw new Error( 'Tried to create CnAppointmentModel without specifying the site.' );
@@ -675,6 +675,11 @@ define( [ 'capacity', 'shift', 'shift_template', 'site' ].reduce( function( list
           }
 
           return data;
+        };
+
+        // don't allow operators to see appointments other than their own
+        this.transitionToViewState = function( record ) {
+          return 'operator' == CnSession.role.name ? $q.all() : this.$$transitionToViewState( record );
         };
       };
 
