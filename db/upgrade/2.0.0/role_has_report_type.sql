@@ -21,6 +21,16 @@ DROP PROCEDURE IF EXISTS patch_role_has_report_type;
     PREPARE statement FROM @sql;
     EXECUTE statement;
     DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "INSERT IGNORE INTO ", @cenozo, ".role_has_report_type( role_id, report_type_id ) ",
+      "SELECT role.id, report_type.id ",
+      "FROM ", @cenozo, ".role, ", @cenozo, ".report_type ",
+      "WHERE role.name = 'operator+' ",
+      "AND report_type.name = 'productivity'" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement;
+    DEALLOCATE PREPARE statement;
   END //
 DELIMITER ;
 

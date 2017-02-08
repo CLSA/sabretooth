@@ -191,9 +191,6 @@ class ui extends \cenozo\ui\ui
     $list = parent::get_report_items();
     $db_role = lib::create( 'business\session' )->get_role();
 
-    // operators get no list items
-    if( 'operator' == $db_role->name ) $list = array();
-
     return $list;
   }
 }

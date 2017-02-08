@@ -97,6 +97,21 @@ CREATE PROCEDURE patch_role_has_service()
     EXECUTE statement;
     DEALLOCATE PREPARE statement;
 
+    -- add report_type to operator+
+    SET @sql = CONCAT(
+      "INSERT INTO role_has_service( role_id, service_id ) ",
+      "SELECT role.id, service.id ",
+      "FROM ", @cenozo, ".role, service ",
+      "WHERE role.name = 'operator+' ",
+      "AND service.restricted = 1 ",
+      "AND ( ",
+        "( subject = 'report_type' AND method = 'GET' ) OR subject = 'report' ",
+      ")";
+    PREPARE statement FROM @sql;
+    EXECUTE statement;
+    DEALLOCATE PREPARE statement;
+
+
     -- helpline can edit notes
     SET @sql = CONCAT(
       "INSERT INTO role_has_service( role_id, service_id ) ",
