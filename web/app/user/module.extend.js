@@ -128,6 +128,8 @@ define( [ 'appointment', 'shift' ].reduce( function( list, name ) {
         // remove day click callback
         delete this.settings.dayClick;
         this.settings.eventClick = function( record ) {
+          // close the popover (this does nothing if there is no popover)
+          angular.element( this ).popover( 'hide' );
           return promise.then( function() {
             if( angular.isUndefined( record.subject ) ) {
               console.warn( 'Clicked on personal calendar event which is neither an appointment or a shift.' );

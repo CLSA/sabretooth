@@ -201,6 +201,8 @@ define( [ 'capacity', 'shift', 'shift_template', 'site' ].reduce( function( list
             var listener = $scope.$watch( 'model.addModel.capacityModel', function( capacityModel ) {
               if( angular.isDefined( capacityModel ) ) {
                 capacityModel.calendarModel.settings.eventClick = function( capacity ) {
+                  // close the popover (this does nothing if there is no popover)
+                  angular.element( this ).popover( 'hide' );
                   var date = moment( capacity.start );
                   var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
 
@@ -345,6 +347,8 @@ define( [ 'capacity', 'shift', 'shift_template', 'site' ].reduce( function( list
             var listener = $scope.$watch( 'model.viewModel.capacityModel', function( capacityModel ) {
               if( angular.isDefined( capacityModel ) ) {
                 capacityModel.calendarModel.settings.eventClick = function( capacity ) {
+                  // close the popover (this does nothing if there is no popover)
+                  angular.element( this ).popover( 'hide' );
                   var date = moment( capacity.start );
                   var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
 
