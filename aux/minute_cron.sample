@@ -39,10 +39,10 @@ function write_log( $message )
  * Send a command to close any lapsed activity
  */
 $curl = curl_init();
-curl_setopt( $curl, CURLOPT_URL, URL.'activity?no_activity=1&close_lapsed=1' );
+curl_setopt( $curl, CURLOPT_URL, URL.'activity?close_lapsed=1' );
 curl_setopt( $curl, CURLOPT_SSL_VERIFYHOST, false );
 curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
-curl_setopt( $curl, CURLOPT_HTTPHEADER, array( AUTH ) );
+curl_setopt( $curl, CURLOPT_HTTPHEADER, array( AUTH, 'No-Activity:true' ) );
 
 $result = curl_exec( $curl );
 if( curl_errno( $curl ) )
