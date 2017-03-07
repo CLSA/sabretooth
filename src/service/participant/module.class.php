@@ -67,7 +67,7 @@ class module extends \cenozo\service\participant\module
     if( $this->get_argument( 'assignment', false ) )
     {
       $session = lib::create( 'business\session' );
-      $user_id = $session->get_user()->id;
+      $db_user = $session->get_user();
 
       $modifier->join( 'queue_has_participant', 'participant.id', 'queue_has_participant.participant_id' );
       $modifier->join( 'queue', 'queue_has_participant.queue_id', 'queue.id' );
@@ -87,8 +87,19 @@ class module extends \cenozo\service\participant\module
 
       $modifier->where_bracket( true );
       $modifier->where( 'queue.name', '!=', 'assignable appointment' );
-      $modifier->or_where( sprintf( 'IFNULL( appointment.user_id, %d )', $user_id ), '=', $user_id );
+      $modifier->or_where( sprintf( 'IFNULL( appointment.user_id, %d )', $db_user->id ), '=', $db_user->id );
       $modifier->where_bracket( false );
+
+      // restrict the list to the user's languages
+      $language_sel = lib::create( 'database\select' );
+      $language_sel->add_column( 'id' );
+      $language_list = $db_user->get_language_list( $language_sel );
+      if( 0 < count( $language_list ) )
+      {
+        $language_array = array();
+        foreach( $language_list as $language ) $language_array[] = $language['id'];
+        $modifier->where( 'participant.language_id', 'IN', $language_array );
+      }
 
       // add a variable defining whether this is a reserved appointment
       $select->add_column( 'appointment.user_id IS NOT NULL', 'reserved', false, 'boolean' );
