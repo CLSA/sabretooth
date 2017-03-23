@@ -1,4 +1,3 @@
-SSLRequireSSL
 Options -Indexes
 
 <IfModule mod_rewrite.c>
