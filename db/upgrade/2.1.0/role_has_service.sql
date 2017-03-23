@@ -32,6 +32,7 @@ CREATE PROCEDURE patch_role_has_service()
       "AND service.restricted = 1 ",
       "AND ( ",
         "subject = 'report' OR ",
+        "subject = 'callback' OR ",
         "( subject IN ( 'report_type', 'report_restriction' ) AND method = 'GET' ) ",
       ")" );
     PREPARE statement FROM @sql;
