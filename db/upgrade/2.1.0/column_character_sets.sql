@@ -81,7 +81,7 @@ CREATE PROCEDURE _patch_column_character_sets()
         "ALTER TABLE ", table_name_val, " ",
         "MODIFY ", column_name_val, " ", column_type_val, " ",
         "CHARACTER SET 'latin1' ",
-        IF( is_nullable_val, "NOT NULL", "NULL" ) );
+        IF( "YES" = is_nullable_val, "NULL", "NOT NULL" ) );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
@@ -98,7 +98,7 @@ CREATE PROCEDURE _patch_column_character_sets()
           WHEN "varchar" THEN CONCAT( "varbinary(", character_maximum_length_val, ")" )
           ELSE "ERROR"
         END, " ",
-        IF( is_nullable_val, "NOT NULL", "NULL" ) );
+        IF( "YES" = is_nullable_val, "NULL", "NOT NULL" ) );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
@@ -108,14 +108,18 @@ CREATE PROCEDURE _patch_column_character_sets()
         "ALTER TABLE ", table_name_val, " ",
         "MODIFY ", column_name_val, " ", column_type_val, " ",
         "CHARACTER SET 'utf8' ",
-        IF( is_nullable_val, "NOT NULL", "NULL" ),
+        IF( "YES" = is_nullable_val, "NULL", "NOT NULL" ),
         IF(
           column_default_val IS NOT NULL AND
           column_default_val NOT IN ( "CURRENT_TIMESTAMP", "0000-00-00 00:00:00" ),
           CONCAT( " DEFAULT '", column_default_val, "'" ),
           ""
-        ), " ",
-        "COMMENT \"", column_comment_val, "\"" );
+        ),
+        IF(
+          0 < CHAR_LENGTH( column_comment_val ),
+          CONCAT( " COMMENT \"", column_comment_val, "\"" ),
+          ""
+        ) );
       PREPARE statement FROM @sql;
       EXECUTE statement;
       DEALLOCATE PREPARE statement;
