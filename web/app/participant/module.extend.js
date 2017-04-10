@@ -166,8 +166,8 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
     '$delegate', 'CnHttpFactory',
     function( $delegate, CnHttpFactory ) {
       var instance = $delegate.instance;
-      $delegate.instance = function( parentModel ) {
-        var object = instance( parentModel );
+      $delegate.instance = function( parentModel, root ) {
+        var object = instance( parentModel, root );
         object.isRepopulating = false;
         object.repopulate = function() {
           object.isRepopulating = true;
