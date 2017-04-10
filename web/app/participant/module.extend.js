@@ -30,6 +30,17 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
     }
   } );
 
+  module.addExtraOperation( 'view', {
+    title: 'Update Queue',
+    isIncluded: function( $state, model ) { return !model.isOperator; },
+    isDisabled: function( $state, model ) { return model.viewModel.isRepopulating; },
+    operation: function( $state, model ) {
+      model.viewModel.onViewPromise.then( function() {
+        model.viewModel.repopulate();
+      } );
+    }
+  } );
+
   angular.extend( module.historyCategoryList, {
 
     // appointments are added in the assignment's promise function below
@@ -150,6 +161,28 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
 
   } );
 
+  // extend the view factory
+  cenozo.providers.decorator( 'CnParticipantViewFactory', [
+    '$delegate', 'CnHttpFactory',
+    function( $delegate, CnHttpFactory ) {
+      var instance = $delegate.instance;
+      $delegate.instance = function( parentModel ) {
+        var object = instance( parentModel );
+        object.isRepopulating = false;
+        object.repopulate = function() {
+          object.isRepopulating = true;
+          return CnHttpFactory.instance( {
+            path: object.parentModel.getServiceResourcePath() + '?repopulate=1'
+          } ).patch().then( function() {
+            object.onView().then( function() { object.isRepopulating = false; } );
+          } );
+        };
+        return object;
+      };
+      return $delegate;
+    }
+  ] );
+
   // extend the list factory
   cenozo.providers.decorator( 'CnParticipantModelFactory', [
     '$delegate', 'CnSession',
@@ -160,6 +193,7 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
       $delegate.root.getListEnabled = function() {
         return 'operator' == CnSession.role.name ? false : this.$$getListEnabled();
       };
+      $delegate.root.isOperator = 'operator' == CnSession.role.name;
       return $delegate;
     }
   ] );
