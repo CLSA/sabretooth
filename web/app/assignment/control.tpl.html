@@ -27,7 +27,7 @@
           <h4>
             <i class="glyphicon glyphicon-refresh glyph-hover rounded pull-right btn-primary"
                ng-click="model.onLoad( false )"
-               tooltip="Click to refresh data"
+               uib-tooltip="Click to refresh data"
                tooltip-placement="left"></i>
             Current Assignment</span>
           </h4>
@@ -105,7 +105,7 @@
               <div class="col-sm-6">
                 <h4 class="text-center">Previous Assignment</h4>
                 <div class="well" ng-if="!model.prevAssignment">
-                  <div ng-if="model.isPrevAssignmentLoading" class="loading" tooltip="Loading&hellip;"></div>
+                  <div ng-if="model.isPrevAssignmentLoading" class="loading" uib-tooltip="Loading&hellip;"></div>
                   <span ng-if="!model.isPrevAssignmentLoading">
                     This participant has never been called for the "{{ model.assignment.qnaire }}" questionnaire.
                   </span>
@@ -164,7 +164,7 @@
             <div class="btn-group">
               <button type="button"
                       class="btn btn-default"
-                      tooltip="Changes to the same timezone as the participant's first active address"
+                      uib-tooltip="Changes to the same timezone as the participant's first active address"
                       ng-click="model.useTimezone()">Use Timezone</button>
             </div>
           </div>
@@ -189,7 +189,7 @@
                 <li ng-if="!model.activePhoneCall" ng-repeat="phone in model.phoneList">
                   <a ng-click="model.startCall( phone )">
                     <div class="row"
-                         tooltip="{{ phone.note }}"
+                         uib-tooltip="{{ phone.note }}"
                          tooltip-popup-delay="100"
                          tooltip-placement="right">
                       <div class="col-xs-6">{{ phone.rank }}. {{ phone.type }}</div>
@@ -231,7 +231,7 @@
             <i class="glyphicon glyphicon-refresh glyph-hover rounded pull-right btn-primary"
                ng-click="model.loadScriptList()"
                ng-disabled="model.isScriptListLoading"
-               tooltip="Click to refresh data"
+               uib-tooltip="Click to refresh data"
                tooltip-placement="left"></i>
             Script Launcher
             <span ng-if="model.isScriptListLoading">(Loading&hellip;)</span>
@@ -294,7 +294,7 @@
                   type="button"
                   class="btn btn-default pull-left"
                   ng-disabled="null == model.activeScript.finished_datetime"
-                  tooltip="This will immediately end the current assignment and begin a new assignment for the next questionnaire without ending the current call. You should only click this button if you intend to immediately proceed with the next questionnaire."
+                  uib-tooltip="This will immediately end the current assignment and begin a new assignment for the next questionnaire without ending the current call. You should only click this button if you intend to immediately proceed with the next questionnaire."
                   ng-click="model.advanceQnaire()">Advance Questionnaire</button>
           <button type="button"
                   class="btn btn-primary"
