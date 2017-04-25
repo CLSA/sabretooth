@@ -29,6 +29,7 @@ class call_history extends \cenozo\business\report\base_report
     $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
     $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
     $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
+    $modifier->join( 'language', 'participant.language_id', 'language.id' );
     $modifier->left_join( 'site', 'assignment.site_id', 'site.id' );
     $modifier->left_join( 'age_group', 'participant.age_group_id', 'age_group.id' );
     $modifier->join( 'user', 'assignment.user_id', 'user.id' );
@@ -86,6 +87,7 @@ class call_history extends \cenozo\business\report\base_report
     $select->from( 'phone_call' );
     if( $this->db_role->all_sites ) $select->add_column( 'site.name', 'Site', false );
     $select->add_column( 'participant.uid', 'UID', false );
+    $select->add_column( 'language.name', 'Language', false );
     $select->add_column( 'participant.sex', 'Sex', false );
     $select->add_column( 'CONCAT( lower, " to ", upper )', 'Age Group', false );
     $select->add_column( 'CONCAT( user.first_name, " ", user.last_name )', 'User', false );
