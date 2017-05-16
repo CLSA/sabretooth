@@ -363,7 +363,7 @@ class appointment extends \cenozo\database\record
    *   upcoming: the appointment's date/time has not yet occurred
    *   assignable: the appointment is ready to be assigned, but hasn't been
    *   missed: the appointment was missed (never assigned) and the call window has passed
-   *   error: the appointment was assigned but the assignment never closed (an error)
+   *   error: the appointment was assigned but the appointment's outcome was never defined (an error)
    *   assigned: the appointment is currently assigned
    *   in progress: the appointment is currently assigned and currently in a call
    * @author Patrick Emond <emondpd@mcmaster.ca>
