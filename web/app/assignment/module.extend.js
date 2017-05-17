@@ -416,17 +416,18 @@ define( [ 'participant' ].reduce( function( list, name ) {
           }
 
           // start by updating the voip status
-          CnSession.updateVoip().then( function() {
+          CnSession.updateVoip().finally( function() {
             if( !CnSession.voip.enabled ) {
               postCall();
             } else {
               if( !CnSession.voip.info ) {
                 if( !CnSession.setting.callWithoutWebphone ) {
-                  CnModalConfirmFactory.instance( {
+                  CnModalMessageFactory.instance( {
                     title: 'Webphone Not Found',
                     message: 'You cannot start a call without a webphone connection. ' +
-                             'To use the built-in telephone system click on the ' +
-                             '"Webphone" link under the "Utilities" submenu to connect to the webphone.'
+                             'To use the built-in telephone system click on the "Webphone" link under the ' +
+                             '"Utilities" submenu and make sure the webphone client is connected.',
+                    error: true
                   } ).show();
                 } else if( !phone.international ) {
                   CnModalConfirmFactory.instance( {
