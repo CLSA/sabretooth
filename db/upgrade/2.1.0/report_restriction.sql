@@ -15,7 +15,7 @@ CREATE PROCEDURE patch_report_restriction()
     SET @sql = CONCAT(
       "UPDATE ", @cenozo, ".report_restriction ",
       "JOIN ", @cenozo, ".report_type ON report_restriction.report_type_id = report_type.id ",
-      "SET null_allowed = 1 ",
+      "SET null_allowed = 0, mandatory = 0 ",
       "WHERE report_type.name = 'appointment' ",
       "AND report_restriction.name = 'qnaire'" );
     PREPARE statement FROM @sql;
