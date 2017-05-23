@@ -3,8 +3,10 @@
 SET AUTOCOMMIT=0;
 
 SOURCE role_has_service.sql
-SOURCE role_has_report_type.sql
+SOURCE report_type.sql
 SOURCE report_restriction.sql
+SOURCE application_type_has_report_type.sql
+SOURCE role_has_report_type.sql
 
 SOURCE column_character_sets.sql
 

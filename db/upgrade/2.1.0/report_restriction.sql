@@ -14,6 +14,26 @@ CREATE PROCEDURE patch_report_restriction()
 
     SET @sql = CONCAT(
       "UPDATE ", @cenozo, ".report_restriction ",
+      "JOIN ", @cenozo, ".report_type ON report_restriction.report_type_id = report_type.id ",
+      "SET null_allowed = 1 ",
+      "WHERE report_type.name = 'appointment' ",
+      "AND report_restriction.name = 'qnaire'" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement;
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "UPDATE ", @cenozo, ".report_restriction ",
+      "JOIN ", @cenozo, ".report_type ON report_restriction.report_type_id = report_type.id ",
+      "SET report_restriction.description = 'Restrict to a particilar appointment outcome (use \"empty\" to restrict to open appointments).' ",
+      "WHERE report_type.name = 'appointment' ",
+      "AND report_restriction.name = 'outcome'" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement;
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "UPDATE ", @cenozo, ".report_restriction ",
       "SET subject = 'appointment.datetime' ",
       "WHERE subject = 'DATE( appointment.datetime )'" );
     PREPARE statement FROM @sql;
