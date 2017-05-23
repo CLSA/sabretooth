@@ -78,6 +78,8 @@ class sample extends \cenozo\business\report\base_report
       $select->add_column( 'site.name', 'Site', false );
     $select->add_column( 'IF( participant.active, "Yes", "No" )', 'Active', false );
     $select->add_column( 'language.name', 'Language', false );
+    $select->add_column(
+      'IF( consent.accept IS NULL, "(empty)", IF( consent.accept, "Yes", "No" ) )', 'Participating', false );
     $select->add_column( 'state.name', 'Condition', false );
     $select->add_column( $this->get_datetime_column( 'application_has_participant.datetime' ), 'Released', false );
     $select->add_column( 'IF( participant.email IS NOT NULL, "Yes", "No" )', 'Has Email', false );
@@ -100,6 +102,11 @@ class sample extends \cenozo\business\report\base_report
       'participant_primary_address', 'participant.id', 'participant_primary_address.participant_id' );
     $modifier->left_join( 'address', 'participant_primary_address.address_id', 'address.id' );
     $modifier->left_join( 'region', 'address.region_id', 'region.id' );
+    $modifier->join(
+      'participant_last_consent', 'participant.id', 'participant_last_consent.participant_id' );
+    $modifier->join( 'consent_type', 'participant_last_consent.consent_type_id', 'consent_type.id' );
+    $modifier->where( 'consent_type.name', '=', 'participation' );
+    $modifier->left_join( 'consent', 'participant_last_consent.consent_id', 'consent.id' );
 
     // join to each interview for each qnaire
     $postfix = '';
