@@ -197,7 +197,7 @@ class queue extends \cenozo\database\record
       $queue_sel->add_constant( NULL, 'create_timestamp' );
 
       static::db()->execute( sprintf(
-        'INSERT INTO queue_has_participant( '.
+        'REPLACE INTO queue_has_participant( '.
           "participant_id, queue_id, site_id, qnaire_id, start_qnaire_date, create_timestamp )\n%s %s",
         $queue_sel->get_sql(), $queue_mod->get_sql() ) );
 
@@ -264,7 +264,7 @@ class queue extends \cenozo\database\record
 
       // sql used by all insert statements below
       $base_sql = sprintf(
-        'INSERT INTO queue_has_participant( '.
+        'REPLACE INTO queue_has_participant( '.
           "participant_id, queue_id, site_id, qnaire_id, start_qnaire_date, create_timestamp )\n%s",
         $select->get_sql() );
 
