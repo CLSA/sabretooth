@@ -60,6 +60,18 @@ class module extends \cenozo\service\interview\module
   {
     parent::prepare_read( $select, $modifier );
 
+    if( $select->has_column( 'last_participation_consent' ) )
+    {
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'interview.participant_id', '=', 'participant_last_consent.participant_id' );
+      $modifier->join(
+        'participant_last_consent', 'interview.participant_id', 'participant_last_consent.participant_id' );
+      $modifier->join( 'consent_type', 'participant_last_consent.consent_type_id', 'consent_type.id' );
+      $modifier->where( 'consent_type.name', '=', 'participation' );
+      $modifier->left_join( 'consent', 'participant_last_consent.consent_id', 'consent.id' );
+      $select->add_column( 'consent.accept', 'last_participation_consent', false, 'boolean' );
+    }
+
     // count how many future, unassigned appointments the interview has
     if( $select->has_column( 'future_appointment' ) )
     {

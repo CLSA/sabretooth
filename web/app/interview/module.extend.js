@@ -11,6 +11,7 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
 
   // add future_appointment as a hidden input (to be used below)
   module.addInput( '', 'future_appointment', { type: 'hidden' } );
+  module.addInput( '', 'last_participation_consent', { type: 'hidden' } );
   module.addInputAfter( '', 'participant', 'qnaire_id', {
     title: 'Questionnaire',
     type: 'enum',
@@ -133,8 +134,9 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
 
         function getAppointmentEnabled( type ) {
           var completed = null !== object.record.end_datetime;
+          var participating = false !== object.record.last_participation_consent;
           var future = object.record.future_appointment;
-          return 'add' == type ? ( !completed && !future ) : future;
+          return 'add' == type ? ( !completed && participating && !future ) : future;
         }
 
         function updateEnableFunctions() {
