@@ -134,3 +134,4 @@ DELIMITER ;
 
 CALL patch_column_character_sets();
 DROP PROCEDURE IF EXISTS patch_column_character_sets;
+DROP PROCEDURE IF EXISTS _patch_column_character_sets;
