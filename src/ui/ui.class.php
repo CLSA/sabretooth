@@ -93,8 +93,7 @@ class ui extends \cenozo\ui\ui
     // add application-specific states to the base list
     $this->add_listitem( 'Questionnaires', 'qnaire' );
     $this->add_listitem( 'Queues', 'queue' );
-    $this->add_listitem( 'Shifts', 'shift' );
-    $this->add_listitem( 'Shift Templates', 'shift_template' );
+    $this->add_listitem( 'Vacancies', 'vacancy' );
   }
 
   /**
@@ -167,13 +166,8 @@ class ui extends \cenozo\ui\ui
 
       if( 1 < $db_role->tier )
       {
-        $list['Shift Calendar'] = array(
-          'subject' => 'shift',
-          'action' => 'calendar',
-          'query' => '/{identifier}',
-          'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );
-        $list['Shift Template Calendar'] = array(
-          'subject' => 'shift_template',
+        $list['Vacancy Calendar'] = array(
+          'subject' => 'vacancy',
           'action' => 'calendar',
           'query' => '/{identifier}',
           'values' => sprintf( '{identifier:"name=%s"}', $db_site->name ) );

@@ -1,89 +1,69 @@
-define( [ 'appointment', 'capacity', 'shift_template', 'site' ].reduce( function( list, name ) {
+define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [] ), function() {
   'use strict';
 
-  try { var module = cenozoApp.module( 'shift', true ); } catch( err ) { console.warn( err ); return; }
+  try { var module = cenozoApp.module( 'vacancy', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {},
     name: {
-      singular: 'shift',
-      plural: 'shifts',
-      possessive: 'shift\'s',
-      pluralPossessive: 'shifts\''
+      singular: 'vacancy',
+      plural: 'vacancies',
+      possessive: 'vacancy\'s',
+      pluralPossessive: 'vacancies\''
     },
     columnList: {
-      username: {
-        column: 'user.name',
-        title: 'User'
-      },
-      firstname: {
-        column: 'user.first_name',
-        title: 'First Name'
-      },
-      lastname: {
-        column: 'user.last_name',
-        title: 'Last Name'
-      },
-      start_datetime: {
+      datetime: {
         type: 'datetime',
-        title: 'Start Date & Time'
+        title: 'Date & Time'
       },
-      end_datetime: {
-        type: 'datetime',
-        title: 'End Date & Time'
+      operators: {
+        type: 'string',
+        title: 'Operators'
       }
     },
     defaultOrder: {
-      column: 'end_datetime',
+      column: 'datetime',
       reverse: true
     }
   } );
 
   module.addInputGroup( '', {
-    user_id: {
-      title: 'User',
-      type: 'lookup-typeahead',
-      typeahead: {
-        table: 'user',
-        select: 'CONCAT( user.first_name, " ", user.last_name, " (", user.name, ")" )',
-        where: [ 'user.first_name', 'user.last_name', 'user.name' ]
-      }
+    datetime: {
+      title: 'Date & Time',
+      type: 'datetime'
     },
-    start_datetime: {
-      title: 'Start Date & Time',
-      type: 'datetime',
-      max: 'end_datetime'
-    },
-    end_datetime: {
-      title: 'End Date & Time',
-      type: 'datetime',
-      min: 'start_datetime'
-    },
+    operators: {
+      title: 'Operators',
+      type: 'string',
+      format: 'integer',
+      minValue: 1,
+      help: 'How many operators are available at this time'
+    }
   } );
 
-  // converts shifts into events
-  function getEventFromShift( shift, timezone ) {
-    if( angular.isDefined( shift.start ) && angular.isDefined( shift.end ) ) {
-      return shift;
+  // converts vacancies into events
+  function getEventFromVacancy( vacancy, timezone ) {
+    if( angular.isDefined( vacancy.start ) && angular.isDefined( vacancy.end ) ) {
+      return vacancy;
     } else {
-      var date = moment( shift.start_datetime );
+      var date = moment( vacancy.datetime );
       var offset = moment.tz.zone( timezone ).offset( date.unix() );
 
       // adjust the appointment for daylight savings time
       if( date.tz( timezone ).isDST() ) offset += -60;
 
       return {
-        getIdentifier: function() { return shift.getIdentifier() },
-        title: shift.username,
-        start: moment( shift.start_datetime ).subtract( offset, 'minutes' ),
-        end: moment( shift.end_datetime ).subtract( offset, 'minutes' )
+        getIdentifier: function() { return vacancy.getIdentifier() },
+        title: vacancy.operators + ' operator' + ( 1 != vacancy.operators ? 's' : '' ),
+        start: moment( vacancy.datetime ).subtract( offset, 'minutes' ),
+        end: moment( vacancy.datetime ).subtract( offset, 'minutes' ).add( 30, 'minutes' )
       };
     }
   }
 
   // add an extra operation for each of the appointment-based calendars the user has access to
-  [ 'appointment', 'capacity', 'shift', 'shift_template' ].forEach( function( name ) {
+  [ 'appointment', 'capacity', 'vacancy' ].forEach( function( name ) {
     var calendarModule = cenozoApp.module( name );
     if( angular.isDefined( calendarModule.actions.calendar ) ) {
       module.addExtraOperation( 'calendar', {
@@ -91,44 +71,44 @@ define( [ 'appointment', 'capacity', 'shift_template', 'site' ].reduce( function
         operation: function( $state, model ) {
           $state.go( name + '.calendar', { identifier: model.site.getIdentifier() } );
         },
-        classes: 'shift' == name ? 'btn-warning' : undefined // highlight current model
+        classes: 'vacancy' == name ? 'btn-warning' : undefined // highlight current model
       } );
     }
   } );
 
   if( angular.isDefined( module.actions.calendar ) ) {
     module.addExtraOperation( 'list', {
-      title: 'Shift Calendar',
+      title: 'Vacancy Calendar',
       operation: function( $state, model ) {
-        $state.go( 'shift.calendar', { identifier: model.site.getIdentifier() } );
+        $state.go( 'vacancy.calendar', { identifier: model.site.getIdentifier() } );
       }
     } );
   }
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnShiftAdd', [
-    'CnShiftModelFactory', 'CnSession', '$timeout',
-    function( CnShiftModelFactory, CnSession, $timeout ) {
+  cenozo.providers.directive( 'cnVacancyAdd', [
+    'CnVacancyModelFactory', 'CnSession', '$timeout',
+    function( CnVacancyModelFactory, CnSession, $timeout ) {
       return {
         templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftModelFactory.instance();
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnVacancyModelFactory.instance();
         },
         link: function( scope, element ) {
           $timeout( function() {
-            // set the start date in the record and formatted record (if passed here from the calendar)
+            // set the datetime in the record and formatted record (if passed here from the calendar)
             scope.model.metadata.getPromise().then( function() {
               if( angular.isDefined( scope.model.addModel.calendarDate ) ) {
                 var cnRecordAddScope = cenozo.findChildDirectiveScope( scope, 'cnRecordAdd' );
                 if( null == cnRecordAddScope )
-                  throw new Error( 'Unable to find shift\'s cnRecordAdd scope.' );
+                  throw new Error( 'Unable to find vacancy\'s cnRecordAdd scope.' );
 
-                cnRecordAddScope.record.start_datetime = moment.tz(
+                cnRecordAddScope.record.datetime = moment.tz(
                   scope.model.addModel.calendarDate + ' 12:00:00', CnSession.user.timezone );
-                cnRecordAddScope.formattedRecord.start_datetime = CnSession.formatValue(
-                  cnRecordAddScope.record.start_datetime, 'datetime', true );
+                cnRecordAddScope.formattedRecord.datetime = CnSession.formatValue(
+                  cnRecordAddScope.record.datetime, 'datetime', true );
                 delete scope.model.addModel.calendarDate;
               }
             } );
@@ -139,11 +119,9 @@ define( [ 'appointment', 'capacity', 'shift_template', 'site' ].reduce( function
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnShiftCalendar', [
-    'CnShiftModelFactory', 'CnAppointmentModelFactory', 'CnCapacityModelFactory', 'CnShiftTemplateModelFactory',
-    'CnSession',
-    function( CnShiftModelFactory, CnAppointmentModelFactory, CnCapacityModelFactory, CnShiftTemplateModelFactory,
-              CnSession ) {
+  cenozo.providers.directive( 'cnVacancyCalendar', [
+    'CnVacancyModelFactory', 'CnAppointmentModelFactory', 'CnCapacityModelFactory', 'CnSession',
+    function( CnVacancyModelFactory, CnAppointmentModelFactory, CnCapacityModelFactory, CnSession ) {
       return {
         templateUrl: module.getFileUrl( 'calendar.tpl.html' ),
         restrict: 'E',
@@ -152,19 +130,18 @@ define( [ 'appointment', 'capacity', 'shift_template', 'site' ].reduce( function
           preventSiteChange: '@'
         },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftModelFactory.instance();
-          $scope.model.calendarModel.heading = $scope.model.site.name.ucWords() + ' Shift Calendar';
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnVacancyModelFactory.instance();
+          $scope.model.calendarModel.heading = $scope.model.site.name.ucWords() + ' Vacancy Calendar';
         },
         link: function( scope ) {
           // factory name -> object map used below
           var factoryList = {
             appointment: CnAppointmentModelFactory,
             capacity: CnCapacityModelFactory,
-            shift: CnShiftModelFactory,
-            shift_template: CnShiftTemplateModelFactory
+            vacancy: CnVacancyModelFactory
           };
 
-          // synchronize appointment/shift-based calendars
+          // synchronize appointment/vacancy-based calendars
           scope.$watch( 'model.calendarModel.currentDate', function( date ) {
             Object.keys( factoryList ).filter( function( name ) {
               return angular.isDefined( cenozoApp.moduleList[name].actions.calendar );
@@ -187,58 +164,50 @@ define( [ 'appointment', 'capacity', 'shift_template', 'site' ].reduce( function
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnShiftList', [
-    'CnShiftModelFactory', 'CnSession',
-    function( CnShiftModelFactory, CnSession ) {
+  cenozo.providers.directive( 'cnVacancyList', [
+    'CnVacancyModelFactory', 'CnSession',
+    function( CnVacancyModelFactory, CnSession ) {
       return {
         templateUrl: module.getFileUrl( 'list.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftModelFactory.instance();
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnVacancyModelFactory.instance();
         }
       };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnShiftView', [
-    'CnShiftModelFactory', 'CnSession',
-    function( CnShiftModelFactory, CnSession ) {
+  cenozo.providers.directive( 'cnVacancyView', [
+    'CnVacancyModelFactory', 'CnSession',
+    function( CnVacancyModelFactory, CnSession ) {
       return {
         templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnShiftModelFactory.instance();
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnVacancyModelFactory.instance();
         }
       };
     }
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnShiftAddFactory', [
+  cenozo.providers.factory( 'CnVacancyAddFactory', [
     'CnBaseAddFactory', 'CnSession', 'CnHttpFactory',
     function( CnBaseAddFactory, CnSession, CnHttpFactory ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
 
-        // add the new shift's events to the calendar cache
+        // add the new vacancy's events to the calendar cache
         this.onAdd = function( record ) {
           return this.$$onAdd( record ).then( function() {
             record.getIdentifier = function() { return parentModel.getIdentifierFromRecord( record ); };
 
             // fill in the user name so that it shows in the calendar
-            return CnHttpFactory.instance( {
-              path: 'user/' + record.user_id,
-              data: { select: { column: [ 'name' ] } }
-            } ).get().then( function( response ) {
-              record.username = response.data.name;
-              var minDate = parentModel.calendarModel.cacheMinDate;
-              var maxDate = parentModel.calendarModel.cacheMaxDate;
-              return parentModel.calendarModel.cache.push( getEventFromShift( record, CnSession.user.timezone ) );
-            } );
+            return parentModel.calendarModel.cache.push( getEventFromVacancy( record, CnSession.user.timezone ) );
           } );
         };
       };
@@ -247,7 +216,7 @@ define( [ 'appointment', 'capacity', 'shift_template', 'site' ].reduce( function
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnShiftCalendarFactory', [
+  cenozo.providers.factory( 'CnVacancyCalendarFactory', [
     'CnBaseCalendarFactory', 'CnSession',
     function( CnBaseCalendarFactory, CnSession ) {
       var object = function( parentModel ) {
@@ -259,14 +228,14 @@ define( [ 'appointment', 'capacity', 'shift_template', 'site' ].reduce( function
         if( angular.isUndefined( this.settings.views.month ) ) this.settings.views.month = {};
         this.settings.views.month.displayEventEnd = true;
 
-        // extend onCalendar to transform templates into events
+        // extend onCalendar to transform vacancies into events
         this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {
           // we must get the load dates before calling $$onCalendar
           var loadMinDate = self.getLoadMinDate( replace, minDate );
           var loadMaxDate = self.getLoadMaxDate( replace, maxDate );
           return self.$$onCalendar( replace, minDate, maxDate, ignoreParent ).then( function() {
             self.cache.forEach( function( item, index, array ) {
-              array[index] = getEventFromShift( item, CnSession.user.timezone );
+              array[index] = getEventFromVacancy( item, CnSession.user.timezone );
             } );
           } );
         };
@@ -277,13 +246,13 @@ define( [ 'appointment', 'capacity', 'shift_template', 'site' ].reduce( function
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnShiftListFactory', [
+  cenozo.providers.factory( 'CnVacancyListFactory', [
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
       var object = function( parentModel ) {
         CnBaseListFactory.construct( this, parentModel );
 
-        // remove the deleted shift from the calendar cache
+        // remove the deleted vacancy from the calendar cache
         this.onDelete = function( record ) {
           return this.$$onDelete( record ).then( function() {
             parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
@@ -297,14 +266,14 @@ define( [ 'appointment', 'capacity', 'shift_template', 'site' ].reduce( function
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnShiftViewFactory', [
+  cenozo.providers.factory( 'CnVacancyViewFactory', [
     'CnBaseViewFactory', 'CnSession',
     function( CnBaseViewFactory, CnSession ) {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
 
-        // remove the deleted shift's events from the calendar cache
+        // remove the deleted vacancy's events from the calendar cache
         this.onDelete = function() {
           return this.$$onDelete().then( function() {
             parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
@@ -313,7 +282,7 @@ define( [ 'appointment', 'capacity', 'shift_template', 'site' ].reduce( function
           } );
         };
 
-        // remove and re-add the shift's events from the calendar cache
+        // remove and re-add the vacancy's events from the calendar cache
         this.onPatch = function( data ) {
           return this.$$onPatch( data ).then( function() {
             var minDate = parentModel.calendarModel.cacheMinDate;
@@ -321,7 +290,7 @@ define( [ 'appointment', 'capacity', 'shift_template', 'site' ].reduce( function
             parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
               return e.getIdentifier() != self.record.getIdentifier();
             } );
-            parentModel.calendarModel.cache.push( getEventFromShift( self.record, CnSession.user.timezone ) );
+            parentModel.calendarModel.cache.push( getEventFromVacancy( self.record, CnSession.user.timezone ) );
           } );
         };
       }
@@ -330,48 +299,31 @@ define( [ 'appointment', 'capacity', 'shift_template', 'site' ].reduce( function
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnShiftModelFactory', [
+  cenozo.providers.factory( 'CnVacancyModelFactory', [
     'CnBaseModelFactory',
-    'CnShiftAddFactory', 'CnShiftCalendarFactory',
-    'CnShiftListFactory', 'CnShiftViewFactory',
+    'CnVacancyAddFactory', 'CnVacancyCalendarFactory',
+    'CnVacancyListFactory', 'CnVacancyViewFactory',
     'CnSession', '$state',
     function( CnBaseModelFactory,
-              CnShiftAddFactory, CnShiftCalendarFactory,
-              CnShiftListFactory, CnShiftViewFactory,
+              CnVacancyAddFactory, CnVacancyCalendarFactory,
+              CnVacancyListFactory, CnVacancyViewFactory,
               CnSession, $state ) {
       var object = function( site ) {
         if( !angular.isObject( site ) || angular.isUndefined( site.id ) )
-          throw new Error( 'Tried to create CnShiftModel without specifying the site.' );
+          throw new Error( 'Tried to create CnVacancyModel without specifying the site.' );
 
         var self = this;
         CnBaseModelFactory.construct( this, module );
-        this.addModel = CnShiftAddFactory.instance( this );
-        this.calendarModel = CnShiftCalendarFactory.instance( this );
-        this.listModel = CnShiftListFactory.instance( this );
-        this.viewModel = CnShiftViewFactory.instance( this, site.id == CnSession.site.id );
+        this.addModel = CnVacancyAddFactory.instance( this );
+        this.calendarModel = CnVacancyCalendarFactory.instance( this );
+        this.listModel = CnVacancyListFactory.instance( this );
+        this.viewModel = CnVacancyViewFactory.instance( this, site.id == CnSession.site.id );
         this.site = site;
 
         // customize service data
         this.getServiceData = function( type, columnRestrictLists ) {
           var data = this.$$getServiceData( type, columnRestrictLists );
           if( 'calendar' == type ) data.restricted_site_id = self.site.id;
-          return data;
-        };
-
-        // extend getTypeaheadData
-        this.getTypeaheadData = function( input, viewValue ) {
-          var data = this.$$getTypeaheadData( input, viewValue );
-
-          // only include active users
-          if( 'user' == input.typeahead.table ) {
-            data.modifier.where.unshift( { bracket: true, open: true } );
-            data.modifier.where.push( { bracket: true, open: false } );
-            data.modifier.where.push( { column: 'user.active', operator: '=', value: true } );
-
-            // restrict to the current site
-            data.restricted_site_id = CnSession.site.id;
-          }
-
           return data;
         };
       };
@@ -382,7 +334,6 @@ define( [ 'appointment', 'capacity', 'shift_template', 'site' ].reduce( function
 
       return {
         siteInstanceList: {},
-        userInstanceList: {},
         forSite: function( site ) {
           if( !angular.isObject( site ) ) {
             $state.go( 'error.404' );
@@ -394,19 +345,6 @@ define( [ 'appointment', 'capacity', 'shift_template', 'site' ].reduce( function
             this.siteInstanceList[site.id] = new object( site );
           }
           return this.siteInstanceList[site.id];
-        },
-        forUser: function( user ) {
-          if( !angular.isObject( user ) ) {
-            $state.go( 'error.404' );
-            throw new Error( 'Cannot find user matching identifier "' + user + '", redirecting to 404.' );
-          }
-          if( angular.isUndefined( this.userInstanceList[user.id] ) ) {
-            var site = CnSession.site;
-            if( angular.isUndefined( site.getIdentifier ) )
-              site.getIdentifier = function() { return siteColumn + '=' + this[siteColumn]; };
-            this.userInstanceList[user.id] = new object( site );
-          }
-          return this.userInstanceList[user.id];
         },
         instance: function() {
           var site = null;

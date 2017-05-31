@@ -6,7 +6,7 @@
  * @filesource
  */
 
-namespace sabretooth\service\shift_template;
+namespace sabretooth\service\vacancy;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**
@@ -20,9 +20,15 @@ class module extends \cenozo\service\base_calendar_module
   public function __construct( $index, $service )
   {
     parent::__construct( $index, $service );
-    // lower-end_date and upper-start_date are purposefully backward
-    $this->lower_date = array( 'null' => true, 'column' => 'end_date' );
-    $this->upper_date = array( 'null' => false, 'column' => 'start_date' );
+    $timezone = lib::create( 'business\session' )->get_user()->timezone;
+    $this->lower_date = array(
+      'null' => false,
+      'column' => sprintf( 'DATE( CONVERT_TZ( datetime, "UTC", "%s" ) )', $timezone )
+    );
+    $this->upper_date = array(
+      'null' => false,
+      'column' => sprintf( 'DATE( CONVERT_TZ( datetime, "UTC", "%s" ) )', $timezone )
+    );
   }
 
   /**
@@ -58,32 +64,6 @@ class module extends \cenozo\service\base_calendar_module
     // restrict by site
     $db_restrict_site = $this->get_restricted_site();
     if( !is_null( $db_restrict_site ) ) $modifier->where( 'site_id', '=', $db_restrict_site->id );
-
-    if( $select->has_column( 'week' ) )
-    {
-      // add week column in a sub-table (so that counts work when restricting by this column)
-      $sub_sel = lib::create( 'database\select' );
-      $sub_sel->from( 'shift_template' );
-      $sub_sel->add_column( 'id' );
-      $sub_sel->add_column(
-        'IF( "weekly" = repeat_type, '.
-            'CONCAT( IF( monday, "M", "_" ), '.
-                    'IF( tuesday, "T", "_" ), '.
-                    'IF( wednesday, "W", "_" ), '.
-                    'IF( thursday, "T", "_" ), '.
-                    'IF( friday, "F", "_" ), '.
-                    'IF( saturday, "S", "_" ), '.
-                    'IF( sunday, "S", "_" ) ), '.
-            '"(n/a)" )',
-        'week',
-        false );
-
-      $modifier->join(
-        sprintf( '( %s ) AS shift_template_week', $sub_sel->get_sql() ),
-        'shift_template.id',
-        'shift_template_week.id' );
-      $select->add_column( 'shift_template_week.week', 'week', false );
-    }
   }
 
   /**

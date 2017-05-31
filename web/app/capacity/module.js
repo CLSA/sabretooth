@@ -1,4 +1,4 @@
-define( [ 'appointment', 'shift', 'shift_template', 'site' ].reduce( function( list, name ) {
+define( [ 'appointment', 'vacancy', 'site' ].reduce( function( list, name ) {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [] ), function() {
   'use strict';
@@ -14,7 +14,7 @@ define( [ 'appointment', 'shift', 'shift_template', 'site' ].reduce( function( l
     }
   } );
 
-  function getSlotsFromEvents( appointmentEvents, shiftEvents, shiftTemplateEvents ) {
+  function getSlotsFromEvents( appointmentEvents, vacancyEvents ) {
     var slots = [];
 
     // function that sorts events by their start time
@@ -28,18 +28,13 @@ define( [ 'appointment', 'shift', 'shift_template', 'site' ].reduce( function( l
     var events = {};
     appointmentEvents.sort( sortByStart ).forEach( function( item ) {
       var date = item.start.format( 'YYYY-MM-DD' );
-      if( angular.isUndefined( events[date] ) ) events[date] = { appointments: [], shifts: [], templates: [] };
+      if( angular.isUndefined( events[date] ) ) events[date] = { appointments: [], vacancies: [] };
       events[date].appointments.push( item );
     } );
-    shiftEvents.sort( sortByStart ).forEach( function( item ) {
+    vacancyEvents.sort( sortByStart ).forEach( function( item ) {
       var date = item.start.format( 'YYYY-MM-DD' );
-      if( angular.isUndefined( events[date] ) ) events[date] = { appointments: [], shifts: [], templates: [] };
-      events[date].shifts.push( item );
-    } );
-    shiftTemplateEvents.sort( sortByStart ).forEach( function( item ) {
-      var date = item.start.format( 'YYYY-MM-DD' );
-      if( angular.isUndefined( events[date] ) ) events[date] = { appointments: [], shifts: [], templates: [] };
-      events[date].templates.push( item );
+      if( angular.isUndefined( events[date] ) ) events[date] = { appointments: [], vacancies: [] };
+      events[date].vacancies.push( item );
     } );
 
     // now go through each day and determine the open slots
@@ -47,29 +42,14 @@ define( [ 'appointment', 'shift', 'shift_template', 'site' ].reduce( function( l
       var tempDate = moment( date );
       var eventList = [];
 
-      // get all shifts for today (or shift templates if there are no shifts
+      // get all vacancies for today
       var lastEvent = null;
-      if( 0 < events[date].shifts.length ) {
-        events[date].shifts.forEach( function( shift ) {
+      if( 0 < events[date].vacancies.length ) {
+        events[date].vacancies.forEach( function( vacancy ) {
           var event = {
-            start: shift.start.format( 'HH:mm' ),
-            end: shift.end.format( 'HH:mm' ),
+            start: vacancy.start.format( 'HH:mm' ),
+            end: vacancy.end.format( 'HH:mm' ),
             slots: 1
-          };
-          if( null != lastEvent && lastEvent.start == event.start && lastEvent.end == event.end ) {
-            lastEvent.slots += event.slots;
-          } else {
-            eventList.push( event );
-            lastEvent = event;
-          }
-        } );
-      } else {
-        // process shift templates if there are no shifts
-        events[date].templates.forEach( function( shiftTemplate ) {
-          var event = {
-            start: shiftTemplate.start.format( 'HH:mm' ),
-            end: shiftTemplate.end.format( 'HH:mm' ),
-            slots: parseInt( shiftTemplate.title )
           };
           if( null != lastEvent && lastEvent.start == event.start && lastEvent.end == event.end ) {
             lastEvent.slots += event.slots;
@@ -121,7 +101,7 @@ define( [ 'appointment', 'shift', 'shift_template', 'site' ].reduce( function( l
         } );
 
         if( null == workingEvent ) {
-          // see if there is a shift that partially covers this appointment
+          // see if there is a vacancy that partially covers this appointment
           eventList.forEach( function( event, index ) {
             if( ( event.start.isSameOrBefore( appointment.start, 'minute' ) &&
                   event.end.isAfter( appointment.start, 'minute' ) ) ||
@@ -199,7 +179,7 @@ define( [ 'appointment', 'shift', 'shift_template', 'site' ].reduce( function( l
   }
 
   // add an extra operation for each of the appointment-based calendars the user has access to
-  [ 'appointment', 'capacity', 'shift', 'shift_template' ].forEach( function( name ) {
+  [ 'appointment', 'capacity', 'vacancy' ].forEach( function( name ) {
     var calendarModule = cenozoApp.module( name );
     if( angular.isDefined( calendarModule.actions.calendar ) ) {
       module.addExtraOperation( 'calendar', {
@@ -214,10 +194,8 @@ define( [ 'appointment', 'shift', 'shift_template', 'site' ].reduce( function( l
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnCapacityCalendar', [
-    'CnCapacityModelFactory', 'CnAppointmentModelFactory',
-    'CnShiftModelFactory', 'CnShiftTemplateModelFactory',
-    function( CnCapacityModelFactory, CnAppointmentModelFactory,
-              CnShiftModelFactory, CnShiftTemplateModelFactory ) {
+    'CnCapacityModelFactory', 'CnAppointmentModelFactory', 'CnVacancyModelFactory',
+    function( CnCapacityModelFactory, CnAppointmentModelFactory, CnVacancyModelFactory ) {
       return {
         templateUrl: module.getFileUrl( 'calendar.tpl.html' ),
         restrict: 'E',
@@ -234,11 +212,10 @@ define( [ 'appointment', 'shift', 'shift_template', 'site' ].reduce( function( l
           var factoryList = {
             appointment: CnAppointmentModelFactory,
             capacity: CnCapacityModelFactory,
-            shift: CnShiftModelFactory,
-            shift_template: CnShiftTemplateModelFactory
+            vacancy: CnVacancyModelFactory
           };
 
-          // synchronize appointment/shift-based calendars
+          // synchronize appointment/vacancy-based calendars
           scope.$watch( 'model.calendarModel.currentDate', function( date ) {
             Object.keys( factoryList ).filter( function( name ) {
               return angular.isDefined( cenozoApp.moduleList[name].actions.calendar );
@@ -263,9 +240,9 @@ define( [ 'appointment', 'shift', 'shift_template', 'site' ].reduce( function( l
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnCapacityCalendarFactory', [
     'CnBaseCalendarFactory',
-    'CnAppointmentModelFactory', 'CnShiftModelFactory', 'CnShiftTemplateModelFactory', '$q',
+    'CnAppointmentModelFactory', 'CnVacancyModelFactory', '$q',
     function( CnBaseCalendarFactory,
-              CnAppointmentModelFactory, CnShiftModelFactory, CnShiftTemplateModelFactory, $q ) {
+              CnAppointmentModelFactory, CnVacancyModelFactory, $q ) {
       var object = function( parentModel, site ) {
         var self = this;
         CnBaseCalendarFactory.construct( this, parentModel );
@@ -281,33 +258,27 @@ define( [ 'appointment', 'shift', 'shift_template', 'site' ].reduce( function( l
           this.settings.views.month = {};
         this.settings.views.month.displayEventEnd = true;
 
-        // extend onCalendar to transform templates into events
+        // extend onCalendar to transform into events
         this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {
-          // always replace, otherwise the calendar won't update when new appointments/shifts/etc are made
+          // always replace, otherwise the calendar won't update when new appointments/vacancies/etc are made
           replace = true;
 
           // unlike other calendars we don't cache events
           var appointmentCalendarModel = CnAppointmentModelFactory.forSite( parentModel.site ).calendarModel;
-          var shiftCalendarModel = CnShiftModelFactory.forSite( parentModel.site ).calendarModel;
-          var shiftTemplateCalendarModel = CnShiftTemplateModelFactory.forSite( parentModel.site ).calendarModel;
+          var vacancyCalendarModel = CnVacancyModelFactory.forSite( parentModel.site ).calendarModel;
 
           // instead of calling $$onCalendar we determine events from the events in other calendars
           return $q.all( [
             appointmentCalendarModel.onCalendar( replace, minDate, maxDate, true ),
-            shiftCalendarModel.onCalendar( replace, minDate, maxDate, true ),
-            shiftTemplateCalendarModel.onCalendar( replace, minDate, maxDate, true )
+            vacancyCalendarModel.onCalendar( replace, minDate, maxDate, true )
           ] ).then( function() {
             self.cache = getSlotsFromEvents(
               // get all appointments inside the load date span
               appointmentCalendarModel.cache.filter( function( item ) {
                 return !item.start.isBefore( minDate, 'day' ) && !item.end.isAfter( maxDate, 'day' );
               } ),
-              // get all shift events inside the load date span
-              shiftCalendarModel.cache.filter( function( item ) {
-                return !item.start.isBefore( minDate, 'day' ) && !item.end.isAfter( maxDate, 'day' );
-              } ),
-              // get all shift template events inside the load date span
-              shiftTemplateCalendarModel.cache.filter( function( item ) {
+              // get all vacancy events inside the load date span
+              vacancyCalendarModel.cache.filter( function( item ) {
                 return !item.start.isBefore( minDate, 'day' ) && !item.end.isAfter( maxDate, 'day' );
               } )
             );

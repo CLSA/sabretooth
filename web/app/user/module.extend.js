@@ -1,5 +1,5 @@
 // extend the framework's module
-define( [ 'appointment', 'shift' ].reduce( function( list, name ) {
+define( [ 'appointment' ].reduce( function( list, name ) {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [ cenozoApp.module( 'user' ).getFileUrl( 'module.js' ) ] ), function() {
   'use strict';
@@ -46,34 +46,6 @@ define( [ 'appointment', 'shift' ].reduce( function( list, name ) {
     return event;
   }
 
-  // converts shifts into events
-  function getEventFromShift( shift, timezone ) {
-    var event = {};
-    if( angular.isUndefined( shift.subject ) ) shift.subject = 'shift';
-    if( angular.isDefined( shift.start ) && angular.isDefined( shift.end ) ) {
-      event = shift;
-    } else {
-      var date = moment( shift.start_datetime );
-      var offset = moment.tz.zone( timezone ).offset( date.unix() );
-
-      // adjust the appointment for daylight savings time
-      if( date.tz( timezone ).isDST() ) offset += -60;
-
-      event = {
-        getIdentifier: function() { return shift.getIdentifier() },
-        start: moment( shift.start_datetime ).subtract( offset, 'minutes' ),
-        end: moment( shift.end_datetime ).subtract( offset, 'minutes' )
-      };
-    }
-
-    angular.extend( event, {
-      title: 'shift',
-      color: 'gray'
-    } );
-
-    return event;
-  }
-
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnUserCalendar', [
     'CnUserModelFactory', 'CnUserCalendarFactory',
@@ -97,8 +69,8 @@ define( [ 'appointment', 'shift' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnUserCalendarFactory', [
-    'CnBaseCalendarFactory', 'CnAppointmentModelFactory', 'CnShiftModelFactory', 'CnSession', '$state', '$q',
-    function( CnBaseCalendarFactory, CnAppointmentModelFactory, CnShiftModelFactory, CnSession, $state, $q ) {
+    'CnBaseCalendarFactory', 'CnAppointmentModelFactory', 'CnSession', '$state', '$q',
+    function( CnBaseCalendarFactory, CnAppointmentModelFactory, CnSession, $state, $q ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseCalendarFactory.construct( this, parentModel );
@@ -108,19 +80,16 @@ define( [ 'appointment', 'shift' ].reduce( function( list, name ) {
         if( angular.isUndefined( this.settings.views.month ) ) this.settings.views.month = {};
         this.settings.views.month.displayEventEnd = true;
 
-        // create instances of shift and appointment models
-        var shiftModule = cenozoApp.module( 'shift' );
+        // create appointment model
         var appointmentModule = cenozoApp.module( 'appointment' );
-        var shiftModel = null;
         var appointmentModel = null;
 
-        // Use the view model's onView function to get the record and create shift and appointment models from it.
+        // Use the view model's onView function to get the record and create an appointment model from it.
         // Note that to do this we must make sure that viewing has been enabled in the parent-model, even if only
         // temporarily.
         var getViewEnabled = parentModel.getViewEnabled;
         parentModel.getViewEnabled = function() { return true; };
         var promise = parentModel.viewModel.onView().then( function() {
-          shiftModel = CnShiftModelFactory.forUser( parentModel.viewModel.record );
           appointmentModel = CnAppointmentModelFactory.forUser( parentModel.viewModel.record );
         } );
         parentModel.getViewEnabled = getViewEnabled;
@@ -132,35 +101,27 @@ define( [ 'appointment', 'shift' ].reduce( function( list, name ) {
           angular.element( this ).popover( 'hide' );
           return promise.then( function() {
             if( angular.isUndefined( record.subject ) ) {
-              console.warn( 'Clicked on personal calendar event which is neither an appointment or a shift.' );
+              console.warn( 'Clicked on personal calendar event which is not an appointment.' );
             } else if( appointmentModel.getViewEnabled() ) {
-              if( ( 'appointment' == record.subject && angular.isDefined( appointmentModule.actions.view ) ) ||
-                  ( 'shift' == record.subject && angular.isDefined( shiftModule.actions.view ) ) )
+              if( 'appointment' == record.subject && angular.isDefined( appointmentModule.actions.view ) )
                 return $state.go( record.subject + '.view', { identifier: record.getIdentifier() } );
             }
           } );
         };
 
-        // extend onCalendar to transform templates into events
+        // extend onCalendar to transform into events
         this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {
           // we must get the load dates before calling $$onCalendar
           var loadMinDate = self.getLoadMinDate( replace, minDate );
           var loadMaxDate = self.getLoadMaxDate( replace, maxDate );
 
           return promise.then( function() {
-            return $q.all( [
-              shiftModel.calendarModel.onCalendar( replace, minDate, maxDate, ignoreParent ),
-              appointmentModel.calendarModel.onCalendar( replace, minDate, maxDate, ignoreParent )
-            ] ).then( function() {
-              shiftModel.calendarModel.cache.forEach( function( item, index, array ) {
-                array[index] = getEventFromShift( item, CnSession.user.timezone );
-              } );
+            return appointmentModel.calendarModel.onCalendar(
+              replace, minDate, maxDate, ignoreParent
+            ).then( function() {
               appointmentModel.calendarModel.cache.forEach( function( item, index, array ) {
                 array[index] = getEventFromAppointment( item, CnSession.user.timezone );
               } );
-
-              // make the cache a combination of appointment and shift events
-              self.cache = appointmentModel.calendarModel.cache.concat( shiftModel.calendarModel.cache );
             } );
           } );
         };

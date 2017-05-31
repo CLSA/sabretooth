@@ -1,4 +1,4 @@
-define( [ 'capacity', 'shift', 'shift_template', 'site' ].reduce( function( list, name ) {
+define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [] ), function() {
   'use strict';
@@ -130,7 +130,7 @@ define( [ 'capacity', 'shift', 'shift_template', 'site' ].reduce( function( list
   } );
 
   // add an extra operation for each of the appointment-based calendars the user has access to
-  [ 'appointment', 'capacity', 'shift', 'shift_template' ].forEach( function( name ) {
+  [ 'appointment', 'capacity', 'vacancy' ].forEach( function( name ) {
     var calendarModule = cenozoApp.module( name );
     if( angular.isDefined( calendarModule.actions.calendar ) ) {
       module.addExtraOperation( 'calendar', {
@@ -270,10 +270,8 @@ define( [ 'capacity', 'shift', 'shift_template', 'site' ].reduce( function( list
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAppointmentCalendar', [
-    'CnAppointmentModelFactory', 'CnCapacityModelFactory', 'CnShiftModelFactory', 'CnShiftTemplateModelFactory',
-    'CnSession',
-    function( CnAppointmentModelFactory, CnCapacityModelFactory, CnShiftModelFactory, CnShiftTemplateModelFactory,
-              CnSession ) {
+    'CnAppointmentModelFactory', 'CnCapacityModelFactory', 'CnVacancyModelFactory', 'CnSession',
+    function( CnAppointmentModelFactory, CnCapacityModelFactory, CnVacancyModelFactory, CnSession ) {
       return {
         templateUrl: module.getFileUrl( 'calendar.tpl.html' ),
         restrict: 'E',
@@ -290,11 +288,10 @@ define( [ 'capacity', 'shift', 'shift_template', 'site' ].reduce( function( list
           var factoryList = {
             appointment: CnAppointmentModelFactory,
             capacity: CnCapacityModelFactory,
-            shift: CnShiftModelFactory,
-            shift_template: CnShiftTemplateModelFactory
+            vacancy: CnVacancyModelFactory
           };
 
-          // synchronize appointment/shift-based calendars
+          // synchronize appointment/vacancy-based calendars
           scope.$watch( 'model.calendarModel.currentDate', function( date ) {
             Object.keys( factoryList ).filter( function( name ) {
               return angular.isDefined( cenozoApp.moduleList[name].actions.calendar );
@@ -489,7 +486,7 @@ define( [ 'capacity', 'shift', 'shift_template', 'site' ].reduce( function( list
         // remove day click callback
         delete this.settings.dayClick;
 
-        // extend onCalendar to transform templates into events
+        // extend onCalendar to transform into events
         this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {
           // we must get the load dates before calling $$onCalendar
           var loadMinDate = self.getLoadMinDate( replace, minDate );
