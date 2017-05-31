@@ -20,15 +20,10 @@ class module extends \cenozo\service\base_calendar_module
   public function __construct( $index, $service )
   {
     parent::__construct( $index, $service );
-    $timezone = lib::create( 'business\session' )->get_user()->timezone;
-    $this->lower_date = array(
-      'null' => false,
-      'column' => sprintf( 'DATE( CONVERT_TZ( datetime, "UTC", "%s" ) )', $timezone )
-    );
-    $this->upper_date = array(
-      'null' => false,
-      'column' => sprintf( 'DATE( CONVERT_TZ( datetime, "UTC", "%s" ) )', $timezone )
-    );
+    $db_user = lib::create( 'business\session' )->get_user();
+    $date_string = sprintf( 'DATE( CONVERT_TZ( datetime, "UTC", "%s" ) )', $db_user->timezone );
+    $this->lower_date = array( 'null' => false, 'column' => $date_string );
+    $this->upper_date = array( 'null' => false, 'column' => $date_string );
   }
 
   /**
