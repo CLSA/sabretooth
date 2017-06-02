@@ -95,7 +95,7 @@ DROP PROCEDURE IF EXISTS _link_appointments_with_vacancies;
     DECLARE appointment_id_val INT UNSIGNED;
     DECLARE site_id_val INT UNSIGNED;
     DECLARE datetime_val DATETIME;
-    DECLARE type_val INT UNSIGNED;
+    DECLARE type_val ENUM( 'short', 'long' );
 
     -- Declare variables used just for cursor and loop control
     DECLARE no_more_rows BOOLEAN;

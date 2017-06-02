@@ -31,7 +31,8 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
   module.addInputGroup( '', {
     datetime: {
       title: 'Date & Time',
-      type: 'datetime'
+      type: 'datetime',
+      minuteStep: 30
     },
     operators: {
       title: 'Operators',
@@ -39,7 +40,8 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
       format: 'integer',
       minValue: 1,
       help: 'How many operators are available at this time'
-    }
+    },
+    appointments: { type: 'hidden' }
   } );
 
   // converts vacancies into events
@@ -53,11 +55,20 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
       // adjust the appointment for daylight savings time
       if( date.tz( timezone ).isDST() ) offset += -60;
 
+      var remaining = vacancy.operators - vacancy.appointments;
+      var color = 'blue';
+      if( 0 == remaining ) color = 'gray';
+      else if( 0 > remaining ) color = 'red';
       return {
+        id: vacancy.id,
         getIdentifier: function() { return vacancy.getIdentifier() },
-        title: vacancy.operators + ' operator' + ( 1 != vacancy.operators ? 's' : '' ),
+        title: vacancy.appointments + ' of ' + vacancy.operators + ' booked',
         start: moment( vacancy.datetime ).subtract( offset, 'minutes' ),
-        end: moment( vacancy.datetime ).subtract( offset, 'minutes' ).add( 30, 'minutes' )
+        end: moment( vacancy.datetime ).subtract( offset, 'minutes' ).add( 30, 'minutes' ),
+        color: color,
+        editable: 0 == vacancy.appointments,
+        offset: offset,
+        operators: vacancy.operators
       };
     }
   }
@@ -120,8 +131,10 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnVacancyCalendar', [
-    'CnVacancyModelFactory', 'CnAppointmentModelFactory', 'CnCapacityModelFactory', 'CnSession',
-    function( CnVacancyModelFactory, CnAppointmentModelFactory, CnCapacityModelFactory, CnSession ) {
+    'CnVacancyModelFactory', 'CnAppointmentModelFactory', 'CnCapacityModelFactory',
+    'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory', '$q',
+    function( CnVacancyModelFactory, CnAppointmentModelFactory, CnCapacityModelFactory,
+              CnSession, CnHttpFactory, CnModalConfirmFactory, CnModalMessageFactory, $q ) {
       return {
         templateUrl: module.getFileUrl( 'calendar.tpl.html' ),
         restrict: 'E',
@@ -129,9 +142,122 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
           model: '=?',
           preventSiteChange: '@'
         },
-        controller: function( $scope ) {
+        controller: function( $scope, $element ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnVacancyModelFactory.instance();
           $scope.model.calendarModel.heading = $scope.model.site.name.ucWords() + ' Vacancy Calendar';
+
+          var currentSelection = null;
+          $scope.onKeyboardShortcut = function( event ) {
+            if( angular.isObject( event ) && angular.isObject( currentSelection ) ) {
+              console.log( currentSelection, event.keyCode );
+            }
+          }
+
+          angular.extend( $scope.model.calendarModel.settings, {
+            eventOverlap: false,
+            selectable: true,
+            selectHelper: true,
+            select: function( start, end ) {
+              currentSelection = { start: start, end: end };
+            },
+            unselect: function() {
+              currentSelection = null;
+            },
+            editable: true,
+            eventDrop: function( event, delta, revertFunc ) {
+              // time is in local timezone, convert back to UTC
+              var datetime = angular.copy( event.start );
+              datetime.add( event.offset, 'minutes' );
+
+              var cacheEvent = $scope.model.calendarModel.cache.findByProperty( 'id', event.id );
+              CnModalConfirmFactory.instance( {
+                title: 'Move Vacancy?',
+                message: 'Are you sure you wish to change this vacancy to ' +
+                         CnSession.formatValue( datetime, 'datetime' ) + '?'
+              } ).show().then( function( response ) {
+                if( response ) {
+                  CnHttpFactory.instance( {
+                    path: 'vacancy/' + event.getIdentifier(),
+                    data: { datetime: datetime.format() },
+                    onError: function( response ) {
+                      CnModalMessageFactory.httpError( response );
+                      revertFunc();
+                    }
+                  } ).patch().then( function() {
+                    // now update this event in the vacancy cache
+                    cacheEvent.start = event.start;
+                    cacheEvent.end = event.end;
+                  } );
+                } else revertFunc();
+              } );
+            },
+            eventResize: function( event, delta, revertFunc ) {
+              // time is in local timezone, convert back to UTC
+              var datetime = angular.copy( event.start );
+              datetime.add( event.offset, 'minutes' );
+              var end = angular.copy( event.end );
+              end.add( event.offset, 'minutes' );
+
+              if( 30 >= end.diff( datetime, 'minutes' ) ) {
+                CnModalMessageFactory.instance( {
+                  title: 'Unable to extend vacancy',
+                  message: 'There was a problem extending the vacancy, please try again.',
+                  error: true
+                } ).show().then( revertFunc );
+              } else {
+                CnModalConfirmFactory.instance( {
+                  title: 'Extend Vacancy?',
+                  message: 'Are you sure you wish to extend this vacancy to ' +
+                           CnSession.formatValue( end, 'datetime' ) + '?'
+                } ).show().then( function( response ) {
+                  if( response ) {
+                    // convert the extended event back to 30 minutes
+                    var revertEnd = angular.copy( event.start );
+                    revertEnd.add( '30', 'minutes' );
+                    event.end = revertEnd;
+
+                    // split into 30-minute chunks
+                    var datetimeList = [];
+                    datetime.add( 30, 'minutes' ); // skip the first since it already exists
+                    while( datetime < end ) {
+                      datetimeList.push( angular.copy( datetime ) );
+                      datetime.add( 30, 'minutes' );
+                    }
+
+                    var eventList = [];
+                    $q.all(
+                      datetimeList.reduce( function( list, datetime ) {
+                        list.push( CnHttpFactory.instance( {
+                          path: 'vacancy',
+                          data: { datetime: datetime.format(), operators: event.operators },
+                          onError: function( response ) {
+                            CnModalMessageFactory.httpError( response );
+                            revertFunc();
+                          }
+                        } ).post().then( function( response ) {
+                          var id = response.data;
+                          var newEvent = getEventFromVacancy( {
+                            id: id,
+                            getIdentifier: function() { return id; },
+                            datetime: datetime,
+                            operators: event.operators,
+                            appointments: 0
+                          }, CnSession.user.timezone );
+
+                          // add the new event to the event list and cache
+                          eventList.push( newEvent );
+                          $scope.model.calendarModel.cache.push( newEvent );
+                        } ) );
+                        return list;
+                      }, [] )
+                    ).then( function() {
+                      $element.find( 'div.calendar' ).fullCalendar( 'renderEvents', eventList );
+                    } );
+                  } else revertFunc();
+                } );
+              }
+            }
+          } );
         },
         link: function( scope ) {
           // factory name -> object map used below
@@ -165,8 +291,8 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnVacancyList', [
-    'CnVacancyModelFactory', 'CnSession',
-    function( CnVacancyModelFactory, CnSession ) {
+    'CnVacancyModelFactory',
+    function( CnVacancyModelFactory ) {
       return {
         templateUrl: module.getFileUrl( 'list.tpl.html' ),
         restrict: 'E',
@@ -180,8 +306,8 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnVacancyView', [
-    'CnVacancyModelFactory', 'CnSession',
-    function( CnVacancyModelFactory, CnSession ) {
+    'CnVacancyModelFactory',
+    function( CnVacancyModelFactory ) {
       return {
         templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
@@ -195,8 +321,8 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnVacancyAddFactory', [
-    'CnBaseAddFactory', 'CnSession', 'CnHttpFactory',
-    function( CnBaseAddFactory, CnSession, CnHttpFactory ) {
+    'CnBaseAddFactory', 'CnSession',
+    function( CnBaseAddFactory, CnSession ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
@@ -222,6 +348,9 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseCalendarFactory.construct( this, parentModel );
+
+        // remove the day click event
+        delete this.settings.dayClick;
 
         // show to-from times in month view
         if( angular.isUndefined( this.settings.views ) ) this.settings.views = {};
