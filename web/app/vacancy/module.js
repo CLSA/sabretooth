@@ -44,17 +44,19 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
     appointments: { type: 'hidden' }
   } );
 
+  // determines the offset given a date (moment object) and timezone
+  function getTimezoneOffset( date, timezone ) {
+    var offset = moment.tz.zone( timezone ).offset( date.unix() );
+    if( date.tz( timezone ).isDST() ) offset += -60; // adjust the appointment for daylight savings time
+    return offset;
+  }
+
   // converts vacancies into events
   function getEventFromVacancy( vacancy, timezone ) {
     if( angular.isDefined( vacancy.start ) && angular.isDefined( vacancy.end ) ) {
       return vacancy;
     } else {
-      var date = moment( vacancy.datetime );
-      var offset = moment.tz.zone( timezone ).offset( date.unix() );
-
-      // adjust the appointment for daylight savings time
-      if( date.tz( timezone ).isDST() ) offset += -60;
-
+      var offset = getTimezoneOffset( moment( vacancy.datetime ), timezone );
       var remaining = vacancy.operators - vacancy.appointments;
       var color = 'blue';
       if( 0 == remaining ) color = 'gray';
@@ -132,9 +134,51 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnVacancyCalendar', [
     'CnVacancyModelFactory', 'CnAppointmentModelFactory', 'CnCapacityModelFactory',
-    'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory', '$q',
+    'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory', 'CnModalInputFactory', '$q',
     function( CnVacancyModelFactory, CnAppointmentModelFactory, CnCapacityModelFactory,
-              CnSession, CnHttpFactory, CnModalConfirmFactory, CnModalMessageFactory, $q ) {
+              CnSession, CnHttpFactory, CnModalConfirmFactory, CnModalMessageFactory, CnModalInputFactory, $q ) {
+
+      // Adds a block of vacancies between the start/end times (used below)
+      function createVacancyBlock( calendarElement, calendarModel, start, end, operators ) {
+        // split into 30-minute chunks
+        var datetimeList = [];
+        var datetime = angular.copy( start );
+        while( datetime < end ) {
+          datetimeList.push( angular.copy( datetime ) );
+          datetime.add( 30, 'minutes' );
+        }
+
+        var eventList = [];
+        return $q.all(
+          datetimeList.reduce( function( list, datetime ) {
+            list.push( CnHttpFactory.instance( {
+              path: 'vacancy',
+              data: { datetime: datetime.format(), operators: operators },
+              onError: function( response ) {
+                CnModalMessageFactory.httpError( response );
+                revertFunc();
+              }
+            } ).post().then( function( response ) {
+              var id = response.data;
+              var newEvent = getEventFromVacancy( {
+                id: id,
+                getIdentifier: function() { return id; },
+                datetime: datetime,
+                operators: operators,
+                appointments: 0
+              }, CnSession.user.timezone );
+
+              // add the new event to the event list and cache
+              eventList.push( newEvent );
+              calendarModel.cache.push( newEvent );
+            } ) );
+            return list;
+          }, [] )
+        ).then( function() {
+          calendarElement.fullCalendar( 'renderEvents', eventList );
+        } );
+      }
+
       return {
         templateUrl: module.getFileUrl( 'calendar.tpl.html' ),
         restrict: 'E',
@@ -146,22 +190,89 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnVacancyModelFactory.instance();
           $scope.model.calendarModel.heading = $scope.model.site.name.ucWords() + ' Vacancy Calendar';
 
-          var currentSelection = null;
-          $scope.onKeyboardShortcut = function( event ) {
-            if( angular.isObject( event ) && angular.isObject( currentSelection ) ) {
-              console.log( currentSelection, event.keyCode );
-            }
-          }
-
           angular.extend( $scope.model.calendarModel.settings, {
             eventOverlap: false,
-            selectable: true,
+            selectable: $scope.model.getAddEnabled() && $scope.model.getEditEnabled(),
             selectHelper: true,
-            select: function( start, end ) {
-              currentSelection = { start: start, end: end };
-            },
-            unselect: function() {
-              currentSelection = null;
+            select: function( start, end, jsEvent, view ) {
+              // do not process selections in month mode
+              if( 'month' == view.type ) return;
+
+              var calendar = $element.find( 'div.calendar' );
+
+              // determine if the selection overlaps any events
+              var overlap = false;
+              var overlapEventList =
+                calendar.fullCalendar( 'clientEvents' ).filter( function( event ) {
+                  return event.start >= start && event.end <= end;
+                } );
+                
+              if( 0 == overlapEventList.length ) {
+                // the selection did not overlap any events, create vacancies to fill the selection box
+                if( 30 > end.diff( start, 'minutes' ) ) {
+                  CnModalMessageFactory.instance( {
+                    title: 'Unable to create vacancies',
+                    message: 'There was a problem creating vacancies, please try again.',
+                    error: true
+                  } ).show().then( function() {
+                    calendar.fullCalendar( 'unselect' );
+                  } );
+                } else {
+                  var offset = getTimezoneOffset( start, CnSession.user.timezone );
+                  start.add( offset, 'minutes' );
+                  end.add( offset, 'minutes' );
+
+                  CnModalInputFactory.instance( {
+                    title: 'Create Vacancy Block',
+                    message: 'Would you like to create a block of vacancies from ' + 
+                      CnSession.formatValue( start, 'datetime' ) + ' to ' +
+                      CnSession.formatValue( end, 'datetime' ) + '?\n\n' +
+                      'If you wish to proceed please provide the number of operators the vacancy has available:',
+                    required: true,
+                    format: 'integer',
+                    minValue: 1,
+                    value: 1
+                  } ).show().then( function( response ) {
+                    if( false !== response && 0 < response )
+                      createVacancyBlock( calendar, $scope.model.calendarModel, start, end, response );
+                    calendar.fullCalendar( 'unselect' );
+                  } );
+                }
+              } else {
+                // the selection overlaps with some event, only delete vacancies which have no appointments
+                var removeEventList = overlapEventList.filter( function( event ) { return event.editable; } );
+
+                if( 0 == removeEventList ) {
+                  CnModalMessageFactory.instance( {
+                    title: 'Cannot Delete Vacancies',
+                    message: 'None of the ' + overlapEventList.length + ' vacancies you have selected can be ' +
+                      'deleted because they already have at least one appointment scheduled.',
+                    error: true
+                  } ).show().then( function() {
+                    calendar.fullCalendar( 'unselect' );
+                  } );
+                } else {
+                  var message = 'Would you like to delete the ' + removeEventList.length +
+                    ' vacancies which you have selected?';
+                  if( removeEventList.length != overlapEventList.length )
+                    message += '\n\nNote: only vacancies which do not have any appointments will be deleted.';
+                  CnModalConfirmFactory.instance( {
+                    title: 'Delete Vacancies?',
+                    message: message
+                  } ).show().then( function( response ) {
+                    if( response ) {
+                      removeEventList.forEach( function( event ) {
+                        CnHttpFactory.instance( {
+                          path: 'vacancy/' + event.getIdentifier()
+                        } ).delete().then( function() {
+                          calendar.fullCalendar( 'removeEvents', event.id );
+                        } );
+                      } );
+                    }
+                    calendar.fullCalendar( 'unselect' );
+                  } );
+                }
+              }
             },
             editable: true,
             eventDrop: function( event, delta, revertFunc ) {
@@ -170,28 +281,22 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
               datetime.add( event.offset, 'minutes' );
 
               var cacheEvent = $scope.model.calendarModel.cache.findByProperty( 'id', event.id );
-              CnModalConfirmFactory.instance( {
-                title: 'Move Vacancy?',
-                message: 'Are you sure you wish to change this vacancy to ' +
-                         CnSession.formatValue( datetime, 'datetime' ) + '?'
-              } ).show().then( function( response ) {
-                if( response ) {
-                  CnHttpFactory.instance( {
-                    path: 'vacancy/' + event.getIdentifier(),
-                    data: { datetime: datetime.format() },
-                    onError: function( response ) {
-                      CnModalMessageFactory.httpError( response );
-                      revertFunc();
-                    }
-                  } ).patch().then( function() {
-                    // now update this event in the vacancy cache
-                    cacheEvent.start = event.start;
-                    cacheEvent.end = event.end;
-                  } );
-                } else revertFunc();
+              CnHttpFactory.instance( {
+                path: 'vacancy/' + event.getIdentifier(),
+                data: { datetime: datetime.format() },
+                onError: function( response ) {
+                  CnModalMessageFactory.httpError( response );
+                  revertFunc();
+                }
+              } ).patch().then( function() {
+                // now update this event in the vacancy cache
+                cacheEvent.start = event.start;
+                cacheEvent.end = event.end;
               } );
             },
             eventResize: function( event, delta, revertFunc ) {
+              var calendar = $element.find( 'div.calendar' );
+
               // time is in local timezone, convert back to UTC
               var datetime = angular.copy( event.start );
               datetime.add( event.offset, 'minutes' );
@@ -205,56 +310,13 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
                   error: true
                 } ).show().then( revertFunc );
               } else {
-                CnModalConfirmFactory.instance( {
-                  title: 'Extend Vacancy?',
-                  message: 'Are you sure you wish to extend this vacancy to ' +
-                           CnSession.formatValue( end, 'datetime' ) + '?'
-                } ).show().then( function( response ) {
-                  if( response ) {
-                    // convert the extended event back to 30 minutes
-                    var revertEnd = angular.copy( event.start );
-                    revertEnd.add( '30', 'minutes' );
-                    event.end = revertEnd;
+                // convert the extended event back to 30 minutes
+                var revertEnd = angular.copy( event.start );
+                revertEnd.add( '30', 'minutes' );
+                event.end = revertEnd;
 
-                    // split into 30-minute chunks
-                    var datetimeList = [];
-                    datetime.add( 30, 'minutes' ); // skip the first since it already exists
-                    while( datetime < end ) {
-                      datetimeList.push( angular.copy( datetime ) );
-                      datetime.add( 30, 'minutes' );
-                    }
-
-                    var eventList = [];
-                    $q.all(
-                      datetimeList.reduce( function( list, datetime ) {
-                        list.push( CnHttpFactory.instance( {
-                          path: 'vacancy',
-                          data: { datetime: datetime.format(), operators: event.operators },
-                          onError: function( response ) {
-                            CnModalMessageFactory.httpError( response );
-                            revertFunc();
-                          }
-                        } ).post().then( function( response ) {
-                          var id = response.data;
-                          var newEvent = getEventFromVacancy( {
-                            id: id,
-                            getIdentifier: function() { return id; },
-                            datetime: datetime,
-                            operators: event.operators,
-                            appointments: 0
-                          }, CnSession.user.timezone );
-
-                          // add the new event to the event list and cache
-                          eventList.push( newEvent );
-                          $scope.model.calendarModel.cache.push( newEvent );
-                        } ) );
-                        return list;
-                      }, [] )
-                    ).then( function() {
-                      $element.find( 'div.calendar' ).fullCalendar( 'renderEvents', eventList );
-                    } );
-                  } else revertFunc();
-                } );
+                datetime.add( 30, 'minutes' ); // skip the first since it already exists
+                createVacancyBlock( calendar, $scope.model.calendarModel, datetime, end, event.operators );
               }
             }
           } );
