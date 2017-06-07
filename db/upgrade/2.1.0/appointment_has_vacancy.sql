@@ -3,7 +3,7 @@ DROP PROCEDURE IF EXISTS patch_appointment_has_vacancy;
   CREATE PROCEDURE patch_appointment_has_vacancy()
   BEGIN
 
-    SET @cenozo = ( 
+    SET @cenozo = (
       SELECT unique_constraint_schema
       FROM information_schema.referential_constraints
       WHERE constraint_schema = DATABASE()
@@ -23,8 +23,8 @@ DROP PROCEDURE IF EXISTS patch_appointment_has_vacancy;
       CONSTRAINT fk_appointment_has_vacancy_appointment_id
         FOREIGN KEY (appointment_id)
         REFERENCES appointment (id)
-        ON DELETE NO ACTION
-        ON UPDATE NO ACTION,
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
       CONSTRAINT fk_appointment_has_vacancy_vacancy_id
         FOREIGN KEY (vacancy_id)
         REFERENCES vacancy (id)
@@ -180,13 +180,18 @@ DELIMITER $$
 DROP TRIGGER IF EXISTS appointment_has_vacancy_AFTER_INSERT $$
 CREATE DEFINER = CURRENT_USER TRIGGER appointment_has_vacancy_AFTER_INSERT AFTER INSERT ON appointment_has_vacancy FOR EACH ROW
 BEGIN
+  CALL update_appointment_vacancies( NEW.appointment_id );
   CALL update_vacancy_appointment_count( NEW.vacancy_id );
 END;$$
 
 DROP TRIGGER IF EXISTS appointment_has_vacancy_AFTER_UPDATE $$
 CREATE DEFINER = CURRENT_USER TRIGGER appointment_has_vacancy_AFTER_UPDATE AFTER UPDATE ON appointment_has_vacancy FOR EACH ROW
 BEGIN
-  IF OLD.vacancy_id != NEW.vacancy_id THEN 
+  IF OLD.appointment_id != NEW.appointment_id THEN
+    CALL update_appointment_vacancies( OLD.appointment_id );
+    CALL update_appointment_vacancies( NEW.appointment_id );
+  END IF;
+  IF OLD.vacancy_id != NEW.vacancy_id THEN
     CALL update_vacancy_appointment_count( OLD.vacancy_id );
     CALL update_vacancy_appointment_count( NEW.vacancy_id );
   END IF;
@@ -195,6 +200,7 @@ END;$$
 DROP TRIGGER IF EXISTS appointment_has_vacancy_AFTER_DELETE $$
 CREATE DEFINER = CURRENT_USER TRIGGER appointment_has_vacancy_AFTER_DELETE AFTER DELETE ON appointment_has_vacancy FOR EACH ROW
 BEGIN
+  CALL update_appointment_vacancies( OLD.appointment_id );
   CALL update_vacancy_appointment_count( OLD.vacancy_id );
 END;$$
 

@@ -15,7 +15,7 @@ CREATE PROCEDURE patch_column_character_sets()
     PREPARE statement FROM @sql;
     EXECUTE statement;
     DEALLOCATE PREPARE statement;
-    
+
     IF @version = "2.0.0" THEN
       CALL _patch_column_character_sets();
     END IF;

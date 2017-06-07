@@ -96,8 +96,6 @@ define( [ 'participant' ].reduce( function( list, name ) {
           self.participantModel.addColumn(
             'language', { title: 'Language', column: 'language.name' }, index++ );
           self.participantModel.addColumn(
-            'appointment_type', { title: 'Appointment', help: 'One of "long", "short" or "none"' } );
-          self.participantModel.addColumn(
             'availability', { title: 'Availability', column: 'availability_type.name' } );
 
           // add the reserved row as a hidden column to be used for highlighting reserved appointments

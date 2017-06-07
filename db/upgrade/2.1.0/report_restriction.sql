@@ -34,8 +34,8 @@ CREATE PROCEDURE patch_report_restriction()
 
     SET @sql = CONCAT(
       "UPDATE ", @cenozo, ".report_restriction ",
-      "SET subject = 'appointment.datetime' ",
-      "WHERE subject = 'DATE( appointment.datetime )'" );
+      "SET subject = 'vacancy.datetime' ",
+      "WHERE subject = 'DATE( vacancy.datetime )'" );
     PREPARE statement FROM @sql;
     EXECUTE statement;
     DEALLOCATE PREPARE statement;

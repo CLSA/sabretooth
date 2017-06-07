@@ -10,9 +10,12 @@ SOURCE application_type_has_report_type.sql
 SOURCE role_has_report_type.sql
 SOURCE vacancy.sql
 SOURCE appointment_has_vacancy.sql
+SOURCE update_interview_last_appointment.sql
 SOURCE appointment.sql
+SOURCE setting.sql
 
 SOURCE update_vacancy_appointment_count.sql
+SOURCE update_appointment_vacancies.sql
 
 SOURCE column_character_sets.sql
 

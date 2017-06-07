@@ -404,8 +404,10 @@ class queue extends \cenozo\database\record
         $join_mod->where( 'appointment.outcome', '=', NULL );
         $modifier->join_modifier( 'appointment', $join_mod );
 
-        $pre_call = 'appointment.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE';
-        $post_call = 'appointment.datetime + INTERVAL IFNULL( post_call_window, 0 ) MINUTE';
+        $modifier->join( 'vacancy', 'appointment.start_vacancy_id', 'vacancy.id' );
+
+        $pre_call = 'vacancy.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE';
+        $post_call = 'vacancy.datetime + INTERVAL IFNULL( post_call_window, 0 ) MINUTE';
         if( 'upcoming appointment' == $db_queue->name )
         {
           $modifier->where( 'UTC_TIMESTAMP()', '<', $pre_call, false );

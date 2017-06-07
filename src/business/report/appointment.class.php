@@ -42,17 +42,18 @@ class appointment extends \cenozo\business\report\base_report
       false );
     $select->add_column( 'participant.uid', 'UID', false );
     if( is_null( $db_qnaire ) ) $select->add_column( 'script.name', 'Questionnaire', false );
-    $select->add_column( $this->get_datetime_column( 'appointment.datetime', 'date' ), 'Date', false );
-    $select->add_column( $this->get_datetime_column( 'appointment.datetime', 'time' ), 'Time', false );
+    $select->add_column( $this->get_datetime_column( 'vacancy.datetime', 'date' ), 'Date', false );
+    $select->add_column( $this->get_datetime_column( 'vacancy.datetime', 'time' ), 'Time', false );
     $select->add_column( 'TIMESTAMPDIFF( YEAR, participant.date_of_birth, CURDATE() )', 'Age', false );
     $select->add_column( 'participant.sex', 'Sex', false );
     $select->add_column( 'language.name', 'Language', false );
     $select->add_column(
-      'IFNULL( appointment.outcome, IF( UTC_TIMESTAMP() < appointment.datetime, "upcoming", "passed" ) )',
+      'IFNULL( appointment.outcome, IF( UTC_TIMESTAMP() < vacancy.datetime, "upcoming", "passed" ) )',
       'State',
       false
     );
 
+    $modifier->join( 'vacancy', 'appointment.start_vacancy_id', 'vacancy.id' );
     $modifier->join( 'interview', 'appointment.interview_id', 'interview.id' );
     $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
     $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
@@ -87,7 +88,7 @@ class appointment extends \cenozo\business\report\base_report
     $modifier->left_join( 'site', 'participant_site.site_id', 'site.id' );
     if( !$this->db_role->all_sites ) $modifier->where( 'site.id', '=', $this->db_site->id );
 
-    $modifier->order( 'appointment.datetime' );
+    $modifier->order( 'vacancy.datetime' );
 
     $this->add_table_from_select( NULL, $participant_class_name::select( $select, $modifier ) );
   }

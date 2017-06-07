@@ -1,4 +1,4 @@
-define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
+define( [ 'appointment', 'site' ].reduce( function( list, name ) {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [] ), function() {
   'use strict';
@@ -32,7 +32,8 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
     datetime: {
       title: 'Date & Time',
       type: 'datetime',
-      minuteStep: 30
+      minuteStep: 30,
+      help: 'Can only be changed if the vacancy has no appointments.'
     },
     operators: {
       title: 'Operators',
@@ -68,15 +69,15 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
         start: moment( vacancy.datetime ).subtract( offset, 'minutes' ),
         end: moment( vacancy.datetime ).subtract( offset, 'minutes' ).add( 30, 'minutes' ),
         color: color,
-        editable: 0 == vacancy.appointments,
         offset: offset,
-        operators: vacancy.operators
+        operators: vacancy.operators,
+        appointments: vacancy.appointments
       };
     }
   }
 
   // add an extra operation for each of the appointment-based calendars the user has access to
-  [ 'appointment', 'capacity', 'vacancy' ].forEach( function( name ) {
+  [ 'appointment', 'vacancy' ].forEach( function( name ) {
     var calendarModule = cenozoApp.module( name );
     if( angular.isDefined( calendarModule.actions.calendar ) ) {
       module.addExtraOperation( 'calendar', {
@@ -133,10 +134,10 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnVacancyCalendar', [
-    'CnVacancyModelFactory', 'CnAppointmentModelFactory', 'CnCapacityModelFactory',
-    'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', 'CnModalMessageFactory', 'CnModalInputFactory', '$q',
-    function( CnVacancyModelFactory, CnAppointmentModelFactory, CnCapacityModelFactory,
-              CnSession, CnHttpFactory, CnModalConfirmFactory, CnModalMessageFactory, CnModalInputFactory, $q ) {
+    'CnVacancyModelFactory', 'CnAppointmentModelFactory', 'CnSession', 'CnHttpFactory',
+    'CnModalConfirmFactory', 'CnModalMessageFactory', 'CnModalInputFactory', '$q',
+    function( CnVacancyModelFactory, CnAppointmentModelFactory, CnSession, CnHttpFactory,
+              CnModalConfirmFactory, CnModalMessageFactory, CnModalInputFactory, $q ) {
 
       // Adds a block of vacancies between the start/end times (used below)
       function createVacancyBlock( calendarElement, calendarModel, start, end, operators ) {
@@ -192,7 +193,12 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
 
           angular.extend( $scope.model.calendarModel.settings, {
             eventOverlap: false,
-            selectable: $scope.model.getAddEnabled() && $scope.model.getEditEnabled(),
+            selectable: $scope.model.getAddEnabled() &&
+                        $scope.model.getEditEnabled() &&
+                        'vacancy' == $scope.model.getSubjectFromState(),
+            editable: $scope.model.getAddEnabled() &&
+                      $scope.model.getEditEnabled() &&
+                      'vacancy' == $scope.model.getSubjectFromState(),
             selectHelper: true,
             select: function( start, end, jsEvent, view ) {
               // do not process selections in month mode
@@ -214,7 +220,7 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
                     title: 'Unable to create vacancies',
                     message: 'There was a problem creating vacancies, please try again.',
                     error: true
-                  } ).show().then( function() {
+                  } ).show().finally( function() {
                     calendar.fullCalendar( 'unselect' );
                   } );
                 } else {
@@ -235,12 +241,16 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
                   } ).show().then( function( response ) {
                     if( false !== response && 0 < response )
                       createVacancyBlock( calendar, $scope.model.calendarModel, start, end, response );
+                  } ).finally( function() {
                     calendar.fullCalendar( 'unselect' );
                   } );
                 }
               } else {
                 // the selection overlaps with some event, only delete vacancies which have no appointments
-                var removeEventList = overlapEventList.filter( function( event ) { return event.editable; } );
+                var removeEventList = overlapEventList.filter( function( event ) {
+                  return 0 == event.appointments;
+                } );
+                console.log( overlapEventList );
 
                 if( 0 == removeEventList ) {
                   CnModalMessageFactory.instance( {
@@ -248,7 +258,7 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
                     message: 'None of the ' + overlapEventList.length + ' vacancies you have selected can be ' +
                       'deleted because they already have at least one appointment scheduled.',
                     error: true
-                  } ).show().then( function() {
+                  } ).show().finally( function() {
                     calendar.fullCalendar( 'unselect' );
                   } );
                 } else {
@@ -269,12 +279,12 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
                         } );
                       } );
                     }
+                  } ).finally( function() {
                     calendar.fullCalendar( 'unselect' );
                   } );
                 }
               }
             },
-            editable: true,
             eventDrop: function( event, delta, revertFunc ) {
               // time is in local timezone, convert back to UTC
               var datetime = angular.copy( event.start );
@@ -325,7 +335,6 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
           // factory name -> object map used below
           var factoryList = {
             appointment: CnAppointmentModelFactory,
-            capacity: CnCapacityModelFactory,
             vacancy: CnVacancyModelFactory
           };
 
@@ -414,17 +423,13 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
         // remove the day click event
         delete this.settings.dayClick;
 
-        // show to-from times in month view
-        if( angular.isUndefined( this.settings.views ) ) this.settings.views = {};
-        if( angular.isUndefined( this.settings.views.month ) ) this.settings.views.month = {};
-        this.settings.views.month.displayEventEnd = true;
-
         // extend onCalendar to transform vacancies into events
         this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {
           // we must get the load dates before calling $$onCalendar
           var loadMinDate = self.getLoadMinDate( replace, minDate );
           var loadMaxDate = self.getLoadMaxDate( replace, maxDate );
-          return self.$$onCalendar( replace, minDate, maxDate, ignoreParent ).then( function() {
+          // note that we ignore the ignoreParent parameter and always ignore the parent
+          return self.$$onCalendar( replace, minDate, maxDate, true ).then( function() {
             self.cache.forEach( function( item, index, array ) {
               array[index] = getEventFromVacancy( item, CnSession.user.timezone );
             } );
@@ -484,6 +489,18 @@ define( [ 'appointment', 'capacity', 'site' ].reduce( function( list, name ) {
             parentModel.calendarModel.cache.push( getEventFromVacancy( self.record, CnSession.user.timezone ) );
           } );
         };
+
+        // editing is only allowed if the vacancy has no appointments
+        this.onView = function() {
+          return this.$$onView().then( function() {
+            self.parentModel.module.getInput( 'datetime' ).constant = 0 < self.record.appointments;
+          } );
+        };
+
+        this.deferred.promise.then( function() {
+          // disable appointment choosing
+          self.appointmentModel.getChooseEnabled = function() { return false; };
+        } );
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }

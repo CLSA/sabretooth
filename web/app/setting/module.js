@@ -36,16 +36,6 @@ define( function() {
         type: 'time_notz',
         help: 'The latest time to assign participants (in their local time)'
       },
-      short_appointment: {
-        title: 'Short Ap.',
-        type: 'number',
-        help: 'The length of time, in minutes, of a short appointment'
-      },
-      long_appointment: {
-        title: 'Long Ap.',
-        type: 'number',
-        help: 'The length of time, in minutes, of a long appointment'
-      },
       pre_call_window: {
         title: 'Pre-Call',
         type: 'number',
@@ -84,20 +74,6 @@ define( function() {
       title: 'Latest Call Time',
       type: 'time_notz',
       help: 'The latest time to assign participants (in their local time)'
-    },
-    short_appointment: {
-      title: 'Short Appointment Length',
-      type: 'string',
-      format: 'integer',
-      minValue: 0,
-      help: 'The length of time, in minutes, of a short appointment'
-    },
-    long_appointment: {
-      title: 'Long Appointment Length',
-      type: 'string',
-      format: 'integer',
-      minValue: 0,
-      help: 'The length of time, in minutes, of a long appointment'
     },
     pre_call_window: {
       title: 'Pre-Appointment Window',

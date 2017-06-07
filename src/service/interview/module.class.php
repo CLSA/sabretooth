@@ -81,7 +81,8 @@ class module extends \cenozo\service\interview\module
       $join_sel->add_column( 'COUNT( * ) > 0', 'future_appointment', false );
 
       $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'datetime', '>', 'UTC_TIMESTAMP()', false );
+      $join_mod->join( 'vacancy', 'appointment.start_vacancy_id', 'vacancy.id' );
+      $join_mod->where( 'vacancy.datetime', '>', 'UTC_TIMESTAMP()', false );
       $join_mod->where( 'assignment_id', '=', NULL );
       $join_mod->group( 'interview_id' );
 
@@ -100,7 +101,8 @@ class module extends \cenozo\service\interview\module
       $join_sel->add_column( 'COUNT( * ) > 0', 'missed_appointment', false );
 
       $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'datetime', '<', 'UTC_TIMESTAMP()', false );
+      $join_mod->join( 'vacancy', 'appointment.start_vacancy_id', 'vacancy.id' );
+      $join_mod->where( 'vacancy.datetime', '<', 'UTC_TIMESTAMP()', false );
       $join_mod->where( 'assignment_id', '=', NULL );
       $join_mod->where( 'outcome', '=', NULL );
       $join_mod->group( 'interview_id' );

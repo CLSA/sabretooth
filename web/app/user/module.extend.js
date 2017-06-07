@@ -23,7 +23,7 @@ define( [ 'appointment' ].reduce( function( list, name ) {
     if( angular.isDefined( appointment.start ) && angular.isDefined( appointment.end ) ) {
       event = appointment;
     } else {
-      var date = moment( appointment.datetime );
+      var date = moment( appointment.start_datetime );
       var offset = moment.tz.zone( timezone ).offset( date.unix() );
 
       // adjust the appointment for daylight savings time
@@ -33,8 +33,8 @@ define( [ 'appointment' ].reduce( function( list, name ) {
         title: ( angular.isDefined( appointment.uid ) ? appointment.uid : 'new appointment' ) +
                ( angular.isDefined( appointment.qnaire_rank ) ? ' (' + appointment.qnaire_rank + ')' : '' ),
         getIdentifier: function() { return appointment.getIdentifier() },
-        start: moment( appointment.datetime ).subtract( offset, 'minutes' ),
-        end: moment( appointment.datetime ).subtract( offset - appointment.duration, 'minutes' )
+        start: moment( appointment.start_datetime ).subtract( offset, 'minutes' ),
+        end: moment( appointment.end_datetime ).subtract( offset, 'minutes' )
       };
     }
 

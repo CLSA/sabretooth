@@ -25,15 +25,17 @@ class appointment extends \cenozo\database\record
     if( is_null( $this->id ) && is_null( $this->assignment_id ) )
     {
       $appointment_mod = lib::create( 'database\modifier' );
+      $appointment_mod->join( 'vacancy', 'appointment.start_vacancy_id', 'vacancy.id' );
       $appointment_mod->where( 'assignment_id', '=', NULL );
       $appointment_mod->where( 'outcome', '=', NULL );
       if( !is_null( $this->id ) ) $appointment_mod->where( 'id', '!=', $this->id );
-      $appointment_mod->order( 'datetime' );
+      $appointment_mod->order( 'vacancy.datetime' );
 
       // cancel any missed appointments
       foreach( $this->get_interview()->get_appointment_object_list( $appointment_mod ) as $db_appointment )
       {
-        if( $db_appointment->datetime < util::get_datetime_object() )
+        $db_start_vacancy = $db_appointment->get_start_vacancy();
+        if( $db_start_vacancy->datetime < util::get_datetime_object() )
         {
           $db_appointment->outcome = 'cancelled';
           $db_appointment->save();
@@ -47,7 +49,7 @@ class appointment extends \cenozo\database\record
     }
 
     // if we changed certain columns then update the queue
-    $update_queue = $this->has_column_changed( array( 'assignment_id', 'datetime', 'outcome' ) );
+    $update_queue = $this->has_column_changed( array( 'assignment_id', 'outcome' ) );
     parent::save();
     if( $update_queue ) $this->get_interview()->get_participant()->repopulate_queue( true );
   }
@@ -63,44 +65,21 @@ class appointment extends \cenozo\database\record
   }
 
   /**
-   * Get the end datetime based on the appointments start, type and site's settings
-   * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
-   * @return DateTime
-   * @access public
+   * Convenience method
    */
-  public function get_end_datetime()
+  public function get_start_vacancy()
   {
-    if( is_null( $this->datetime ) )
-      throw lib::create( 'exception\runtime',
-        'Cannot get appointment end_datetime since the datetime isn\'t set.', __METHOD__ );
-    if( is_null( $this->type ) )
-      throw lib::create( 'exception\runtime',
-        'Cannot get appointment end_datetime since the type isn\'t set.', __METHOD__ );
+    return is_null( $this->start_vacancy_id ) ?
+      NULL : lib::create( 'database\vacancy', $this->start_vacancy_id );
+  }
 
-    // get the site the appointment refers to
-    $db_site = NULL;
-    $db_interview = $this->get_interview();
-    if( !is_null( $db_interview ) )
-    {
-      $db_participant = $this->get_interview()->get_participant();
-      $db_site = $db_participant->get_effective_site();
-    }
-    else // if the appointment isn't assigned to a participant then use the user's site
-    {
-      $db_site = lib::create( 'business\session' )->get_site();
-    }
-
-    $setting_sel = lib::create( 'database\select' );
-    $setting_sel->add_column( 'short_appointment' );
-    $setting_sel->add_column( 'long_appointment' );
-    $setting_mod = lib::create( 'database\modifier' );
-    $settings = current( $db_site->get_setting_list( $setting_sel ) );
-    $interval = $settings[$this->type.'_appointment'];
-
-    $datetime = util::get_datetime_object( $this->datetime );
-    $datetime->add( new \DateInterval( sprintf( 'PT%dM', $interval ) ) );
-    return $datetime;
+  /**
+   * Convenience method
+   */
+  public function get_end_vacancy()
+  {
+    return is_null( $this->end_vacancy_id ) ?
+      NULL : lib::create( 'database\vacancy', $this->end_vacancy_id );
   }
 
   /**

@@ -1,4 +1,4 @@
-define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
+define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [] ), function() {
   'use strict';
@@ -22,9 +22,17 @@ define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
       pluralPossessive: 'appointments\''
     },
     columnList: {
-      datetime: {
-        type: 'datetime',
-        title: 'Date & Time'
+      date: {
+        type: 'date',
+        title: 'Date'
+      },
+      start_time: {
+        type: 'time',
+        title: 'Start Time'
+      },
+      end_time: {
+        type: 'time',
+        title: 'End Time'
       },
       language: {
         column: 'language.name',
@@ -35,7 +43,7 @@ define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
       phone: {
         column: 'phone.name',
         type: 'string',
-        title: 'Number'
+        title: 'Phone Number'
       },
       user: {
         column: 'user.name',
@@ -47,10 +55,6 @@ define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
         type: 'string',
         title: 'Assigned to'
       },
-      type: {
-        type: 'string',
-        title: 'Type'
-      },
       state: {
         type: 'string',
         title: 'State',
@@ -58,22 +62,21 @@ define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
       }
     },
     defaultOrder: {
-      column: 'datetime',
+      column: 'start_vacancy.datetime',
       reverse: true
     }
   } );
 
   module.addInputGroup( '', {
-    datetime: {
-      title: 'Date & Time',
-      type: 'datetime',
-      min: 'now',
-      help: 'Cannot be changed once the appointment has passed.'
+    start_datetime: {
+      title: 'Start Date & Time',
+      type: 'string',
+      constant: true,
+      help: 'Set by clicking a vacancy in the calendar below'
     },
-    override: {
-      title: 'Override Calendar',
-      type: 'boolean',
-      help: 'Whether to ignore if an operator is available for the appointment'
+    duration: {
+      title: 'Duration',
+      type: 'enum'
     },
     participant: {
       column: 'participant.uid',
@@ -123,14 +126,11 @@ define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
       constant: true,
       help: 'One of reached, not reached, upcoming, assignable, missed, assigned or in progress'
     },
-    type: {
-      title: 'Type',
-      type: 'enum'
-    }
+    datetime: { column: 'start_vacancy.datetime', type: 'hidden' }
   } );
 
   // add an extra operation for each of the appointment-based calendars the user has access to
-  [ 'appointment', 'capacity', 'vacancy' ].forEach( function( name ) {
+  [ 'appointment', 'vacancy' ].forEach( function( name ) {
     var calendarModule = cenozoApp.module( name );
     if( angular.isDefined( calendarModule.actions.calendar ) ) {
       module.addExtraOperation( 'calendar', {
@@ -157,7 +157,7 @@ define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
     if( angular.isDefined( appointment.start ) && angular.isDefined( appointment.end ) ) {
       return appointment;
     } else {
-      var date = moment( appointment.datetime );
+      var date = moment( appointment.start_datetime );
       var offset = moment.tz.zone( timezone ).offset( date.unix() );
 
       // adjust the appointment for daylight savings time
@@ -169,8 +169,8 @@ define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
                ( angular.isDefined( appointment.language_code ) ? ' (' + appointment.language_code + ')' : '' ) +
                ( angular.isDefined( appointment.qnaire_rank ) ? ' (' + appointment.qnaire_rank + ')' : '' ) +
                ( null != appointment.username ? '\nfor ' + appointment.username : '' ),
-        start: moment( appointment.datetime ).subtract( offset, 'minutes' ),
-        end: moment( appointment.datetime ).subtract( offset - appointment.duration, 'minutes' ),
+        start: moment( appointment.start_datetime ).subtract( offset, 'minutes' ),
+        end: moment( appointment.end_datetime ).subtract( offset, 'minutes' ),
         help: appointment.help
       };
 
@@ -196,39 +196,30 @@ define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAppointmentModelFactory.instance();
 
-          // connect the capacity calendar's event click callback to the appointment's datetime
+          // connect the vacancy calendar's event click callback to the appointment
           if( $scope.model.getEditEnabled() ) {
-            var listener = $scope.$watch( 'model.addModel.capacityModel', function( capacityModel ) {
-              if( angular.isDefined( capacityModel ) ) {
-                capacityModel.calendarModel.settings.eventClick = function( capacity ) {
+            var listener = $scope.$watch( 'model.addModel.vacancyModel', function( vacancyModel ) {
+              if( angular.isDefined( vacancyModel ) ) {
+                console.log( 'appointment' );
+                vacancyModel.calendarModel.settings.eventClick = function( vacancy ) {
                   // close the popover (this does nothing if there is no popover)
                   angular.element( this ).popover( 'hide' );
-                  var date = moment( capacity.start );
-                  var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
 
+                  var date = moment( vacancy.start );
+                  var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
+                  
                   // adjust the appointment for daylight savings time
                   if( date.tz( CnSession.user.timezone ).isDST() ) offset += -60;
 
-                  var capacityStart = moment( capacity.start ).add( offset, 'minutes' );
-                  var capacityEnd = moment( capacity.end ).add( offset, 'minutes' );
-                  if( capacityEnd.isAfter( moment() ) ) {
+                  var datetime = moment( vacancy.start ).add( offset, 'minutes' );
+                  if( -30 < datetime.diff( moment(), 'minutes' ) ) {
                     // find the add directive's scope
                     var cnRecordAddScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
                     if( null == cnRecordAddScope )
                       throw new Error( 'Unable to find appointment\'s cnRecordAdd scope.' );
 
-                    // if the start is after the current time then use the next rounded hour
-                    var datetime = moment( capacityStart );
-                    if( !datetime.isAfter( moment() ) ) {
-                      datetime = moment().minute( 0 ).second( 0 ).millisecond( 0 ).add( 1, 'hours' );
-                      if( !datetime.isAfter( moment() ) )
-                        datetime = moment( capacityEnd.format() );
-                    }
-
                     // set the datetime in the record and formatted record
-                    cnRecordAddScope.record.datetime = datetime.format();
-                    cnRecordAddScope.formattedRecord.datetime =
-                      CnSession.formatValue( datetime, 'datetime', true );
+                    cnRecordAddScope.record.start_datetime = CnSession.formatValue( datetime, 'datetime', true );
                     $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
                   }
                 };
@@ -270,8 +261,8 @@ define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAppointmentCalendar', [
-    'CnAppointmentModelFactory', 'CnCapacityModelFactory', 'CnVacancyModelFactory', 'CnSession',
-    function( CnAppointmentModelFactory, CnCapacityModelFactory, CnVacancyModelFactory, CnSession ) {
+    'CnAppointmentModelFactory', 'CnVacancyModelFactory', 'CnSession',
+    function( CnAppointmentModelFactory, CnVacancyModelFactory, CnSession ) {
       return {
         templateUrl: module.getFileUrl( 'calendar.tpl.html' ),
         restrict: 'E',
@@ -287,7 +278,6 @@ define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
           // factory name -> object map used below
           var factoryList = {
             appointment: CnAppointmentModelFactory,
-            capacity: CnCapacityModelFactory,
             vacancy: CnVacancyModelFactory
           };
 
@@ -339,32 +329,33 @@ define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAppointmentModelFactory.instance();
 
-          // connect the capacity calendar's event click callback to the appointment's datetime
+          // connect the vacancy calendar's event click callback to the appointment's datetime
           if( $scope.model.getEditEnabled() ) {
-            var listener = $scope.$watch( 'model.viewModel.capacityModel', function( capacityModel ) {
-              if( angular.isDefined( capacityModel ) ) {
-                capacityModel.calendarModel.settings.eventClick = function( capacity ) {
+            var listener = $scope.$watch( 'model.viewModel.vacancyModel', function( vacancyModel ) {
+              if( angular.isDefined( vacancyModel ) ) {
+                vacancyModel.calendarModel.settings.eventClick = function( vacancy ) {
                   // close the popover (this does nothing if there is no popover)
                   angular.element( this ).popover( 'hide' );
-                  var date = moment( capacity.start );
+                  var date = moment( vacancy.start );
                   var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
 
                   // adjust the appointment for daylight savings time
                   if( date.tz( CnSession.user.timezone ).isDST() ) offset += -60;
 
-                  var capacityStart = moment( capacity.start ).add( offset, 'minutes' );
-                  var capacityEnd = moment( capacity.end ).add( offset, 'minutes' );
-                  if( capacityEnd.isAfter( moment() ) ) {
+                  var vacancyStart = moment( vacancy.start ).add( offset, 'minutes' );
+                  var vacancyEnd = moment( vacancy.end ).add( offset, 'minutes' );
+                  if( vacancyEnd.isAfter( moment() ) ) {
                     var cnRecordViewScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
                     if( null == cnRecordViewScope )
                       throw new Error( 'Unable to find appointment\'s cnRecordView scope.' );
 
+                    /* TODO: code needs to be re-written
                     // if the start is after the current time then use the next rounded hour
-                    var datetime = moment( capacityStart.format() );
+                    var datetime = moment( vacancyStart.format() );
                     if( !datetime.isAfter( moment() ) ) {
                       datetime = moment().minute( 0 ).second( 0 ).millisecond( 0 ).add( 1, 'hours' );
                       if( !datetime.isAfter( moment() ) )
-                        datetime = moment( capacityEnd.format() );
+                        datetime = moment( vacancyEnd.format() );
                     }
 
                     if( !datetime.isSame( moment( $scope.model.viewModel.record.datetime ) ) ) {
@@ -375,6 +366,7 @@ define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
                       $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
                       cnRecordViewScope.patch( 'datetime' );
                     }
+                    */
                   }
                 };
 
@@ -389,8 +381,8 @@ define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAppointmentAddFactory', [
-    'CnBaseAddFactory', 'CnSession', 'CnHttpFactory', '$q', '$injector',
-    function( CnBaseAddFactory, CnSession, CnHttpFactory, $q, $injector ) {
+    'CnBaseAddFactory', 'CnSession', 'CnHttpFactory', 'CnVacancyModelFactory', '$q', '$injector',
+    function( CnBaseAddFactory, CnSession, CnHttpFactory, CnVacancyModelFactory, $q, $injector ) {
       var object = function( parentModel ) {
         var self = this;
         CnBaseAddFactory.construct( this, parentModel );
@@ -403,7 +395,6 @@ define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
             } ).get().then( function( response ) {
               record.uid = response.data.uid;
               record.qnaire_rank = response.data.qnaire_rank;
-              record.duration = response.data.duration;
               record.getIdentifier = function() { return parentModel.getIdentifierFromRecord( record ); };
               var minDate = parentModel.calendarModel.cacheMinDate;
               var maxDate = parentModel.calendarModel.cacheMaxDate;
@@ -429,8 +420,13 @@ define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
                   { table: 'site', column: 'name' }
                 ] } }
               } ).get().then( function( response ) {
-                parentModel.metadata.participantSite =
-                  CnSession.siteList.findByProperty( 'id', response.data.site_id );
+                parentModel.metadata.getPromise().then( function() {
+                  parentModel.metadata.participantSite =
+                    CnSession.siteList.findByProperty( 'id', response.data.site_id );
+
+                  // get the vacancy model linked to the participant's site
+                  self.vacancyModel = CnVacancyModelFactory.forSite( parentModel.metadata.participantSite );
+                } );
               } ),
 
               CnHttpFactory.instance( {
@@ -455,17 +451,19 @@ define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
               } )
             ] ).then( function() {
               return self.$$onNew( record ).then( function() {
-                if( angular.isUndefined( self.capacityModel ) &&
-                    angular.isDefined( cenozoApp.module( 'capacity' ).actions.calendar ) &&
+                /*
+                if( angular.isUndefined( self.vacancyModel ) &&
+                    angular.isDefined( cenozoApp.module( 'vacancy' ).actions.calendar ) &&
                     angular.isObject( parentModel.metadata.participantSite ) ) {
-                  // to avoid a circular dependency we have to get the CnCapacityModelFactory here instead of
+                  // to avoid a circular dependency we have to get the CnVacancyModelFactory here instead of
                   // in this service's injection list
-                  var CnCapacityModelFactory = $injector.get( 'CnCapacityModelFactory' );
+                  var CnVacancyModelFactory = $injector.get( 'CnVacancyModelFactory' );
 
-                  // get the capacity model linked to the participant's site
-                  self.capacityModel =
-                    CnCapacityModelFactory.forSite( parentModel.metadata.participantSite );
+                  // get the vacancy model linked to the participant's site
+                  self.vacancyModel =
+                    CnVacancyModelFactory.forSite( parentModel.metadata.participantSite );
                 }
+                */
               } );
             } );
           } );
@@ -562,16 +560,18 @@ define( [ 'capacity', 'vacancy', 'site' ].reduce( function( list, name ) {
             parentModel.getDeleteEnabled = function() { return parentModel.$$getDeleteEnabled() && upcoming; };
             parentModel.getEditEnabled = function() { return parentModel.$$getEditEnabled() && upcoming; };
 
-            if( angular.isUndefined( self.capacityModel ) &&
-                angular.isDefined( cenozoApp.module( 'capacity' ).actions.calendar ) &&
+            /*
+            if( angular.isUndefined( self.vacancyModel ) &&
+                angular.isDefined( cenozoApp.module( 'vacancy' ).actions.calendar ) &&
                 angular.isObject( parentModel.metadata.participantSite ) ) {
-              // to avoid a circular dependency we have to get the CnCapacityModelFactory here instead of
+              // to avoid a circular dependency we have to get the CnVacancyModelFactory here instead of
               // in this service's injection list
-              var CnCapacityModelFactory = $injector.get( 'CnCapacityModelFactory' );
+              var CnVacancyModelFactory = $injector.get( 'CnVacancyModelFactory' );
 
-              // get the capacity model linked to the participant's site
-              self.capacityModel = CnCapacityModelFactory.forSite( parentModel.metadata.participantSite );
+              // get the vacancy model linked to the participant's site
+              self.vacancyModel = CnVacancyModelFactory.forSite( parentModel.metadata.participantSite );
             }
+            */
 
             // update the phone list based on the parent interview
             return CnHttpFactory.instance( {

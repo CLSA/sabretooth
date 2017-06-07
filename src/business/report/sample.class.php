@@ -43,7 +43,7 @@ class sample extends \cenozo\business\report\base_report
       $interview_data_sel->from( 'interview' );
       $interview_data_sel->add_column( 'id' );
       $interview_data_sel->add_column(
-        'IF( appointment.datetime < UTC_TIMESTAMP(), NULL, appointment.datetime )', 'datetime', false );
+        'IF( vacancy.datetime < UTC_TIMESTAMP(), NULL, vacancy.datetime )', 'datetime', false );
       $interview_data_sel->add_column( 'IF( phone_call.id IS NULL, 0, COUNT(*) )', 'total', false );
       $interview_data_mod = lib::create( 'database\modifier' );
       $interview_data_mod->join(
@@ -55,6 +55,11 @@ class sample extends \cenozo\business\report\base_report
         'appointment',
         'interview_last_appointment.appointment_id',
         'appointment.id'
+      );
+      $interview_data_mod->left_join(
+        'vacancy',
+        'appointment.start_vacancy_id',
+        'vacancy.id'
       );
       $interview_data_mod->left_join( 'assignment', 'interview.id', 'assignment.interview_id' );
       $interview_data_mod->left_join( 'phone_call', 'assignment.id', 'phone_call.assignment_id' );

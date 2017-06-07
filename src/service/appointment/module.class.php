@@ -21,7 +21,7 @@ class module extends \cenozo\service\base_calendar_module
   {
     parent::__construct( $index, $service );
     $db_user = lib::create( 'business\session' )->get_user();
-    $date_string = sprintf( 'DATE( CONVERT_TZ( datetime, "UTC", "%s" ) )', $db_user->timezone );
+    $date_string = sprintf( 'DATE( CONVERT_TZ( start_vacancy.datetime, "UTC", "%s" ) )', $db_user->timezone );
     $this->lower_date = array( 'null' => false, 'column' => $date_string );
     $this->upper_date = array( 'null' => false, 'column' => $date_string );
   }
@@ -87,6 +87,7 @@ class module extends \cenozo\service\base_calendar_module
 
       if( $service_class_name::is_write_method( $method ) )
       {
+        $db_vacancy = is_null( $db_appointment ) ? NULL : $db_appointment->get_start_vacancy();
         $db_role = lib::create( 'business\session' )->get_role();
 
         // no writing of appointments if interview is completed
@@ -96,7 +97,8 @@ class module extends \cenozo\service\base_calendar_module
           $this->get_status()->set_code( 306 );
         }
         // no writing of appointments if they have passed
-        else if( !is_null( $db_appointment ) && $db_appointment->datetime < util::get_datetime_object() )
+        else if( !is_null( $db_vacancy ) &&
+                 $db_vacancy->datetime < util::get_datetime_object() )
         {
           $this->set_data( 'Appointments cannot be changed after they have passed.' );
           $this->get_status()->set_code( 306 );
@@ -125,16 +127,6 @@ class module extends \cenozo\service\base_calendar_module
             );
             $this->get_status()->set_code( 306 );
           }
-          // validate if we are changing the datetime
-          else if( 'POST' == $method ||
-              ( 'PATCH' == $method && array_key_exists( 'datetime', $this->get_file_as_array() ) ) )
-          {
-            if( !$db_appointment->validate_date() )
-            {
-              $this->set_data( 'There are no operators available over the requested appointment timespan.' );
-              $this->get_status()->set_code( 306 );
-            }
-          }
         }
       }
     }
@@ -162,6 +154,8 @@ class module extends \cenozo\service\base_calendar_module
     }
 
     // include the participant uid, language and interview's qnaire rank as supplemental data
+    $modifier->join( 'vacancy', 'appointment.start_vacancy_id', 'start_vacancy.id', '', 'start_vacancy' );
+    $modifier->join( 'vacancy', 'appointment.end_vacancy_id', 'end_vacancy.id', '', 'end_vacancy' );
     $modifier->join( 'interview', 'appointment.interview_id', 'interview.id' );
     $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
@@ -178,18 +172,29 @@ class module extends \cenozo\service\base_calendar_module
       'participant_site.application_id', '=', $session->get_application()->id );
     $modifier->join_modifier( 'participant_site', $participant_site_join_mod, 'left' );
 
-    // add the appointment's duration
-    $modifier->join( 'setting', 'participant_site.site_id', 'setting.site_id' );
-    $select->add_column(
-      'IF( "long" = appointment.type, setting.long_appointment, setting.short_appointment )', 'duration', false );
-
     // restrict by site
     $db_restricted_site = $this->get_restricted_site();
     if( !is_null( $db_restricted_site ) )
       $modifier->where( 'participant_site.site_id', '=', $db_restricted_site->id );
 
+    $modifier->join( 'setting', 'participant_site.site_id', 'setting.site_id' );
+
     if( $select->has_table_columns( 'script' ) )
       $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
+
+    if( $select->has_column( 'date' ) )
+    {
+      $date_string = sprintf(
+        'DATE( CONVERT_TZ( start_vacancy.datetime, "UTC", "%s" ) )',
+        $session->get_user()->timezone
+      );
+      $select->add_column( $date_string, 'date', false );
+    }
+
+    if( $select->has_column( 'start_time' ) )
+      $select->add_column( 'TIME( start_vacancy.datetime )', 'start_time', false );
+    if( $select->has_column( 'end_time' ) )
+      $select->add_column( 'TIME( end_vacancy.datetime + INTERVAL 30 MINUTE )', 'end_time', false );
 
     if( $select->has_table_columns( 'assignment_user' ) )
     {
@@ -230,11 +235,11 @@ class module extends \cenozo\service\base_calendar_module
                 '), '.
                 // the appointment hasn't been assigned
                 'IF( UTC_TIMESTAMP() < '.
-                    'appointment.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE, '.
+                    'start_vacancy.datetime - INTERVAL IFNULL( pre_call_window, 0 ) MINUTE, '.
                     // the appointment is in the pre-appointment time
                     '"upcoming", '.
                     'IF( UTC_TIMESTAMP() < '.
-                        'appointment.datetime + INTERVAL IFNULL( post_call_window, 0 ) MINUTE, '.
+                        'start_vacancy.datetime + INTERVAL IFNULL( post_call_window, 0 ) MINUTE, '.
                         // the appointment is in the post-appointment time
                         '"assignable", '.
                         // the appointment is after the post-appointment time

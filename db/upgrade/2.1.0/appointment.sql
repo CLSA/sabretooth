@@ -30,6 +30,62 @@ DROP PROCEDURE IF EXISTS patch_appointment;
       DROP COLUMN type;
     END IF;
 
+    SELECT "Adding start_vacancy_id column to appointment table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "appointment"
+      AND COLUMN_NAME = "start_vacancy_id" );
+    IF @test = 0 THEN
+      ALTER TABLE appointment
+      ADD COLUMN start_vacancy_id INT UNSIGNED NULL DEFAULT NULL COMMENT 'Do not edit, determined by trigger.',
+      ADD KEY fk_start_vacancy_id (start_vacancy_id ASC),
+      ADD CONSTRAINT fk_appointment_start_vacancy_id
+        FOREIGN KEY (start_vacancy_id)
+        REFERENCES vacancy (id)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION;
+
+      UPDATE appointment
+      SET start_vacancy_id = (
+        SELECT vacancy.id
+        FROM appointment_has_vacancy
+        JOIN vacancy ON appointment_has_vacancy.vacancy_id = vacancy.id
+        WHERE appointment_id = appointment.id
+        ORDER BY vacancy.datetime LIMIT 1
+      );
+    END IF;
+
+    SELECT "Adding end_vacancy_id column to appointment table" AS "";
+
+    SET @test = (
+      SELECT COUNT(*)
+      FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = "appointment"
+      AND COLUMN_NAME = "end_vacancy_id" );
+    IF @test = 0 THEN
+      ALTER TABLE appointment
+      ADD COLUMN end_vacancy_id INT UNSIGNED NULL DEFAULT NULL COMMENT 'Do not edit, determined by trigger.',
+      ADD KEY fk_end_vacancy_id (end_vacancy_id ASC),
+      ADD CONSTRAINT fk_appointment_end_vacancy_id
+        FOREIGN KEY (end_vacancy_id)
+        REFERENCES vacancy (id)
+        ON DELETE NO ACTION
+        ON UPDATE NO ACTION;
+
+      UPDATE appointment
+      SET end_vacancy_id = (
+        SELECT vacancy.id
+        FROM appointment_has_vacancy
+        JOIN vacancy ON appointment_has_vacancy.vacancy_id = vacancy.id
+        WHERE appointment_id = appointment.id
+        ORDER BY vacancy.datetime DESC LIMIT 1
+      );
+    END IF;
+
   END //
 DELIMITER ;
 

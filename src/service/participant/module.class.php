@@ -104,9 +104,6 @@ class module extends \cenozo\service\participant\module
       // add a variable defining whether this is a reserved appointment
       $select->add_column( 'appointment.user_id IS NOT NULL', 'reserved', false, 'boolean' );
 
-      // add the appointment type
-      $select->add_column( 'IFNULL( appointment.type, "none" )', 'appointment_type', false );
-
       // repopulate queue if it is out of date
       $queue_class_name = lib::get_class_name( 'database\queue' );
       $interval = $queue_class_name::get_interval_since_last_repopulate();

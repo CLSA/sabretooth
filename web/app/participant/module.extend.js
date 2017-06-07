@@ -63,9 +63,19 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
               CnHttpFactory.instance( {
                 path: 'interview/' + item.id + '/appointment',
                 data: {
-                  modifier: { order: { start_datetime: true } },
+                  modifier: {
+                    join: [ {
+                      table: 'vacancy',
+                      onleft: 'appointment.start_vacancy_id',
+                      onright: 'vacancy.id'
+                    } ],
+                    order: { start_datetime: true }
+                  },
                   select: {
-                    column: [ 'datetime', 'type', 'outcome', 'assignment_id', 'user_id', {
+                    column: [ 'outcome', 'assignment_id', 'user_id', {
+                      table: 'vacancy',
+                      column: 'datetime'
+                    }, {
                       table: 'user',
                       column: 'first_name',
                       alias: 'user_first'
@@ -78,7 +88,7 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
                 }
               } ).query().then( function( response ) {
                 response.data.forEach( function( item ) {
-                  var description = 'A ' + item.type + ' appointment scheduled for this time has ';
+                  var description = 'An appointment scheduled for this time has ';
                   if( 'cancelled' == item.outcome ) {
                     description += 'been cancelled.';
                   } else {

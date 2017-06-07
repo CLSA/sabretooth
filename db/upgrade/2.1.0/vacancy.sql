@@ -177,7 +177,7 @@ CREATE PROCEDURE _create_vacancy_records()
     DECLARE num_rows INT DEFAULT 0;
 
     -- Declare the cursor
-    DECLARE the_cursor CURSOR FOR 
+    DECLARE the_cursor CURSOR FOR
     SELECT update_timestamp, create_timestamp, site_id, date, start_time, end_time, operators
     FROM temp_vacancy
     ORDER BY date;
