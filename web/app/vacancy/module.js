@@ -496,11 +496,6 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
             self.parentModel.module.getInput( 'datetime' ).constant = 0 < self.record.appointments;
           } );
         };
-
-        this.deferred.promise.then( function() {
-          // disable appointment choosing
-          self.appointmentModel.getChooseEnabled = function() { return false; };
-        } );
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }

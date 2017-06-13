@@ -92,3 +92,16 @@ DELIMITER ;
 -- now call the procedure and remove the procedure
 CALL patch_appointment();
 DROP PROCEDURE IF EXISTS patch_appointment;
+
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS appointment_BEFORE_DELETE $$
+CREATE DEFINER = CURRENT_USER TRIGGER appointment_BEFORE_DELETE BEFORE DELETE ON appointment FOR EACH ROW
+BEGIN
+  -- Delete all vacancies
+  -- Note that we can't do this as part of a cascade operation since the appointment_has_vacancy delete trigger won't fire if we do
+  DELETE FROM appointment_has_vacancy WHERE appointment_id = OLD.id;
+END;$$
+
+DELIMITER ;

@@ -1,7 +1,7 @@
 <?php
 /**
  * module.class.php
- * 
+ *
  * @author Patrick Emond <emondpd@mcmaster.ca>
  * @filesource
  */
@@ -36,8 +36,13 @@ class module extends \cenozo\service\base_calendar_module
     if( 300 > $this->get_status()->get_code() )
     {
       $service_class_name = lib::get_class_name( 'service\service' );
+      $vacancy_class_name = lib::get_class_name( 'database\vacancy' );
       $db_appointment = $this->get_resource();
-      $db_interview = is_null( $db_appointment ) ? $this->get_parent_resource() : $db_appointment->get_interview();
+      $db_interview = !is_null( $db_appointment )
+                    ? $db_appointment->get_interview()
+                    : ( 'interview' == $this->get_parent_subject() ? $this->get_parent_resource() : NULL );
+      $db_participant = is_null( $db_interview ) ? NULL : $db_interview->get_participant();
+      $db_effective_site = is_null( $db_participant ) ? NULL : $db_participant->get_effective_site();
       $method = $this->get_method();
 
       $session = lib::create( 'business\session' );
@@ -48,8 +53,7 @@ class module extends \cenozo\service\base_calendar_module
       // make sure the application has access to the participant
       if( !is_null( $db_appointment ) )
       {
-        $db_participant = $db_interview->get_participant();
-        if( $db_application->release_based )
+        if( $db_application->release_based && !is_null( $db_participant ) )
         {
           $modifier = lib::create( 'database\modifier' );
           $modifier->where( 'participant_id', '=', $db_participant->id );
@@ -64,7 +68,6 @@ class module extends \cenozo\service\base_calendar_module
         $db_restrict_site = $this->get_restricted_site();
         if( !is_null( $db_restrict_site ) )
         {
-          $db_effective_site = $db_participant->get_effective_site();
           if( is_null( $db_effective_site ) || $db_restrict_site->id != $db_effective_site->id )
           {
             $this->get_status()->set_code( 403 );
@@ -87,7 +90,7 @@ class module extends \cenozo\service\base_calendar_module
 
       if( $service_class_name::is_write_method( $method ) )
       {
-        $db_vacancy = is_null( $db_appointment ) ? NULL : $db_appointment->get_start_vacancy();
+        $db_start_vacancy = is_null( $db_appointment ) ? NULL : $db_appointment->get_start_vacancy();
         $db_role = lib::create( 'business\session' )->get_role();
 
         // no writing of appointments if interview is completed
@@ -97,8 +100,8 @@ class module extends \cenozo\service\base_calendar_module
           $this->get_status()->set_code( 306 );
         }
         // no writing of appointments if they have passed
-        else if( !is_null( $db_vacancy ) &&
-                 $db_vacancy->datetime < util::get_datetime_object() )
+        else if( !is_null( $db_start_vacancy ) &&
+                 $db_start_vacancy->datetime < util::get_datetime_object() )
         {
           $this->set_data( 'Appointments cannot be changed after they have passed.' );
           $this->get_status()->set_code( 306 );
@@ -109,24 +112,15 @@ class module extends \cenozo\service\base_calendar_module
           $this->set_data( 'Appointments cannot be changed once they have been assigned.' );
           $this->get_status()->set_code( 306 );
         }
-        // don't allow tier-1 roles to override appointments (except for operator+)
-        else if( $db_appointment->override && 1 > $db_role->tier && 'operator+' != $db_role->name )
+        // no new appointments if the script is complete
+        else if( !is_null( $db_interview ) && $db_interview->is_survey_complete() )
         {
-          $this->set_data( 'Your role does not allow appointments to be overridden.' );
+          $this->set_data(
+            'Appointments cannot be created or changed for this interview since the associated survey has '.
+            'been completed.  The participant must be advanced to the next interview before a new appointment '.
+            'can be created.'
+          );
           $this->get_status()->set_code( 306 );
-        }
-        else
-        {
-          // no new appointments if the script is complete
-          if( $db_interview->is_survey_complete() )
-          {
-            $this->set_data(
-              'Appointments cannot be created or changed for this interview since the associated survey has '.
-              'been completed.  The participant must be advanced to the next interview before a new appointment '.
-              'can be created.'
-            );
-            $this->get_status()->set_code( 306 );
-          }
         }
       }
     }
@@ -154,8 +148,8 @@ class module extends \cenozo\service\base_calendar_module
     }
 
     // include the participant uid, language and interview's qnaire rank as supplemental data
-    $modifier->join( 'vacancy', 'appointment.start_vacancy_id', 'start_vacancy.id', '', 'start_vacancy' );
-    $modifier->join( 'vacancy', 'appointment.end_vacancy_id', 'end_vacancy.id', '', 'end_vacancy' );
+    $modifier->left_join( 'vacancy', 'appointment.start_vacancy_id', 'start_vacancy.id', 'start_vacancy' );
+    $modifier->left_join( 'vacancy', 'appointment.end_vacancy_id', 'end_vacancy.id', 'end_vacancy' );
     $modifier->join( 'interview', 'appointment.interview_id', 'interview.id' );
     $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
@@ -190,11 +184,23 @@ class module extends \cenozo\service\base_calendar_module
       );
       $select->add_column( $date_string, 'date', false );
     }
-
     if( $select->has_column( 'start_time' ) )
       $select->add_column( 'TIME( start_vacancy.datetime )', 'start_time', false );
+    if( $select->has_column( 'start_datetime' ) )
+      $select->add_column( 'start_vacancy.datetime', 'start_datetime', false );
     if( $select->has_column( 'end_time' ) )
       $select->add_column( 'TIME( end_vacancy.datetime + INTERVAL 30 MINUTE )', 'end_time', false );
+    if( $select->has_column( 'end_datetime' ) )
+      $select->add_column( 'end_vacancy.datetime', 'end_datetime', false );
+    if( $select->has_column( 'duration' ) )
+    {
+      $select->add_column(
+        'TIMESTAMPDIFF( MINUTE, start_vacancy.datetime, end_vacancy.datetime ) + 30',
+        'duration',
+        false,
+        'integer'
+      );
+    }
 
     if( $select->has_table_columns( 'assignment_user' ) )
     {

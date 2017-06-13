@@ -83,6 +83,29 @@ class appointment extends \cenozo\database\record
   }
 
   /**
+   * TODO: document
+   */
+  public function get_duration()
+  {
+    $duration = NULL;
+    $db_start_vacancy = $this->get_start_vacancy();
+    $db_end_vacancy = $this->get_end_vacancy();
+
+    if( !is_null( $db_start_vacancy ) && !is_null( $db_end_vacancy ) )
+    {
+      $diff = util::get_interval(
+        $db_start_vacancy->datetime,
+        $db_end_vacancy->datetime
+      );
+
+      // get the duration and add 30 (to include the last vacancy)
+      $duration = $diff->days*1440 + $diff->h*60 + $diff->i + 30;
+    }
+
+    return $duration;
+  }
+
+  /**
    * Get the state of the appointment as a string:
    *   reached: the appointment was met and the participant was reached
    *   not reached: the appointment was met but the participant was not reached

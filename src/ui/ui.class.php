@@ -80,7 +80,7 @@ class ui extends \cenozo\ui\ui
     }
 
     $module = $this->get_module( 'vacancy' );
-    if( !is_null( $module ) ) $module->add_choose( 'appointment' );
+    if( !is_null( $module ) ) $module->add_child( 'appointment' );
   }
 
   /**
