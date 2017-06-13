@@ -47,7 +47,6 @@ class assignment extends \cenozo\database\assignment
     $db_application = lib::create( 'business\session' )->get_application();
     $db_queue = $this->get_queue();
     $db_interview = $this->get_interview();
-    $db_participant = $db_interview->get_participant();
 
     // set the assignment and outcome columns in appointments
     if( $db_queue->from_appointment() )
@@ -55,6 +54,18 @@ class assignment extends \cenozo\database\assignment
       // if complete then search for associated appointments, otherwise search for unassociated ones
       $modifier = lib::create( 'database\modifier' );
       $modifier->where( 'assignment_id', '=', $completed ? $this->id : NULL );
+      if( !$completed )
+      {
+        // get the pre-call window setting
+        $db_site = $db_interview->get_participant()->get_effective_site();
+        $pre_call_window = is_null( $db_site ) ? 0 : $db_site->get_setting()->pre_call_window;
+        // make sure not to select future appointments
+        $modifier->where(
+          sprintf( 'appointment.datetime - INTERVAL %d MINUTE', $pre_call_window ),
+          '<=',
+          $this->start_datetime->format( 'Y-m-d H:i:s' )
+        );
+      }
 
       foreach( $db_interview->get_appointment_object_list( $modifier ) as $db_appointment )
       {
