@@ -53,19 +53,8 @@ class appointment_manager extends \cenozo\base_object
    */
   public function has_missing_vacancy()
   {
-    $vacancy_class_name = lib::get_class_name( 'database\vacancy' );
-
-    $this->semaphore = lib::create( 'business\semaphore' );
-    $this->semaphore->acquire();
-
-    // create a list of all existing and missing vacancies this appointment will have
-    $vacancy_class_name::get_vacancy_lists(
-      $this->db_site,
-      $this->datetime,
-      $this->duration,
-      $this->vacancy_list,
-      $this->missing_vacancy_list
-    );
+    // make sure the vacancy list has been determined
+    $this->determine_vacancy_lists();
 
     // get a list of the appointment's existing vacancies
     $existing_vacancy_id_list = array();
@@ -92,6 +81,9 @@ class appointment_manager extends \cenozo\base_object
    */
   public function apply_vacancy_list()
   {
+    // make sure the vacancy list has been determined
+    $this->determine_vacancy_lists();
+
     // remove any existing vacancy records from the appointment
     $this->db_appointment->remove_vacancy( NULL );
 
@@ -112,6 +104,32 @@ class appointment_manager extends \cenozo\base_object
   public function release()
   {
     if( !is_null( $this->semaphore ) ) $this->semaphore->release();
+  }
+
+  /**
+   * TODO: document
+   * create a list of all existing and missing vacancies this appointment will have
+   */
+  public function determine_vacancy_lists()
+  {
+    $vacancy_class_name = lib::get_class_name( 'database\vacancy' );
+
+    if( is_null( $this->vacancy_list ) && is_null( $this->missing_vacancy_list ) )
+    {
+      $this->semaphore = lib::create( 'business\semaphore' );
+      $this->semaphore->acquire();
+
+      $this->vacancy_list = array();
+      $this->missing_vacancy_list = array();
+      // create a list of all existing and missing vacancies this appointment will have
+      $vacancy_class_name::get_vacancy_lists(
+        $this->db_site,
+        $this->datetime,
+        $this->duration,
+        $this->vacancy_list,
+        $this->missing_vacancy_list
+      );
+    }
   }
 
   /**
@@ -137,12 +155,12 @@ class appointment_manager extends \cenozo\base_object
   /**
    * TODO: document
    */
-  protected $vacancy_list = array();
+  protected $vacancy_list = NULL;
 
   /**
    * TODO: document
    */
-  protected $missing_vacancy_list = array();
+  protected $missing_vacancy_list = NULL;
 
   /**
    * TODO: document
