@@ -176,6 +176,9 @@ class module extends \cenozo\service\base_calendar_module
     if( $select->has_table_columns( 'script' ) )
       $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
 
+    $select->add_column( 'start_vacancy.datetime', 'start_datetime', false );
+    $select->add_column( 'end_vacancy.datetime + INTERVAL 30 MINUTE', 'end_datetime', false );
+
     if( $select->has_column( 'date' ) )
     {
       $date_string = sprintf(
@@ -186,12 +189,8 @@ class module extends \cenozo\service\base_calendar_module
     }
     if( $select->has_column( 'start_time' ) )
       $select->add_column( 'TIME( start_vacancy.datetime )', 'start_time', false );
-    if( $select->has_column( 'start_datetime' ) )
-      $select->add_column( 'start_vacancy.datetime', 'start_datetime', false );
     if( $select->has_column( 'end_time' ) )
       $select->add_column( 'TIME( end_vacancy.datetime + INTERVAL 30 MINUTE )', 'end_time', false );
-    if( $select->has_column( 'end_datetime' ) )
-      $select->add_column( 'end_vacancy.datetime', 'end_datetime', false );
     if( $select->has_column( 'duration' ) )
     {
       $select->add_column(
