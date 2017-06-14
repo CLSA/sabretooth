@@ -62,92 +62,94 @@ DELIMITER //
       SET @cur_date = ( SELECT MIN( start_date ) FROM shift_template );
       SET @max_date = ( SELECT MAX( start_date ) FROM shift_template );
 
-      REPEAT
-        INSERT INTO temp_vacancy(
-          update_timestamp, create_timestamp, site_id, date, start_time, end_time, operators )
-        SELECT update_timestamp, create_timestamp, site_id, @cur_date,
-          SUBTIME(
-            start_time,
-            TIMEDIFF(
-              TIME( convert_tz( CONCAT( @cur_date, " 12:00:00" ), "UTC", "Canada/Eastern" ) ),
-              TIME( convert_tz( "2000-01-01 12:00:00", "UTC", "Canada/Eastern" ) )
-            )
-          ) AS start_time,
-          SUBTIME(
-            end_time,
-            TIMEDIFF(
-              TIME( convert_tz( CONCAT( @cur_date, " 12:00:00" ), "UTC", "Canada/Eastern" ) ),
-              TIME( convert_tz( "2000-01-01 12:00:00", "UTC", "Canada/Eastern" ) )
-            )
-          ) AS end_time,
-          operators
-        FROM shift_template
-        WHERE start_date <= @cur_date
-        AND end_date >= @cur_date
-        AND CASE DAYOFWEEK( @cur_date )
-          WHEN 1 THEN sunday = 1
-          WHEN 2 THEN monday = 1
-          WHEN 3 THEN tuesday = 1
-          WHEN 4 THEN wednesday = 1
-          WHEN 5 THEN thursday = 1
-          WHEN 6 THEN friday = 1
-          WHEN 7 THEN saturday = 1
-          ELSE 0
-        END = 1;
+      IF @cur_date IS NOT NULL AND @max_date IS NOT NULL THEN
+        REPEAT
+          INSERT INTO temp_vacancy(
+            update_timestamp, create_timestamp, site_id, date, start_time, end_time, operators )
+          SELECT update_timestamp, create_timestamp, site_id, @cur_date,
+            SUBTIME(
+              start_time,
+              TIMEDIFF(
+                TIME( convert_tz( CONCAT( @cur_date, " 12:00:00" ), "UTC", "Canada/Eastern" ) ),
+                TIME( convert_tz( "2000-01-01 12:00:00", "UTC", "Canada/Eastern" ) )
+              )
+            ) AS start_time,
+            SUBTIME(
+              end_time,
+              TIMEDIFF(
+                TIME( convert_tz( CONCAT( @cur_date, " 12:00:00" ), "UTC", "Canada/Eastern" ) ),
+                TIME( convert_tz( "2000-01-01 12:00:00", "UTC", "Canada/Eastern" ) )
+              )
+            ) AS end_time,
+            operators
+          FROM shift_template
+          WHERE start_date <= @cur_date
+          AND end_date >= @cur_date
+          AND CASE DAYOFWEEK( @cur_date )
+            WHEN 1 THEN sunday = 1
+            WHEN 2 THEN monday = 1
+            WHEN 3 THEN tuesday = 1
+            WHEN 4 THEN wednesday = 1
+            WHEN 5 THEN thursday = 1
+            WHEN 6 THEN friday = 1
+            WHEN 7 THEN saturday = 1
+            ELSE 0
+          END = 1;
 
-        SET @cur_date = DATE_ADD( @cur_date, INTERVAL 1 DAY );
-      UNTIL @cur_date > @max_date END REPEAT;
+          SET @cur_date = DATE_ADD( @cur_date, INTERVAL 1 DAY );
+        UNTIL @cur_date > @max_date END REPEAT;
 
-      -- remove all temporary vacancies which are on the same day as a shift
-      SET @sql = CONCAT(
-        "CREATE TEMPORARY TABLE delete_vacancy ",
-        "SELECT temp_vacancy.id ",
-        "FROM temp_vacancy ",
-        "JOIN ", @cenozo, ".site ON temp_vacancy.site_id = site.id ",
-        "JOIN shift ON temp_vacancy.site_id = shift.site_id ",
-        "AND temp_vacancy.date = DATE( CONVERT_TZ( shift.start_datetime, 'UTC', site.timezone ) )" );
-      PREPARE statement FROM @sql;
-      EXECUTE statement;
-      DEALLOCATE PREPARE statement;
-
-      DELETE FROM temp_vacancy
-      WHERE id IN ( SELECT id FROM delete_vacancy );
-      DROP TABLE delete_vacancy;
-
-      -- overwrite shift template entries with shifts
-      SET @sql = CONCAT(
-        "SELECT MIN( DATE( CONVERT_TZ( start_datetime, 'UTC', site.timezone ) ) ) INTO @cur_date ",
-        "FROM shift JOIN ", @cenozo, ".site ON shift.site_id = site.id" );
-      PREPARE statement FROM @sql;
-      EXECUTE statement;
-      DEALLOCATE PREPARE statement;
-
-      SET @sql = CONCAT(
-        "SELECT MAX( DATE( CONVERT_TZ( start_datetime, 'UTC', site.timezone ) ) ) INTO @max_date ",
-        "FROM shift JOIN ", @cenozo, ".site ON shift.site_id = site.id" );
-      PREPARE statement FROM @sql;
-      EXECUTE statement;
-      DEALLOCATE PREPARE statement;
-
-      REPEAT
+        -- remove all temporary vacancies which are on the same day as a shift
         SET @sql = CONCAT(
-          "INSERT INTO temp_vacancy( ",
-            "update_timestamp, create_timestamp, site_id, date, start_time, end_time, operators ) ",
-          "SELECT shift.update_timestamp, shift.create_timestamp, ",
-            "site_id, @cur_date, TIME( start_datetime ), TIME( end_datetime ), 1 ",
-          "FROM shift ",
-          "JOIN ", @cenozo, ".site ON shift.site_id = site.id ",
-          "WHERE DATE( CONVERT_TZ( start_datetime, 'UTC', site.timezone ) ) <= @cur_date ",
-          "AND DATE( CONVERT_TZ( start_datetime, 'UTC', site.timezone ) ) >= @cur_date" );
+          "CREATE TEMPORARY TABLE delete_vacancy ",
+          "SELECT temp_vacancy.id ",
+          "FROM temp_vacancy ",
+          "JOIN ", @cenozo, ".site ON temp_vacancy.site_id = site.id ",
+          "JOIN shift ON temp_vacancy.site_id = shift.site_id ",
+          "AND temp_vacancy.date = DATE( CONVERT_TZ( shift.start_datetime, 'UTC', site.timezone ) )" );
         PREPARE statement FROM @sql;
         EXECUTE statement;
         DEALLOCATE PREPARE statement;
 
-        SET @cur_date = DATE_ADD( @cur_date, INTERVAL 1 DAY );
-      UNTIL @cur_date > @max_date END REPEAT;
+        DELETE FROM temp_vacancy
+        WHERE id IN ( SELECT id FROM delete_vacancy );
+        DROP TABLE delete_vacancy;
 
-      -- now create a list of all vacancies by half-hour increments
-      CALL _create_vacancy_records();
+        -- overwrite shift template entries with shifts
+        SET @sql = CONCAT(
+          "SELECT MIN( DATE( CONVERT_TZ( start_datetime, 'UTC', site.timezone ) ) ) INTO @cur_date ",
+          "FROM shift JOIN ", @cenozo, ".site ON shift.site_id = site.id" );
+        PREPARE statement FROM @sql;
+        EXECUTE statement;
+        DEALLOCATE PREPARE statement;
+
+        SET @sql = CONCAT(
+          "SELECT MAX( DATE( CONVERT_TZ( start_datetime, 'UTC', site.timezone ) ) ) INTO @max_date ",
+          "FROM shift JOIN ", @cenozo, ".site ON shift.site_id = site.id" );
+        PREPARE statement FROM @sql;
+        EXECUTE statement;
+        DEALLOCATE PREPARE statement;
+
+        REPEAT
+          SET @sql = CONCAT(
+            "INSERT INTO temp_vacancy( ",
+              "update_timestamp, create_timestamp, site_id, date, start_time, end_time, operators ) ",
+            "SELECT shift.update_timestamp, shift.create_timestamp, ",
+              "site_id, @cur_date, TIME( start_datetime ), TIME( end_datetime ), 1 ",
+            "FROM shift ",
+            "JOIN ", @cenozo, ".site ON shift.site_id = site.id ",
+            "WHERE DATE( CONVERT_TZ( start_datetime, 'UTC', site.timezone ) ) <= @cur_date ",
+            "AND DATE( CONVERT_TZ( start_datetime, 'UTC', site.timezone ) ) >= @cur_date" );
+          PREPARE statement FROM @sql;
+          EXECUTE statement;
+          DEALLOCATE PREPARE statement;
+
+          SET @cur_date = DATE_ADD( @cur_date, INTERVAL 1 DAY );
+        UNTIL @cur_date > @max_date END REPEAT;
+
+        -- now create a list of all vacancies by half-hour increments
+        CALL _create_vacancy_records();
+      END IF;
 
       DROP TABLE temp_vacancy;
 
