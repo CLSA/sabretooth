@@ -31,6 +31,15 @@ class participant extends \cenozo\database\participant
    */
   public function set_preferred_site( $db_application, $site = NULL )
   {
+    // delete any appointments which are linked to a vacancy from a different site to the new one
+    $appointment_class_name = lib::get_class_name( 'database\appointment' );
+    $appointment_mod = lib::create( 'database\modifier' );
+    $appointment_mod->join( 'interview', 'appointment.interview_id', 'interview.id' );
+    $appointment_mod->where( 'interview.participant_id', '=', $this->id );
+    $appointment_mod->where( 'outcome', '=', NULL );
+    foreach( $appointment_class_name::select_objects( $appointment_mod ) as $db_appointment )
+      $db_appointment->delete();
+
     parent::set_preferred_site( $db_application, $site );
     $this->repopulate_queue( true );
   }
