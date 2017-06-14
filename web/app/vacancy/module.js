@@ -523,6 +523,24 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
         this.viewModel = CnVacancyViewFactory.instance( this, site.id == CnSession.site.id );
         this.site = site;
 
+        // replace view-list with view-calendar
+        this.viewTitle = 'Vacancy Calendar';
+        this.transitionToParentListState = function( subject ) {
+          if( 'vacancy' == subject ) {
+            // switch to/from calendar/list states
+            var name = 'vacancy.calendar' == $state.current.name
+                     ? 'vacancy.list'
+                     : 'vacancy.calendar';
+            var param = 'vacancy.calendar' == $state.current.name
+                      ? undefined
+                      : { identifier: self.site.getIdentifier() };
+            return $state.go( name, param );
+          } else {
+            return this.$$transitionToParentListState( subject );
+          }
+        };
+        this.transitionToListState = function() { return this.transitionToParentListState( 'vacancy' ); };
+
         // customize service data
         this.getServiceData = function( type, columnRestrictLists ) {
           var data = this.$$getServiceData( type, columnRestrictLists );
