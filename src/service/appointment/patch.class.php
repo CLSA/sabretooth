@@ -100,6 +100,9 @@ class patch extends \cenozo\service\patch
     {
       $this->appointment_manager->apply_vacancy_list();
       $this->appointment_manager->release();
+
+      // repopulate the participant's queue
+      $this->get_leaf_record()->get_interview()->get_participant()->repopulate_queue( true );
     }
   }
 
