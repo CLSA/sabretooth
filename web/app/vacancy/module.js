@@ -250,7 +250,6 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
                 var removeEventList = overlapEventList.filter( function( event ) {
                   return 0 == event.appointments;
                 } );
-                console.log( overlapEventList );
 
                 if( 0 == removeEventList ) {
                   CnModalMessageFactory.instance( {
