@@ -190,8 +190,10 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAppointmentAdd', [
-    'CnAppointmentModelFactory', 'CnSession', 'CnHttpFactory', 'CnModalConfirmFactory', '$q',
-    function( CnAppointmentModelFactory, CnSession, CnHttpFactory, CnModalConfirmFactory, $q ) {
+    'CnAppointmentModelFactory', 'CnSession', 'CnHttpFactory',
+    'CnModalConfirmFactory', 'CnModalMessageFactory', '$q',
+    function( CnAppointmentModelFactory, CnSession, CnHttpFactory,
+              CnModalConfirmFactory, CnModalMessageFactory, $q ) {
       return {
         templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
@@ -203,20 +205,32 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
           var listener = $scope.$watch( 'model.addModel.vacancyModel', function( vacancyModel ) {
             if( angular.isDefined( vacancyModel ) ) {
               vacancyModel.calendarModel.settings.eventClick = function( vacancy ) {
-                if( vacancy.appointments < vacancy.operators ||
-                    1 < CnSession.role.tier ||
-                    'operator+' == CnSession.role.name ) {
-                  // close the popover (this does nothing if there is no popover)
-                  angular.element( this ).popover( 'hide' );
+                // close the popover (this does nothing if there is no popover)
+                angular.element( this ).popover( 'hide' );
 
+                // if we are looking at an appointment (parent interview) then update its start datetime
+                if( 'interview' == $scope.model.getSubjectFromState() ) {
+                  // get the vacancy's start time adjusted for daylight savings time
                   var date = moment( vacancy.start );
                   var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
-                  
-                  // adjust the appointment for daylight savings time
                   if( date.tz( CnSession.user.timezone ).isDST() ) offset += -60;
-
                   var datetime = moment( vacancy.start ).add( offset, 'minutes' );
-                  if( datetime.isAfter( moment() ) ) {
+
+                  if( !datetime.isAfter( moment() ) ) {
+                    CnModalMessageFactory.instance( {
+                      title: 'Invalid Appointment Time',
+                      message: 'The vacancy you have selected is in the past.  You can only create new ' +
+                               'appointment using a vacancy in the future.'
+                    } ).show();
+                  } else if( vacancy.appointments >= vacancy.operators &&
+                             2 > CnSession.role.tier &&
+                            'operator+' != CnSession.role.name ) {
+                    CnModalMessageFactory.instance( {
+                      title: 'No Vacancy',
+                      message: 'The start time you have selected does not have any vacancy.  You may only ' +
+                        'create an appointment using a vacancy which has at least one unbooked operator.'
+                    } ).show();
+                  } else {
                     // find the add directive's scope
                     var cnRecordAddScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
                     if( null == cnRecordAddScope )
@@ -229,6 +243,8 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
                     cnRecordAddScope.record.start_vacancy_id = vacancy.id;
                     $scope.$apply(); // needed otherwise the new datetime takes seconds before it appears
                   }
+                } else { // we're not looking at an appointment, so view the vacancy instead (as normal)
+                  if( vacancyModel.getViewEnabled() ) return vacancyModel.transitionToViewState( vacancy );
                 }
               };
 
@@ -341,50 +357,56 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
             var listener = $scope.$watch( 'model.viewModel.vacancyModel', function( vacancyModel ) {
               if( angular.isDefined( vacancyModel ) ) {
                 vacancyModel.calendarModel.settings.eventClick = function( vacancy ) {
-                  // get the vacancy's start time adjusted for daylight savings time
-                  var date = moment( vacancy.start );
-                  var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
-                  if( date.tz( CnSession.user.timezone ).isDST() ) offset += -60;
-                  var datetime = moment( vacancy.start ).add( offset, 'minutes' );
-                  if( moment( $scope.model.viewModel.record.start_datetime ).isSame( datetime, 'minute' ) ) {
-                   // do nothing, the user selected the appointment's current start vacancy
-                  } else if( !datetime.isAfter( moment() ) ) {
-                    CnModalMessageFactory.instance( {
-                      title: 'Invalid Appointment Time',
-                      message: 'The vacancy you have selected is in the past.  You can only change the ' +
-                        'appointment\'s start time to a vacancy in the future.'
-                    } ).show();
-                  } else if ( vacancy.appointments >= vacancy.operators &&
-                              2 > CnSession.role.tier &&
-                              'operator+' != CnSession.role.name ) {
-                    CnModalMessageFactory.instance( {
-                      title: 'No Vacancy',
-                      message: 'The start time you have selected does not have any vacancy.  You may only ' +
-                        'set an appointment\'s start time to a vacancy which has at least one unbooked operator.'
-                    } ).show();
-                  } else {
-                    CnModalConfirmFactory.instance( {
-                      title: 'Change Appointment Time',
-                      message: 'Are you sure you wish to change the appointment\'s start time to ' +
-                        CnSession.formatValue( datetime, 'datetime', true ) + '?'
-                    } ).show().then( function( response ) {
-                      if( response ) {
-                        // close the popover (this does nothing if there is no popover)
-                        angular.element( this ).popover( 'hide' );
+                  // close the popover (this does nothing if there is no popover)
+                  angular.element( this ).popover( 'hide' );
 
-                        // find the view directive's scope
-                        var cnRecordViewScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
-                        if( null == cnRecordViewScope )
-                          throw new Error( 'Unable to find appointment\'s cnRecordView scope.' );
+                  // if we are looking at an appointment then update its start datetime
+                  if( 'appointment' == $scope.model.getSubjectFromState() ) {
+                    // get the vacancy's start time adjusted for daylight savings time
+                    var date = moment( vacancy.start );
+                    var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
+                    if( date.tz( CnSession.user.timezone ).isDST() ) offset += -60;
+                    var datetime = moment( vacancy.start ).add( offset, 'minutes' );
 
-                        // set the datetime in the record and formatted record
-                        $scope.model.viewModel.record.start_datetime = datetime;
-                        $scope.model.viewModel.formattedRecord.start_datetime =
-                          CnSession.formatValue( datetime, 'datetime', true );
-                        $scope.model.viewModel.record.start_vacancy_id = vacancy.id;
-                        cnRecordViewScope.patch( 'start_vacancy_id' );
-                      }
-                    } );
+                    if( moment( $scope.model.viewModel.record.start_datetime ).isSame( datetime, 'minute' ) ) {
+                     // do nothing, the user selected the appointment's current start vacancy
+                    } else if( !datetime.isAfter( moment() ) ) {
+                      CnModalMessageFactory.instance( {
+                        title: 'Invalid Appointment Time',
+                        message: 'The vacancy you have selected is in the past.  You can only change the ' +
+                          'appointment\'s start time to a vacancy in the future.'
+                      } ).show();
+                    } else if ( vacancy.appointments >= vacancy.operators &&
+                                2 > CnSession.role.tier &&
+                                'operator+' != CnSession.role.name ) {
+                      CnModalMessageFactory.instance( {
+                        title: 'No Vacancy',
+                        message: 'The start time you have selected does not have any vacancy.  You may only ' +
+                          'set an appointment\'s start time to a vacancy which has at least one unbooked operator.'
+                      } ).show();
+                    } else {
+                      CnModalConfirmFactory.instance( {
+                        title: 'Change Appointment Time',
+                        message: 'Are you sure you wish to change the appointment\'s start time to ' +
+                          CnSession.formatValue( datetime, 'datetime', true ) + '?'
+                      } ).show().then( function( response ) {
+                        if( response ) {
+                          // find the view directive's scope
+                          var cnRecordViewScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
+                          if( null == cnRecordViewScope )
+                            throw new Error( 'Unable to find appointment\'s cnRecordView scope.' );
+
+                          // set the datetime in the record and formatted record
+                          $scope.model.viewModel.record.start_datetime = datetime;
+                          $scope.model.viewModel.formattedRecord.start_datetime =
+                            CnSession.formatValue( datetime, 'datetime', true );
+                          $scope.model.viewModel.record.start_vacancy_id = vacancy.id;
+                          cnRecordViewScope.patch( 'start_vacancy_id' );
+                        }
+                      } );
+                    }
+                  } else { // we're not looking at an appointment, so view the vacancy instead (as normal)
+                    if( vacancyModel.getViewEnabled() ) return vacancyModel.transitionToViewState( vacancy );
                   }
                 };
 
