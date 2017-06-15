@@ -131,8 +131,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
       exclude: 'add',
       constant: true,
       help: 'One of reached, not reached, upcoming, assignable, missed, assigned or in progress'
-    },
-    datetime: { column: 'start_vacancy.datetime', type: 'hidden' }
+    }
   } );
 
   // add an extra operation for each of the appointment-based calendars the user has access to
@@ -158,25 +157,28 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
     } );
   };
 
+  // get the vacancy's start time adjusted for daylight savings time
+  function convertDatetime( datetime, timezone, forward ) {
+    if( angular.isUndefined( forward ) ) forward = false;
+    var date = moment( datetime );
+    var offset = moment.tz.zone( timezone ).offset( date.unix() );
+    if( date.tz( timezone ).isDST() ) offset += -60;
+    return forward ? moment( datetime ).add( offset, 'minute' ) : moment( datetime ).subtract( offset, 'minute' );
+  }
+
   // converts appointments into events
   function getEventFromAppointment( appointment, timezone ) {
     if( angular.isDefined( appointment.start ) && angular.isDefined( appointment.end ) ) {
       return appointment;
     } else {
-      var date = moment( appointment.start_datetime );
-      var offset = moment.tz.zone( timezone ).offset( date.unix() );
-
-      // adjust the appointment for daylight savings time
-      if( date.tz( timezone ).isDST() ) offset += -60;
-
       var event = {
         getIdentifier: function() { return appointment.getIdentifier() },
         title: ( angular.isDefined( appointment.uid ) ? appointment.uid : 'new appointment' ) +
                ( angular.isDefined( appointment.language_code ) ? ' (' + appointment.language_code + ')' : '' ) +
                ( angular.isDefined( appointment.qnaire_rank ) ? ' (' + appointment.qnaire_rank + ')' : '' ) +
                ( null != appointment.username ? '\nfor ' + appointment.username : '' ),
-        start: moment( appointment.start_datetime ).subtract( offset, 'minutes' ),
-        end: moment( appointment.end_datetime ).subtract( offset, 'minutes' ),
+        start: convertDatetime( appointment.start_datetime, timezone, false ),
+        end: convertDatetime( appointment.end_datetime, timezone, false ),
         help: appointment.help
       };
 
@@ -186,6 +188,35 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
       }
       return event;
     }
+  }
+
+  // determines if all vacancies are available (using local time, not UTC)
+  function vacancyAvailable( oldDatetime, oldDuration, newDatetime, newDuration, cache ) {
+    var available = true;
+    if( 'same' == newDatetime ) newDatetime = oldDatetime.clone();
+    if( 'same' == newDuration ) newDuration = oldDuration;
+    var oldFromDatetime = null == oldDatetime ? null : oldDatetime.clone();
+    var oldToDatetime = null == oldDatetime ? null : oldDatetime.clone().add( oldDuration, 'minute' );
+    var newFromDatetime = newDatetime.clone();
+    var newToDatetime = newDatetime.clone().add( newDuration, 'minute' );
+    var total = newDuration / 30;
+    var found = 0;
+    cache.some( function( vacancy ) {
+      if( vacancy.start.isBetween( newFromDatetime, newToDatetime, 'minute', '[)' ) ) {
+        found++;
+        if( vacancy.start.isBetween( oldFromDatetime, oldToDatetime, 'minute', '[)' ) ) {
+          // this vacancy is already used by this appointment
+          if( vacancy.appointments > vacancy.operators ) available = false;
+        } else {
+          // this vacancy is not used by this appointment
+          if( vacancy.appointments >= vacancy.operators ) available = false;
+        }
+      }
+      return found == total || !available; // quit once all are found or one is unavailable
+    } );
+
+    // if all vacancies are available do a last check that we found them all
+    return available ? found == total : false;
   }
 
   /* ######################################################################################################## */
@@ -211,11 +242,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
                 // if we are looking at an appointment (parent interview) then update its start datetime
                 if( 'interview' == $scope.model.getSubjectFromState() ) {
                   // get the vacancy's start time adjusted for daylight savings time
-                  var date = moment( vacancy.start );
-                  var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
-                  if( date.tz( CnSession.user.timezone ).isDST() ) offset += -60;
-                  var datetime = moment( vacancy.start ).add( offset, 'minutes' );
-
+                  var datetime = convertDatetime( vacancy.start, CnSession.user.timezone, true );
                   if( !datetime.isAfter( moment() ) ) {
                     CnModalMessageFactory.instance( {
                       title: 'Invalid Appointment Time',
@@ -253,27 +280,68 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
           } );
 
           $scope.model.addModel.afterNew( function() {
-            // warn if old appointment will be cancelled
             var addDirective = cenozo.findChildDirectiveScope( $scope, 'cnRecordAdd' );
             if( null == addDirective ) throw new Error( 'Unable to find appointment\'s cnRecordAdd scope.' );
             var saveFn = addDirective.save;
             addDirective.save = function() {
-              CnHttpFactory.instance( {
-                path: 'interview/' + $scope.model.getParentIdentifier().identifier,
-                data: { select: { column: [ 'missed_appointment' ] } }
-              } ).get().then( function( response ) {
-                var proceed = false;
-                var promise =
-                  response.data.missed_appointment ?
-                  CnModalConfirmFactory.instance( {
-                    title: 'Cancel Missed Appointment?',
-                    message: 'There already exists a passed appointment for this interview, ' +
-                             'do you wish to cancel it and create a new one?'
-                  } ).show().then( function( response ) { proceed = response; } ) :
-                  $q.all().then( function() { proceed = true; } );
+              // see if there are vacancies to fulfill the appointment's timespan
+              var cache = $scope.model.addModel.vacancyModel.calendarModel.cache;
+              var vacancy = cache.findByProperty( 'id', addDirective.record.start_vacancy_id );
+              var available = vacancyAvailable(
+                null,
+                null,
+                vacancy.start,
+                addDirective.record.duration,
+                cache
+              );
 
-                // proceed with the usual save function if we are told to proceed
-                promise.then( function() { if( proceed ) saveFn(); } );
+              var promiseList = [];
+              var proceed1 = true;
+              if( !available ) {
+                if( 2 > CnSession.role.tier && 'operator+' != CnSession.role.name ) {
+                  proceed1 = false;
+                  CnModalMessageFactory.instance( {
+                    title: 'No Vacancy',
+                    message:
+                      'The appointment time and duration you have selected is missing vacancy.  You may only ' +
+                      'create an appointment such that all vacancies have at least one unbooked operator.'
+                  } ).show();
+                } else {
+                  var hours = $scope.model.viewModel.record.duration / 60;
+                  promiseList.push(
+                    CnModalConfirmFactory.instance( {
+                      title: 'Overbook Appointment',
+                      message:
+                      'NOTE: The appointment time and duration you have chosen will require the vacancy ' +
+                      'calendar to be overbooked!\n\nAre you sure you wish to create the appointment?'
+                    } ).show().then( function( response ) {
+                      proceed1 = response;
+                    } )
+                  );
+                }
+              }
+
+              $q.all( promiseList ).then( function() {
+                if( proceed1 ) {
+                  // warn if old appointment will be cancelled
+                  CnHttpFactory.instance( {
+                    path: 'interview/' + $scope.model.getParentIdentifier().identifier,
+                    data: { select: { column: [ 'missed_appointment' ] } }
+                  } ).get().then( function( response ) {
+                    var proceed2 = false;
+                    var promise =
+                      response.data.missed_appointment ?
+                      CnModalConfirmFactory.instance( {
+                        title: 'Cancel Missed Appointment?',
+                        message: 'There already exists a passed appointment for this interview, ' +
+                                 'do you wish to cancel it and create a new one?'
+                      } ).show().then( function( response ) { proceed2 = response; } ) :
+                      $q.all().then( function() { proceed2 = true; } );
+
+                    // proceed with the usual save function if we are told to proceed
+                    promise.then( function() { if( proceed2 ) saveFn(); } );
+                  } );
+                }
               } );
             };
           } );
@@ -343,14 +411,69 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAppointmentView', [
-    'CnAppointmentModelFactory', 'CnSession', 'CnModalConfirmFactory', 'CnModalMessageFactory',
-    function( CnAppointmentModelFactory, CnSession, CnModalConfirmFactory, CnModalMessageFactory ) {
+    'CnAppointmentModelFactory', 'CnSession', 'CnModalConfirmFactory', 'CnModalMessageFactory', '$q',
+    function( CnAppointmentModelFactory, CnSession, CnModalConfirmFactory, CnModalMessageFactory, $q ) {
       return {
         templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAppointmentModelFactory.instance();
+
+          $scope.model.viewModel.afterView( function() {
+            var cnRecordViewScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
+
+            // override the regular patch function
+            var patchFn = cnRecordViewScope.patch;
+            cnRecordViewScope.patch = function( property ) {
+              // if we're changing the duration we have to check if there is vacancy available
+              var promiseList = [];
+              var proceed = true;
+              if( 'duration' == property ) {
+                var available = vacancyAvailable(
+                  convertDatetime(
+                    $scope.model.viewModel.record.start_datetime,
+                    CnSession.user.timezone,
+                    false
+                  ),
+                  $scope.model.viewModel.backupRecord.duration,
+                  'same',
+                  $scope.model.viewModel.record.duration,
+                  $scope.model.viewModel.vacancyModel.calendarModel.cache
+                );
+
+                if( !available ) {
+                  if( 2 > CnSession.role.tier && 'operator+' != CnSession.role.name ) {
+                    return CnModalMessageFactory.instance( {
+                      title: 'No Vacancy',
+                      message:
+                        'The duration you have selected is missing vacancy.  You may only set an ' +
+                        'appointment\'s duration such that all vacancies have at least one unbooked operator.'
+                    } ).show();
+                  } else {
+                    var hours = $scope.model.viewModel.record.duration / 60;
+                    var message = 'NOTE: The duration you have chosen will require the vacancy calendar to ' +
+                      'be overbooked!\n\nAre you sure you wish to change the appointment\'s duration to ' +
+                      hours.toFixed(1) + ' hours?';
+
+                    promiseList.push(
+                      CnModalConfirmFactory.instance( {
+                        title: ( available ? 'Change' : 'Overbook' ) + ' Appointment',
+                        message: message
+                      } ).show().then( function( response ) {
+                        proceed = response;
+                      } )
+                    );
+                  }
+                }
+              }
+
+              return $q.all( promiseList ).then( function() {
+                if( proceed ) patchFn( property );
+                else $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
+              } );
+            };
+          } );
 
           // connect the vacancy calendar's event click callback to the appointment
           if( $scope.model.getEditEnabled() ) {
@@ -363,11 +486,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
                   // if we are looking at an appointment then update its start datetime
                   if( 'appointment' == $scope.model.getSubjectFromState() ) {
                     // get the vacancy's start time adjusted for daylight savings time
-                    var date = moment( vacancy.start );
-                    var offset = moment.tz.zone( CnSession.user.timezone ).offset( date.unix() );
-                    if( date.tz( CnSession.user.timezone ).isDST() ) offset += -60;
-                    var datetime = moment( vacancy.start ).add( offset, 'minutes' );
-
+                    var datetime = convertDatetime( vacancy.start, CnSession.user.timezone, true );
                     if( moment( $scope.model.viewModel.record.start_datetime ).isSame( datetime, 'minute' ) ) {
                      // do nothing, the user selected the appointment's current start vacancy
                     } else if( !datetime.isAfter( moment() ) ) {
@@ -376,34 +495,52 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
                         message: 'The vacancy you have selected is in the past.  You can only change the ' +
                           'appointment\'s start time to a vacancy in the future.'
                       } ).show();
-                    } else if ( vacancy.appointments >= vacancy.operators &&
-                                2 > CnSession.role.tier &&
-                                'operator+' != CnSession.role.name ) {
-                      CnModalMessageFactory.instance( {
-                        title: 'No Vacancy',
-                        message: 'The start time you have selected does not have any vacancy.  You may only ' +
-                          'set an appointment\'s start time to a vacancy which has at least one unbooked operator.'
-                      } ).show();
                     } else {
-                      CnModalConfirmFactory.instance( {
-                        title: 'Change Appointment Time',
-                        message: 'Are you sure you wish to change the appointment\'s start time to ' +
-                          CnSession.formatValue( datetime, 'datetime', true ) + '?'
-                      } ).show().then( function( response ) {
-                        if( response ) {
-                          // find the view directive's scope
-                          var cnRecordViewScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
-                          if( null == cnRecordViewScope )
-                            throw new Error( 'Unable to find appointment\'s cnRecordView scope.' );
+                      // determine if all vacancies are available
+                      var available = vacancyAvailable(
+                        convertDatetime(
+                          $scope.model.viewModel.record.start_datetime,
+                          CnSession.user.timezone,
+                          false
+                        ),
+                        $scope.model.viewModel.record.duration,
+                        moment( vacancy.start ),
+                        'same',
+                        vacancyModel.calendarModel.cache
+                      );
 
-                          // set the datetime in the record and formatted record
-                          $scope.model.viewModel.record.start_datetime = datetime;
-                          $scope.model.viewModel.formattedRecord.start_datetime =
-                            CnSession.formatValue( datetime, 'datetime', true );
-                          $scope.model.viewModel.record.start_vacancy_id = vacancy.id;
-                          cnRecordViewScope.patch( 'start_vacancy_id' );
-                        }
-                      } );
+                      if( !available && 2 > CnSession.role.tier && 'operator+' != CnSession.role.name ) {
+                        CnModalMessageFactory.instance( {
+                          title: 'No Vacancy',
+                          message:
+                            'The start time you have selected does not have any vacancy.  You may only set an ' +
+                            'appointment\'s start time to a vacancy which has at least one unbooked operator.'
+                        } ).show();
+                      } else {
+                        var message = ( available ? '' : 'NOTE: The time you have chosen will require the ' +
+                                                         'vacancy calendar to be overbooked!\n\n' ) +
+                          'Are you sure you wish to change the appointment\'s start time to ' +
+                          CnSession.formatValue( datetime, 'datetime', true ) + '?';
+
+                        CnModalConfirmFactory.instance( {
+                          title: ( available ? 'Change' : 'Overbook' ) + ' Appointment',
+                          message: message
+                        } ).show().then( function( response ) {
+                          if( response ) {
+                            // find the view directive's scope
+                            var cnRecordViewScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordView' );
+                            if( null == cnRecordViewScope )
+                              throw new Error( 'Unable to find appointment\'s cnRecordView scope.' );
+
+                            // set the datetime in the record and formatted record
+                            $scope.model.viewModel.record.start_datetime = datetime;
+                            $scope.model.viewModel.formattedRecord.start_datetime =
+                              CnSession.formatValue( datetime, 'datetime', true );
+                            $scope.model.viewModel.record.start_vacancy_id = vacancy.id;
+                            cnRecordViewScope.patch( 'start_vacancy_id' );
+                          }
+                        } );
+                      }
                     }
                   } else { // we're not looking at an appointment, so view the vacancy instead (as normal)
                     if( vacancyModel.getViewEnabled() ) return vacancyModel.transitionToViewState( vacancy );
@@ -429,9 +566,6 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
         CnBaseAddFactory.construct( this, parentModel );
 
         this.onAdd = function( record ) {
-          // see if there are vacancies to fulfill the appointment's timespan
-          // TODO: implement
-
           return this.$$onAdd( record ).then( function() {
             parentModel.updateVacancyCalendars();
             // add the new appointment's events to the calendar cache
@@ -572,7 +706,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
 
         // remove and re-add the appointment's events from the calendar cache
         this.onPatch = function( data ) {
-          return this.$$onPatch( data ).then( function() {
+          return self.$$onPatch( data ).then( function() {
             parentModel.updateVacancyCalendars();
             parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
               return e.getIdentifier() != self.record.getIdentifier();
@@ -586,7 +720,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
         this.onView = function() {
           return this.$$onView().then( function() {
             // only allow delete/edit if the appointment is in the future
-            var upcoming = moment().isBefore( self.record.datetime, 'minute' );
+            var upcoming = moment().isBefore( self.record.start_datetime, 'minute' );
             parentModel.getDeleteEnabled = function() { return parentModel.$$getDeleteEnabled() && upcoming; };
             parentModel.getEditEnabled = function() { return parentModel.$$getEditEnabled() && upcoming; };
 
