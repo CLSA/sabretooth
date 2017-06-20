@@ -10,7 +10,7 @@ CREATE PROCEDURE patch_role_has_service()
       WHERE constraint_schema = DATABASE()
       AND constraint_name = "fk_access_site_id" );
 
-    SELECT "Adding new services to operator and operator+ roles" AS "";
+    SELECT "Adding new services to roles" AS "";
 
     SET @sql = CONCAT(
       "INSERT IGNORE INTO role_has_service( role_id, service_id ) ",
@@ -35,6 +35,17 @@ CREATE PROCEDURE patch_role_has_service()
         "subject = 'callback' OR ",
         "( subject IN ( 'report_type', 'report_restriction' ) AND method = 'GET' ) ",
       ")" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement;
+    DEALLOCATE PREPARE statement;
+
+    SET @sql = CONCAT(
+      "INSERT IGNORE INTO role_has_service( role_id, service_id ) ",
+      "SELECT role.id, service.id ",
+      "FROM ", @cenozo, ".role, service ",
+      "WHERE role.name = 'administrator' ",
+      "AND service.subject = 'failed_login' ",
+      "AND service.restricted = 1" );
     PREPARE statement FROM @sql;
     EXECUTE statement;
     DEALLOCATE PREPARE statement;
