@@ -38,11 +38,7 @@ define( [ 'appointment' ].reduce( function( list, name ) {
       };
     }
 
-    angular.extend( event, {
-      title: event.title.replace( /\nfor .+$/, '' ),
-      color: undefined
-    } );
-
+    angular.extend( event, { title: event.title.replace( /\nfor .+$/, '' ) } );
     return event;
   }
 
@@ -119,7 +115,8 @@ define( [ 'appointment' ].reduce( function( list, name ) {
             return appointmentModel.calendarModel.onCalendar(
               replace, minDate, maxDate, ignoreParent
             ).then( function() {
-              appointmentModel.calendarModel.cache.forEach( function( item, index, array ) {
+              self.cache = appointmentModel.calendarModel.cache;
+              self.cache.forEach( function( item, index, array ) {
                 array[index] = getEventFromAppointment( item, CnSession.user.timezone );
               } );
             } );
