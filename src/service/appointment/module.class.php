@@ -176,8 +176,8 @@ class module extends \cenozo\service\base_calendar_module
     if( $select->has_table_columns( 'script' ) )
       $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
 
-    $select->add_column( 'start_vacancy.datetime', 'start_datetime', false );
-    $select->add_column( 'end_vacancy.datetime + INTERVAL 30 MINUTE', 'end_datetime', false );
+    $select->add_column( 'start_vacancy.datetime', 'start_datetime', false, 'datetime' );
+    $select->add_column( 'end_vacancy.datetime + INTERVAL 30 MINUTE', 'end_datetime', false, 'datetime' );
 
     if( $select->has_column( 'date' ) )
     {
