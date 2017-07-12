@@ -33,6 +33,12 @@ class patch extends \cenozo\service\patch
       $this->start_vacancy_id = $patch_array['start_vacancy_id'];
       unset( $patch_array['start_vacancy_id'] );
     }
+    else if( array_key_exists( 'start_datetime', $patch_array ) )
+    {
+      $this->update_vacancies = true;
+      $this->start_datetime = $patch_array['start_datetime'];
+      unset( $patch_array['start_datetime'] );
+    }
 
     return $patch_array;
   }
@@ -49,15 +55,20 @@ class patch extends \cenozo\service\patch
     if( $this->update_vacancies )
     {
       $db_appointment = $this->get_leaf_record();
-      $db_start_vacancy = is_null( $this->start_vacancy_id )
-                        ? $db_appointment->get_start_vacancy()
-                        : lib::create( 'database\vacancy', $this->start_vacancy_id );
+
+      // determine the start datetime
+      if( !is_null( $this->start_vacancy_id ) )
+        $datetime = lib::create( 'database\vacancy', $this->start_vacancy_id )->datetime;
+      else if( !is_null( $this->start_datetime ) )
+        $datetime = util::get_datetime_object( $this->start_datetime );
+      else $datetime = $db_appointment->get_start_vacancy()->datetime;
+
       $this->appointment_manager = lib::create( 'business\appointment_manager' );
       $this->appointment_manager->set_site(
         $db_appointment->get_interview()->get_participant()->get_effective_site()
       );
       $this->appointment_manager->set_datetime_and_duration(
-        $db_start_vacancy->datetime,
+        $datetime,
         is_null( $this->duration ) ? $db_appointment->get_duration() : $this->duration
       );
     }
@@ -120,6 +131,11 @@ class patch extends \cenozo\service\patch
    * TODO: document
    */
   protected $start_vacancy_id = NULL;
+
+  /**
+   * TODO: document
+   */
+  protected $start_datetime = NULL;
 
   /**
    * TODO: document

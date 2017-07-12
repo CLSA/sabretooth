@@ -40,9 +40,15 @@ class post extends \cenozo\service\post
     $post_array = $this->get_file_as_array();
 
     $this->appointment_manager = lib::create( 'business\appointment_manager' );
-    $db_start_vacancy = lib::create( 'database\vacancy', $post_array['start_vacancy_id'] );
     $this->appointment_manager->set_site( $this->get_parent_record()->get_participant()->get_effective_site() );
-    $this->appointment_manager->set_datetime_and_duration( $db_start_vacancy->datetime, $this->duration );
+    // note that the 'start_datetime' is only used when there is no vacancy record (when overriding)
+    $datetime = util::get_datetime_object( $post_array['start_datetime'] );
+    if( $post_array['start_vacancy_id'] )
+    {
+      $db_start_vacancy = lib::create( 'database\vacancy', $post_array['start_vacancy_id'] );
+      $datetime = $db_start_vacancy->datetime;
+    }
+    $this->appointment_manager->set_datetime_and_duration( $datetime, $this->duration );
   }
 
   /**
