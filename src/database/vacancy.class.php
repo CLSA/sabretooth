@@ -35,6 +35,7 @@ class vacancy extends \cenozo\database\record
         $db_vacancy = lib::create( 'database\vacancy' );
         $db_vacancy->site_id = $db_site->id;
         $db_vacancy->datetime = $datetime;
+        $db_vacancy->operators = 0;
 
         $missing_list[] = $db_vacancy;
       }

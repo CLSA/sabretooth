@@ -104,4 +104,15 @@ BEGIN
   DELETE FROM appointment_has_vacancy WHERE appointment_id = OLD.id;
 END;$$
 
+DROP TRIGGER IF EXISTS appointment_AFTER_DELETE $$
+CREATE DEFINER = CURRENT_USER TRIGGER appointment_AFTER_DELETE AFTER DELETE ON appointment FOR EACH ROW
+BEGIN
+  CALL update_interview_last_appointment( OLD.interview_id );
+  
+  -- remove any vacancies that have no operators or appointments
+  DELETE FROM vacancy
+  WHERE operators = 0
+  AND ID NOT IN( SELECT DISTINCT vacancy_id FROM appointment_has_vacancy );
+END;$$
+
 DELIMITER ;
