@@ -792,7 +792,10 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
           return this.$$onView().then( function() {
             // only allow delete/edit if the appointment is in the future
             var upcoming = moment().isBefore( self.record.start_datetime, 'minute' );
-            parentModel.getDeleteEnabled = function() { return parentModel.$$getDeleteEnabled() && upcoming; };
+            parentModel.getDeleteEnabled = function() {
+              return 'vacancy' != parentModel.getSubjectFromState() &&
+                     parentModel.$$getDeleteEnabled() && upcoming;
+            };
             parentModel.getEditEnabled = function() { return parentModel.$$getEditEnabled() && upcoming; };
 
             // update the phone list based on the parent interview
