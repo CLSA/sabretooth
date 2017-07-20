@@ -27,17 +27,13 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
         type: 'string',
         title: 'UID'
       },
-      date: {
-        type: 'date',
-        title: 'Date'
+      start_datetime: {
+        type: 'datetime',
+        title: 'Date & Time'
       },
-      start_time: {
-        type: 'time',
-        title: 'Start Time'
-      },
-      end_time: {
-        type: 'time',
-        title: 'End Time'
+      duration: {
+        type: 'string',
+        title: 'Duration'
       },
       language: {
         column: 'language.name',
@@ -67,7 +63,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
       }
     },
     defaultOrder: {
-      column: 'start_vacancy.datetime',
+      column: 'start_datetime',
       reverse: true
     }
   } );
