@@ -53,6 +53,7 @@ class assignment extends \cenozo\database\assignment
     {
       // if complete then search for associated appointments, otherwise search for unassociated ones
       $modifier = lib::create( 'database\modifier' );
+      $modifier->join( 'vacancy', 'appointment.start_vacancy_id', 'vacancy.id' );
       $modifier->where( 'assignment_id', '=', $completed ? $this->id : NULL );
       if( !$completed )
       {
@@ -61,7 +62,7 @@ class assignment extends \cenozo\database\assignment
         $pre_call_window = is_null( $db_site ) ? 0 : $db_site->get_setting()->pre_call_window;
         // make sure not to select future appointments
         $modifier->where(
-          sprintf( 'appointment.datetime - INTERVAL %d MINUTE', $pre_call_window ),
+          sprintf( 'vacancy.datetime - INTERVAL %d MINUTE', $pre_call_window ),
           '<=',
           $this->start_datetime->format( 'Y-m-d H:i:s' )
         );
