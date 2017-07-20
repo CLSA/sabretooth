@@ -634,7 +634,6 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
 
         this.onAdd = function( record ) {
           return this.$$onAdd( record ).then( function() {
-            parentModel.updateVacancyCalendars();
             // add the new appointment's events to the calendar cache
             CnHttpFactory.instance( {
               path: 'appointment/' + record.id
@@ -742,7 +741,6 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
         // override onDelete
         this.onDelete = function( record ) {
           return this.$$onDelete( record ).then( function() {
-            parentModel.updateVacancyCalendars();
             parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
               return e.getIdentifier() != record.getIdentifier();
             } );
@@ -764,7 +762,6 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
         // remove the deleted appointment's events from the calendar cache
         this.onDelete = function() {
           return this.$$onDelete().then( function() {
-            parentModel.updateVacancyCalendars();
             parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
               return e.getIdentifier() != self.record.getIdentifier();
             } );
@@ -774,7 +771,14 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
         // remove and re-add the appointment's events from the calendar cache
         this.onPatch = function( data ) {
           return self.$$onPatch( data ).then( function() {
-            parentModel.updateVacancyCalendars();
+
+            // refresh any visible calendars
+            self.vacancyModel.calendarModel.onCalendar( true );
+            var cnRecordCalendar = cenozo.getScopeByQuerySelector( '.record-calendar' );
+            if( null != cnRecordCalendar ) cnRecordCalendar.refresh();
+
+
+
             parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
               return e.getIdentifier() != self.record.getIdentifier();
             } );
@@ -927,18 +931,6 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
           }
 
           return data;
-        };
-
-        // convenience method to update vacancy calendars
-        this.updateVacancyCalendars = function() {
-          if( angular.isDefined( self.addModel.vacancyModel ) )
-            self.addModel.vacancyModel.calendarModel.onCalendar( true );
-          if( angular.isDefined( self.viewModel.vacancyModel ) )
-            self.viewModel.vacancyModel.calendarModel.onCalendar( true );
-
-          // refresh any visible calendars
-          var cnRecordCalendar = cenozo.getScopeByQuerySelector( '.record-calendar' );
-          if( null != cnRecordCalendar ) cnRecordCalendar.refresh();
         };
       };
 

@@ -191,6 +191,12 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnVacancyModelFactory.instance();
           $scope.model.calendarModel.heading = $scope.model.site.name.ucWords() + ' Vacancy Calendar';
 
+          // refresh the calendar EVERY time we see it
+          $scope.model.calendarModel.onCalendar( true ).then( function() {
+            var cnRecordCalendarScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordCalendar' );
+            if( cnRecordCalendarScope ) cnRecordCalendarScope.refresh();
+          } );
+
           angular.extend( $scope.model.calendarModel.settings, {
             eventOverlap: false,
             selectable: $scope.model.getAddEnabled() &&

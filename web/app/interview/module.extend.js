@@ -146,7 +146,8 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
           };
           object.appointmentModel.getDeleteEnabled = function() {
             return angular.isDefined( object.appointmentModel.module.actions.delete ) &&
-                   getAppointmentEnabled( 'delete' );
+                   getAppointmentEnabled( 'delete' ) &&
+                   'vacancy' != parentModel.getSubjectFromState();
           };
         }
 
