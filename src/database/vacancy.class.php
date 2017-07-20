@@ -44,4 +44,16 @@ class vacancy extends \cenozo\database\record
       $datetime->add( new \DateInterval( 'PT30M' ) );
     }
   }
+
+  /**
+   * TODO: document
+   */
+  public static function remove_defunct()
+  {
+    $sql =
+      "DELETE FROM vacancy\n".
+      "WHERE operators = 0\n".
+      "AND id NOT IN( SELECT DISTINCT vacancy_id FROM appointment_has_vacancy )";
+    static::db()->execute( $sql );
+  }
 }

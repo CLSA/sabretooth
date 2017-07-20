@@ -59,8 +59,11 @@ class appointment extends \cenozo\database\record
    */
   public function delete()
   {
+    $vacancy_class_name = lib::get_class_name( 'database\vacancy' );
+
     $db_participant = $this->get_interview()->get_participant();
     parent::delete();
+    $vacancy_class_name::remove_defunct();
     $db_participant->repopulate_queue( true );
   }
 

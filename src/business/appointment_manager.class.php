@@ -81,6 +81,8 @@ class appointment_manager extends \cenozo\base_object
    */
   public function apply_vacancy_list()
   {
+    $vacancy_class_name = lib::get_class_name( 'database\vacancy' );
+
     // make sure the vacancy list has been determined
     $this->determine_vacancy_lists();
 
@@ -96,6 +98,8 @@ class appointment_manager extends \cenozo\base_object
       array_map( $get_id, $this->vacancy_list ),
       array_map( $get_id, $this->missing_vacancy_list )
     ) );
+
+    $vacancy_class_name::remove_defunct();
   }
 
   /**
