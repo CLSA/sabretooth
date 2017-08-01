@@ -78,6 +78,13 @@ class appointment extends \cenozo\business\report\base_report
 
     $this->apply_restrictions( $modifier );
 
+    // replace application.datetime restrictions with vacancy.datetime
+    // (this does nothing if the restrictions were not selected)
+    $modifier->replace_where(
+      'DATE_FORMAT( CONVERT_TZ( appointment.datetime, "UTC", "Canada/Eastern" ), "%Y-%m-%d" )',
+      'DATE_FORMAT( CONVERT_TZ( vacancy.datetime, "UTC", "Canada/Eastern" ), "%Y-%m-%d" )'
+    );
+
     if( !$modifier->has_join( 'participant_site' ) )
     {
       $join_mod = lib::create( 'database\modifier' );
