@@ -25,17 +25,20 @@ class appointment extends \cenozo\business\report\base_report
     $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
     $session = lib::create( 'business\session' );
 
-    // get whether this is a site or home qnaire
+    // get whether restricting by qnaire or site
+    $db_site = NULL;
     $db_qnaire = NULL;
     foreach( $this->get_restriction_list() as $restriction )
-      if( 'qnaire' == $restriction['name'] )
-        $db_qnaire = lib::create( 'database\qnaire', $restriction['value'] );
+    {
+      if( 'qnaire' == $restriction['name'] ) $db_qnaire = lib::create( 'database\qnaire', $restriction['value'] );
+      else if( 'site' == $restriction['name'] ) $db_site = lib::create( 'database\site', $restriction['value'] );
+    }
 
     $modifier = lib::create( 'database\modifier' );
     $select = lib::create( 'database\select' );
     $select->from( $this->db_report->get_report_type()->subject );
-    if( $this->db_role->all_sites )
-      $select->add_column( 'IFNULL( site.name, "(none)" )', 'Site', false );
+    if( $this->db_role->all_sites ) $select->add_column( 'IFNULL( site.name, "(none)" )', 'Site', false );
+    else $db_site = $this->db_site; // always restrict to the user's site if they don't have all-site access
     $select->add_column(
       'CONCAT_WS( " ", honorific, participant.first_name, CONCAT( "(", other_name, ")" ), participant.last_name )',
       'Name',
@@ -94,7 +97,7 @@ class appointment extends \cenozo\business\report\base_report
       $modifier->join_modifier( 'participant_site', $join_mod );
     }
     $modifier->left_join( 'site', 'participant_site.site_id', 'site.id' );
-    if( !$this->db_role->all_sites ) $modifier->where( 'site.id', '=', $this->db_site->id );
+    if( !is_null( $db_site ) ) $modifier->where( 'site.id', '=', $db_site->id );
 
     $modifier->order( 'vacancy.datetime' );
 
