@@ -12,7 +12,7 @@ global $SETTINGS;
 // tagged version
 $SETTINGS['general']['application_name'] = 'sabretooth';
 $SETTINGS['general']['instance_name'] = $SETTINGS['general']['application_name'];
-$SETTINGS['general']['version'] = '2.1.0';
+$SETTINGS['general']['version'] = '2.2';
 $SETTINGS['general']['build'] = '2fcef63';
 
 // always leave as false when running as production server
