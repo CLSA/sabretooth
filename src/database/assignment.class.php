@@ -3,7 +3,6 @@
  * assignment.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace sabretooth\database;
@@ -36,7 +35,6 @@ class assignment extends \cenozo\database\assignment
   /**
    * Processes changes to appointments and callbacks based on this assignment
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param boolean $completed Whether the assignment is being closed
    * @access public
    */

@@ -3,7 +3,6 @@
  * queue.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace sabretooth\database;
@@ -17,7 +16,6 @@ class queue extends \cenozo\database\record
   /**
    * Adds a participant to the list of those to run repopulate() on during shutdown
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant If NULL then all participants will be included
    * @access public
    * @static
@@ -35,7 +33,6 @@ class queue extends \cenozo\database\record
   /**
    * Adds a participant to the list of those to run repopulate_time() on during shutdown
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant If NULL then all participants will be included
    * @access public
    * @static
@@ -53,7 +50,6 @@ class queue extends \cenozo\database\record
   /**
    * Executes all delayed repopulate() and repopulate_time() methods
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    * @static
    */
@@ -76,7 +72,6 @@ class queue extends \cenozo\database\record
   /**
    * Returns the time since the last time repopulate() was called
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return datetime
    * @access public
    * @static
@@ -96,7 +91,6 @@ class queue extends \cenozo\database\record
   /**
    * Retuns the time since the last repopulate_time() was called
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return datetime
    * @access public
    * @static
@@ -118,7 +112,6 @@ class queue extends \cenozo\database\record
    * 
    * This method is called internally by the {@link repopulate} method in order to generate
    * the proper SQL to complete the repopulate of queues.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    * @static
    */
@@ -149,7 +142,6 @@ class queue extends \cenozo\database\record
    * This method is used to pupulate all non-time-specific queues.
    * Only non time-specific queues are affected by this function, to populate time-specific
    * queues use the repopulate_time() method instead.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant If provided then only that participant will
    *        be affected by the operation.
    * @access public
@@ -227,7 +219,6 @@ class queue extends \cenozo\database\record
    * queues use the repopulate() static method instead.
    * @param database\participant $db_participant If provided then only that participant will
    *        be affected by the operation.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public static function repopulate_time( $db_participant = NULL )
@@ -484,7 +475,6 @@ class queue extends \cenozo\database\record
 
   /**
    * Get whether this queue is related to an appointment
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -498,7 +488,6 @@ class queue extends \cenozo\database\record
 
   /**
    * Prepares select and modifier objects according to the query generated for a particular queue.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $queue The name of the queue
    * @param database\select A select object which will be set according to the given queue
    * @param database\modifier A modifier object which will be set according to the given queue
@@ -728,7 +717,6 @@ class queue extends \cenozo\database\record
   /**
    * Creates the temp_participant temporary table needed by all queues.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant $db_participant If provided then only that participant will
    *        be affected by the operation.
    * @access protected
@@ -836,7 +824,6 @@ class queue extends \cenozo\database\record
   /**
    * Creates the queue_list_cache needed by all queues.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    * @static
    */

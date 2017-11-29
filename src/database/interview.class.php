@@ -3,7 +3,6 @@
  * interview.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace sabretooth\database;
@@ -17,7 +16,6 @@ class interview extends \cenozo\database\interview
   /**
    * Determines whether the script associated with this interview has been completed
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return boolean
    * @access public
    */
@@ -85,7 +83,6 @@ class interview extends \cenozo\database\interview
    * 
    * This method will update an interview's status to be complete.  It will also update the
    * correspinding limesurvey data to be set as complete.  This action cannot be undone.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function force_complete()
@@ -151,7 +148,6 @@ class interview extends \cenozo\database\interview
    * 
    * This method will update an interview's status to be incomplete.  It will also delete the
    * correspinding limesurvey data.  This action cannot be undone.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access public
    */
   public function force_uncomplete()

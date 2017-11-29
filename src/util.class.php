@@ -3,7 +3,6 @@
  * util.class.php
  * 
  * @author Dean Inglis <inglisd@mcmaster.ca>
- * @filesource
  */
 
 namespace sabretooth;

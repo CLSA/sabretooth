@@ -3,7 +3,6 @@
  * call_history.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace sabretooth\business\report;
@@ -16,7 +15,6 @@ class call_history extends \cenozo\business\report\base_report
 {
   /**
    * Build the report
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @access protected
    */
   protected function build()

@@ -3,7 +3,6 @@
  * voip_call.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace sabretooth\business;
@@ -17,7 +16,6 @@ class voip_call extends \cenozo\business\voip_call
   /**
    * Starts recording (monitoring) the call.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param string $filename The file name the recorded call is to be saved under.
    * @access public
    */

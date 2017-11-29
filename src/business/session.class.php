@@ -3,7 +3,6 @@
  * session.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace sabretooth\business;
@@ -32,7 +31,6 @@ class session extends \cenozo\business\session
   /**
    * Get the user's current assignment.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\assignment
    * @throws exception\runtime
    * @access public
@@ -55,7 +53,6 @@ class session extends \cenozo\business\session
   /**
    * Get the user's current phone call.
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\phone_call
    * @throws exception\runtime
    * @access public

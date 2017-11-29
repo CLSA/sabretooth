@@ -3,7 +3,6 @@
  * data_manager.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace sabretooth\business;
@@ -17,7 +16,6 @@ class data_manager extends \cenozo\business\data_manager
   /**
    * Get participant-based data
    * 
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @param database\participant
    * @param string $key The key string defining which data to return
    * @return string

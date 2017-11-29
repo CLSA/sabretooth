@@ -3,7 +3,6 @@
  * application.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace sabretooth\database;
@@ -19,7 +18,6 @@ class application extends \cenozo\database\application
    * 
    * Returns the event-type associated with
    * If no event-type exists this method will return NULL.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\event_type
    * @access public
    */
@@ -39,7 +37,6 @@ class application extends \cenozo\database\application
    * 
    * Returns the event-type associated with
    * If no event-type exists this method will return NULL.
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return database\event_type
    * @access public
    */

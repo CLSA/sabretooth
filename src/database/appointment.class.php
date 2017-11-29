@@ -3,7 +3,6 @@
  * appointment.class.php
  * 
  * @author Patrick Emond <emondpd@mcmaster.ca>
- * @filesource
  */
 
 namespace sabretooth\database;
@@ -16,7 +15,6 @@ class appointment extends \cenozo\database\record
 {
   /**
    * Overrides the parent save method.
-   * @author Patrick Emond
    * @access public
    */
   public function save()
@@ -119,7 +117,6 @@ class appointment extends \cenozo\database\record
    *   error: the appointment was assigned but the appointment's outcome was never defined (an error)
    *   assigned: the appointment is currently assigned
    *   in progress: the appointment is currently assigned and currently in a call
-   * @author Patrick Emond <emondpd@mcmaster.ca>
    * @return string
    * @access public
    */
