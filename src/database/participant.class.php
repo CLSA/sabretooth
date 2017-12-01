@@ -20,7 +20,7 @@ class participant extends \cenozo\database\participant
   {
     // if we changed certain columns then update the queue
     $update_queue = $this->has_column_changed(
-      array( 'active', 'sex', 'age_group_id', 'state_id', 'source_id', 'override_quota' ) );
+      array( 'sex', 'age_group_id', 'source_id', 'override_quota' ) );
     parent::save();
     if( $update_queue ) $this->repopulate_queue( true );
   }
@@ -49,7 +49,7 @@ class participant extends \cenozo\database\participant
    * The participant's entries in the queue_has_participant table are all removed and
    * re-determined.  This method should be called if any of the participant's details
    * which affect which queue they belong in change (eg: change to appointments, consent
-   * status, state, etc).
+   * status, hold, etc).
    * @param boolean $delayed Whether to wait until the end of execution or to process immediately
    * @access public
    */

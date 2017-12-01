@@ -27,47 +27,47 @@ title = "Not eligible to answer questionnaires",
 rank = NULL,
 time_specific = 0,
 parent_queue_id = ( SELECT id FROM ( SELECT id FROM queue WHERE name = "all" ) AS tmp ),
-description = "Participants who are not eligible to answer questionnaires due to a permanent condition, because they are inactive or because they do not have a phone number.";
+description = "Participants who are not eligible to answer questionnaires.";
 
 INSERT INTO queue SET
-name = "inactive",
-title = "Inactive participants",
+name = "not enrolled",
+title = "Not enrolled participants",
 rank = NULL,
 time_specific = 0,
 parent_queue_id = ( SELECT id FROM ( SELECT id FROM queue WHERE name = "ineligible" ) AS tmp ),
-description = "Participants who are not eligible for answering questionnaires because they have been marked as inactive.";
+description = "Participants who cannot be enrolled in the study.";
 
 INSERT INTO queue SET
-name = "refused consent",
-title = "Participants who refused consent",
+name = "final hold",
+title = "Participants who are in a final hold",
 rank = NULL,
 time_specific = 0,
 parent_queue_id = ( SELECT id FROM ( SELECT id FROM queue WHERE name = "ineligible" ) AS tmp ),
-description = "Participants who are not eligible for answering questionnaires because they have refused consent.";
+description = "Participants who will likely never be called again.";
 
 INSERT INTO queue SET
-name = "condition",
-title = "Permanent Condition",
+name = "temporary hold",
+title = "Participants who are in a temporary hold",
 rank = NULL,
 time_specific = 0,
 parent_queue_id = ( SELECT id FROM ( SELECT id FROM queue WHERE name = "ineligible" ) AS tmp ),
-description = "Participants who are not eligible for answering questionnaires because they have a permanent condition.";
+description = "Participants who cannot currently be called but may become available in the future.";
 
 INSERT INTO queue SET
-name = "no address",
-title = "Participants with no address",
+name = "proxy hold",
+title = "Participants who require a proxy",
 rank = NULL,
 time_specific = 0,
 parent_queue_id = ( SELECT id FROM ( SELECT id FROM queue WHERE name = "ineligible" ) AS tmp ),
-description = "Participants who are not eligible because they do not have an address.";
+description = "Participants who cannot currently be called because they may require a proxy.";
 
 INSERT INTO queue SET
-name = "no phone",
-title = "Participants with no phone",
+name = "trace hold",
+title = "Participants who require tracing",
 rank = NULL,
 time_specific = 0,
 parent_queue_id = ( SELECT id FROM ( SELECT id FROM queue WHERE name = "ineligible" ) AS tmp ),
-description = "Participants who are not eligible because they do not have an phone number.";
+description = "Participants who are uncontactable because of missing or invalid contact information.";
 
 INSERT INTO queue SET
 name = "eligible",
@@ -134,14 +134,6 @@ parent_queue_id = ( SELECT id FROM ( SELECT id FROM queue WHERE name = "appointm
 description = "Participants who have an appointment which was missed.";
 
 INSERT INTO queue SET
-name = "no active address",
-title = "Participants with no active address",
-rank = NULL,
-time_specific = 0,
-parent_queue_id = ( SELECT id FROM ( SELECT id FROM queue WHERE name = "qnaire" ) AS tmp ),
-description = "Participants who are unreachable since they currently have no active address.";
-
-INSERT INTO queue SET
 name = "no site",
 title = "Participants who have no site",
 rank = NULL,
@@ -155,7 +147,7 @@ title = "Participants whose questionnaire is disabled",
 rank = NULL,
 time_specific = 0,
 parent_queue_id = ( SELECT id FROM ( SELECT id FROM queue WHERE name = "qnaire" ) AS tmp ),
-description = "Participants who are unreachable since they currently have no active address.";
+description = "Participants who are ready to answer an questionnaire which has been disabled.";
 
 INSERT INTO queue SET
 name = "quota disabled",

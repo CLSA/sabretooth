@@ -45,7 +45,6 @@ class ui extends \cenozo\ui\ui
     {
       $module->set_list_menu( true ); // always show the queue list
       $module->add_choose( 'participant' );
-
       // add special query parameters to queue-view
       $module->append_action_query( 'view', '?{restrict}&{order}&{reverse}' );
     }
@@ -56,14 +55,14 @@ class ui extends \cenozo\ui\ui
     $module = $this->get_module( 'site' );
     if( !is_null( $module ) ) $module->add_choose( 'qnaire' );
 
-    // remove the state list from the operator+ role
-    $module = $this->get_module( 'state' );
+    // remove the hold_type list from the operator+ role
+    $module = $this->get_module( 'hold_type' );
     if( !is_null( $module ) && 'operator+' == $db_role->name ) $module->set_list_menu( false );
 
     $module = $this->get_module( 'user' );
     if( !is_null( $module ) )
     {
-      // remove the state list from the operator+ role
+      // remove the user list from the operator+ role
       if( 'operator+' == $db_role->name ) $module->set_list_menu( false );
 
       // remove the user view action from operator roles (it is for viewing personal calendar only)
@@ -89,7 +88,7 @@ class ui extends \cenozo\ui\ui
   {
     parent::build_listitem_list();
 
-    // add application-specific states to the base list
+    // add application-specific lists to the base list
     $this->add_listitem( 'Questionnaires', 'qnaire' );
     $this->add_listitem( 'Queues', 'queue' );
     $this->add_listitem( 'Vacancies', 'vacancy' );
@@ -122,7 +121,7 @@ class ui extends \cenozo\ui\ui
         'values' => sprintf( '{identifier:"name=%s"}', $db_user->name ) );
     }
 
-    // add application-specific states to the base list
+    // add application-specific lists to the base list
     if( in_array( $db_role->name, array( 'helpline', 'operator', 'operator+', 'supervisor' ) ) )
     {
       $list['Assignment Control'] = array(

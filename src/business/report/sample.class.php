@@ -77,16 +77,17 @@ class sample extends \cenozo\business\report\base_report
     $select = lib::create( 'database\select' );
     $select->from( 'participant' );
     $select->add_column( 'uid', 'UID' );
-    if( $this->db_role->all_sites )
-      $select->add_column( 'site.name', 'Site', false );
-    $select->add_column( 'IF( participant.active, "Yes", "No" )', 'Active', false );
+    if( $this->db_role->all_sites ) $select->add_column( 'site.name', 'Site', false );
     $select->add_column( 'language.name', 'Language', false );
+    $select->add_column( 'IFNULL( CONCAT( "No: ", enrollment.name ), "Yes" )', 'Enrolled', false );
     $select->add_column(
-      'IF( consent.accept IS NULL, "(empty)", IF( consent.accept, "Yes", "No" ) )', 'Participating', false );
-    $select->add_column( 'state.name', 'Condition', false );
+      'IF( hold_type.type IS NULL, "(none)", CONCAT( hold_type.type, ": ", hold_type.name ) )',
+      'Hold',
+      false
+    );  
     $select->add_column( $this->get_datetime_column( 'application_has_participant.datetime' ), 'Released', false );
-    $select->add_column( 'IF( participant.email IS NOT NULL, "Yes", "No" )', 'Has Email', false );
     $select->add_column( 'region.name', 'Region', false );
+    $select->add_column( 'IF( participant.email IS NOT NULL, "Yes", "No" )', 'Has Email', false );
     $select->add_column(
       $this->get_datetime_column( 'participant.callback' ),
       'Callback',
@@ -99,7 +100,9 @@ class sample extends \cenozo\business\report\base_report
     );
 
     $modifier = lib::create( 'database\modifier' );
-    $modifier->left_join( 'state', 'participant.state_id', 'state.id' );
+    $modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
+    $modifier->left_join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
+    $modifier->left_join( 'hold_type', 'hold.hold_type_id', 'hold_type.id' );
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
     $modifier->join(
       'participant_primary_address', 'participant.id', 'participant_primary_address.participant_id' );

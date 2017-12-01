@@ -19,7 +19,7 @@
   <div ng-if="!model.isForbidden">
     <div ng-if="!model.assignment">
       <cn-record-list model="model.participantModel"
-                      remove-columns="active cohort source state first last"></cn-record-list>
+                      remove-columns="cohort source last_hold enrollment first last"></cn-record-list>
     </div>
     <div ng-if="model.assignment">
       <div class="utility-view rounded">

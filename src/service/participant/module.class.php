@@ -72,7 +72,6 @@ class module extends \cenozo\service\participant\module
       $modifier->join( 'queue', 'queue_has_participant.queue_id', 'queue.id' );
       $modifier->join( 'qnaire', 'queue_has_participant.qnaire_id', 'qnaire.id' );
       $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
-      $modifier->where( 'participant.active', '=', true );
       $modifier->where( 'queue.rank', '!=', NULL );
 
       // only show reserved appointments to the reserved user

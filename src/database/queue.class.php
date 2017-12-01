@@ -119,9 +119,6 @@ class queue extends \cenozo\database\record
   {
     if( 0 == count( self::$query_object_list ) )
     {
-      $participant_class_name = lib::get_class_name( 'database\participant' );
-      $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
-
       // make sure the queue_list_cache has been created and loop through it
       static::create_queue_list_cache();
       foreach( array_keys( self::$queue_list_cache ) as $queue )
@@ -539,65 +536,53 @@ class queue extends \cenozo\database\record
     $modifier->where( 'effective_qnaire_id', '!=', NULL );
     if( 'ineligible' == $queue )
     {
-      // ineligible means either inactive or with a "final" state
+      // ineligible means either not enrolled or in a hold
       $modifier->where_bracket( true );
-      $modifier->where( 'participant_active', '=', false );
-      $modifier->or_where( 'participant_state_id', '!=', NULL );
-      $modifier->or_where( 'last_participation_consent_accept', '=', 0 );
-      $modifier->or_where( 'primary_region_id', '=', NULL );
-      $modifier->or_where( 'has_phone', '=', false );
+      $modifier->where( 'participant_enrollment_id', '!=', NULL );
+      $modifier->or_where( 'last_hold_type_type', '!=', NULL );
       $modifier->where_bracket( false );
       return;
     }
 
-    if( 'inactive' == $queue )
+    if( 'not enrolled' == $queue )
     {
-      $modifier->where( 'participant_active', '=', false );
+      $modifier->where( 'participant_enrollment_id', '!=', NULL );
       return;
     }
 
-    if( 'refused consent' == $queue )
+    if( 'final hold' == $queue )
     {
-      $modifier->where( 'participant_active', '=', true );
-      $modifier->where( 'last_participation_consent_accept', '=', 0 );
+      $modifier->where( 'participant_enrollment_id', '=', NULL );
+      $modifier->where( 'last_hold_type_type', '=', 'final' );
       return;
     }
 
-    if( 'condition' == $queue )
+    if( 'temporary hold' == $queue )
     {
-      $modifier->where( 'participant_active', '=', true );
-      $modifier->where( 'IFNULL( last_participation_consent_accept = 1, true )', '=', true );
-      $modifier->where( 'participant_state_id', '!=', NULL );
+      $modifier->where( 'participant_enrollment_id', '=', NULL );
+      $modifier->where( 'last_hold_type_type', '=', 'temporary' );
       return;
     }
 
-    if( 'no address' == $queue )
+    if( 'proxy hold' == $queue )
     {
-      $modifier->where( 'participant_active', '=', true );
-      $modifier->where( 'IFNULL( last_participation_consent_accept = 1, true )', '=', true );
-      $modifier->where( 'participant_state_id', '=', NULL );
-      $modifier->where( 'primary_region_id', '=', NULL );
+      $modifier->where( 'participant_enrollment_id', '=', NULL );
+      $modifier->where( 'last_hold_type_type', '=', 'proxy' );
       return;
     }
 
-    if( 'no phone' == $queue )
+    if( 'trace hold' == $queue )
     {
-      $modifier->where( 'participant_active', '=', true );
-      $modifier->where( 'IFNULL( last_participation_consent_accept = 1, true )', '=', true );
-      $modifier->where( 'participant_state_id', '=', NULL );
-      $modifier->where( 'primary_region_id', '!=', NULL );
-      $modifier->where( 'has_phone', '=', false );
+      $modifier->where( 'participant_enrollment_id', '=', NULL );
+      $modifier->where( 'last_hold_type_type', '=', 'trace' );
       return;
     }
 
     if( 'eligible' == $queue )
     {
-      // active participant who does not have a "final" state and has at least one phone number
-      $modifier->where( 'participant_active', '=', true );
-      $modifier->where( 'participant_state_id', '=', NULL );
-      $modifier->where( 'IFNULL( last_participation_consent_accept = 1, true )', '=', true );
-      $modifier->where( 'primary_region_id', '!=', NULL );
-      $modifier->where( 'has_phone', '=', true );
+      // enrolled participant who is not in a hold
+      $modifier->where( 'participant_enrollment_id', '=', NULL );
+      $modifier->where( 'last_hold_type_type', '=', NULL );
       return;
     }
 
@@ -647,20 +632,6 @@ class queue extends \cenozo\database\record
     $join_mod->where( 'appointment.outcome', '=', NULL );
     $modifier->join_modifier( 'appointment', $join_mod, 'left' );
     $modifier->where( 'appointment.id', '=', NULL );
-
-    // join to the first_address table based on participant id
-    $modifier->left_join(
-      'temp_participant_first_address', 'temp_participant_first_address.id', 'temp_participant.id' );
-
-    if( 'no active address' == $queue )
-    {
-      // make sure there is no active address
-      $modifier->where( 'temp_participant_first_address.address_id', '=', NULL );
-      return;
-    }
-
-    // make sure there is an active address
-    $modifier->where( 'temp_participant_first_address.address_id', '!=', NULL );
 
     // join to the quota table based on site, region, sex and age group
     $join_mod = lib::create( 'database\modifier' );
@@ -746,10 +717,9 @@ class queue extends \cenozo\database\record
         'ADD INDEX fk_id ( id ), '.
         'ADD INDEX fk_participant_sex ( participant_sex ), '.
         'ADD INDEX fk_participant_age_group_id ( participant_age_group_id ), '.
-        'ADD INDEX fk_participant_active ( participant_active ), '.
-        'ADD INDEX fk_participant_state_id ( participant_state_id ), '.
+        'ADD INDEX fk_participant_enrollment_id ( participant_enrollment_id ), '.
+        'ADD INDEX fk_last_hold_type_type ( last_hold_type_type ), '.
         'ADD INDEX fk_effective_qnaire_id ( effective_qnaire_id ), '.
-        'ADD INDEX fk_last_participation_consent_accept ( last_participation_consent_accept ), '.
         'ADD INDEX fk_current_assignment_id ( current_assignment_id ), '.
         'ADD INDEX dk_primary_region_id ( primary_region_id )' );
     if( static::$debug ) log::debug( sprintf(
@@ -780,41 +750,6 @@ class queue extends \cenozo\database\record
         'ADD INDEX dk_participant_id_site_id ( id, participant_site_id )' );
     if( static::$debug ) log::debug( sprintf(
       '(Queue) Building temp_participant_participant_site temp table%s: %0.2f',
-      is_null( $db_participant ) ? '' : ' for '.$db_participant->uid,
-      util::get_elapsed_time() - $time ) );
-
-    // build temp_participant_first_address table
-    $sql = sprintf(
-      'CREATE TEMPORARY TABLE IF NOT EXISTS temp_participant_first_address '.
-      'SELECT participant.id AS id, '.
-             'address.id AS address_id, '.
-             'address.timezone_offset AS first_address_timezone_offset, '.
-             'address.daylight_savings AS first_address_daylight_savings '.
-      'FROM participant_first_address '.
-      'JOIN application_has_participant '.
-      'ON participant_first_address.participant_id = application_has_participant.participant_id '.
-      'AND application_has_participant.application_id = %s '.
-      'AND application_has_participant.datetime IS NOT NULL '.
-      'LEFT JOIN participant ON participant_first_address.participant_id = participant.id '.
-      'LEFT JOIN address '.
-      'ON participant_first_address.address_id = address.id ',
-      static::db()->format_string( $application_id ) );
-    if( !is_null( $db_participant ) )
-      $sql .= sprintf( 'WHERE participant.id = %s ',
-                       static::db()->format_string( $db_participant->id ) );
-
-    if( static::$debug ) $time = util::get_elapsed_time();
-    static::db()->execute( 'DROP TABLE IF EXISTS temp_participant_first_address' );
-    static::db()->execute( $sql );
-
-    if( is_null( $db_participant ) )
-      static::db()->execute(
-        'ALTER TABLE temp_participant_first_address '.
-        'ADD INDEX dk_id ( id ), '.
-        'ADD INDEX dk_first_address_timezone_offset ( first_address_timezone_offset ), '.
-        'ADD INDEX dk_first_address_daylight_savings ( first_address_daylight_savings )' );
-    if( static::$debug ) log::debug( sprintf(
-      '(Queue) Building temp_participant_first_address temp table%s: %0.2f',
       is_null( $db_participant ) ? '' : ' for '.$db_participant->uid,
       util::get_elapsed_time() - $time ) );
 
@@ -912,15 +847,13 @@ class queue extends \cenozo\database\record
    */
   protected static $temp_participant_sql = <<<'SQL'
 SELECT participant.id,
-participant.active AS participant_active,
+participant.enrollment_id AS participant_enrollment_id,
 participant.sex AS participant_sex,
 participant.age_group_id AS participant_age_group_id,
-participant.state_id AS participant_state_id,
 participant.override_quota AS participant_override_quota,
 source.override_quota AS source_override_quota,
 primary_region.id AS primary_region_id,
-participant_has_phone.has_phone,
-last_participation_consent.accept AS last_participation_consent_accept,
+last_hold_type.type AS last_hold_type_type,
 current_interview.id AS current_interview_id,
 current_qnaire.id AS current_qnaire_id,
 current_assignment.id AS current_assignment_id,
@@ -963,22 +896,12 @@ ON participant_primary_address.address_id = primary_address.id
 LEFT JOIN region AS primary_region
 ON primary_address.region_id = primary_region.id
 
-JOIN (
-  SELECT participant.id, phone.id IS NOT NULL has_phone
-  FROM participant
-  LEFT JOIN phone
-  ON participant.id = phone.participant_id
-  AND phone.active = true
-  GROUP BY participant.id
-) as participant_has_phone ON participant.id = participant_has_phone.id
-
-JOIN participant_last_consent
-ON participant.id = participant_last_consent.participant_id
-JOIN consent_type
-ON participant_last_consent.consent_type_id = consent_type.id
-AND consent_type.name = "participation"
-LEFT JOIN consent AS last_participation_consent
-ON last_participation_consent.id = participant_last_consent.consent_id
+JOIN participant_last_hold
+ON participant.id = participant_last_hold.participant_id
+LEFT JOIN hold AS last_hold
+ON participant_last_hold.hold_id = last_hold.id
+LEFT JOIN hold_type AS last_hold_type
+ON last_hold.hold_type_id = last_hold_type.id
 
 LEFT JOIN participant_last_interview AS participant_current_interview
 ON participant.id = participant_current_interview.participant_id
