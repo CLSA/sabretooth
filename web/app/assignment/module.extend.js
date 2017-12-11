@@ -60,6 +60,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
           self.assignment = null;
           self.prevAssignment = null;
           self.participant = null;
+          self.phoneList = null;
           self.activePhoneCall = false;
           self.qnaireList = null;
           self.activeQnaire = null;
