@@ -21,6 +21,8 @@ class progress extends \cenozo\business\overview\base_overview
     $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
     $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
     $hold_type_class_name = lib::get_class_name( 'database\hold_type' );
+    $trace_type_class_name = lib::get_class_name( 'database\trace_type' );
+    $proxy_type_class_name = lib::get_class_name( 'database\proxy_type' );
 
     $session = lib::create( 'business\session' );
     $db = $session->get_database();
@@ -38,6 +40,20 @@ class progress extends \cenozo\business\overview\base_overview
     $hold_type_list = array();
     foreach( $hold_type_class_name::select_objects( $hold_type_mod ) as $db_hold_type )
       $hold_type_list[] = $db_hold_type->to_string();
+
+    // get a list of all trace types
+    $trace_type_mod = lib::create( 'database\modifier' );
+    $trace_type_mod->order( 'name' );
+    $trace_type_list = array();
+    foreach( $trace_type_class_name::select_objects( $trace_type_mod ) as $db_trace_type )
+      $trace_type_list[] = $db_trace_type->name;
+
+    // get a list of all proxy types
+    $proxy_type_mod = lib::create( 'database\modifier' );
+    $proxy_type_mod->order( 'name' );
+    $proxy_type_list = array();
+    foreach( $proxy_type_class_name::select_objects( $proxy_type_mod ) as $db_proxy_type )
+      $proxy_type_list[] = $db_proxy_type->name;
 
     // get a list of all qnaires
     $qnaire_sel = lib::create( 'database\select' );
@@ -77,6 +93,10 @@ class progress extends \cenozo\business\overview\base_overview
       $this->add_item( $node, 'Not Enrolled', 0 );
       $hold_type_node = $this->add_item( $node, 'Hold Types' );
       foreach( $hold_type_list as $hold_type ) $this->add_item( $hold_type_node, $hold_type, 0 );
+      $trace_type_node = $this->add_item( $node, 'Trace Types' );
+      foreach( $trace_type_list as $trace_type ) $this->add_item( $trace_type_node, $trace_type, 0 );
+      $proxy_type_node = $this->add_item( $node, 'Proxy Types' );
+      foreach( $proxy_type_list as $proxy_type ) $this->add_item( $proxy_type_node, $proxy_type, 0 );
       foreach( $qnaire_list as $qnaire )
       {
         $qnaire_node = $this->add_item( $node, $qnaire.' Interview' );
@@ -117,6 +137,46 @@ class progress extends \cenozo\business\overview\base_overview
     {
       $parent_node = $site_node_lookup[$row['site']]->find_node( 'Hold Types' );
       $node = $parent_node->find_node( $row['type'].': '.$row['name'] );
+      $node->set_value( $row['total'] );
+    }
+
+    // trace types
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    $trace_type_sel = clone $select;
+    $trace_type_sel->add_table_column( 'trace_type', 'name' );
+
+    $trace_type_mod = clone $modifier;
+    $trace_type_mod->where( 'queue.name', '=', 'tracing' );
+    $trace_type_mod->join(
+      'participant_last_trace', 'queue_has_participant.participant_id', 'participant_last_trace.participant_id' );
+    $trace_type_mod->join( 'trace', 'participant_last_trace.trace_id', 'trace.id' );
+    $trace_type_mod->join( 'trace_type', 'trace.trace_type_id', 'trace_type.id' );
+    $trace_type_mod->group( 'trace_type.id' );
+    
+    foreach( $db->get_all( sprintf( '%s %s', $trace_type_sel->get_sql(), $trace_type_mod->get_sql() ) ) as $row )
+    {
+      $parent_node = $site_node_lookup[$row['site']]->find_node( 'Trace Types' );
+      $node = $parent_node->find_node( $row['name'] );
+      $node->set_value( $row['total'] );
+    }
+
+    // proxy types
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    $proxy_type_sel = clone $select;
+    $proxy_type_sel->add_table_column( 'proxy_type', 'name' );
+
+    $proxy_type_mod = clone $modifier;
+    $proxy_type_mod->where( 'queue.name', '=', 'proxy' );
+    $proxy_type_mod->join(
+      'participant_last_proxy', 'queue_has_participant.participant_id', 'participant_last_proxy.participant_id' );
+    $proxy_type_mod->join( 'proxy', 'participant_last_proxy.proxy_id', 'proxy.id' );
+    $proxy_type_mod->join( 'proxy_type', 'proxy.proxy_type_id', 'proxy_type.id' );
+    $proxy_type_mod->group( 'proxy_type.id' );
+    
+    foreach( $db->get_all( sprintf( '%s %s', $proxy_type_sel->get_sql(), $proxy_type_mod->get_sql() ) ) as $row )
+    {
+      $parent_node = $site_node_lookup[$row['site']]->find_node( 'Proxy Types' );
+      $node = $parent_node->find_node( $row['name'] );
       $node->set_value( $row['total'] );
     }
 
@@ -221,6 +281,26 @@ class progress extends \cenozo\business\overview\base_overview
       $this->root_node->each( function( $node ) use( $removed_label_list ) {
         $hold_type_node = $node->find_node( 'Hold Types' );
         $hold_type_node->remove_child_by_label( $removed_label_list );
+      } );
+
+      // go through the first node and remove all trace types with a value of 0
+      $trace_type_node = $first_node->find_node( 'Trace Types' );
+      $removed_label_list = $trace_type_node->remove_empty_children();
+
+      // and remove them from other nodes as well
+      $this->root_node->each( function( $node ) use( $removed_label_list ) {
+        $trace_type_node = $node->find_node( 'Trace Types' );
+        $trace_type_node->remove_child_by_label( $removed_label_list );
+      } );
+
+      // go through the first node and remove all proxy types with a value of 0
+      $proxy_type_node = $first_node->find_node( 'Proxy Types' );
+      $removed_label_list = $proxy_type_node->remove_empty_children();
+
+      // and remove them from other nodes as well
+      $this->root_node->each( function( $node ) use( $removed_label_list ) {
+        $proxy_type_node = $node->find_node( 'Proxy Types' );
+        $proxy_type_node->remove_child_by_label( $removed_label_list );
       } );
     }
   }

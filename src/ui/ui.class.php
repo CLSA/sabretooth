@@ -59,6 +59,14 @@ class ui extends \cenozo\ui\ui
     $module = $this->get_module( 'hold_type' );
     if( !is_null( $module ) && 'operator+' == $db_role->name ) $module->set_list_menu( false );
 
+    // remove the trace_type list from the operator+ role
+    $module = $this->get_module( 'trace_type' );
+    if( !is_null( $module ) && 'operator+' == $db_role->name ) $module->set_list_menu( false );
+
+    // remove the proxy_type list from the operator+ role
+    $module = $this->get_module( 'proxy_type' );
+    if( !is_null( $module ) && 'operator+' == $db_role->name ) $module->set_list_menu( false );
+
     $module = $this->get_module( 'user' );
     if( !is_null( $module ) )
     {

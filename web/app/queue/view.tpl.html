@@ -7,7 +7,7 @@
 <div class="vertical-spacer">
   <cn-record-list ng-if="model.viewModel.participantModel"
                   model="model.viewModel.participantModel"
-                  remove-columns="cohort source enrollment"></cn-record-list>
+                  remove-columns="cohort source"></cn-record-list>
 </div>
 <div class="vertical-spacer" ng-repeat="child in model.module.choosing">
   <cn-record-list ng-if="'participant' != child.subject.snake &&

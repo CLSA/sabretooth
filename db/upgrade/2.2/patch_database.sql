@@ -3,6 +3,7 @@
 SET AUTOCOMMIT=0;
 
 SOURCE queue.sql
+SOURCE queue_has_participant.sql
 SOURCE service.sql
 SOURCE role_has_service.sql
 

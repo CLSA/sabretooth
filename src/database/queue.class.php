@@ -536,53 +536,57 @@ class queue extends \cenozo\database\record
     $modifier->where( 'effective_qnaire_id', '!=', NULL );
     if( 'ineligible' == $queue )
     {
-      // ineligible means either not enrolled or in a hold
+      // ineligible means either not enrolled, in a hold, trace or proxy
       $modifier->where_bracket( true );
-      $modifier->where( 'participant_enrollment_id', '!=', NULL );
+      $modifier->where( 'participant_exclusion_id', '!=', NULL );
       $modifier->or_where( 'last_hold_type_type', '!=', NULL );
+      $modifier->or_where( 'last_trace_type_name', '!=', NULL );
+      $modifier->or_where( 'last_proxy_type_name', '!=', NULL );
       $modifier->where_bracket( false );
       return;
     }
 
     if( 'not enrolled' == $queue )
     {
-      $modifier->where( 'participant_enrollment_id', '!=', NULL );
+      $modifier->where( 'participant_exclusion_id', '!=', NULL );
       return;
     }
 
     if( 'final hold' == $queue )
     {
-      $modifier->where( 'participant_enrollment_id', '=', NULL );
+      $modifier->where( 'participant_exclusion_id', '=', NULL );
       $modifier->where( 'last_hold_type_type', '=', 'final' );
       return;
     }
 
     if( 'temporary hold' == $queue )
     {
-      $modifier->where( 'participant_enrollment_id', '=', NULL );
+      $modifier->where( 'participant_exclusion_id', '=', NULL );
       $modifier->where( 'last_hold_type_type', '=', 'temporary' );
       return;
     }
 
-    if( 'proxy hold' == $queue )
+    if( 'tracing' == $queue )
     {
-      $modifier->where( 'participant_enrollment_id', '=', NULL );
-      $modifier->where( 'last_hold_type_type', '=', 'proxy' );
+      $modifier->where( 'participant_exclusion_id', '=', NULL );
+      $modifier->where( 'last_trace_type_name', '!=', NULL );
       return;
     }
 
-    if( 'trace hold' == $queue )
+    if( 'proxy' == $queue )
     {
-      $modifier->where( 'participant_enrollment_id', '=', NULL );
-      $modifier->where( 'last_hold_type_type', '=', 'trace' );
+      $modifier->where( 'participant_exclusion_id', '=', NULL );
+      $modifier->where( 'last_proxy_type_name', '!=', NULL );
       return;
     }
 
     if( 'eligible' == $queue )
     {
-      // enrolled participant who is not in a hold
-      $modifier->where( 'participant_enrollment_id', '=', NULL );
+      // enrolled participant who is not in a hold, trace or proxy
+      $modifier->where( 'participant_exclusion_id', '=', NULL );
       $modifier->where( 'last_hold_type_type', '=', NULL );
+      $modifier->where( 'last_trace_type_name', '=', NULL );
+      $modifier->where( 'last_proxy_type_name', '=', NULL );
       return;
     }
 
@@ -717,8 +721,10 @@ class queue extends \cenozo\database\record
         'ADD INDEX fk_id ( id ), '.
         'ADD INDEX fk_participant_sex ( participant_sex ), '.
         'ADD INDEX fk_participant_age_group_id ( participant_age_group_id ), '.
-        'ADD INDEX fk_participant_enrollment_id ( participant_enrollment_id ), '.
+        'ADD INDEX fk_participant_exclusion_id ( participant_exclusion_id ), '.
         'ADD INDEX fk_last_hold_type_type ( last_hold_type_type ), '.
+        'ADD INDEX fk_last_trace_type_name ( last_trace_type_name ), '.
+        'ADD INDEX fk_last_proxy_type_name ( last_proxy_type_name ), '.
         'ADD INDEX fk_effective_qnaire_id ( effective_qnaire_id ), '.
         'ADD INDEX fk_current_assignment_id ( current_assignment_id ), '.
         'ADD INDEX dk_primary_region_id ( primary_region_id )' );
@@ -847,13 +853,15 @@ class queue extends \cenozo\database\record
    */
   protected static $temp_participant_sql = <<<'SQL'
 SELECT participant.id,
-participant.enrollment_id AS participant_enrollment_id,
+participant.exclusion_id AS participant_exclusion_id,
 participant.sex AS participant_sex,
 participant.age_group_id AS participant_age_group_id,
 participant.override_quota AS participant_override_quota,
 source.override_quota AS source_override_quota,
 primary_region.id AS primary_region_id,
 last_hold_type.type AS last_hold_type_type,
+last_trace_type.name AS last_trace_type_name,
+last_proxy_type.name AS last_proxy_type_name,
 current_interview.id AS current_interview_id,
 current_qnaire.id AS current_qnaire_id,
 current_assignment.id AS current_assignment_id,
@@ -902,6 +910,20 @@ LEFT JOIN hold AS last_hold
 ON participant_last_hold.hold_id = last_hold.id
 LEFT JOIN hold_type AS last_hold_type
 ON last_hold.hold_type_id = last_hold_type.id
+
+JOIN participant_last_trace
+ON participant.id = participant_last_trace.participant_id
+LEFT JOIN trace AS last_trace
+ON participant_last_trace.trace_id = last_trace.id
+LEFT JOIN trace_type AS last_trace_type
+ON last_trace.trace_type_id = last_trace_type.id
+
+JOIN participant_last_proxy
+ON participant.id = participant_last_proxy.participant_id
+LEFT JOIN proxy AS last_proxy
+ON participant_last_proxy.proxy_id = last_proxy.id
+LEFT JOIN proxy_type AS last_proxy_type
+ON last_proxy.proxy_type_id = last_proxy_type.id
 
 LEFT JOIN participant_last_interview AS participant_current_interview
 ON participant.id = participant_current_interview.participant_id

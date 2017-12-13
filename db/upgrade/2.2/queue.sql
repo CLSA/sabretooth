@@ -78,15 +78,15 @@ SET name = "temporary hold",
 WHERE name = "condition";
 
 UPDATE queue
-SET name = "proxy hold",
-    title = "Participants who require a proxy",
-    description = "Participants who cannot currently be called because they may require a proxy."
+SET name = "tracing",
+    title = "Participants who require tracing",
+    description = "Participants who are uncontactable because of missing or invalid contact information."
 WHERE name = "no address";
 
 UPDATE queue
-SET name = "trace hold",
-    title = "Participants who require tracing",
-    description = "Participants who are uncontactable because of missing or invalid contact information."
+SET name = "proxy",
+    title = "Participants who require a proxy",
+    description = "Participants who cannot currently be called because they may require a proxy."
 WHERE name = "no phone";
 
 -- fix invalid queue description

@@ -79,10 +79,12 @@ class sample extends \cenozo\business\report\base_report
     $select->add_column( 'uid', 'UID' );
     if( $this->db_role->all_sites ) $select->add_column( 'site.name', 'Site', false );
     $select->add_column( 'language.name', 'Language', false );
-    $select->add_column( 'IFNULL( CONCAT( "No: ", enrollment.name ), "Yes" )', 'Enrolled', false );
     $select->add_column(
-      'IF( hold_type.type IS NULL, "(none)", CONCAT( hold_type.type, ": ", hold_type.name ) )',
-      'Hold',
+      "IF( hold_type.type = 'final', CONCAT( 'final: ', hold_type.name ),\n".
+      "IF( trace_type.name IS NOT NULL, CONCAT( 'trace: ', trace_type.name ),\n".
+      "IF( hold_type.type IS NOT NULL, CONCAT( hold_type.type, ': ', hold_type.name ),\n".
+      "IF( proxy_type.name IS NOT NULL, CONCAT( 'proxy: ', proxy_type.name ), 'active' ))))",
+      'status',
       false
     );  
     $select->add_column( $this->get_datetime_column( 'application_has_participant.datetime' ), 'Released', false );
@@ -100,9 +102,18 @@ class sample extends \cenozo\business\report\base_report
     );
 
     $modifier = lib::create( 'database\modifier' );
+
+    // do not include excluded participants
+    $modifier->where( 'participant.exclusion_id', '=', NULL);
     $modifier->join( 'participant_last_hold', 'participant.id', 'participant_last_hold.participant_id' );
     $modifier->left_join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
     $modifier->left_join( 'hold_type', 'hold.hold_type_id', 'hold_type.id' );
+    $modifier->join( 'participant_last_trace', 'participant.id', 'participant_last_trace.participant_id' );
+    $modifier->left_join( 'trace', 'participant_last_trace.trace_id', 'trace.id' );
+    $modifier->left_join( 'trace_type', 'trace.trace_type_id', 'trace_type.id' );
+    $modifier->join( 'participant_last_proxy', 'participant.id', 'participant_last_proxy.participant_id' );
+    $modifier->left_join( 'proxy', 'participant_last_proxy.proxy_id', 'proxy.id' );
+    $modifier->left_join( 'proxy_type', 'proxy.proxy_type_id', 'proxy_type.id' );
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
     $modifier->join(
       'participant_primary_address', 'participant.id', 'participant_primary_address.participant_id' );
