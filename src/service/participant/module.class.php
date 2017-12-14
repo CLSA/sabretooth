@@ -139,28 +139,35 @@ class module extends \cenozo\service\participant\module
     {
       if( $select->has_table_columns( 'queue' ) || $select->has_table_columns( 'qnaire' ) )
       {
-        $join_sel = lib::create( 'database\select' );
-        $join_sel->from( 'queue_has_participant' );
-        $join_sel->add_column( 'participant_id' );
-        $join_sel->add_column( 'MAX( queue_id )', 'queue_id', false );
+        // Special note: the following is needed when viewing a participant's details but not needed when
+        // viewing a list of participants belonging to a queue (and the participant_max_queue join below
+        // would drastically slow down the query if we were to use it)
+        // We can work around this issue by not joining to this temporary table when the parent is "queue"
+        if( 'queue' != $this->get_parent_subject() )
+        {
+          $join_sel = lib::create( 'database\select' );
+          $join_sel->from( 'queue_has_participant' );
+          $join_sel->add_column( 'participant_id' );
+          $join_sel->add_column( 'MAX( queue_id )', 'queue_id', false );
 
-        $join_mod = lib::create( 'database\modifier' );
-        $join_mod->group( 'participant_id' );
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->group( 'participant_id' );
 
-        $modifier->left_join(
-          sprintf( '( %s %s ) AS participant_max_queue',
-                   $join_sel->get_sql(),
-                   $join_mod->get_sql() ),
-          'participant.id',
-          'participant_max_queue.participant_id' );
+          $modifier->left_join(
+            sprintf( '( %s %s ) AS participant_max_queue',
+                     $join_sel->get_sql(),
+                     $join_mod->get_sql() ),
+            'participant.id',
+            'participant_max_queue.participant_id' );
 
-        $join_mod = lib::create( 'database\modifier' );
-        $join_mod->where(
-          'participant_max_queue.queue_id', '=', 'queue_has_participant.queue_id', false );
-        $join_mod->where(
-          'participant_max_queue.participant_id', '=', 'queue_has_participant.participant_id', false );
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->where(
+            'participant_max_queue.queue_id', '=', 'queue_has_participant.queue_id', false );
+          $join_mod->where(
+            'participant_max_queue.participant_id', '=', 'queue_has_participant.participant_id', false );
 
-        $modifier->join_modifier( 'queue_has_participant', $join_mod, 'left' );
+          $modifier->join_modifier( 'queue_has_participant', $join_mod, 'left' );
+        }
 
         if( $select->has_table_columns( 'queue' ) )
           $modifier->left_join( 'queue', 'queue_has_participant.queue_id', 'queue.id' );
