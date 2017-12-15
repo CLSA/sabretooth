@@ -19,4 +19,5 @@ INSERT IGNORE INTO service ( subject, method, resource, restricted ) VALUES
 ( 'trace', 'GET', 0, 0 ),
 ( 'trace', 'GET', 1, 0 ),
 ( 'trace_type', 'GET', 0, 0 ),
-( 'trace_type', 'GET', 1, 0 );
+( 'trace_type', 'GET', 1, 0 ),
+( 'trace', 'POST', 0, 1 );
