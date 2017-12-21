@@ -338,9 +338,10 @@ define( [ 'participant' ].reduce( function( list, name ) {
             promiseList.push(
               CnHttpFactory.instance( {
                 path: 'participant/' + self.assignment.participant_id,
-                data: { select: { column: [ 'withdrawn' ] } }
+                data: { select: { column: [ { table: 'hold_type', column: 'name' } ] } }
               } ).get().then( function( response ) {
-                if( null != self.participant ) self.participant.withdrawn = response.data.withdrawn;
+                if( null != self.participant )
+                  self.participant.withdrawn = 'Withdrawn' == response.data.name;
               } )
             );
 
