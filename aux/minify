@@ -16,12 +16,16 @@ if( !file_exists( 'web' ) )
 chdir( 'web' );
 
 $file_list = array();
-exec(
-  'find -type f | '.
-  'grep "\.js\|\.css$" | '.
-  'grep -v "^\.\/lib\|\.\/app\/require.js$\|\.min\.\|\.swp"',
-  $file_list
-);
+exec( implode( ' | ', array(
+  'find -type f',
+  'grep "\.js\|\.css$"',
+  'grep -v "^\.\/lib"',
+  'grep -v "\.\/app\/require.js$"',
+  'grep -v "theme.css"',
+  'grep -v "\.min\."',
+  'grep -v "\.swp"'
+) ), $file_list );
+
 foreach( $file_list as $file )
 {
   $file_type = false === strpos( $file, '.js' ) ? 'css' : 'js';
