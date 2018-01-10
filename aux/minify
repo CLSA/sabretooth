@@ -16,7 +16,12 @@ if( !file_exists( 'web' ) )
 chdir( 'web' );
 
 $file_list = array();
-exec( 'find -type f | grep "\.js\|\.css$" | grep -v "^\.\/lib\|\.\/app\/require.js$\|\.min\.js$"', $file_list );
+exec(
+  'find -type f | '.
+  'grep "\.js\|\.css$" | '.
+  'grep -v "^\.\/lib\|\.\/app\/require.js$\|\.min\.\|\.swp"',
+  $file_list
+);
 foreach( $file_list as $file )
 {
   $file_type = false === strpos( $file, '.js' ) ? 'css' : 'js';
@@ -26,7 +31,7 @@ foreach( $file_list as $file )
   // if the minified file doesn't exist or is older than the file, re-create it
   if( !file_exists( $min_file ) || filemtime( $file ) > filemtime( $min_file ) )
   {
-    printf( "Creating %s\n", $min_file );
+    printf( "Creating %s\n", preg_replace( '/^\./', 'web', $min_file ) );
     exec( sprintf( 'uglify%s %s > %s', $file_type, $file, $min_file ) );
   }
 }
