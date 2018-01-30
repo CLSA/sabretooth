@@ -68,6 +68,19 @@ class module extends \cenozo\service\participant\module
       $session = lib::create( 'business\session' );
       $db_user = $session->get_user();
 
+      // remove hold/proxy/trace/exclusion joins for efficiency
+      $modifier->remove_join( 'exclusion' );
+      $modifier->remove_join( 'participant_last_hold' );
+      $modifier->remove_join( 'hold' );
+      $modifier->remove_join( 'hold_type' );
+      $modifier->remove_join( 'participant_last_proxy' );
+      $modifier->remove_join( 'proxy' );
+      $modifier->remove_join( 'proxy_type' );
+      $modifier->remove_join( 'participant_last_trace' );
+      $modifier->remove_join( 'trace' );
+      $modifier->remove_join( 'trace_type' );
+      $select->remove_column_by_alias( 'status' );
+
       $modifier->join( 'queue_has_participant', 'participant.id', 'queue_has_participant.participant_id' );
       $modifier->join( 'queue', 'queue_has_participant.queue_id', 'queue.id' );
       $modifier->join( 'qnaire', 'queue_has_participant.qnaire_id', 'qnaire.id' );
