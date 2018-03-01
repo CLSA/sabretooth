@@ -146,7 +146,7 @@ class appointment extends \cenozo\database\record
     {
       if( !is_null( $db_assignment->end_datetime ) )
       { // assignment closed but appointment never completed
-        log::crit(
+        log::critical(
           sprintf( 'Appointment %d has assignment which is closed but no status was set.',
                    $this->id ) );
         $status = 'error';

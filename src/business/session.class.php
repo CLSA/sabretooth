@@ -45,7 +45,7 @@ class session extends \cenozo\business\session
 
     // only one assignment should ever be open at a time, warn if this isn't the case
     if( 1 < count( $assignment_list ) )
-      log::crit( sprintf( 'User "%s" has more than one active assignment!', $this->get_user()->name ) );
+      log::critical( sprintf( 'User "%s" has more than one active assignment!', $this->get_user()->name ) );
 
     return 1 <= count( $assignment_list ) ? current( $assignment_list ) : NULL;
   }
@@ -71,7 +71,7 @@ class session extends \cenozo\business\session
 
     // only one phone call should ever be open at a time, warn if this isn't the case
     if( 1 < count( $phone_call_list ) )
-      log::crit( sprintf( 'User "%s" has more than one active phone call!', $this->get_user()->name ) );
+      log::critical( sprintf( 'User "%s" has more than one active phone call!', $this->get_user()->name ) );
 
     return 1 <= count( $phone_call_list ) ? current( $phone_call_list ) : NULL;
   }
