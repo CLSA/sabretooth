@@ -58,7 +58,7 @@ if( curl_errno( $curl ) )
 else
 {
   $code = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
-  if( 200 != $code )
+  if( 200 != $code && 503 != $code )
   {
     write_log( sprintf( 'Failed to repopulate the queue tree (response code: %s)', $code ) );
   }
@@ -92,7 +92,7 @@ if( curl_errno( $curl ) )
 else
 {
   $code = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
-  if( 200 != $code )
+  if( 200 != $code && 503 != $code )
   {
     write_log( sprintf( 'Failed to update scheduled reports (response code: %s)', $code ) );
   }
