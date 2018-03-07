@@ -18,8 +18,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
     name: {
       singular: 'appointment',
       plural: 'appointments',
-      possessive: 'appointment\'s',
-      pluralPossessive: 'appointments\''
+      possessive: 'appointment\'s'
     },
     columnList: {
       uid: {

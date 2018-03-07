@@ -9,8 +9,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
     name: {
       singular: 'vacancy',
       plural: 'vacancies',
-      possessive: 'vacancy\'s',
-      pluralPossessive: 'vacancies\''
+      possessive: 'vacancy\'s'
     },
     columnList: {
       datetime: {

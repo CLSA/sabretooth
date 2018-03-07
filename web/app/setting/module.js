@@ -13,8 +13,7 @@ define( function() {
     name: {
       singular: 'setting',
       plural: 'settings',
-      possessive: 'setting\'s',
-      pluralPossessive: 'settings\''
+      possessive: 'setting\'s'
     },
     columnList: {
       site: {

@@ -7,8 +7,7 @@ define( function() {
     name: {
       singular: 'queue',
       plural: 'queues',
-      possessive: 'queue\'s',
-      pluralPossessive: 'queues\''
+      possessive: 'queue\'s'
     },
     columnList: {
       rank: {
