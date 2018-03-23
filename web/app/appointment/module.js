@@ -129,6 +129,15 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
     }
   } );
 
+  if( angular.isDefined( cenozoApp.module( 'participant' ).actions.notes ) ) {
+    module.addExtraOperation( 'view', {
+      title: 'Notes',
+      operation: function( $state, model ) {
+        $state.go( 'participant.notes', { identifier: 'uid=' + model.viewModel.record.participant } );
+      }
+    } );
+  }
+
   // add an extra operation for each of the appointment-based calendars the user has access to
   [ 'appointment', 'vacancy' ].forEach( function( name ) {
     var calendarModule = cenozoApp.module( name );
