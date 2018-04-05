@@ -785,14 +785,13 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
             var cnRecordCalendar = cenozo.getScopeByQuerySelector( '.record-calendar' );
             if( null != cnRecordCalendar ) cnRecordCalendar.refresh();
 
-
-
-            parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
-              return e.getIdentifier() != self.record.getIdentifier();
+            // rebuild the event for this record
+            parentModel.calendarModel.cache.some( function( e, index, array ) {
+              if( e.getIdentifier() == self.record.getIdentifier() ) {
+                array[index] = getEventFromAppointment( self.record, CnSession.user.timezone );
+                return true;
+              }
             } );
-            parentModel.calendarModel.cache.push(
-              getEventFromAppointment( self.record, CnSession.user.timezone )
-            );
           } );
         };
 

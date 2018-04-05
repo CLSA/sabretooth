@@ -482,13 +482,15 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
           } );
         };
 
-        // remove and re-add the vacancy's events from the calendar cache
         this.onPatch = function( data ) {
           return this.$$onPatch( data ).then( function() {
-            parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
-              return e.getIdentifier() != self.record.getIdentifier();
+            // rebuild the event for this record
+            parentModel.calendarModel.cache.some( function( e, index, array ) {
+              if( e.getIdentifier() == self.record.getIdentifier() ) {
+                array[index] = getEventFromVacancy( self.record, CnSession.user.timezone );
+                return true;
+              }
             } );
-            parentModel.calendarModel.cache.push( getEventFromVacancy( self.record, CnSession.user.timezone ) );
           } );
         };
 
