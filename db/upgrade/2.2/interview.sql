@@ -21,3 +21,16 @@ DELIMITER ;
 -- now call the procedure and remove the procedure
 CALL patch_interview();
 DROP PROCEDURE IF EXISTS patch_interview;
+
+
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS interview_AFTER_INSERT $$
+CREATE DEFINER = CURRENT_USER TRIGGER interview_AFTER_INSERT AFTER INSERT ON interview FOR EACH ROW
+BEGIN
+  CALL update_participant_last_interview( NEW.participant_id );
+  CALL update_interview_last_assignment( NEW.id );
+  CALL update_interview_last_appointment( NEW.id );
+END;$$
+
+DELIMITER ;
