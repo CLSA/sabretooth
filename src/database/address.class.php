@@ -35,6 +35,6 @@ class address extends \cenozo\database\address
   {
     $db_participant = $this->get_participant();
     parent::delete();
-    $db_participant->repopulate_queue( true );
+    if( !is_null( $db_participant ) ) $db_participant->repopulate_queue( true );
   }
 }
