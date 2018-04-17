@@ -646,11 +646,11 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
             CnHttpFactory.instance( {
               path: 'appointment/' + record.id
             } ).get().then( function( response ) {
-              record.uid = response.data.uid;
-              record.qnaire_rank = response.data.qnaire_rank;
-              record.getIdentifier = function() { return parentModel.getIdentifierFromRecord( record ); };
+              // do not re-use the record object passed to this function
+              var newRecord = response.data;
+              newRecord.getIdentifier = function() { return parentModel.getIdentifierFromRecord( newRecord ); };
               parentModel.calendarModel.cache.push(
-                getEventFromAppointment( record, CnSession.user.timezone )
+                getEventFromAppointment( newRecord, CnSession.user.timezone )
               );
             } );
           } );
