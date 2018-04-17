@@ -18,6 +18,7 @@ $SETTINGS['general']['build'] = '1e92bdc';
 // the location of sabretooth internal path
 $SETTINGS['path']['APPLICATION'] = str_replace( '/settings.ini.php', '', __FILE__ );
 
-// add the interview and recording modules
+// add modules used by the application
 $SETTINGS['module']['interview'] = true;
 $SETTINGS['module']['recording'] = true;
+$SETTINGS['module']['script'] = true;
