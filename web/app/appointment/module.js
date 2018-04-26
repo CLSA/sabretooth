@@ -165,7 +165,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
   function convertDatetime( datetime, timezone, forward ) {
     if( angular.isUndefined( forward ) ) forward = false;
     var date = moment( datetime );
-    var offset = moment.tz.zone( timezone ).offset( date.unix() );
+    var offset = moment.tz.zone( timezone ).utcOffset( date.unix() );
     if( date.tz( timezone ).isDST() ) offset += -60;
     return forward ? moment( datetime ).add( offset, 'minute' ) : moment( datetime ).subtract( offset, 'minute' );
   }

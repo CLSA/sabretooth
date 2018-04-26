@@ -13,7 +13,7 @@ global $SETTINGS;
 $SETTINGS['general']['application_name'] = 'sabretooth';
 $SETTINGS['general']['instance_name'] = $SETTINGS['general']['application_name'];
 $SETTINGS['general']['version'] = '2.2';
-$SETTINGS['general']['build'] = '1e92bdc';
+$SETTINGS['general']['build'] = '2b9fed2';
 
 // the location of sabretooth internal path
 $SETTINGS['path']['APPLICATION'] = str_replace( '/settings.ini.php', '', __FILE__ );

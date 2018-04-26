@@ -46,7 +46,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
 
   // determines the offset given a date (moment object) and timezone
   function getTimezoneOffset( date, timezone ) {
-    var offset = moment.tz.zone( timezone ).offset( date.unix() );
+    var offset = moment.tz.zone( timezone ).utcOffset( date.unix() );
     if( date.tz( timezone ).isDST() ) offset += -60; // adjust the appointment for daylight savings time
     return offset;
   }
