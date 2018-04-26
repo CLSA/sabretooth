@@ -175,8 +175,10 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
     if( angular.isDefined( appointment.start ) && angular.isDefined( appointment.end ) ) {
       return appointment;
     } else {
+      // get the identifier now and not in the getIdentifier() function below
+      var identifier = appointment.getIdentifier();
       var event = {
-        getIdentifier: function() { return appointment.getIdentifier() },
+        getIdentifier: function() { return identifier; },
         title: ( angular.isDefined( appointment.uid ) ? appointment.uid : 'new appointment' ) +
                ( angular.isDefined( appointment.language_code ) ? ' (' + appointment.language_code + ')' : '' ) +
                ( angular.isDefined( appointment.qnaire_rank ) ? ' (' + appointment.qnaire_rank + ')' : '' ) +
@@ -646,8 +648,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
             CnHttpFactory.instance( {
               path: 'appointment/' + record.id
             } ).get().then( function( response ) {
-              // do not re-use the record object passed to this function
-              var newRecord = response.data;
+              var newRecord = angular.copy( response.data );
               newRecord.getIdentifier = function() { return parentModel.getIdentifierFromRecord( newRecord ); };
               parentModel.calendarModel.cache.push(
                 getEventFromAppointment( newRecord, CnSession.user.timezone )

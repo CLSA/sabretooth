@@ -61,9 +61,12 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
       var color = 'blue';
       if( 0 == remaining ) color = 'gray';
       else if( 0 > remaining ) color = 'red';
+
+      // get the identifier now and not in the getIdentifier() function below
+      var identifier = vacancy.getIdentifier();
       return {
         id: vacancy.id,
-        getIdentifier: function() { return vacancy.getIdentifier() },
+        getIdentifier: function() { return identifier; },
         title: vacancy.appointments + ' of ' + vacancy.operators + ' booked',
         start: moment( vacancy.datetime ).subtract( offset, 'minutes' ),
         end: moment( vacancy.datetime ).subtract( offset, 'minutes' ).add( 30, 'minutes' ),
