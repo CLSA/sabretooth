@@ -399,6 +399,17 @@ define( [ 'participant' ].reduce( function( list, name ) {
             lang: self.participant.language_code
           } )
           this.scriptLauncher.launch().then( function() { self.loadScriptList(); } );
+
+          // check for when the window gets focus back and update the participant details
+          if( null != script.name.match( /withdraw/i ) ) {
+            var win = angular.element( $window ).on( 'focus', function() {
+              // the following will process the withdraw script (in case it was finished)
+              CnHttpFactory.instance( {
+                path: 'script/' + script.id + '/token/uid=' + self.participant.uid
+              } ).get().then( function() { self.loadScriptList(); } );
+              win.off( 'focus' );
+            } );
+          }
         };
 
         this.advanceQnaire = function() {
