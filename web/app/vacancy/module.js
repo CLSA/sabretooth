@@ -103,24 +103,22 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnVacancyAdd', [
-    'CnVacancyModelFactory', 'CnSession', '$timeout',
-    function( CnVacancyModelFactory, CnSession, $timeout ) {
+    'CnVacancyModelFactory', 'CnSession',
+    function( CnVacancyModelFactory, CnSession ) {
       return {
         templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnVacancyModelFactory.instance();
-        },
-        link: function( scope, element ) {
-          $timeout( function() {
+
+          var cnRecordAddScope = null;
+          $scope.$on( 'cnRecordAdd ready', function( event, data ) {
+            cnRecordAddScope = data;
+
             // set the datetime in the record and formatted record (if passed here from the calendar)
             scope.model.metadata.getPromise().then( function() {
               if( angular.isDefined( scope.model.addModel.calendarDate ) ) {
-                var cnRecordAddScope = cenozo.findChildDirectiveScope( scope, 'cnRecordAdd' );
-                if( null == cnRecordAddScope )
-                  throw new Error( 'Unable to find vacancy\'s cnRecordAdd scope.' );
-
                 cnRecordAddScope.record.datetime = moment.tz(
                   scope.model.addModel.calendarDate + ' 12:00:00', CnSession.user.timezone );
                 cnRecordAddScope.formattedRecord.datetime = CnSession.formatValue(
@@ -128,7 +126,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
                 delete scope.model.addModel.calendarDate;
               }
             } );
-          }, 200 );
+          } );
         }
       };
     }
@@ -193,10 +191,12 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnVacancyModelFactory.instance();
           $scope.model.calendarModel.heading = $scope.model.site.name.ucWords() + ' Vacancy Calendar';
 
-          // refresh the calendar EVERY time we see it
-          $scope.model.calendarModel.onCalendar( true ).then( function() {
-            var cnRecordCalendarScope = cenozo.findChildDirectiveScope( $scope, 'cnRecordCalendar' );
-            if( cnRecordCalendarScope ) cnRecordCalendarScope.refresh();
+          var cnRecordCalendarScope = null;
+          $scope.$on( 'cnRecordCalendar ready', function( event, data ) {
+            cnRecordCalendarScope = data;
+
+            // refresh the calendar EVERY time we see it
+            $scope.model.calendarModel.onCalendar( true ).then( function() { cnRecordCalendarScope.refresh(); } );
           } );
 
           angular.extend( $scope.model.calendarModel.settings, {
