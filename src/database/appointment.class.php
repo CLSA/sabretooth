@@ -84,7 +84,7 @@ class appointment extends \cenozo\database\record
   }
 
   /**
-   * TODO: document
+   * Gets the duration of the appointment
    */
   public function get_duration()
   {

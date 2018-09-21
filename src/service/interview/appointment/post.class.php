@@ -89,12 +89,12 @@ class post extends \cenozo\service\post
   }
 
   /**
-   * TODO: document
+   * The appointment manager used by the patch service
    */
   protected $appointment_manager = NULL;
 
   /**
-   * TODO: document
+   * Caching variable
    */
   protected $duration = NULL;
 }

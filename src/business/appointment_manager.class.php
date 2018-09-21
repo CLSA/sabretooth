@@ -14,7 +14,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class appointment_manager extends \cenozo\base_object
 {
   /**
-   * TODO: document
+   * Constructor
    */
   public function __construct()
   {
@@ -22,7 +22,7 @@ class appointment_manager extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Sets the datetime and duration of the appointment
    */
   public function set_datetime_and_duration( $datetime, $duration )
   {
@@ -31,8 +31,7 @@ class appointment_manager extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
-   * default session's site
+   * Set the appointment's site (if not set then the session's site is used)
    */
   public function set_site( $db_site )
   {
@@ -40,7 +39,7 @@ class appointment_manager extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Sets the appointment to manipulate
    */
   public function set_appointment( $db_appointment )
   {
@@ -48,7 +47,7 @@ class appointment_manager extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Determines whether there is missing vacancy for the appointment datetime and duration
    */
   public function has_missing_vacancy()
   {
@@ -76,7 +75,7 @@ class appointment_manager extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Adds the appropriate vacancy records to the appointment
    */
   public function apply_vacancy_list()
   {
@@ -102,7 +101,7 @@ class appointment_manager extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * Releases the manager's semaphore
    */
   public function release()
   {
@@ -110,8 +109,7 @@ class appointment_manager extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
-   * create a list of all existing and missing vacancies this appointment will have
+   * Create a list of all existing and missing vacancies this appointment will have
    */
   public function determine_vacancy_lists()
   {
@@ -136,37 +134,37 @@ class appointment_manager extends \cenozo\base_object
   }
 
   /**
-   * TODO: document
+   * The appointment's datetime
    */
   protected $datetime = NULL;
 
   /**
-   * TODO: document
+   * The appointment's duration
    */
   protected $duration = NULL;
 
   /**
-   * TODO: document
+   * The appointment to affect
    */
   protected $db_appointment = NULL;
 
   /**
-   * TODO: document
+   * The appointment's site
    */
   protected $db_site = NULL;
 
   /**
-   * TODO: document
+   * The vacancy list belonging to the appointment
    */
   protected $vacancy_list = NULL;
 
   /**
-   * TODO: document
+   * The missing vacancies required for the appointment
    */
   protected $missing_vacancy_list = NULL;
 
   /**
-   * TODO: document
+   * The semaphore used by the manager
    */
   protected $semaphore = NULL;
 }

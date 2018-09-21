@@ -14,7 +14,7 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class vacancy extends \cenozo\database\record
 {
   /**
-   * TODO: document
+   * Used by the appointment manager to determine the existing and missing vacancies for an appointment
    */
   public static function get_vacancy_lists( $db_site, $start_datetime, $duration, &$existing_list, &$missing_list )
   {
@@ -45,7 +45,7 @@ class vacancy extends \cenozo\database\record
   }
 
   /**
-   * TODO: document
+   * Removes defunct vacancies
    */
   public static function remove_defunct()
   {

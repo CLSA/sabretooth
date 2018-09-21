@@ -117,27 +117,27 @@ class patch extends \cenozo\service\patch
   }
 
   /**
-   * TODO: document
+   * The appointment manager used by the patch service
    */
   protected $appointment_manager = NULL;
 
   /**
-   * TODO: document
+   * Caching variable
    */
   protected $update_vacancies = false;
 
   /**
-   * TODO: document
+   * Caching variable
    */
   protected $start_vacancy_id = NULL;
 
   /**
-   * TODO: document
+   * Caching variable
    */
   protected $start_datetime = NULL;
 
   /**
-   * TODO: document
+   * Caching variable
    */
   protected $duration = NULL;
 }
