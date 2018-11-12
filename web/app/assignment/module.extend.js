@@ -178,7 +178,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
           if( closeScript ) CnSession.closeScript();
           return CnHttpFactory.instance( {
             path: 'assignment/0',
-            data: { select: { column: [ 'id', 'interview_id', 'start_datetime',
+            data: { select: { column: [ 'id', 'interview_id', 'start_datetime', 'missing_hin',
               { table: 'participant', column: 'id', alias: 'participant_id' },
               { table: 'qnaire', column: 'id', alias: 'qnaire_id' },
               { table: 'script', column: 'id', alias: 'script_id' },
@@ -213,6 +213,19 @@ define( [ 'participant' ].reduce( function( list, name ) {
             CnSession.updateData().then( function() {
               self.assignment = response.data;
               CnSession.alertHeader = 'You are currently in an assignment';
+
+              // show a popup if the participant is missing HIN data
+              // Note: this will only show if the participant has consented to provide HIN but hasn't provided an HIN number
+              console.log( self.assignment.missing_hin );
+              if( self.assignment.missing_hin ) {
+                CnModalMessageFactory.instance( {
+                  title: 'Missing HIN',
+                  message:
+                    'The participant has consented to provide their Health Insurance Number (HIN) but their number is not on file.\n\n' +
+                    'Please ask the participant to provide their HIN number.  The details can be added in the participant\'s file ' +
+                    'under the "HIN List" section.'
+                } ).show();
+              }
 
               // get the assigned participant's details
               CnHttpFactory.instance( {
