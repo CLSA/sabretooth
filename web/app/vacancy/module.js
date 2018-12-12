@@ -332,6 +332,11 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
                 revertEnd.add( '30', 'minutes' );
                 event.end = revertEnd;
 
+                // re-render the event show it displays the new details
+                calendar.fullCalendar( 'removeEvents', event.id );
+                calendar.fullCalendar( 'renderEvent', event );
+
+                // create additional 30 minute increments to fill up the new vacancy
                 datetime.add( 30, 'minutes' ); // skip the first since it already exists
                 createVacancyBlock( calendar, $scope.model.calendarModel, datetime, end, event.operators );
               }
