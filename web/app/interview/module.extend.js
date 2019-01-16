@@ -152,8 +152,8 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
         }
 
         // override onView
-        object.onView = function() {
-          return object.$$onView().then( function() {
+        object.onView = function( force ) {
+          return object.$$onView( force ).then( function() {
             if( angular.isDefined( object.appointmentModel ) ) updateEnableFunctions();
           } );
         };

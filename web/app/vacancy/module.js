@@ -503,8 +503,8 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
         };
 
         // editing is only allowed if the vacancy has no appointments
-        this.onView = function() {
-          return this.$$onView().then( function() {
+        this.onView = function( force ) {
+          return this.$$onView( force ).then( function() {
             self.parentModel.module.getInput( 'datetime' ).constant = 0 < self.record.appointments;
           } );
         };
