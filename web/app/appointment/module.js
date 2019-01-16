@@ -781,8 +781,8 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
           } );
         };
 
-        this.onView = function() {
-          return this.$$onView().then( function() {
+        this.onView = function( force ) {
+          return this.$$onView( force ).then( function() {
             // only allow delete/edit if the appointment is in the future
             var upcoming = moment().isBefore( self.record.start_datetime, 'minute' );
             parentModel.getDeleteEnabled = function() {
