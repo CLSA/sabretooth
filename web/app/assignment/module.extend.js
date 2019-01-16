@@ -174,17 +174,21 @@ define( [ 'participant' ].reduce( function( list, name ) {
           self.reset();
           self.isAssignmentLoading = true;
           self.isPrevAssignmentLoading = true;
-
           if( closeScript ) CnSession.closeScript();
+
+          var column = [ 'id', 'interview_id', 'start_datetime',
+            { table: 'participant', column: 'id', alias: 'participant_id' },
+            { table: 'qnaire', column: 'id', alias: 'qnaire_id' },
+            { table: 'script', column: 'id', alias: 'script_id' },
+            { table: 'script', column: 'name', alias: 'qnaire' },
+            { table: 'queue', column: 'title', alias: 'queue' }
+          ];
+
+          if( CnSession.application.checkForMissingHin ) column.push( 'missing_hin' );
+
           return CnHttpFactory.instance( {
             path: 'assignment/0',
-            data: { select: { column: [ 'id', 'interview_id', 'start_datetime', 'missing_hin',
-              { table: 'participant', column: 'id', alias: 'participant_id' },
-              { table: 'qnaire', column: 'id', alias: 'qnaire_id' },
-              { table: 'script', column: 'id', alias: 'script_id' },
-              { table: 'script', column: 'name', alias: 'qnaire' },
-              { table: 'queue', column: 'title', alias: 'queue' }
-            ] } },
+            data: { select: { column: column } },
             onError: function( response ) {
               CnSession.updateData().then( function() {
                 self.assignment = null;
@@ -216,8 +220,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
 
               // show a popup if the participant is missing HIN data
               // Note: this will only show if the participant has consented to provide HIN but hasn't provided an HIN number
-              console.log( self.assignment.missing_hin );
-              if( self.assignment.missing_hin ) {
+              if( CnSession.application.checkForMissingHin && self.assignment.missing_hin ) {
                 CnModalMessageFactory.instance( {
                   title: 'Missing HIN',
                   message:
