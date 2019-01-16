@@ -910,7 +910,7 @@ participant.exclusion_id AS participant_exclusion_id,
 participant.sex AS participant_sex,
 participant.age_group_id AS participant_age_group_id,
 participant.override_quota AS participant_override_quota,
-source.override_quota AS source_override_quota,
+IFNULL( source.override_quota, false ) AS source_override_quota,
 primary_region.id AS primary_region_id,
 last_hold_type.type AS last_hold_type_type,
 last_trace_type.name AS last_trace_type_name,
@@ -947,7 +947,7 @@ JOIN application
 ON application_has_participant.application_id = application.id
 AND application.id = %s
 
-JOIN source
+LEFT JOIN source
 ON participant.source_id = source.id
 
 LEFT JOIN participant_primary_address
