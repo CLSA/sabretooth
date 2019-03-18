@@ -367,7 +367,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
                 data: {
                   modifier: { order: ['repeated','name'] },
                   select: { column: [
-                    'id', 'name', 'repeated', 'url', 'description',
+                    'id', 'name', 'repeated', 'supporting', 'url', 'description',
                     { table: 'started_event', column: 'datetime', alias: 'started_datetime' },
                     { table: 'finished_event', column: 'datetime', alias: 'finished_datetime' }
                   ] }
