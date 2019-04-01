@@ -16,3 +16,8 @@ if( !array_key_exists( 'REDIRECT_URL', $_SERVER ) ||
   $bootstrap = new \cenozo\bootstrap();
   $bootstrap->initialize( 'ui' );
 }
+else if( 0 != preg_match( '#\.js$#', $_SERVER['REDIRECT_URL'] ) )
+{
+  // make sure that javascript files have the correct header (not html)
+  header( 'Content-Type: application/javascript' );
+}
