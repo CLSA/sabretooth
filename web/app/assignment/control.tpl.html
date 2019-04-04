@@ -209,7 +209,7 @@
         </div>
       </div>
       <div class="utility-view rounded vertical-spacer"
-           ng-if="model.activePhoneCall && model.participant.withdrawn">
+           ng-if="model.activePhoneCall && ( model.participant.withdrawn || model.participant.proxy )">
         <div class="container-fluid bg-primary rounded-top">
           <h4>Script Launcher</h4>
         </div>
@@ -217,7 +217,8 @@
           <div class="container-fluid">
             <div class="vertical-spacer text-warning">
               <i class="glyphicon glyphicon-exclamation-sign"></i>
-              You may not launch any scripts for this participant since they have withdrawn from the study.
+              You may not launch any scripts for this participant since
+              {{ model.participant.withdrawn ? 'they have withdrawn from the study.' : 'a proxy is required for the interview.' }}
             </div>
           </div>
         </div>
@@ -225,7 +226,7 @@
         </div>
       </div>
       <div class="utility-view rounded vertical-spacer"
-           ng-if="model.activePhoneCall && !model.participant.withdrawn">
+           ng-if="model.activePhoneCall && !model.participant.withdrawn && !model.participant.proxy">
         <div class="container-fluid bg-primary rounded-top">
           <h4>
             <i class="glyphicon glyphicon-refresh glyph-hover rounded pull-right btn-primary"
