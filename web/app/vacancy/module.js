@@ -117,13 +117,13 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
             cnRecordAddScope = data;
 
             // set the datetime in the record and formatted record (if passed here from the calendar)
-            scope.model.metadata.getPromise().then( function() {
-              if( angular.isDefined( scope.model.addModel.calendarDate ) ) {
+            $scope.model.metadata.getPromise().then( function() {
+              if( angular.isDefined( $scope.model.addModel.calendarDate ) ) {
                 cnRecordAddScope.record.datetime = moment.tz(
-                  scope.model.addModel.calendarDate + ' 12:00:00', CnSession.user.timezone );
+                  $scope.model.addModel.calendarDate + ' 12:00:00', CnSession.user.timezone );
                 cnRecordAddScope.formattedRecord.datetime = CnSession.formatValue(
                   cnRecordAddScope.record.datetime, 'datetime', true );
-                delete scope.model.addModel.calendarDate;
+                delete $scope.model.addModel.calendarDate;
               }
             } );
           } );
