@@ -88,6 +88,7 @@ class call_history extends \cenozo\business\report\base_report
     $select->add_column( 'language.name', 'Language', false );
     $select->add_column( 'participant.sex', 'Sex', false );
     $select->add_column( 'CONCAT( lower, " to ", upper )', 'Age Group', false );
+    $select->add_column( 'participant.email', 'Email', false );
     $select->add_column( 'CONCAT( user.first_name, " ", user.last_name )', 'User', false );
     $select->add_column( 'assignment.id', 'Assignment ID', false );
     $select->add_column( 'script.name', 'Questionnaire', false );
