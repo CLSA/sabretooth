@@ -30,22 +30,22 @@ define( function() {
     rank: {
       title: 'Rank',
       type: 'rank',
-      constant: true
+      isConstant: true
     },
     name: {
       title: 'Name',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     title: {
       title: 'Title',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     description: {
       title: 'Description',
       type: 'text',
-      constant: true
+      isConstant: true
     }
   } );
 

@@ -57,7 +57,7 @@ define( function() {
       column: 'site.name',
       title: 'Site',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     call_without_webphone: {
       title: 'Allow calls without a webphone',

@@ -32,6 +32,9 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
       title: 'Date & Time',
       type: 'datetime',
       minuteStep: 30,
+      isConstant: function( $state, model ) {
+        return angular.isUndefined( model.viewModel.record.appointments ) || 0 < model.viewModel.record.appointments;
+      },
       help: 'Can only be changed if the vacancy has no appointments.'
     },
     operators: {
@@ -499,13 +502,6 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
                 return true;
               }
             } );
-          } );
-        };
-
-        // editing is only allowed if the vacancy has no appointments
-        this.onView = function( force ) {
-          return this.$$onView( force ).then( function() {
-            self.parentModel.module.getInput( 'datetime' ).constant = 0 < self.record.appointments;
           } );
         };
       }

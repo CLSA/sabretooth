@@ -8,18 +8,18 @@ define( [ 'participant' ].reduce( function( list, name ) {
 
   module.identifier.parent.friendly = 'qnaire';
 
-  module.addInputAfter( '', 'participant', 'qnaire', {
+  module.addInput( '', 'qnaire', {
     column: 'script.name',
     title: 'Questionnaire',
     type: 'string',
-    constant: true
-  } );
-  module.addInputAfter( '', 'site', 'queue', {
+    isConstant: true
+  }, 'participant' );
+  module.addInput( '', 'queue', {
     column: 'queue.title',
     title: 'Queue',
     type: 'string',
-    constant: true
-  } );
+    isConstant: true
+  }, 'site' );
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAssignmentControl', [

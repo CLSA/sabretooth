@@ -71,7 +71,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
     start_datetime: {
       title: 'Start Date & Time',
       type: 'datetime',
-      constant: true,
+      isConstant: true,
       help: 'Set by clicking a vacancy in the calendar below'
     },
     duration: {
@@ -83,15 +83,15 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
       column: 'participant.uid',
       title: 'Participant',
       type: 'string',
-      exclude: 'add',
-      constant: true
+      isExcluded: 'add',
+      isConstant: true
     },
     qnaire: {
       column: 'script.name',
       title: 'Questionnaire',
       type: 'string',
-      exclude: 'add',
-      constant: true
+      isExcluded: 'add',
+      isConstant: true
     },
     phone_id: {
       title: 'Phone Number',
@@ -115,16 +115,16 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
       column: 'assignment_user.name',
       title: 'Assigned to',
       type: 'string',
-      exclude: 'add',
-      constant: true,
+      isExcluded: 'add',
+      isConstant: true,
       help: 'This will remain blank until the appointment has been assigned. The assigned user can only be ' +
             ' different from the reserved user when the appointment was missed.'
     },
     state: {
       title: 'State',
       type: 'string',
-      exclude: 'add',
-      constant: true,
+      isExcluded: 'add',
+      isConstant: true,
       help: 'One of reached, not reached, upcoming, assignable, missed, assigned or in progress'
     }
   } );

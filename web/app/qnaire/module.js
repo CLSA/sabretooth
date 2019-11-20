@@ -38,7 +38,7 @@ define( function() {
     script_id: {
       title: 'Script',
       type: 'enum',
-      constant: 'view',
+      isConstant: 'view',
       help: 'Only scripts which are marked as non-repeatable may be used as a questionnaire.'
     },
     delay: {

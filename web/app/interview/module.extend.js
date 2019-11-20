@@ -12,11 +12,11 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
   // add future_appointment as a hidden input (to be used below)
   module.addInput( '', 'future_appointment', { type: 'hidden' } );
   module.addInput( '', 'last_participation_consent', { type: 'hidden' } );
-  module.addInputAfter( '', 'participant', 'qnaire_id', {
+  module.addInput( '', 'qnaire_id', {
     title: 'Questionnaire',
     type: 'enum',
-    constant: true
-  } );
+    isConstant: true
+  }, 'participant' );
 
   module.addExtraOperation( 'view', {
     title: 'Force Complete',

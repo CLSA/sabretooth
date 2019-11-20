@@ -8,13 +8,13 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
       title: 'Current Questionnaire',
       column: 'qnaire.title',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     start_date: {
       title: 'Delayed Until',
       column: 'qnaire.start_date',
       type: 'date',
-      constant: true,
+      isConstant: true,
       help: 'If not empty then the participant will not be permitted to begin this questionnaire until the ' +
             'date shown is reached.'
     },
@@ -22,11 +22,12 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
       title: 'Current Queue',
       column: 'queue.name',
       type: 'string',
-      constant: true
+      isConstant: true
     },
     override_quota: {
       title: 'Override Quota',
-      type: 'boolean'
+      type: 'boolean',
+      isConstant: function( $state, model ) { return !model.isAdministrator(); }
     }
   } );
 
@@ -197,8 +198,8 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
   cenozo.providers.decorator( 'CnParticipantModelFactory', [
     '$delegate', 'CnSession',
     function( $delegate, CnSession ) {
-      // only allow tier-3 roles to override the quota
-      $delegate.root.module.getInput( 'override_quota' ).constant = 3 > CnSession.role.tier;
+      $delegate.root.isAdministrator = function() { return 'administrator' == CnSession.role.name; };
+      
       // disable list for operators
       $delegate.root.getListEnabled = function() {
         return 'operator' == CnSession.role.name ? false : this.$$getListEnabled();
