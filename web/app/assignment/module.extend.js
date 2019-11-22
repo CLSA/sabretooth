@@ -412,13 +412,19 @@ define( [ 'participant' ].reduce( function( list, name ) {
           } );
         };
 
+        this.launchingScript = false;
         this.launchScript = function( script ) {
+          this.launchingScript = true;
           this.scriptLauncher = CnScriptLauncherFactory.instance( {
             script: script,
             identifier: 'uid=' + self.participant.uid,
             lang: self.participant.language_code
           } )
-          this.scriptLauncher.launch().then( function() { self.loadScriptList(); } );
+          this.scriptLauncher.launch().then( function() {
+            self.loadScriptList();
+          } ).finally( function() {
+            self.launchingScript = false;
+          } );
 
           // check for when the window gets focus back and update the participant details
           if( null != script.name.match( /withdraw|proxy/i ) ) {
