@@ -233,8 +233,6 @@ class module extends \cenozo\service\assignment\module
         // since the interview is now complete the effective interview will be newly created
         // by the participant record's get_effective_interview() method
         $db_next_interview = $this->db_participant->get_effective_interview();
-        $db_next_interview->start_datetime = $now;
-        $db_next_interview->save();
 
         $db_assignment = lib::create( 'database\assignment' );
         $db_assignment->user_id = $session->get_user()->id;

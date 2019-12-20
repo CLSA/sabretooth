@@ -208,6 +208,7 @@ class participant extends \cenozo\database\participant
         $db_interview = lib::create( 'database\interview' );
         $db_interview->participant_id = $this->id;
         $db_interview->qnaire_id = $this->effective_qnaire_id;
+        $db_interview->start_datetime = util::get_datetime_object();
         if( $save ) $db_interview->save();
       }
     }
