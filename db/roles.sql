@@ -12,7 +12,4 @@ INSERT IGNORE INTO cenozo.role( name, tier, all_sites ) VALUES
 ( "operator+", 1, false ),
 ( "supervisor", 2, false );
 
--- add states to roles
--- TODO
-
 COMMIT;
