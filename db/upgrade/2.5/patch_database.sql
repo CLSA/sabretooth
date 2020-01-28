@@ -5,6 +5,7 @@ SET AUTOCOMMIT=0;
 SOURCE service.sql
 SOURCE role_has_service.sql
 SOURCE appointment_mail.sql
+SOURCE appointment_has_mail.sql
 
 SOURCE update_version_number.sql
 

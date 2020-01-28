@@ -114,6 +114,18 @@ class patch extends \cenozo\service\patch
       // repopulate the participant's queue
       $this->get_leaf_record()->get_interview()->get_participant()->repopulate_queue( true );
     }
+
+    // PLEASE NOTE:
+    // The "update_email" option is used to update an appointment's mail reminders after the start vacancy
+    // has been changed.  We can't do this at the time that the vacancy is changed because the start_vacancy_id
+    // column is updated as part of a trigger, so the software layer won't be aware of the change until after
+    // the process which made the change is complete.  Therefore an additional request must be made after
+    // the change in start vacancy.
+    if( $this->get_argument( 'update_mail', false ) )
+    {
+      $db_appointment = $this->get_leaf_record();
+      $db_appointment->update_mail();
+    }
   }
 
   /**

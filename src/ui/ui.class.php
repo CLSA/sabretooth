@@ -53,7 +53,11 @@ class ui extends \cenozo\ui\ui
     if( !is_null( $module ) ) $module->add_choose( 'qnaire' );
 
     $module = $this->get_module( 'site' );
-    if( !is_null( $module ) ) $module->add_choose( 'qnaire' );
+    if( !is_null( $module ) )
+    {
+      $module->add_child( 'appointment_mail' );
+      $module->add_choose( 'qnaire' );
+    }
 
     // remove the hold_type list from the operator+ role
     $module = $this->get_module( 'hold_type' );

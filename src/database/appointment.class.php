@@ -58,9 +58,14 @@ class appointment extends \cenozo\database\record
   public function delete()
   {
     $vacancy_class_name = lib::get_class_name( 'database\vacancy' );
-
     $db_participant = $this->get_interview()->get_participant();
+
+    // remove email reminders
+    $this->remove_mail();
+
     parent::delete();
+
+    // free up vacancies and repopulate the queue for this participant
     $vacancy_class_name::remove_defunct();
     $db_participant->repopulate_queue( true );
   }
@@ -180,5 +185,48 @@ class appointment extends \cenozo\database\record
     }
 
     return $status;
+  }
+
+  /**
+   * Adds email reminders for this appointment
+   * @access public
+   */
+  public function add_mail()
+  {
+    $db_site = lib::create( 'business\session' )->get_site();
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'language_id', '=', $this->get_interview()->get_participant()->language_id );
+    foreach( $db_site->get_appointment_mail_object_list( $modifier ) as $db_appointment_mail )
+      $db_appointment_mail->add_mail( $this );
+  }
+
+  /**
+   * Removes email reminders for this appointment
+   * @return The number of mail records deleted
+   * @access public
+   */
+  public function remove_mail()
+  {
+    $count = 0;
+    foreach( $this->get_mail_object_list() as $db_mail )
+    {
+      $db_mail->delete();
+      $count++;
+    }
+
+    return $count;
+  }
+
+  /**
+   * Changes any existing mail records associated with this appointment to the current start datetime
+   * 
+   * This should be called whenever the appointment's start vacancy (start datetime) is changed.  Note
+   * that mail will only be updated if it already exists.  If there is no mail associated with the
+   * appointment then no new mail will be created.
+   * @access public
+   */
+  public function update_mail()
+  {
+    if( 0 < $this->remove_mail() ) $this->add_mail();
   }
 }

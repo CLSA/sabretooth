@@ -137,6 +137,8 @@ class module extends \cenozo\service\base_calendar_module
     $modifier->left_join( 'user', 'appointment.user_id', 'user.id' );
     $select->add_table_column( 'user', 'name', 'username' );
 
+    if( $select->has_column( 'disable_mail' ) ) $select->add_constant( false, 'disable_mail', 'boolean' );
+
     if( !is_null( $this->get_resource() ) )
     {
       // include the user first/last/name as supplemental data

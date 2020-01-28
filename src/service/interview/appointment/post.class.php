@@ -20,10 +20,16 @@ class post extends \cenozo\service\post
   {
     // store non-standard columns into temporary variables
     $post_array = parent::get_file_as_array();
+
     if( array_key_exists( 'duration', $post_array ) )
     {
       $this->duration = $post_array['duration'];
       unset( $post_array['duration'] );
+    }
+    if( array_key_exists( 'disable_mail', $post_array ) )
+    {
+      $this->disable_mail = $post_array['disable_mail'];
+      unset( $post_array['disable_mail'] );
     }
 
     return $post_array;
@@ -86,6 +92,9 @@ class post extends \cenozo\service\post
 
     // repopulate the participant's queue
     $db_appointment->get_interview()->get_participant()->repopulate_queue( true );
+
+    // create appointment mail
+    if( !$this->disable_mail ) $db_appointment->add_mail();
   }
 
   /**
@@ -97,4 +106,9 @@ class post extends \cenozo\service\post
    * Caching variable
    */
   protected $duration = NULL;
+
+  /**
+   * Caching variable
+   */
+  protected $disable_mail = false;
 }

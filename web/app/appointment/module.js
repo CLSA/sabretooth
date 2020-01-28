@@ -111,6 +111,12 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
       help: 'The user the appointment is specifically reserved for. ' +
             'Cannot be changed once the appointment has passed.'
     },
+    disable_mail: {
+      title: 'Disable Email Reminder(s)',
+      type: 'boolean',
+      isExcluded: 'view',
+      help: 'If selected then no automatic email reminders will be created for this appointment.'
+    },
     assignment_user: {
       column: 'assignment_user.name',
       title: 'Assigned to',
@@ -765,6 +771,17 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
         // remove and re-add the appointment's events from the calendar cache
         this.onPatch = function( data ) {
           return self.$$onPatch( data ).then( function() {
+            // PLEASE NOTE:
+            // The "update_email" option is used to update an appointment's mail reminders after the start vacancy
+            // has been changed.  We can't do this at the time that the vacancy is changed because the start_vacancy_id
+            // column is updated as part of a trigger, so the software layer won't be aware of the change until after
+            // the process which made the change is complete.  Therefore an additional request must be made after
+            // the change in start vacancy.
+            if( angular.isDefined( data.start_vacancy_id ) ) {
+              CnHttpFactory.instance( {
+                path: self.parentModel.getServiceResourcePath() + '?update_mail=1'
+              } ).patch();
+            }
 
             // refresh any visible calendars
             self.vacancyModel.calendarModel.onCalendar( true );
@@ -846,11 +863,11 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
     'CnBaseModelFactory',
     'CnAppointmentAddFactory', 'CnAppointmentCalendarFactory',
     'CnAppointmentListFactory', 'CnAppointmentViewFactory',
-    'CnSession', 'CnHttpFactory', '$state',
+    'CnSession', '$state',
     function( CnBaseModelFactory,
               CnAppointmentAddFactory, CnAppointmentCalendarFactory,
               CnAppointmentListFactory, CnAppointmentViewFactory,
-              CnSession, CnHttpFactory, $state ) {
+              CnSession, $state ) {
       var object = function( site ) {
         if( !angular.isObject( site ) || angular.isUndefined( site.id ) )
           throw new Error( 'Tried to create CnAppointmentModel without specifying the site.' );
