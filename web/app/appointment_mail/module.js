@@ -51,22 +51,22 @@ define( [ 'trace' ].reduce( function( list, name ) {
       isConstant: 'view'
     },
     from_name: {
-      title: 'From name',
+      title: 'From Name',
       type: 'string'
     },
     from_address: {
-      title: 'From address',
+      title: 'From Address',
       type: 'string',
       format: 'eappointment_mail',
       help: 'Must be in the format "account@domain.name".'
     },
     cc_address: {
-      title: 'CC',
+      title: 'Carbon Copy (CC)',
       type: 'string',
       help: 'May be a comma-delimited list of eappointment_mail addresses in the format "account@domain.name".'
     },
     bcc_address: {
-      title: 'BCC',
+      title: 'Blind Carbon Copy (BCC)',
       type: 'string',
       help: 'May be a comma-delimited list of eappointment_mail addresses in the format "account@domain.name".'
     },
