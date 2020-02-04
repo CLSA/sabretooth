@@ -85,6 +85,11 @@ define( [ 'trace' ].reduce( function( list, name ) {
     }
   } );
 
+  module.addExtraOperation( 'view', {
+    title: 'Preview',
+    operation: function( $state, model ) { model.viewModel.preview(); }
+  } );
+
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAppointmentMailAdd', [
     'CnAppointmentMailModelFactory',
@@ -150,9 +155,28 @@ define( [ 'trace' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAppointmentMailViewFactory', [
-    'CnBaseViewFactory',
-    function( CnBaseViewFactory ) {
-      var object = function( parentModel, root ) { CnBaseViewFactory.construct( this, parentModel, root ); };
+    'CnBaseViewFactory', 'CnSession', 'CnHttpFactory', 'CnModalMessageFactory',
+    function( CnBaseViewFactory, CnSession, CnHttpFactory, CnModalMessageFactory ) {
+      var object = function( parentModel, root ) {
+        var self = this;
+        CnBaseViewFactory.construct( this, parentModel, root );
+
+        this.preview = function() {
+          return CnHttpFactory.instance( {
+            path: 'application/' + CnSession.application.id,
+            data: { select: { column: [ 'mail_header', 'mail_footer' ] } }
+          } ).get().then( function( response ) {
+            var body = self.record.body;
+            if( null != response.data.mail_header ) body = response.data.mail_header + "\n" + body;
+            if( null != response.data.mail_footer ) body = body + "\n" + response.data.mail_footer;
+            return CnModalMessageFactory.instance( {
+              title: 'Mail Preview',
+              message: body,
+              html: true
+            } ).show();
+          } );
+        };
+      };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
   ] );
