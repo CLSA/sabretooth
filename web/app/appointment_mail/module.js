@@ -28,7 +28,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
       delay: {
         title: 'Delay (days)'
       },
-      title: {
+      subject: {
         title: 'Subject'
       }
     },
@@ -75,7 +75,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
       type: 'string',
       format: 'integer'
     },
-    title: {
+    subject: {
       title: 'Subject',
       type: 'string'
     },

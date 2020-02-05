@@ -51,7 +51,7 @@ class appointment_mail extends \cenozo\database\record
         $db_mail->cc_address = $this->cc_address;
         $db_mail->bcc_address = $this->bcc_address;
         $db_mail->schedule_datetime = $schedule_datetime;
-        $db_mail->title = $this->compile_text( $this->title, $db_participant, $db_start_vacancy->datetime );
+        $db_mail->subject = $this->compile_text( $this->subject, $db_participant, $db_start_vacancy->datetime );
         $db_mail->body = $this->compile_text( $this->body, $db_participant, $db_start_vacancy->datetime );
         $db_mail->note = 'Automatically added from an appointment mail template.';
         $db_mail->save();

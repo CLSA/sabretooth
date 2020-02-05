@@ -25,7 +25,7 @@ CREATE PROCEDURE patch_appointment_mail()
         "cc_address VARCHAR(255) NULL DEFAULT NULL, ",
         "bcc_address VARCHAR(255) NULL DEFAULT NULL, ",
         "delay INT UNSIGNED NOT NULL, ",
-        "title VARCHAR(255) NOT NULL, ",
+        "subject VARCHAR(255) NOT NULL, ",
         "body TEXT NOT NULL, ",
         "PRIMARY KEY (id), ",
         "INDEX fk_site_id (site_id ASC), ",
