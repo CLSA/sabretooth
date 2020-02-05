@@ -101,7 +101,7 @@ class appointment_mail extends \cenozo\database\record
   private function compile_text( $text, $db_participant, $datetime )
   {
     $data_manager = lib::create( 'business\data_manager' );
-    $time_format = 'en' == $db_participant->get_language()->code ? 'h:i a' : 'H:i';
+    $time_format = 'en' == $db_participant->get_language()->code ? 'g:i a' : 'H:i';
 
     $matches = array();
     preg_match_all( '/\$[^$\s]+\$/', $text, $matches ); // get anything enclosed by $ with no whitespace
