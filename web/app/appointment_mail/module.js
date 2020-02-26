@@ -137,9 +137,25 @@ define( [ 'trace' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAppointmentMailAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
+    'CnBaseAddFactory', 'CnHttpFactory',
+    function( CnBaseAddFactory, CnHttpFactory ) {
+      var object = function( parentModel ) {
+        var self = this;
+        CnBaseAddFactory.construct( this, parentModel );
+
+        this.onNew = function( record ) {
+          return this.$$onNew( record ).then( function() {
+            var parent = self.parentModel.getParentIdentifier();
+            return CnHttpFactory.instance( {
+              path: 'application/0',
+              data: { select: { column: [ 'mail_name', 'mail_address' ] } }
+            } ).get().then( function( response ) {
+              record.from_name = response.data.mail_name;
+              record.from_address = response.data.mail_address;
+            } );
+          } );
+        };
+      };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
