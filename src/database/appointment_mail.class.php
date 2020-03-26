@@ -14,6 +14,41 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class appointment_mail extends \cenozo\database\record
 {
   /**
+   * Tests the subject and body of an email to make sure the template is valid
+   * @return boolean
+   * @access public
+   */
+  public function validate()
+  {
+    // test with any participant
+    $db_participant = lib::create( 'database\participant', 1 );
+    $datetime = util::get_datetime_object();
+
+    $errors = array();
+    try
+    {
+      $this->compile_text( $this->subject, $db_participant, $datetime );
+    }
+    catch( \cenozo\exception\argument $e )
+    {
+      preg_match( '/"key" with value "[^"]+"([^"]+)"/', $e->get_raw_message(), $matches );
+      $errors['subject'] = $matches[1];
+    }
+
+    try
+    {
+      $this->compile_text( $this->body, $db_participant, $datetime );
+    }
+    catch( \cenozo\exception\argument $e )
+    {
+      preg_match( '/"key" with value "[^"]+"([^"]+)"/', $e->get_raw_message(), $matches );
+      $errors['body'] = $matches[1];
+    }
+
+    return 0 < count( $errors ) ? util::json_encode( $errors ) : null;
+  }
+
+  /**
    * Adds a mail reminder for the given appointment
    * @param database\appointment $db_appointment
    * @access public

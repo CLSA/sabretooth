@@ -22,5 +22,11 @@ class module extends \cenozo\service\site_restricted_module
 
     $modifier->join( 'site', 'appointment_mail.site_id', 'site.id' );
     $modifier->join( 'language', 'appointment_mail.language_id', 'language.id' );
+
+    $db_mail_template = $this->get_resource();
+    if( !is_null( $db_mail_template ) )
+    {
+      if( $select->has_column( 'validate' ) ) $select->add_constant( $db_mail_template->validate(), 'validate' );
+    }
   }
 }
