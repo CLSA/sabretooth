@@ -139,7 +139,9 @@ class appointment_mail extends \cenozo\database\record
   private function compile_text( $text, $db_participant, $datetime )
   {
     $data_manager = lib::create( 'business\data_manager' );
-    $time_format = 'en' == $db_participant->get_language()->code ? 'g:i a' : 'H:i';
+    $lang = $db_participant->get_language()->code;
+    $date_format = 'en' == $lang ? 'l, F jS' : 'l F j';
+    $time_format = 'en' == $lang ? 'g:i a' : 'H:i';
 
     $matches = array();
     preg_match_all( '/\$[^$\s]+\$/', $text, $matches ); // get anything enclosed by $ with no whitespace
@@ -149,11 +151,14 @@ class appointment_mail extends \cenozo\database\record
       $replace = '';
       if( 'appointment.date' == $value )
       {
-        $replace = $datetime->format( 'F jS' );
+        $replace = util::convert_date_to_language( $datetime->format( $date_format ), $lang );
       }
       else if( 'appointment.datetime' == $value )
       {
-        $replace = $datetime->format( 'F jS \a\t '.$time_format );
+        $replace = util::convert_date_to_language(
+          $datetime->format( sprintf( '%s \a\t %s', $date_format, $time_format ) ),
+          $lang
+        );
       }
       else if( 'appointment.time' == $value )
       {
