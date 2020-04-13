@@ -23,15 +23,24 @@ class interview extends \cenozo\database\interview
   {
     $db_script = $this->get_qnaire()->get_script();
 
+    $is_complete = false;
     if( 'pine' == $db_script->get_type() )
     {
       $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
-      $response = $cenozo_manager->get( sprintf(
-        'qnaire/%d/respondent/participant_id=%d?no_activity=1&select={"column":{"table":"response","column":"submitted"}}',
-        $db_script->pine_qnaire_id,
-        $this->get_participant()->id
-      ) );
-      $is_complete = $response->submitted;
+      try
+      {
+        $response = $cenozo_manager->get( sprintf(
+          'qnaire/%d/respondent/participant_id=%d?no_activity=1&select={"column":{"table":"response","column":"submitted"}}',
+          $db_script->pine_qnaire_id,
+          $this->get_participant()->id
+        ) );
+        $is_complete = $response->submitted;
+      }
+      catch( \cenozo\exception\runtime $e )
+      {
+        // ignore 404s, it just mean the script hasn't been started yet
+        if( false === preg_match( '/Got response code 404/', $e->get_raw_message() ) ) throw $e;
+      }
     }
     else
     {
