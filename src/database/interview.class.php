@@ -27,7 +27,7 @@ class interview extends \cenozo\database\interview
     {
       $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
       $response = $cenozo_manager->get( sprintf(
-        'qnaire/%d/response/participant_id=%d?no_activity=1&select={"column":["submitted"]}',
+        'qnaire/%d/respondent/participant_id=%d?no_activity=1&select={"column":{"table":"response","column":"submitted"}}',
         $db_script->pine_qnaire_id,
         $this->get_participant()->id
       ) );
@@ -123,9 +123,10 @@ class interview extends \cenozo\database\interview
     if( 'pine' == $db_script->get_type() )
     {
       $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
-      $response = $cenozo_manager->patch(
-        sprintf( 'qnaire/%d/response/participant_id=%d', $db_script->pine_qnaire_id, $db_participant->id ),
-        array( 'submitted' => true )
+      $cenozo_manager->patch(
+        // note that we have to use the root respondent/<identifier> service for this operation
+        sprintf( 'respondent/qnaire_id=%d;participant_id=%d?action=force_submit', $db_script->pine_qnaire_id, $db_participant->id ),
+        new \stdClass
       );
     }
     else
