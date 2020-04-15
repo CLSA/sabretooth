@@ -454,19 +454,11 @@ define( [ 'participant' ].reduce( function( list, name ) {
 
           // start by updating the voip status
           CnSession.updateVoip().finally( function() {
-            if( !CnSession.voip.enabled ) {
+            if( !CnSession.voip.enabled || CnSession.setting.callWithoutWebphone ) {
               postCall();
             } else {
               if( !CnSession.voip.info ) {
-                if( !CnSession.setting.callWithoutWebphone ) {
-                  CnModalMessageFactory.instance( {
-                    title: 'Webphone Not Found',
-                    message: 'You cannot start a call without a webphone connection. ' +
-                             'To use the built-in telephone system click on the "Webphone" link under the ' +
-                             '"Utilities" submenu and make sure the webphone client is connected.',
-                    error: true
-                  } ).show();
-                } else if( !phone.international ) {
+                if( !phone.international ) {
                   CnModalConfirmFactory.instance( {
                     title: 'Webphone Not Found',
                     message: 'You are about to place a call with no webphone connection. ' +
@@ -478,6 +470,14 @@ define( [ 'participant' ].reduce( function( list, name ) {
                   } ).show().then( function( response ) {
                     if( response ) postCall();
                   } );
+                } else {
+                  CnModalMessageFactory.instance( {
+                    title: 'Webphone Not Found',
+                    message: 'You cannot start a call without a webphone connection. ' +
+                             'To use the built-in telephone system click on the "Webphone" link under the ' +
+                             '"Utilities" submenu and make sure the webphone client is connected.',
+                    error: true
+                  } ).show();
                 }
               } else {
                 if( phone.international ) {
