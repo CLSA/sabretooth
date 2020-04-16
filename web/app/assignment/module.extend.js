@@ -454,11 +454,13 @@ define( [ 'participant' ].reduce( function( list, name ) {
 
           // start by updating the voip status
           CnSession.updateVoip().finally( function() {
-            if( !CnSession.voip.enabled || CnSession.setting.callWithoutWebphone ) {
+            if( !CnSession.voip.enabled ) {
               postCall();
             } else {
               if( !CnSession.voip.info ) {
-                if( !phone.international ) {
+                if( CnSession.setting.callWithoutWebphone ) {
+                  postCall();
+                } else if( !phone.international ) {
                   CnModalConfirmFactory.instance( {
                     title: 'Webphone Not Found',
                     message: 'You are about to place a call with no webphone connection. ' +
