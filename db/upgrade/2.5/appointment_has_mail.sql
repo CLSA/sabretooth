@@ -1,6 +1,6 @@
-DROP PROCEDURE IF EXISTS patch_role_has_service;
+DROP PROCEDURE IF EXISTS patch_appointment_has_mail;
 DELIMITER //
-CREATE PROCEDURE patch_role_has_service()
+CREATE PROCEDURE patch_appointment_has_mail()
   BEGIN
 
     -- determine the @cenozo database name
@@ -11,7 +11,7 @@ CREATE PROCEDURE patch_role_has_service()
       AND constraint_name = "fk_access_site_id"
     );
 
-    SELECT "Adding services to roles" AS "";
+    SELECT "Adding new appointment_has_mail table" AS "";
 
     SET @sql = CONCAT(
       "CREATE TABLE IF NOT EXISTS appointment_has_mail ( ",
@@ -42,5 +42,5 @@ CREATE PROCEDURE patch_role_has_service()
   END //
 DELIMITER ;
 
-CALL patch_role_has_service();
-DROP PROCEDURE IF EXISTS patch_role_has_service;
+CALL patch_appointment_has_mail();
+DROP PROCEDURE IF EXISTS patch_appointment_has_mail;

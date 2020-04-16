@@ -36,6 +36,8 @@ class ui extends \cenozo\ui\ui
     $module = $this->get_module( 'qnaire' );
     if( !is_null( $module ) )
     {
+      $module->add_choose( 'collection' );
+      $module->add_choose( 'hold_type' );
       $module->add_choose( 'site' );
       $module->add_choose( 'quota' );
     }

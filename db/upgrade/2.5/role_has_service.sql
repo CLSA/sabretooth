@@ -3,7 +3,7 @@ DELIMITER //
 CREATE PROCEDURE patch_role_has_service()
   BEGIN
 
-    -- determine the @cenozo database name
+    -- determine the cenozo database name
     SET @cenozo = (
       SELECT unique_constraint_schema
       FROM information_schema.referential_constraints
