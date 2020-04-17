@@ -121,10 +121,10 @@ define( function() {
         CnBaseViewFactory.construct( this, parentModel, root );
 
         this.deferred.promise.then( function() {
-          if( angular.isDefined( self.siteModel ) )
-            self.siteModel.listModel.heading = 'Disabled Site List';
-          if( angular.isDefined( self.quotaModel ) )
-            self.quotaModel.listModel.heading = 'Disabled Quota List';
+          if( angular.isDefined( self.collectionModel ) ) self.collectionModel.listModel.heading = 'Disabled Collection List';
+          if( angular.isDefined( self.holdTypeModel ) ) self.holdTypeModel.listModel.heading = 'Overridden Hold Type List';
+          if( angular.isDefined( self.siteModel ) ) self.siteModel.listModel.heading = 'Disabled Site List';
+          if( angular.isDefined( self.quotaModel ) ) self.quotaModel.listModel.heading = 'Disabled Quota List';
         } );
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
