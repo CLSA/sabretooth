@@ -30,11 +30,11 @@ class interview extends \cenozo\database\interview
       try
       {
         $response = $cenozo_manager->get( sprintf(
-          'qnaire/%d/respondent/participant_id=%d?no_activity=1&select={"column":{"table":"response","column":"submitted"}}',
+          'qnaire/%d/respondent/participant_id=%d?no_activity=1&select={"column":"completed"}',
           $db_script->pine_qnaire_id,
           $this->get_participant()->id
         ) );
-        $is_complete = $response->submitted;
+        $is_complete = $response->completed;
       }
       catch( \cenozo\exception\runtime $e )
       {

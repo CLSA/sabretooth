@@ -414,6 +414,23 @@ define( [ 'participant' ].reduce( function( list, name ) {
 
         this.launchingScript = false;
         this.launchScript = function( script ) {
+          if( 0 < this.activeQnaire.delay && 1 < this.activeQnaire.rank ) {
+            var previousQnaire = this.qnaireList.findByProperty( 'rank', this.activeQnaire.rank - 1 );
+            var delayUntil = moment( this.qnaireScriptList.findByProperty( 'id', previousQnaire.script_id ).finished_datetime ).add(
+              this.activeQnaire.delay, 'week'
+            );
+
+            if( delayUntil > moment( new Date() ) ) {
+              // do not launch the script (return here)
+              return CnModalMessageFactory.instance( {
+                title: 'Interview Cannot Proceed',
+                message: 'The participant cannot continue the interview process until ' + delayUntil.format( 'dddd, MMMM Do' ) +
+                         '.  Please end your assignment now, the participant will become available for assignment after the ' +
+                         'delay has ended.'
+              } ).show();
+            }
+          }
+
           this.launchingScript = true;
           this.scriptLauncher = CnScriptLauncherFactory.instance( {
             script: script,
