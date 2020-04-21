@@ -210,8 +210,11 @@ class appointment extends \cenozo\database\record
     $count = 0;
     foreach( $this->get_mail_object_list() as $db_mail )
     {
-      $db_mail->delete();
-      $count++;
+      if( is_null( $db_mail->sent ) )
+      {
+        $db_mail->delete();
+        $count++;
+      }
     }
 
     return $count;
