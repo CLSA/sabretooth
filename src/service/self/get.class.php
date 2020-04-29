@@ -18,6 +18,7 @@ class get extends \cenozo\service\self\get
    */
   protected function create_resource( $index )
   {
+    $setting_manager = lib::create( 'business\setting_manager' );
     $session = lib::create( 'business\session' );
     $resource = parent::create_resource( $index );
 
@@ -25,6 +26,7 @@ class get extends \cenozo\service\self\get
     $setting_sel->from( 'setting' );
     $setting_sel->add_all_table_columns();
     $resource['setting'] = $session->get_setting()->get_column_values( $setting_sel );
+    $resource['setting']['vacancy_size'] = $setting_manager->get_setting( 'general', 'vacancy_size' );
 
     return $resource;
   }

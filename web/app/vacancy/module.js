@@ -31,7 +31,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
     datetime: {
       title: 'Date & Time',
       type: 'datetime',
-      minuteStep: 30,
+      minuteStep: 60,
       isConstant: function( $state, model ) {
         return angular.isUndefined( model.viewModel.record.appointments ) || 0 < model.viewModel.record.appointments;
       },
@@ -55,7 +55,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
   }
 
   // converts vacancies into events
-  function getEventFromVacancy( vacancy, timezone ) {
+  function getEventFromVacancy( vacancy, timezone, vacancySize ) {
     if( angular.isDefined( vacancy.start ) && angular.isDefined( vacancy.end ) ) {
       return vacancy;
     } else {
@@ -72,7 +72,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
         getIdentifier: function() { return identifier; },
         title: vacancy.appointments + ' of ' + vacancy.operators + ' booked',
         start: moment( vacancy.datetime ).subtract( offset, 'minutes' ),
-        end: moment( vacancy.datetime ).subtract( offset, 'minutes' ).add( 30, 'minutes' ),
+        end: moment( vacancy.datetime ).subtract( offset, 'minutes' ).add( vacancySize, 'minutes' ),
         color: color,
         offset: offset,
         operators: vacancy.operators,
@@ -144,12 +144,12 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
 
       // Adds a block of vacancies between the start/end times (used below)
       function createVacancyBlock( calendarElement, calendarModel, start, end, operators ) {
-        // split into 30-minute chunks
+        // split into vacancy-size chunks
         var datetimeList = [];
         var datetime = angular.copy( start );
         while( datetime < end ) {
           datetimeList.push( angular.copy( datetime ) );
-          datetime.add( 30, 'minutes' );
+          datetime.add( CnSEssion.setting.vacancySize, 'minutes' );
         }
 
         var eventList = [];
@@ -170,7 +170,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
                 datetime: datetime,
                 operators: operators,
                 appointments: 0
-              }, CnSession.user.timezone );
+              }, CnSession.user.timezone, CnSession.setting.vacancySize );
 
               // add the new event to the event list and cache
               eventList.push( newEvent );
@@ -226,7 +226,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
                 
               if( 0 == overlapEventList.length ) {
                 // the selection did not overlap any events, create vacancies to fill the selection box
-                if( 30 > end.diff( start, 'minutes' ) ) {
+                if( CnSession.setting.vacancySize > end.diff( start, 'minutes' ) ) {
                   CnModalMessageFactory.instance( {
                     title: 'Unable to create vacancies',
                     message: 'There was a problem creating vacancies, please try again.',
@@ -323,24 +323,24 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
               var end = angular.copy( event.end );
               end.add( event.offset, 'minutes' );
 
-              if( 30 >= end.diff( datetime, 'minutes' ) ) {
+              if( CnSession.setting.vacancySize >= end.diff( datetime, 'minutes' ) ) {
                 CnModalMessageFactory.instance( {
                   title: 'Unable to extend vacancy',
                   message: 'There was a problem extending the vacancy, please try again.',
                   error: true
                 } ).show().then( revertFunc );
               } else {
-                // convert the extended event back to 30 minutes
+                // convert the extended event back to vacancy-size minutes
                 var revertEnd = angular.copy( event.start );
-                revertEnd.add( '30', 'minutes' );
+                revertEnd.add( CnSession.setting.vacancySize, 'minutes' );
                 event.end = revertEnd;
 
                 // re-render the event show it displays the new details
                 calendar.fullCalendar( 'removeEvents', event.id );
                 calendar.fullCalendar( 'renderEvent', event );
 
-                // create additional 30 minute increments to fill up the new vacancy
-                datetime.add( 30, 'minutes' ); // skip the first since it already exists
+                // create additional vacancy-size minute increments to fill up the new vacancy
+                datetime.add( CnSession.setting.vacancySize, 'minutes' ); // skip the first since it already exists
                 createVacancyBlock( calendar, $scope.model.calendarModel, datetime, end, event.operators );
               }
             }
@@ -419,7 +419,11 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
             record.getIdentifier = function() { return parentModel.getIdentifierFromRecord( record ); };
 
             // fill in the user name so that it shows in the calendar
-            return parentModel.calendarModel.cache.push( getEventFromVacancy( record, CnSession.user.timezone ) );
+            return parentModel.calendarModel.cache.push( getEventFromVacancy(
+              record,
+              CnSession.user.timezone,
+              CnSession.setting.vacancySize
+            ) );
           } );
         };
       };
@@ -446,7 +450,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
           // note that we ignore the ignoreParent parameter and always ignore the parent
           return self.$$onCalendar( replace, minDate, maxDate, true ).then( function() {
             self.cache.forEach( function( item, index, array ) {
-              array[index] = getEventFromVacancy( item, CnSession.user.timezone );
+              array[index] = getEventFromVacancy( item, CnSession.user.timezone, CnSession.setting.vacancySize );
             } );
           } );
         };
@@ -498,7 +502,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
             // rebuild the event for this record
             parentModel.calendarModel.cache.some( function( e, index, array ) {
               if( e.getIdentifier() == self.record.getIdentifier() ) {
-                array[index] = getEventFromVacancy( self.record, CnSession.user.timezone );
+                array[index] = getEventFromVacancy( self.record, CnSession.user.timezone, CnSession.setting.vacancySize );
                 return true;
               }
             } );
@@ -530,6 +534,9 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
         this.listModel = CnVacancyListFactory.instance( this );
         this.viewModel = CnVacancyViewFactory.instance( this, site.id == CnSession.site.id );
         this.site = site;
+
+        // define the datetime interval
+        this.module.inputGroupList.findByProperty( 'title', '' ).inputList.datetime.minuteStep = CnSession.setting.vacancySize;
 
         // replace view-list with view-calendar
         this.viewTitle = 'Vacancy Calendar';

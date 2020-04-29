@@ -203,7 +203,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
   }
 
   // determines if all vacancies are available (using local time, not UTC)
-  function vacancyAvailable( oldDatetime, oldDuration, newDatetime, newDuration, cache ) {
+  function vacancyAvailable( vacancySize, oldDatetime, oldDuration, newDatetime, newDuration, cache ) {
     var available = true;
     if( 'same' == newDatetime ) newDatetime = oldDatetime.clone();
     if( 'same' == newDuration ) newDuration = oldDuration;
@@ -211,7 +211,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
     var oldToDatetime = null == oldDatetime ? null : oldDatetime.clone().add( oldDuration, 'minute' );
     var newFromDatetime = newDatetime.clone();
     var newToDatetime = newDatetime.clone().add( newDuration, 'minute' );
-    var total = newDuration / 30;
+    var total = newDuration / vacancySize;
     var found = 0;
     cache.some( function( vacancy ) {
       if( vacancy.start.isBetween( newFromDatetime, newToDatetime, 'minute', '[)' ) ) {
@@ -258,7 +258,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
                 ? cache.findByProperty( 'id', cnRecordAddScope.record.start_vacancy_id )
                 : null;
               var available = vacancy
-                ? vacancyAvailable( null, null, vacancy.start, cnRecordAddScope.record.duration, cache )
+                ? vacancyAvailable( CnSession.setting.vacancySize, null, null, vacancy.start, cnRecordAddScope.record.duration, cache )
                 : false;
 
               var promiseList = [];
@@ -468,6 +468,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
               var proceed = true;
               if( 'duration' == property ) {
                 var available = vacancyAvailable(
+                  CnSession.setting.vacancySize,
                   convertDatetime(
                     $scope.model.viewModel.record.start_datetime,
                     CnSession.user.timezone,
@@ -574,6 +575,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
                   } else {
                     // determine if all vacancies are available
                     var available = vacancyAvailable(
+                      CnSession.setting.vacancySize,
                       convertDatetime(
                         $scope.model.viewModel.record.start_datetime,
                         CnSession.user.timezone,
@@ -906,23 +908,28 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
         this.getMetadata = function() {
           return this.$$getMetadata().then( function() {
             // add the start_datetime and duration metadata details
+            var interval = CnSession.setting.vacancySize;
             angular.extend( self.metadata.columnList, {
               start_datetime: { required: true },
               duration: {
                 required: true,
-                default: 60,
-                enumList: [
-                  { value: 30, name: '0.5 hours' },
-                  { value: 60, name: '1.0 hours' },
-                  { value: 90, name: '1.5 hours' },
-                  { value: 120, name: '2.0 hours' },
-                  { value: 150, name: '2.5 hours' },
-                  { value: 180, name: '3.0 hours' },
-                  { value: 210, name: '3.5 hours' },
-                  { value: 240, name: '4.0 hours' }
-                ]
+                default: 2*interval,
+                enumList: []
               }
             } );
+
+            // add 8 increments for possible appointment lengths
+            for( var i = 1; i <= 8; i++ ) {
+              var time = interval * i;
+              var hours = Math.floor( time/60 );
+              var minutes = time%60;
+              self.metadata.columnList.duration.enumList.push( {
+                value: time,
+                name: ( 0 < hours ? hours + ' hour' + ( 1 < hours ? 's' : '' ) : '' ) + 
+                      ( 0 < hours && 0 < minutes ? ', ' : '' ) +
+                      ( 0 < minutes ? minutes + ' minute' + ( 1 < minutes ? 's' : '' ) : '' )
+              } );
+            }
           } );
         };
 

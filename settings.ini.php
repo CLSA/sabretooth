@@ -13,7 +13,10 @@ global $SETTINGS;
 $SETTINGS['general']['application_name'] = 'sabretooth';
 $SETTINGS['general']['instance_name'] = $SETTINGS['general']['application_name'];
 $SETTINGS['general']['version'] = '2.5';
-$SETTINGS['general']['build'] = '15eef9e';
+$SETTINGS['general']['build'] = 'f2018c9';
+
+// determines the vacancy block size
+$SETTINGS['general']['vacancy_size'] = 30;
 
 // the location of sabretooth internal path
 $SETTINGS['path']['APPLICATION'] = str_replace( '/settings.ini.php', '', __FILE__ );

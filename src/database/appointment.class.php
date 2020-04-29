@@ -93,6 +93,7 @@ class appointment extends \cenozo\database\record
    */
   public function get_duration()
   {
+    $vacancy_size = lib::create( 'business\setting_manager' )->get_setting( 'general', 'vacancy_size' );
     $duration = NULL;
     $db_start_vacancy = $this->get_start_vacancy();
     $db_end_vacancy = $this->get_end_vacancy();
@@ -104,8 +105,8 @@ class appointment extends \cenozo\database\record
         $db_end_vacancy->datetime
       );
 
-      // get the duration and add 30 (to include the last vacancy)
-      $duration = $diff->days*1440 + $diff->h*60 + $diff->i + 30;
+      // get the duration and add vacancy-size (to include the last vacancy)
+      $duration = $diff->days*1440 + $diff->h*60 + $diff->i + $vacancy_size;
     }
 
     return $duration;

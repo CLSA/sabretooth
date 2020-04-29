@@ -18,6 +18,8 @@ class vacancy extends \cenozo\database\record
    */
   public static function get_vacancy_lists( $db_site, $start_datetime, $duration, &$existing_list, &$missing_list )
   {
+    $vacancy_size = lib::create( 'business\setting_manager' )->get_setting( 'general', 'vacancy_size' );
+
     // populate the list of vacancies and missing vacancies
     $datetime = clone $start_datetime;
     $end_datetime = clone $start_datetime;
@@ -40,7 +42,7 @@ class vacancy extends \cenozo\database\record
       }
       else $existing_list[] = $db_vacancy;
 
-      $datetime->add( new \DateInterval( 'PT30M' ) );
+      $datetime->add( new \DateInterval( sprintf( 'PT%dM', $vacancy_size ) ) );
     }
   }
 

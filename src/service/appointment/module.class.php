@@ -133,6 +133,7 @@ class module extends \cenozo\service\base_calendar_module
     parent::prepare_read( $select, $modifier );
 
     $session = lib::create( 'business\session' );
+    $vacancy_size = lib::create( 'business\setting_manager' )->get_setting( 'general', 'vacancy_size' );
 
     $modifier->left_join( 'user', 'appointment.user_id', 'user.id' );
     $select->add_table_column( 'user', 'name', 'username' );
@@ -178,7 +179,7 @@ class module extends \cenozo\service\base_calendar_module
       $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
 
     $select->add_column( 'start_vacancy.datetime', 'start_datetime', false, 'datetime' );
-    $select->add_column( 'end_vacancy.datetime + INTERVAL 30 MINUTE', 'end_datetime', false, 'datetime' );
+    $select->add_column( sprintf( 'end_vacancy.datetime + INTERVAL %d MINUTE', $vacancy_size ), 'end_datetime', false, 'datetime' );
 
     if( $select->has_column( 'date' ) )
     {
@@ -191,11 +192,11 @@ class module extends \cenozo\service\base_calendar_module
     if( $select->has_column( 'start_time' ) )
       $select->add_column( 'TIME( start_vacancy.datetime )', 'start_time', false );
     if( $select->has_column( 'end_time' ) )
-      $select->add_column( 'TIME( end_vacancy.datetime + INTERVAL 30 MINUTE )', 'end_time', false );
+      $select->add_column( sprintf( 'TIME( end_vacancy.datetime + INTERVAL %d MINUTE )', $vacancy_size ), 'end_time', false );
     if( $select->has_column( 'duration' ) )
     {
       $select->add_column(
-        'TIMESTAMPDIFF( MINUTE, start_vacancy.datetime, end_vacancy.datetime ) + 30',
+        sprintf( 'TIMESTAMPDIFF( MINUTE, start_vacancy.datetime, end_vacancy.datetime ) + %d', $vacancy_size ),
         'duration',
         false,
         'integer'
