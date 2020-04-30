@@ -13,7 +13,7 @@ global $SETTINGS;
 $SETTINGS['general']['application_name'] = 'sabretooth';
 $SETTINGS['general']['instance_name'] = $SETTINGS['general']['application_name'];
 $SETTINGS['general']['version'] = '2.5';
-$SETTINGS['general']['build'] = 'f2018c9';
+$SETTINGS['general']['build'] = 'a8fbad0';
 
 // determines the vacancy block size
 $SETTINGS['general']['vacancy_size'] = 30;

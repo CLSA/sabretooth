@@ -149,7 +149,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
         var datetime = angular.copy( start );
         while( datetime < end ) {
           datetimeList.push( angular.copy( datetime ) );
-          datetime.add( CnSEssion.setting.vacancySize, 'minutes' );
+          datetime.add( CnSession.setting.vacancySize, 'minutes' );
         }
 
         var eventList = [];
