@@ -20,6 +20,14 @@ define( function() {
         column: 'site.name',
         title: 'Site'
       },
+      mail_name: {
+        title: 'Default Email Name',
+        help: 'The default sender\'s name that emails will be sent from'
+      },
+      mail_address: {
+        title: 'Default Email Address',
+        help: 'The default email address that emails will be sent from'
+      },
       call_without_webphone: {
         title: 'No-Webphone',
         type: 'boolean',
@@ -58,6 +66,16 @@ define( function() {
       title: 'Site',
       type: 'string',
       isConstant: true
+    },
+    mail_name: {
+      title: 'Default Email Name',
+      type: 'string',
+      help: 'The default sender\'s name that emails will be sent from'
+    },
+    mail_address: {
+      title: 'Default Email Address',
+      type: 'string',
+      help: 'The default email address that emails will be sent from'
     },
     call_without_webphone: {
       title: 'Allow calls without a webphone',

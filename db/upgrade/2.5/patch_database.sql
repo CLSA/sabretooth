@@ -9,6 +9,7 @@ SOURCE appointment_has_mail.sql
 SOURCE qnaire_has_collection.sql
 SOURCE qnaire_has_hold_type.sql
 SOURCE queue.sql
+SOURCE setting.sql
 
 SOURCE update_version_number.sql
 
