@@ -973,7 +973,7 @@ IF
     IF
     (
       current_interview.end_datetime IS NOT NULL AND current_assignment.end_datetime IS NOT NULL,
-      current_assignment.end_datetime + INTERVAL next_qnaire.delay WEEK,
+      DATE( current_assignment.end_datetime ) + INTERVAL next_qnaire.delay WEEK,
       NULL
     )
   )
