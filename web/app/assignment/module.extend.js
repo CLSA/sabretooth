@@ -420,7 +420,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
               this.activeQnaire.delay, 'week'
             );
 
-            if( delayUntil > moment( new Date() ) ) {
+            if( delayUntil.isAfter( moment( new Date() ), 'days' ) ) {
               // do not launch the script (return here)
               return CnModalMessageFactory.instance( {
                 title: 'Interview Cannot Proceed',
