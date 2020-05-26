@@ -139,9 +139,16 @@ class appointment_mail extends \cenozo\database\record
   private function compile_text( $text, $db_participant, $datetime )
   {
     $data_manager = lib::create( 'business\data_manager' );
-    $lang = $db_participant->get_language()->code;
-    $date_format = 'en' == $lang ? 'l, F jS' : 'l j F';
-    $time_format = 'en' == $lang ? 'g:i a' : 'H:i';
+    $db_language = $db_participant->get_language();
+    $date_format = 'en' == $db_language->code ? 'l, F jS' : 'l j F';
+    $time_format = 'en' == $db_language->code ? 'g:i a T' : 'H:i T';
+
+    $db_address = $db_participant->get_first_address();
+    $datetime->setTimezone(
+      is_null( $db_address ) ?
+      $db_participant->get_effective_site()->get_timezone_object() :
+      $db_address->get_timezone_object()
+    );
 
     $matches = array();
     preg_match_all( '/\$[^$\s]+\$/', $text, $matches ); // get anything enclosed by $ with no whitespace
@@ -151,18 +158,18 @@ class appointment_mail extends \cenozo\database\record
       $replace = '';
       if( 'appointment.date' == $value )
       {
-        $replace = util::convert_date_to_language( $datetime->format( $date_format ), $lang );
+        $replace = util::convert_datetime_language( $datetime->format( $date_format ), $db_language );
       }
       else if( 'appointment.datetime' == $value )
       {
-        $replace = util::convert_date_to_language(
+        $replace = util::convert_datetime_language(
           $datetime->format( sprintf( '%s \a\t %s', $date_format, $time_format ) ),
-          $lang
+          $db_language
         );
       }
       else if( 'appointment.time' == $value )
       {
-        $replace = $datetime->format( $time_format );
+        $replace = util::convert_datetime_language( $datetime->format( $time_format ), $db_language );
       }
       else
       {
