@@ -28,6 +28,7 @@ class module extends \cenozo\service\collection\module
       $db_application = lib::create( 'business\session' )->get_application();
       $column = sprintf( 'IFNULL( application_has_collection.application_id, %d )', $db_application->id );
       $modifier->remove_where( $column );
+      $modifier->remove_join( 'application_has_collection' );
     }
   }
 }
