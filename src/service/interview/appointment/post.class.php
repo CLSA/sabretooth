@@ -92,9 +92,6 @@ class post extends \cenozo\service\post
 
     // repopulate the participant's queue
     $db_appointment->get_interview()->get_participant()->repopulate_queue( true );
-
-    // create appointment mail
-    if( !$this->disable_mail ) $db_appointment->add_mail();
   }
 
   /**

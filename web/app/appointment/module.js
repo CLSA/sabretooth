@@ -647,6 +647,16 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
                 getEventFromAppointment( newRecord, CnSession.user.timezone )
               );
             } );
+
+            // PLEASE NOTE:
+            // The "add_email" option is used to add an appointment's mail reminders after is has been created.
+            // We can't do this at the time that the appointment is created because overridden appointments create
+            // their vacancies as part of a trigger, so the software layer won't be aware of the change until after
+            // the appointment has been created.  Therefore an additional request must be made after the new
+            // appointment has been created.
+            if( !record.disable_mail ) {
+              CnHttpFactory.instance( { path: 'appointment/' + record.id + '?add_mail=1' } ).patch();
+            }
           } );
         };
 
@@ -780,9 +790,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
             // the process which made the change is complete.  Therefore an additional request must be made after
             // the change in start vacancy.
             if( angular.isDefined( data.start_vacancy_id ) ) {
-              CnHttpFactory.instance( {
-                path: self.parentModel.getServiceResourcePath() + '?update_mail=1'
-              } ).patch();
+              CnHttpFactory.instance( { path: self.parentModel.getServiceResourcePath() + '?update_mail=1' } ).patch();
             }
 
             // refresh any visible calendars
