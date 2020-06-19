@@ -24,6 +24,7 @@ class productivity extends \cenozo\business\report\base_report
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $interview_class_name = lib::get_class_name( 'database\interview' );
+    $pine_server = lib::create( 'business\cenozo_manager', 'pine' );
 
     // create a list of all qnaires
     $qnaire_mod = lib::create( 'database\modifier' );
@@ -147,6 +148,8 @@ class productivity extends \cenozo\business\report\base_report
         }
       }
 
+      $time_report = array( 'index' => array(), 'query' => array() );
+
       $sub_mod = clone $modifier;
       $sub_mod->where( 'interview.site_id', '=', $site['id'] );
       foreach( $interview_class_name::select( $select, $sub_mod ) as $row )
@@ -171,8 +174,32 @@ class productivity extends \cenozo\business\report\base_report
 
           if( 'pine' == $db_script->get_type() )
           {
-            // TODO: pine doesn't track time yet
+            $interview_sel = lib::create( 'database\select' );
+            $interview_sel->add_column( 'participant_id' );
+
+            $interview_mod = lib::create( 'database\modifier' );
+            $interview_mod->join( 'interview_last_assignment', 'interview.id', 'interview_last_assignment.interview_id' );
+            $interview_mod->join( 'assignment', 'interview_last_assignment.assignment_id', 'assignment.id' );
+            $interview_mod->where( 'assignment.user_id', '=', $row['user_id'] );
+            $interview_mod->where( 'assignment.site_id', '=', $site['id'] );
+            $interview_mod->where( 'interview.qnaire_id', '=', $db_qnaire->id );
+
+            $participant_id_list = array();
+            foreach( $interview_class_name::select( $interview_sel, $interview_mod ) as $r )
+              $participant_id_list[] = $r['participant_id'];
+
             $data[$row['user']][$db_qnaire->get_script()->name.' Time'] = 0;
+            if( 0 < count( $participant_id_list ) )
+            {
+              $time_report['index'][] = array(
+                'user' => $row['user'],
+                'column' => $db_qnaire->get_script()->name.' Time'
+              );
+              $time_report['query'][] = array(
+                'qnaire_id' => $db_script->pine_qnaire_id,
+                'participant_id_list' => $participant_id_list
+              );
+            }
           }
           else
           {
@@ -228,6 +255,25 @@ class productivity extends \cenozo\business\report\base_report
               $survey_class_name::get_total_time( $survey_time_mod ) / 60;
 
             $survey_class_name::set_sid( $old_sid );
+          }
+        }
+      }
+
+      if( 'pine' == $db_script->get_type() )
+      {
+        // send all queries to pine as a single request to reduce machine-to-machine overhead
+        if( 0 < count( $time_report['query'] ) )
+        {
+          $response = $pine_server->post(
+            'respondent?time_report=1',
+            $time_report['query']
+          );
+
+          foreach( $response as $row )
+          {
+            // pine tracks time in seconds so we divide by 60 to convert to minutes
+            $index = $time_report['index'][$row->index];
+            $data[$index['user']][$index['column']] = $row->time / 60;
           }
         }
       }
