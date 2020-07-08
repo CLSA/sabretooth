@@ -194,11 +194,15 @@ class appointment extends \cenozo\database\record
    */
   public function add_mail()
   {
-    $db_site = lib::create( 'business\session' )->get_site();
-    $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'language_id', '=', $this->get_interview()->get_participant()->language_id );
-    foreach( $db_site->get_appointment_mail_object_list( $modifier ) as $db_appointment_mail )
-      $db_appointment_mail->add_mail( $this );
+    $db_participant = $this->get_interview()->get_participant();
+    $db_site = $db_participant->get_effective_site();
+    if( !is_null( $db_site ) )
+    {
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'language_id', '=', $db_participant->language_id );
+      foreach( $db_site->get_appointment_mail_object_list( $modifier ) as $db_appointment_mail )
+        $db_appointment_mail->add_mail( $this );
+    }
   }
 
   /**
