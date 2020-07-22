@@ -147,6 +147,9 @@ class sample extends \cenozo\business\report\base_report
       $postfix .= ' ';
     }
 
+    // add the global note as the last column
+    $select->add_column( 'participant.global_note', 'Special Note', false );
+
     // set up requirements
     $this->apply_restrictions( $modifier );
 
