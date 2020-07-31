@@ -666,6 +666,16 @@ class queue extends \cenozo\database\record
     $modifier->left_join(
       'temp_participant_first_address', 'temp_participant_first_address.id', 'temp_participant.id' );
 
+    if( 'web version' == $queue )
+    {
+      // make sure there is no active address
+      $modifier->where( 'interview_method', '=', 'web' );
+      return;
+    }
+
+    // make sure there is an active address
+    $modifier->where( 'interview_method', '!=', 'web' );
+
     if( 'no active address' == $queue )
     {
       // make sure there is no active address
@@ -956,6 +966,7 @@ last_hold_type.type AS last_hold_type_type,
 last_trace_type.name AS last_trace_type_name,
 last_proxy_type.name AS last_proxy_type_name,
 current_interview.id AS current_interview_id,
+current_interview.method AS interview_method,
 current_qnaire.id AS current_qnaire_id,
 current_assignment.id AS current_assignment_id,
 current_assignment.end_datetime AS current_assignment_end_datetime,

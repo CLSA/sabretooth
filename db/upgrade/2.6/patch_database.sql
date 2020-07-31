@@ -2,6 +2,9 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE interview.sql
+
 SOURCE update_version_number.sql
+SOURCE queue.sql
 
 COMMIT;

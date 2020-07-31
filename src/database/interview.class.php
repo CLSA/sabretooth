@@ -14,6 +14,17 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class interview extends \cenozo\database\interview
 {
   /**
+   * Override the parent method
+   */
+  public function save()
+  {
+    // if we changed the method column then update the queue
+    $update_queue = $this->has_column_changed( 'method' );
+    parent::save();
+    if( $update_queue ) $this->get_participant()->repopulate_queue( true );
+  }
+
+  /**
    * Determines whether the script associated with this interview has been completed
    * 
    * @return boolean

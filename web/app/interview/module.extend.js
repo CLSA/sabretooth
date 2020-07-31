@@ -9,14 +9,29 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
     title: 'Questionnaire'
   } );
 
+  cenozo.insertPropertyAfter( module.columnList, 'qnaire', 'method', {
+    column: 'interview.method',
+    title: 'Method'
+  } );
+
   // add future_appointment as a hidden input (to be used below)
   module.addInput( '', 'future_appointment', { type: 'hidden' } );
   module.addInput( '', 'last_participation_consent', { type: 'hidden' } );
+
+  // add whether the script is pine based or not (needed to enable/disable qnaire method)
+  module.addInput( '', 'pine_qnaire_id', { column: 'script.pine_qnaire_id', type: 'hidden' } );
+
   module.addInput( '', 'qnaire_id', {
     title: 'Questionnaire',
     type: 'enum',
     isConstant: true
   }, 'participant' );
+  module.addInput( '', 'method', {
+    title: 'Interviewing Method',
+    type: 'enum',
+    // don't allow the interviewing method to be changed if not doing a pine interview
+    isConstant: function( $state, model ) { return null == model.viewModel.record.pine_qnaire_id; }
+  }, 'qnaire_id' );
 
   module.addExtraOperation( 'view', {
     title: 'Force Complete',
