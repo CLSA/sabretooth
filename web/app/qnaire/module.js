@@ -49,6 +49,14 @@ define( function() {
     }
   } );
 
+  module.addExtraOperation( 'view', {
+    title: 'Mass Interview Method',
+    operation: function( $state, model ) {
+      $state.go( 'qnaire.mass_method', { identifier: model.viewModel.record.getIdentifier() } );
+    },
+    isIncluded: function( $state, model ) { return model.getEditEnabled(); }
+  } );
+
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnQnaireAdd', [
     'CnQnaireModelFactory',
@@ -74,6 +82,33 @@ define( function() {
         scope: { model: '=?' },
         controller: function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnQnaireModelFactory.root;
+        }
+      };
+    }
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.directive( 'cnQnaireMassMethod', [
+    'CnQnaireMassMethodFactory', 'CnSession', '$state',
+    function( CnQnaireMassMethodFactory, CnSession, $state ) {
+      return {
+        templateUrl: module.getFileUrl( 'mass_method.tpl.html' ),
+        restrict: 'E',
+        scope: { model: '=?' },
+        controller: function( $scope ) {
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnQnaireMassMethodFactory.instance();
+
+          $scope.model.onLoad().then( function() {
+            CnSession.setBreadcrumbTrail( [ {
+              title: 'Questionnaires',
+              go: function() { return $state.go( 'qnaire.list' ); }
+            }, {
+              title: $scope.model.qnaireName,
+              go: function() { return $state.go( 'qnaire.view', { identifier: $scope.model.qnaireId } ); }
+            }, {
+              title: 'Mass Interview Method'
+            } ] );
+          } );
         }
       };
     }
@@ -109,6 +144,97 @@ define( function() {
     function( CnBaseListFactory ) {
       var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
+    }
+  ] );
+
+  /* ######################################################################################################## */
+  cenozo.providers.factory( 'CnQnaireMassMethodFactory', [
+    'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', '$state',
+    function( CnSession, CnHttpFactory, CnModalMessageFactory, $state ) {
+      var object = function() {
+        var self = this;
+        angular.extend( this, {
+          method: 'phone',
+          working: false,
+          qnaireId: $state.params.identifier,
+          qnaireName: null,
+          confirmInProgress: false,
+          confirmedCount: null,
+          uidListString: '',
+          uidList: [],
+
+          onLoad: function() {
+            // reset data
+            return CnHttpFactory.instance( {
+              path: 'qnaire/' + this.qnaireId,
+              data: { select: { column: 'name' } }
+            } ).get().then( function( response ) {
+              self.qnaireName = response.data.name;
+              self.confirmInProgress = false;
+              self.confirmedCount = null;
+              self.uidListString = '';
+              self.uidList = [];
+            } );
+          },
+
+          inputsChanged: function() {
+            this.confirmedCount = null;
+          },
+
+          confirm: function() {
+            this.confirmInProgress = true;
+            this.confirmedCount = null;
+            var uidRegex = new RegExp( CnSession.application.uidRegex );
+
+            // clean up the uid list
+            this.uidList =
+              this.uidListString.toUpperCase() // convert to uppercase
+                          .replace( /[\s,;|\/]/g, ' ' ) // replace whitespace and separation chars with a space
+                          .replace( /[^a-zA-Z0-9 ]/g, '' ) // remove anything that isn't a letter, number of space
+                          .split( ' ' ) // delimite string by spaces and create array from result
+                          .filter( function( uid ) { // match UIDs (eg: A123456)
+                            return null != uid.match( uidRegex );
+                          } )
+                          .filter( function( uid, index, array ) { // make array unique
+                            return index <= array.indexOf( uid );
+                          } )
+                          .sort(); // sort the array
+
+            // now confirm UID list with server
+            if( 0 == this.uidList.length ) {
+              this.uidListString = '';
+              this.confirmInProgress = false;
+            } else {
+              CnHttpFactory.instance( {
+                path: ['qnaire', this.qnaireId, 'participant'].join( '/' ),
+                data: { mode: 'confirm', uid_list: this.uidList, method: this.method }
+              } ).post().then( function( response ) {
+                self.confirmedCount = response.data.length;
+                self.uidListString = response.data.join( ' ' );
+                self.confirmInProgress = false;
+              } );
+            }
+          },
+
+          proceed: function() {
+            this.working = true;
+            if( !this.confirmInProgress && 0 < this.confirmedCount ) {
+              CnHttpFactory.instance( {
+                path: ['qnaire', this.qnaireId, 'participant'].join( '/' ),
+                data: { mode: 'release', uid_list: this.uidList, method: this.method }
+              } ).post().then( function( response ) {
+                CnModalMessageFactory.instance( {
+                  title: 'Interview Methods Updated',
+                  message: 'You have successfully changed ' + self.confirmedCount + ' "' + self.qnaireName + '" questionnaires ' +
+                           'to using the ' + self.method + ' interviewing method.'
+                } ).show().then( function() { self.onLoad(); } ).finally( function() { self.working = false; } );
+              } );
+            }
+          }
+
+        } );
+      }
+      return { instance: function() { return new object(); } };
     }
   ] );
 

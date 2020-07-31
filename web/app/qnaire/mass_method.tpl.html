@@ -1,0 +1,86 @@
+<div class="utility-view rounded">
+  <div class="container-fluid bg-primary rounded-top"><h4>Mass Interview "{{ model.qnaireName }}"</h4></div>
+  <form name="form" class="form-horizontal" novalidate>
+    <div class="form-body container-fluid">
+      <div class="container-fluid text-info">
+        This utility allows you change the interview method for multiple participants for the <strong>{{ model.qnaireName }}</strong>
+        questionnaire.  In order to proceed you must first select which participants to affect.  This can be done by
+        typing the unique identifiers (ie: A123456) of all participants you wish to have included in the operation, then
+        confirm that list to ensure each of the identifiers can be linked to a participant.
+      </div>
+      <div class="vertical-spacer container-fluid text-warning">
+        NOTE: All participants will be tested for the following criteria:
+        <ol>
+          <li>The participant must be enrolled and not be in a final hold</li>
+          <li>The participant's interview for the selected questionnaire must exist and not be complete</li>
+          <li>If selecting the web method of interviewing the participant must have an email address</li>
+        </ol>
+        Any participant who do not meet these criteria will be removed from the participant selection list after the "Confirm List"
+        button is clicked.
+      </div>
+      <hr />
+      <div class="form-group">
+        <label for="method" class="col-sm-3 control-label">Interview Method</label>
+        <div class="col-sm-9">
+          <div class="input-group">
+            <select ng-attr-id="method"
+                    name="method"
+                    ng-model="model.method"
+                    ng-change="model.inputsChanged()"
+                    class="form-control"
+                    ng-required="true">
+              <option value="phone">phone</option>
+              <option value="web">web</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <strong>Participant selection</strong>
+          <span class="pull-right">
+            <span ng-if="model.confirmInProgress">working, please wait...</span>
+            <span ng-if="!model.confirmInProgress">
+              {{ model.confirmedCount ?
+                 model.confirmedCount + ' participants confirmed' :
+                 'no confirmed participants' }}
+              <i class="glyphicon" ng-class="model.confirmedCount ? 'glyphicon-ok' : 'glyphicon-remove'"></i>
+            </span>
+          </span>
+        </div>
+        <textarea id="uidListString"
+                  name="uidListString"
+                  cn-elastic
+                  ng-change="model.inputsChanged()"
+                  ng-model="model.uidListString"
+                  ng-disabled="model.confirmInProgress"
+                  class="form-control no-rounding"></textarea>
+        <div class="form-footer text-right rounded-bottom bg-info">
+          <button type="button"
+                  class="btn btn-primary"
+                  ng-disabled=" null != model.confirmedCount || model.confirmInProgress"
+                  ng-click="model.confirm()">Confirm List</button>
+        </div>
+      </div>
+      <div ng-if="model.confirmedCount">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <strong>Confirm selection</strong>
+          </div>
+          <div class="container-fluid panel-body">
+            You have selected a total of {{ model.confirmedCount }} participants to change the interviewing method for.
+            If you wish to proceed you may select the interview method and click the "Proceed" button below, or you may
+            make changes to the participant selection list above.
+          </div>
+          <div class="form-footer text-right rounded-bottom bg-info">
+            <button type="button"
+                    class="btn btn-primary"
+                    ng-disabled="model.working"
+                    cn-really-message="Are you sure you wish to change the interview method for the {{ model.confirmedCount }} selected participants?"
+                    ng-click="model.proceed()">{{ model.working ? 'Working...' : 'Proceed' }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

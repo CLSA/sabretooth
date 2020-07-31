@@ -20,8 +20,72 @@ class interview extends \cenozo\database\interview
   {
     // if we changed the method column then update the queue
     $update_queue = $this->has_column_changed( 'method' );
+
+    // if we're changing to web-based interviewing then update pine
+    $update_method = $this->has_column_changed( 'method' );
+
     parent::save();
+
     if( $update_queue ) $this->get_participant()->repopulate_queue( true );
+
+    if( $update_method )
+    {
+      $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+      $pine_qnaire_id = $this->get_qnaire()->get_script()->pine_qnaire_id;
+
+      if( !is_null( $pine_qnaire_id ) )
+      {
+        // try and get the respondent record from pine, if it exists
+        $token = NULL;
+        try
+        {
+          $response = $cenozo_manager->get( sprintf(
+            'qnaire/%d/respondent/participant_id=%d?no_activity=1&select={"column":["token"]}',
+            $pine_qnaire_id,
+            $this->participant_id
+          ) );
+
+          $token = $response->token;
+        }
+        catch( \cenozo\exception\runtime $e )
+        {
+          // 404 errors simply means the respondent doesn't exit
+          if( false === preg_match( '/Got response code 404/', $e->get_raw_message() ) ) throw $e;
+        }
+
+        if( 'web' == $this->method )
+        {
+          // make sure that the pine invitation/reminder mail is sent to the participant
+          if( is_null( $token ) )
+          {
+            // create the missing respondent record
+            $cenozo_manager->post(
+              sprintf( 'qnaire/%d/respondent', $pine_qnaire_id ),
+              array( 'participant_id' => $this->participant_id )
+            );
+          }
+          else
+          {
+            // resend mail for the respondent
+            $cenozo_manager->patch(
+              sprintf( 'respondent/token=%s?no_activity=1&action=resend_mail', $token ),
+              new \stdClass
+            );
+          }
+        }
+        else if( 'phone' == $this->method )
+        {
+          if( !is_null( $token ) )
+          {
+            // delete any of the respondent's unsent mail
+            $cenozo_manager->patch(
+              sprintf( 'respondent/token=%s?no_activity=1&action=remove_mail', $token ),
+              new \stdClass
+            );
+          }
+        }
+      }
+    }
   }
 
   /**
