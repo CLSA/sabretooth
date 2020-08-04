@@ -139,18 +139,22 @@ class queue extends \cenozo\database\record
    * This method is used to pupulate all non-time-specific queues.
    * Only non time-specific queues are affected by this function, to populate time-specific
    * queues use the repopulate_time() method instead.
-   * @param database\participant $db_participant If provided then only that participant will
-   *        be affected by the operation.
+   * @param database\participant $db_participant If provided then only that participant will be affected by the operation.
    * @access public
    * @static
    */
   public static function repopulate( $db_participant = NULL )
   {
+    $interview_class_name = lib::get_class_name( 'database\interview' );
+
     if( static::$debug ) $total_time = util::get_elapsed_time();
 
     // block with a semaphore
     $semaphore = lib::create( 'business\semaphore', __METHOD__ );
     $semaphore->acquire();
+
+    // update all web-based interviews
+    $interview_class_name::launch_web_interviews( $db_participant );
 
     // make sure the temporary table exists
     static::build_temporary_tables( $db_participant );
@@ -214,8 +218,7 @@ class queue extends \cenozo\database\record
    * This method is used to populate queues which are dependent on the exact time.
    * Only time-specific queues are affected by this function, to populate non time-specific
    * queues use the repopulate() static method instead.
-   * @param database\participant $db_participant If provided then only that participant will
-   *        be affected by the operation.
+   * @param database\participant $db_participant If provided then only that participant will be affected by the operation.
    * @access public
    */
   public static function repopulate_time( $db_participant = NULL )
@@ -759,8 +762,7 @@ class queue extends \cenozo\database\record
   /**
    * Creates the temp_participant temporary table needed by all queues.
    * 
-   * @param database\participant $db_participant If provided then only that participant will
-   *        be affected by the operation.
+   * @param database\participant $db_participant If provided then only that participant will be affected by the operation.
    * @access protected
    * @static
    */
@@ -983,9 +985,19 @@ IF
     NULL,
     IF
     (
-      current_interview.end_datetime IS NOT NULL AND current_assignment.end_datetime IS NOT NULL,
-      DATE( current_assignment.end_datetime ) + INTERVAL next_qnaire.delay WEEK,
-      NULL
+      "web" = current_interview.method,
+      IF
+      (
+        current_interview.end_datetime IS NOT NULL,
+        DATE( current_interview.end_datetime ) + INTERVAL next_qnaire.delay WEEK,
+        NULL
+      ),
+      IF
+      (
+        current_interview.end_datetime IS NOT NULL AND current_assignment.end_datetime IS NOT NULL,
+        DATE( current_assignment.end_datetime ) + INTERVAL next_qnaire.delay WEEK,
+        NULL
+      )
     )
   )
 ) AS start_qnaire_date

@@ -314,4 +314,131 @@ class interview extends \cenozo\database\interview
     $tokens_class_name::set_sid( $old_tokens_sid );
     $survey_class_name::set_sid( $old_survey_sid );
   }
+
+  /**
+   * Launches any web interviews which are ready to proceed.
+   * 
+   * @param database\participant $db_participant If provided then only that participant will be affected by the operation.
+   * @access protected
+   * @static
+   */
+  public static function launch_web_interviews( $db_participant = NULL )
+  {
+    $db_application = lib::create( 'business\session' )->get_application();
+
+    // update all web-based interviews
+    // start by getting a list of all appointments which will need to be moved to the next interview
+    $interview_sel = lib::create( 'database\select' );
+    $interview_sel->add_table_column( 'appointment', 'id', 'appointment_id' );
+    $interview_sel->add_column( 'participant_id' );
+    $interview_sel->add_table_column( 'qnaire', 'rank' );
+    $interview_mod = lib::create( 'database\modifier' );
+    $interview_mod->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
+    $interview_mod->join( 'script', 'qnaire.script_id', 'script.id' );
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'event.event_type_id', '=', 'script.finished_event_type_id', false );
+    $join_mod->where( 'event.participant_id', '=', 'interview.participant_id', false );
+    $interview_mod->join_modifier( 'event', $join_mod );
+    $interview_mod->join( 'appointment', 'interview.id', 'appointment.interview_id' );
+    $interview_mod->where( 'interview.method', '=', 'web' );
+    $interview_mod->where( 'interview.end_datetime', '=', NULL );
+    $interview_mod->where( 'appointment.assignment_id', '=', NULL );
+    $interview_mod->where( 'appointment.outcome', '=', NULL );
+    if( !is_null( $db_participant ) ) $interview_mod->where( 'interview.participant_id', '=', $db_participant->id );
+
+    $appointment_list = array();
+    foreach( static::select( $interview_sel, $interview_mod ) as $interview )
+    {
+      $appointment_list[] = array(
+        'appointment_id' => $interview['appointment_id'],
+        'participant_id' => $interview['participant_id'],
+        'rank' => $interview['rank']
+      );
+    }
+
+    // now close all web interviews which have the correct completed event
+    $interview_mod = lib::create( 'database\modifier' );
+    $interview_mod->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
+    $interview_mod->join( 'script', 'qnaire.script_id', 'script.id' );
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'event.event_type_id', '=', 'script.finished_event_type_id', false );
+    $join_mod->where( 'event.participant_id', '=', 'interview.participant_id', false );
+    $interview_mod->join_modifier( 'event', $join_mod );
+    $interview_mod->where( 'interview.method', '=', 'web' );
+    $interview_mod->where( 'interview.end_datetime', '=', NULL );
+    if( !is_null( $db_participant ) ) $interview_mod->where( 'interview.participant_id', '=', $db_participant->id );
+
+    static::db()->execute( sprintf(
+      "UPDATE interview %s\n".
+      "SET end_datetime = event.datetime\n".
+      "WHERE %s",
+      $interview_mod->get_join(),
+      $interview_mod->get_where()
+    ) );
+
+    // create any web interviews which are ready to proceed after the required delay
+    // (match same day, not datetime since this will be run as cron job overnight)
+    $interview_sel = lib::create( 'database\select' );
+    $interview_sel->add_column( 'participant_id' );
+    $interview_sel->add_table_column( 'next_qnaire', 'id', 'qnaire_id' );
+    $interview_mod = lib::create( 'database\modifier' );
+    $interview_mod->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
+    $interview_mod->join( 'script', 'qnaire.script_id', 'script.id' );
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'event.event_type_id', '=', 'script.finished_event_type_id', false );
+    $join_mod->where( 'event.participant_id', '=', 'interview.participant_id', false );
+    $interview_mod->join_modifier( 'event', $join_mod );
+    $interview_mod->join( 'qnaire', 'qnaire.rank + 1', 'next_qnaire.rank', '', 'next_qnaire' );
+    $join_mod = lib::create( 'database\modifier' );
+    $join_mod->where( 'next_qnaire.id', '=', 'next_interview.qnaire_id', false );
+    $join_mod->where( 'interview.participant_id', '=', 'next_interview.participant_id', false );
+    $interview_mod->join_modifier( 'interview', $join_mod, 'left', 'next_interview' );
+    $interview_mod->where( 'interview.method', '=', 'web' );
+    $interview_mod->where( 'interview.end_datetime', '!=', NULL );
+    $interview_mod->where(
+      'DATE( interview.end_datetime + INTERVAL next_qnaire.delay WEEK )',
+      '<=',
+      'DATE( UTC_TIMESTAMP() )',
+      false
+    );
+    $interview_mod->where( 'next_interview.id', '=', NULL );
+    if( !is_null( $db_participant ) ) $interview_mod->where( 'interview.participant_id', '=', $db_participant->id );
+
+    foreach( static::select( $interview_sel, $interview_mod ) as $interview )
+    {
+      $db_interview = lib::create( 'database\interview' );
+      $db_interview->qnaire_id = $interview['qnaire_id'];
+      $db_interview->participant_id = $interview['participant_id'];
+      $db_interview->method = 'web';
+      $db_interview->start_datetime = util::get_datetime_object();
+      $db_interview->note = sprintf( 'Automatically created by the %s queue', $db_application->title );
+      $db_interview->save();
+    }
+
+    // finally, move all orphaned appointments to the next interview (or delete them if there is none)
+    foreach( $appointment_list as $appointment )
+    {
+      $db_appointment = lib::create( 'database\appointment', $appointment['appointment_id'] );
+      $db_qnaire = $qnaire_class_name::get_unique_record( 'rank', $appointment['rank'] );
+      if( 0 < $db_qnaire->delay )
+      {
+        // if there is a delay before the next qnaire then we can't create an appointment for it
+        $db_appointment->delete();
+      }
+      else
+      {
+        $db_next_qnaire = $qnaire_class_name::get_unique_record( 'rank', $appointment['rank'] + 1 );
+        if( is_null( $db_next_qnaire ) ) $db_appointment->delete();
+        else
+        {
+          $db_interview = static::get_unique_record(
+            array( 'participant_id', 'qnaire_id' ),
+            array( $appointment['participant_id'], $db_next_qnaire->id )
+          );
+          $db_appointment->interview_id = $db_interview->id;
+          $db_appointment->save();
+        }
+      }
+    }
+  }
 }
