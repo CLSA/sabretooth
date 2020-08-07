@@ -221,14 +221,17 @@ define( function() {
             if( !this.confirmInProgress && 0 < this.confirmedCount ) {
               CnHttpFactory.instance( {
                 path: ['qnaire', this.qnaireId, 'participant'].join( '/' ),
-                data: { mode: 'release', uid_list: this.uidList, method: this.method }
+                data: { mode: 'update', uid_list: this.uidList, method: this.method },
+                onError: function( response ) {
+                  CnModalMessageFactory.httpError( response ).then( function() { self.onLoad(); } );
+                }
               } ).post().then( function( response ) {
                 CnModalMessageFactory.instance( {
                   title: 'Interview Methods Updated',
                   message: 'You have successfully changed ' + self.confirmedCount + ' "' + self.qnaireName + '" questionnaires ' +
                            'to using the ' + self.method + ' interviewing method.'
-                } ).show().then( function() { self.onLoad(); } ).finally( function() { self.working = false; } );
-              } );
+                } ).show().then( function() { self.onLoad(); } );
+              } ).finally( function() { self.working = false; } );
             }
           }
 

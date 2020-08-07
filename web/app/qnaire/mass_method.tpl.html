@@ -8,16 +8,6 @@
         typing the unique identifiers (ie: A123456) of all participants you wish to have included in the operation, then
         confirm that list to ensure each of the identifiers can be linked to a participant.
       </div>
-      <div class="vertical-spacer container-fluid text-warning">
-        NOTE: All participants will be tested for the following criteria:
-        <ol>
-          <li>The participant must be enrolled and not be in a final hold</li>
-          <li>The participant's interview for the selected questionnaire must exist and not be complete</li>
-          <li>If selecting the web method of interviewing the participant must have an email address</li>
-        </ol>
-        Any participant who do not meet these criteria will be removed from the participant selection list after the "Confirm List"
-        button is clicked.
-      </div>
       <hr />
       <div class="form-group">
         <label for="method" class="col-sm-3 control-label">Interview Method</label>
@@ -32,6 +22,17 @@
               <option value="phone">phone</option>
               <option value="web">web</option>
             </select>
+          </div>
+          <div class="vertical-spacer container-fluid text-warning">
+            <strong>NOTE:</strong>
+            <span ng-if="'phone' == model.method">
+              When switching from web to phone only <strong>existing web interviews</strong>
+            </span>
+            <span ng-if="'web' == model.method">
+              When switching from phone to web only participants in the <strong>eligible queue</strong> who have
+              a <strong>valid email address</strong>
+            </span>
+            will be included in the final selection list after the "Confirm List" button is clicked.
           </div>
         </div>
       </div>

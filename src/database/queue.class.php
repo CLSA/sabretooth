@@ -14,6 +14,17 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class queue extends \cenozo\database\record
 {
   /**
+   * Returns the queue's parent queue
+   * 
+   * @return database\queue
+   * @access public
+   */
+  public function get_parent_queue()
+  {
+    return is_null( $this->parent_queue_id ) ? NULL : new static( $this->parent_queue_id );
+  }
+
+  /**
    * Adds a participant to the list of those to run repopulate() on during shutdown
    * 
    * @param database\participant $db_participant If NULL then all participants will be included

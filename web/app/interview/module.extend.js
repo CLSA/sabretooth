@@ -29,8 +29,10 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
   module.addInput( '', 'method', {
     title: 'Interviewing Method',
     type: 'enum',
-    // don't allow the interviewing method to be changed if not doing a pine interview
-    isConstant: function( $state, model ) { return null == model.viewModel.record.pine_qnaire_id; }
+    // don't allow the interviewing method to be changed if it is done or not doing a pine interview
+    isConstant: function( $state, model ) {
+      return null != model.viewModel.record.end_datetime || null == model.viewModel.record.pine_qnaire_id;
+    }
   }, 'qnaire_id' );
 
   module.addExtraOperation( 'view', {

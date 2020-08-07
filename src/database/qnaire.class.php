@@ -18,21 +18,74 @@ class qnaire extends \cenozo\database\has_rank
    */
   public function mass_set_method( $uid_list, $method )
   {
+    $pine_qnaire_id = $this->get_script()->pine_qnaire_id;
+    if( is_null( $pine_qnaire_id ) )
+      throw lib::create( 'exception\runtime', 'Tried to set method for non Pine questionnaire.', __METHOD__ );
+
     set_time_limit( 900 ); // 15 minutes max
 
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $interview_class_name = lib::get_class_name( 'database\interview' );
+    $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
 
-    foreach( $uid_list as $uid )
+    if( 'phone' == $method )
     {
-      $db_participant = $participant_class_name::get_unique_record( 'uid', $uid );
-      $db_interview = $interview_class_name::get_unique_record(
-        array( 'participant_id', 'qnaire_id' ),
-        array( $db_participant->id, $this->id )
+      // delete pending emails for all interviews
+      $cenozo_manager->post(
+        sprintf( 'qnaire/%d/participant', $pine_qnaire_id ),
+        array(
+          'mode' => 'remove_mail',
+          'uid_list' => $uid_list
+        )
       );
-      $db_interview->method = $method;
-      $db_interview->save();
     }
+    else if( 'web' == $method )
+    {
+      // first make sure that all interviews exist
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'uid', 'IN', $uid_list );
+      
+      static::db()->execute( sprintf(
+        'INSERT INTO interview( qnaire_id, participant_id, method, start_datetime ) '.
+        'SELECT %s, participant.id, "web", UTC_TIMESTAMP() '.
+        'FROM participant '.
+        '%s '.
+        'ON DUPLICATE KEY UPDATE method = "web"',
+        static::db()->format_string( $this->id ),
+        $modifier->get_sql()
+      ) );
+
+      // make sure all existing respondents get mail
+      $cenozo_manager->post(
+        sprintf( 'qnaire/%d/participant', $pine_qnaire_id ),
+        array(
+          'mode' => 'add_mail',
+          'uid_list' => $uid_list
+        )
+      );
+
+      // and finally, create missing pine respondents
+      $cenozo_manager->post(
+        sprintf( 'qnaire/%d/participant', $pine_qnaire_id ),
+        array(
+          'mode' => 'create',
+          'uid_list' => $uid_list
+        )
+      );
+    }
+
+    // now set the method column
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
+    $modifier->where( 'participant.uid', 'IN', $uid_list );
+    static::db()->execute( sprintf(
+      "UPDATE interview %s\n".
+      "SET method = %s\n".
+      'WHERE %s',
+      $modifier->get_join(),
+      static::db()->format_string( $method ),
+      $modifier->get_where()
+    ) );
   }
 
   /**
