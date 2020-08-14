@@ -73,6 +73,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
           self.isAssignmentLoading = false;
           self.isForbidden = false;
           self.isPrevAssignmentLoading = false;
+          self.changingInterviewMethod = false;
         };
 
         CnSession.promise.then( function() {
@@ -122,6 +123,18 @@ define( [ 'participant' ].reduce( function( list, name ) {
           var data = this.$$getServiceData( type, columnRestrictList );
           data.assignment = true;
           return data;
+        };
+
+        this.setInterviewMethod = function() {
+          self.changingInterviewMethod = true;
+          CnHttpFactory.instance( {
+            path: 'interview/' + self.assignment.interview_id,
+            data: { method: self.assignment.interview_method },
+            onError: function( response ) {
+              self.assignment.interview_method = 'phone' == self.assignment.interview_method ? 'web' : 'phone';
+              CnModalMessageFactory.httpError( response );
+            }
+          } ).patch().finally( function() { self.changingInterviewMethod = false; } );
         };
 
         // start a new assignment with a participant (provided by record) or whoever is available next
@@ -181,7 +194,8 @@ define( [ 'participant' ].reduce( function( list, name ) {
             { table: 'qnaire', column: 'id', alias: 'qnaire_id' },
             { table: 'script', column: 'id', alias: 'script_id' },
             { table: 'script', column: 'name', alias: 'qnaire' },
-            { table: 'queue', column: 'title', alias: 'queue' }
+            { table: 'queue', column: 'title', alias: 'queue' },
+            { table: 'interview', column: 'method', alias: 'interview_method' }
           ];
 
           if( CnSession.application.checkForMissingHin ) column.push( 'missing_hin' );

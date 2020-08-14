@@ -67,6 +67,18 @@
                 <span style="white-space: pre-wrap;">{{ model.participant.global_note ? model.participant.global_note : '(none)' }}</span>
               </div>
             </div>
+            <div class="row vertical-spacer">
+              <label class="col-sm-4 control-label">Interviewing Method</label>
+              <div class="col-sm-8">
+                <select ng-model="model.assignment.interview_method"
+                        class="form-control"
+                        ng-change="model.setInterviewMethod()"
+                        ng-disabled="model.changingInterviewMethod">
+                  <option value="phone">Phone</option>
+                  <option value="web">Web</option>
+                </select>
+              </div>
+            </div>
           </div>
           <hr />
           <div class="container-fluid">

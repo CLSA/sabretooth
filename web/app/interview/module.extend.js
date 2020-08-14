@@ -192,8 +192,8 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
 
   // extend the model factory
   cenozo.providers.decorator( 'CnInterviewModelFactory', [
-    '$delegate', 'CnHttpFactory',
-    function( $delegate, CnHttpFactory ) {
+    '$delegate', 'CnHttpFactory', 'CnSession',
+    function( $delegate, CnHttpFactory, CnSession ) {
       var instance = $delegate.instance;
       // extend getBreadcrumbTitle
       // (metadata's promise will have already returned so we don't have to wait for it)
@@ -204,6 +204,8 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
               'value', object.viewModel.record.qnaire_id );
             return qnaire ? qnaire.name : 'unknown';
           },
+
+          getEditEnabled: function() { return object.$$getEditEnabled() && 3 <= CnSession.role.tier; },
 
           // extend getMetadata
           getMetadata: function() {
