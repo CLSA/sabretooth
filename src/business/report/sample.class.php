@@ -90,7 +90,6 @@ class sample extends \cenozo\business\report\base_report
     $select->add_column( $this->get_datetime_column( 'application_has_participant.datetime' ), 'Released', false );
     $select->add_column( 'region.abbreviation', 'Province/State', false );
     $select->add_column( 'IF( participant.email IS NOT NULL, "Yes", "No" )', 'Has Email', false );
-    $select->add_column( 'interview.method', 'Method', false );
     $select->add_column(
       $this->get_datetime_column( 'participant.callback' ),
       'Callback',
@@ -127,7 +126,7 @@ class sample extends \cenozo\business\report\base_report
     $modifier->left_join( 'consent', 'participant_last_consent.consent_id', 'consent.id' );
 
     // join to each interview for each qnaire
-    $postfix = '';
+    $postfix = ''; // we're going to use this as a way to cheat having multiple columns with the same name
     foreach( $qnaire_list as $qnaire )
     {
       $interview = sprintf( 'interview_%d', $qnaire['id'] );
@@ -138,6 +137,7 @@ class sample extends \cenozo\business\report\base_report
       $join_mod->where( $interview.'.qnaire_id', '=', $qnaire['id'] );
       $modifier->join_modifier( 'interview', $join_mod, 'left', $interview );
       $modifier->left_join( $interview_data, $interview.'.id', $interview_data.'.id' );
+      $select->add_column( $interview.'.method', 'Method'.$postfix, false );
       $select->add_column(
         $this->get_datetime_column( $interview.'.end_datetime' ), $qnaire['name'], false, 'string' );
       $select->add_column(
@@ -145,7 +145,7 @@ class sample extends \cenozo\business\report\base_report
         'Phone Calls'.$postfix,
         false
       );
-      $postfix .= ' ';
+      $postfix .= ' '; // add a space to the postfix to make each interview having unique column names
     }
 
     // add the global note as the last column
