@@ -14,7 +14,9 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class qnaire extends \cenozo\database\has_rank
 {
   /**
-   * TODO: document
+   * Sets the interview method for a list of UIDs as a single operation
+   * @param array $uid_list
+   * @param string $method Either "phone" or "web"
    */
   public function mass_set_method( $uid_list, $method )
   {
