@@ -67,7 +67,7 @@
                 <span style="white-space: pre-wrap;">{{ model.participant.global_note ? model.participant.global_note : '(none)' }}</span>
               </div>
             </div>
-            <div class="row vertical-spacer">
+            <div ng-if="model.assignment.web_version" class="row vertical-spacer">
               <label class="col-sm-4 control-label">Interviewing Method</label>
               <div class="col-sm-8">
                 <select ng-model="model.assignment.interview_method"

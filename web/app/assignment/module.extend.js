@@ -192,6 +192,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
           var column = [ 'id', 'interview_id', 'start_datetime',
             { table: 'participant', column: 'id', alias: 'participant_id' },
             { table: 'qnaire', column: 'id', alias: 'qnaire_id' },
+            { table: 'qnaire', column: 'web_version', type: 'boolean' },
             { table: 'script', column: 'id', alias: 'script_id' },
             { table: 'script', column: 'name', alias: 'qnaire' },
             { table: 'queue', column: 'title', alias: 'queue' },
@@ -229,6 +230,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
             }
           } ).get().then( function( response ) {
             CnSession.updateData().then( function() {
+              console.log( response.data );
               self.assignment = response.data;
               CnSession.alertHeader = 'You are currently in an assignment';
 

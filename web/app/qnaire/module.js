@@ -18,6 +18,10 @@ define( function() {
         title: 'Rank',
         type: 'rank'
       },
+      web_version: {
+        title: 'Web Version',
+        type: 'boolean'
+      },
       delay: {
         title: 'Delay',
         type: 'number'
@@ -41,11 +45,24 @@ define( function() {
       isConstant: 'view',
       help: 'Only scripts which are marked as non-repeatable may be used as a questionnaire.'
     },
+    web_version: {
+      title: 'Web Version',
+      type: 'boolean',
+      isConstant: function( $state, model ) {
+        // don't allow non-Pine scripts to have a web version
+        return 'add' != model.getActionFromState() && null == model.viewModel.record.pine_qnaire_id;
+      },
+      help: 'Defines whether this questionnaire has a web-version.'
+    },
     delay: {
       title: 'Delay (weeks)',
       type: 'string',
       format: 'integer',
       minValue: 0
+    },
+    pine_qnaire_id: {
+      column: 'script.pine_qnaire_id',
+      type: 'hidden'
     }
   } );
 
@@ -54,7 +71,7 @@ define( function() {
     operation: function( $state, model ) {
       $state.go( 'qnaire.mass_method', { identifier: model.viewModel.record.getIdentifier() } );
     },
-    isIncluded: function( $state, model ) { return model.getEditEnabled(); }
+    isIncluded: function( $state, model ) { return model.getEditEnabled() && null != model.viewModel.record.pine_qnaire_id; }
   } );
 
   /* ######################################################################################################## */

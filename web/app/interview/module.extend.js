@@ -26,6 +26,7 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
     type: 'enum',
     isConstant: true
   }, 'participant' );
+
   module.addInput( '', 'method', {
     title: 'Interviewing Method',
     type: 'enum',

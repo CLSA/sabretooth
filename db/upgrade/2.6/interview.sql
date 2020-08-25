@@ -20,6 +20,3 @@ DELIMITER ;
 
 CALL patch_interview();
 DROP PROCEDURE IF EXISTS patch_interview;
-
-
-
