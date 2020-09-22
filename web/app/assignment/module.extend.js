@@ -230,7 +230,6 @@ define( [ 'participant' ].reduce( function( list, name ) {
             }
           } ).get().then( function( response ) {
             CnSession.updateData().then( function() {
-              console.log( response.data );
               self.assignment = response.data;
               CnSession.alertHeader = 'You are currently in an assignment';
 
