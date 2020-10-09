@@ -36,6 +36,8 @@ class module extends \cenozo\service\base_calendar_module
     {
       $service_class_name = lib::get_class_name( 'service\service' );
       $vacancy_class_name = lib::get_class_name( 'database\vacancy' );
+      $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
+
       $db_appointment = $this->get_resource();
       $db_interview = !is_null( $db_appointment )
                     ? $db_appointment->get_interview()
@@ -114,11 +116,15 @@ class module extends \cenozo\service\base_calendar_module
         // no new appointments if the script is complete
         else if( !is_null( $db_interview ) && $db_interview->is_survey_complete() )
         {
-          $this->set_data(
-            'Appointments cannot be created or changed for this interview since the associated survey has '.
-            'been completed.  The participant must be advanced to the next interview before a new appointment '.
-            'can be created.'
-          );
+          $qnaire_sel = lib::create( 'database\select' );
+          $qnaire_sel->add_column( 'MAX( rank )', 'max_rank', false );
+          $max_rank = current( $qnaire_class_name::select( $qnaire_sel ) )['max_rank'];
+
+          $message = 'Appointments cannot be created or changed for this interview since the associated survey has been completed.';
+          if( $max_rank > $db_interview->get_qnaire()->rank )
+            $message .= ' The participant must be advanced to the next interview before a new appointment can be created.';
+
+          $this->set_data( $message );
           $this->get_status()->set_code( 306 );
         }
       }
