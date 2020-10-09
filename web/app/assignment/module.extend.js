@@ -73,12 +73,14 @@ define( [ 'participant' ].reduce( function( list, name ) {
           self.isAssignmentLoading = false;
           self.isForbidden = false;
           self.isPrevAssignmentLoading = false;
-          self.changingInterviewMethod = false;
+          self.changeInterviewMethodAllowed = false;
         };
 
         CnSession.promise.then( function() {
           self.isOperator = 'operator' == CnSession.role.name || 'operator+' == CnSession.role.name;
           self.application = CnSession.application.title;
+          self.changeInterviewMethodAllowed =
+            [ 'administrator', 'helpline', 'operator+', 'supervisor' ].includes( CnSession.role.name );
 
           // add additional columns to the model
           var index = 0;

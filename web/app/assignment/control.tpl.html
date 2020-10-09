@@ -73,7 +73,7 @@
                 <select ng-model="model.assignment.interview_method"
                         class="form-control"
                         ng-change="model.setInterviewMethod()"
-                        ng-disabled="model.changingInterviewMethod">
+                        ng-disabled="!model.changeInterviewMethodAllowed || model.changingInterviewMethod">
                   <option value="phone">Phone</option>
                   <option value="web">Web</option>
                 </select>

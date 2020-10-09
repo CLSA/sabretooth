@@ -206,7 +206,9 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
             return qnaire ? qnaire.name : 'unknown';
           },
 
-          getEditEnabled: function() { return object.$$getEditEnabled() && 3 <= CnSession.role.tier; },
+          getEditEnabled: function() {
+            return object.$$getEditEnabled() && ['administrator', 'helpline'].includes( CnSession.role.name );
+          },
 
           // extend getMetadata
           getMetadata: function() {
