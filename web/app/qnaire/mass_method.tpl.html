@@ -36,40 +36,14 @@
           </div>
         </div>
       </div>
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <strong>Participant selection</strong>
-          <span class="pull-right">
-            <span ng-if="model.confirmInProgress">working, please wait...</span>
-            <span ng-if="!model.confirmInProgress">
-              {{ model.confirmedCount ?
-                 model.confirmedCount + ' participants confirmed' :
-                 'no confirmed participants' }}
-              <i class="glyphicon" ng-class="model.confirmedCount ? 'glyphicon-ok' : 'glyphicon-remove'"></i>
-            </span>
-          </span>
-        </div>
-        <textarea id="uidListString"
-                  name="uidListString"
-                  cn-elastic
-                  ng-change="model.inputsChanged()"
-                  ng-model="model.uidListString"
-                  ng-disabled="model.confirmInProgress"
-                  class="form-control no-rounding"></textarea>
-        <div class="form-footer text-right rounded-bottom bg-info">
-          <button type="button"
-                  class="btn btn-primary"
-                  ng-disabled=" null != model.confirmedCount || model.confirmInProgress"
-                  ng-click="model.confirm()">Confirm List</button>
-        </div>
-      </div>
-      <div ng-if="model.confirmedCount">
+      <cn-participant-selection model="model.participantSelection"></cn-participant-selection>
+      <div ng-if="model.participantSelection.confirmedCount">
         <div class="panel panel-default">
           <div class="panel-heading">
             <strong>Confirm selection</strong>
           </div>
           <div class="container-fluid panel-body">
-            You have selected a total of {{ model.confirmedCount }} participants to change the interviewing method for.
+            You have selected a total of {{ model.participantSelection.confirmedCount }} participants to change the interviewing method for.
             If you wish to proceed you may select the interview method and click the "Proceed" button below, or you may
             make changes to the participant selection list above.
           </div>
@@ -77,7 +51,7 @@
             <button type="button"
                     class="btn btn-primary"
                     ng-disabled="model.working"
-                    cn-really-message="Are you sure you wish to change the interview method for the {{ model.confirmedCount }} selected participants?"
+                    cn-really-message="Are you sure you wish to change the interview method for the {{ model.participantSelection.confirmedCount }} selected participants?"
                     ng-click="model.proceed()">{{ model.working ? 'Working...' : 'Proceed' }}</button>
           </div>
         </div>

@@ -421,7 +421,7 @@ class interview extends \cenozo\database\interview
     foreach( $qnaire_list as $qnaire_id => $uid_list )
     {
       $db_qnaire = lib::create( 'database\qnaire', $qnaire_id );
-      $db_qnaire->mass_set_method( $uid_list, 'web' );
+      $db_qnaire->mass_set_method( NULL, $uid_list, 'web' );
     }
 
     // finally, move all orphaned appointments to the next interview (or delete them if there is none)

@@ -14,11 +14,12 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class qnaire extends \cenozo\database\has_rank
 {
   /**
-   * Sets the interview method for a list of UIDs as a single operation
-   * @param array $uid_list
+   * Sets the interview method for a list of identifiers as a single operation
+   * @param database\identifier $db_identifier The identifier (NULL if using native UIDs)
+   * @param array $identifier_list
    * @param string $method Either "phone" or "web"
    */
-  public function mass_set_method( $uid_list, $method )
+  public function mass_set_method( $db_identifier, $identifier_list, $method )
   {
     $pine_qnaire_id = $this->get_script()->pine_qnaire_id;
     if( is_null( $pine_qnaire_id ) )
@@ -37,7 +38,8 @@ class qnaire extends \cenozo\database\has_rank
         sprintf( 'qnaire/%d/participant', $pine_qnaire_id ),
         array(
           'mode' => 'remove_mail',
-          'uid_list' => $uid_list
+          'identifier_id' => is_null( $db_identifier ) ? NULL : $db_identifier->id,
+          'identifier_list' => $identifier_list
         )
       );
     }
@@ -45,8 +47,18 @@ class qnaire extends \cenozo\database\has_rank
     {
       // first make sure that all interviews exist
       $modifier = lib::create( 'database\modifier' );
-      $modifier->where( 'uid', 'IN', $uid_list );
-      
+
+      if( is_null( $db_identifier ) )
+      {
+        $modifier->where( 'uid', 'IN', $identifier_list );
+      }
+      else
+      {
+        $modifier->join( 'participant_identifier', 'participant.id', 'participant_identifier.participant_id' );
+        $modifier->where( 'participant_identifier.identifier_id', '=', $db_identifier->id );
+        $modifier->where( 'participant_identifier.value', 'IN', $identifier_list );
+      }
+
       static::db()->execute( sprintf(
         'INSERT INTO interview( qnaire_id, participant_id, method, start_datetime ) '.
         'SELECT %s, participant.id, "web", UTC_TIMESTAMP() '.
@@ -62,7 +74,8 @@ class qnaire extends \cenozo\database\has_rank
         sprintf( 'qnaire/%d/participant', $pine_qnaire_id ),
         array(
           'mode' => 'add_mail',
-          'uid_list' => $uid_list
+          'identifier_id' => is_null( $db_identifier ) ? NULL : $db_identifier->id,
+          'identifier_list' => $identifier_list
         )
       );
 
@@ -71,7 +84,8 @@ class qnaire extends \cenozo\database\has_rank
         sprintf( 'qnaire/%d/participant', $pine_qnaire_id ),
         array(
           'mode' => 'create',
-          'uid_list' => $uid_list
+          'identifier_id' => is_null( $db_identifier ) ? NULL : $db_identifier->id,
+          'identifier_list' => $identifier_list
         )
       );
     }
@@ -79,7 +93,18 @@ class qnaire extends \cenozo\database\has_rank
     // now set the method column
     $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
-    $modifier->where( 'participant.uid', 'IN', $uid_list );
+
+    if( is_null( $db_identifier ) )
+    {
+      $modifier->where( 'uid', 'IN', $identifier_list );
+    }
+    else
+    {
+      $modifier->join( 'participant_identifier', 'participant.id', 'participant_identifier.participant_id' );
+      $modifier->where( 'participant_identifier.identifier_id', '=', $db_identifier->id );
+      $modifier->where( 'participant_identifier.value', 'IN', $identifier_list );
+    }
+
     static::db()->execute( sprintf(
       "UPDATE interview %s\n".
       "SET method = %s\n".

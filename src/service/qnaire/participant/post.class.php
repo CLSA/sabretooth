@@ -33,7 +33,7 @@ class post extends \cenozo\service\write
       $file = $this->get_file_as_object();
       if( !property_exists( $file, 'mode' ) ||
           !in_array( $file->mode, ['confirm', 'update'] ) ||
-          !property_exists( $file, 'uid_list' ) ) {
+          !property_exists( $file, 'identifier_list' ) ) {
         $this->status->set_code( 400 );
       }
     }
@@ -68,12 +68,14 @@ class post extends \cenozo\service\write
       $modifier->where( 'participant.email', '!=', NULL );
     }
 
-    $uid_list = $participant_class_name::get_valid_uid_list( $file->uid_list, $modifier );
+    $identifier_id = property_exists( $file, 'identifier_id' ) ? $file->identifier_id : NULL;
+    $db_identifier = is_null( $identifier_id ) ? NULL : lib::create( 'database\identifier', $identifier_id );
+    $identifier_list = $participant_class_name::get_valid_identifier_list( $db_identifier, $file->identifier_list, $modifier );
     if( 'update' == $file->mode )
     { // update interview methods
-      if( 0 < count( $uid_list ) )
+      if( 0 < count( $identifier_list ) )
       {
-        $db_qnaire->mass_set_method( $uid_list, $file->method );
+        $db_qnaire->mass_set_method( $db_identifier, $identifier_list, $file->method );
 
         // repopulate the queues immediately
         $queue_class_name = lib::get_class_name( 'database\queue' );
@@ -81,8 +83,8 @@ class post extends \cenozo\service\write
       }
     }
     else // 'confirm' == $file->mode
-    { // return a list of all valid uids
-      $this->set_data( $uid_list );
+    { // return a list of all valid identifiers
+      $this->set_data( $identifier_list );
     }
   }
 
