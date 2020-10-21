@@ -683,12 +683,12 @@ class queue extends \cenozo\database\record
     if( 'web version' == $queue )
     {
       // make sure there is no active address
-      $modifier->where( 'interview_method', '=', 'web' );
+      $modifier->where( 'IFNULL( interview_method, "phone" )', '=', 'web' );
       return;
     }
 
     // make sure there is an active address
-    $modifier->where( 'interview_method', '!=', 'web' );
+    $modifier->where( 'IFNULL( interview_method, "phone" )', '!=', 'web' );
 
     if( 'no active address' == $queue )
     {
