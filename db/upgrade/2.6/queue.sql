@@ -30,7 +30,6 @@ CREATE PROCEDURE patch_queue()
 
       SELECT id INTO @parent_queue_id FROM queue WHERE name = "qnaire";
 
-      -- add the new no active address queue
       INSERT INTO queue SET
         id = @min_id,
         name = "web version",
@@ -39,6 +38,30 @@ CREATE PROCEDURE patch_queue()
         time_specific = 0,
         parent_queue_id = @parent_queue_id,
         description = "Participants who are answering the questionnaire over the web instead of over the phone.";
+    END IF;
+
+    SELECT "Adding not participating queue" AS "";
+
+    SET @test = ( SELECT COUNT(*) FROM queue WHERE name = "not participating" );
+    IF @test = 0 THEN
+      -- increment all queue ids by 1 from the final hold queue onward
+      SET @id = ( SELECT MAX( id ) FROM queue );
+      SET @min_id = ( SELECT id FROM queue WHERE name = "final hold" );
+      WHILE @id >= @min_id DO
+        CALL set_queue_id( @id, @id + 1 );
+        SET @id = @id - 1;
+      END WHILE;
+
+      SELECT id INTO @parent_queue_id FROM queue WHERE name = "ineligible";
+
+      INSERT INTO queue SET
+        id = @min_id,
+        name = "not participating",
+        title = "Participants who do not wish to participate",
+        rank = NULL,
+        time_specific = 0,
+        parent_queue_id = @parent_queue_id,
+        description = "Participants who do not wish to participate in the study.";
     END IF;
 
     SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;

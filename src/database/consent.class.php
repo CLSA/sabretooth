@@ -21,8 +21,7 @@ class consent extends \cenozo\database\consent
     // if we changed certain columns then update the queue
     $update_queue = $this->has_column_changed( 'accept' );
     parent::save();
-    if( $update_queue && 'participation' == $this->get_consent_type()->name )
-      $this->get_participant()->repopulate_queue( true );
+    if( $update_queue ) $this->get_participant()->repopulate_queue( true );
   }
 
   /**
@@ -30,9 +29,7 @@ class consent extends \cenozo\database\consent
    */
   public function delete()
   {
-    $db_participant = $this->get_participant();
-    $update_queue = 'participation' == $this->get_consent_type()->name;
     parent::delete();
-    if( $update_queue ) $db_participant->repopulate_queue( true );
+    $db_participant->repopulate_queue( true );
   }
 }
