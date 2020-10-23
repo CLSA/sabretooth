@@ -19,79 +19,110 @@ class interview extends \cenozo\database\interview
   public function save()
   {
     $is_new = is_null( $this->id );
-
-    // if we changed the method column then update the queue
-    $update_queue = $this->has_column_changed( 'method' );
-
-    // if we're changing to web-based interviewing then update pine
     $update_method = $this->has_column_changed( 'method' );
 
     parent::save();
 
     if( $update_method )
     {
-      $pine_qnaire_id = $this->get_qnaire()->get_script()->pine_qnaire_id;
+      // only update mail if necessary
+      if( 'phone' == $this->method && !$is_new ) $this->remove_mail();
+      else if( 'web' == $this->method ) $this->resend_mail();
 
-      if( !is_null( $pine_qnaire_id ) )
+      $this->get_participant()->repopulate_queue( true );
+    }
+  }
+
+  /**
+   * Send a message to Pine asking to remove mail for this interview
+   * 
+   * Note: this will only affect interviews linked to a Pine script
+   */
+  public function remove_mail()
+  {
+    $pine_qnaire_id = $this->get_qnaire()->get_script()->pine_qnaire_id;
+
+    if( !is_null( $pine_qnaire_id ) )
+    {
+      $token = NULL;
+
+      // try and get the respondent record from pine, if it exists
+      $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+      try
       {
-        // only check on pine if necessary
-        $token = NULL;
-        if( ( 'phone' == $this->method && !$is_new ) || 'web' == $this->method )
-        {
-          // try and get the respondent record from pine, if it exists
-          $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
-          try
-          {
-            $response = $cenozo_manager->get( sprintf(
-              'qnaire/%d/respondent/participant_id=%d?no_activity=1&select={"column":["token"]}',
-              $pine_qnaire_id,
-              $this->participant_id
-            ) );
+        $response = $cenozo_manager->get( sprintf(
+          'qnaire/%d/respondent/participant_id=%d?no_activity=1&select={"column":["token"]}',
+          $pine_qnaire_id,
+          $this->participant_id
+        ) );
 
-            $token = $response->token;
-          }
-          catch( \cenozo\exception\runtime $e )
-          {
-            // 404 errors simply means the respondent doesn't exit
-            if( false === preg_match( '/Got response code 404/', $e->get_raw_message() ) ) throw $e;
-          }
-        }
+        $token = $response->token;
+      }
+      catch( \cenozo\exception\runtime $e )
+      {
+        // 404 errors simply means the respondent doesn't exit
+        if( false === preg_match( '/Got response code 404/', $e->get_raw_message() ) ) throw $e;
+      }
 
-        if( 'phone' == $this->method )
-        {
-          if( !is_null( $token ) )
-          {
-            // changing an existing interview from web to phone
-            $cenozo_manager->patch(
-              sprintf( 'respondent/token=%s?no_activity=1&action=remove_mail', $token ),
-              new \stdClass
-            );
-          }
-        }
-        else if( 'web' == $this->method )
-        {
-          // creating a new web interview or changing an existing interview from phone to web
-          if( is_null( $token ) )
-          {
-            // create the missing respondent record (respondent mail will also be created)
-            $cenozo_manager->post(
-              sprintf( 'qnaire/%d/respondent', $pine_qnaire_id ),
-              array( 'participant_id' => $this->participant_id )
-            );
-          }
-          else
-          {
-            // resend mail for the respondent
-            $cenozo_manager->patch(
-              sprintf( 'respondent/token=%s?no_activity=1&action=resend_mail', $token ),
-              new \stdClass
-            );
-          }
-        }
+      if( !is_null( $token ) )
+      {
+        // changing an existing interview from web to phone
+        $cenozo_manager->patch(
+          sprintf( 'respondent/token=%s?no_activity=1&action=remove_mail', $token ),
+          new \stdClass
+        );
       }
     }
+  }
 
-    if( $update_queue ) $this->get_participant()->repopulate_queue( true );
+  /**
+   * Send a message to Pine asking to resend mail for this interview
+   * 
+   * Note: this will only affect interviews linked to a Pine script
+   */
+  public function resend_mail()
+  {
+    $pine_qnaire_id = $this->get_qnaire()->get_script()->pine_qnaire_id;
+
+    if( !is_null( $pine_qnaire_id ) )
+    {
+      $token = NULL;
+
+      // try and get the respondent record from pine, if it exists
+      $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+      try
+      {
+        $response = $cenozo_manager->get( sprintf(
+          'qnaire/%d/respondent/participant_id=%d?no_activity=1&select={"column":["token"]}',
+          $pine_qnaire_id,
+          $this->participant_id
+        ) );
+
+        $token = $response->token;
+      }
+      catch( \cenozo\exception\runtime $e )
+      {
+        // 404 errors simply means the respondent doesn't exit
+        if( false === preg_match( '/Got response code 404/', $e->get_raw_message() ) ) throw $e;
+      }
+
+      if( is_null( $token ) )
+      {
+        // create the missing respondent record (respondent mail will also be created)
+        $cenozo_manager->post(
+          sprintf( 'qnaire/%d/respondent', $pine_qnaire_id ),
+          array( 'participant_id' => $this->participant_id )
+        );
+      }
+      else
+      {
+        // resend mail for the respondent
+        $cenozo_manager->patch(
+          sprintf( 'respondent/token=%s?no_activity=1&action=resend_mail', $token ),
+          new \stdClass
+        );
+      }
+    }
   }
 
   /**
