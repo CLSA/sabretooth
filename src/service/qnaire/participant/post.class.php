@@ -33,9 +33,7 @@ class post extends \cenozo\service\write
       $file = $this->get_file_as_object();
       if( !property_exists( $file, 'mode' ) ||
           !in_array( $file->mode, ['confirm', 'update'] ) ||
-          !property_exists( $file, 'identifier_list' ) ) {
-        $this->status->set_code( 400 );
-      }
+          !property_exists( $file, 'identifier_list' ) ) $this->status->set_code( 400 );
     }
   }
 
