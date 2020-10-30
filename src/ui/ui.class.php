@@ -39,7 +39,7 @@ class ui extends \cenozo\ui\ui
       $module->add_choose( 'collection' );
       $module->add_choose( 'hold_type' );
       $module->add_choose( 'site' );
-      $module->add_choose( 'quota' );
+      $module->add_choose( 'stratum' );
       $module->add_action( 'mass_method', '/{identifier}' );
     }
 
@@ -52,7 +52,7 @@ class ui extends \cenozo\ui\ui
       $module->append_action_query( 'view', '?{restrict}&{order}&{reverse}' );
     }
 
-    $module = $this->get_module( 'quota' );
+    $module = $this->get_module( 'stratum' );
     if( !is_null( $module ) ) $module->add_choose( 'qnaire' );
 
     $module = $this->get_module( 'site' );

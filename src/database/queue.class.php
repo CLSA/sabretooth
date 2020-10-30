@@ -511,6 +511,9 @@ class queue extends \cenozo\database\record
     // make sure the queue_list_cache has been created
     static::create_queue_list_cache();
 
+    // make sure the stratum_id_list_cache has been created
+    static::create_stratum_id_list_cache();
+
     // start by getting the queue and parent queue objects from the cache
     $db_queue = self::$queue_list_cache[$queue]['object'];
     if( is_null( $db_queue ) ) // invalid queue name
@@ -559,7 +562,7 @@ class queue extends \cenozo\database\record
       $modifier->where_bracket( true );
       $modifier->where( 'participant_exclusion_id', '!=', NULL );
       $modifier->or_where( 'study_consent_accept', '=', false );
-      
+
       $modifier->where_bracket( true, true );
       $modifier->where( 'qnaire_has_hold_type.hold_type_id', '=', NULL );
       $modifier->where( 'last_hold_type_type', '!=', NULL );
@@ -713,18 +716,16 @@ class queue extends \cenozo\database\record
     // make sure there is an active address
     $modifier->where( 'temp_participant_first_address.address_id', '!=', NULL );
 
-    // join to the quota table based on site, region, sex and age group
+    // join to the stratum table (if the participant belongs to one)
     $join_mod = lib::create( 'database\modifier' );
-    $join_mod->where( 'quota.site_id', '=', 'participant_site_id', false );
-    $join_mod->where( 'quota.region_id', '=', 'primary_region_id', false );
-    $join_mod->where( 'quota.sex', '=', 'participant_sex', false );
-    $join_mod->where( 'quota.age_group_id', '=', 'participant_age_group_id', false );
-    $modifier->join_modifier( 'quota', $join_mod, 'left' );
+    $join_mod->where( 'temp_participant.id', '=', 'stratum_has_participant.participant_id', false );
+    $join_mod->where( 'stratum_has_participant.stratum_id', 'IN', self::$stratum_id_list_cache );
+    $modifier->join_modifier( 'stratum_has_participant', $join_mod, 'left' );
 
     $join_mod = lib::create( 'database\modifier' );
-    $join_mod->where( 'quota.id', '=', 'qnaire_has_quota.quota_id', false );
-    $join_mod->where( 'effective_qnaire_id', '=', 'qnaire_has_quota.qnaire_id', false );
-    $modifier->join_modifier( 'qnaire_has_quota', $join_mod, 'left' );
+    $join_mod->where( 'stratum_has_participant.stratum_id', '=', 'qnaire_has_stratum.stratum_id', false );
+    $join_mod->where( 'effective_qnaire_id', '=', 'qnaire_has_stratum.qnaire_id', false );
+    $modifier->join_modifier( 'qnaire_has_stratum', $join_mod, 'left' );
 
     if( 'no site' == $queue )
     {
@@ -753,7 +754,7 @@ class queue extends \cenozo\database\record
 
     // make sure there is no row in qnaire_has_collection
     $modifier->where( 'collection_has_participant.participant_id', '=', NULL );
-    
+
     $join_mod = lib::create( 'database\modifier' );
     $join_mod->where( 'qnaire_has_site.qnaire_id', '=', 'effective_qnaire_id', false );
     $join_mod->where( 'qnaire_has_site.site_id', '=', 'participant_site_id', false );
@@ -769,13 +770,13 @@ class queue extends \cenozo\database\record
     // make sure there is no row in qnaire_has_site
     $modifier->where( 'qnaire_has_site.qnaire_id', '!=', NULL );
 
-    if( 'quota disabled' == $queue )
+    if( 'stratum disabled' == $queue )
     {
-      // who belong to a quota which is disabled (row in qnaire_has_quota found)
-      $modifier->where( 'qnaire_has_quota.quota_id', '!=', NULL );
-      // and who are not marked to override quota
-      $modifier->where( 'participant_override_quota', '=', false );
-      $modifier->where( 'source_override_quota', '=', false );
+      // who belong to a stratum which is disabled (row in qnaire_has_stratum found)
+      $modifier->where( 'qnaire_has_stratum.stratum_id', '!=', NULL );
+      // and who are not marked to override stratum
+      $modifier->where( 'participant_override_stratum', '=', false );
+      $modifier->where( 'source_override_stratum', '=', false );
       return;
     }
 
@@ -813,7 +814,6 @@ class queue extends \cenozo\database\record
         'ALTER TABLE temp_participant '.
         'ADD INDEX fk_id ( id ), '.
         'ADD INDEX fk_participant_sex ( participant_sex ), '.
-        'ADD INDEX fk_participant_age_group_id ( participant_age_group_id ), '.
         'ADD INDEX fk_participant_exclusion_id ( participant_exclusion_id ), '.
         'ADD INDEX fk_last_hold_type_type ( last_hold_type_type ), '.
         'ADD INDEX fk_last_trace_type_name ( last_trace_type_name ), '.
@@ -926,6 +926,28 @@ class queue extends \cenozo\database\record
   }
 
   /**
+   * Creates the stratum_id_list_cache needed by all queues.
+   * 
+   * @access protected
+   * @static
+   */
+  protected static function create_stratum_id_list_cache()
+  {
+    if( is_null( self::$stratum_id_list_cache ) )
+    {
+      self::$stratum_id_list_cache = array();
+      $db_study_phase = lib::create( 'business\session' )->get_application()->get_study_phase();
+      if( !is_null( $db_study_phase ) )
+      {
+        $stratum_sel = lib::create( 'database\select' );
+        $stratum_sel->add_column( 'id' );
+        foreach( $db_study_phase->get_study( $stratum_sel )->get_stratum_list() as $stratum )
+          self::$stratum_id_list_cache[] = $stratum['id'];
+      }
+    }
+  }
+
+  /**
    * Whether or not to show debug information
    * @var boolean
    * @access public
@@ -974,6 +996,14 @@ class queue extends \cenozo\database\record
   private static $queue_list_cache = array();
 
   /**
+   * A cache of all strata belonging to this application's study
+   * @var array
+   * @access private
+   * @static
+   */
+  private static $stratum_id_list_cache = NULL;
+
+  /**
    * A string containing the SQL used to create the temp_participant data
    * @var string
    * @access protected
@@ -983,10 +1013,9 @@ class queue extends \cenozo\database\record
 SELECT participant.id,
 participant.exclusion_id AS participant_exclusion_id,
 participant.sex AS participant_sex,
-participant.age_group_id AS participant_age_group_id,
-participant.override_quota AS participant_override_quota,
+participant.override_stratum AS participant_override_stratum,
 IFNULL( study_consent.accept, application.allow_missing_consent ) AS study_consent_accept,
-IFNULL( source.override_quota, false ) AS source_override_quota,
+IFNULL( source.override_stratum, false ) AS source_override_stratum,
 primary_region.id AS primary_region_id,
 last_hold_type.id AS last_hold_type_id,
 last_hold_type.type AS last_hold_type_type,
@@ -1029,65 +1058,46 @@ IF
 
 FROM participant
 JOIN application_has_participant
-ON participant.id = application_has_participant.participant_id
-AND application_has_participant.datetime IS NOT NULL
+  ON participant.id = application_has_participant.participant_id
+  AND application_has_participant.datetime IS NOT NULL
 JOIN application
-ON application_has_participant.application_id = application.id
-AND application.id = %s
+  ON application_has_participant.application_id = application.id
+  AND application.id = %s
 
+LEFT JOIN source ON participant.source_id = source.id
 LEFT JOIN study_phase ON application.study_phase_id = study_phase.id
 LEFT JOIN study ON study_phase.study_id = study.id
 LEFT JOIN participant_last_consent
-ON participant.id = participant_last_consent.participant_id
-AND study.consent_type_id = participant_last_consent.consent_type_id
+  ON participant.id = participant_last_consent.participant_id
+  AND study.consent_type_id = participant_last_consent.consent_type_id
 LEFT JOIN consent AS study_consent ON participant_last_consent.consent_id = study_consent.id
 
-LEFT JOIN source
-ON participant.source_id = source.id
+LEFT JOIN participant_primary_address ON participant.id = participant_primary_address.participant_id
+LEFT JOIN address AS primary_address ON participant_primary_address.address_id = primary_address.id
+LEFT JOIN region AS primary_region ON primary_address.region_id = primary_region.id
 
-LEFT JOIN participant_primary_address
-ON participant.id = participant_primary_address.participant_id
-LEFT JOIN address AS primary_address
-ON participant_primary_address.address_id = primary_address.id
-LEFT JOIN region AS primary_region
-ON primary_address.region_id = primary_region.id
+JOIN participant_last_hold ON participant.id = participant_last_hold.participant_id
+LEFT JOIN hold AS last_hold ON participant_last_hold.hold_id = last_hold.id
+LEFT JOIN hold_type AS last_hold_type ON last_hold.hold_type_id = last_hold_type.id
 
-JOIN participant_last_hold
-ON participant.id = participant_last_hold.participant_id
-LEFT JOIN hold AS last_hold
-ON participant_last_hold.hold_id = last_hold.id
-LEFT JOIN hold_type AS last_hold_type
-ON last_hold.hold_type_id = last_hold_type.id
+JOIN participant_last_trace ON participant.id = participant_last_trace.participant_id
+LEFT JOIN trace AS last_trace ON participant_last_trace.trace_id = last_trace.id
+LEFT JOIN trace_type AS last_trace_type ON last_trace.trace_type_id = last_trace_type.id
 
-JOIN participant_last_trace
-ON participant.id = participant_last_trace.participant_id
-LEFT JOIN trace AS last_trace
-ON participant_last_trace.trace_id = last_trace.id
-LEFT JOIN trace_type AS last_trace_type
-ON last_trace.trace_type_id = last_trace_type.id
-
-JOIN participant_last_proxy
-ON participant.id = participant_last_proxy.participant_id
-LEFT JOIN proxy AS last_proxy
-ON participant_last_proxy.proxy_id = last_proxy.id
-LEFT JOIN proxy_type AS last_proxy_type
-ON last_proxy.proxy_type_id = last_proxy_type.id
+JOIN participant_last_proxy ON participant.id = participant_last_proxy.participant_id
+LEFT JOIN proxy AS last_proxy ON participant_last_proxy.proxy_id = last_proxy.id
+LEFT JOIN proxy_type AS last_proxy_type ON last_proxy.proxy_type_id = last_proxy_type.id
 
 LEFT JOIN participant_last_interview AS participant_current_interview
-ON participant.id = participant_current_interview.participant_id
-LEFT JOIN interview AS current_interview
-ON participant_current_interview.interview_id = current_interview.id
-LEFT JOIN qnaire AS current_qnaire
-ON current_interview.qnaire_id = current_qnaire.id
+   ON participant.id = participant_current_interview.participant_id
+LEFT JOIN interview AS current_interview ON participant_current_interview.interview_id = current_interview.id
+LEFT JOIN qnaire AS current_qnaire ON current_interview.qnaire_id = current_qnaire.id
 LEFT JOIN interview_last_assignment AS interview_current_assignment
-ON current_interview.id = interview_current_assignment.interview_id
-LEFT JOIN assignment AS current_assignment
-ON interview_current_assignment.assignment_id = current_assignment.id
+   ON current_interview.id = interview_current_assignment.interview_id
+LEFT JOIN assignment AS current_assignment ON interview_current_assignment.assignment_id = current_assignment.id
 
-CROSS JOIN qnaire AS first_qnaire
-ON first_qnaire.rank = 1
+CROSS JOIN qnaire AS first_qnaire ON first_qnaire.rank = 1
 
-LEFT JOIN qnaire AS next_qnaire
-ON next_qnaire.rank = ( current_qnaire.rank + 1 )
+LEFT JOIN qnaire AS next_qnaire ON next_qnaire.rank = ( current_qnaire.rank + 1 )
 SQL;
 }

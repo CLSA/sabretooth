@@ -1,9 +1,9 @@
 // extend the framework's module
-define( [ cenozoApp.module( 'quota' ).getFileUrl( 'module.js' ) ], function() {
+define( [ cenozoApp.module( 'stratum' ).getFileUrl( 'module.js' ) ], function() {
   'use strict';
 
   // extend the view factory
-  cenozo.providers.decorator( 'CnQuotaViewFactory', [
+  cenozo.providers.decorator( 'CnStratumViewFactory', [
     '$delegate',
     function( $delegate ) {
       var instance = $delegate.instance;

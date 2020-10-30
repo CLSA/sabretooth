@@ -33,15 +33,7 @@ class data_manager extends \cenozo\business\data_manager
     $subject = $parts[0];
 
     $value = NULL;
-    if( 'participant' == $subject && 2 == count( $parts ) && 'override_quota()' == $parts[1] )
-    {
-      // participant.override_quota()
-      $value = false === $db_participant->get_quota_enabled() &&
-               ( $db_participant->override_quota || $db_participant->get_source()->override_quota )
-             ? '1'
-             : '0';
-    }
-    else if( 'qnaire' == $subject )
+    if( 'qnaire' == $subject )
     {
       $event_class_name = lib::get_class_name( 'database\event' );
       $qnaire_class_name = lib::get_class_name( 'database\qnaire' );

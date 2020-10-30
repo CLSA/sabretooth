@@ -73,3 +73,11 @@ DELIMITER ;
 CALL patch_queue();
 DROP PROCEDURE IF EXISTS patch_queue;
 DROP PROCEDURE IF EXISTS set_queue_id;
+
+SELECT "Renaming the quota disabled queue to stratum disabled" AS ""; 
+
+UPDATE queue
+SET name = "stratum disabled",
+    title = "Participant's stratum is disabled",
+    description = "Participants who belong to a stratum which has been disabled for the active questionnaire"
+WHERE name = "quota disabled";

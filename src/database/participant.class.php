@@ -20,7 +20,7 @@ class participant extends \cenozo\database\participant
   {
     // if we changed certain columns then update the queue
     $update_queue = $this->has_column_changed(
-      array( 'sex', 'age_group_id', 'source_id', 'override_quota' ) );
+      array( 'sex', 'source_id', 'override_stratum' ) );
     parent::save();
     if( $update_queue ) $this->repopulate_queue( true );
   }
@@ -217,21 +217,21 @@ class participant extends \cenozo\database\participant
   }
 
   /**
-   * Returns whether the participant's quota is enabled or not.
+   * Returns whether the participant's stratum is enabled or not.
    * 
-   * This is determined by cross-referencing the participant's quota and their effective qnaire
-   * since quotas can be enabled/disabled by qnaire.  If the participant does not belong to any
-   * quota then NULL is returned instead.
+   * This is determined by cross-referencing the participant's stratum and their effective qnaire
+   * since strata can be enabled/disabled by qnaire.  If the participant does not belong to any
+   * stratum then NULL is returned instead.
    * @return boolean
    * @access public
    */
-  public function get_quota_enabled()
+  public function get_stratum_enabled()
   {
     $this->load_queue_data();
     $qnaire_mod = lib::create( 'database\modifier' );
     $qnaire_mod->where( 'qnaire_id', '=', $this->effective_qnaire_id );
-    $db_quota = $this->get_quota();
-    return is_null( $db_quota ) ? NULL : 0 == $db_quota->get_qnaire_count( $qnaire_mod );
+    $db_stratum = $this->get_stratum();
+    return is_null( $db_stratum ) ? NULL : 0 == $db_stratum->get_qnaire_count( $qnaire_mod );
   }
 
   /**

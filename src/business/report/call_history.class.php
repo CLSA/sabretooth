@@ -29,7 +29,6 @@ class call_history extends \cenozo\business\report\base_report
     $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
     $modifier->left_join( 'site', 'assignment.site_id', 'site.id' );
-    $modifier->left_join( 'age_group', 'participant.age_group_id', 'age_group.id' );
     $modifier->join( 'user', 'assignment.user_id', 'user.id' );
     $modifier->order( 'phone_call.start_datetime' );
 

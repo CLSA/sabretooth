@@ -24,8 +24,8 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
       type: 'string',
       isConstant: true
     },
-    override_quota: {
-      title: 'Override Quota',
+    override_stratum: {
+      title: 'Override Stratum',
       type: 'boolean',
       isConstant: function( $state, model ) { return !model.isAdministrator(); }
     }

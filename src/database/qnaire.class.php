@@ -118,9 +118,9 @@ class qnaire extends \cenozo\database\has_rank
   /**
    * Extend parent method
    */
-  public function add_quota( $ids )
+  public function add_stratum( $ids )
   {
-    parent::add_quota( $ids );
+    parent::add_stratum( $ids );
     $queue_class_name = lib::get_class_name( 'database\queue' );
     $queue_class_name::repopulate();
   }
@@ -128,9 +128,9 @@ class qnaire extends \cenozo\database\has_rank
   /**
    * Extend parent method
    */
-  public function remove_quota( $ids )
+  public function remove_stratum( $ids )
   {
-    parent::remove_quota( $ids );
+    parent::remove_stratum( $ids );
     $queue_class_name = lib::get_class_name( 'database\queue' );
     $queue_class_name::repopulate();
   }
@@ -138,9 +138,9 @@ class qnaire extends \cenozo\database\has_rank
   /**
    * Extend parent method
    */
-  public function replace_quota( $ids )
+  public function replace_stratum( $ids )
   {
-    parent::replace_quota( $ids );
+    parent::replace_stratum( $ids );
     $queue_class_name = lib::get_class_name( 'database\queue' );
     $queue_class_name::repopulate();
   }
