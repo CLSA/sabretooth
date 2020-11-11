@@ -23,18 +23,18 @@ class patch extends \cenozo\service\participant\patch
     $db_participant = $this->get_leaf_record();
 
     // update the participant's queue, if requested
-    if( $this->get_argument( 'repopulate', false ) ) $db_participant->repopulate_queue();
-    else
+    if( $this->get_argument( 'repopulate', false ) )
     {
-      $interview_mail = $this->get_argument( 'interview_mail', false );
-      if( !is_null( $interview_mail ) )
+      $old_queue_web = 'web version' == $db_participant->get_current_queue()->name;
+      $db_participant->repopulate_queue();
+      $new_queue_web = 'web version' == $db_participant->get_current_queue( true )->name;
+
+      $db_effective_interview = $db_participant->get_effective_interview();
+      if( !is_null( $db_effective_interview ) && !is_null( $db_effective_interview->id ) )
       {
-        $db_effective_interview = $db_participant->get_effective_interview();
-        if( !is_null( $db_effective_interview ) && !is_null( $db_effective_interview->id ) )
-        {
-          if( 'resend' == $interview_mail ) $db_effective_interview->resend_mail();
-          else if( 'remove' == $interview_mail ) $db_effective_interview->remove_mail();
-        }
+        // resend or remove mail depending on the consent status
+        if( !$old_queue_web && $new_queue_web ) $db_effective_interview->resend_mail();
+        else if( $old_queue_web && !$new_queue_web ) $db_effective_interview->remove_mail();
       }
     }
   }

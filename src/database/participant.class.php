@@ -154,9 +154,9 @@ class participant extends \cenozo\database\participant
    * @return database\queue
    * @access public
    */
-  public function get_current_queue()
+  public function get_current_queue( $force = false )
   {
-    $this->load_queue_data();
+    $this->load_queue_data( $force );
     return is_null( $this->current_queue_id ) ?
       NULL : lib::create( 'database\queue', $this->current_queue_id );
   }
@@ -172,9 +172,9 @@ class participant extends \cenozo\database\participant
    * @return database\qnaire
    * @access public
    */
-  public function get_effective_qnaire()
+  public function get_effective_qnaire( $force = false )
   {
-    $this->load_queue_data();
+    $this->load_queue_data( $force );
     return is_null( $this->effective_qnaire_id ) ?
       NULL : lib::create( 'database\qnaire', $this->effective_qnaire_id );
   }
@@ -191,10 +191,10 @@ class participant extends \cenozo\database\participant
    * @return database\qnaire
    * @access public
    */
-  public function get_effective_interview( $save = true )
+  public function get_effective_interview( $save = true, $force = false )
   {
     $interview_class_name = lib::get_class_name( 'database\interview' );
-    $this->load_queue_data();
+    $this->load_queue_data( $force );
 
     $db_interview = NULL;
     if( !is_null( $this->effective_qnaire_id ) )
@@ -225,9 +225,9 @@ class participant extends \cenozo\database\participant
    * @return boolean
    * @access public
    */
-  public function get_stratum_enabled()
+  public function get_stratum_enabled( $force = false )
   {
-    $this->load_queue_data();
+    $this->load_queue_data( $force );
     $qnaire_mod = lib::create( 'database\modifier' );
     $qnaire_mod->where( 'qnaire_id', '=', $this->effective_qnaire_id );
     $db_stratum = $this->get_stratum();
@@ -248,19 +248,20 @@ class participant extends \cenozo\database\participant
    * @return datetime
    * @access public
    */
-  public function get_start_qnaire_date()
+  public function get_start_qnaire_date( $force = false )
   {
-    $this->load_queue_data();
+    $this->load_queue_data( $force );
     return $this->start_qnaire_date;
   }
 
   /**
    * Fills in the queue-based information about the participant
+   * @param boolean $force Whether to force-refresh the queue's data (use this after repopulating the queue)
    * @access private
    */
-  private function load_queue_data()
+  private function load_queue_data( $force = false )
   {
-    if( $this->queue_data_loaded ) return;
+    if( $this->queue_data_loaded && !$force ) return;
 
     // check the primary key value
     if( is_null( $this->id ) )

@@ -18,6 +18,10 @@ define( function() {
         title: 'Rank',
         type: 'rank'
       },
+      allow_missing_consent: {
+        title: 'Missing Consent',
+        type: 'boolean'
+      },
       web_version: {
         title: 'Web Version',
         type: 'boolean'
@@ -44,6 +48,11 @@ define( function() {
       type: 'enum',
       isConstant: 'view',
       help: 'Only scripts which are marked as non-repeatable may be used as a questionnaire.'
+    },
+    allow_missing_consent: {
+      title: 'Allow Missing Consent',
+      type: 'boolean',
+      help: 'This field determines whether or not a participant should be allowed to proceed with the questionnaire when they are missing the extra consent record specified by the study.'
     },
     web_version: {
       title: 'Web Version',

@@ -4,7 +4,7 @@ CREATE PROCEDURE patch_qnaire()
   BEGIN
 
     SELECT "Adding new web_version column to qnaire table" AS "";
-    
+
     SELECT COUNT(*) INTO @test
     FROM information_schema.COLUMNS
     WHERE table_schema = DATABASE()
@@ -13,6 +13,18 @@ CREATE PROCEDURE patch_qnaire()
 
     IF @test = 0 THEN
       ALTER TABLE qnaire ADD COLUMN web_version TINYINT(1) NOT NULL DEFAULT 0 AFTER script_id;
+    END IF;
+
+    SELECT "Adding new allow_missing_consent column to qnaire table" AS "";
+
+    SELECT COUNT(*) INTO @test
+    FROM information_schema.COLUMNS
+    WHERE table_schema = DATABASE()
+    AND table_name = "qnaire"
+    AND column_name = "allow_missing_consent";
+
+    IF @test = 0 THEN
+      ALTER TABLE qnaire ADD COLUMN allow_missing_consent TINYINT(1) NOT NULL DEFAULT 1 AFTER script_id;
     END IF;
 
   END //
