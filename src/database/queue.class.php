@@ -1043,13 +1043,25 @@ IF
       IF
       (
         current_interview.end_datetime IS NOT NULL,
-        DATE( current_interview.end_datetime ) + INTERVAL next_qnaire.delay WEEK,
+        DATE(
+          CASE next_qnaire.delay_unit
+            WHEN "day" THEN current_interview.end_datetime + INTERVAL next_qnaire.delay_offset DAY
+            WHEN "week" THEN current_interview.end_datetime + INTERVAL next_qnaire.delay_offset WEEK
+            WHEN "month" THEN current_interview.end_datetime + INTERVAL next_qnaire.delay_offset MONTH
+          END
+        ),
         NULL
       ),
       IF
       (
         current_interview.end_datetime IS NOT NULL AND current_assignment.end_datetime IS NOT NULL,
-        DATE( current_assignment.end_datetime ) + INTERVAL next_qnaire.delay WEEK,
+        DATE(
+          CASE next_qnaire.delay_unit
+            WHEN "day" THEN current_assignment.end_datetime + INTERVAL next_qnaire.delay_offset DAY
+            WHEN "week" THEN current_assignment.end_datetime + INTERVAL next_qnaire.delay_offset WEEK
+            WHEN "month" THEN current_assignment.end_datetime + INTERVAL next_qnaire.delay_offset MONTH
+          END
+        ),
         NULL
       )
     )

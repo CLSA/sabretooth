@@ -283,7 +283,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
                   CnHttpFactory.instance( {
                     path: 'qnaire',
                     data: {
-                      select: { column: ['id', 'rank', 'script_id', 'delay'] },
+                      select: { column: ['id', 'rank', 'script_id', 'delay_offset', 'delay_unit'] },
                       modifier: { order: 'rank' }
                     }
                   } ).query().then( function( response ) {
@@ -431,10 +431,10 @@ define( [ 'participant' ].reduce( function( list, name ) {
 
         this.launchingScript = false;
         this.launchScript = function( script ) {
-          if( 0 < this.activeQnaire.delay && 1 < this.activeQnaire.rank ) {
+          if( 0 < this.activeQnaire.delay_offset && 1 < this.activeQnaire.rank ) {
             var previousQnaire = this.qnaireList.findByProperty( 'rank', this.activeQnaire.rank - 1 );
             var delayUntil = moment( this.qnaireScriptList.findByProperty( 'id', previousQnaire.script_id ).finished_datetime ).add(
-              this.activeQnaire.delay, 'week'
+              this.activeQnaire.delay_offset, this.activeQnaire.delay_unit
             );
 
             if( delayUntil.isAfter( moment( new Date() ), 'days' ) ) {

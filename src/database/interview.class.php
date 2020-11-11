@@ -413,7 +413,7 @@ class interview extends \cenozo\database\interview
       $interview_mod->get_where()
     ) );
 
-    // create any web interviews which are ready to proceed after the required delay
+    // create any web interviews which are ready to proceed after the required delay offset/unit
     // (match same day, not datetime since this will be run as cron job overnight)
     $interview_sel = lib::create( 'database\select' );
     $interview_sel->add_column( 'participant_id' );
@@ -433,7 +433,13 @@ class interview extends \cenozo\database\interview
     $interview_mod->where( 'interview.method', '=', 'web' );
     $interview_mod->where( 'interview.end_datetime', '!=', NULL );
     $interview_mod->where(
-      'DATE( interview.end_datetime + INTERVAL next_qnaire.delay WEEK )',
+      'DATE( '.
+        'CASE next_qnaire.delay_unit '.
+          'WHEN "day" THEN interview.end_datetime + INTERVAL next_qnaire.delay_offset DAY '.
+          'WHEN "week" THEN interview.end_datetime + INTERVAL next_qnaire.delay_offset WEEK '.
+          'WHEN "month" THEN interview.end_datetime + INTERVAL next_qnaire.delay_offset MONTH '.
+        'END '.
+      ')',
       '<=',
       'DATE( UTC_TIMESTAMP() )',
       false
@@ -460,7 +466,7 @@ class interview extends \cenozo\database\interview
     {
       $db_appointment = lib::create( 'database\appointment', $appointment['appointment_id'] );
       $db_qnaire = $qnaire_class_name::get_unique_record( 'rank', $appointment['rank'] );
-      if( 0 < $db_qnaire->delay )
+      if( 0 < $db_qnaire->delay_offset )
       {
         // if there is a delay before the next qnaire then we can't create an appointment for it
         $db_appointment->delete();

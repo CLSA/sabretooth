@@ -26,9 +26,13 @@ define( function() {
         title: 'Web Version',
         type: 'boolean'
       },
-      delay: {
-        title: 'Delay',
+      delay_offset: {
+        title: 'Delay Offset',
         type: 'number'
+      },
+      delay_unit: {
+        title: 'Delay Unit',
+        type: 'string'
       }
     },
     defaultOrder: {
@@ -63,11 +67,15 @@ define( function() {
       },
       help: 'Defines whether this questionnaire has a web-version.'
     },
-    delay: {
-      title: 'Delay (weeks)',
+    delay_offset: {
+      title: 'Delay Offset',
       type: 'string',
       format: 'integer',
       minValue: 0
+    },
+    delay_unit: {
+      title: 'Delay Unit',
+      type: 'enum'
     },
     pine_qnaire_id: {
       column: 'script.pine_qnaire_id',
