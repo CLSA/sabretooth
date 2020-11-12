@@ -199,6 +199,7 @@ class interview extends \cenozo\database\interview
         $db_interview->qnaire_id = $db_next_qnaire->id;
         $db_interview->participant_id = $db_participant->id;
         $db_interview->start_datetime = util::get_datetime_object();
+        $db_interview->method = $this->method;
         $db_interview->save();
       }
 
