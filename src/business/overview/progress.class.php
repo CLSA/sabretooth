@@ -83,10 +83,10 @@ class progress extends \cenozo\business\overview\base_overview
 
     // start with the participant totals
     /////////////////////////////////////////////////////////////////////////////////////////////
-    $all_mod = clone $modifier;
-    $all_mod->where( 'queue.name', '=', 'all' );
+    $cat_mod = clone $modifier;
+    $cat_mod->where( 'queue.name', '=', 'all' );
 
-    foreach( $db->get_all( sprintf( '%s %s', $select->get_sql(), $all_mod->get_sql() ) ) as $row )
+    foreach( $db->get_all( sprintf( '%s %s', $select->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
       $node = $this->add_root_item( $row['site'] );
       $this->add_item( $node, 'All Participants', $row['total'] );
@@ -101,8 +101,11 @@ class progress extends \cenozo\business\overview\base_overview
       {
         $qnaire_node = $this->add_item( $node, $qnaire.' Interview' );
         $this->add_item( $qnaire_node, 'Not yet called', 0 );
-        $this->add_item( $qnaire_node, 'Call in progress', 0 );
+        $this->add_item( $qnaire_node, 'Call in Progress', 0 );
         foreach( $call_status_list as $call_status ) $this->add_item( $qnaire_node, ucWords( $call_status ), 0 );
+        $this->add_item( $qnaire_node, 'Phone Version Completed', 0 );
+        $this->add_item( $qnaire_node, 'Web Version in Progress', 0 );
+        $this->add_item( $qnaire_node, 'Web Version Completed', 0 );
         $this->add_item( $qnaire_node, 'Completed Interviews', 0 );
       }
       $site_node_lookup[$row['site']] = $node;
@@ -110,10 +113,10 @@ class progress extends \cenozo\business\overview\base_overview
 
     // not enrolled participants
     /////////////////////////////////////////////////////////////////////////////////////////////
-    $not_enrolled_mod = clone $modifier;
-    $not_enrolled_mod->where( 'queue.name', '=', 'not enrolled' );
+    $cat_mod = clone $modifier;
+    $cat_mod->where( 'queue.name', '=', 'not enrolled' );
 
-    foreach( $db->get_all( sprintf( '%s %s', $select->get_sql(), $not_enrolled_mod->get_sql() ) ) as $row )
+    foreach( $db->get_all( sprintf( '%s %s', $select->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
       $node = $site_node_lookup[$row['site']]->find_node( 'Not Enrolled' );
       $node->set_value( $row['total'] );
@@ -121,19 +124,19 @@ class progress extends \cenozo\business\overview\base_overview
 
     // hold types
     /////////////////////////////////////////////////////////////////////////////////////////////
-    $hold_type_sel = clone $select;
-    $hold_type_sel->add_table_column( 'hold_type', 'name' );
-    $hold_type_sel->add_table_column( 'hold_type', 'type' );
+    $cat_sel = clone $select;
+    $cat_sel->add_table_column( 'hold_type', 'name' );
+    $cat_sel->add_table_column( 'hold_type', 'type' );
 
-    $hold_type_mod = clone $modifier;
-    $hold_type_mod->where( 'queue.name', 'LIKE', '% hold' );
-    $hold_type_mod->join(
+    $cat_mod = clone $modifier;
+    $cat_mod->where( 'queue.name', 'LIKE', '% hold' );
+    $cat_mod->join(
       'participant_last_hold', 'queue_has_participant.participant_id', 'participant_last_hold.participant_id' );
-    $hold_type_mod->join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
-    $hold_type_mod->join( 'hold_type', 'hold.hold_type_id', 'hold_type.id' );
-    $hold_type_mod->group( 'hold_type.id' );
+    $cat_mod->join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
+    $cat_mod->join( 'hold_type', 'hold.hold_type_id', 'hold_type.id' );
+    $cat_mod->group( 'hold_type.id' );
     
-    foreach( $db->get_all( sprintf( '%s %s', $hold_type_sel->get_sql(), $hold_type_mod->get_sql() ) ) as $row )
+    foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
       $parent_node = $site_node_lookup[$row['site']]->find_node( 'Hold Types' );
       $node = $parent_node->find_node( $row['type'].': '.$row['name'] );
@@ -142,18 +145,18 @@ class progress extends \cenozo\business\overview\base_overview
 
     // trace types
     /////////////////////////////////////////////////////////////////////////////////////////////
-    $trace_type_sel = clone $select;
-    $trace_type_sel->add_table_column( 'trace_type', 'name' );
+    $cat_sel = clone $select;
+    $cat_sel->add_table_column( 'trace_type', 'name' );
 
-    $trace_type_mod = clone $modifier;
-    $trace_type_mod->where( 'queue.name', '=', 'tracing' );
-    $trace_type_mod->join(
+    $cat_mod = clone $modifier;
+    $cat_mod->where( 'queue.name', '=', 'tracing' );
+    $cat_mod->join(
       'participant_last_trace', 'queue_has_participant.participant_id', 'participant_last_trace.participant_id' );
-    $trace_type_mod->join( 'trace', 'participant_last_trace.trace_id', 'trace.id' );
-    $trace_type_mod->join( 'trace_type', 'trace.trace_type_id', 'trace_type.id' );
-    $trace_type_mod->group( 'trace_type.id' );
+    $cat_mod->join( 'trace', 'participant_last_trace.trace_id', 'trace.id' );
+    $cat_mod->join( 'trace_type', 'trace.trace_type_id', 'trace_type.id' );
+    $cat_mod->group( 'trace_type.id' );
     
-    foreach( $db->get_all( sprintf( '%s %s', $trace_type_sel->get_sql(), $trace_type_mod->get_sql() ) ) as $row )
+    foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
       $parent_node = $site_node_lookup[$row['site']]->find_node( 'Trace Types' );
       $node = $parent_node->find_node( $row['name'] );
@@ -162,18 +165,18 @@ class progress extends \cenozo\business\overview\base_overview
 
     // proxy types
     /////////////////////////////////////////////////////////////////////////////////////////////
-    $proxy_type_sel = clone $select;
-    $proxy_type_sel->add_table_column( 'proxy_type', 'name' );
+    $cat_sel = clone $select;
+    $cat_sel->add_table_column( 'proxy_type', 'name' );
 
-    $proxy_type_mod = clone $modifier;
-    $proxy_type_mod->where( 'queue.name', '=', 'proxy' );
-    $proxy_type_mod->join(
+    $cat_mod = clone $modifier;
+    $cat_mod->where( 'queue.name', '=', 'proxy' );
+    $cat_mod->join(
       'participant_last_proxy', 'queue_has_participant.participant_id', 'participant_last_proxy.participant_id' );
-    $proxy_type_mod->join( 'proxy', 'participant_last_proxy.proxy_id', 'proxy.id' );
-    $proxy_type_mod->join( 'proxy_type', 'proxy.proxy_type_id', 'proxy_type.id' );
-    $proxy_type_mod->group( 'proxy_type.id' );
+    $cat_mod->join( 'proxy', 'participant_last_proxy.proxy_id', 'proxy.id' );
+    $cat_mod->join( 'proxy_type', 'proxy.proxy_type_id', 'proxy_type.id' );
+    $cat_mod->group( 'proxy_type.id' );
     
-    foreach( $db->get_all( sprintf( '%s %s', $proxy_type_sel->get_sql(), $proxy_type_mod->get_sql() ) ) as $row )
+    foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
       $parent_node = $site_node_lookup[$row['site']]->find_node( 'Proxy Types' );
       $node = $parent_node->find_node( $row['name'] );
@@ -182,14 +185,14 @@ class progress extends \cenozo\business\overview\base_overview
 
     // not yet called
     /////////////////////////////////////////////////////////////////////////////////////////////
-    $new_sel = clone $select;
-    $new_sel->add_table_column( 'script', 'name', 'qnaire' );
+    $cat_sel = clone $select;
+    $cat_sel->add_table_column( 'script', 'name', 'qnaire' );
 
-    $new_mod = clone $modifier;
-    $new_mod->where( 'queue.name', '=', 'new participant' );
-    $new_mod->group( 'script.name' );
+    $cat_mod = clone $modifier;
+    $cat_mod->where( 'queue.name', '=', 'new participant' );
+    $cat_mod->group( 'script.name' );
 
-    foreach( $db->get_all( sprintf( '%s %s', $new_sel->get_sql(), $new_mod->get_sql() ) ) as $row )
+    foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
       $parent_node = $site_node_lookup[$row['site']]->find_node( ucWords( $row['qnaire'] ).' Interview' );
       $node = $parent_node->find_node( 'Not yet called' );
@@ -198,17 +201,17 @@ class progress extends \cenozo\business\overview\base_overview
 
     // call in progress
     /////////////////////////////////////////////////////////////////////////////////////////////
-    $new_sel = clone $select;
-    $new_sel->add_table_column( 'script', 'name', 'qnaire' );
+    $cat_sel = clone $select;
+    $cat_sel->add_table_column( 'script', 'name', 'qnaire' );
 
-    $new_mod = clone $modifier;
-    $new_mod->where( 'queue.name', '=', 'assigned' );
-    $new_mod->group( 'script.name' );
+    $cat_mod = clone $modifier;
+    $cat_mod->where( 'queue.name', '=', 'assigned' );
+    $cat_mod->group( 'script.name' );
 
-    foreach( $db->get_all( sprintf( '%s %s', $new_sel->get_sql(), $new_mod->get_sql() ) ) as $row )
+    foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
       $parent_node = $site_node_lookup[$row['site']]->find_node( ucWords( $row['qnaire'] ).' Interview' );
-      $node = $parent_node->find_node( 'Call in progress' );
+      $node = $parent_node->find_node( 'Call in Progress' );
       $node->set_value( $row['total'] );
     }
 
@@ -216,14 +219,14 @@ class progress extends \cenozo\business\overview\base_overview
     /////////////////////////////////////////////////////////////////////////////////////////////
     foreach( $call_status_list as $call_status )
     {
-      $new_sel = clone $select;
-      $new_sel->add_table_column( 'script', 'name', 'qnaire' );
+      $cat_sel = clone $select;
+      $cat_sel->add_table_column( 'script', 'name', 'qnaire' );
 
-      $new_mod = clone $modifier;
-      $new_mod->where( 'queue.name', '=', $call_status );
-      $new_mod->group( 'script.name' );
+      $cat_mod = clone $modifier;
+      $cat_mod->where( 'queue.name', '=', $call_status );
+      $cat_mod->group( 'script.name' );
 
-      foreach( $db->get_all( sprintf( '%s %s', $new_sel->get_sql(), $new_mod->get_sql() ) ) as $row )
+      foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
       {
         $parent_node = $site_node_lookup[$row['site']]->find_node( ucWords( $row['qnaire'] ).' Interview' );
         $node = $parent_node->find_node( ucWords( $call_status ) );
@@ -231,22 +234,84 @@ class progress extends \cenozo\business\overview\base_overview
       }
     }
 
+    // phone version completed
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    $cat_sel = clone $select;
+    $cat_sel->add_table_column( 'script', 'name', 'qnaire' );
+
+    $cat_mod = clone $modifier;
+    $cat_mod->where( 'queue.name', '=', 'all' );
+    $cat_mod->join( 'interview', 'queue_has_participant.participant_id', 'interview.participant_id' );
+    $cat_mod->remove_join( 'qnaire' );
+    $cat_mod->remove_join( 'script' );
+    $cat_mod->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
+    $cat_mod->join( 'script', 'qnaire.script_id', 'script.id' );
+    $cat_mod->where( 'interview.end_datetime', '!=', NULL );
+    $cat_mod->where( 'interview.method', '=', 'phone' );
+    $cat_mod->group( 'script.name' );
+
+    foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
+    {
+      $parent_node = $site_node_lookup[$row['site']]->find_node( ucWords( $row['qnaire'] ).' Interview' );
+      $node = $parent_node->find_node( 'Phone Version Completed' );
+      $node->set_value( $row['total'] );
+    }
+
+    // web version in progress
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    $cat_sel = clone $select;
+    $cat_sel->add_table_column( 'script', 'name', 'qnaire' );
+
+    $cat_mod = clone $modifier;
+    $cat_mod->where( 'queue.name', '=', 'web version' );
+    $cat_mod->group( 'script.name' );
+
+    foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
+    {
+      $parent_node = $site_node_lookup[$row['site']]->find_node( ucWords( $row['qnaire'] ).' Interview' );
+      $node = $parent_node->find_node( 'Web Version in Progress' );
+      $node->set_value( $row['total'] );
+    }
+
+    // web version completed
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    $cat_sel = clone $select;
+    $cat_sel->add_table_column( 'script', 'name', 'qnaire' );
+
+    $cat_mod = clone $modifier;
+    $cat_mod->where( 'queue.name', '=', 'all' );
+    $cat_mod->join( 'interview', 'queue_has_participant.participant_id', 'interview.participant_id' );
+    $cat_mod->remove_join( 'qnaire' );
+    $cat_mod->remove_join( 'script' );
+    $cat_mod->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
+    $cat_mod->join( 'script', 'qnaire.script_id', 'script.id' );
+    $cat_mod->where( 'interview.end_datetime', '!=', NULL );
+    $cat_mod->where( 'interview.method', '=', 'web' );
+    $cat_mod->group( 'script.name' );
+
+    foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
+    {
+      $parent_node = $site_node_lookup[$row['site']]->find_node( ucWords( $row['qnaire'] ).' Interview' );
+      $node = $parent_node->find_node( 'Web Version Completed' );
+      $node->set_value( $row['total'] );
+    }
+
     // completed
     /////////////////////////////////////////////////////////////////////////////////////////////
-    $completed_sel = clone $select;
-    $completed_sel->add_table_column( 'script', 'name', 'qnaire' );
+    $cat_sel = clone $select;
+    $cat_sel->add_table_column( 'script', 'name', 'qnaire' );
 
-    $completed_mod = clone $modifier;
-    $completed_mod->where( 'queue.name', '=', 'all' );
-    $completed_mod->join( 'interview', 'queue_has_participant.participant_id', 'interview.participant_id' );
-    $completed_mod->remove_join( 'qnaire' );
-    $completed_mod->remove_join( 'script' );
-    $completed_mod->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
-    $completed_mod->join( 'script', 'qnaire.script_id', 'script.id' );
-    $completed_mod->where( 'interview.end_datetime', '!=', NULL );
-    $completed_mod->group( 'script.name' );
+    $cat_mod = clone $modifier;
+    $cat_mod->where( 'queue.name', '=', 'all' );
+    $cat_mod->join( 'interview', 'queue_has_participant.participant_id', 'interview.participant_id' );
+    $cat_mod->remove_join( 'qnaire' );
+    $cat_mod->remove_join( 'script' );
+    $cat_mod->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
+    $cat_mod->join( 'script', 'qnaire.script_id', 'script.id' );
+    $cat_mod->where( 'interview.end_datetime', '!=', NULL );
+    $cat_mod->group( 'script.name' );
 
-    foreach( $db->get_all( sprintf( '%s %s', $completed_sel->get_sql(), $completed_mod->get_sql() ) ) as $row )
+    foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
       $parent_node = $site_node_lookup[$row['site']]->find_node( ucWords( $row['qnaire'] ).' Interview' );
       $node = $parent_node->find_node( 'Completed Interviews' );
