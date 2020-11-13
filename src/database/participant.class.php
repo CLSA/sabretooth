@@ -193,6 +193,7 @@ class participant extends \cenozo\database\participant
    */
   public function get_effective_interview( $save = true, $force = false )
   {
+    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
     $interview_class_name = lib::get_class_name( 'database\interview' );
     $this->load_queue_data( $force );
 
@@ -201,7 +202,8 @@ class participant extends \cenozo\database\participant
     {
       $db_interview = $interview_class_name::get_unique_record(
         array( 'participant_id', 'qnaire_id' ),
-        array( $this->id, $this->effective_qnaire_id ) );
+        array( $this->id, $this->effective_qnaire_id )
+      );
 
       if( is_null( $db_interview ) )
       { // create the interview if it isn't found
@@ -209,6 +211,20 @@ class participant extends \cenozo\database\participant
         $db_interview->participant_id = $this->id;
         $db_interview->qnaire_id = $this->effective_qnaire_id;
         $db_interview->start_datetime = util::get_datetime_object();
+
+        // get the last qnaire and match its interviewing method
+        $db_current_qnaire = lib::create( 'database\qnaire', $this->effective_qnaire_id );
+        $db_previous_interview = NULL;
+        if( 1 < $db_current_qnaire->rank )
+        {
+          $db_previous_qnaire = $qnaire_class_name::get_unique_record( 'rank', $db_current_qnaire->rank - 1 );
+          $db_previous_interview = $interview_class_name::get_unique_record(
+            array( 'participant_id', 'qnaire_id' ),
+            array( $this->id, $db_previous_qnaire->id )
+          );
+          if( !is_null( $db_previous_interview ) ) $db_interview->method = $db_previous_interview->method;
+        }
+
         if( $save ) $db_interview->save();
       }
     }

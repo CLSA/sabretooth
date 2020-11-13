@@ -699,12 +699,12 @@ class queue extends \cenozo\database\record
     if( 'web version' == $queue )
     {
       // make sure there is no active address
-      $modifier->where( 'IFNULL( interview_method, "phone" )', '=', 'web' );
+      $modifier->where( 'IFNULL( current_interview_method, IFNULL( previous_interview_method, "phone" ) )', '=', 'web' );
       return;
     }
 
     // make sure there is an active address
-    $modifier->where( 'IFNULL( interview_method, "phone" )', '!=', 'web' );
+    $modifier->where( 'IFNULL( current_interview_method, IFNULL( previous_interview_method, "phone" ) )', '!=', 'web' );
 
     if( 'no active address' == $queue )
     {
@@ -1022,10 +1022,11 @@ last_hold_type.type AS last_hold_type_type,
 last_trace_type.name AS last_trace_type_name,
 last_proxy_type.name AS last_proxy_type_name,
 current_interview.id AS current_interview_id,
-current_interview.method AS interview_method,
+current_interview.method AS current_interview_method,
 current_qnaire.id AS current_qnaire_id,
 current_assignment.id AS current_assignment_id,
 current_assignment.end_datetime AS current_assignment_end_datetime,
+previous_interview.method AS previous_interview_method,
 IF
 (
   current_qnaire.id IS NULL,
@@ -1109,6 +1110,11 @@ LEFT JOIN interview_last_assignment AS interview_current_assignment
 LEFT JOIN assignment AS current_assignment ON interview_current_assignment.assignment_id = current_assignment.id
 
 CROSS JOIN qnaire AS first_qnaire ON first_qnaire.rank = 1
+
+LEFT JOIN qnaire AS previous_qnaire ON previous_qnaire.rank = ( current_qnaire.rank - 1 )
+LEFT JOIN interview AS previous_interview
+  ON participant.id = previous_interview.participant_id
+  AND previous_qnaire.id = previous_interview.qnaire_id
 
 LEFT JOIN qnaire AS next_qnaire ON next_qnaire.rank = ( current_qnaire.rank + 1 )
 SQL;

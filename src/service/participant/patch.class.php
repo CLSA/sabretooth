@@ -29,7 +29,7 @@ class patch extends \cenozo\service\participant\patch
       $db_participant->repopulate_queue();
       $new_queue_web = 'web version' == $db_participant->get_current_queue( true )->name;
 
-      $db_effective_interview = $db_participant->get_effective_interview();
+      $db_effective_interview = $db_participant->get_effective_interview( false );
       if( !is_null( $db_effective_interview ) && !is_null( $db_effective_interview->id ) )
       {
         // resend or remove mail depending on the consent status
