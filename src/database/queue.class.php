@@ -165,7 +165,7 @@ class queue extends \cenozo\database\record
     $semaphore->acquire();
 
     // update all web-based interviews
-    $interview_class_name::launch_web_interviews( $db_participant );
+    $qnaire_list = $interview_class_name::process_completed_web_interviews( $db_participant );
 
     // make sure the temporary table exists
     static::build_temporary_tables( $db_participant );
@@ -211,12 +211,34 @@ class queue extends \cenozo\database\record
         is_null( $db_participant ) ? '' : ' for '.$db_participant->uid,
         util::get_elapsed_time() - $queue_time ) );
     }
+
+    // send all invitiations to new web-based interviews
+    foreach( $qnaire_list as $qnaire_id => $uid_list )
+    {
+      // only include participants who are now in the web version queue
+      $select = lib::create( 'database\select' );
+      $select->from( 'queue_has_participant' );
+      $select->add_table_column( 'participant', 'uid' );
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->join( 'queue', 'queue_has_participant.queue_id', 'queue.id' );
+      $modifier->join( 'participant', 'queue_has_participant.participant_id', 'participant.id' );
+      $modifier->where( 'participant.uid', 'IN', $uid_list );
+      $modifier->where( 'queue.name', '=', 'web version' );
+      $uid_list = static::db()->get_col( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
+      if( 0 < count( $uid_list ) )
+      {
+        $db_qnaire = lib::create( 'database\qnaire', $qnaire_id );
+        $db_qnaire->launch_web_interviews( NULL, $uid_list );
+      }
+    }
+
     if( static::$debug ) log::debug( sprintf(
       '(Queue) Total queue build time%s: %0.2f',
       is_null( $db_participant ) ? '' : ' for '.$db_participant->uid,
       util::get_elapsed_time() - $time ) );
 
     $semaphore->release();
+
     if( static::$debug ) log::debug( sprintf(
       '(Queue) Total repopulate() time%s: %0.2f',
       is_null( $db_participant ) ? '' : ' for '.$db_participant->uid,

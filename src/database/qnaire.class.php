@@ -27,13 +27,10 @@ class qnaire extends \cenozo\database\has_rank
 
     set_time_limit( 900 ); // 15 minutes max
 
-    $participant_class_name = lib::get_class_name( 'database\participant' );
-    $interview_class_name = lib::get_class_name( 'database\interview' );
-    $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
-
     if( 'phone' == $method )
     {
       // delete pending emails for all interviews
+      $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
       $cenozo_manager->post(
         sprintf( 'qnaire/%d/participant', $pine_qnaire_id ),
         array(
@@ -69,25 +66,7 @@ class qnaire extends \cenozo\database\has_rank
         $modifier->get_sql()
       ) );
 
-      // make sure all existing respondents get mail
-      $cenozo_manager->post(
-        sprintf( 'qnaire/%d/participant', $pine_qnaire_id ),
-        array(
-          'mode' => 'add_mail',
-          'identifier_id' => is_null( $db_identifier ) ? NULL : $db_identifier->id,
-          'identifier_list' => $identifier_list
-        )
-      );
-
-      // and finally, create missing pine respondents
-      $cenozo_manager->post(
-        sprintf( 'qnaire/%d/participant', $pine_qnaire_id ),
-        array(
-          'mode' => 'create',
-          'identifier_id' => is_null( $db_identifier ) ? NULL : $db_identifier->id,
-          'identifier_list' => $identifier_list
-        )
-      );
+      $this->launch_web_interviews( $db_identifier, $identifier_list );
     }
 
     // now set the method column
@@ -113,6 +92,41 @@ class qnaire extends \cenozo\database\has_rank
       static::db()->format_string( $method ),
       $modifier->get_where()
     ) );
+  }
+
+  /**
+   * Sends email and creates respondent records for this record's pine qnaire
+   * @param database\identifier $db_identifier The identifier (NULL if using native UIDs)
+   * @param array $identifier_list
+   */
+  public function launch_web_interviews( $db_identifier, $identifier_list )
+  {
+    $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+    $pine_qnaire_id = $this->get_script()->pine_qnaire_id;
+    if( is_null( $pine_qnaire_id ) )
+      throw lib::create( 'exception\runtime', 'Tried to launch web interviews for non Pine questionnaire.', __METHOD__ );
+
+    set_time_limit( 900 ); // 15 minutes max
+
+    // make sure all existing respondents get mail
+    $cenozo_manager->post(
+      sprintf( 'qnaire/%d/participant', $pine_qnaire_id ),
+      array(
+        'mode' => 'add_mail',
+        'identifier_id' => is_null( $db_identifier ) ? NULL : $db_identifier->id,
+        'identifier_list' => $identifier_list
+      )
+    );
+
+    // and finally, create missing pine respondents
+    $cenozo_manager->post(
+      sprintf( 'qnaire/%d/participant', $pine_qnaire_id ),
+      array(
+        'mode' => 'create',
+        'identifier_id' => is_null( $db_identifier ) ? NULL : $db_identifier->id,
+        'identifier_list' => $identifier_list
+      )
+    );
   }
 
   /**

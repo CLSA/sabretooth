@@ -358,9 +358,10 @@ class interview extends \cenozo\database\interview
    * 
    * @param database\participant $db_participant If provided then only that participant will be affected by the operation.
    * @access protected
+   * @return array( qnaire-id => array( uids ) ) An array of qnaires and the UIDs of participants who have been added
    * @static
    */
-  public static function launch_web_interviews( $db_participant = NULL )
+  public static function process_completed_web_interviews( $db_participant = NULL )
   {
     $db_application = lib::create( 'business\session' )->get_application();
 
@@ -458,8 +459,19 @@ class interview extends \cenozo\database\interview
 
     foreach( $qnaire_list as $qnaire_id => $uid_list )
     {
-      $db_qnaire = lib::create( 'database\qnaire', $qnaire_id );
-      $db_qnaire->mass_set_method( NULL, $uid_list, 'web' );
+      // make sure the interview records exist
+      $modifier = lib::create( 'database\modifier' );
+      $modifier->where( 'uid', 'IN', $uid_list );
+
+      static::db()->execute( sprintf(
+        'INSERT INTO interview( qnaire_id, participant_id, method, start_datetime ) '.
+        'SELECT %s, participant.id, "web", UTC_TIMESTAMP() '.
+        'FROM participant '.
+        '%s '.
+        'ON DUPLICATE KEY UPDATE method = "web"',
+        static::db()->format_string( $qnaire_id ),
+        $modifier->get_sql()
+      ) );
     }
 
     // finally, move all orphaned appointments to the next interview (or delete them if there is none)
@@ -487,5 +499,7 @@ class interview extends \cenozo\database\interview
         }
       }
     }
+
+    return $qnaire_list;
   }
 }
