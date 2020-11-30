@@ -1038,9 +1038,14 @@ participant.sex AS participant_sex,
 participant.override_stratum AS participant_override_stratum,
 IFNULL(
   study_consent.accept,
-  IFNULL(
-    current_qnaire.allow_missing_consent,
-    first_qnaire.allow_missing_consent
+  IF(
+    current_qnaire.id IS NULL,
+    first_qnaire.allow_missing_consent,
+    IF(
+      current_interview.end_datetime IS NOT NULL,
+      next_qnaire.allow_missing_consent,
+      current_qnaire.allow_missing_consent
+    )
   )
 ) AS study_consent_accept,
 IFNULL( source.override_stratum, false ) AS source_override_stratum,
