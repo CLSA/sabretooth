@@ -1,16 +1,11 @@
 <cn-record-view model="model"></cn-record-view>
-<div class="vertical-spacer" ng-repeat="child in model.module.children">
-  <cn-record-list ng-if="model.viewModel[child.subject.camel+'Model'] &&
-                         model.viewModel[child.subject.camel+'Model'].show"
-                  model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
-</div>
-<div class="vertical-spacer">
-  <cn-record-list ng-if="model.viewModel.participantModel"
-                  model="model.viewModel.participantModel"
-                  remove-columns="cohort source"></cn-record-list>
-</div>
-<div class="vertical-spacer" ng-repeat="child in model.module.choosing">
-  <cn-record-list ng-if="'participant' != child.subject.snake &&
-                         model.viewModel[child.subject.camel+'Model']"
-                  model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
+<cn-list-selector model="model"></cn-list-selector>
+<div ng-show="null === model.viewModel.tab || child.subject.snake == model.viewModel.tab"
+     ng-repeat="child in model.viewModel.getChildList()"
+     ng-switch="child.subject.snake"
+     class="vertical-spacer">
+  <cn-record-list ng-switch-when="participant"
+                  remove-columns="cohort source"
+                  model="model.viewModel.participantModel"></cn-record-list>
+  <cn-record-list ng-switch-default model="model.viewModel[child.subject.camel+'Model']"></cn-record-list>
 </div>

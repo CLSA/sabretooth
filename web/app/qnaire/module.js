@@ -249,7 +249,7 @@ define( function() {
     function( CnBaseViewFactory ) {
       var object = function( parentModel, root ) {
         var self = this;
-        CnBaseViewFactory.construct( this, parentModel, root );
+        CnBaseViewFactory.construct( this, parentModel, root, 'collection' );
 
         this.deferred.promise.then( function() {
           if( angular.isDefined( self.collectionModel ) ) self.collectionModel.listModel.heading = 'Disabled Collection List';
