@@ -4,14 +4,18 @@ define( [ cenozoApp.module( 'stratum' ).getFileUrl( 'module.js' ) ], function() 
 
   // extend the view factory
   cenozo.providers.decorator( 'CnStratumViewFactory', [
-    '$delegate',
-    function( $delegate ) {
+    '$delegate', 'CnSession',
+    function( $delegate, CnSession ) {
       var instance = $delegate.instance;
       $delegate.instance = function( parentModel, root ) {
         var object = instance( parentModel, root );
         object.deferred.promise.then( function() {
-          if( angular.isDefined( object.qnaireModel ) )
+          if( angular.isDefined( object.qnaireModel ) ) {
+            object.qnaireModel.getChooseEnabled = function() {
+              return object.qnaireModel.$$getChooseEnabled() && 3 <= CnSession.role.tier;
+            };
             object.qnaireModel.listModel.heading = 'Disabled Questionnaire List';
+          }
         } );
         return object;
       };
