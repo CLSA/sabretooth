@@ -179,6 +179,10 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
       var instance = $delegate.instance;
       $delegate.instance = function( parentModel, root ) {
         var object = instance( parentModel, root );
+
+        // force the default tab to be "interview"
+        object.defaultTab = 'interview';
+
         object.isRepopulating = false;
         object.repopulate = function() {
           object.isRepopulating = true;
