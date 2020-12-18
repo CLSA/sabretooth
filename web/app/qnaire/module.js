@@ -282,7 +282,8 @@ define( function() {
                 select: { column: [ 'id', 'name' ] },
                 modifier: {
                   where: [ { column: 'repeated', operator: '=', value: false } ],
-                  order: 'name'
+                  order: 'name',
+                  limit: 1000
                 }
               }
             } ).query().then( function( response ) {

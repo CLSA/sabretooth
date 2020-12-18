@@ -249,7 +249,8 @@ define( [ 'trace' ].reduce( function( list, name ) {
                   select: { column: [ 'id', 'name' ] },
                   modifier: {
                     where: { column: 'active', operator: '=', value: true },
-                    order: 'name'
+                    order: 'name',
+                    limit: 1000
                   }
                 }
               } ).query().then( function success( response ) {
@@ -263,7 +264,7 @@ define( [ 'trace' ].reduce( function( list, name ) {
                 path: 'site',
                 data: {
                   select: { column: [ 'id', 'name' ] },
-                  modifier: { order: 'name' }
+                  modifier: { order: 'name', limit: 1000 }
                 }
               } ).query().then( function success( response ) {
                 self.metadata.columnList.site_id.enumList = [];
