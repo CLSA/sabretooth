@@ -123,6 +123,9 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
       $delegate.instance = function( parentModel, root ) {
         var object = instance( parentModel, root );
 
+        // force the default tab to be "appointment"
+        object.defaultTab = 'appointment';
+
         object.forceCompleteAllowed = 2 < CnSession.role.tier;
         object.forceComplete = function() {
           CnModalConfirmFactory.instance( {
