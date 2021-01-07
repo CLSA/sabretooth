@@ -790,7 +790,7 @@ class queue extends \cenozo\database\record
     }
 
     // make sure there is no row in qnaire_has_site
-    $modifier->where( 'qnaire_has_site.qnaire_id', '!=', NULL );
+    $modifier->where( 'qnaire_has_site.qnaire_id', '=', NULL );
 
     if( 'stratum disabled' == $queue )
     {
