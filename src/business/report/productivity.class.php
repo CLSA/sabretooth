@@ -259,6 +259,7 @@ class productivity extends \cenozo\business\report\base_report
         }
       }
 
+      $db_script = current( $script_list );
       if( 'pine' == $db_script->get_type() )
       {
         // send all queries to pine as a single request to reduce machine-to-machine overhead
