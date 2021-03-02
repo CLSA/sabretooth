@@ -56,7 +56,6 @@ define( [ 'participant' ].reduce( function( list, name ) {
         this.scriptLauncher = null;
 
         this.reset = function() {
-          self.isOperator = false;
           self.assignment = null;
           self.prevAssignment = null;
           self.participant = null;
@@ -73,14 +72,12 @@ define( [ 'participant' ].reduce( function( list, name ) {
           self.isAssignmentLoading = false;
           self.isForbidden = false;
           self.isPrevAssignmentLoading = false;
-          self.changeInterviewMethodAllowed = false;
         };
 
+        this.participantModel = CnParticipantModelFactory.instance();
+
         CnSession.promise.then( function() {
-          self.isOperator = 'operator' == CnSession.role.name || 'operator+' == CnSession.role.name;
           self.application = CnSession.application.title;
-          self.changeInterviewMethodAllowed =
-            [ 'administrator', 'helpline', 'operator+', 'supervisor' ].includes( CnSession.role.name );
 
           // add additional columns to the model
           var index = 0;
@@ -106,8 +103,6 @@ define( [ 'participant' ].reduce( function( list, name ) {
           self.participantModel.addColumn( 'reserved', { type: 'hidden', highlight: true } );
         } );
 
-        this.participantModel = CnParticipantModelFactory.instance();
-
         // map assignment-control query parameters to participant-list
         this.participantModel.queryParameterSubject = 'assignment';
 
@@ -125,6 +120,10 @@ define( [ 'participant' ].reduce( function( list, name ) {
           var data = this.$$getServiceData( type, columnRestrictList );
           data.assignment = true;
           return data;
+        };
+
+        this.canChangeInterviewMethod = function() {
+          return self.participantModel.isRole( 'administrator', 'helpline', 'operator+', 'supervisor' );
         };
 
         this.setInterviewMethod = function() {
@@ -217,7 +216,8 @@ define( [ 'participant' ].reduce( function( list, name ) {
                   // 307 means the user has no active assignment, so load the participant select list
                   CnSession.alertHeader = undefined;
                   self.participantModel.listModel.afterList( function() {
-                    if( self.isOperator && 0 < self.participantModel.listModel.cache.length ) {
+                    if( self.participantModel.isRole( 'operator', 'operator+' ) &&
+                        0 < self.participantModel.listModel.cache.length ) {
                       self.participantModel.listModel.heading =
                         'Participant Selection List (' + self.participantModel.listModel.cache[0].queue + ')';
                     }
