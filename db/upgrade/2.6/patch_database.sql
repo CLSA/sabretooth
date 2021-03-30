@@ -1,4 +1,4 @@
--- Patch to upgrade database to version 2.5
+-- Patch to upgrade database to version 2.6
 
 SET AUTOCOMMIT=0;
 
