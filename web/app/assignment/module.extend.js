@@ -430,7 +430,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
         };
 
         this.launchingScript = false;
-        this.launchScript = function( script ) {
+        this.launchScript = async function( script ) {
           if( 0 < this.activeQnaire.delay_offset && 1 < this.activeQnaire.rank ) {
             var previousQnaire = this.qnaireList.findByProperty( 'rank', this.activeQnaire.rank - 1 );
             var delayUntil = moment( this.qnaireScriptList.findByProperty( 'id', previousQnaire.script_id ).finished_datetime ).add(
@@ -448,26 +448,32 @@ define( [ 'participant' ].reduce( function( list, name ) {
             }
           }
 
-          this.launchingScript = true;
-          this.scriptLauncher = CnScriptLauncherFactory.instance( {
-            script: script,
-            identifier: 'uid=' + self.participant.uid,
-            lang: self.participant.language_code
-          } )
-          this.scriptLauncher.launch().then( function() {
-            self.loadScriptList();
-          } ).finally( function() {
-            self.launchingScript = false;
-          } );
+          try {
+            this.launchingScript = true;
+            this.scriptLauncher = CnScriptLauncherFactory.instance( {
+              script: script,
+              identifier: 'uid=' + this.participant.uid,
+              lang: this.participant.language_code
+            } );
+            await this.scriptLauncher.initialize();
+
+            await this.scriptLauncher.launch();
+            await this.loadScriptList();
+          } finally {
+            this.launchingScript = false;
+          };
 
           // check for when the window gets focus back and update the participant details
           if( null != script.name.match( /withdraw|proxy/i ) ) {
-            var win = angular.element( $window ).on( 'focus', function() {
-              // the following will process the withdraw or proxy script (in case it was finished)
-              CnHttpFactory.instance( {
-                path: 'script/' + script.id + '/token/uid=' + self.participant.uid
-              } ).get().then( function() { self.loadScriptList(); } );
+            var self = this;
+            var win = angular.element( $window ).on( 'focus', async function() {
               win.off( 'focus' );
+
+              // the following will process the withdraw or proxy script (in case it was finished)
+              await CnHttpFactory.instance( {
+                path: 'script/' + script.id + '/token/uid=' + self.participant.uid
+              } ).get()
+              await self.loadScriptList();
             } );
           }
         };
