@@ -78,6 +78,7 @@ class sample extends \cenozo\business\report\base_report
     $select->from( 'participant' );
     $select->add_column( 'uid', 'UID' );
     if( $this->db_role->all_sites ) $select->add_column( 'site.name', 'Site', false );
+    $select->add_column( 'TIMESTAMPDIFF( YEAR, participant.date_of_birth, CURDATE() )', 'Age', false );
     $select->add_column( 'language.name', 'Language', false );
     $select->add_column(
       "IF( hold_type.type = 'final', CONCAT( 'final: ', hold_type.name ),\n".
