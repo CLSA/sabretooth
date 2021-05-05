@@ -59,7 +59,7 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
         //   1) the interview list's parent is a participant model
         //   2) all interviews are complete for this participant
         //   3) another qnaire is available for this participant
-        object.afterList( function() {
+        object.afterList( async function() {
           object.parentModel.getAddEnabled = function() { return false; };
 
           var path = object.parentModel.getServiceCollectionPath();
@@ -70,42 +70,42 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
             var lastInterview = null;
 
             // get the participant's last interview
-            CnHttpFactory.instance( {
+            var response = await CnHttpFactory.instance( {
               path: path,
               data: {
                 modifier: { order: { 'qnaire.rank': true }, limit: 1 },
                 select: { column: [ { table: 'qnaire', column: 'rank' }, 'end_datetime' ] }
               },
-              onError: function( response ) {} // ignore errors
-            } ).query().then( function( response ) {
-              if( 0 < response.data.length ) lastInterview = response.data[0];
+              onError: function( error ) {} // ignore errors
+            } ).query();
 
-              // get the participant's current queue rank
-              return CnHttpFactory.instance( {
-                path: path.replace( '/interview', '' ),
-                data: {
-                  select: { column: [
-                    { table: 'queue', column: 'rank', alias: 'queueRank' },
-                    { table: 'qnaire', column: 'rank', alias: 'qnaireRank' }
-                  ] }
-                },
-                onError: function( response ) {} // ignore errors
-              } ).query().then( function( response ) {
-                queueRank = response.data.queueRank;
-                qnaireRank = response.data.qnaireRank;
-              } );
-            } ).then( function( response ) {
-              object.parentModel.getAddEnabled = function() {
-                return object.parentModel.$$getAddEnabled() &&
-                       null != queueRank &&
-                       null != qnaireRank && (
-                         null == lastInterview || (
-                           null != lastInterview.end_datetime &&
-                           lastInterview.rank != qnaireRank
-                         )
-                       );
-              };
-            } );
+            if( 0 < response.data.length ) lastInterview = response.data[0];
+
+            // get the participant's current queue rank
+            var response = await CnHttpFactory.instance( {
+              path: path.replace( '/interview', '' ),
+              data: {
+                select: { column: [
+                  { table: 'queue', column: 'rank', alias: 'queueRank' },
+                  { table: 'qnaire', column: 'rank', alias: 'qnaireRank' }
+                ] }
+              },
+              onError: function( error ) {} // ignore errors
+            } ).query();
+
+            queueRank = response.data.queueRank;
+            qnaireRank = response.data.qnaireRank;
+
+            object.parentModel.getAddEnabled = function() {
+              return object.parentModel.$$getAddEnabled() &&
+                     null != queueRank &&
+                     null != qnaireRank && (
+                       null == lastInterview || (
+                         null != lastInterview.end_datetime &&
+                         lastInterview.rank != qnaireRank
+                       )
+                     );
+            };
           }
         } );
 

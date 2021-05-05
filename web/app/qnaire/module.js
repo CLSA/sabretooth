@@ -85,8 +85,8 @@ define( function() {
 
   module.addExtraOperation( 'view', {
     title: 'Mass Interview Method',
-    operation: function( $state, model ) {
-      $state.go( 'qnaire.mass_method', { identifier: model.viewModel.record.getIdentifier() } );
+    operation: async function( $state, model ) {
+      await $state.go( 'qnaire.mass_method', { identifier: model.viewModel.record.getIdentifier() } );
     },
     isIncluded: function( $state, model ) { return model.getEditEnabled() && null != model.viewModel.record.pine_qnaire_id; }
   } );
@@ -129,20 +129,18 @@ define( function() {
         templateUrl: module.getFileUrl( 'mass_method.tpl.html' ),
         restrict: 'E',
         scope: { model: '=?' },
-        controller: function( $scope ) {
+        controller: async function( $scope ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnQnaireMassMethodFactory.instance();
-
-          $scope.model.onLoad().then( function() {
-            CnSession.setBreadcrumbTrail( [ {
-              title: 'Questionnaires',
-              go: function() { return $state.go( 'qnaire.list' ); }
-            }, {
-              title: $scope.model.qnaireName,
-              go: function() { return $state.go( 'qnaire.view', { identifier: $scope.model.qnaireId } ); }
-            }, {
-              title: 'Mass Interview Method'
-            } ] );
-          } );
+          await $scope.model.onLoad();
+          CnSession.setBreadcrumbTrail( [ {
+            title: 'Questionnaires',
+            go: async function() { await $state.go( 'qnaire.list' ); }
+          }, {
+            title: $scope.model.qnaireName,
+            go: async function() { await $state.go( 'qnaire.view', { identifier: $scope.model.qnaireId } ); }
+          }, {
+            title: 'Mass Interview Method'
+          } ] );
         }
       };
     }
@@ -186,7 +184,6 @@ define( function() {
     'CnSession', 'CnHttpFactory', 'CnModalMessageFactory', 'CnParticipantSelectionFactory', '$state',
     function( CnSession, CnHttpFactory, CnModalMessageFactory, CnParticipantSelectionFactory, $state ) {
       var object = function() {
-        var self = this;
         angular.extend( this, {
           method: 'phone',
           working: false,
@@ -196,15 +193,15 @@ define( function() {
             path: ['qnaire', $state.params.identifier, 'participant'].join( '/' ),
             data: { mode: 'confirm', method: 'phone' }
           } ),
-          onLoad: function() {
+          onLoad: async function() {
             // reset data
-            return CnHttpFactory.instance( {
+            var response = await CnHttpFactory.instance( {
               path: 'qnaire/' + this.qnaireId,
               data: { select: { column: 'name' } }
-            } ).get().then( function( response ) {
-              self.qnaireName = response.data.name;
-              self.participantSelection.reset();
-            } );
+            } ).get();
+
+            this.qnaireName = response.data.name;
+            this.participantSelection.reset();
           },
 
           inputsChanged: function() {
@@ -212,28 +209,34 @@ define( function() {
             this.participantSelection.reset();
           },
 
-          proceed: function() {
-            this.working = true;
+          proceed: async function() {
             if( !this.participantSelection.confirmInProgress && 0 < this.participantSelection.confirmedCount ) {
-              CnHttpFactory.instance( {
-                path: ['qnaire', this.qnaireId, 'participant'].join( '/' ),
-                data: {
-                  mode: 'update',
-                  identifier_id: this.participantSelection.identifierId,
-                  identifier_list: this.participantSelection.getIdentifierList(),
-                  method: this.method
-                },
-                onError: function( response ) {
-                  CnModalMessageFactory.httpError( response ).then( function() { self.onLoad(); } );
-                }
-              } ).post().then( function( response ) {
-                CnModalMessageFactory.instance( {
+              try {
+                this.working = true;
+                var response = await CnHttpFactory.instance( {
+                  path: ['qnaire', this.qnaireId, 'participant'].join( '/' ),
+                  data: {
+                    mode: 'update',
+                    identifier_id: this.participantSelection.identifierId,
+                    identifier_list: this.participantSelection.getIdentifierList(),
+                    method: this.method
+                  },
+                  onError: async function( error ) {
+                    await CnModalMessageFactory.httpError( error );
+                    await this.onLoad();
+                  }
+                } ).post();
+
+                await CnModalMessageFactory.instance( {
                   title: 'Interview Methods Updated',
-                  message: 'You have successfully changed ' + self.participantSelection.confirmedCount +
-                           ' "' + self.qnaireName + '" questionnaires ' +
-                           'to using the ' + self.method + ' interviewing method.'
-                } ).show().then( function() { self.onLoad(); } );
-              } ).finally( function() { self.working = false; } );
+                  message: 'You have successfully changed ' + this.participantSelection.confirmedCount +
+                           ' "' + this.qnaireName + '" questionnaires ' +
+                           'to using the ' + this.method + ' interviewing method.'
+                } ).show();
+                this.onLoad();
+              } finally {
+                this.working = false;
+              }
             }
           }
 
@@ -248,15 +251,18 @@ define( function() {
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root, 'collection' );
 
-        this.deferred.promise.then( function() {
+        var self = this;
+        async function init() {
+          await self.deferred.promise;
           if( angular.isDefined( self.collectionModel ) ) self.collectionModel.listModel.heading = 'Disabled Collection List';
           if( angular.isDefined( self.holdTypeModel ) ) self.holdTypeModel.listModel.heading = 'Overridden Hold Type List';
           if( angular.isDefined( self.siteModel ) ) self.siteModel.listModel.heading = 'Disabled Site List';
           if( angular.isDefined( self.stratumModel ) ) self.stratumModel.listModel.heading = 'Disabled Stratum List';
-        } );
+        }
+
+        init();
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
@@ -267,31 +273,31 @@ define( function() {
     'CnBaseModelFactory', 'CnQnaireAddFactory', 'CnQnaireListFactory', 'CnQnaireViewFactory', 'CnHttpFactory',
     function( CnBaseModelFactory, CnQnaireAddFactory, CnQnaireListFactory, CnQnaireViewFactory, CnHttpFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnQnaireAddFactory.instance( this );
         this.listModel = CnQnaireListFactory.instance( this );
         this.viewModel = CnQnaireViewFactory.instance( this, root );
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            return CnHttpFactory.instance( {
-              path: 'application/0/script',
-              data: {
-                select: { column: [ 'id', 'name' ] },
-                modifier: {
-                  where: [ { column: 'repeated', operator: '=', value: false } ],
-                  order: 'name',
-                  limit: 1000
-                }
+        this.getMetadata = async function() {
+          await this.$$getMetadata();
+
+          var response = await CnHttpFactory.instance( {
+            path: 'application/0/script',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: {
+                where: [ { column: 'repeated', operator: '=', value: false } ],
+                order: 'name',
+                limit: 1000
               }
-            } ).query().then( function( response ) {
-              self.metadata.columnList.script_id.enumList = [];
-              response.data.forEach( function( item ) {
-                self.metadata.columnList.script_id.enumList.push( { value: item.id, name: item.name } );
-              } );
-            } );
+            }
+          } ).query();
+
+          this.metadata.columnList.script_id.enumList = [];
+          var self = this;
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.script_id.enumList.push( { value: item.id, name: item.name } );
           } );
         };
       };

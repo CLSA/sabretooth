@@ -9,8 +9,8 @@ define( [ 'appointment' ].reduce( function( list, name ) {
   if( angular.isDefined( module.actions.calendar ) ) {
     module.addExtraOperation( 'view', {
       title: 'Calendar',
-      operation: function( $state, model ) {
-        $state.go( 'user.calendar', { identifier: model.viewModel.record.getIdentifier() } );
+      operation: async function( $state, model ) {
+        await $state.go( 'user.calendar', { identifier: model.viewModel.record.getIdentifier() } );
       }
     } );
   }
@@ -65,10 +65,9 @@ define( [ 'appointment' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnUserCalendarFactory', [
-    'CnBaseCalendarFactory', 'CnAppointmentModelFactory', 'CnSession', '$state', '$q',
-    function( CnBaseCalendarFactory, CnAppointmentModelFactory, CnSession, $state, $q ) {
+    'CnBaseCalendarFactory', 'CnAppointmentModelFactory', 'CnSession', '$state',
+    function( CnBaseCalendarFactory, CnAppointmentModelFactory, CnSession, $state ) {
       var object = function( parentModel ) {
-        var self = this;
         CnBaseCalendarFactory.construct( this, parentModel );
 
         // show to-from times in month view
@@ -85,43 +84,44 @@ define( [ 'appointment' ].reduce( function( list, name ) {
         // temporarily.
         var getViewEnabled = parentModel.getViewEnabled;
         parentModel.getViewEnabled = function() { return true; };
-        var promise = parentModel.viewModel.onView().then( function() {
-          appointmentModel = CnAppointmentModelFactory.forUser( parentModel.viewModel.record );
-        } );
         parentModel.getViewEnabled = getViewEnabled;
 
         // remove day click callback
         delete this.settings.dayClick;
-        this.settings.eventClick = function( record ) {
+        this.settings.eventClick = async function( record ) {
           // close the popover (this does nothing if there is no popover)
           angular.element( this ).popover( 'hide' );
-          return promise.then( function() {
-            if( angular.isUndefined( record.subject ) ) {
-              console.warn( 'Clicked on personal calendar event which is not an appointment.' );
-            } else if( appointmentModel.getViewEnabled() ) {
-              if( 'appointment' == record.subject && angular.isDefined( appointmentModule.actions.view ) )
-                return $state.go( record.subject + '.view', { identifier: record.getIdentifier() } );
-            }
-          } );
+          await promise;
+
+          if( angular.isUndefined( record.subject ) ) {
+            console.warn( 'Clicked on personal calendar event which is not an appointment.' );
+          } else if( appointmentModel.getViewEnabled() ) {
+            if( 'appointment' == record.subject && angular.isDefined( appointmentModule.actions.view ) )
+              await $state.go( record.subject + '.view', { identifier: record.getIdentifier() } );
+          }
         };
 
         // extend onCalendar to transform into events
-        this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {
+        this.onCalendar = async function( replace, minDate, maxDate, ignoreParent ) {
           // we must get the load dates before calling $$onCalendar
-          var loadMinDate = self.getLoadMinDate( replace, minDate );
-          var loadMaxDate = self.getLoadMaxDate( replace, maxDate );
+          var loadMinDate = this.getLoadMinDate( replace, minDate );
+          var loadMaxDate = this.getLoadMaxDate( replace, maxDate );
 
-          return promise.then( function() {
-            return appointmentModel.calendarModel.onCalendar(
-              replace, minDate, maxDate, ignoreParent
-            ).then( function() {
-              self.cache = appointmentModel.calendarModel.cache;
-              self.cache.forEach( function( item, index, array ) {
-                array[index] = getEventFromAppointment( item, CnSession.user.timezone );
-              } );
-            } );
+          await promise;
+          await appointmentModel.calendarModel.onCalendar( replace, minDate, maxDate, ignoreParent );
+          this.cache = appointmentModel.calendarModel.cache;
+          this.cache.forEach( function( item, index, array ) {
+            array[index] = getEventFromAppointment( item, CnSession.user.timezone );
           } );
         };
+
+        var promise = null;
+        async function init() {
+          promise = await parentModel.viewModel.onView();
+          appointmentModel = CnAppointmentModelFactory.forUser( parentModel.viewModel.record );
+        }
+
+        init();
       };
 
       return { instance: function( parentModel ) { return new object( parentModel ); } };

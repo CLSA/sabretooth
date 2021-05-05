@@ -138,8 +138,8 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
   if( angular.isDefined( cenozoApp.module( 'participant' ).actions.notes ) ) {
     module.addExtraOperation( 'view', {
       title: 'Notes',
-      operation: function( $state, model ) {
-        $state.go( 'participant.notes', { identifier: 'uid=' + model.viewModel.record.participant } );
+      operation: async function( $state, model ) {
+        await $state.go( 'participant.notes', { identifier: 'uid=' + model.viewModel.record.participant } );
       }
     } );
   }
@@ -150,8 +150,8 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
     if( angular.isDefined( calendarModule.actions.calendar ) ) {
       module.addExtraOperation( 'calendar', {
         title: calendarModule.subject.snake.replace( '_', ' ' ).ucWords(),
-        operation: function( $state, model ) {
-          $state.go( name + '.calendar', { identifier: model.site.getIdentifier() } );
+        operation: async function( $state, model ) {
+          await $state.go( name + '.calendar', { identifier: model.site.getIdentifier() } );
         },
         classes: 'appointment' == name ? 'btn-warning' : undefined // highlight current model
       } );
@@ -161,8 +161,8 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
   if( angular.isDefined( module.actions.calendar ) ) {
     module.addExtraOperation( 'view', {
       title: 'Appointment Calendar',
-      operation: function( $state, model ) {
-        $state.go( 'appointment.calendar', { identifier: model.metadata.participantSite.getIdentifier() } );
+      operation: async function( $state, model ) {
+        await $state.go( 'appointment.calendar', { identifier: model.metadata.participantSite.getIdentifier() } );
       }
     } );
   };
@@ -234,9 +234,9 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAppointmentAdd', [
     'CnAppointmentModelFactory', 'CnSession', 'CnHttpFactory',
-    'CnModalConfirmFactory', 'CnModalMessageFactory', '$q',
+    'CnModalConfirmFactory', 'CnModalMessageFactory',
     function( CnAppointmentModelFactory, CnSession, CnHttpFactory,
-              CnModalConfirmFactory, CnModalMessageFactory, $q ) {
+              CnModalConfirmFactory, CnModalMessageFactory ) {
       return {
         templateUrl: module.getFileUrl( 'add.tpl.html' ),
         restrict: 'E',
@@ -251,7 +251,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
 
             // extend the child directive's save() function
             var saveFn = cnRecordAddScope.save;
-            cnRecordAddScope.save = function() {
+            cnRecordAddScope.save = async function() {
               // see if there are vacancies to fulfill the appointment's timespan
               var cache = $scope.model.addModel.vacancyModel.calendarModel.cache;
               var vacancy = null != cnRecordAddScope.record.start_vacancy_id
@@ -261,12 +261,11 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
                 ? vacancyAvailable( CnSession.setting.vacancySize, null, null, vacancy.start, cnRecordAddScope.record.duration, cache )
                 : false;
 
-              var promiseList = [];
-              var proceed1 = true;
+              var proceed = true;
               if( !available ) {
                 if( 2 > CnSession.role.tier && 'operator+' != CnSession.role.name ) {
-                  proceed1 = false;
-                  CnModalMessageFactory.instance( {
+                  proceed = false;
+                  await CnModalMessageFactory.instance( {
                     title: 'No Vacancy',
                     message:
                       'The appointment time and duration you have selected is missing vacancy.  You may only ' +
@@ -274,41 +273,33 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
                   } ).show();
                 } else {
                   var hours = $scope.model.viewModel.record.duration / 60;
-                  promiseList.push(
-                    CnModalConfirmFactory.instance( {
-                      title: 'Overbook Appointment',
-                      message:
-                      'NOTE: The appointment time and duration you have chosen will require the vacancy ' +
-                      'calendar to be overbooked!\n\nAre you sure you wish to create the appointment?'
-                    } ).show().then( function( response ) {
-                      proceed1 = response;
-                    } )
-                  );
+                  proceed = await CnModalConfirmFactory.instance( {
+                    title: 'Overbook Appointment',
+                    message:
+                    'NOTE: The appointment time and duration you have chosen will require the vacancy ' +
+                    'calendar to be overbooked!\n\nAre you sure you wish to create the appointment?'
+                  } ).show();
                 }
               }
 
-              $q.all( promiseList ).then( function() {
-                if( proceed1 ) {
-                  // warn if old appointment will be cancelled
-                  CnHttpFactory.instance( {
-                    path: 'interview/' + $scope.model.getParentIdentifier().identifier,
-                    data: { select: { column: [ 'missed_appointment' ] } }
-                  } ).get().then( function( response ) {
-                    var proceed2 = false;
-                    var promise =
-                      response.data.missed_appointment ?
-                      CnModalConfirmFactory.instance( {
-                        title: 'Cancel Missed Appointment?',
-                        message: 'There already exists a passed appointment for this interview, ' +
-                                 'do you wish to cancel it and create a new one?'
-                      } ).show().then( function( response ) { proceed2 = response; } ) :
-                      $q.all().then( function() { proceed2 = true; } );
+              if( proceed ) {
+                // warn if old appointment will be cancelled
+                var response = await CnHttpFactory.instance( {
+                  path: 'interview/' + $scope.model.getParentIdentifier().identifier,
+                  data: { select: { column: [ 'missed_appointment' ] } }
+                } ).get();
 
-                    // proceed with the usual save function if we are told to proceed
-                    promise.then( function() { if( proceed2 ) saveFn(); } );
-                  } );
+                if( response.data.missed_appointment ) {
+                  // if we're not cancleing the missed appointment then don't proceed
+                  proceed = await CnModalConfirmFactory.instance( {
+                    title: 'Cancel Missed Appointment?',
+                    message: 'There already exists a passed appointment for this interview, ' +
+                             'do you wish to cancel it and create a new one?'
+                  } ).show();
                 }
-              } );
+
+                if( proceed ) await saveFn();
+              }
             };
           } );
 
@@ -446,8 +437,8 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAppointmentView', [
-    'CnAppointmentModelFactory', 'CnSession', 'CnModalConfirmFactory', 'CnModalMessageFactory', '$q',
-    function( CnAppointmentModelFactory, CnSession, CnModalConfirmFactory, CnModalMessageFactory, $q ) {
+    'CnAppointmentModelFactory', 'CnSession', 'CnModalConfirmFactory', 'CnModalMessageFactory',
+    function( CnAppointmentModelFactory, CnSession, CnModalConfirmFactory, CnModalMessageFactory ) {
       return {
         templateUrl: module.getFileUrl( 'view.tpl.html' ),
         restrict: 'E',
@@ -462,9 +453,8 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
 
             // override the regular patch function
             var patchFn = cnRecordViewScope.patch;
-            cnRecordViewScope.patch = function( property ) {
+            cnRecordViewScope.patch = async function( property ) {
               // if we're changing the duration we have to check if there is vacancy available
-              var promiseList = [];
               var proceed = true;
               if( 'duration' == property ) {
                 var available = vacancyAvailable(
@@ -482,34 +472,32 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
 
                 if( !available ) {
                   if( 2 > CnSession.role.tier && 'operator+' != CnSession.role.name ) {
-                    return CnModalMessageFactory.instance( {
+                    await CnModalMessageFactory.instance( {
                       title: 'No Vacancy',
                       message:
                         'The duration you have selected is missing vacancy.  You may only set an ' +
                         'appointment\'s duration such that all vacancies have at least one unbooked operator.'
                     } ).show();
+                    proceed = false;
                   } else {
                     var hours = $scope.model.viewModel.record.duration / 60;
                     var message = 'NOTE: The duration you have chosen will require the vacancy calendar to ' +
                       'be overbooked!\n\nAre you sure you wish to change the appointment\'s duration to ' +
                       hours.toFixed(1) + ' hours?';
 
-                    promiseList.push(
-                      CnModalConfirmFactory.instance( {
-                        title: ( available ? 'Change' : 'Overbook' ) + ' Appointment',
-                        message: message
-                      } ).show().then( function( response ) {
-                        proceed = response;
-                      } )
-                    );
+                    proceed = await CnModalConfirmFactory.instance( {
+                      title: ( available ? 'Change' : 'Overbook' ) + ' Appointment',
+                      message: message
+                    } ).show()
                   }
                 }
               }
 
-              return $q.all( promiseList ).then( function() {
-                if( proceed ) patchFn( property );
-                else $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
-              } );
+              if( proceed ) {
+                await patchFn( property );
+              } else {
+                $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
+              }
             };
           } );
 
@@ -517,7 +505,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
           if( $scope.model.getEditEnabled() ) {
             var listener = $scope.$watch( 'model.viewModel.vacancyModel', function( vacancyModel ) {
               if( angular.isDefined( vacancyModel ) ) {
-                vacancyModel.calendarModel.settings.dayClick = function( date, event, view ) {
+                vacancyModel.calendarModel.settings.dayClick = async function( date, event, view ) {
                   // if we are not looking at an appointment then do nothing
                   if( 'appointment' != $scope.model.getSubjectFromState() ) return;
 
@@ -534,26 +522,26 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
                           'appointment\'s start time to a time in the future.'
                       } ).show();
                     } else {
-                      CnModalConfirmFactory.instance( {
+                      var response = await CnModalConfirmFactory.instance( {
                         title: 'Overbook Appointment',
                         message: 'NOTE: The time you have chosen will require the vacancy calendar to be ' +
                                  'overbooked!\n\nAre you sure you wish to change the appointment\'s start ' +
                                  'time to ' + CnSession.formatValue( datetime, 'datetime', true ) + '?'
-                      } ).show().then( function( response ) {
-                        if( response ) {
-                          // set the datetime in the record and formatted record
-                          $scope.model.viewModel.record.start_datetime = datetime;
-                          $scope.model.viewModel.formattedRecord.start_datetime =
-                            CnSession.formatValue( datetime, 'datetime', true );
-                          $scope.model.viewModel.record.start_vacancy_id = null;
-                          cnRecordViewScope.patch( 'start_datetime' );
-                        }
-                      } );
+                      } ).show();
+
+                      if( response ) {
+                        // set the datetime in the record and formatted record
+                        $scope.model.viewModel.record.start_datetime = datetime;
+                        $scope.model.viewModel.formattedRecord.start_datetime =
+                          CnSession.formatValue( datetime, 'datetime', true );
+                        $scope.model.viewModel.record.start_vacancy_id = null;
+                        cnRecordViewScope.patch( 'start_datetime' );
+                      }
                     }
                   }
                 };
 
-                vacancyModel.calendarModel.settings.eventClick = function( vacancy ) {
+                vacancyModel.calendarModel.settings.eventClick = async function( vacancy ) {
                   // if we are not looking at an appointment then view the vacancy
                   if( 'appointment' != $scope.model.getSubjectFromState() )
                     return vacancyModel.getViewEnabled() ?
@@ -600,19 +588,19 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
                         'Are you sure you wish to change the appointment\'s start time to ' +
                         CnSession.formatValue( datetime, 'datetime', true ) + '?';
 
-                      CnModalConfirmFactory.instance( {
+                      var response = await CnModalConfirmFactory.instance( {
                         title: ( available ? 'Change' : 'Overbook' ) + ' Appointment',
                         message: message
-                      } ).show().then( function( response ) {
-                        if( response ) {
-                          // set the datetime in the record and formatted record
-                          $scope.model.viewModel.record.start_datetime = datetime;
-                          $scope.model.viewModel.formattedRecord.start_datetime =
-                            CnSession.formatValue( datetime, 'datetime', true );
-                          $scope.model.viewModel.record.start_vacancy_id = vacancy.id;
-                          cnRecordViewScope.patch( 'start_vacancy_id' );
-                        }
-                      } );
+                      } ).show();
+
+                      if( response ) {
+                        // set the datetime in the record and formatted record
+                        $scope.model.viewModel.record.start_datetime = datetime;
+                        $scope.model.viewModel.formattedRecord.start_datetime =
+                          CnSession.formatValue( datetime, 'datetime', true );
+                        $scope.model.viewModel.record.start_vacancy_id = vacancy.id;
+                        cnRecordViewScope.patch( 'start_vacancy_id' );
+                      }
                     }
                   }
                 };
@@ -629,24 +617,23 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAppointmentAddFactory', [
-    'CnBaseAddFactory', 'CnSession', 'CnHttpFactory', 'CnVacancyModelFactory', '$q',
-    function( CnBaseAddFactory, CnSession, CnHttpFactory, CnVacancyModelFactory, $q ) {
+    'CnBaseAddFactory', 'CnSession', 'CnHttpFactory', 'CnVacancyModelFactory',
+    function( CnBaseAddFactory, CnSession, CnHttpFactory, CnVacancyModelFactory ) {
       var object = function( parentModel ) {
-        var self = this;
         CnBaseAddFactory.construct( this, parentModel );
 
-        this.onAdd = function( record ) {
-          return this.$$onAdd( record ).then( function() {
+        angular.extend( this, {
+          onAdd: async function( record ) {
+            await this.$$onAdd( record );
+
             // add the new appointment's events to the calendar cache
-            CnHttpFactory.instance( {
+            var response = await CnHttpFactory.instance( {
               path: 'appointment/' + record.id
-            } ).get().then( function( response ) {
-              var newRecord = angular.copy( response.data );
-              newRecord.getIdentifier = function() { return parentModel.getIdentifierFromRecord( newRecord ); };
-              parentModel.calendarModel.cache.push(
-                getEventFromAppointment( newRecord, CnSession.user.timezone )
-              );
-            } );
+            } ).get();
+
+            var newRecord = angular.copy( response.data );
+            newRecord.getIdentifier = function() { return parentModel.getIdentifierFromRecord( newRecord ); };
+            parentModel.calendarModel.cache.push( getEventFromAppointment( newRecord, CnSession.user.timezone ) );
 
             // PLEASE NOTE:
             // The "add_email" option is used to add an appointment's mail reminders after is has been created.
@@ -655,60 +642,55 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
             // the appointment has been created.  Therefore an additional request must be made after the new
             // appointment has been created.
             if( !record.disable_mail ) {
-              CnHttpFactory.instance( { path: 'appointment/' + record.id + '?add_mail=1' } ).patch();
+              await CnHttpFactory.instance( { path: 'appointment/' + record.id + '?add_mail=1' } ).patch();
             }
-          } );
-        };
+          },
 
-        this.onNew = function( record ) {
-          var parent = parentModel.getParentIdentifier();
-          return CnHttpFactory.instance( {
-            path: [ parent.subject, parent.identifier ].join( '/' ),
-            data: { select: { column: { column: 'participant_id' } } }
-          } ).query().then( function( response ) {
+          onNew: async function( record ) {
+            var parent = parentModel.getParentIdentifier();
+            var response = await CnHttpFactory.instance( {
+              path: [ parent.subject, parent.identifier ].join( '/' ),
+              data: { select: { column: { column: 'participant_id' } } }
+            } ).query();
+
             // get the participant's effective site and list of phone numbers
-            return $q.all( [
-              CnHttpFactory.instance( {
-                path: ['participant', response.data.participant_id ].join( '/' ),
-                data: { select: { column: [
-                  { table: 'site', column: 'id', alias: 'site_id' },
-                  { table: 'site', column: 'name' }
-                ] } }
-              } ).get().then( function( response ) {
-                parentModel.metadata.getPromise().then( function() {
-                  parentModel.metadata.participantSite =
-                    CnSession.siteList.findByProperty( 'id', response.data.site_id );
+            var response = await CnHttpFactory.instance( {
+              path: ['participant', response.data.participant_id ].join( '/' ),
+              data: { select: { column: [
+                { table: 'site', column: 'id', alias: 'site_id' },
+                { table: 'site', column: 'name' }
+              ] } }
+            } ).get();
 
-                  // get the vacancy model linked to the participant's site
-                  self.vacancyModel = CnVacancyModelFactory.forSite( parentModel.metadata.participantSite );
-                } );
-              } ),
+            await parentModel.metadata.getPromise();
+            parentModel.metadata.participantSite = CnSession.siteList.findByProperty( 'id', response.data.site_id );
 
-              CnHttpFactory.instance( {
-                path: ['participant', response.data.participant_id, 'phone' ].join( '/' ),
-                data: {
-                  select: { column: [ 'id', 'rank', 'type', 'number' ] },
-                  modifier: {
-                    where: { column: 'phone.active', operator: '=', value: true },
-                    order: { rank: false }
-                  }
+            // get the vacancy model linked to the participant's site
+            this.vacancyModel = CnVacancyModelFactory.forSite( parentModel.metadata.participantSite );
+
+            var response = await CnHttpFactory.instance( {
+              path: ['participant', response.data.participant_id, 'phone' ].join( '/' ),
+              data: {
+                select: { column: [ 'id', 'rank', 'type', 'number' ] },
+                modifier: {
+                  where: { column: 'phone.active', operator: '=', value: true },
+                  order: { rank: false }
                 }
-              } ).query().then( function( response ) {
-                parentModel.metadata.getPromise().then( function() {
-                  parentModel.metadata.columnList.phone_id.enumList = [];
-                  response.data.forEach( function( item ) {
-                    parentModel.metadata.columnList.phone_id.enumList.push( {
-                      value: item.id,
-                      name: '(' + item.rank + ') ' + item.type + ': ' + item.number
-                    } );
-                  } );
-                } );
-              } )
-            ] ).then( function() {
-              return self.$$onNew( record );
+              }
+            } ).query();
+
+            await parentModel.metadata.getPromise();
+            parentModel.metadata.columnList.phone_id.enumList = [];
+            response.data.forEach( function( item ) {
+              parentModel.metadata.columnList.phone_id.enumList.push( {
+                value: item.id,
+                name: '(' + item.rank + ') ' + item.type + ': ' + item.number
+              } );
             } );
-          } );
-        };
+
+            await this.$$onNew( record );
+          }
+        } );
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
@@ -719,21 +701,20 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
     'CnBaseCalendarFactory', 'CnSession',
     function( CnBaseCalendarFactory, CnSession ) {
       var object = function( parentModel ) {
-        var self = this;
         CnBaseCalendarFactory.construct( this, parentModel );
 
         // remove day click callback
         delete this.settings.dayClick;
 
         // extend onCalendar to transform into events
-        this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {
+        this.onCalendar = async function( replace, minDate, maxDate, ignoreParent ) {
           // we must get the load dates before calling $$onCalendar
-          var loadMinDate = self.getLoadMinDate( replace, minDate );
-          var loadMaxDate = self.getLoadMaxDate( replace, maxDate );
-          return self.$$onCalendar( replace, minDate, maxDate, ignoreParent ).then( function() {
-            self.cache.forEach( function( item, index, array ) {
-              array[index] = getEventFromAppointment( item, CnSession.user.timezone );
-            } );
+          var loadMinDate = this.getLoadMinDate( replace, minDate );
+          var loadMaxDate = this.getLoadMaxDate( replace, maxDate );
+          await this.$$onCalendar( replace, minDate, maxDate, ignoreParent );
+
+          this.cache.forEach( function( item, index, array ) {
+            array[index] = getEventFromAppointment( item, CnSession.user.timezone );
           } );
         };
       };
@@ -747,15 +728,14 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
     'CnBaseListFactory',
     function( CnBaseListFactory ) {
       var object = function( parentModel ) {
-        var self = this;
         CnBaseListFactory.construct( this, parentModel );
 
         // override onDelete
-        this.onDelete = function( record ) {
-          return this.$$onDelete( record ).then( function() {
-            parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
-              return e.getIdentifier() != record.getIdentifier();
-            } );
+        this.onDelete = async function( record ) {
+          await this.$$onDelete( record );
+
+          parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
+            return e.getIdentifier() != record.getIdentifier();
           } );
         };
       };
@@ -765,24 +745,26 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAppointmentViewFactory', [
-    'CnBaseViewFactory', 'CnSession', 'CnHttpFactory', 'CnVacancyModelFactory', '$q',
-    function( CnBaseViewFactory, CnSession, CnHttpFactory, CnVacancyModelFactory, $q ) {
+    'CnBaseViewFactory', 'CnSession', 'CnHttpFactory', 'CnVacancyModelFactory',
+    function( CnBaseViewFactory, CnSession, CnHttpFactory, CnVacancyModelFactory ) {
       var object = function( parentModel, root ) {
         var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
 
-        // remove the deleted appointment's events from the calendar cache
-        this.onDelete = function() {
-          return this.$$onDelete().then( function() {
+        angular.extend( this, {
+          // remove the deleted appointment's events from the calendar cache
+          onDelete: async function() {
+            await this.$$onDelete();
+
             parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
               return e.getIdentifier() != self.record.getIdentifier();
             } );
-          } );
-        };
+          },
 
-        // remove and re-add the appointment's events from the calendar cache
-        this.onPatch = function( data ) {
-          return self.$$onPatch( data ).then( function() {
+          // remove and re-add the appointment's events from the calendar cache
+          onPatch: async function( data ) {
+            await this.$$onPatch( data );
+
             // PLEASE NOTE:
             // The "update_email" option is used to update an appointment's mail reminders after the start vacancy
             // has been changed.  We can't do this at the time that the vacancy is changed because the start_vacancy_id
@@ -790,13 +772,13 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
             // the process which made the change is complete.  Therefore an additional request must be made after
             // the change in start vacancy.
             if( angular.isDefined( data.start_vacancy_id ) ) {
-              CnHttpFactory.instance( { path: self.parentModel.getServiceResourcePath() + '?update_mail=1' } ).patch();
+              await CnHttpFactory.instance( { path: this.parentModel.getServiceResourcePath() + '?update_mail=1' } ).patch();
             }
 
             // refresh any visible calendars
-            self.vacancyModel.calendarModel.onCalendar( true );
+            await this.vacancyModel.calendarModel.onCalendar( true );
             var cnRecordCalendar = cenozo.getScopeByQuerySelector( '.record-calendar' );
-            if( null != cnRecordCalendar ) cnRecordCalendar.refresh();
+            if( null != cnRecordCalendar ) await cnRecordCalendar.refresh();
 
             // rebuild the event for this record
             parentModel.calendarModel.cache.some( function( e, index, array ) {
@@ -805,13 +787,13 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
                 return true;
               }
             } );
-          } );
-        };
+          },
 
-        this.onView = function( force ) {
-          return this.$$onView( force ).then( function() {
+          onView: async function( force ) {
+            await this.$$onView( force );
+
             // only allow delete/edit if the appointment is in the future
-            var upcoming = moment().isBefore( self.record.start_datetime, 'minute' );
+            var upcoming = moment().isBefore( this.record.start_datetime, 'minute' );
             parentModel.getDeleteEnabled = function() {
               return 'vacancy' != parentModel.getSubjectFromState() &&
                      parentModel.$$getDeleteEnabled() && upcoming;
@@ -819,50 +801,48 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
             parentModel.getEditEnabled = function() { return parentModel.$$getEditEnabled() && upcoming; };
 
             // update the phone list based on the parent interview
-            return CnHttpFactory.instance( {
-              path: 'interview/' + self.record.interview_id,
+            var response = await CnHttpFactory.instance( {
+              path: 'interview/' + this.record.interview_id,
               data: { select: { column: { column: 'participant_id' } } }
-            } ).query().then( function( response ) {
-              // get the participant's effective site and list of phone numbers
-              return $q.all( [
-                CnHttpFactory.instance( {
-                  path: ['participant', response.data.participant_id ].join( '/' ),
-                  data: { select: { column: [
-                    { table: 'site', column: 'id', alias: 'site_id' },
-                    { table: 'site', column: 'name' }
-                  ] } }
-                } ).get().then( function( response ) {
-                  parentModel.metadata.participantSite =
-                    CnSession.siteList.findByProperty( 'id', response.data.site_id );
+            } ).query();
 
-                  // get the vacancy model linked to the participant's site
-                  self.vacancyModel = CnVacancyModelFactory.forSite( parentModel.metadata.participantSite );
-                } ),
+            // get the participant's effective site and list of phone numbers
+            var response = await CnHttpFactory.instance( {
+              path: ['participant', response.data.participant_id ].join( '/' ),
+              data: { select: { column: [
+                { table: 'site', column: 'id', alias: 'site_id' },
+                { table: 'site', column: 'name' }
+              ] } }
+            } ).get();
 
-                CnHttpFactory.instance( {
-                  path: ['participant', response.data.participant_id, 'phone' ].join( '/' ),
-                  data: {
-                    select: { column: [ 'id', 'rank', 'type', 'number' ] },
-                    modifier: {
-                      where: { column: 'phone.active', operator: '=', value: true },
-                      order: { rank: false }
-                    }
-                  }
-                } ).query().then( function( response ) {
-                  parentModel.metadata.getPromise().then( function() {
-                    parentModel.metadata.columnList.phone_id.enumList = [];
-                    response.data.forEach( function( item ) {
-                      parentModel.metadata.columnList.phone_id.enumList.push( {
-                        value: item.id,
-                        name: '(' + item.rank + ') ' + item.type + ': ' + item.number
-                      } );
-                    } );
-                  } );
-                } )
-              ] );
+            parentModel.metadata.participantSite =
+              CnSession.siteList.findByProperty( 'id', response.data.site_id );
+
+            // get the vacancy model linked to the participant's site
+            this.vacancyModel = CnVacancyModelFactory.forSite( parentModel.metadata.participantSite );
+
+            var response = await CnHttpFactory.instance( {
+              path: ['participant', response.data.participant_id, 'phone' ].join( '/' ),
+              data: {
+                select: { column: [ 'id', 'rank', 'type', 'number' ] },
+                modifier: {
+                  where: { column: 'phone.active', operator: '=', value: true },
+                  order: { rank: false }
+                }
+              }
+            } ).query();
+
+            await parentModel.metadata.getPromise();
+
+            parentModel.metadata.columnList.phone_id.enumList = [];
+            response.data.forEach( function( item ) {
+              parentModel.metadata.columnList.phone_id.enumList.push( {
+                value: item.id,
+                name: '(' + item.rank + ') ' + item.type + ': ' + item.number
+              } );
             } );
-          } );
-        };
+          }
+        } );
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
@@ -882,42 +862,43 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
         if( !angular.isObject( site ) || angular.isUndefined( site.id ) )
           throw new Error( 'Tried to create CnAppointmentModel without specifying the site.' );
 
-        var self = this;
-
         CnBaseModelFactory.construct( this, module );
-        this.addModel = CnAppointmentAddFactory.instance( this );
-        this.calendarModel = CnAppointmentCalendarFactory.instance( this );
-        this.listModel = CnAppointmentListFactory.instance( this );
-        this.viewModel = CnAppointmentViewFactory.instance( this, site.id == CnSession.site.id );
-        this.site = site;
 
-        // customize service data
-        this.getServiceData = function( type, columnRestrictLists ) {
-          var data = this.$$getServiceData( type, columnRestrictLists );
-          if( 'calendar' == type ) data.restricted_site_id = self.site.id;
-          return data;
-        };
+        angular.extend( this, {
+          addModel: CnAppointmentAddFactory.instance( this ),
+          calendarModel: CnAppointmentCalendarFactory.instance( this ),
+          listModel: CnAppointmentListFactory.instance( this ),
+          viewModel: CnAppointmentViewFactory.instance( this, site.id == CnSession.site.id ),
+          site: site,
 
-        // customize when to enable adding appointments
-        this.getAddEnabled = function() {
-          var subject = this.getSubjectFromState();
-          var action = this.getActionFromState();
-          return !( 'appointment' == subject && 'list' == action ) &&
-                 'vacancy' != subject &&
-                 angular.isDefined( module.actions.add );
-        };
+          // customize service data
+          getServiceData: function( type, columnRestrictLists ) {
+            var data = this.$$getServiceData( type, columnRestrictLists );
+            if( 'calendar' == type ) data.restricted_site_id = this.site.id;
+            return data;
+          },
 
-        // customize when to enable deleting appointments
-        this.getDeleteEnabled = function() {
-          return this.$$getDeleteEnabled() && 'vacancy' != this.getSubjectFromState();
-        };
+          // customize when to enable adding appointments
+          getAddEnabled: function() {
+            var subject = this.getSubjectFromState();
+            var action = this.getActionFromState();
+            return !( 'appointment' == subject && 'list' == action ) &&
+                   'vacancy' != subject &&
+                   angular.isDefined( module.actions.add );
+          },
 
-        // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
+          // customize when to enable deleting appointments
+          getDeleteEnabled: function() {
+            return this.$$getDeleteEnabled() && 'vacancy' != this.getSubjectFromState();
+          },
+
+          // extend getMetadata
+          getMetadata: async function() {
+            await this.$$getMetadata();
+
             // add the start_datetime and duration metadata details
             var interval = CnSession.setting.vacancySize;
-            angular.extend( self.metadata.columnList, {
+            angular.extend( this.metadata.columnList, {
               start_datetime: { required: true },
               duration: {
                 required: true,
@@ -931,32 +912,32 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
               var time = interval * i;
               var hours = Math.floor( time/60 );
               var minutes = time%60;
-              self.metadata.columnList.duration.enumList.push( {
+              this.metadata.columnList.duration.enumList.push( {
                 value: time,
                 name: ( 0 < hours ? hours + ' hour' + ( 1 < hours ? 's' : '' ) : '' ) + 
                       ( 0 < hours && 0 < minutes ? ', ' : '' ) +
                       ( 0 < minutes ? minutes + ' minute' + ( 1 < minutes ? 's' : '' ) : '' )
               } );
             }
-          } );
-        };
+          },
 
-        // extend getTypeaheadData
-        this.getTypeaheadData = function( input, viewValue ) {
-          var data = this.$$getTypeaheadData( input, viewValue );
+          // extend getTypeaheadData
+          getTypeaheadData: function( input, viewValue ) {
+            var data = this.$$getTypeaheadData( input, viewValue );
 
-          // only include active users
-          if( 'user' == input.typeahead.table ) {
-            data.modifier.where.unshift( { bracket: true, open: true } );
-            data.modifier.where.push( { bracket: true, open: false } );
-            data.modifier.where.push( { column: 'user.active', operator: '=', value: true } );
+            // only include active users
+            if( 'user' == input.typeahead.table ) {
+              data.modifier.where.unshift( { bracket: true, open: true } );
+              data.modifier.where.push( { bracket: true, open: false } );
+              data.modifier.where.push( { column: 'user.active', operator: '=', value: true } );
 
-            // restrict to the current site
-            if( this.site ) data.restricted_site_id = this.site.id;
+              // restrict to the current site
+              if( this.site ) data.restricted_site_id = this.site.id;
+            }
+
+            return data;
           }
-
-          return data;
-        };
+        } );
       };
 
       // get the siteColumn to be used by a site's identifier

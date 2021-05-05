@@ -9,10 +9,13 @@ define( [ cenozoApp.module( 'site' ).getFileUrl( 'module.js' ) ], function() {
       var instance = $delegate.instance;
       $delegate.instance = function( parentModel, root ) {
         var object = instance( parentModel, root );
-        object.deferred.promise.then( function() {
-          if( angular.isDefined( object.qnaireModel ) )
-            object.qnaireModel.listModel.heading = 'Disabled Questionnaire List';
-        } );
+
+        async function init() {
+          await object.deferred.promise;
+          if( angular.isDefined( object.qnaireModel ) ) object.qnaireModel.listModel.heading = 'Disabled Questionnaire List';
+        }
+
+        init();
         return object;
       };
       return $delegate;

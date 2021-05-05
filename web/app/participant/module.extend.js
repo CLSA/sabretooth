@@ -35,10 +35,9 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
     title: 'Update Queue',
     isIncluded: function( $state, model ) { return !model.isOperator; },
     isDisabled: function( $state, model ) { return model.viewModel.isRepopulating; },
-    operation: function( $state, model ) {
-      model.viewModel.onViewPromise.then( function() {
-        model.viewModel.repopulate();
-      } );
+    operation: async function( $state, model ) {
+      await model.viewModel.onViewPromise;
+      await model.viewModel.repopulate();
     }
   } );
 
@@ -49,123 +48,116 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
 
     Assignment: {
       active: true,
-      promise: function( historyList, $state, CnHttpFactory, $q ) {
-        return CnHttpFactory.instance( {
+      promise: async function( historyList, $state, CnHttpFactory ) {
+        var response = await CnHttpFactory.instance( {
           path: 'participant/' + $state.params.identifier + '/interview',
           data: {
             modifier: { order: { start_datetime: true } },
             select: { column: [ 'id' ] }
           }
-        } ).query().then( function( response ) {
-          var promiseArray = [];
-          response.data.forEach( function( item ) {
-            // appointments
-            promiseArray.push(
-              CnHttpFactory.instance( {
-                path: 'interview/' + item.id + '/appointment',
-                data: {
-                  modifier: {
-                    join: [ {
-                      table: 'vacancy',
-                      onleft: 'appointment.start_vacancy_id',
-                      onright: 'vacancy.id'
-                    } ],
-                    order: { start_datetime: true }
-                  },
-                  select: {
-                    column: [ 'outcome', 'assignment_id', 'user_id', {
-                      table: 'vacancy',
-                      column: 'datetime'
-                    }, {
-                      table: 'user',
-                      column: 'first_name',
-                      alias: 'user_first'
-                    }, {
-                      table: 'user',
-                      column: 'last_name',
-                      alias: 'user_last'
-                    } ]
-                  }
-                }
-              } ).query().then( function( response ) {
-                response.data.forEach( function( item ) {
-                  var description = 'An appointment scheduled for this time has ';
-                  if( 'cancelled' == item.outcome ) {
-                    description += 'been cancelled.';
-                  } else {
-                    description += item.assignment_id
-                                 ? 'been met.\nDuring the call the participant was ' + item.outcome + '.\n'
-                                 : 'not yet been met.';
-                  }
-                  historyList.push( {
-                    datetime: item.datetime,
-                    category: 'Appointment',
-                    title: 'scheduled for ' +
-                      ( null == item.user_id ? 'any operator' : item.user_first + ' ' + item.user_last ),
-                    description: description
-                  } );
-                } );
-              } )
-            );
+        } ).query();
 
-            // assignments
-            promiseArray.push(
-              CnHttpFactory.instance( {
-                path: 'interview/' + item.id + '/assignment',
-                data: {
-                  modifier: { order: { start_datetime: true } },
-                  select: {
-                    column: [ 'start_datetime', 'end_datetime', {
-                      table: 'user',
-                      column: 'first_name',
-                      alias: 'user_first'
-                    }, {
-                      table: 'user',
-                      column: 'last_name',
-                      alias: 'user_last'
-                    }, {
-                      table: 'site',
-                      column: 'name',
-                      alias: 'site'
-                    }, {
-                      table: 'script',
-                      column: 'name',
-                      alias: 'script'
-                    }, {
-                      table: 'queue',
-                      column: 'name',
-                      alias: 'queue'
-                    } ]
-                  }
-                }
-              } ).query().then( function( response ) {
-                response.data.forEach( function( item ) {
-                  if( null != item.start_datetime ) {
-                    historyList.push( {
-                      datetime: item.start_datetime,
-                      category: 'Assignment',
-                      title: 'started by ' + item.user_first + ' ' + item.user_last,
-                      description: 'Started an assignment for the "' + item.script + '" questionnaire.\n' +
-                                   'Assigned from the ' + item.site + ' site ' +
-                                   'from the "' + item.queue + '" queue.'
-                    } );
-                  }
-                  if( null != item.end_datetime ) {
-                    historyList.push( {
-                      datetime: item.end_datetime,
-                      category: 'Assignment',
-                      title: 'completed by ' + item.user_first + ' ' + item.user_last,
-                      description: 'Completed an assignment for the "' + item.script + '" questionnaire.\n' +
-                                   'Assigned from the ' + item.site + ' site ' +
-                                   'from the "' + item.queue + '" queue.'
-                    } );
-                  }
-                } );
-              } )
-            );
+        response.data.forEach( async function( item ) {
+          // appointments
+          var subResponse = await CnHttpFactory.instance( {
+            path: 'interview/' + item.id + '/appointment',
+            data: {
+              modifier: {
+                join: [ {
+                  table: 'vacancy',
+                  onleft: 'appointment.start_vacancy_id',
+                  onright: 'vacancy.id'
+                } ],
+                order: { start_datetime: true }
+              },
+              select: {
+                column: [ 'outcome', 'assignment_id', 'user_id', {
+                  table: 'vacancy',
+                  column: 'datetime'
+                }, {
+                  table: 'user',
+                  column: 'first_name',
+                  alias: 'user_first'
+                }, {
+                  table: 'user',
+                  column: 'last_name',
+                  alias: 'user_last'
+                } ]
+              }
+            }
+          } ).query();
 
+          subResponse.data.forEach( function( item ) {
+            var description = 'An appointment scheduled for this time has ';
+            if( 'cancelled' == item.outcome ) {
+              description += 'been cancelled.';
+            } else {
+              description += item.assignment_id
+                           ? 'been met.\nDuring the call the participant was ' + item.outcome + '.\n'
+                           : 'not yet been met.';
+            }
+            historyList.push( {
+              datetime: item.datetime,
+              category: 'Appointment',
+              title: 'scheduled for ' +
+                ( null == item.user_id ? 'any operator' : item.user_first + ' ' + item.user_last ),
+              description: description
+            } );
           } );
-          return $q.all( promiseArray );
+
+          // assignments
+          var subResponse = await CnHttpFactory.instance( {
+            path: 'interview/' + item.id + '/assignment',
+            data: {
+              modifier: { order: { start_datetime: true } },
+              select: {
+                column: [ 'start_datetime', 'end_datetime', {
+                  table: 'user',
+                  column: 'first_name',
+                  alias: 'user_first'
+                }, {
+                  table: 'user',
+                  column: 'last_name',
+                  alias: 'user_last'
+                }, {
+                  table: 'site',
+                  column: 'name',
+                  alias: 'site'
+                }, {
+                  table: 'script',
+                  column: 'name',
+                  alias: 'script'
+                }, {
+                  table: 'queue',
+                  column: 'name',
+                  alias: 'queue'
+                } ]
+              }
+            }
+          } ).query();
+
+          subResponse.data.forEach( function( item ) {
+            if( null != item.start_datetime ) {
+              historyList.push( {
+                datetime: item.start_datetime,
+                category: 'Assignment',
+                title: 'started by ' + item.user_first + ' ' + item.user_last,
+                description: 'Started an assignment for the "' + item.script + '" questionnaire.\n' +
+                             'Assigned from the ' + item.site + ' site ' +
+                             'from the "' + item.queue + '" queue.'
+              } );
+            }
+            if( null != item.end_datetime ) {
+              historyList.push( {
+                datetime: item.end_datetime,
+                category: 'Assignment',
+                title: 'completed by ' + item.user_first + ' ' + item.user_last,
+                description: 'Completed an assignment for the "' + item.script + '" questionnaire.\n' +
+                             'Assigned from the ' + item.site + ' site ' +
+                             'from the "' + item.queue + '" queue.'
+              } );
+            }
+          } );
         } );
       }
     },
@@ -180,18 +172,23 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
       $delegate.instance = function( parentModel, root ) {
         var object = instance( parentModel, root );
 
-        // force the default tab to be "interview"
-        object.defaultTab = 'interview';
+        angular.extend( object, {
+          // force the default tab to be "interview"
+          defaultTab: 'interview',
+          isRepopulating: false,
+          repopulate: async function() {
+            try {
+              object.isRepopulating = true;
+              await CnHttpFactory.instance( {
+                path: object.parentModel.getServiceResourcePath() + '?repopulate=1'
+              } ).patch();
+              await object.onView();
+            } finally {
+              object.isRepopulating = false;
+            }
+          }
+        } );
 
-        object.isRepopulating = false;
-        object.repopulate = function() {
-          object.isRepopulating = true;
-          return CnHttpFactory.instance( {
-            path: object.parentModel.getServiceResourcePath() + '?repopulate=1'
-          } ).patch().then( function() {
-            object.onView().then( function() { object.isRepopulating = false; } );
-          } );
-        };
         return object;
       };
       return $delegate;

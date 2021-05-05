@@ -215,10 +215,9 @@ define( function() {
 
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnSettingModelFactory', [
-    '$state', 'CnBaseModelFactory', 'CnSettingListFactory', 'CnSettingViewFactory',
-    function( $state, CnBaseModelFactory, CnSettingListFactory, CnSettingViewFactory ) {
+    'CnBaseModelFactory', 'CnSettingListFactory', 'CnSettingViewFactory',
+    function( CnBaseModelFactory, CnSettingListFactory, CnSettingViewFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.listModel = CnSettingListFactory.instance( this );
         this.viewModel = CnSettingViewFactory.instance( this, root );

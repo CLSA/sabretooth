@@ -87,8 +87,8 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
     if( angular.isDefined( calendarModule.actions.calendar ) ) {
       module.addExtraOperation( 'calendar', {
         title: calendarModule.subject.snake.replace( "_", " " ).ucWords(),
-        operation: function( $state, model ) {
-          $state.go( name + '.calendar', { identifier: model.site.getIdentifier() } );
+        operation: async function( $state, model ) {
+          await $state.go( name + '.calendar', { identifier: model.site.getIdentifier() } );
         },
         classes: 'vacancy' == name ? 'btn-warning' : undefined // highlight current model
       } );
@@ -98,8 +98,8 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
   if( angular.isDefined( module.actions.calendar ) ) {
     module.addExtraOperation( 'list', {
       title: 'Vacancy Calendar',
-      operation: function( $state, model ) {
-        $state.go( 'vacancy.calendar', { identifier: model.site.getIdentifier() } );
+      operation: async function( $state, model ) {
+        await $state.go( 'vacancy.calendar', { identifier: model.site.getIdentifier() } );
       }
     } );
   }
@@ -116,19 +116,18 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnVacancyModelFactory.instance();
 
           var cnRecordAddScope = null;
-          $scope.$on( 'cnRecordAdd ready', function( event, data ) {
+          $scope.$on( 'cnRecordAdd ready', async function( event, data ) {
             cnRecordAddScope = data;
 
             // set the datetime in the record and formatted record (if passed here from the calendar)
-            $scope.model.metadata.getPromise().then( function() {
-              if( angular.isDefined( $scope.model.addModel.calendarDate ) ) {
-                cnRecordAddScope.record.datetime = moment.tz(
-                  $scope.model.addModel.calendarDate + ' 12:00:00', CnSession.user.timezone );
-                cnRecordAddScope.formattedRecord.datetime = CnSession.formatValue(
-                  cnRecordAddScope.record.datetime, 'datetime', true );
-                delete $scope.model.addModel.calendarDate;
-              }
-            } );
+            await $scope.model.metadata.getPromise();
+            if( angular.isDefined( $scope.model.addModel.calendarDate ) ) {
+              cnRecordAddScope.record.datetime = moment.tz(
+                $scope.model.addModel.calendarDate + ' 12:00:00', CnSession.user.timezone );
+              cnRecordAddScope.formattedRecord.datetime = CnSession.formatValue(
+                cnRecordAddScope.record.datetime, 'datetime', true );
+              delete $scope.model.addModel.calendarDate;
+            }
           } );
         }
       };
@@ -138,12 +137,11 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnVacancyCalendar', [
     'CnVacancyModelFactory', 'CnAppointmentModelFactory', 'CnSession', 'CnHttpFactory',
-    'CnModalConfirmFactory', 'CnModalMessageFactory', 'CnModalInputFactory', '$q',
+    'CnModalConfirmFactory', 'CnModalMessageFactory', 'CnModalInputFactory',
     function( CnVacancyModelFactory, CnAppointmentModelFactory, CnSession, CnHttpFactory,
-              CnModalConfirmFactory, CnModalMessageFactory, CnModalInputFactory, $q ) {
-
+              CnModalConfirmFactory, CnModalMessageFactory, CnModalInputFactory ) {
       // Adds a block of vacancies between the start/end times (used below)
-      function createVacancyBlock( calendarElement, calendarModel, start, end, operators ) {
+      async function createVacancyBlock( calendarElement, calendarModel, start, end, operators, revertFunc ) {
         // split into vacancy-size chunks
         var datetimeList = [];
         var datetime = angular.copy( start );
@@ -153,34 +151,30 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
         }
 
         var eventList = [];
-        return $q.all(
-          datetimeList.reduce( function( list, datetime ) {
-            list.push( CnHttpFactory.instance( {
-              path: 'vacancy',
-              data: { datetime: datetime.format(), operators: operators },
-              onError: function( response ) {
-                CnModalMessageFactory.httpError( response );
-                revertFunc();
-              }
-            } ).post().then( function( response ) {
-              var id = response.data;
-              var newEvent = getEventFromVacancy( {
-                id: id,
-                getIdentifier: function() { return id; },
-                datetime: datetime,
-                operators: operators,
-                appointments: 0
-              }, CnSession.user.timezone, CnSession.setting.vacancySize );
+        datetimeList.forEach( async function( datetime ) {
+          var id = await CnHttpFactory.instance( {
+            path: 'vacancy',
+            data: { datetime: datetime.format(), operators: operators },
+            onError: function( error ) {
+              CnModalMessageFactory.httpError( error );
+              if( angular.isFunction( revertFunc ) ) revertFunc();
+            }
+          } ).post().data;
+          var object = {
+            id: id,
+            getIdentifier: function() { return id; },
+            datetime: datetime,
+            operators: operators,
+            appointments: 0
+          };
+          var newEvent = getEventFromVacancy( object, CnSession.user.timezone, CnSession.setting.vacancySize );
 
-              // add the new event to the event list and cache
-              eventList.push( newEvent );
-              calendarModel.cache.push( newEvent );
-            } ) );
-            return list;
-          }, [] )
-        ).then( function() {
-          calendarElement.fullCalendar( 'renderEvents', eventList );
+          // add the new event to the event list and cache
+          eventList.push( newEvent );
+          calendarModel.cache.push( newEvent );
         } );
+
+        calendarElement.fullCalendar( 'renderEvents', eventList );
       }
 
       return {
@@ -195,11 +189,12 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
           $scope.model.calendarModel.heading = $scope.model.site.name.ucWords() + ' Vacancy Calendar';
 
           var cnRecordCalendarScope = null;
-          $scope.$on( 'cnRecordCalendar ready', function( event, data ) {
+          $scope.$on( 'cnRecordCalendar ready', async function( event, data ) {
             cnRecordCalendarScope = data;
 
             // refresh the calendar EVERY time we see it
-            $scope.model.calendarModel.onCalendar( true ).then( function() { cnRecordCalendarScope.refresh(); } );
+            await $scope.model.calendarModel.onCalendar( true );
+            await cnRecordCalendarScope.refresh();
           } );
 
           angular.extend( $scope.model.calendarModel.settings, {
@@ -211,7 +206,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
                       $scope.model.getEditEnabled() &&
                       'vacancy' == $scope.model.getSubjectFromState(),
             selectHelper: true,
-            select: function( start, end, jsEvent, view ) {
+            select: async function( start, end, jsEvent, view ) {
               // do not process selections in month mode
               if( 'month' == view.type ) return;
 
@@ -223,98 +218,92 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
                 calendar.fullCalendar( 'clientEvents' ).filter( function( event ) {
                   return event.start >= start && event.end <= end;
                 } );
-                
-              if( 0 == overlapEventList.length ) {
-                // the selection did not overlap any events, create vacancies to fill the selection box
-                if( CnSession.setting.vacancySize > end.diff( start, 'minutes' ) ) {
-                  CnModalMessageFactory.instance( {
-                    title: 'Unable to create vacancies',
-                    message: 'There was a problem creating vacancies, please try again.',
-                    error: true
-                  } ).show().finally( function() {
-                    calendar.fullCalendar( 'unselect' );
-                  } );
-                } else {
-                  var offset = getTimezoneOffset( start, CnSession.user.timezone );
-                  start.add( offset, 'minutes' );
-                  end.add( offset, 'minutes' );
 
-                  CnModalInputFactory.instance( {
-                    title: 'Create Vacancy Block',
-                    message: 'Would you like to create a block of vacancies from ' + 
-                      CnSession.formatValue( start, 'datetime' ) + ' to ' +
-                      CnSession.formatValue( end, 'datetime' ) + '?\n\n' +
-                      'If you wish to proceed please provide the number of operators the vacancy has available:',
-                    required: true,
-                    format: 'integer',
-                    minValue: 1,
-                    value: 1
-                  } ).show().then( function( response ) {
+              try {
+                if( 0 == overlapEventList.length ) {
+                  // the selection did not overlap any events, create vacancies to fill the selection box
+                  if( CnSession.setting.vacancySize > end.diff( start, 'minutes' ) ) {
+                    await CnModalMessageFactory.instance( {
+                      title: 'Unable to create vacancies',
+                      message: 'There was a problem creating vacancies, please try again.',
+                      error: true
+                    } ).show();
+                  } else {
+                    var offset = getTimezoneOffset( start, CnSession.user.timezone );
+                    start.add( offset, 'minutes' );
+                    end.add( offset, 'minutes' );
+
+                    var response = await CnModalInputFactory.instance( {
+                      title: 'Create Vacancy Block',
+                      message: 'Would you like to create a block of vacancies from ' + 
+                        CnSession.formatValue( start, 'datetime' ) + ' to ' +
+                        CnSession.formatValue( end, 'datetime' ) + '?\n\n' +
+                        'If you wish to proceed please provide the number of operators the vacancy has available:',
+                      required: true,
+                      format: 'integer',
+                      minValue: 1,
+                      value: 1
+                    } ).show();
+
                     if( false !== response && 0 < response )
-                      createVacancyBlock( calendar, $scope.model.calendarModel, start, end, response );
-                  } ).finally( function() {
-                    calendar.fullCalendar( 'unselect' );
-                  } );
-                }
-              } else {
-                // the selection overlaps with some event, only delete vacancies which have no appointments
-                var removeEventList = overlapEventList.filter( function( event ) {
-                  return 0 == event.appointments;
-                } );
-
-                if( 0 == removeEventList ) {
-                  CnModalMessageFactory.instance( {
-                    title: 'Cannot Delete Vacancies',
-                    message: 'None of the ' + overlapEventList.length + ' vacancies you have selected can be ' +
-                      'deleted because they already have at least one appointment scheduled.',
-                    error: true
-                  } ).show().finally( function() {
-                    calendar.fullCalendar( 'unselect' );
-                  } );
+                      await createVacancyBlock( calendar, $scope.model.calendarModel, start, end, response );
+                  }
                 } else {
-                  var message = 'Would you like to delete the ' + removeEventList.length +
-                    ' vacancies which you have selected?';
-                  if( removeEventList.length != overlapEventList.length )
-                    message += '\n\nNote: only vacancies which do not have any appointments will be deleted.';
-                  CnModalConfirmFactory.instance( {
-                    title: 'Delete Vacancies?',
-                    message: message
-                  } ).show().then( function( response ) {
+                  // the selection overlaps with some event, only delete vacancies which have no appointments
+                  var removeEventList = overlapEventList.filter( function( event ) {
+                    return 0 == event.appointments;
+                  } );
+
+                  if( 0 == removeEventList ) {
+                    await CnModalMessageFactory.instance( {
+                      title: 'Cannot Delete Vacancies',
+                      message: 'None of the ' + overlapEventList.length + ' vacancies you have selected can be ' +
+                        'deleted because they already have at least one appointment scheduled.',
+                      error: true
+                    } ).show();
+                  } else {
+                    var message = 'Would you like to delete the ' + removeEventList.length +
+                      ' vacancies which you have selected?';
+                    if( removeEventList.length != overlapEventList.length )
+                      message += '\n\nNote: only vacancies which do not have any appointments will be deleted.';
+
+                    var response = await CnModalConfirmFactory.instance( {
+                      title: 'Delete Vacancies?',
+                      message: message
+                    } ).show();
+
                     if( response ) {
-                      removeEventList.forEach( function( event ) {
-                        CnHttpFactory.instance( {
-                          path: 'vacancy/' + event.getIdentifier()
-                        } ).delete().then( function() {
-                          calendar.fullCalendar( 'removeEvents', event.id );
-                        } );
+                      removeEventList.forEach( async function( event ) {
+                        await CnHttpFactory.instance( { path: 'vacancy/' + event.getIdentifier() } ).delete();
+                        calendar.fullCalendar( 'removeEvents', event.id );
                       } );
                     }
-                  } ).finally( function() {
-                    calendar.fullCalendar( 'unselect' );
-                  } );
+                  }
                 }
+              } finally {
+                calendar.fullCalendar( 'unselect' );
               }
             },
-            eventDrop: function( event, delta, revertFunc ) {
+            eventDrop: async function( event, delta, revertFunc ) {
               // time is in local timezone, convert back to UTC
               var datetime = angular.copy( event.start );
               datetime.add( event.offset, 'minutes' );
 
               var cacheEvent = $scope.model.calendarModel.cache.findByProperty( 'id', event.id );
-              CnHttpFactory.instance( {
+              await CnHttpFactory.instance( {
                 path: 'vacancy/' + event.getIdentifier(),
                 data: { datetime: datetime.format() },
-                onError: function( response ) {
-                  CnModalMessageFactory.httpError( response );
+                onError: function( error ) {
+                  CnModalMessageFactory.httpError( error );
                   revertFunc();
                 }
-              } ).patch().then( function() {
-                // now update this event in the vacancy cache
-                cacheEvent.start = event.start;
-                cacheEvent.end = event.end;
-              } );
+              } ).patch();
+
+              // now update this event in the vacancy cache
+              cacheEvent.start = event.start;
+              cacheEvent.end = event.end;
             },
-            eventResize: function( event, delta, revertFunc ) {
+            eventResize: async function( event, delta, revertFunc ) {
               var calendar = $element.find( 'div.calendar' );
 
               // time is in local timezone, convert back to UTC
@@ -324,11 +313,13 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
               end.add( event.offset, 'minutes' );
 
               if( CnSession.setting.vacancySize >= end.diff( datetime, 'minutes' ) ) {
-                CnModalMessageFactory.instance( {
+                await CnModalMessageFactory.instance( {
                   title: 'Unable to extend vacancy',
                   message: 'There was a problem extending the vacancy, please try again.',
                   error: true
-                } ).show().then( revertFunc );
+                } ).show();
+                
+                revertFunc();
               } else {
                 // convert the extended event back to vacancy-size minutes
                 var revertEnd = angular.copy( event.start );
@@ -341,7 +332,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
 
                 // create additional vacancy-size minute increments to fill up the new vacancy
                 datetime.add( CnSession.setting.vacancySize, 'minutes' ); // skip the first since it already exists
-                createVacancyBlock( calendar, $scope.model.calendarModel, datetime, end, event.operators );
+                await createVacancyBlock( calendar, $scope.model.calendarModel, datetime, end, event.operators, revertFunc );
               }
             }
           } );
@@ -410,21 +401,19 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
     'CnBaseAddFactory', 'CnSession',
     function( CnBaseAddFactory, CnSession ) {
       var object = function( parentModel ) {
-        var self = this;
         CnBaseAddFactory.construct( this, parentModel );
 
         // add the new vacancy's events to the calendar cache
-        this.onAdd = function( record ) {
-          return this.$$onAdd( record ).then( function() {
-            record.getIdentifier = function() { return parentModel.getIdentifierFromRecord( record ); };
+        this.onAdd = async function( record ) {
+          await this.$$onAdd( record );
+          record.getIdentifier = function() { return parentModel.getIdentifierFromRecord( record ); };
 
-            // fill in the user name so that it shows in the calendar
-            return parentModel.calendarModel.cache.push( getEventFromVacancy(
-              record,
-              CnSession.user.timezone,
-              CnSession.setting.vacancySize
-            ) );
-          } );
+          // fill in the user name so that it shows in the calendar
+          parentModel.calendarModel.cache.push( getEventFromVacancy(
+            record,
+            CnSession.user.timezone,
+            CnSession.setting.vacancySize
+          ) );
         };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
@@ -436,22 +425,20 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
     'CnBaseCalendarFactory', 'CnSession',
     function( CnBaseCalendarFactory, CnSession ) {
       var object = function( parentModel ) {
-        var self = this;
         CnBaseCalendarFactory.construct( this, parentModel );
 
         // remove the day click event
         delete this.settings.dayClick;
 
         // extend onCalendar to transform vacancies into events
-        this.onCalendar = function( replace, minDate, maxDate, ignoreParent ) {
+        this.onCalendar = async function( replace, minDate, maxDate, ignoreParent ) {
           // we must get the load dates before calling $$onCalendar
-          var loadMinDate = self.getLoadMinDate( replace, minDate );
-          var loadMaxDate = self.getLoadMaxDate( replace, maxDate );
+          var loadMinDate = this.getLoadMinDate( replace, minDate );
+          var loadMaxDate = this.getLoadMaxDate( replace, maxDate );
           // note that we ignore the ignoreParent parameter and always ignore the parent
-          return self.$$onCalendar( replace, minDate, maxDate, true ).then( function() {
-            self.cache.forEach( function( item, index, array ) {
-              array[index] = getEventFromVacancy( item, CnSession.user.timezone, CnSession.setting.vacancySize );
-            } );
+          await this.$$onCalendar( replace, minDate, maxDate, true );
+          this.cache.forEach( function( item, index, array ) {
+            array[index] = getEventFromVacancy( item, CnSession.user.timezone, CnSession.setting.vacancySize );
           } );
         };
       };
@@ -468,11 +455,11 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
         CnBaseListFactory.construct( this, parentModel );
 
         // remove the deleted vacancy from the calendar cache
-        this.onDelete = function( record ) {
-          return this.$$onDelete( record ).then( function() {
-            parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
-              return e.getIdentifier() != record.getIdentifier();
-            } );
+        this.onDelete = async function( record ) {
+          await this.$$onDelete( record );
+
+          parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
+            return e.getIdentifier() != record.getIdentifier();
           } );
         };
       };
@@ -485,27 +472,27 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
     'CnBaseViewFactory', 'CnSession',
     function( CnBaseViewFactory, CnSession ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
 
         // remove the deleted vacancy's events from the calendar cache
-        this.onDelete = function() {
-          return this.$$onDelete().then( function() {
-            parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
-              return e.getIdentifier() != self.record.getIdentifier();
-            } );
+        this.onDelete = async function() {
+          await this.$$onDelete();
+          var self = this;
+          parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
+            return e.getIdentifier() != self.record.getIdentifier();
           } );
         };
 
-        this.onPatch = function( data ) {
-          return this.$$onPatch( data ).then( function() {
-            // rebuild the event for this record
-            parentModel.calendarModel.cache.some( function( e, index, array ) {
-              if( e.getIdentifier() == self.record.getIdentifier() ) {
-                array[index] = getEventFromVacancy( self.record, CnSession.user.timezone, CnSession.setting.vacancySize );
-                return true;
-              }
-            } );
+        this.onPatch = async function( data ) {
+          await this.$$onPatch( data );
+
+          // rebuild the event for this record
+          var self = this;
+          parentModel.calendarModel.cache.some( function( e, index, array ) {
+            if( e.getIdentifier() == self.record.getIdentifier() ) {
+              array[index] = getEventFromVacancy( self.record, CnSession.user.timezone, CnSession.setting.vacancySize );
+              return true;
+            }
           } );
         };
       }
@@ -527,41 +514,44 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
         if( !angular.isObject( site ) || angular.isUndefined( site.id ) )
           throw new Error( 'Tried to create CnVacancyModel without specifying the site.' );
 
-        var self = this;
         CnBaseModelFactory.construct( this, module );
-        this.addModel = CnVacancyAddFactory.instance( this );
-        this.calendarModel = CnVacancyCalendarFactory.instance( this );
-        this.listModel = CnVacancyListFactory.instance( this );
-        this.viewModel = CnVacancyViewFactory.instance( this, site.id == CnSession.site.id );
-        this.site = site;
+
+        angular.extend( this, {
+          addModel: CnVacancyAddFactory.instance( this ),
+          calendarModel: CnVacancyCalendarFactory.instance( this ),
+          listModel: CnVacancyListFactory.instance( this ),
+          viewModel: CnVacancyViewFactory.instance( this, site.id == CnSession.site.id ),
+          viewTitle: 'Vacancy Calendar',
+          site: site,
+
+          // replace view-list with view-calendar
+          transitionToParentListState: async function( subject ) {
+            if( 'vacancy' == subject ) {
+              // switch to/from calendar/list states
+              var name = 'vacancy.calendar' == $state.current.name
+                       ? 'vacancy.list'
+                       : 'vacancy.calendar';
+              var param = 'vacancy.calendar' == $state.current.name
+                        ? undefined
+                        : { identifier: this.site.getIdentifier() };
+              await $state.go( name, param );
+            } else {
+              await this.$$transitionToParentListState( subject );
+            }
+          },
+
+          transitionToListState: async function() { await this.transitionToParentListState( 'vacancy' ); },
+
+          // customize service data
+          getServiceData: function( type, columnRestrictLists ) {
+            var data = this.$$getServiceData( type, columnRestrictLists );
+            if( 'calendar' == type ) data.restricted_site_id = this.site.id;
+            return data;
+          }
+        } );
 
         // define the datetime interval
         this.module.inputGroupList.findByProperty( 'title', '' ).inputList.datetime.minuteStep = CnSession.setting.vacancySize;
-
-        // replace view-list with view-calendar
-        this.viewTitle = 'Vacancy Calendar';
-        this.transitionToParentListState = function( subject ) {
-          if( 'vacancy' == subject ) {
-            // switch to/from calendar/list states
-            var name = 'vacancy.calendar' == $state.current.name
-                     ? 'vacancy.list'
-                     : 'vacancy.calendar';
-            var param = 'vacancy.calendar' == $state.current.name
-                      ? undefined
-                      : { identifier: self.site.getIdentifier() };
-            return $state.go( name, param );
-          } else {
-            return this.$$transitionToParentListState( subject );
-          }
-        };
-        this.transitionToListState = function() { return this.transitionToParentListState( 'vacancy' ); };
-
-        // customize service data
-        this.getServiceData = function( type, columnRestrictLists ) {
-          var data = this.$$getServiceData( type, columnRestrictLists );
-          if( 'calendar' == type ) data.restricted_site_id = self.site.id;
-          return data;
-        };
       };
 
       // get the siteColumn to be used by a site's identifier
@@ -570,9 +560,9 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
 
       return {
         siteInstanceList: {},
-        forSite: function( site ) {
+        forSite: async function( site ) {
           if( !angular.isObject( site ) ) {
-            $state.go( 'error.404' );
+            await $state.go( 'error.404' );
             throw new Error( 'Cannot find site matching identifier "' + site + '", redirecting to 404.' );
           }
           if( angular.isUndefined( this.siteInstanceList[site.id] ) ) {

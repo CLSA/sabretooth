@@ -145,20 +145,19 @@ define( [ 'trace' ].reduce( function( list, name ) {
     'CnBaseAddFactory', 'CnHttpFactory',
     function( CnBaseAddFactory, CnHttpFactory ) {
       var object = function( parentModel ) {
-        var self = this;
         CnBaseAddFactory.construct( this, parentModel );
 
-        this.onNew = function( record ) {
-          return this.$$onNew( record ).then( function() {
-            var parent = self.parentModel.getParentIdentifier();
-            return CnHttpFactory.instance( {
-              path: 'application/0',
-              data: { select: { column: [ 'mail_name', 'mail_address' ] } }
-            } ).get().then( function( response ) {
-              record.from_name = response.data.mail_name;
-              record.from_address = response.data.mail_address;
-            } );
-          } );
+        this.onNew = async function( record ) {
+          await this.$$onNew( record );
+
+          var parent = this.parentModel.getParentIdentifier();
+          var response = await CnHttpFactory.instance( {
+            path: 'application/0',
+            data: { select: { column: [ 'mail_name', 'mail_address' ] } }
+          } ).get();
+
+          record.from_name = response.data.mail_name;
+          record.from_address = response.data.mail_address;
         };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
@@ -179,30 +178,31 @@ define( [ 'trace' ].reduce( function( list, name ) {
     'CnBaseViewFactory', 'CnSession', 'CnHttpFactory', 'CnModalMessageFactory',
     function( CnBaseViewFactory, CnSession, CnHttpFactory, CnModalMessageFactory ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
 
-        this.preview = function() {
-          return CnHttpFactory.instance( {
-            path: 'application/' + CnSession.application.id,
-            data: { select: { column: [ 'mail_header', 'mail_footer' ] } }
-          } ).get().then( function( response ) {
-            var body = self.record.body;
+        angular.extend( this, {
+          preview: async function() {
+            var response = await CnHttpFactory.instance( {
+              path: 'application/' + CnSession.application.id,
+              data: { select: { column: [ 'mail_header', 'mail_footer' ] } }
+            } ).get();
+
+            var body = this.record.body;
             if( null != response.data.mail_header ) body = response.data.mail_header + "\n" + body;
             if( null != response.data.mail_footer ) body = body + "\n" + response.data.mail_footer;
-            return CnModalMessageFactory.instance( {
+            await CnModalMessageFactory.instance( {
               title: 'Mail Preview',
               message: body,
               html: true
             } ).show();
-          } );
-        };
+          },
 
-        this.validate = function() {
-          return CnHttpFactory.instance( {
-            path: this.parentModel.getServiceResourcePath(),
-            data: { select: { column: 'validate' } }
-          } ).get().then( function( response ) {
+          validate: async function() {
+            var response = await CnHttpFactory.instance( {
+              path: this.parentModel.getServiceResourcePath(),
+              data: { select: { column: 'validate' } }
+            } ).get();
+
             var result = JSON.parse( response.data.validate );
             
             var message = 'The subject contains ';
@@ -215,9 +215,9 @@ define( [ 'trace' ].reduce( function( list, name ) {
                      ? 'no errors.\n'
                      : 'the invalid variable $' + result.body + '$.';
 
-            return CnModalMessageFactory.instance( { title: 'Validation Result', message: message } ).show();
-          } );
-        };
+            await CnModalMessageFactory.instance( { title: 'Validation Result', message: message } ).show();
+          }
+        } )
       };
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
@@ -226,11 +226,10 @@ define( [ 'trace' ].reduce( function( list, name ) {
   /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAppointmentMailModelFactory', [
     'CnBaseModelFactory', 'CnAppointmentMailListFactory', 'CnAppointmentMailAddFactory', 'CnAppointmentMailViewFactory',
-    'CnSession', 'CnHttpFactory', '$q',
+    'CnSession', 'CnHttpFactory',
     function( CnBaseModelFactory, CnAppointmentMailListFactory, CnAppointmentMailAddFactory, CnAppointmentMailViewFactory,
-              CnSession, CnHttpFactory, $q ) {
+              CnSession, CnHttpFactory ) {
       var object = function( root ) {
-        var self = this;
         CnBaseModelFactory.construct( this, module );
         this.addModel = CnAppointmentMailAddFactory.instance( this );
         this.listModel = CnAppointmentMailListFactory.instance( this );
@@ -239,41 +238,38 @@ define( [ 'trace' ].reduce( function( list, name ) {
         this.hasAllSites = function() { return CnSession.role.allSites; };
 
         // extend getMetadata
-        this.getMetadata = function() {
-          return this.$$getMetadata().then( function() {
-            return $q.all( [
+        this.getMetadata = async function() {
+          var self = this;
+          await this.$$getMetadata();
 
-              CnHttpFactory.instance( {
-                path: 'language',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: {
-                    where: { column: 'active', operator: '=', value: true },
-                    order: 'name',
-                    limit: 1000
-                  }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.language_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
-                } );
-              } ),
+          var response = await CnHttpFactory.instance( {
+            path: 'language',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: {
+                where: { column: 'active', operator: '=', value: true },
+                order: 'name',
+                limit: 1000
+              }
+            }
+          } ).query();
 
-              CnHttpFactory.instance( {
-                path: 'site',
-                data: {
-                  select: { column: [ 'id', 'name' ] },
-                  modifier: { order: 'name', limit: 1000 }
-                }
-              } ).query().then( function success( response ) {
-                self.metadata.columnList.site_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
-                } );
-              } )
+          this.metadata.columnList.language_id.enumList = [];
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
+          } );
 
-            ] );
+          var response = await CnHttpFactory.instance( {
+            path: 'site',
+            data: {
+              select: { column: [ 'id', 'name' ] },
+              modifier: { order: 'name', limit: 1000 }
+            }
+          } ).query();
+
+          this.metadata.columnList.site_id.enumList = [];
+          response.data.forEach( function( item ) {
+            self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
           } );
         };
       };

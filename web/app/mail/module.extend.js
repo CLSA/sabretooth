@@ -15,11 +15,10 @@ define( [ cenozoApp.module( 'mail' ).getFileUrl( 'module.js' ) ], function() {
 
         // extend onNew
         var onNew = object.onNew;
-        object.onNew = function( record ) {
-          return onNew( record ).then( function() {
-            if( CnSession.setting.mailName ) record.from_name = CnSession.setting.mailName;
-            if( CnSession.setting.mailAddress ) record.from_address = CnSession.setting.mailAddress;
-          } );
+        object.onNew = async function( record ) {
+          await onNew( record );
+          if( CnSession.setting.mailName ) record.from_name = CnSession.setting.mailName;
+          if( CnSession.setting.mailAddress ) record.from_address = CnSession.setting.mailAddress;
         };
 
         return object;
