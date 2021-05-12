@@ -1,0 +1,48 @@
+#!/usr/bin/php
+<?php
+/**
+ * This is a script that patches this instance's database
+ * 
+ * @author Patrick Emond <emondpd@mcmaster.ca>
+ */
+
+if( 2 != $_SERVER['argc'] )
+{
+  print "ERROR: Script expects exactly one argument: which database version to patch to\n";
+  die();
+}
+$patch_version = $_SERVER['argv'][1];
+$patch_dir = sprintf( 'db/upgrade/%s', $patch_version );
+
+chdir( dirname( __FILE__ ).'/../' );
+chdir( dirname( __FILE__ ).'/../' );
+require_once 'settings.ini.php';
+require_once 'settings.local.ini.php';
+require_once $SETTINGS['path']['CENOZO'].'/src/initial.class.php';
+$initial = new \cenozo\initial();
+$settings = $initial->get_settings();
+define( 'USER', $settings['db']['username'] );
+define( 'HOST', $settings['db']['server'] );
+define( 'DATABASE', sprintf( '%s%s', $settings['db']['database_prefix'], INSTANCE ) );
+
+if( !file_exists( $patch_dir ) || !file_exists( sprintf( '%s/patch_database.sql', $patch_dir ) ) )
+{
+  printf( "ERROR: Patch version %s does not exist\n", $patch_version );
+  die();
+}
+
+chdir( $patch_dir );
+
+printf( "Patching %s database to version %s\n", INSTANCE, $patch_version );
+
+$output = array();
+exec(
+  sprintf(
+    'mysql -u"%s" -h"%s" %s < patch_database.sql',
+    USER,
+    HOST,
+    DATABASE
+  ),
+  $output
+);
+foreach( $output as $line ) if( 0 < strlen( $line ) ) printf( "  %s\n", $line );
