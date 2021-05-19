@@ -151,7 +151,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
         }
 
         var eventList = [];
-        datetimeList.forEach( async function( datetime ) {
+        await Promise.all( datetimeList.map( async function( datetime ) {
           var id = await CnHttpFactory.instance( {
             path: 'vacancy',
             data: { datetime: datetime.format(), operators: operators },
@@ -172,7 +172,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
           // add the new event to the event list and cache
           eventList.push( newEvent );
           calendarModel.cache.push( newEvent );
-        } );
+        } ) );
 
         calendarElement.fullCalendar( 'renderEvents', eventList );
       }
@@ -273,10 +273,10 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
                     } ).show();
 
                     if( response ) {
-                      removeEventList.forEach( async function( event ) {
+                      await Promise.all( removeEventList.map( async function( event ) {
                         await CnHttpFactory.instance( { path: 'vacancy/' + event.getIdentifier() } ).delete();
                         calendar.fullCalendar( 'removeEvents', event.id );
-                      } );
+                      } ) );
                     }
                   }
                 }

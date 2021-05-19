@@ -57,7 +57,7 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
           }
         } ).query();
 
-        response.data.forEach( async function( item ) {
+        await Promise.all( response.data.map( async function( item ) {
           // appointments
           var subResponse = await CnHttpFactory.instance( {
             path: 'interview/' + item.id + '/appointment',
@@ -158,7 +158,7 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
               } );
             }
           } );
-        } );
+        } ) );
       }
     },
 
