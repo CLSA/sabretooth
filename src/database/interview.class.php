@@ -363,6 +363,7 @@ class interview extends \cenozo\database\interview
    */
   public static function process_completed_web_interviews( $db_participant = NULL )
   {
+    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
     $db_application = lib::create( 'business\session' )->get_application();
 
     // update all web-based interviews
