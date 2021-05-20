@@ -250,7 +250,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
             cnRecordAddScope = data;
 
             // extend the child directive's save() function
-            var saveFn = cnRecordAddScope.save;
+            cnRecordAddScope.baseSaveFn = cnRecordAddScope.save;
             cnRecordAddScope.save = async function() {
               // see if there are vacancies to fulfill the appointment's timespan
               var cache = $scope.model.addModel.vacancyModel.calendarModel.cache;
@@ -298,7 +298,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
                   } ).show();
                 }
 
-                if( proceed ) await saveFn();
+                if( proceed ) await cnRecordAddScope.basesaveFn();
               }
             };
           } );
@@ -452,7 +452,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
             cnRecordViewScope = data;
 
             // override the regular patch function
-            var patchFn = cnRecordViewScope.patch;
+            cnRecordViewScope.basePatchFn = cnRecordViewScope.patch;
             cnRecordViewScope.patch = async function( property ) {
               // if we're changing the duration we have to check if there is vacancy available
               var proceed = true;
@@ -494,7 +494,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
               }
 
               if( proceed ) {
-                await patchFn( property );
+                await cnRecordViewScope.basePatchFn( property );
               } else {
                 $scope.model.viewModel.record[property] = $scope.model.viewModel.backupRecord[property];
               }
