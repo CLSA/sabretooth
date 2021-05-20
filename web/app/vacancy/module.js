@@ -152,16 +152,17 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
 
         var eventList = [];
         await Promise.all( datetimeList.map( async function( datetime ) {
-          var id = await CnHttpFactory.instance( {
+          var response = await CnHttpFactory.instance( {
             path: 'vacancy',
             data: { datetime: datetime.format(), operators: operators },
             onError: function( error ) {
               CnModalMessageFactory.httpError( error );
               if( angular.isFunction( revertFunc ) ) revertFunc();
             }
-          } ).post().data;
+          } ).post();
+          var newId = response.data;
           var object = {
-            id: id,
+            id: newId,
             getIdentifier: function() { return id; },
             datetime: datetime,
             operators: operators,
