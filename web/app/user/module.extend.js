@@ -91,7 +91,7 @@ define( [ 'appointment' ].reduce( function( list, name ) {
         this.settings.eventClick = async function( record ) {
           // close the popover (this does nothing if there is no popover)
           angular.element( this ).popover( 'hide' );
-          await promise;
+          await this.initPromise;
 
           if( angular.isUndefined( record.subject ) ) {
             console.warn( 'Clicked on personal calendar event which is not an appointment.' );
@@ -101,23 +101,27 @@ define( [ 'appointment' ].reduce( function( list, name ) {
           }
         };
 
-        // extend onCalendar to transform into events
-        this.onCalendar = async function( replace, minDate, maxDate, ignoreParent ) {
-          // we must get the load dates before calling $$onCalendar
-          var loadMinDate = this.getLoadMinDate( replace, minDate );
-          var loadMaxDate = this.getLoadMaxDate( replace, maxDate );
+        angular.extend( this, {
+          initPromise: null,
 
-          await promise;
-          await appointmentModel.calendarModel.onCalendar( replace, minDate, maxDate, ignoreParent );
-          this.cache = appointmentModel.calendarModel.cache;
-          this.cache.forEach( function( item, index, array ) {
-            array[index] = getEventFromAppointment( item, CnSession.user.timezone );
-          } );
-        };
+          // extend onCalendar to transform into events
+          onCalendar: async function( replace, minDate, maxDate, ignoreParent ) {
+            // we must get the load dates before calling $$onCalendar
+            var loadMinDate = this.getLoadMinDate( replace, minDate );
+            var loadMaxDate = this.getLoadMaxDate( replace, maxDate );
 
-        var promise = null;
+            await this.initPromise;
+            await appointmentModel.calendarModel.onCalendar( replace, minDate, maxDate, ignoreParent );
+            this.cache = appointmentModel.calendarModel.cache;
+            this.cache.forEach( function( item, index, array ) {
+              array[index] = getEventFromAppointment( item, CnSession.user.timezone );
+            } );
+          }
+        } );
+
+        var self = this;
         async function init() {
-          promise = await parentModel.viewModel.onView();
+          self.initPromise = await parentModel.viewModel.onView();
           appointmentModel = CnAppointmentModelFactory.forUser( parentModel.viewModel.record );
         }
 
