@@ -343,7 +343,7 @@ define( function() {
             if( angular.isDefined( this.form.language_id ) )
               whereList.push( { column: 'language_id', operator: '=', value: this.form.language_id } );
 
-            var response = CnHttpFactory.instance( {
+            var response = await CnHttpFactory.instance( {
               path: 'queue?full=1' + ( updateQueue ? '&repopulate=time' : '' ),
               data: {
                 modifier: {

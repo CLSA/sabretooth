@@ -167,7 +167,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
               if( CnSession.application.checkForMissingHin ) column.push( 'missing_hin' );
 
               var self = this;
-              this.assignment = await CnHttpFactory.instance( {
+              var response = await CnHttpFactory.instance( {
                 path: 'assignment/0',
                 data: { select: { column: column } },
                 onError: async function( error ) {
@@ -193,7 +193,8 @@ define( [ 'participant' ].reduce( function( list, name ) {
                     self.isForbidden = true;
                   } else { CnModalMessageFactory.httpError( error ); }
                 }
-              } ).get().data;
+              } ).get();
+              this.assignment = response.data;
 
               CnSession.alertHeader = 'You are currently in an assignment';
               await CnSession.updateData();
@@ -212,17 +213,19 @@ define( [ 'participant' ].reduce( function( list, name ) {
               }
 
               // get the assigned participant's details
-              this.participant = await CnHttpFactory.instance( {
+              var response = await CnHttpFactory.instance( {
                 path: 'participant/' + this.assignment.participant_id,
                 data: { select: { column: [
                   'id', 'uid', 'honorific', 'first_name', 'other_name', 'last_name', 'global_note',
                   { table: 'language', column: 'code', alias: 'language_code' },
                   { table: 'language', column: 'name', alias: 'language' }
                 ] } }
-              } ).get().data;
+              } ).get();
+              this.participant = response.data;
 
+              var self = this;
               this.participant.getIdentifier = function() {
-                return this.participantModel.getIdentifierFromRecord( this.participant );
+                return self.participantModel.getIdentifierFromRecord( self.participant );
               };
 
               CnSession.setBreadcrumbTrail( [ { title: 'Assignment' }, { title: this.participant.uid } ] );
