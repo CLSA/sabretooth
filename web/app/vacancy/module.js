@@ -561,11 +561,10 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
 
       return {
         siteInstanceList: {},
-        forSite: async function( site ) {
-          if( !angular.isObject( site ) ) {
-            await $state.go( 'error.404' );
-            throw new Error( 'Cannot find site matching identifier "' + site + '", redirecting to 404.' );
-          }
+        forSite: function( site ) {
+          // redirect if we can't find the site
+          if( !angular.isObject( site ) ) $state.go( 'error.404' );
+
           if( angular.isUndefined( this.siteInstanceList[site.id] ) ) {
             if( angular.isUndefined( site.getIdentifier ) )
               site.getIdentifier = function() { return siteColumn + '=' + this[siteColumn]; };

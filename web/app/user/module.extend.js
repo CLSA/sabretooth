@@ -77,14 +77,6 @@ define( [ 'appointment' ].reduce( function( list, name ) {
 
         // create appointment model
         var appointmentModule = cenozoApp.module( 'appointment' );
-        var appointmentModel = null;
-
-        // Use the view model's onView function to get the record and create an appointment model from it.
-        // Note that to do this we must make sure that viewing has been enabled in the parent-model, even if only
-        // temporarily.
-        var getViewEnabled = parentModel.getViewEnabled;
-        parentModel.getViewEnabled = function() { return true; };
-        parentModel.getViewEnabled = getViewEnabled;
 
         // remove day click callback
         delete this.settings.dayClick;
@@ -95,9 +87,12 @@ define( [ 'appointment' ].reduce( function( list, name ) {
 
           if( angular.isUndefined( record.subject ) ) {
             console.warn( 'Clicked on personal calendar event which is not an appointment.' );
-          } else if( appointmentModel.getViewEnabled() ) {
-            if( 'appointment' == record.subject && angular.isDefined( appointmentModule.actions.view ) )
-              await $state.go( record.subject + '.view', { identifier: record.getIdentifier() } );
+          } else {
+            var appointmentModel = CnAppointmentModelFactory.forUser( parentModel.viewModel.record );
+            if( appointmentModel.getViewEnabled() ) {
+              if( 'appointment' == record.subject && angular.isDefined( appointmentModule.actions.view ) )
+                await $state.go( record.subject + '.view', { identifier: record.getIdentifier() } );
+            }
           }
         };
 
@@ -111,6 +106,7 @@ define( [ 'appointment' ].reduce( function( list, name ) {
             var loadMaxDate = this.getLoadMaxDate( replace, maxDate );
 
             await this.initPromise;
+            var appointmentModel = CnAppointmentModelFactory.forUser( parentModel.viewModel.record );
             await appointmentModel.calendarModel.onCalendar( replace, minDate, maxDate, ignoreParent );
             this.cache = appointmentModel.calendarModel.cache;
             this.cache.forEach( function( item, index, array ) {
@@ -121,8 +117,13 @@ define( [ 'appointment' ].reduce( function( list, name ) {
 
         var self = this;
         async function init() {
+          // Use the view model's onView function to get the record and create an appointment model from it.
+          // Note that to do this we must make sure that viewing has been enabled in the parent-model, even if only
+          // temporarily.
+          parentModel.oldGetViewEnabledFn = parentModel.getViewEnabled;
+          parentModel.getViewEnabled = function() { return true; };
           self.initPromise = await parentModel.viewModel.onView();
-          appointmentModel = CnAppointmentModelFactory.forUser( parentModel.viewModel.record );
+          parentModel.getViewEnabled = parentModel.oldGetViewEnabledFn;
         }
 
         init();

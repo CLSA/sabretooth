@@ -150,7 +150,7 @@ define( function() {
 
             // override model functions
             self.participantModel.getServiceData = function( type, columnRestrictList ) {
-              var data = self.$$getServiceData( type, columnRestrictList );
+              var data = this.$$getServiceData( type, columnRestrictList );
               if( 'list' == type ) data.repopulate = true;
               return data;
             };
