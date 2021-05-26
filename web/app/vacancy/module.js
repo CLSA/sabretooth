@@ -563,7 +563,10 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
         siteInstanceList: {},
         forSite: function( site ) {
           // redirect if we can't find the site
-          if( !angular.isObject( site ) ) $state.go( 'error.404' );
+          if( !angular.isObject( site ) ) {
+            $state.go( 'error.404' );
+            throw 'Cannot find user matching identifier "' + site + '", redirecting to 404.';
+          }
 
           if( angular.isUndefined( this.siteInstanceList[site.id] ) ) {
             if( angular.isUndefined( site.getIdentifier ) )

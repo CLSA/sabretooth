@@ -948,10 +948,12 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
         siteInstanceList: {},
         userInstanceList: {},
         forSite: function( site ) {
+          // redirect if we can't find the site
           if( !angular.isObject( site ) ) {
             $state.go( 'error.404' );
-            throw new Error( 'Cannot find site matching identifier "' + site + '", redirecting to 404.' );
+            throw 'Cannot find user matching identifier "' + site + '", redirecting to 404.';
           }
+
           if( angular.isUndefined( this.siteInstanceList[site.id] ) ) {
             if( angular.isUndefined( site.getIdentifier ) )
               site.getIdentifier = function() { return siteColumn + '=' + this[siteColumn]; };
@@ -963,7 +965,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
         forUser: function( user ) {
           if( !angular.isObject( user ) ) {
             $state.go( 'error.404' );
-            throw new Error( 'Cannot find user matching identifier "' + user + '", redirecting to 404.' );
+            throw 'Cannot find user matching identifier "' + user + '", redirecting to 404.';
           }
           if( angular.isUndefined( this.userInstanceList[user.id] ) ) {
             var site = CnSession.site;
