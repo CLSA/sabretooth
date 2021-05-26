@@ -565,6 +565,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
           }
         } );
 
+        var self = this;
         angular.extend( this.participantModel.listModel, {
           // override the default column order for the participant list to rank
           order: { column: 'rank', reverse: false },
@@ -573,7 +574,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
           heading: 'Participant Selection List',
 
           // override the onChoose function
-          onSelect: this.beginAssignment
+          onSelect: async function() { await self.beginAssignment(); }
         } );
 
         this.reset();
