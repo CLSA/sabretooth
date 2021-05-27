@@ -36,9 +36,11 @@
           <div class="container-fluid form-body allow-select">
             <div class="row">
               <label class="col-sm-4 control-label">UID</label>
-              <div class="col-sm-8 form-text">
-                  {{ model.participant.uid }}
-              </div>
+              <div class="col-sm-8 form-text">{{ model.participant.uid }}</div>
+            </div>
+            <div class="row" ng-if="model.hasIdentifier">
+              <label class="col-sm-4 control-label">Study ID</label>
+              <div class="col-sm-8 form-text">{{ model.participant.sid }}</div>
             </div>
             <div class="row">
               <label class="col-sm-4 control-label">Participant</label>

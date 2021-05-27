@@ -57,6 +57,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
           participantModel: CnParticipantModelFactory.instance(),
 
           reset: function() {
+            this.hasIdentifier = null != CnSession.application.identifier,
             this.assignment = null;
             this.prevAssignment = null;
             this.participant = null;
@@ -217,6 +218,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
                 path: 'participant/' + this.assignment.participant_id,
                 data: { select: { column: [
                   'id', 'uid', 'honorific', 'first_name', 'other_name', 'last_name', 'global_note',
+                  { table: 'participant_identifier', column: 'value', alias: 'sid' },
                   { table: 'language', column: 'code', alias: 'language_code' },
                   { table: 'language', column: 'name', alias: 'language' }
                 ] } }
