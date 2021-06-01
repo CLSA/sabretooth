@@ -535,6 +535,8 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
         this.viewModel = CnVacancyViewFactory.instance( this, site.id == CnSession.site.id );
         this.site = site;
 
+        this.getAddEnabled = function() { return 'calendar' == this.getActionFromState() ? this.$$getAddEnabled() : false; }
+
         // define the datetime interval
         this.module.inputGroupList.findByProperty( 'title', '' ).inputList.datetime.minuteStep = CnSession.setting.vacancySize;
 
