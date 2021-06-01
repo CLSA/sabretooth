@@ -525,6 +525,8 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
           viewTitle: 'Vacancy Calendar',
           site: site,
 
+          getAddEnabled: function() { return 'calendar' == this.getActionFromState() ? this.$$getAddEnabled() : false; },
+
           // replace view-list with view-calendar
           transitionToParentListState: async function( subject ) {
             if( 'vacancy' == subject ) {
