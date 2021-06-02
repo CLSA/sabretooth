@@ -26,6 +26,20 @@ CREATE PROCEDURE patch_role_has_service()
     EXECUTE statement;
     DEALLOCATE PREPARE statement;
 
+    DELETE FROM role_has_service WHERE service_id IN ( SELECT id FROM service WHERE subject = 'consent' );
+    
+    -- only allow administrators to edit and delete consent and alternate_consent records
+    SET @sql = CONCAT(
+      "INSERT IGNORE INTO role_has_service( role_id, service_id ) ",
+      "SELECT role.id, service.id ",
+      "FROM ", @cenozo, ".role, service ",
+      "WHERE service.restricted = 1 ",
+      "AND service.subject IN( 'consent', 'alternate_consent' ) ",
+      "AND role.name = 'administrator'" );
+    PREPARE statement FROM @sql;
+    EXECUTE statement;
+    DEALLOCATE PREPARE statement;
+
   END //
 DELIMITER ;
 
