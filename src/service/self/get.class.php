@@ -26,6 +26,7 @@ class get extends \cenozo\service\self\get
     $setting_sel->from( 'setting' );
     $setting_sel->add_all_table_columns();
     $resource['setting'] = $session->get_setting()->get_column_values( $setting_sel );
+    $resource['setting']['proxy'] = $setting_manager->get_setting( 'general', 'proxy' );
     $resource['setting']['vacancy_size'] = $setting_manager->get_setting( 'general', 'vacancy_size' );
 
     return $resource;

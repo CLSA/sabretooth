@@ -183,25 +183,39 @@
             </div>
           </div>
           <div class="btn-group btn-group-justified">
-            <div class="btn-group dropdown">
+            <div ng-if="model.activePhoneCall" class="btn-group dropdown">
               <button type="button"
                       class="btn btn-primary dropdown-toggle"
                       id="callList"
                       data-toggle="dropdown"
                       aria-haspopup="true"
                       aria-expanded="false">
-                {{ model.activePhoneCall ? 'End Call' : 'Call' }}
-                <span class="caret"></span>
+                End Call <span class="caret"></span>
               </button>
               <ul class="dropdown-menu full-width" aria-labelledby="callList">
-                <li ng-if="model.activePhoneCall" ng-repeat="status in model.phoneCallStatusList">
+                <li ng-repeat="status in model.phoneCallStatusList">
                   <a ng-click="model.endCall( status )">{{ status }}</a>
                 </li>
-                <li ng-if="!model.activePhoneCall && 0 == model.phoneList.length">
+              </ul>
+            </div>
+            <div ng-if="!model.activePhoneCall" class="btn-group dropdown">
+              <button type="button"
+                      class="btn btn-primary dropdown-toggle"
+                      id="callList"
+                      data-toggle="dropdown"
+                      aria-haspopup="true"
+                      ng-disabled="null == model.phoneList"
+                      aria-expanded="false">
+                {{ null == model.phoneList ? 'Loading...' : 'Call' }}
+                <span ng-show="null != model.phoneList" class="caret"></span>
+              </button>
+              <ul class="dropdown-menu full-width" aria-labelledby="callList">
+                <li ng-if="0 == model.phoneList.length">
                   There are no phone numbers available.
                 <li>
-                <li ng-if="!model.activePhoneCall" ng-repeat="phone in model.phoneList">
-                  <a ng-click="model.startCall( phone )">
+                <li ng-if="0 < model.phoneList.length" ng-repeat="phone in model.phoneList">
+                  <h4 class="horizontal-spacer text-primary" ng-if="model.proxyInterview && phone.newPerson">{{ phone.person }}</h4>
+                  <a ng-if="!phone.newPerson" ng-click="model.startCall( phone )">
                     <div class="row"
                          uib-tooltip="{{ phone.note }}"
                          tooltip-popup-delay="100"
@@ -223,7 +237,7 @@
         </div>
       </div>
       <div class="utility-view rounded vertical-spacer"
-           ng-if="model.activePhoneCall && ( model.participant.withdrawn || model.participant.proxy )">
+           ng-if="model.activePhoneCall && ( model.participant.withdrawn || ( model.proxyInterview != model.participant.proxy ) )">
         <div class="container-fluid bg-primary rounded-top">
           <h4>Script Launcher</h4>
         </div>
@@ -232,7 +246,13 @@
             <div class="vertical-spacer text-warning">
               <i class="glyphicon glyphicon-exclamation-sign"></i>
               You may not launch any scripts for this participant since
-              {{ model.participant.withdrawn ? 'they have withdrawn from the study.' : 'a proxy is required for the interview.' }}
+              {{
+                model.participant.withdrawn ?
+                'they have withdrawn from the study.' :
+                model.proxyInterview ?
+                'they are not ready for the proxy system.' :
+                'a proxy is required for the interview.'
+              }}
             </div>
           </div>
         </div>
@@ -240,7 +260,7 @@
         </div>
       </div>
       <div class="utility-view rounded vertical-spacer"
-           ng-if="model.activePhoneCall && !model.participant.withdrawn && !model.participant.proxy">
+           ng-if="model.activePhoneCall && !model.participant.withdrawn && ( model.proxyInterview == model.participant.proxy )">
         <div class="container-fluid bg-primary rounded-top">
           <h4>
             <i class="glyphicon glyphicon-refresh glyph-hover rounded pull-right btn-primary"

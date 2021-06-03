@@ -57,23 +57,26 @@ define( [ 'participant' ].reduce( function( list, name ) {
           participantModel: CnParticipantModelFactory.instance(),
 
           reset: function() {
-            this.hasIdentifier = null != CnSession.application.identifier,
-            this.assignment = null;
-            this.prevAssignment = null;
-            this.participant = null;
-            this.phoneList = null;
-            this.activePhoneCall = false;
-            this.qnaireList = null;
-            this.activeQnaire = null;
-            this.lastQnaire = null;
-            this.isScriptListLoading = false;
-            this.scriptList = null;
-            this.activeScript = null;
-            this.phoneCallStatusList = null;
-            this.phoneCallList = null;
-            this.isAssignmentLoading = false;
-            this.isForbidden = false;
-            this.isPrevAssignmentLoading = false;
+            angular.extend( this, {
+              proxyInterview: CnSession.setting.proxy,
+              hasIdentifier: null != CnSession.application.identifier,
+              assignment: null,
+              prevAssignment: null,
+              participant: null,
+              phoneList: null,
+              activePhoneCall: false,
+              qnaireList: null,
+              activeQnaire: null,
+              lastQnaire: null,
+              isScriptListLoading: false,
+              scriptList: null,
+              activeScript: null,
+              phoneCallStatusList: null,
+              phoneCallList: null,
+              isAssignmentLoading: false,
+              isForbidden: false,
+              isPrevAssignmentLoading: false
+            } );
           },
 
           canChangeInterviewMethod: function() {
@@ -147,6 +150,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
           },
 
           onLoad: async function( closeScript ) {
+            var self = this;
             if( angular.isUndefined( closeScript ) ) closeScript = true;
             this.reset();
 
@@ -167,7 +171,6 @@ define( [ 'participant' ].reduce( function( list, name ) {
 
               if( CnSession.application.checkForMissingHin ) column.push( 'missing_hin' );
 
-              var self = this;
               var response = await CnHttpFactory.instance( {
                 path: 'assignment/0',
                 data: { select: { column: column } },
@@ -225,7 +228,6 @@ define( [ 'participant' ].reduce( function( list, name ) {
               } ).get();
               this.participant = response.data;
 
-              var self = this;
               this.participant.getIdentifier = function() {
                 return self.participantModel.getIdentifierFromRecord( self.participant );
               };
@@ -291,18 +293,37 @@ define( [ 'participant' ].reduce( function( list, name ) {
             this.prevAssignment = 1 == response.data.length ? response.data[0] : null;
             this.isPrevAssignmentLoading = false;
 
+            this.phoneList = null;
+            var path = 'participant/' + this.assignment.participant_id + '/phone';
+            if( this.proxyInterview ) path += '?proxy=1';
+
             var response = await CnHttpFactory.instance( {
-              path: 'participant/' + this.assignment.participant_id + '/phone',
+              path: path,
               data: {
                 select: { column: [ 'id', 'rank', 'type', 'number', 'international', 'note' ] },
                 modifier: {
                   where: { column: 'phone.active', operator: '=', value: true },
-                  order: 'rank'
+                  // Note: a negative column sorted desc means sort asc but put null values last
+                  // We do this because we want the participant's numbers at the very end of the list
+                  order: [ { '-phone.alternate_id': true }, 'rank' ]
                 }
               }
             } ).query();
 
-            this.phoneList = response.data;
+            this.phoneList = [];
+            var lastPerson = null;
+            response.data.forEach( function( phone ) {
+              phone.newPerson = false;
+
+              if( phone.person != lastPerson ) {
+                var newPhone = angular.copy( phone );
+                newPhone.newPerson = true;
+                self.phoneList.push( newPhone );
+              }
+
+              self.phoneList.push( phone );
+              lastPerson = phone.person;
+            } );
 
             var response = await CnHttpFactory.instance( { path: 'phone_call' } ).head();
             this.phoneCallStatusList = cenozo.parseEnumList( angular.fromJson( response.headers( 'Columns' ) ).status );

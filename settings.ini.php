@@ -13,7 +13,10 @@ global $SETTINGS;
 $SETTINGS['general']['application_name'] = 'sabretooth';
 $SETTINGS['general']['instance_name'] = $SETTINGS['general']['application_name'];
 $SETTINGS['general']['version'] = '2.7';
-$SETTINGS['general']['build'] = '79b3bbe6';
+$SETTINGS['general']['build'] = '7df93408';
+
+// determines whether this instance is for proxy interviewing
+$SETTINGS['general']['proxy'] = false;
 
 // determines the vacancy block size
 $SETTINGS['general']['vacancy_size'] = 30;

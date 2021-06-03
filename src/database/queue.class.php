@@ -530,6 +530,8 @@ class queue extends \cenozo\database\record
    */
   protected static function prepare_queue_query( $queue, $select, $modifier )
   {
+    $proxy_interviewing = lib::create( 'business\setting_manager' )->get_setting( 'general', 'proxy' );
+
     // make sure the queue_list_cache has been created
     static::create_queue_list_cache();
 
@@ -591,7 +593,7 @@ class queue extends \cenozo\database\record
       $modifier->where_bracket( false );
 
       $modifier->or_where( 'last_trace_type_name', '!=', NULL );
-      $modifier->or_where( 'last_proxy_type_name', '!=', NULL );
+      $modifier->or_where( 'last_proxy_type_name', '!=', $proxy_interviewing ? 'ready for proxy system' : NULL );
       $modifier->where_bracket( false );
       return;
     }
@@ -649,7 +651,7 @@ class queue extends \cenozo\database\record
       $modifier->where( 'qnaire_has_hold_type.hold_type_id', '!=', NULL );
       $modifier->or_where( 'last_hold_type_type', '=', NULL );
       $modifier->where_bracket( false );
-      $modifier->where( 'last_proxy_type_name', '!=', NULL );
+      $modifier->where( 'last_proxy_type_name', '!=', $proxy_interviewing ? 'ready for proxy system' : NULL );
       return;
     }
 
@@ -663,7 +665,7 @@ class queue extends \cenozo\database\record
       $modifier->or_where( 'last_hold_type_type', '=', NULL );
       $modifier->where_bracket( false );
       $modifier->where( 'last_trace_type_name', '=', NULL );
-      $modifier->where( 'last_proxy_type_name', '=', NULL );
+      $modifier->where( 'last_proxy_type_name', '=', $proxy_interviewing ? 'ready for proxy system' : NULL );
       return;
     }
 
