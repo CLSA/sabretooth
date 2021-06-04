@@ -598,7 +598,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
           heading: 'Participant Selection List',
 
           // override the onChoose function
-          onSelect: async function() { await self.beginAssignment(); }
+          onSelect: async function( record ) { await self.beginAssignment( record ); }
         } );
 
         this.reset();
