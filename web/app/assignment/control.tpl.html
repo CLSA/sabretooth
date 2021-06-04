@@ -51,6 +51,16 @@
                   {{ model.participant.last_name }}
               </div>
             </div>
+            <div ng-if="model.proxyInterview" class="row">
+              <label class="col-sm-4 control-label">Use Decision Maker</label>
+              <div class="col-sm-8 form-text">{{
+                null == model.assignment.use_decision_maker ?
+                  'Not confirmed' :
+                  model.assignment.use_decision_maker ?
+                  'Yes' :
+                  'No'
+              }}</div>
+            </div>
             <div class="row">
               <label class="col-sm-4 control-label">Preferred Language</label>
               <div class="col-sm-8 form-text">{{ model.participant.language }}</div>

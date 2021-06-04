@@ -170,6 +170,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
               ];
 
               if( CnSession.application.checkForMissingHin ) column.push( 'missing_hin' );
+              if( this.proxyInterview ) column.push( 'use_decision_maker' );
 
               var response = await CnHttpFactory.instance( {
                 path: 'assignment/0',
