@@ -593,7 +593,7 @@ class queue extends \cenozo\database\record
       $modifier->where_bracket( false );
 
       $modifier->or_where( 'last_trace_type_name', '!=', NULL );
-      $modifier->or_where( 'last_proxy_type_name', '!=', $proxy_interviewing ? 'ready for proxy system' : NULL );
+      $modifier->or_where( 'last_proxy_type_name', '!=', $proxy_interviewing ? 'ready for proxy system' : 'none' );
       $modifier->where_bracket( false );
       return;
     }
@@ -651,7 +651,7 @@ class queue extends \cenozo\database\record
       $modifier->where( 'qnaire_has_hold_type.hold_type_id', '!=', NULL );
       $modifier->or_where( 'last_hold_type_type', '=', NULL );
       $modifier->where_bracket( false );
-      $modifier->where( 'last_proxy_type_name', '!=', $proxy_interviewing ? 'ready for proxy system' : NULL );
+      $modifier->where( 'last_proxy_type_name', '!=', $proxy_interviewing ? 'ready for proxy system' : 'none' );
       return;
     }
 
@@ -665,7 +665,7 @@ class queue extends \cenozo\database\record
       $modifier->or_where( 'last_hold_type_type', '=', NULL );
       $modifier->where_bracket( false );
       $modifier->where( 'last_trace_type_name', '=', NULL );
-      $modifier->where( 'last_proxy_type_name', '=', $proxy_interviewing ? 'ready for proxy system' : NULL );
+      $modifier->where( 'last_proxy_type_name', '=', $proxy_interviewing ? 'ready for proxy system' : 'none' );
       return;
     }
 
@@ -1055,7 +1055,7 @@ primary_region.id AS primary_region_id,
 last_hold_type.id AS last_hold_type_id,
 last_hold_type.type AS last_hold_type_type,
 last_trace_type.name AS last_trace_type_name,
-last_proxy_type.name AS last_proxy_type_name,
+IFNULL( last_proxy_type.name, "none" ) AS last_proxy_type_name,
 current_interview.id AS current_interview_id,
 current_interview.method AS current_interview_method,
 current_qnaire.id AS current_qnaire_id,
