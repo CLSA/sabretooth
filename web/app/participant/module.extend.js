@@ -20,7 +20,7 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
     },
     queue: {
       title: 'Current Queue',
-      column: 'queue.name',
+      column: 'queue.title',
       type: 'string',
       isConstant: true
     },
