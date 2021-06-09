@@ -378,8 +378,8 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAppointmentCalendar', [
-    'CnAppointmentModelFactory', 'CnVacancyModelFactory', 'CnSession',
-    function( CnAppointmentModelFactory, CnVacancyModelFactory, CnSession ) {
+    'CnAppointmentModelFactory', 'CnVacancyModelFactory',
+    function( CnAppointmentModelFactory, CnVacancyModelFactory ) {
       return {
         templateUrl: module.getFileUrl( 'calendar.tpl.html' ),
         restrict: 'E',
@@ -422,8 +422,8 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
 
   /* ######################################################################################################## */
   cenozo.providers.directive( 'cnAppointmentList', [
-    'CnAppointmentModelFactory', 'CnSession',
-    function( CnAppointmentModelFactory, CnSession ) {
+    'CnAppointmentModelFactory',
+    function( CnAppointmentModelFactory ) {
       return {
         templateUrl: module.getFileUrl( 'list.tpl.html' ),
         restrict: 'E',
