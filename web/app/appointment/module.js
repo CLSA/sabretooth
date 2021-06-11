@@ -298,7 +298,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
                   } ).show();
                 }
 
-                if( proceed ) await cnRecordAddScope.basesaveFn();
+                if( proceed ) await cnRecordAddScope.baseSaveFn();
               }
             };
           } );
@@ -648,47 +648,60 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
 
           onNew: async function( record ) {
             var parent = parentModel.getParentIdentifier();
-            var response = await CnHttpFactory.instance( {
-              path: [ parent.subject, parent.identifier ].join( '/' ),
-              data: { select: { column: { column: 'participant_id' } } }
-            } ).query();
 
-            // get the participant's effective site and list of phone numbers
-            var response = await CnHttpFactory.instance( {
-              path: ['participant', response.data.participant_id ].join( '/' ),
-              data: { select: { column: [
-                { table: 'site', column: 'id', alias: 'site_id' },
-                { table: 'site', column: 'name' }
-              ] } }
-            } ).get();
+            // the parent may not exist if we're no longer viewing the appointment
+            if( angular.isUndefined( parent.subject ) &&  'interview' == parentModel.getSubjectFromState() ) {
+              parent = {
+                subject: 'interview',
+                identifier: parentModel.getQueryParameter( 'identifier', true )
+              };
+            }
 
-            await parentModel.metadata.getPromise();
-            parentModel.metadata.participantSite = CnSession.siteList.findByProperty( 'id', response.data.site_id );
+            if( angular.isDefined( parent.subject ) ) {
+              // get the particiapnt's id
+              var response = await CnHttpFactory.instance( {
+                path: [ parent.subject, parent.identifier ].join( '/' ),
+                data: { select: { column: { column: 'participant_id' } } }
+              } ).query();
+              var participant_id = response.data.participant_id;
 
-            // get the vacancy model linked to the participant's site
-            this.vacancyModel = CnVacancyModelFactory.forSite( parentModel.metadata.participantSite );
+              // get the participant's effective site and list of phone numbers
+              var response = await CnHttpFactory.instance( {
+                path: ['participant', participant_id ].join( '/' ),
+                data: { select: { column: [
+                  { table: 'site', column: 'id', alias: 'site_id' },
+                  { table: 'site', column: 'name' }
+                ] } }
+              } ).get();
 
-            var response = await CnHttpFactory.instance( {
-              path: ['participant', response.data.participant_id, 'phone' ].join( '/' ),
-              data: {
-                select: { column: [ 'id', 'rank', 'type', 'number' ] },
-                modifier: {
-                  where: { column: 'phone.active', operator: '=', value: true },
-                  order: { rank: false }
+              await parentModel.metadata.getPromise();
+              parentModel.metadata.participantSite = CnSession.siteList.findByProperty( 'id', response.data.site_id );
+
+              // get the vacancy model linked to the participant's site
+              this.vacancyModel = CnVacancyModelFactory.forSite( parentModel.metadata.participantSite );
+
+              var response = await CnHttpFactory.instance( {
+                path: ['participant', participant_id, 'phone' ].join( '/' ),
+                data: {
+                  select: { column: [ 'id', 'rank', 'type', 'number' ] },
+                  modifier: {
+                    where: { column: 'phone.active', operator: '=', value: true },
+                    order: { rank: false }
+                  }
                 }
-              }
-            } ).query();
+              } ).query();
 
-            await parentModel.metadata.getPromise();
-            parentModel.metadata.columnList.phone_id.enumList = [];
-            response.data.forEach( function( item ) {
-              parentModel.metadata.columnList.phone_id.enumList.push( {
-                value: item.id,
-                name: '(' + item.rank + ') ' + item.type + ': ' + item.number
+              await parentModel.metadata.getPromise();
+              parentModel.metadata.columnList.phone_id.enumList = [];
+              response.data.forEach( function( item ) {
+                parentModel.metadata.columnList.phone_id.enumList.push( {
+                  value: item.id,
+                  name: '(' + item.rank + ') ' + item.type + ': ' + item.number
+                } );
               } );
-            } );
 
-            await this.$$onNew( record );
+              await this.$$onNew( record );
+            }
           }
         } );
       };
