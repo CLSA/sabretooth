@@ -542,14 +542,18 @@ define( [ 'participant' ].reduce( function( list, name ) {
 
           endCall: async function( status ) {
             if( CnSession.voip.enabled && CnSession.voip.info && !this.activePhoneCall.international ) {
-              await CnHttpFactory.instance( {
-                path: 'voip/0',
-                onError: function( error ) {
-                  if( 404 == error.status ) {
-                    // ignore 404 errors, it just means there was no phone call found to hang up
-                  } else { CnModalMessageFactory.httpError( error ); }
-                }
-              } ).delete();
+              try {
+                await CnHttpFactory.instance( {
+                  path: 'voip/0',
+                  onError: function( error ) {
+                    if( 404 == error.status ) {
+                      // ignore 404 errors, it just means there was no phone call found to hang up
+                    } else { CnModalMessageFactory.httpError( error ); }
+                  }
+                } ).delete();
+              } catch( error ) {
+                // handled by onError above
+              }
             }
 
             await CnHttpFactory.instance( { path: 'phone_call/0?operation=close', data: { status: status } } ).patch();
