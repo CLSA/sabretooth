@@ -818,10 +818,11 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
               path: 'interview/' + this.record.interview_id,
               data: { select: { column: { column: 'participant_id' } } }
             } ).query();
+            var participant_id = response.data.participant_id;
 
             // get the participant's effective site and list of phone numbers
             var response = await CnHttpFactory.instance( {
-              path: ['participant', response.data.participant_id ].join( '/' ),
+              path: ['participant', participant_id ].join( '/' ),
               data: { select: { column: [
                 { table: 'site', column: 'id', alias: 'site_id' },
                 { table: 'site', column: 'name' }
@@ -835,7 +836,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
             this.vacancyModel = CnVacancyModelFactory.forSite( parentModel.metadata.participantSite );
 
             var response = await CnHttpFactory.instance( {
-              path: ['participant', response.data.participant_id, 'phone' ].join( '/' ),
+              path: ['participant', participant_id, 'phone' ].join( '/' ),
               data: {
                 select: { column: [ 'id', 'rank', 'type', 'number' ] },
                 modifier: {
