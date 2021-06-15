@@ -35,7 +35,7 @@ cenozo.controller( 'HeaderCtrl', [
 
     // don't allow users to log out if they have an active assignment
     var logoutOperation = $scope.operationList.findByProperty( 'title', 'Logout' );
-    var logoutFunction = logoutOperation.execute;
+    var baseExecuteFn = logoutOperation.execute;
     logoutOperation.execute = async function() {
       // private function to redirect the user to assignment-control
       async function showAssignmentExists() {
@@ -65,7 +65,7 @@ cenozo.controller( 'HeaderCtrl', [
         onError: function( error ) {
           if( 307 == error.status ) {
             // 307 means the user has no active assignment
-            logoutFunction();
+            baseExecuteFn();
           } else if( 403 == error.status ) {
             // 403 means there is an assignment, but under a different site
             showAssignmentExists();
