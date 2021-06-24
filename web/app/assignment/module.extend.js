@@ -345,7 +345,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
           useTimezone: async function() {
             if( null != this.participant ) {
               await CnSession.setTimezone( { 'participant_id': this.participant.id } );
-              await $state.go( 'this.wait' );
+              await $state.go( 'self.wait' );
               $window.location.reload();
             }
           },
