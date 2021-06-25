@@ -163,7 +163,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
           var newId = response.data;
           var object = {
             id: newId,
-            getIdentifier: function() { return id; },
+            getIdentifier: function() { return newId; },
             datetime: datetime,
             operators: operators,
             appointments: 0
