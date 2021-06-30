@@ -1,6 +1,6 @@
 #!/usr/bin/php
 <?php
-/** 
+/**
  * Utility which removes the cached schema file
  * @author Patrick Emond <emondpd@mcmaster.ca>
  */
@@ -23,4 +23,4 @@ if( 1 != $argc )
 $filename = sprintf( TEMPORARY_FILES_PATH.'/*.schema.ser' );
 print "Removing all cached schema files\n";
 
-$result = passthru( sprintf( 'rm -v %s', $filename ) );
+$result = passthru( sprintf( 'rm -fv %s %s', $filename, preg_replace( '#^/tmp/#', '/tmp/*apache2*/tmp/', $filename ) ) );
