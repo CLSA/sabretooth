@@ -240,7 +240,7 @@ class interview extends \cenozo\database\interview
     $sub_mod->where( 'interview_id', '=', $this->id );
 
     $modifier = lib::create( 'database\modifier' );
-    $modifier->where( 'assignment_id', 'IN', sprintf( '( %s %s )', $sub_sel->get_sql(), $sub_mod->get_sql() ) );
+    $modifier->where( 'assignment_id', 'IN', sprintf( '( %s %s )', $sub_sel->get_sql(), $sub_mod->get_sql() ), false );
     static::db()->execute( sprintf( 'DELETE FROM phone_call %s', $modifier->get_sql() ) );
 
     // delete all assignments
