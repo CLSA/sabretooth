@@ -216,6 +216,42 @@ class interview extends \cenozo\database\interview
   }
 
   /**
+   * Removes an interview along with its appointments, phone calls, and assignments
+   * @access public
+   */
+  public function force_delete()
+  {
+    if( is_null( $this->id ) )
+    {
+      log::warning( 'Tried to force delete interview with no primary key.' );
+      return;
+    }
+
+    // delete all appointments
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'interview_id', '=', $this->id );
+    static::db()->execute( sprintf( 'DELETE FROM appointment %s', $modifier->get_sql() ) );
+
+    // delete all phone calls
+    $sub_sel = lib::create( 'database\select' );
+    $sub_sel->from( 'assignment' );
+    $sub_sel->add_column( 'id' );
+    $sub_mod = lib::create( 'database\modifier' );
+    $sub_mod->where( 'interview_id', '=', $this->id );
+
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'assignment_id', 'IN', sprintf( '( %s %s )', $sub_sel->get_sql(), $sub_mod->get_sql() ) );
+    static::db()->execute( sprintf( 'DELETE FROM phone_call %s', $modifier->get_sql() ) );
+
+    // delete all assignments
+    $modifier = lib::create( 'database\modifier' );
+    $modifier->where( 'interview_id', '=', $this->id );
+    static::db()->execute( sprintf( 'DELETE FROM assignment %s', $modifier->get_sql() ) );
+
+    $this->delete();
+  }
+
+  /**
    * Forces an interview to become completed.
    * 
    * This method will update an interview's status to be complete.  It will also update the

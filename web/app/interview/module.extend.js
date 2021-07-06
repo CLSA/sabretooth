@@ -37,10 +37,21 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
   }, 'qnaire_id' );
 
   module.addExtraOperation( 'view', {
+    title: 'Force Remove',
+    operation: function( $state, model ) { model.viewModel.forceRemove(); },
+    isIncluded: function( $state, model ) { return model.viewModel.forceOperationsAllowed; },
+    classes: 'btn-danger',
+    help: 'Force removes the interview. ' +
+          'This will delete all appointments, calls, and assignments along with the interview. ' +
+          'Questionnaires associated with the interview will not be changed and must be edited/deleted directly.'
+  } );
+
+  module.addExtraOperation( 'view', {
     title: 'Force Complete',
     operation: function( $state, model ) { model.viewModel.forceComplete(); },
     isDisabled: function( $state, model ) { return null !== model.viewModel.record.end_datetime; },
-    isIncluded: function( $state, model ) { return model.viewModel.forceCompleteAllowed; },
+    isIncluded: function( $state, model ) { return model.viewModel.forceOperationsAllowed; },
+    classes: 'btn-danger',
     help: 'Force completes the interview. ' +
           'This will end the interview\'s questionnaire leaving any remaining questions unanswered. ' +
           'You should only force-close an interview when you are sure that as many questions in the ' +
@@ -123,35 +134,84 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
       $delegate.instance = function( parentModel, root ) {
         var object = instance( parentModel, root );
 
-        // force the default tab to be "appointment"
-        object.defaultTab = 'appointment';
+        angular.extend( object, {
+          // force the default tab to be "appointment"
+          defaultTab: 'appointment',
 
-        object.forceCompleteAllowed = 2 < CnSession.role.tier;
-        object.forceComplete = function() {
-          CnModalConfirmFactory.instance( {
-            title: 'Force Complete Interview?',
-            message: 'Are you sure you wish to force-complete the interview?\n\n' +
-                     'Note that the interview\'s questionnaire will be closed and unanswered questions will ' +
-                     'no longer be accessible.  This operation cannot be undone.'
-          } ).show().then( function( response ) {
+          forceOperationsAllowed: 2 < CnSession.role.tier,
+
+          forceRemove: async function() {
+            var response = await CnModalConfirmFactory.instance( {
+              title: 'Force Remove Interview?',
+              message: 'Are you sure you wish to force-remove the interview?\n\n' +
+                       'Note that all appointments, phone calls, and assignments associated with the ' +
+                       'interview will also be deleted.  Questionnaires will not be changed, and start/finish ' +
+                       'events will not be deleted.  This operation cannot be undone.',
+              onError: function( response ) {
+                if( 409 == response.status ) {
+                  // 409 means there is an open assignment (or some other problem which we can report)
+                  CnModalMessageFactory.instance( {
+                    title: 'Unable to delete interview',
+                    message: response.data,
+                    error: true
+                  } ).show();
+                } else { CnModalMessageFactory.httpError( response ); }
+              }
+            } ).show();
+
             if( response ) {
-              CnHttpFactory.instance( {
-                path: 'interview/' + object.record.id + '?operation=force_complete',
-                data: {},
-                onError: function( response ) {
-                  if( 409 == response.status ) {
-                    // 409 means there is an open assignment (or some other problem which we can report)
-                    CnModalMessageFactory.instance( {
-                      title: 'Unable to close interview',
-                      message: response.data,
-                      error: true
-                    } ).show();
-                  } else { CnModalMessageFactory.httpError( response ); }
-                }
-              } ).patch().then( object.onView );
+              try {
+                await CnHttpFactory.instance( {
+                  path: 'interview/' + object.record.id + '?operation=force_delete',
+                  data: {}
+                } ).patch();
+
+                await object.transitionOnViewParent( 'participant' );
+              } catch( error ) {
+                // handled by onError above
+              }
             }
-          } );
-        };
+          },
+
+          forceComplete: async function() {
+            var response = await CnModalConfirmFactory.instance( {
+              title: 'Force Complete Interview?',
+              message: 'Are you sure you wish to force-complete the interview?\n\n' +
+                       'Note that the interview\'s questionnaire will be closed and unanswered questions will ' +
+                       'no longer be accessible.  This operation cannot be undone.'
+            } ).show();
+
+            if( response ) {
+              try {
+                await CnHttpFactory.instance( {
+                  path: 'interview/' + object.record.id + '?operation=force_complete',
+                  data: {},
+                  onError: function( response ) {
+                    if( 409 == response.status ) {
+                      // 409 means there is an open assignment (or some other problem which we can report)
+                      CnModalMessageFactory.instance( {
+                        title: 'Unable to close interview',
+                        message: response.data,
+                        error: true
+                      } ).show();
+                    } else { CnModalMessageFactory.httpError( response ); }
+                  }
+                } ).patch();
+
+                await object.onView();
+              } catch( error ) {
+                // handled by onError above
+              }
+            }
+          },
+
+          // override onView
+          onView: function( force ) {
+            return object.$$onView( force ).then( function() {
+              if( angular.isDefined( object.appointmentModel ) ) updateEnableFunctions();
+            } );
+          }
+        } );
 
         function getAppointmentEnabled( type ) {
           var completed = null !== object.record.end_datetime;
@@ -171,13 +231,6 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
                    'vacancy' != parentModel.getSubjectFromState();
           };
         }
-
-        // override onView
-        object.onView = function( force ) {
-          return object.$$onView( force ).then( function() {
-            if( angular.isDefined( object.appointmentModel ) ) updateEnableFunctions();
-          } );
-        };
 
         // override appointment list's onDelete
         object.deferred.promise.then( function() {
