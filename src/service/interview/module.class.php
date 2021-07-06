@@ -23,7 +23,27 @@ class module extends \cenozo\service\interview\module
     if( 300 > $this->get_status()->get_code() )
     {
       $operation = $this->get_argument( 'operation', false );
-      if( 'force_complete' == $operation )
+      if( 'force_delete' == $operation )
+      {
+        $db_interview = $this->get_resource();
+
+        if( 3 > lib::create( 'business\session' )->get_role()->tier )
+        {
+          $this->get_status()->set_code( 403 );
+        }
+        else
+        {
+          // only force complete if there are no open assignments
+          $modifier = lib::create( 'database\modifier' );
+          $modifier->where( 'assignment.end_datetime', '=', NULL );
+          if( 0 < $db_interview->get_assignment_count( $modifier ) )
+          {
+            $this->set_data( 'Interviews cannot be force-closed while there is an open assignment.' );
+            $this->get_status()->set_code( 409 );
+          }
+        }
+      }
+      else if( 'force_complete' == $operation )
       {
         $db_interview = $this->get_resource();
 
@@ -127,7 +147,12 @@ class module extends \cenozo\service\interview\module
 
     if( 'PATCH' == $this->get_method() )
     {
-      if( 'force_complete' == $this->get_argument( 'operation', false ) )
+      if( 'force_delete' == $this->get_argument( 'operation', false ) )
+      {
+        $record->force_delete();
+        $record->get_participant()->repopulate_queue( true );
+      }
+      else if( 'force_complete' == $this->get_argument( 'operation', false ) )
       {
         $record->force_complete();
         $record->get_participant()->repopulate_queue( true );
