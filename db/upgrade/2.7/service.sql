@@ -11,6 +11,7 @@ INSERT IGNORE INTO service ( subject, method, resource, restricted ) VALUES
 ( 'alternate_consent_type', 'GET', 1, 0 ),
 ( 'alternate_consent_type', 'PATCH', 1, 1 ),
 ( 'alternate_consent_type', 'POST', 0, 1 ),
+( 'debug', 'POST', 0, 0 ),
 ( 'proxy_type', 'PATCH', 1, 1 );
 
 -- restrictions on adding consent records is managed by restricting consent-types by role
