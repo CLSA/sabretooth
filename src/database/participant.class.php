@@ -28,6 +28,32 @@ class participant extends \cenozo\database\participant
   /**
    * Override parent method
    */
+  public function get_status()
+  {
+    $proxy_interviewing = lib::create( 'business\setting_manager' )->get_setting( 'general', 'proxy' );
+    $status = parent::get_status();
+
+    // if this instance is for proxy interviewing then show active users as not ready for the proxy system
+    if( $proxy_interviewing && 'active' == $status ) $status = 'no proxy status';
+    return $status;
+  }
+
+  /**
+   * Override parent method
+   */
+  public static function get_status_column_sql()
+  {
+    $proxy_interviewing = lib::create( 'business\setting_manager' )->get_setting( 'general', 'proxy' );
+    $sql = parent::get_status_column_sql();
+
+    // if this instance is for proxy interviewing then show active users as not ready for the proxy system
+    if( $proxy_interviewing ) $sql = str_replace( 'active', 'no proxy status', $sql );
+    return $sql;
+  }
+
+  /**
+   * Override parent method
+   */
   public function set_preferred_site( $db_application, $site = NULL )
   {
     // delete any appointments which are linked to a vacancy from a different site to the new one
