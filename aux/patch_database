@@ -15,7 +15,6 @@ $patch_version = $_SERVER['argv'][1];
 $patch_dir = sprintf( 'db/upgrade/%s', $patch_version );
 
 chdir( dirname( __FILE__ ).'/../' );
-chdir( dirname( __FILE__ ).'/../' );
 require_once 'settings.ini.php';
 require_once 'settings.local.ini.php';
 require_once $SETTINGS['path']['CENOZO'].'/src/initial.class.php';
