@@ -142,38 +142,33 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
               CnModalConfirmFactory, CnModalMessageFactory, CnModalInputFactory ) {
       // Adds a block of vacancies between the start/end times (used below)
       async function createVacancyBlock( calendarElement, calendarModel, start, end, operators, revertFunc ) {
-        // split into vacancy-size chunks
-        var datetimeList = [];
-        var datetime = angular.copy( start );
-        while( datetime < end ) {
-          datetimeList.push( angular.copy( datetime ) );
-          datetime.add( CnSession.setting.vacancySize, 'minutes' );
-        }
+        var response = await CnHttpFactory.instance( {
+          path: 'vacancy',
+          data: { start_datetime: start.format(), end_datetime: end.format(), operators: operators },
+          onError: function( error ) {
+            CnModalMessageFactory.httpError( error );
+            if( angular.isFunction( revertFunc ) ) revertFunc();
+          }
+        } ).post();
 
+        // now create event objects for the returned id array (they'll be in chronological order)
+        var datetime = angular.copy( start );
         var eventList = [];
-        await Promise.all( datetimeList.map( async function( datetime ) {
-          var response = await CnHttpFactory.instance( {
-            path: 'vacancy',
-            data: { datetime: datetime.format(), operators: operators },
-            onError: function( error ) {
-              CnModalMessageFactory.httpError( error );
-              if( angular.isFunction( revertFunc ) ) revertFunc();
-            }
-          } ).post();
-          var newId = response.data;
+        response.data.forEach( function( newId, index ) {
           var object = {
             id: newId,
             getIdentifier: function() { return newId; },
-            datetime: datetime,
+            datetime: angular.copy( datetime ),
             operators: operators,
             appointments: 0
           };
           var newEvent = getEventFromVacancy( object, CnSession.user.timezone, CnSession.setting.vacancySize );
+          datetime.add( CnSession.setting.vacancySize, 'minutes' );
 
           // add the new event to the event list and cache
           eventList.push( newEvent );
           calendarModel.cache.push( newEvent );
-        } ) );
+        } );
 
         calendarElement.fullCalendar( 'renderEvents', eventList );
       }
@@ -274,10 +269,12 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
                     } ).show();
 
                     if( response ) {
-                      await Promise.all( removeEventList.map( async function( event ) {
-                        await CnHttpFactory.instance( { path: 'vacancy/' + event.getIdentifier() } ).delete();
-                        calendar.fullCalendar( 'removeEvents', event.id );
-                      } ) );
+                      // we use a special version of the post function that deletes lists of ids in a single request
+                      await CnHttpFactory.instance( {
+                        path: 'vacancy',
+                        data: { delete_ids: removeEventList.map( event => event.getIdentifier() ) }
+                      } ).post();
+                      removeEventList.forEach( event => calendar.fullCalendar( 'removeEvents', event.id ) );
                     }
                   }
                 }
