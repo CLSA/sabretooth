@@ -22,6 +22,8 @@ class appointment extends \cenozo\business\report\base_report
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
     $session = lib::create( 'business\session' );
+    $db_study_phase = $session->get_application()->get_study_phase();
+    $db_identifier = is_null( $db_study_phase ) ? NULL : $db_study_phase->get_study()->get_identifier();
 
     // get whether restricting by qnaire or site
     $db_site = NULL;
@@ -42,6 +44,7 @@ class appointment extends \cenozo\business\report\base_report
       'Name',
       false );
     $select->add_column( 'participant.uid', 'UID', false );
+    if( !is_null( $db_identifier ) ) $select->add_column( 'participant_identifier.value', 'Study ID', false );
     if( is_null( $db_qnaire ) ) $select->add_column( 'script.name', 'Questionnaire', false );
     $select->add_column( $this->get_datetime_column( 'vacancy.datetime', 'date' ), 'Date', false );
     $select->add_column( $this->get_datetime_column( 'vacancy.datetime', 'time' ), 'Time', false );
@@ -60,6 +63,13 @@ class appointment extends \cenozo\business\report\base_report
     $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
     if( !is_null( $db_qnaire ) ) $modifier->where( 'qnaire.id', '=', $db_qnaire->id );
     $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
+    if( !is_null( $db_identifier ) )
+    {
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'participant.id', '=', 'participant_identifier.participant_id', false );
+      $join_mod->where( 'participant_identifier.identifier_id', '=', $db_identifier->id );
+      $modifier->join_modifier( 'participant_identifier', $join_mod, 'left' );
+    }
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
     $modifier->left_join( 'phone', 'appointment.phone_id', 'appointment_phone.id', 'appointment_phone' );
     $join_mod = lib::create( 'database\modifier' );
