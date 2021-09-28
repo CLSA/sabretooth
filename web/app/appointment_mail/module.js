@@ -242,33 +242,35 @@ define( [ 'trace' ].reduce( function( list, name ) {
           var self = this;
           await this.$$getMetadata();
 
-          var response = await CnHttpFactory.instance( {
-            path: 'language',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: {
-                where: { column: 'active', operator: '=', value: true },
-                order: 'name',
-                limit: 1000
+          var [languageResponse, siteResponse] = await Promise.all( [
+            CnHttpFactory.instance( {
+              path: 'language',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: {
+                  where: { column: 'active', operator: '=', value: true },
+                  order: 'name',
+                  limit: 1000
+                }
               }
-            }
-          } ).query();
+            } ).query(),
+
+            CnHttpFactory.instance( {
+              path: 'site',
+              data: {
+                select: { column: [ 'id', 'name' ] },
+                modifier: { order: 'name', limit: 1000 }
+              }
+            } ).query()
+          ] );
 
           this.metadata.columnList.language_id.enumList = [];
-          response.data.forEach( function( item ) {
+          languageResponse.data.forEach( function( item ) {
             self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
           } );
 
-          var response = await CnHttpFactory.instance( {
-            path: 'site',
-            data: {
-              select: { column: [ 'id', 'name' ] },
-              modifier: { order: 'name', limit: 1000 }
-            }
-          } ).query();
-
           this.metadata.columnList.site_id.enumList = [];
-          response.data.forEach( function( item ) {
+          siteResponse.data.forEach( function( item ) {
             self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
           } );
         };
