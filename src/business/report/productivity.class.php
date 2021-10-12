@@ -43,6 +43,7 @@ class productivity extends \cenozo\business\report\base_report
     $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
     $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
     $modifier->where( 'interview.end_datetime', '!=', NULL );
+    $modifier->where( 'interview.method', '=', 'phone' );
     $modifier->group( 'assignment.user_id' );
     $modifier->group( 'qnaire.id' );
 
