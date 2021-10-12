@@ -238,10 +238,13 @@ class progress extends \cenozo\business\overview\base_overview
     /////////////////////////////////////////////////////////////////////////////////////////////
     $cat_sel = clone $select;
     $cat_sel->add_table_column( 'script', 'name', 'qnaire' );
+    $cat_sel->remove_column_by_alias( 'site' );
+    $cat_sel->add_column( 'IFNULL( interview_site.name, site.name )', 'site', false );
 
     $cat_mod = clone $modifier;
     $cat_mod->where( 'queue.name', '=', 'all' );
     $cat_mod->join( 'interview', 'queue_has_participant.participant_id', 'interview.participant_id' );
+    $cat_mod->left_join( 'site', 'interview.site_id', 'interview_site.id', 'interview_site' );
     $cat_mod->remove_join( 'qnaire' );
     $cat_mod->remove_join( 'script' );
     $cat_mod->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
@@ -249,6 +252,8 @@ class progress extends \cenozo\business\overview\base_overview
     $cat_mod->where( 'interview.end_datetime', '!=', NULL );
     $cat_mod->where( 'interview.method', '=', 'phone' );
     $cat_mod->group( 'script.name' );
+    $cat_mod->replace_where( 'site.id', 'IFNULL( interview_site.id, site.id )' );
+    $cat_mod->replace_group( 'queue_has_participant.site_id', 'IFNULL( interview_site.id, site.id )' );
 
     foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
@@ -277,10 +282,13 @@ class progress extends \cenozo\business\overview\base_overview
     /////////////////////////////////////////////////////////////////////////////////////////////
     $cat_sel = clone $select;
     $cat_sel->add_table_column( 'script', 'name', 'qnaire' );
+    $cat_sel->remove_column_by_alias( 'site' );
+    $cat_sel->add_column( 'IFNULL( interview_site.name, site.name )', 'site', false );
 
     $cat_mod = clone $modifier;
     $cat_mod->where( 'queue.name', '=', 'all' );
     $cat_mod->join( 'interview', 'queue_has_participant.participant_id', 'interview.participant_id' );
+    $cat_mod->left_join( 'site', 'interview.site_id', 'interview_site.id', 'interview_site' );
     $cat_mod->remove_join( 'qnaire' );
     $cat_mod->remove_join( 'script' );
     $cat_mod->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
@@ -288,6 +296,8 @@ class progress extends \cenozo\business\overview\base_overview
     $cat_mod->where( 'interview.end_datetime', '!=', NULL );
     $cat_mod->where( 'interview.method', '=', 'web' );
     $cat_mod->group( 'script.name' );
+    $cat_mod->replace_where( 'site.id', 'IFNULL( interview_site.id, site.id )' );
+    $cat_mod->replace_group( 'queue_has_participant.site_id', 'IFNULL( interview_site.id, site.id )' );
 
     foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
@@ -300,16 +310,21 @@ class progress extends \cenozo\business\overview\base_overview
     /////////////////////////////////////////////////////////////////////////////////////////////
     $cat_sel = clone $select;
     $cat_sel->add_table_column( 'script', 'name', 'qnaire' );
+    $cat_sel->remove_column_by_alias( 'site' );
+    $cat_sel->add_column( 'IFNULL( interview_site.name, site.name )', 'site', false );
 
     $cat_mod = clone $modifier;
     $cat_mod->where( 'queue.name', '=', 'all' );
     $cat_mod->join( 'interview', 'queue_has_participant.participant_id', 'interview.participant_id' );
+    $cat_mod->left_join( 'site', 'interview.site_id', 'interview_site.id', 'interview_site' );
     $cat_mod->remove_join( 'qnaire' );
     $cat_mod->remove_join( 'script' );
     $cat_mod->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
     $cat_mod->join( 'script', 'qnaire.script_id', 'script.id' );
     $cat_mod->where( 'interview.end_datetime', '!=', NULL );
     $cat_mod->group( 'script.name' );
+    $cat_mod->replace_where( 'site.id', 'IFNULL( interview_site.id, site.id )' );
+    $cat_mod->replace_group( 'queue_has_participant.site_id', 'IFNULL( interview_site.id, site.id )' );
 
     foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {

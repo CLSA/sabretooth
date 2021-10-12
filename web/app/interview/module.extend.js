@@ -206,10 +206,9 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
           },
 
           // override onView
-          onView: function( force ) {
-            return object.$$onView( force ).then( function() {
-              if( angular.isDefined( object.appointmentModel ) ) updateEnableFunctions();
-            } );
+          onView: async function( force ) {
+            await object.$$onView( force );
+            if( angular.isDefined( object.appointmentModel ) ) updateEnableFunctions();
           }
         } );
 
@@ -232,14 +231,19 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
           };
         }
 
-        // override appointment list's onDelete
-        object.deferred.promise.then( function() {
+        async function init() {
+          // override appointment list's onDelete
+          await object.deferred.promise;
+
           if( angular.isDefined( object.appointmentModel ) ) {
-            object.appointmentModel.listModel.onDelete = function( record ) {
-              return object.appointmentModel.listModel.$$onDelete( record ).then( function() { object.onView(); } );
+            object.appointmentModel.listModel.onDelete = async function( record ) {
+              await object.appointmentModel.listModel.$$onDelete( record );
+              await object.onView();
             };
           }
-        } );
+        }
+
+        init();
 
         return object;
       };
@@ -252,9 +256,13 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
     '$delegate', 'CnHttpFactory', 'CnSession',
     function( $delegate, CnHttpFactory, CnSession ) {
       var instance = $delegate.instance;
-      // extend getBreadcrumbTitle
+
+
       // (metadata's promise will have already returned so we don't have to wait for it)
       function extendObject( object ) {
+        // keep the original getMetadata() function and call it below
+        object.oldGetMetadata = object.getMetadata;
+
         angular.extend( object, {
           getBreadcrumbTitle: function() {
             var qnaire = object.metadata.columnList.qnaire_id.enumList.findByProperty(
@@ -267,20 +275,20 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
           },
 
           // extend getMetadata
-          getMetadata: function() {
-            return object.$$getMetadata().then( function() {
-              return CnHttpFactory.instance( {
-                path: 'qnaire',
-                data: {
-                  select: { column: [ 'id', { table: 'script', column: 'name' } ] },
-                  modifier: { order: 'rank' }
-                }
-              } ).query().then( function success( response ) {
-                object.metadata.columnList.qnaire_id.enumList = [];
-                response.data.forEach( function( item ) {
-                  object.metadata.columnList.qnaire_id.enumList.push( { value: item.id, name: item.name } );
-                } );
-              } );
+          getMetadata: async function() {
+            await object.oldGetMetadata();
+
+            var response = await CnHttpFactory.instance( {
+              path: 'qnaire',
+              data: {
+                select: { column: [ 'id', { table: 'script', column: 'name' } ] },
+                modifier: { order: 'rank' }
+              }
+            } ).query();
+
+            object.metadata.columnList.qnaire_id.enumList = [];
+            response.data.forEach( function( item ) {
+              object.metadata.columnList.qnaire_id.enumList.push( { value: item.id, name: item.name } );
             } );
           }
         } );
