@@ -614,23 +614,12 @@ define( [ 'participant' ].reduce( function( list, name ) {
 
           // add additional columns to the model
           var index = 0;
-          self.participantModel.addColumn( 'rank', {
-            title: 'Rank',
-            column: 'queue.rank',
-            type: 'rank',
-            type: 'string'
-          }, index++ );
-          self.participantModel.addColumn( 'queue', {
-            title: 'Queue',
-            column: 'queue.name',
-            type: 'string'
-          }, index++ );
-          self.participantModel.addColumn(
-            'qnaire', { title: 'Questionnaire', column: 'script.name' }, index++ );
-          self.participantModel.addColumn(
-            'language', { title: 'Language', column: 'language.name' }, index++ );
-          self.participantModel.addColumn(
-            'availability', { title: 'Availability', column: 'availability_type.name' } );
+          self.participantModel.addColumn( 'rank', { title: 'Rank', column: 'queue.rank', type: 'rank', type: 'string' }, index++ );
+          self.participantModel.addColumn( 'queue', { title: 'Queue', column: 'queue.name', type: 'string' }, index++ );
+          self.participantModel.addColumn( 'qnaire', { title: 'Questionnaire', column: 'script.name' }, index++ );
+          self.participantModel.addColumn( 'page_progress', { title: 'Page Progress' }, index++ );
+          self.participantModel.addColumn( 'language', { title: 'Language', column: 'language.name' }, index++ );
+          self.participantModel.addColumn( 'availability', { title: 'Availability', column: 'availability_type.name' } );
 
           // add the reserved row as a hidden column to be used for highlighting reserved appointments
           self.participantModel.addColumn( 'reserved', { type: 'hidden', highlight: true } );

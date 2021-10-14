@@ -14,6 +14,11 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
     title: 'Method'
   } );
 
+  cenozo.insertPropertyAfter( module.columnList, 'site', 'page_progress', {
+    title: 'Page Progress'
+  } );
+
+
   // add future_appointment as a hidden input (to be used below)
   module.addInput( '', 'future_appointment', { type: 'hidden' } );
   module.addInput( '', 'last_participation_consent', { type: 'hidden' } );
@@ -35,6 +40,12 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
       return null != model.viewModel.record.end_datetime || null == model.viewModel.record.pine_qnaire_id;
     }
   }, 'qnaire_id' );
+
+  module.addInput( '', 'page_progress', {
+    title: 'Page Progress',
+    type: 'string',
+    isConstant: true
+  }, 'site_id' );
 
   module.addExtraOperation( 'view', {
     title: 'Force Remove',

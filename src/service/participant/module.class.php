@@ -90,6 +90,7 @@ class module extends \cenozo\service\participant\module
       // only show reserved appointments to the reserved user
       $modifier->left_join(
         'participant_last_interview', 'participant.id', 'participant_last_interview.participant_id' );
+      $modifier->left_join( 'interview', 'participant_last_interview.interview_id', 'interview.id' );
       $join_mod = lib::create( 'database\modifier' );
       $join_mod->where( 'participant_last_interview.interview_id', '=', 'appointment.interview_id', false );
       $join_mod->where( 'appointment.assignment_id', '=', NULL );
@@ -112,6 +113,25 @@ class module extends \cenozo\service\participant\module
         $modifier->where( 'participant.language_id', 'IN', $language_array );
       }
 
+      if( $select->has_column( 'page_progress' ) )
+      {
+        $select->add_column(
+          'IF( '.
+            'script.total_pages IS NULL, '.
+            '"Unknown", '.
+            'CONCAT( '.
+              'IF( '.
+                'interview.end_datetime IS NOT NULL, '.
+                'script.total_pages, '.
+                'IF( interview.current_page_rank IS NULL, 0, interview.current_page_rank ) '.
+              '), '.
+              '" of ", script.total_pages '.
+            ') '.
+          ')',
+          'page_progress',
+          false
+        );
+      }
       // add a variable defining whether this is a reserved appointment
       $select->add_column( 'appointment.user_id IS NOT NULL', 'reserved', false, 'boolean' );
 

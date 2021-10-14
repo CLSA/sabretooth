@@ -157,6 +157,7 @@ class queue extends \cenozo\database\record
   public static function repopulate( $db_participant = NULL )
   {
     $interview_class_name = lib::get_class_name( 'database\interview' );
+    $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
 
     if( static::$debug ) $total_time = util::get_elapsed_time();
 
@@ -212,7 +213,7 @@ class queue extends \cenozo\database\record
         util::get_elapsed_time() - $queue_time ) );
     }
 
-    // send all invitiations to new web-based interviews
+    // send all invitiations to new web-based interviews and update progress
     foreach( $qnaire_list as $qnaire_id => $uid_list )
     {
       // only include participants who are now in the web version queue
@@ -231,6 +232,11 @@ class queue extends \cenozo\database\record
         $db_qnaire->launch_web_interviews( NULL, $uid_list );
       }
     }
+
+    // update the progress of all interviews
+    foreach( $qnaire_class_name::select_objects() as $db_qnaire ) $db_qnaire->update_interview_progress();
+
+    // update interview progress
 
     if( static::$debug ) log::debug( sprintf(
       '(Queue) Total queue build time%s: %0.2f',

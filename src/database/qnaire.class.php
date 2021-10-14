@@ -132,6 +132,58 @@ class qnaire extends \cenozo\database\has_rank
   }
 
   /**
+   * Updates the progress of all interviews
+   * @return integer The number of interviews updated
+   */
+  public function update_interview_progress()
+  {
+    $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+    
+    $updated_total = 0;
+    $db_script = $this->get_script();
+    if( $cenozo_manager->exists() && !is_null( $db_script->pine_qnaire_id ) )
+    {
+      $select = array(
+        'column' => array(
+          'participant_id',
+          array( 'table' => 'response', 'column' => 'current_page_rank' )
+        )
+      );
+      $modifier = array(
+        'where' => array(
+          'column' => 'current_page_rank',
+          'operator' => '!=',
+          'value' => NULL
+        ),
+        'limit' => 1000000
+      );
+      
+      $service = sprintf(
+        'qnaire/%d/respondent?no_activity=1&select=%s&modifier=%s',
+        $db_script->pine_qnaire_id,
+        util::json_encode( $select ),
+        util::json_encode( $modifier )
+      );
+
+      $replace_list = array();
+      foreach( $cenozo_manager->get( $service ) as $obj )
+        $replace_list[] = sprintf( '(%s,%s,%s)', $obj->participant_id, $this->id, $obj->current_page_rank );
+
+      $sql = sprintf(
+        'INSERT IGNORE INTO interview( participant_id, qnaire_id, current_page_rank ) '.
+        'VALUES %s '.
+        'ON DUPLICATE KEY UPDATE current_page_rank = VALUES( current_page_rank )',
+        implode( ',', $replace_list )
+      );
+
+      static::db()->execute( 'UPDATE interview SET current_page_rank = NULL WHERE current_page_rank IS NOT NULL' );
+      $updated_total = static::db()->execute( $sql );
+    }
+
+    return $updated_total;
+  }
+
+  /**
    * Extend parent method
    */
   public function add_stratum( $ids )
