@@ -144,26 +144,26 @@ class qnaire extends \cenozo\database\has_rank
     $db_script = $this->get_script();
     if( $cenozo_manager->exists() && !is_null( $db_script->pine_qnaire_id ) )
     {
-      $select = array(
+      $select_obj = array(
         'column' => array(
           'participant_id',
           array( 'table' => 'response', 'column' => 'current_page_rank' )
         )
       );
-      $modifier = array(
+      $modifier_obj = array(
         'where' => array(
           array( 'column' => 'current_page_rank', 'operator' => '!=', 'value' => NULL )
         ),
         'limit' => 1000000
       );
       if( !is_null( $db_participant ) )
-        $modifier['where'][] = array( 'column' => 'participant_id', 'operator' => '=', 'value' => $db_participant->id );
+        $modifier_obj['where'][] = array( 'column' => 'participant_id', 'operator' => '=', 'value' => $db_participant->id );
       
       $service = sprintf(
         'qnaire/%d/respondent?no_activity=1&select=%s&modifier=%s',
         $db_script->pine_qnaire_id,
-        util::json_encode( $select ),
-        util::json_encode( $modifier )
+        util::json_encode( $select_obj ),
+        util::json_encode( $modifier_obj )
       );
 
       $replace_list = array();
