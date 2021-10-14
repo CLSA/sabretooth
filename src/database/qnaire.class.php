@@ -133,9 +133,10 @@ class qnaire extends \cenozo\database\has_rank
 
   /**
    * Updates the progress of all interviews
+   * @param database\participant Optional participant when only one interview needs to be updated.
    * @return integer The number of interviews updated
    */
-  public function update_interview_progress()
+  public function update_interview_progress( $db_participant = NULL )
   {
     $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
     
@@ -151,12 +152,12 @@ class qnaire extends \cenozo\database\has_rank
       );
       $modifier = array(
         'where' => array(
-          'column' => 'current_page_rank',
-          'operator' => '!=',
-          'value' => NULL
+          array( 'column' => 'current_page_rank', 'operator' => '!=', 'value' => NULL )
         ),
         'limit' => 1000000
       );
+      if( !is_null( $db_participant ) )
+        $modifier['where'][] = array( 'column' => 'participant_id', 'operator' => '=', 'value' => $db_participant->id );
       
       $service = sprintf(
         'qnaire/%d/respondent?no_activity=1&select=%s&modifier=%s',
@@ -169,17 +170,28 @@ class qnaire extends \cenozo\database\has_rank
       foreach( $cenozo_manager->get( $service ) as $obj )
         $replace_list[] = sprintf( '(%s,%s,%s)', $obj->participant_id, $this->id, $obj->current_page_rank );
 
-      $sql = sprintf(
-        'INSERT IGNORE INTO interview( participant_id, qnaire_id, current_page_rank ) '.
-        'VALUES %s '.
-        'ON DUPLICATE KEY UPDATE current_page_rank = VALUES( current_page_rank )',
-        implode( ',', $replace_list )
-      );
+      // set the current_page_rank to NULL if they aren't already
+      $update_mod = lib::create( 'database\modifier' );
+      $update_mod->where( 'qnaire_id', '=', $this->id );
+      $update_mod->where( 'current_page_rank', '!=', NULL );
+      if( $db_participant ) $update_mod->where( 'participant_id', '=', $db_participant->id );
+      static::db()->execute( sprintf( 'UPDATE interview SET current_page_rank = NULL %s', $update_mod->get_sql() ) );
 
-      static::db()->execute( 'UPDATE interview SET current_page_rank = NULL WHERE current_page_rank IS NOT NULL' );
-      $updated_total = static::db()->execute( $sql );
+      if( 0 < count( $replace_list ) )
+      {
+        // update the interview table with the data received from Pine
+        $sql = sprintf(
+          'INSERT IGNORE INTO interview( participant_id, qnaire_id, current_page_rank ) '.
+          'VALUES %s '.
+          'ON DUPLICATE KEY UPDATE current_page_rank = VALUES( current_page_rank )',
+          implode( ',', $replace_list )
+        );
+
+        $updated_total = static::db()->execute( $sql );
+      }
     }
 
+    log::debug( $updated_total );
     return $updated_total;
   }
 

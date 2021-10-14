@@ -34,7 +34,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
         },
         link: function( scope ) {
           // update the script list whenever we regain focus since there may have been script activity
-          var focusFn = function() { if( null != scope.model.assignment ) scope.model.loadScriptList(); };
+          var focusFn = function() { if( null != scope.model.assignment ) scope.model.onLoad(); };
           var win = angular.element( $window ).on( 'focus', focusFn );
           scope.$on( '$destroy', function() { win.off( 'focus', focusFn ); } );
 
@@ -159,7 +159,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
               this.isPrevAssignmentLoading = true;
               if( closeScript ) CnSession.closeScript();
 
-              var column = [ 'id', 'interview_id', 'start_datetime',
+              var column = [ 'id', 'interview_id', 'start_datetime', 'page_progress',
                 { table: 'participant', column: 'id', alias: 'participant_id' },
                 { table: 'qnaire', column: 'id', alias: 'qnaire_id' },
                 { table: 'qnaire', column: 'web_version', type: 'boolean' },
@@ -172,8 +172,9 @@ define( [ 'participant' ].reduce( function( list, name ) {
               if( CnSession.application.checkForMissingHin ) column.push( 'missing_hin' );
               if( this.proxyInterview ) column.push( 'use_decision_maker' );
 
+              console.log( 'a' );
               var response = await CnHttpFactory.instance( {
-                path: 'assignment/0',
+                path: 'assignment/0?update_data=1',
                 data: { select: { column: column } },
                 onError: async function( error ) {
                   await CnSession.updateData();
@@ -199,6 +200,8 @@ define( [ 'participant' ].reduce( function( list, name ) {
                   } else { CnModalMessageFactory.httpError( error ); }
                 }
               } ).get();
+              
+              console.log( 'b' );
               this.assignment = response.data;
 
               CnSession.alertHeader = 'You are currently in an assignment';

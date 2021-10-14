@@ -76,6 +76,16 @@ class interview extends \cenozo\database\interview
   }
 
   /**
+   * Updates the interview's progress
+   * 
+   * Note that this will do nothing if the parent qnaire is not connected to a Pine-based script
+   */
+  public function update_progress()
+  {
+    $this->get_qnaire()->update_interview_progress( $this->get_participant() );
+  }
+
+  /**
    * Send a message to Pine asking to resend mail for this interview
    * 
    * Note: this will only affect interviews linked to a Pine script

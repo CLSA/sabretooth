@@ -13,7 +13,7 @@ global $SETTINGS;
 $SETTINGS['general']['application_name'] = 'sabretooth';
 $SETTINGS['general']['instance_name'] = $SETTINGS['general']['application_name'];
 $SETTINGS['general']['version'] = '2.7';
-$SETTINGS['general']['build'] = '8e7b0afe';
+$SETTINGS['general']['build'] = '33278c7a';
 
 // determines whether this instance is for proxy interviewing
 $SETTINGS['general']['proxy'] = false;

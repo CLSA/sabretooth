@@ -234,7 +234,7 @@ class queue extends \cenozo\database\record
     }
 
     // update the progress of all interviews
-    foreach( $qnaire_class_name::select_objects() as $db_qnaire ) $db_qnaire->update_interview_progress();
+    foreach( $qnaire_class_name::select_objects() as $db_qnaire ) $db_qnaire->update_interview_progress( $db_participant );
 
     // update interview progress
 
