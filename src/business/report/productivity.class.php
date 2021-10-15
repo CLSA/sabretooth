@@ -151,6 +151,8 @@ class productivity extends \cenozo\business\report\base_report
 
       $time_report = array( 'index' => array(), 'query' => array() );
 
+      $has_pine_script = false;
+
       $sub_mod = clone $modifier;
       $sub_mod->where( 'interview.site_id', '=', $site['id'] );
       foreach( $interview_class_name::select( $select, $sub_mod ) as $row )
@@ -175,6 +177,7 @@ class productivity extends \cenozo\business\report\base_report
 
           if( 'pine' == $db_script->get_type() )
           {
+            $has_pine_script = true;
             $interview_sel = lib::create( 'database\select' );
             $interview_sel->add_column( 'participant_id' );
 
@@ -260,8 +263,7 @@ class productivity extends \cenozo\business\report\base_report
         }
       }
 
-      $db_script = current( $script_list );
-      if( 'pine' == $db_script->get_type() )
+      if( $has_pine_script )
       {
         // send all queries to pine as a single request to reduce machine-to-machine overhead
         if( 0 < count( $time_report['query'] ) )
