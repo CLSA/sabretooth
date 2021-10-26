@@ -1,10 +1,4 @@
-// we need the participant module for the special CnAssignmentControlFactory
-define( [ 'participant' ].reduce( ( list, name ) => {
-  return list.concat( cenozoApp.module( name ).getRequiredFiles() );
-}, [ cenozoApp.module( 'assignment' ).getFileUrl( 'module.js' ) ] ), function() {
-  'use strict';
-
-  var module = cenozoApp.module( 'assignment' );
+cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', create: module => {
 
   module.identifier.parent.friendly = 'qnaire';
 
@@ -629,4 +623,4 @@ define( [ 'participant' ].reduce( ( list, name ) => {
     }
   ] );
 
-} );
+} } );

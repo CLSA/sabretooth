@@ -1,10 +1,4 @@
-// extend the framework's module
-define( [ 'appointment' ].reduce( ( list, name ) => {
-  return list.concat( cenozoApp.module( name ).getRequiredFiles() );
-}, [ cenozoApp.module( 'user' ).getFileUrl( 'module.js' ) ] ), function() {
-  'use strict';
-
-  var module = cenozoApp.module( 'user' );
+cenozoApp.extendModule( { name: 'user', dependencies: 'appointment', create: module => {
 
   if( angular.isDefined( module.actions.calendar ) ) {
     module.addExtraOperation( 'view', {
@@ -132,4 +126,4 @@ define( [ 'appointment' ].reduce( ( list, name ) => {
     }
   ] );
 
-} );
+} } );

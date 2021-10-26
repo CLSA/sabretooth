@@ -1,8 +1,4 @@
-// extend the framework's module
-define( [ cenozoApp.module( 'mail' ).getFileUrl( 'module.js' ) ], function() {
-  'use strict';
-
-  var module = cenozoApp.module( 'mail' );
+cenozoApp.extendModule( { name: 'mail', create: module => {
 
   // extend the model factory
   cenozo.providers.decorator( 'CnMailAddFactory', [
@@ -28,4 +24,4 @@ define( [ cenozoApp.module( 'mail' ).getFileUrl( 'module.js' ) ], function() {
     }
   ] );
 
-} );
+} } );

@@ -1,8 +1,5 @@
-// extend the framework's module
-define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], function() {
-  'use strict';
+cenozoApp.extendModule( { name: 'participant', create: module => {
 
-  var module = cenozoApp.module( 'participant' );
   module.addInputGroup( 'Queue Details', {
     title: {
       title: 'Current Questionnaire',
@@ -208,4 +205,4 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
     }
   ] );
 
-} );
+} } );

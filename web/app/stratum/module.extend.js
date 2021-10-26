@@ -1,6 +1,4 @@
-// extend the framework's module
-define( [ cenozoApp.module( 'stratum' ).getFileUrl( 'module.js' ) ], function() {
-  'use strict';
+cenozoApp.extendModule( { name: 'stratum', create: module => {
 
   // extend the view factory
   cenozo.providers.decorator( 'CnStratumViewFactory', [
@@ -28,4 +26,4 @@ define( [ cenozoApp.module( 'stratum' ).getFileUrl( 'module.js' ) ], function() 
     }
   ] );
 
-} );
+} } );
