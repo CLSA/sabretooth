@@ -12,7 +12,7 @@ global $SETTINGS;
 // tagged version
 $SETTINGS['general']['application_name'] = 'sabretooth';
 $SETTINGS['general']['instance_name'] = $SETTINGS['general']['application_name'];
-$SETTINGS['general']['version'] = '2.7';
+$SETTINGS['general']['version'] = '2.8';
 $SETTINGS['general']['build'] = 'db661c9a';
 
 // determines whether this instance is for proxy interviewing
