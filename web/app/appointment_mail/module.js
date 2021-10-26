@@ -1,9 +1,5 @@
-define( [ 'trace' ].reduce( function( list, name ) {
-  return list.concat( cenozoApp.module( name ).getRequiredFiles() );
-}, [] ), function() {
-  'use strict';
+cenozoApp.defineModule( { name: 'appointment_mail', dependencies: 'trace', models: ['add', 'list', 'view'], create: module => {
 
-  try { var module = cenozoApp.module( 'appointment_mail', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: {
@@ -96,51 +92,6 @@ define( [ 'trace' ].reduce( function( list, name ) {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAppointmentMailAdd', [
-    'CnAppointmentMailModelFactory',
-    function( CnAppointmentMailModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAppointmentMailModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAppointmentMailList', [
-    'CnAppointmentMailModelFactory',
-    function( CnAppointmentMailModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAppointmentMailModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnAppointmentMailView', [
-    'CnAppointmentMailModelFactory',
-    function( CnAppointmentMailModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnAppointmentMailModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnAppointmentMailAddFactory', [
     'CnBaseAddFactory', 'CnHttpFactory',
     function( CnBaseAddFactory, CnHttpFactory ) {
@@ -160,15 +111,6 @@ define( [ 'trace' ].reduce( function( list, name ) {
           record.from_address = response.data.mail_address;
         };
       };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnAppointmentMailListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
@@ -239,7 +181,6 @@ define( [ 'trace' ].reduce( function( list, name ) {
 
         // extend getMetadata
         this.getMetadata = async function() {
-          var self = this;
           await this.$$getMetadata();
 
           var [languageResponse, siteResponse] = await Promise.all( [
@@ -264,15 +205,15 @@ define( [ 'trace' ].reduce( function( list, name ) {
             } ).query()
           ] );
 
-          this.metadata.columnList.language_id.enumList = [];
-          languageResponse.data.forEach( function( item ) {
-            self.metadata.columnList.language_id.enumList.push( { value: item.id, name: item.name } );
-          } );
+          this.metadata.columnList.language_id.enumList = languageResponse.data.reduce( ( list, item ) => {
+            list.push( { value: item.id, name: item.name } );
+            return list;
+          }, [] );
 
-          this.metadata.columnList.site_id.enumList = [];
-          siteResponse.data.forEach( function( item ) {
-            self.metadata.columnList.site_id.enumList.push( { value: item.id, name: item.name } );
-          } );
+          this.metadata.columnList.site_id.enumList = siteResponse.data.reduce( ( item ) => {
+            list.push( { value: item.id, name: item.name } );
+            return list;
+          }, [] );
         };
       };
 
@@ -283,4 +224,4 @@ define( [ 'trace' ].reduce( function( list, name ) {
     }
   ] );
 
-} );
+} } );

@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( { name: 'queue', models: ['list', 'view'], create: module => {
 
-  try { var module = cenozoApp.module( 'queue', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: { column: 'name' },
     name: {
@@ -75,21 +73,6 @@ define( function() {
   }
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnQueueList', [
-    'CnQueueModelFactory',
-    function( CnQueueModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnQueueModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.directive( 'cnQueueTree', [
     'CnQueueTreeFactory', 'CnSession',
     function( CnQueueTreeFactory, CnSession ) {
@@ -111,80 +94,38 @@ define( function() {
   ] );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnQueueView', [
-    'CnQueueModelFactory',
-    function( CnQueueModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnQueueModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnQueueListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnQueueViewFactory', [
     'CnBaseViewFactory',
     function( CnBaseViewFactory ) {
       var object = function( parentModel, root ) {
         CnBaseViewFactory.construct( this, parentModel, root );
 
-        var self = this;
-        async function init() {
-          await self.deferred.promise;
-          if( angular.isDefined( self.participantModel ) ) {
+        async function init( object ) {
+          await object.deferred.promise;
+          if( angular.isDefined( object.participantModel ) ) {
             // map queue-view query parameters to participant-list
-            self.participantModel.queryParameterSubject = 'queue';
+            object.participantModel.queryParameterSubject = 'queue';
 
             // override model functions
-            self.participantModel.getServiceData = function( type, columnRestrictList ) {
+            object.participantModel.getServiceData = function( type, columnRestrictList ) {
               var data = this.$$getServiceData( type, columnRestrictList );
               if( 'list' == type ) data.repopulate = true;
               return data;
             };
 
             // add additional columns to the model
-            self.participantModel.addColumn( 'qnaire', { title: 'Questionnaire', column: 'script.name' }, 0 );
-            self.participantModel.addColumn( 'language', { title: 'Language', column: 'language.name' }, 1 );
+            object.participantModel.addColumn( 'qnaire', { title: 'Questionnaire', column: 'script.name' }, 0 );
+            object.participantModel.addColumn( 'language', { title: 'Language', column: 'language.name' }, 1 );
 
             // make sure users can't add/remove participants from queues
-            self.participantModel.getChooseEnabled = function() { return false; };
+            object.participantModel.getChooseEnabled = function() { return false; };
           }
         }
 
-        init();
+        init( this );
       };
 
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnQueueModelFactory', [
-    'CnBaseModelFactory', 'CnQueueListFactory', 'CnQueueViewFactory',
-    function( CnBaseModelFactory, CnQueueListFactory, CnQueueViewFactory ) {
-      var object = function( root ) {
-        CnBaseModelFactory.construct( this, module );
-        this.listModel = CnQueueListFactory.instance( this );
-        this.viewModel = CnQueueViewFactory.instance( this, root );
-      };
-
-      return {
-        root: new object( true ),
-        instance: function() { return new object( false ); }
-      };
     }
   ] );
 
@@ -260,11 +201,9 @@ define( function() {
           },
 
           onView: async function( updateQueue ) {
-            var self = this;
-
             // blank out the button title if the tree is already built
             if( 0 < this.queueTree.length ) {
-              this.queueList.forEach( function( item, index, array ) {
+              this.queueList.forEach( ( item, index, array ) => {
                 if( 0 < index && angular.isDefined( item ) ) {
                   array[index].participant_count = 0;
                   array[index].childTotal = 0;
@@ -283,9 +222,7 @@ define( function() {
               } ).query();
 
               this.form.qnaireList = [ { value: undefined, name: 'Any' } ];
-              response.data.forEach( function( item ) {
-                self.form.qnaireList.push( { value: item.id, name: item.name } );
-              } );
+              response.data.forEach( item => { this.form.qnaireList.push( { value: item.id, name: item.name } ); } );
             }
 
             if( 0 == this.form.siteList.length && CnSession.role.allSites ) {
@@ -295,9 +232,7 @@ define( function() {
               } ).query();
 
               this.form.siteList = [ { value: undefined, name: 'All' } ];
-              response.data.forEach( function( item ) {
-                self.form.siteList.push( { value: item.id, name: item.name } );
-              } );
+              response.data.forEach( item => { this.form.siteList.push( { value: item.id, name: item.name } ); } );
             }
 
             if( 0 == this.form.languageList.length ) {
@@ -310,9 +245,7 @@ define( function() {
               } ).query();
 
               this.form.languageList = [ { value: undefined, name: 'Any' } ];
-              response.data.forEach( function( item ) {
-                self.form.languageList.push( { value: item.id, name: item.name } );
-              } );
+              response.data.forEach( item => { this.form.languageList.push( { value: item.id, name: item.name } ); } );
             }
 
             // determine the qnaire, site and language from the query parameters
@@ -356,8 +289,8 @@ define( function() {
 
             if( 0 < this.queueTree.length ) {
               // don't rebuild the queue, just update the participant totals
-              response.data.forEach( function( item ) {
-                var queue = self.queueList[item.id];
+              response.data.forEach( item => {
+                var queue = this.queueList[item.id];
                 queue.participant_count = item.participant_count;
                 queue.button.name = item.participant_count;
                 queue.last_repopulation = item.last_repopulation;
@@ -366,7 +299,7 @@ define( function() {
               // create an array containing all branches and add their child branches as we go
               var eligibleQueueId = null;
               var oldParticipantQueueId = null;
-              response.data.forEach( function( item ) {
+              response.data.forEach( item => {
                 // make note of certain queues
                 if( null === eligibleQueueId && 'eligible' == item.name )
                   eligibleQueueId = item.id;
@@ -377,6 +310,7 @@ define( function() {
                 item.branchList = []; // will be filled in if the branch has any children
                 item.initialOpen = null === oldParticipantQueueId ||
                                                oldParticipantQueueId > item.id;
+                var self = this;
                 item.open = item.initialOpen;
                 item.button = {
                   id: item.id,
@@ -400,29 +334,28 @@ define( function() {
                   item.title = 'Q' + item.rank + ': ' + item.title;
                   item.color = 'success';
                 }
-                self.queueList[item.id] = item;
+                this.queueList[item.id] = item;
                 if( null !== item.parent_queue_id && 'qnaire' != item.name ) {
-                  if( 'qnaire' == self.queueList[item.parent_queue_id].name )
+                  if( 'qnaire' == this.queueList[item.parent_queue_id].name )
                     item.parent_queue_id = eligibleQueueId;
-                  self.queueList[item.parent_queue_id].branchList.push( item );
+                  this.queueList[item.parent_queue_id].branchList.push( item );
                 }
               } );
 
               // now put all root branches into the queue tree
-              self.queueList.forEach( function( item ) {
-                if( angular.isDefined( item ) && null === item.parent_queue_id ) self.queueTree.push( item );
+              this.queueList.forEach( item => {
+                if( angular.isDefined( item ) && null === item.parent_queue_id ) this.queueTree.push( item );
               } );
             }
 
             // now check for count errors
-            this.queueList.forEach( function( queue, index, array ) {
+            this.queueList.forEach( ( queue, index, array ) => {
               if( 'all' == queue.name )
-                self.form.lastRepopulation =
-                  CnSession.formatValue( queue.last_repopulation, 'datetimesecond', false );
+                this.form.lastRepopulation = CnSession.formatValue( queue.last_repopulation, 'datetimesecond', false );
 
               if( angular.isDefined( queue ) && 0 < queue.branchList.length ) {
                 var count = 0;
-                queue.branchList.forEach( function( branch ) { count += branch.participant_count; } );
+                queue.branchList.forEach( branch => { count += branch.participant_count; } );
                 array[index].childTotal = count;
 
                 if( queue.childTotal != queue.participant_count )
@@ -441,4 +374,4 @@ define( function() {
     }
   ] );
 
-} );
+} } );

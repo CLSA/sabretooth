@@ -1,5 +1,5 @@
 // we need the participant module for the special CnAssignmentControlFactory
-define( [ 'participant' ].reduce( function( list, name ) {
+define( [ 'participant' ].reduce( ( list, name ) => {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [ cenozoApp.module( 'assignment' ).getFileUrl( 'module.js' ) ] ), function() {
   'use strict';
@@ -150,7 +150,6 @@ define( [ 'participant' ].reduce( function( list, name ) {
           },
 
           onLoad: async function( closeScript ) {
-            var self = this;
             if( angular.isUndefined( closeScript ) ) closeScript = true;
             this.reset();
 
@@ -172,7 +171,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
               if( CnSession.application.checkForMissingHin ) column.push( 'missing_hin' );
               if( this.proxyInterview ) column.push( 'use_decision_maker' );
 
-              console.log( 'a' );
+              var self = this;
               var response = await CnHttpFactory.instance( {
                 path: 'assignment/0?update_data=1',
                 data: { select: { column: column } },
@@ -201,7 +200,6 @@ define( [ 'participant' ].reduce( function( list, name ) {
                 }
               } ).get();
               
-              console.log( 'b' );
               this.assignment = response.data;
 
               CnSession.alertHeader = 'You are currently in an assignment';
@@ -232,6 +230,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
               } ).get();
               this.participant = response.data;
 
+              var self = this;
               this.participant.getIdentifier = function() {
                 return self.participantModel.getIdentifierFromRecord( self.participant );
               };
@@ -316,16 +315,16 @@ define( [ 'participant' ].reduce( function( list, name ) {
 
             this.phoneList = [];
             var lastPerson = null;
-            response.data.forEach( function( phone ) {
+            response.data.forEach( phone => {
               phone.newPerson = false;
 
               if( phone.person != lastPerson ) {
                 var newPhone = angular.copy( phone );
                 newPhone.newPerson = true;
-                self.phoneList.push( newPhone );
+                this.phoneList.push( newPhone );
               }
 
-              self.phoneList.push( phone );
+              this.phoneList.push( phone );
               lastPerson = phone.person;
             } );
 
@@ -386,14 +385,13 @@ define( [ 'participant' ].reduce( function( list, name ) {
                 // put qnaire scripts in separate list and only include the current qnaire script in the main list
                 this.scriptList = [];
                 this.qnaireScriptList = [];
-                var self = this;
-                response.data.forEach( function( item ) {
-                  if( angular.isArray( self.qnaireList ) &&
-                      null != self.qnaireList.findByProperty( 'script_id', item.id ) ) {
-                    self.qnaireScriptList.push( item );
-                    if( item.id == self.assignment.script_id ) self.scriptList.unshift( item );
+                response.data.forEach( item => {
+                  if( angular.isArray( this.qnaireList ) &&
+                      null != this.qnaireList.findByProperty( 'script_id', item.id ) ) {
+                    this.qnaireScriptList.push( item );
+                    if( item.id == this.assignment.script_id ) this.scriptList.unshift( item );
                   } else {
-                    self.scriptList.push( item );
+                    this.scriptList.push( item );
                   }
                 } );
 
@@ -405,9 +403,7 @@ define( [ 'participant' ].reduce( function( list, name ) {
                     this.activeScript = this.scriptList[0];
                   } else {
                     var activeScriptName = this.activeScript.name;
-                    this.scriptList.forEach( function( item ) {
-                      if( activeScriptName == item.name ) self.activeScript = item;
-                    } );
+                    this.scriptList.forEach( item => { if( activeScriptName == item.name ) this.activeScript = item; } );
                   }
                 }
               } finally {
@@ -452,15 +448,14 @@ define( [ 'participant' ].reduce( function( list, name ) {
 
             // check for when the window gets focus back and update the participant details
             if( null != script.name.match( /withdraw|proxy/i ) ) {
-              var self = this;
-              var win = angular.element( $window ).on( 'focus', async function() {
+              var win = angular.element( $window ).on( 'focus', async () => {
                 win.off( 'focus' );
 
                 // the following will process the withdraw or proxy script (in case it was finished)
                 await CnHttpFactory.instance( {
-                  path: 'script/' + script.id + '/token/uid=' + self.participant.uid
+                  path: 'script/' + script.id + '/token/uid=' + this.participant.uid
                 } ).get()
-                await self.loadScriptList();
+                await this.loadScriptList();
               } );
             }
           },
@@ -610,25 +605,24 @@ define( [ 'participant' ].reduce( function( list, name ) {
 
         this.reset();
 
-        var self = this;
-        async function init() {
+        async function init( object ) {
           await CnSession.promise;
-          self.application = CnSession.application.title;
+          object.application = CnSession.application.title;
 
           // add additional columns to the model
           var index = 0;
-          self.participantModel.addColumn( 'rank', { title: 'Rank', column: 'queue.rank', type: 'rank', type: 'string' }, index++ );
-          self.participantModel.addColumn( 'queue', { title: 'Queue', column: 'queue.name', type: 'string' }, index++ );
-          self.participantModel.addColumn( 'qnaire', { title: 'Questionnaire', column: 'script.name' }, index++ );
-          self.participantModel.addColumn( 'page_progress', { title: 'Page Progress' }, index++ );
-          self.participantModel.addColumn( 'language', { title: 'Language', column: 'language.name' }, index++ );
-          self.participantModel.addColumn( 'availability', { title: 'Availability', column: 'availability_type.name' } );
+          object.participantModel.addColumn( 'rank', { title: 'Rank', column: 'queue.rank', type: 'rank', type: 'string' }, index++ );
+          object.participantModel.addColumn( 'queue', { title: 'Queue', column: 'queue.name', type: 'string' }, index++ );
+          object.participantModel.addColumn( 'qnaire', { title: 'Questionnaire', column: 'script.name' }, index++ );
+          object.participantModel.addColumn( 'page_progress', { title: 'Page Progress' }, index++ );
+          object.participantModel.addColumn( 'language', { title: 'Language', column: 'language.name' }, index++ );
+          object.participantModel.addColumn( 'availability', { title: 'Availability', column: 'availability_type.name' } );
 
           // add the reserved row as a hidden column to be used for highlighting reserved appointments
-          self.participantModel.addColumn( 'reserved', { type: 'hidden', highlight: true } );
+          object.participantModel.addColumn( 'reserved', { type: 'hidden', highlight: true } );
         }
 
-        init();
+        init( this );
       };
 
       return { instance: function() { return new object( false ); } };

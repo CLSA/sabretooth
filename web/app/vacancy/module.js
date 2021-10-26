@@ -1,9 +1,5 @@
-define( [ 'appointment', 'site' ].reduce( function( list, name ) {
-  return list.concat( cenozoApp.module( name ).getRequiredFiles() );
-}, [] ), function() {
-  'use strict';
+cenozoApp.defineModule( { name: 'vacancy', dependencies: ['appointment', 'site'], models: ['add', 'list', 'view'], create: module => {
 
-  try { var module = cenozoApp.module( 'vacancy', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {},
     name: {
@@ -82,7 +78,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
   }
 
   // add an extra operation for each of the appointment-based calendars the user has access to
-  [ 'appointment', 'vacancy' ].forEach( function( name ) {
+  [ 'appointment', 'vacancy' ].forEach( name => {
     var calendarModule = cenozoApp.module( name );
     if( angular.isDefined( calendarModule.actions.calendar ) ) {
       module.addExtraOperation( 'calendar', {
@@ -154,7 +150,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
         // now create event objects for the returned id array (they'll be in chronological order)
         var datetime = angular.copy( start );
         var eventList = [];
-        response.data.forEach( function( newId, index ) {
+        response.data.forEach( ( newId, index ) => {
           var object = {
             id: newId,
             getIdentifier: function() { return newId; },
@@ -211,9 +207,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
               // determine if the selection overlaps any events
               var overlap = false;
               var overlapEventList =
-                calendar.fullCalendar( 'clientEvents' ).filter( function( event ) {
-                  return event.start >= start && event.end <= end;
-                } );
+                calendar.fullCalendar( 'clientEvents' ).filter( event => event.start >= start && event.end <= end );
 
               try {
                 if( 0 == overlapEventList.length ) {
@@ -246,9 +240,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
                   }
                 } else {
                   // the selection overlaps with some event, only delete vacancies which have no appointments
-                  var removeEventList = overlapEventList.filter( function( event ) {
-                    return 0 == event.appointments;
-                  } );
+                  var removeEventList = overlapEventList.filter( event => 0 == event.appointments );
 
                   if( 0 == removeEventList ) {
                     await CnModalMessageFactory.instance( {
@@ -344,51 +336,21 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
 
           // synchronize appointment/vacancy-based calendars
           scope.$watch( 'model.calendarModel.currentDate', function( date ) {
-            Object.keys( factoryList ).filter( function( name ) {
-              return angular.isDefined( cenozoApp.moduleList[name].actions.calendar );
-            } ).forEach( function( name ) {
+            Object.keys( factoryList )
+                  .filter( name => angular.isDefined( cenozoApp.moduleList[name].actions.calendar ) )
+                  .forEach( name => {
                var calendarModel = factoryList[name].forSite( scope.model.site ).calendarModel;
                if( !calendarModel.currentDate.isSame( date, 'day' ) ) calendarModel.currentDate = date;
             } );
           } );
           scope.$watch( 'model.calendarModel.currentView', function( view ) {
-            Object.keys( factoryList ).filter( function( name ) {
-              return angular.isDefined( cenozoApp.moduleList[name].actions.calendar );
-            } ).forEach( function( name ) {
+            Object.keys( factoryList )
+                  .filter( name => angular.isDefined( cenozoApp.moduleList[name].actions.calendar ) )
+                  .forEach( name => {
                var calendarModel = factoryList[name].forSite( scope.model.site ).calendarModel;
                if( calendarModel.currentView != view ) calendarModel.currentView = view;
             } );
           } );
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnVacancyList', [
-    'CnVacancyModelFactory',
-    function( CnVacancyModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnVacancyModelFactory.instance();
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnVacancyView', [
-    'CnVacancyModelFactory',
-    function( CnVacancyModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnVacancyModelFactory.instance();
         }
       };
     }
@@ -435,7 +397,7 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
           var loadMaxDate = this.getLoadMaxDate( replace, maxDate );
           // note that we ignore the ignoreParent parameter and always ignore the parent
           await this.$$onCalendar( replace, minDate, maxDate, true );
-          this.cache.forEach( function( item, index, array ) {
+          this.cache.forEach( ( item, index, array ) => {
             array[index] = getEventFromVacancy( item, CnSession.user.timezone, CnSession.setting.vacancySize );
           } );
         };
@@ -456,9 +418,8 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
         this.onDelete = async function( record ) {
           await this.$$onDelete( record );
 
-          parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
-            return e.getIdentifier() != record.getIdentifier();
-          } );
+          parentModel.calendarModel.cache =
+            parentModel.calendarModel.cache.filter( e => e.getIdentifier() != record.getIdentifier() );
         };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
@@ -475,20 +436,17 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
         // remove the deleted vacancy's events from the calendar cache
         this.onDelete = async function() {
           await this.$$onDelete();
-          var self = this;
-          parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
-            return e.getIdentifier() != self.record.getIdentifier();
-          } );
+          parentModel.calendarModel.cache =
+            parentModel.calendarModel.cache.filter( e => e.getIdentifier() != this.record.getIdentifier());
         };
 
         this.onPatch = async function( data ) {
           await this.$$onPatch( data );
 
           // rebuild the event for this record
-          var self = this;
-          parentModel.calendarModel.cache.some( function( e, index, array ) {
-            if( e.getIdentifier() == self.record.getIdentifier() ) {
-              array[index] = getEventFromVacancy( self.record, CnSession.user.timezone, CnSession.setting.vacancySize );
+          parentModel.calendarModel.cache.some( ( e, index, array ) => {
+            if( e.getIdentifier() == this.record.getIdentifier() ) {
+              array[index] = getEventFromVacancy( this.record, CnSession.user.timezone, CnSession.setting.vacancySize );
               return true;
             }
           } );
@@ -591,4 +549,4 @@ define( [ 'appointment', 'site' ].reduce( function( list, name ) {
     }
   ] );
 
-} );
+} } );

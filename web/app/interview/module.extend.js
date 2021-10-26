@@ -297,10 +297,10 @@ define( [ cenozoApp.module( 'interview' ).getFileUrl( 'module.js' ) ], function(
               }
             } ).query();
 
-            object.metadata.columnList.qnaire_id.enumList = [];
-            response.data.forEach( function( item ) {
-              object.metadata.columnList.qnaire_id.enumList.push( { value: item.id, name: item.name } );
-            } );
+            object.metadata.columnList.qnaire_id.enumList = response.data.reduce( ( list, item ) => {
+              list.push( { value: item.id, name: item.name } );
+              return list;
+            }, [] );
           }
         } );
       }

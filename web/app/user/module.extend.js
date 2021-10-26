@@ -1,5 +1,5 @@
 // extend the framework's module
-define( [ 'appointment' ].reduce( function( list, name ) {
+define( [ 'appointment' ].reduce( ( list, name ) => {
   return list.concat( cenozoApp.module( name ).getRequiredFiles() );
 }, [ cenozoApp.module( 'user' ).getFileUrl( 'module.js' ) ] ), function() {
   'use strict';
@@ -109,24 +109,23 @@ define( [ 'appointment' ].reduce( function( list, name ) {
             var appointmentModel = CnAppointmentModelFactory.forUser( parentModel.viewModel.record );
             await appointmentModel.calendarModel.onCalendar( replace, minDate, maxDate, ignoreParent );
             this.cache = appointmentModel.calendarModel.cache;
-            this.cache.forEach( function( item, index, array ) {
+            this.cache.forEach( ( item, index, array ) => {
               array[index] = getEventFromAppointment( item, CnSession.user.timezone );
             } );
           }
         } );
 
-        var self = this;
-        async function init() {
+        async function init( object ) {
           // Use the view model's onView function to get the record and create an appointment model from it.
           // Note that to do this we must make sure that viewing has been enabled in the parent-model, even if only
           // temporarily.
           parentModel.oldGetViewEnabledFn = parentModel.getViewEnabled;
           parentModel.getViewEnabled = function() { return true; };
-          self.initPromise = await parentModel.viewModel.onView();
+          object.initPromise = await parentModel.viewModel.onView();
           parentModel.getViewEnabled = parentModel.oldGetViewEnabledFn;
         }
 
-        init();
+        init( this );
       };
 
       return { instance: function( parentModel ) { return new object( parentModel ); } };

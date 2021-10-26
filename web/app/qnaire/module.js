@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( { name: 'qnaire', models: ['add', 'list', 'view'], create: module => {
 
-  try { var module = cenozoApp.module( 'qnaire', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: { column: 'rank' },
     name: {
@@ -92,36 +90,6 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnQnaireAdd', [
-    'CnQnaireModelFactory',
-    function( CnQnaireModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'add.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnQnaireModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnQnaireList', [
-    'CnQnaireModelFactory',
-    function( CnQnaireModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnQnaireModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.directive( 'cnQnaireMassMethod', [
     'CnQnaireMassMethodFactory', 'CnSession', '$state',
     function( CnQnaireMassMethodFactory, CnSession, $state ) {
@@ -143,39 +111,6 @@ define( function() {
           } ] );
         }
       };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnQnaireView', [
-    'CnQnaireModelFactory',
-    function( CnQnaireModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnQnaireModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnQnaireAddFactory', [
-    'CnBaseAddFactory',
-    function( CnBaseAddFactory ) {
-      var object = function( parentModel ) { CnBaseAddFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnQnaireListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
     }
   ] );
 
@@ -253,16 +188,15 @@ define( function() {
       var object = function( parentModel, root ) {
         CnBaseViewFactory.construct( this, parentModel, root, 'collection' );
 
-        var self = this;
-        async function init() {
-          await self.deferred.promise;
-          if( angular.isDefined( self.collectionModel ) ) self.collectionModel.listModel.heading = 'Disabled Collection List';
-          if( angular.isDefined( self.holdTypeModel ) ) self.holdTypeModel.listModel.heading = 'Overridden Hold Type List';
-          if( angular.isDefined( self.siteModel ) ) self.siteModel.listModel.heading = 'Disabled Site List';
-          if( angular.isDefined( self.stratumModel ) ) self.stratumModel.listModel.heading = 'Disabled Stratum List';
+        async function init( object ) {
+          await object.deferred.promise;
+          if( angular.isDefined( object.collectionModel ) ) object.collectionModel.listModel.heading = 'Disabled Collection List';
+          if( angular.isDefined( object.holdTypeModel ) ) object.holdTypeModel.listModel.heading = 'Overridden Hold Type List';
+          if( angular.isDefined( object.siteModel ) ) object.siteModel.listModel.heading = 'Disabled Site List';
+          if( angular.isDefined( object.stratumModel ) ) object.stratumModel.listModel.heading = 'Disabled Stratum List';
         }
 
-        init();
+        init( this );
       }
       return { instance: function( parentModel, root ) { return new object( parentModel, root ); } };
     }
@@ -295,9 +229,8 @@ define( function() {
           } ).query();
 
           this.metadata.columnList.script_id.enumList = [];
-          var self = this;
-          response.data.forEach( function( item ) {
-            self.metadata.columnList.script_id.enumList.push( { value: item.id, name: item.name } );
+          response.data.forEach( item => {
+            this.metadata.columnList.script_id.enumList.push( { value: item.id, name: item.name } );
           } );
         };
       };
@@ -309,4 +242,4 @@ define( function() {
     }
   ] );
 
-} );
+} } );

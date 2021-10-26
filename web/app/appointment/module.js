@@ -1,9 +1,5 @@
-define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
-  return list.concat( cenozoApp.module( name ).getRequiredFiles() );
-}, [] ), function() {
-  'use strict';
+cenozoApp.defineModule( { name: 'appointment', dependencies: ['site', 'vacancy'], models: ['add', 'list', 'view'], create: module => {
 
-  try { var module = cenozoApp.module( 'appointment', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: [ {
@@ -145,7 +141,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
   }
 
   // add an extra operation for each of the appointment-based calendars the user has access to
-  [ 'appointment', 'vacancy' ].forEach( function( name ) {
+  [ 'appointment', 'vacancy' ].forEach( name => {
     var calendarModule = cenozoApp.module( name );
     if( angular.isDefined( calendarModule.actions.calendar ) ) {
       module.addExtraOperation( 'calendar', {
@@ -213,7 +209,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
     var newToDatetime = newDatetime.clone().add( newDuration, 'minute' );
     var total = newDuration / vacancySize;
     var found = 0;
-    cache.some( function( vacancy ) {
+    cache.some( vacancy => {
       if( vacancy.start.isBetween( newFromDatetime, newToDatetime, 'minute', '[)' ) ) {
         found++;
         if( vacancy.start.isBetween( oldFromDatetime, oldToDatetime, 'minute', '[)' ) ) {
@@ -400,17 +396,15 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
 
           // synchronize appointment/vacancy-based calendars
           scope.$watch( 'model.calendarModel.currentDate', function( date ) {
-            Object.keys( factoryList ).filter( function( name ) {
-              return angular.isDefined( cenozoApp.moduleList[name].actions.calendar );
-            } ).forEach( function( name ) {
+            Object.keys( factoryList ).filter( name => angular.isDefined( cenozoApp.moduleList[name].actions.calendar ) )
+                                      .forEach( name => {
               var calendarModel = factoryList[name].forSite( scope.model.site ).calendarModel;
               if( !calendarModel.currentDate.isSame( date, 'day' ) ) calendarModel.currentDate = date;
             } );
           } );
           scope.$watch( 'model.calendarModel.currentView', function( view ) {
-            Object.keys( factoryList ).filter( function( name ) {
-              return angular.isDefined( cenozoApp.moduleList[name].actions.calendar );
-            } ).forEach( function( name ) {
+            Object.keys( factoryList ).filter( name => angular.isDefined( cenozoApp.moduleList[name].actions.calendar ) )
+                                      .forEach( name => {
               var calendarModel = factoryList[name].forSite( scope.model.site ).calendarModel;
               if( calendarModel.currentView != view ) calendarModel.currentView = view;
             } );
@@ -429,6 +423,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
         restrict: 'E',
         scope: { model: '=?' },
         controller: function( $scope ) {
+          // note that instead of attaching the model to the root we need to reference an instance instead
           if( angular.isUndefined( $scope.model ) ) $scope.model = CnAppointmentModelFactory.instance();
         }
       };
@@ -692,13 +687,10 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
               } ).query();
 
               await parentModel.metadata.getPromise();
-              parentModel.metadata.columnList.phone_id.enumList = [];
-              response.data.forEach( function( item ) {
-                parentModel.metadata.columnList.phone_id.enumList.push( {
-                  value: item.id,
-                  name: '(' + item.rank + ') ' + item.type + ': ' + item.number
-                } );
-              } );
+              parentModel.metadata.columnList.phone_id.enumList = response.data.reduce( ( list, item ) => {
+                list.push( { value: item.id, name: '(' + item.rank + ') ' + item.type + ': ' + item.number } );
+                return list;
+              }, [] );
 
               await this.$$onNew( record );
             }
@@ -726,7 +718,7 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
           var loadMaxDate = this.getLoadMaxDate( replace, maxDate );
           await this.$$onCalendar( replace, minDate, maxDate, ignoreParent );
 
-          this.cache.forEach( function( item, index, array ) {
+          this.cache.forEach( ( item, index, array ) => {
             array[index] = getEventFromAppointment( item, CnSession.user.timezone );
           } );
         };
@@ -747,9 +739,8 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
         this.onDelete = async function( record ) {
           await this.$$onDelete( record );
 
-          parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
-            return e.getIdentifier() != record.getIdentifier();
-          } );
+          parentModel.calendarModel.cache =
+            parentModel.calendarModel.cache.filter( e => e.getIdentifier() != record.getIdentifier() );
         };
       };
       return { instance: function( parentModel ) { return new object( parentModel ); } };
@@ -761,7 +752,6 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
     'CnBaseViewFactory', 'CnSession', 'CnHttpFactory', 'CnVacancyModelFactory',
     function( CnBaseViewFactory, CnSession, CnHttpFactory, CnVacancyModelFactory ) {
       var object = function( parentModel, root ) {
-        var self = this;
         CnBaseViewFactory.construct( this, parentModel, root );
 
         angular.extend( this, {
@@ -769,9 +759,8 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
           onDelete: async function() {
             await this.$$onDelete();
 
-            parentModel.calendarModel.cache = parentModel.calendarModel.cache.filter( function( e ) {
-              return e.getIdentifier() != self.record.getIdentifier();
-            } );
+            parentModel.calendarModel.cache =
+              parentModel.calendarModel.cache.filter( e => e.getIdentifier() != this.record.getIdentifier() );
           },
 
           // remove and re-add the appointment's events from the calendar cache
@@ -794,9 +783,9 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
             if( null != cnRecordCalendar ) await cnRecordCalendar.refresh();
 
             // rebuild the event for this record
-            parentModel.calendarModel.cache.some( function( e, index, array ) {
-              if( e.getIdentifier() == self.record.getIdentifier() ) {
-                array[index] = getEventFromAppointment( self.record, CnSession.user.timezone );
+            parentModel.calendarModel.cache.some( ( e, index, array ) => {
+              if( e.getIdentifier() == this.record.getIdentifier() ) {
+                array[index] = getEventFromAppointment( this.record, CnSession.user.timezone );
                 return true;
               }
             } );
@@ -848,13 +837,10 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
 
             await parentModel.metadata.getPromise();
 
-            parentModel.metadata.columnList.phone_id.enumList = [];
-            response.data.forEach( function( item ) {
-              parentModel.metadata.columnList.phone_id.enumList.push( {
-                value: item.id,
-                name: '(' + item.rank + ') ' + item.type + ': ' + item.number
-              } );
-            } );
+            parentModel.metadata.columnList.phone_id.enumList = response.data.reduce( ( list, item ) => {
+              list.push( { value: item.id, name: '(' + item.rank + ') ' + item.type + ': ' + item.number } );
+              return list;
+            }, [] );
           }
         } );
       }
@@ -1006,4 +992,4 @@ define( [ 'site', 'vacancy' ].reduce( function( list, name ) {
     }
   ] );
 
-} );
+} } );

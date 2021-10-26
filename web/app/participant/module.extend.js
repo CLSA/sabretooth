@@ -57,7 +57,7 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
           }
         } ).query();
 
-        await Promise.all( response.data.map( async function( item ) {
+        await Promise.all( response.data.map( async item => {
           // appointments
           var subResponse = await CnHttpFactory.instance( {
             path: 'interview/' + item.id + '/appointment',
@@ -87,7 +87,7 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
             }
           } ).query();
 
-          subResponse.data.forEach( function( item ) {
+          subResponse.data.forEach( item => {
             var description = 'An appointment scheduled for this time has ';
             if( 'cancelled' == item.outcome ) {
               description += 'been cancelled.';
@@ -136,7 +136,7 @@ define( [ cenozoApp.module( 'participant' ).getFileUrl( 'module.js' ) ], functio
             }
           } ).query();
 
-          subResponse.data.forEach( function( item ) {
+          subResponse.data.forEach( item => {
             if( null != item.start_datetime ) {
               historyList.push( {
                 datetime: item.start_datetime,

@@ -1,7 +1,5 @@
-define( function() {
-  'use strict';
+cenozoApp.defineModule( { name: 'setting', models: ['list', 'view'], create: module => {
 
-  try { var module = cenozoApp.module( 'setting', true ); } catch( err ) { console.warn( err ); return; }
   angular.extend( module, {
     identifier: {
       parent: {
@@ -161,45 +159,6 @@ define( function() {
   } );
 
   /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSettingList', [
-    'CnSettingModelFactory',
-    function( CnSettingModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'list.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnSettingModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.directive( 'cnSettingView', [
-    'CnSettingModelFactory',
-    function( CnSettingModelFactory ) {
-      return {
-        templateUrl: module.getFileUrl( 'view.tpl.html' ),
-        restrict: 'E',
-        scope: { model: '=?' },
-        controller: function( $scope ) {
-          if( angular.isUndefined( $scope.model ) ) $scope.model = CnSettingModelFactory.root;
-        }
-      };
-    }
-  ] );
-
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnSettingListFactory', [
-    'CnBaseListFactory',
-    function( CnBaseListFactory ) {
-      var object = function( parentModel ) { CnBaseListFactory.construct( this, parentModel ); };
-      return { instance: function( parentModel ) { return new object( parentModel ); } };
-    }
-  ] );
-
-  /* ######################################################################################################## */
   cenozo.providers.factory( 'CnSettingViewFactory', [
     'CnBaseViewFactory', 'CnSession',
     function( CnBaseViewFactory, CnSession ) {
@@ -213,21 +172,4 @@ define( function() {
     }
   ] );
 
-  /* ######################################################################################################## */
-  cenozo.providers.factory( 'CnSettingModelFactory', [
-    'CnBaseModelFactory', 'CnSettingListFactory', 'CnSettingViewFactory',
-    function( CnBaseModelFactory, CnSettingListFactory, CnSettingViewFactory ) {
-      var object = function( root ) {
-        CnBaseModelFactory.construct( this, module );
-        this.listModel = CnSettingListFactory.instance( this );
-        this.viewModel = CnSettingViewFactory.instance( this, root );
-      };
-
-      return {
-        root: new object( true ),
-        instance: function() { return new object( false ); }
-      };
-    }
-  ] );
-
-} );
+} } );
