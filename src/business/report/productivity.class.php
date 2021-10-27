@@ -86,6 +86,7 @@ class productivity extends \cenozo\business\report\base_report
 
     $select = lib::create( 'database\select' );
     $select->from( 'interview' );
+    $select->add_column( 'qnaire_id' );
     $select->add_column( 'user.id', 'user_id', false );
     $select->add_column( 'user.name', 'user', false );
     $select->add_column( 'script.name', 'script', false );
@@ -173,92 +174,95 @@ class productivity extends \cenozo\business\report\base_report
         $data[$row['user']][$row['script'].' Completes'] += $row['total'];
         foreach( $qnaire_list as $index => $db_qnaire )
         {
-          $db_script = $script_list[$index];
-
-          if( 'pine' == $db_script->get_type() )
+          if( $row['qnaire_id'] == $db_qnaire->id )
           {
-            $has_pine_script = true;
-            $interview_sel = lib::create( 'database\select' );
-            $interview_sel->add_column( 'participant_id' );
+            $db_script = $script_list[$index];
 
-            $interview_mod = lib::create( 'database\modifier' );
-            $interview_mod->join( 'interview_last_assignment', 'interview.id', 'interview_last_assignment.interview_id' );
-            $interview_mod->join( 'assignment', 'interview_last_assignment.assignment_id', 'assignment.id' );
-            $interview_mod->where( 'assignment.user_id', '=', $row['user_id'] );
-            $interview_mod->where( 'assignment.site_id', '=', $site['id'] );
-            $interview_mod->where( 'interview.qnaire_id', '=', $db_qnaire->id );
-
-            $participant_id_list = array();
-            foreach( $interview_class_name::select( $interview_sel, $interview_mod ) as $r )
-              $participant_id_list[] = $r['participant_id'];
-
-            $data[$row['user']][$db_qnaire->get_script()->name.' Time'] = 0;
-            if( 0 < count( $participant_id_list ) )
+            if( 'pine' == $db_script->get_type() )
             {
-              $time_report['index'][] = array(
-                'user' => $row['user'],
-                'column' => $db_qnaire->get_script()->name.' Time'
-              );
-              $time_report['query'][] = array(
-                'qnaire_id' => $db_script->pine_qnaire_id,
-                'participant_id_list' => $participant_id_list
-              );
+              $has_pine_script = true;
+              $interview_sel = lib::create( 'database\select' );
+              $interview_sel->add_column( 'participant_id' );
+
+              $interview_mod = lib::create( 'database\modifier' );
+              $interview_mod->join( 'interview_last_assignment', 'interview.id', 'interview_last_assignment.interview_id' );
+              $interview_mod->join( 'assignment', 'interview_last_assignment.assignment_id', 'assignment.id' );
+              $interview_mod->where( 'assignment.user_id', '=', $row['user_id'] );
+              $interview_mod->where( 'assignment.site_id', '=', $site['id'] );
+              $interview_mod->where( 'interview.qnaire_id', '=', $db_qnaire->id );
+
+              $participant_id_list = array();
+              foreach( $interview_class_name::select( $interview_sel, $interview_mod ) as $r )
+                $participant_id_list[] = $r['participant_id'];
+
+              $data[$row['user']][$db_script->name.' Time'] = 0;
+              if( 0 < count( $participant_id_list ) )
+              {
+                $time_report['index'][] = array(
+                  'user' => $row['user'],
+                  'column' => $db_script->name.' Time'
+                );
+                $time_report['query'][] = array(
+                  'qnaire_id' => $db_script->pine_qnaire_id,
+                  'participant_id_list' => $participant_id_list
+                );
+              }
             }
-          }
-          else
-          {
-            $old_sid = $survey_class_name::get_sid();
-            $survey_class_name::set_sid( $db_script->sid );
-
-            $survey_time_mod = lib::create( 'database\modifier' );
-            $survey_time_mod->join(
-              sprintf( '%s.participant',
-                       str_replace( INSTANCE, 'cenozo', $participant_class_name::db()->get_name() ) ),
-              'token',
-              'participant.uid'
-            );
-            $survey_time_mod->join(
-              sprintf( '%s.interview', $participant_class_name::db()->get_name() ),
-              'participant.id',
-              'interview.participant_id'
-            );
-            $survey_time_mod->join(
-              sprintf( '%s.interview_last_assignment', $participant_class_name::db()->get_name() ),
-              'interview.id',
-              'interview_last_assignment.interview_id'
-            );
-            $survey_time_mod->join(
-              sprintf( '%s.assignment', $participant_class_name::db()->get_name() ),
-              'interview_last_assignment.assignment_id',
-              'assignment.id'
-            );
-            $survey_time_mod->where( 'assignment.user_id', '=', $row['user_id'] );
-            $survey_time_mod->where( 'assignment.site_id', '=', $site['id'] );
-            $survey_time_mod->where( 'interview.qnaire_id', '=', $db_qnaire->id );
-
-            if( !is_null( $start_date ) )
+            else
             {
-              $survey_time_mod->where(
-                sprintf( 'DATE( CONVERT_TZ( interview.end_datetime, "UTC", "%s" ) )', $this->db_user->timezone ),
-                '>=',
-                $start_date
+              $old_sid = $survey_class_name::get_sid();
+              $survey_class_name::set_sid( $db_script->sid );
+
+              $survey_time_mod = lib::create( 'database\modifier' );
+              $survey_time_mod->join(
+                sprintf( '%s.participant',
+                         str_replace( INSTANCE, 'cenozo', $participant_class_name::db()->get_name() ) ),
+                'token',
+                'participant.uid'
               );
-            }
-
-            if( !is_null( $end_date ) )
-            {
-              $survey_time_mod->where(
-                sprintf( 'DATE( CONVERT_TZ( interview.end_datetime, "UTC", "%s" ) )', $this->db_user->timezone ),
-                '<=',
-                $end_date
+              $survey_time_mod->join(
+                sprintf( '%s.interview', $participant_class_name::db()->get_name() ),
+                'participant.id',
+                'interview.participant_id'
               );
+              $survey_time_mod->join(
+                sprintf( '%s.interview_last_assignment', $participant_class_name::db()->get_name() ),
+                'interview.id',
+                'interview_last_assignment.interview_id'
+              );
+              $survey_time_mod->join(
+                sprintf( '%s.assignment', $participant_class_name::db()->get_name() ),
+                'interview_last_assignment.assignment_id',
+                'assignment.id'
+              );
+              $survey_time_mod->where( 'assignment.user_id', '=', $row['user_id'] );
+              $survey_time_mod->where( 'assignment.site_id', '=', $site['id'] );
+              $survey_time_mod->where( 'interview.qnaire_id', '=', $db_qnaire->id );
+
+              if( !is_null( $start_date ) )
+              {
+                $survey_time_mod->where(
+                  sprintf( 'DATE( CONVERT_TZ( interview.end_datetime, "UTC", "%s" ) )', $this->db_user->timezone ),
+                  '>=',
+                  $start_date
+                );
+              }
+
+              if( !is_null( $end_date ) )
+              {
+                $survey_time_mod->where(
+                  sprintf( 'DATE( CONVERT_TZ( interview.end_datetime, "UTC", "%s" ) )', $this->db_user->timezone ),
+                  '<=',
+                  $end_date
+                );
+              }
+
+              // limesurvey tracks time in seconds so we divide by 60 to convert to minutes
+              $data[$row['user']][$db_script->name.' Time'] =
+                $survey_class_name::get_total_time( $survey_time_mod ) / 60;
+
+              $survey_class_name::set_sid( $old_sid );
             }
-
-            // limesurvey tracks time in seconds so we divide by 60 to convert to minutes
-            $data[$row['user']][$db_qnaire->get_script()->name.' Time'] =
-              $survey_class_name::get_total_time( $survey_time_mod ) / 60;
-
-            $survey_class_name::set_sid( $old_sid );
           }
         }
       }
