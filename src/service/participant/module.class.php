@@ -114,24 +114,8 @@ class module extends \cenozo\service\participant\module
       }
 
       if( $select->has_column( 'page_progress' ) )
-      {
-        $select->add_column(
-          'IF( '.
-            'script.total_pages IS NULL, '.
-            '"Unknown", '.
-            'CONCAT( '.
-              'IF( '.
-                'interview.end_datetime IS NOT NULL, '.
-                'script.total_pages, '.
-                'IF( interview.current_page_rank IS NULL, 0, interview.current_page_rank ) '.
-              '), '.
-              '" of ", script.total_pages '.
-            ') '.
-          ')',
-          'page_progress',
-          false
-        );
-      }
+        $select->add_column( $interview_class_name::get_page_progress_column(), 'page_progress', false );
+
       // add a variable defining whether this is a reserved appointment
       $select->add_column( 'appointment.user_id IS NOT NULL', 'reserved', false, 'boolean' );
 

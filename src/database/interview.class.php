@@ -549,4 +549,27 @@ class interview extends \cenozo\database\interview
 
     return $qnaire_list;
   }
+
+  /**
+   * Returns the SQL column value for an interview's page-based progress through a script
+   * 
+   * This function assumes that the interview table is included in the table list joined to its qnaire's script table
+   * @return string
+   */
+  public static function get_page_progress_column()
+  {
+    return
+      "IF(\n".
+        "script.total_pages IS NULL,\n".
+        "'Unknown',\n".
+        "CONCAT(\n".
+          "IF(\n".
+            "interview.end_datetime IS NOT NULL,\n".
+            "script.total_pages,\n".
+            "IF( interview.current_page_rank IS NULL, 0, interview.current_page_rank )\n".
+          "),\n".
+          "' of ', script.total_pages\n".
+        ")\n".
+      ")";
+  }
 }

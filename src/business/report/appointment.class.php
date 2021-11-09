@@ -21,6 +21,7 @@ class appointment extends \cenozo\business\report\base_report
   {
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
+    $interview_class_name = lib::get_class_name( 'database\interview' );
     $session = lib::create( 'business\session' );
     $db_study_phase = $session->get_application()->get_study_phase();
     $db_identifier = is_null( $db_study_phase ) ? NULL : $db_study_phase->get_study()->get_identifier();
@@ -46,23 +47,7 @@ class appointment extends \cenozo\business\report\base_report
     $select->add_column( 'participant.uid', 'UID', false );
     if( !is_null( $db_identifier ) ) $select->add_column( 'participant_identifier.value', 'Study ID', false );
     if( is_null( $db_qnaire ) ) $select->add_column( 'script.name', 'Questionnaire', false );
-    $select->add_column(
-      'IF( '.
-        'script.total_pages IS NULL, '.
-        '"Unknown", '.
-        'CONCAT( '.
-          'IF( '.
-            'interview.end_datetime IS NOT NULL, '.
-            'script.total_pages, '.
-            'IF( interview.current_page_rank IS NULL, 0, interview.current_page_rank ) '.
-          '), '.
-          '" of ", script.total_pages '.
-        ') '.
-      ')',
-      'Progress',
-      false
-    );
-
+    $select->add_column( $interview_class_name::get_page_progress_column(), 'Progress', false );
     $select->add_column( $this->get_datetime_column( 'vacancy.datetime', 'date' ), 'Date', false );
     $select->add_column( $this->get_datetime_column( 'vacancy.datetime', 'time' ), 'Time', false );
     $select->add_column( 'TIMESTAMPDIFF( YEAR, participant.date_of_birth, CURDATE() )', 'Age', false );

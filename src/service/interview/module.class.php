@@ -79,28 +79,13 @@ class module extends \cenozo\service\interview\module
   {
     parent::prepare_read( $select, $modifier );
 
+    $interview_class_name = lib::get_class_name( 'database\interview' );
+
     $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
     $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
 
     if( $select->has_column( 'page_progress' ) )
-    {
-      $select->add_column(
-        'IF( '.
-          'script.total_pages IS NULL, '.
-          '"Unknown", '.
-          'CONCAT( '.
-            'IF( '.
-              'interview.end_datetime IS NOT NULL, '.
-              'script.total_pages, '.
-              'IF( interview.current_page_rank IS NULL, 0, interview.current_page_rank ) '.
-            '), '.
-            '" of ", script.total_pages '.
-          ') '.
-        ')',
-        'page_progress',
-        false
-      );
-    }
+      $select->add_column( $interview_class_name::get_page_progress_column(), 'page_progress', false );
 
     if( $select->has_column( 'last_participation_consent' ) )
     {
