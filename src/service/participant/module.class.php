@@ -65,6 +65,9 @@ class module extends \cenozo\service\participant\module
 
     if( $this->get_argument( 'assignment', false ) )
     {
+      $queue_class_name = lib::get_class_name( 'database\queue' );
+      $interview_class_name = lib::get_class_name( 'database\interview' );
+
       $session = lib::create( 'business\session' );
       $db_user = $session->get_user();
 
@@ -120,7 +123,6 @@ class module extends \cenozo\service\participant\module
       $select->add_column( 'appointment.user_id IS NOT NULL', 'reserved', false, 'boolean' );
 
       // repopulate queue if it is out of date
-      $queue_class_name = lib::get_class_name( 'database\queue' );
       $interval = $queue_class_name::get_interval_since_last_repopulate();
       if( is_null( $interval ) || 0 < $interval->days || 22 < $interval->h )
       { // it's been at least 23 hours since the non time-based queues have been repopulated
