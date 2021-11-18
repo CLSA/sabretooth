@@ -191,7 +191,6 @@ class qnaire extends \cenozo\database\has_rank
       }
     }
 
-    log::debug( $updated_total );
     return $updated_total;
   }
 
