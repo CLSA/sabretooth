@@ -131,6 +131,22 @@ cenozoApp.defineModule( { name: 'vacancy', dependencies: ['appointment', 'site']
   ] );
 
   /* ######################################################################################################## */
+  cenozo.providers.directive( 'cnVacancyView', [
+    'CnVacancyModelFactory',
+    function( CnVacancyModelFactory ) {
+      return {
+        templateUrl: module.getFileUrl( 'view.tpl.html' ),
+        restrict: 'E',
+        scope: { model: '=?' },
+        controller: function( $scope ) {
+          // need to create a model instance since there is no "root"
+          if( angular.isUndefined( $scope.model ) ) $scope.model = CnVacancyModelFactory.instance();
+        }
+      };
+    }
+  ] );
+
+  /* ######################################################################################################## */
   cenozo.providers.directive( 'cnVacancyCalendar', [
     'CnVacancyModelFactory', 'CnAppointmentModelFactory', 'CnSession', 'CnHttpFactory',
     'CnModalConfirmFactory', 'CnModalMessageFactory', 'CnModalInputFactory',
