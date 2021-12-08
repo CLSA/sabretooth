@@ -33,7 +33,7 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
           scope.$on( '$destroy', function() { win.off( 'focus', focusFn ); } );
 
           // close the session's script window whenever this page is unloaded (refreshed or closed)
-          $window.onunload = function() { console.log( 'onunload' ); CnSession.closeScript(); };
+          $window.onunload = function() { CnSession.closeScript(); };
         }
       };
     }
@@ -144,7 +144,6 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
           },
 
           onLoad: async function( closeScript ) {
-            console.log( 'onLoad', closeScript );
             if( angular.isUndefined( closeScript ) ) closeScript = true;
             this.reset();
 
