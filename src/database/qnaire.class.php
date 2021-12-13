@@ -147,17 +147,20 @@ class qnaire extends \cenozo\database\has_rank
       $select_obj = array(
         'column' => array(
           'participant_id',
+          array( 'table' => 'response', 'column' => 'submitted' ),
           array( 'table' => 'response', 'column' => 'current_page_rank' )
         )
       );
       $modifier_obj = array(
         'where' => array(
-          array( 'column' => 'current_page_rank', 'operator' => '!=', 'value' => NULL )
+          is_null( $db_participant ) ?
+            // when updating all participants we can ignore those that haven't started or are finished
+            array( 'column' => 'current_page_rank', 'operator' => '!=', 'value' => NULL ) :
+            // when updating a specific participant make sure only to get their data
+            array( 'column' => 'participant_id', 'operator' => '=', 'value' => $db_participant->id )
         ),
         'limit' => 1000000
       );
-      if( !is_null( $db_participant ) )
-        $modifier_obj['where'][] = array( 'column' => 'participant_id', 'operator' => '=', 'value' => $db_participant->id );
       
       $service = sprintf(
         'qnaire/%d/respondent?no_activity=1&select=%s&modifier=%s',
@@ -168,7 +171,15 @@ class qnaire extends \cenozo\database\has_rank
 
       $replace_list = array();
       foreach( $cenozo_manager->get( $service ) as $obj )
-        $replace_list[] = sprintf( '(%s,%s,%s)', $obj->participant_id, $this->id, $obj->current_page_rank );
+      {
+        $replace_list[] = sprintf(
+          '(%s,%s,%s)',
+          $obj->participant_id,
+          $this->id,
+          // if submitted then we've completed the last page, if no page rank then we haven't started
+          $obj->submitted ? $db_script->total_pages : ( $obj->current_page_rank ? $obj->current_page_rank : 0 )
+        );
+      }
 
       // set the current_page_rank to NULL if they aren't already
       $update_mod = lib::create( 'database\modifier' );
