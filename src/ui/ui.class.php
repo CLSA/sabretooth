@@ -40,6 +40,7 @@ class ui extends \cenozo\ui\ui
       $module->add_choose( 'hold_type' );
       $module->add_choose( 'site' );
       $module->add_choose( 'stratum' );
+      $module->add_choose( 'alternate_type' );
       $module->add_action( 'mass_method', '/{identifier}' );
     }
 

@@ -47,71 +47,102 @@ class query extends \cenozo\service\query
    */
   protected function get_record_list()
   {
-    if( $this->get_argument( 'proxy', false ) )
+    // if in an assignment and the qnaire has alternate types then include them in the phone list
+    $db_assignment = lib::create( 'business\session' )->get_current_assignment();
+    $alternate_type_list = is_null( $db_assignment )
+                         ? array()
+                         : $db_assignment->get_interview()->get_qnaire()->get_alternate_type_object_list();
+
+    if( 0 < count( $alternate_type_list ) )
     {
       $alternate_type_class_name = lib::get_class_name( 'database\alternate_type' );
-      $alternate_consent_type_class_name = lib::get_class_name( 'database\alternate_consent_type' );
       $participant_id = $this->get_parent_record()->id;
-      $dm_type_id = $alternate_type_class_name::get_unique_record( 'name', 'proxy' )->id;
-      $ip_type_id = $alternate_type_class_name::get_unique_record( 'name', 'informant' )->id;
-      $dm_consent_type_id = $alternate_consent_type_class_name::get_unique_record( 'name', 'decision maker' )->id;
-      $ip_consent_type_id = $alternate_consent_type_class_name::get_unique_record( 'name', 'information provider' )->id;
 
       // create a temporary table with all of the alternate information we'll need
       $alternate_sel = lib::create( 'database\select' );
+      $alternate_mod = lib::create( 'database\modifier' );
+
       $alternate_sel->from( 'alternate' );
       $alternate_sel->add_column( 'id', 'alternate_id' );
       $alternate_sel->add_column( 'first_name' );
       $alternate_sel->add_column( 'last_name' );
-      $alternate_sel->add_table_column( 'alternate_has_dm_type', 'alternate_id IS NOT NULL', 'is_dm' );
-      $alternate_sel->add_column( 'IFNULL( dm_consent.accept, false )', 'dm_consent', false );
-      $alternate_sel->add_table_column( 'alternate_has_ip_type', 'alternate_id IS NOT NULL', 'is_ip' );
-      $alternate_sel->add_column( 'IFNULL( ip_consent.accept, false )', 'ip_consent', false );
 
-      $alternate_mod = lib::create( 'database\modifier' );
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'alternate.id', '=', 'alternate_has_dm_type.alternate_id', false );
-      $join_mod->where( 'alternate_has_dm_type.alternate_type_id', '=', $dm_type_id );
-      $alternate_mod->join_modifier( 'alternate_has_alternate_type', $join_mod, 'left', 'alternate_has_dm_type' );
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'alternate.id', '=', 'alternate_has_ip_type.alternate_id', false );
-      $join_mod->where( 'alternate_has_ip_type.alternate_type_id', '=', $ip_type_id );
-      $alternate_mod->join_modifier( 'alternate_has_alternate_type', $join_mod, 'left', 'alternate_has_ip_type' );
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'alternate.id', '=', 'alternate_last_dm_consent.alternate_id', false );
-      $join_mod->where( 'alternate_last_dm_consent.alternate_consent_type_id', '=', $dm_consent_type_id );
-      $alternate_mod->join_modifier( 'alternate_last_alternate_consent', $join_mod, 'left', 'alternate_last_dm_consent' );
-      $alternate_mod->left_join(
-        'alternate_consent',
-        'alternate_last_dm_consent.alternate_consent_id',
-        'dm_consent.id',
-        'dm_consent'
-      );
-      $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'alternate.id', '=', 'alternate_last_ip_consent.alternate_id', false );
-      $join_mod->where( 'alternate_last_ip_consent.alternate_consent_type_id', '=', $ip_consent_type_id );
-      $alternate_mod->join_modifier( 'alternate_last_alternate_consent', $join_mod, 'left', 'alternate_last_ip_consent' );
-      $alternate_mod->left_join(
-        'alternate_consent',
-        'alternate_last_ip_consent.alternate_consent_id',
-        'ip_consent.id',
-        'ip_consent'
-      );
-      $alternate_mod->where( 'COALESCE( alternate_has_dm_type.alternate_id, alternate_has_ip_type.alternate_id )', '!=', NULL );
+      $coalesce_column_list = array();
+      foreach( $alternate_type_list as $db_alternate_type )
+      {
+        // add whether the alternate is of this type
+        $alternate_type_table_name = sprintf( 'alternate_has_%s_type', $db_alternate_type->name );
+        $alternate_sel->add_table_column(
+          $alternate_type_table_name,
+          'alternate_id IS NOT NULL',
+          sprintf( 'is_%s', $db_alternate_type->name )
+        );
+        $join_mod = lib::create( 'database\modifier' );
+        $join_mod->where( 'alternate.id', '=', sprintf( '%s.alternate_id', $alternate_type_table_name ), false );
+        $join_mod->where( sprintf( '%s.alternate_type_id', $alternate_type_table_name ), '=', $db_alternate_type->id );
+        $alternate_mod->join_modifier( 'alternate_has_alternate_type', $join_mod, 'left', $alternate_type_table_name );
+
+        // add whether the alternate has consent for this type
+        if( is_null( $db_alternate_type->alternate_consent_type_id ) )
+        {
+          $alternate_sel->add_constant(
+            false,
+            sprintf( '%s_consent', $db_alternate_type->name ),
+            'boolean'
+          );
+        }
+        else
+        {
+          $consent_table_name = sprintf( 'alternate_last_%s_consent', $db_alternate_type->name );
+          $alternate_sel->add_column(
+            sprintf( 'IFNULL( %s_consent.accept, false )', $db_alternate_type->name ),
+            sprintf( '%s_consent', $db_alternate_type->name ),
+            false
+          );
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->where( 'alternate.id', '=', sprintf( '%s.alternate_id', $consent_table_name ), false );
+          $join_mod->where(
+            sprintf( '%s.alternate_consent_type_id', $consent_table_name ),
+            '=',
+            $db_alternate_type->alternate_consent_type_id
+          );
+          $alternate_mod->join_modifier( 'alternate_last_alternate_consent', $join_mod, 'left', $consent_table_name );
+          $alternate_mod->left_join(
+            'alternate_consent',
+            sprintf( '%s.alternate_consent_id', $consent_table_name ),
+            sprintf( '%s_consent.id', $db_alternate_type->name ),
+            sprintf( '%s_consent', $db_alternate_type->name )
+          );
+        }
+
+        // build the coalisce column
+        $coalesce_column_list[] = sprintf( '%s.alternate_id', $alternate_type_table_name );
+      }
+
+      $alternate_mod->where( sprintf( 'COALESCE( %s )', implode( ', ', $coalesce_column_list ) ), '!=', NULL );
       $alternate_mod->where( 'alternate.participant_id', '=', $participant_id );
 
-      $alternate_type_class_name::db()->execute( sprintf(
-        'CREATE TEMPORARY TABLE IF NOT EXISTS alternate_data ( '.
-          'alternate_id INT UNSIGNED NOT NULL, '.
-          'is_dm TINYINT(1) NOT NULL, '.
-          'dm_consent TINYINT(1) NOT NULL, '.
-          'is_ip TINYINT(1) NOT NULL, '.
-          'ip_consent TINYINT(1) NOT NULL, '.
-          'PRIMARY KEY( alternate_id ) '.
-        ') %s %s',
+      $sql = 'CREATE TEMPORARY TABLE IF NOT EXISTS alternate_data ( alternate_id INT UNSIGNED NOT NULL, ';
+
+      foreach( $alternate_type_list as $db_alternate_type )
+      {
+        $sql .= sprintf(
+          '%s_title VARCHAR(255) NOT NULL, '.
+          'is_%s TINYINT(1) NOT NULL, '.
+          '%s_consent TINYINT(1) NOT NULL, ',
+          $db_alternate_type->name,
+          $db_alternate_type->name,
+          $db_alternate_type->name
+        );
+      }
+
+      $sql .= sprintf(
+        'PRIMARY KEY( alternate_id ) ) %s %s',
         $alternate_sel->get_sql(),
         $alternate_mod->get_sql()
-      ) );
+      );
+
+      $alternate_type_class_name::db()->execute( $sql );
 
       $modifier = clone $this->modifier;
       $modifier->left_join( 'participant', 'phone.participant_id', 'participant.id' );
@@ -125,33 +156,33 @@ class query extends \cenozo\service\query
       // find aliases in the select and translate them in the modifier
       $this->select->apply_aliases_to_modifier( $modifier );
       
+      $concat_list = array();
+      foreach( $alternate_type_list as $db_alternate_type )
+      {
+        $concat_list[] = sprintf(
+          'IF( alternate_data.is_%s, CONCAT( "%s", IF( alternate_data.%s_consent, " with consent", "" ) ), NULL )',
+          $db_alternate_type->name,
+          $db_alternate_type->title,
+          $db_alternate_type->name
+        );
+      }
+
       // add the person to the select
       $select = clone $this->select;
       $select->add_column(
-        'IFNULL( '.
-          'CONCAT( '.
-            // include the alternat's first and last name
-            'alternate_data.first_name, " ", alternate_data.last_name, '.
-            // include whether the alternate is a DM, IP or both
-            '" [", '.
-            'IF( '.
-              'alternate_data.is_dm AND alternate_data.is_ip, '.
-              'CONCAT( '.
-                'CONCAT( "DM", IF( alternate_data.dm_consent, " with consent", "" ) ), '.
-                '", ", '.
-                'CONCAT( "IP", IF( alternate_data.ip_consent, " with consent", "" ) ) '.
-              '), '.
-              'IF( '.
-                'alternate_data.is_dm, '.
-                'CONCAT( "DM", IF( alternate_data.dm_consent, " with consent", "" ) ), '.
-                'CONCAT( "IP", IF( alternate_data.ip_consent, " with consent", "" ) ) '.
-              ') '.
+        sprintf(
+          'IFNULL( '.
+            'CONCAT( '.
+              // include the alternat's first and last name
+              'alternate_data.first_name, " ", alternate_data.last_name, '.
+              // include what alternate types and consent the alternate has
+              '" [", CONCAT_WS( ", ", %s ), "]" '.
             '), '.
-            '"]" '.
-          '), '.
-          // when not an alternate simply label the number as belonging to the participant
-          '"Participant" '.
-        ')',
+            // when not an alternate simply label the number as belonging to the participant
+            '"Participant" '.
+          ')',
+          implode( ', ', $concat_list )
+        ),
         'person',
         false
       );
