@@ -236,7 +236,7 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
 
             var response = await CnHttpFactory.instance( {
               path: 'assignment/0/phone_call',
-              data: { select: { column: [ 'end_datetime', 'status',
+              data: { select: { column: [ 'end_datetime', 'status', 'person',
                 { table: 'phone', column: 'rank' },
                 { table: 'phone', column: 'type' },
                 { table: 'phone', column: 'number' }
@@ -249,6 +249,7 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
                                  ? this.phoneCallList[len-1]
                                  : null;
 
+            console.log( this.activePhoneCall );
             if( null === this.qnaireList ) {
               // get the qnaire list and store the current and last qnaires
               var response = await CnHttpFactory.instance( {
@@ -291,11 +292,8 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
             this.isPrevAssignmentLoading = false;
 
             this.phoneList = null;
-            var path = 'participant/' + this.assignment.participant_id + '/phone';
-            if( this.proxyInterview ) path += '?proxy=1';
-
             var response = await CnHttpFactory.instance( {
-              path: path,
+              path: 'participant/' + this.assignment.participant_id + '/phone',
               data: {
                 select: { column: [ 'id', 'rank', 'type', 'number', 'international', 'note' ] },
                 modifier: {

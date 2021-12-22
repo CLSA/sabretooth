@@ -124,8 +124,8 @@
                     <label class="col-sm-5 control-label">Connected To</label>
                     <div class="col-sm-7 form-text" ng-if="!model.activePhoneCall">No active call</div>
                     <div class="col-sm-7 form-text" ng-if="model.activePhoneCall">
-                      {{ model.activePhoneCall.rank }}. {{ model.activePhoneCall.type }}
-                      ({{ model.activePhoneCall.number }})
+                      {{ model.activePhoneCall.person }}<br/>
+                      {{ model.activePhoneCall.rank }}. {{ model.activePhoneCall.type }} ({{ model.activePhoneCall.number }})
                     </div>
                   </div>
                 </div>
@@ -228,7 +228,7 @@
                   There are no phone numbers available.
                 <li>
                 <li ng-if="0 < model.phoneList.length" ng-repeat="phone in model.phoneList">
-                  <h4 class="horizontal-spacer text-primary" ng-if="model.proxyInterview && phone.newPerson">{{ phone.person }}</h4>
+                  <h4 class="horizontal-spacer text-primary" ng-if="phone.newPerson">{{ phone.person }}</h4>
                   <a ng-if="!phone.newPerson" ng-click="model.startCall( phone )">
                     <div class="row"
                          uib-tooltip="{{ phone.note }}"

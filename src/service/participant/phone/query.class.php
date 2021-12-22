@@ -13,51 +13,22 @@ use cenozo\lib, cenozo\log, sabretooth\util;
  */
 class query extends \cenozo\service\query
 {
-  /**
+  /*
    * Extends parent method
    */
-  protected function get_record_count()
+  protected function setup()
   {
-    if( $this->get_argument( 'proxy', false ) )
-    {
-      $participant_id = $this->get_parent_record()->id;
+    $alternate_type_class_name = lib::get_class_name( 'database\alternate_type' );
 
-      $modifier = clone $this->modifier;
-      $modifier->left_join( 'participant', 'phone.participant_id', 'participant.id' );
-      $modifier->left_join( 'alternate', 'phone.alternate_id', 'alternate.id' );
-      $modifier->where_bracket( true );
-      $modifier->where( 'participant.id', '=', $participant_id );
-      $modifier->or_where( 'alternate.participant_id', '=', $participant_id );
-      $modifier->where_bracket( false );
+    parent::setup();
 
-      // find aliases in the select and translate them in the modifier
-      $this->select->apply_aliases_to_modifier( $modifier );
-
-      $phone_class_name = lib::get_class_name( 'database\phone' );
-      return $phone_class_name::count( $modifier );
-    }
-    else
-    {
-      return parent::get_record_count();
-    }
-  }
-
-  /**
-   * Extends parent method
-   */
-  protected function get_record_list()
-  {
-    // if in an assignment and the qnaire has alternate types then include them in the phone list
+    // if in an assignment and the qnaire has alternate types then create a temporary table with alternate phone records
     $db_assignment = lib::create( 'business\session' )->get_current_assignment();
-    $alternate_type_list = is_null( $db_assignment )
-                         ? array()
-                         : $db_assignment->get_interview()->get_qnaire()->get_alternate_type_object_list();
+    $this->alternate_type_list = is_null( $db_assignment ) ?
+      array() : $db_assignment->get_interview()->get_qnaire()->get_alternate_type_object_list();
 
-    if( 0 < count( $alternate_type_list ) )
+    if( 0 < count( $this->alternate_type_list ) )
     {
-      $alternate_type_class_name = lib::get_class_name( 'database\alternate_type' );
-      $participant_id = $this->get_parent_record()->id;
-
       // create a temporary table with all of the alternate information we'll need
       $alternate_sel = lib::create( 'database\select' );
       $alternate_mod = lib::create( 'database\modifier' );
@@ -68,19 +39,27 @@ class query extends \cenozo\service\query
       $alternate_sel->add_column( 'last_name' );
 
       $coalesce_column_list = array();
-      foreach( $alternate_type_list as $db_alternate_type )
+      foreach( $this->alternate_type_list as $db_alternate_type )
       {
         // add whether the alternate is of this type
-        $alternate_type_table_name = sprintf( 'alternate_has_%s_type', $db_alternate_type->name );
+        $alternate_type_table_name = sprintf( '%s_alternate_type', $db_alternate_type->name );
+        $has_alternate_table_name = sprintf( 'alternate_has_%s_type', $db_alternate_type->name );
+        $alternate_sel->add_table_column( $alternate_type_table_name, 'title', 'emergency_title' );
         $alternate_sel->add_table_column(
-          $alternate_type_table_name,
+          $has_alternate_table_name,
           'alternate_id IS NOT NULL',
           sprintf( 'is_%s', $db_alternate_type->name )
         );
         $join_mod = lib::create( 'database\modifier' );
-        $join_mod->where( 'alternate.id', '=', sprintf( '%s.alternate_id', $alternate_type_table_name ), false );
-        $join_mod->where( sprintf( '%s.alternate_type_id', $alternate_type_table_name ), '=', $db_alternate_type->id );
-        $alternate_mod->join_modifier( 'alternate_has_alternate_type', $join_mod, 'left', $alternate_type_table_name );
+        $join_mod->where( 'alternate.id', '=', sprintf( '%s.alternate_id', $has_alternate_table_name ), false );
+        $join_mod->where( sprintf( '%s.alternate_type_id', $has_alternate_table_name ), '=', $db_alternate_type->id );
+        $alternate_mod->join_modifier( 'alternate_has_alternate_type', $join_mod, 'left', $has_alternate_table_name );
+        $alternate_mod->left_join(
+          'alternate_type',
+          sprintf( '%s.alternate_type_id', $has_alternate_table_name ),
+          sprintf( '%s.id', $alternate_type_table_name ),
+          $alternate_type_table_name
+        );
 
         // add whether the alternate has consent for this type
         if( is_null( $db_alternate_type->alternate_consent_type_id ) )
@@ -116,15 +95,16 @@ class query extends \cenozo\service\query
         }
 
         // build the coalisce column
-        $coalesce_column_list[] = sprintf( '%s.alternate_id', $alternate_type_table_name );
+        $coalesce_column_list[] = sprintf( '%s.alternate_id', $has_alternate_table_name );
       }
 
       $alternate_mod->where( sprintf( 'COALESCE( %s )', implode( ', ', $coalesce_column_list ) ), '!=', NULL );
-      $alternate_mod->where( 'alternate.participant_id', '=', $participant_id );
+      $alternate_mod->where( 'alternate.participant_id', '=', $this->get_parent_record()->id );
+
 
       $sql = 'CREATE TEMPORARY TABLE IF NOT EXISTS alternate_data ( alternate_id INT UNSIGNED NOT NULL, ';
 
-      foreach( $alternate_type_list as $db_alternate_type )
+      foreach( $this->alternate_type_list as $db_alternate_type )
       {
         $sql .= sprintf(
           '%s_title VARCHAR(255) NOT NULL, '.
@@ -143,13 +123,52 @@ class query extends \cenozo\service\query
       );
 
       $alternate_type_class_name::db()->execute( $sql );
+    }
+  }
 
+  /**
+   * Extends parent method
+   */
+  protected function get_record_count()
+  {
+    $phone_class_name = lib::get_class_name( 'database\phone' );
+
+    // if requested then join to the temporary table created in setup()
+    if( 0 < count( $this->alternate_type_list ) )
+    {
       $modifier = clone $this->modifier;
       $modifier->left_join( 'participant', 'phone.participant_id', 'participant.id' );
       $modifier->left_join( 'alternate_data', 'phone.alternate_id', 'alternate_data.alternate_id' );
 
       $modifier->where_bracket( true );
-      $modifier->where( 'participant.id', '=', $participant_id );
+      $modifier->where( 'participant.id', '=', $this->get_parent_record()->id );
+      $modifier->or_where( 'alternate_data.alternate_id', '!=', NULL );
+      $modifier->where_bracket( false );
+
+      return $phone_class_name::count( $modifier );
+    }
+    else
+    {
+      return parent::get_record_count();
+    }
+  }
+
+  /**
+   * Extends parent method
+   */
+  protected function get_record_list()
+  {
+    $phone_class_name = lib::get_class_name( 'database\phone' );
+
+    // if requested then join to the temporary table created in setup()
+    if( 0 < count( $this->alternate_type_list ) )
+    {
+      $modifier = clone $this->modifier;
+      $modifier->left_join( 'participant', 'phone.participant_id', 'participant.id' );
+      $modifier->left_join( 'alternate_data', 'phone.alternate_id', 'alternate_data.alternate_id' );
+
+      $modifier->where_bracket( true );
+      $modifier->where( 'participant.id', '=', $this->get_parent_record()->id );
       $modifier->or_where( 'alternate_data.alternate_id', '!=', NULL );
       $modifier->where_bracket( false );
 
@@ -157,7 +176,7 @@ class query extends \cenozo\service\query
       $this->select->apply_aliases_to_modifier( $modifier );
       
       $concat_list = array();
-      foreach( $alternate_type_list as $db_alternate_type )
+      foreach( $this->alternate_type_list as $db_alternate_type )
       {
         $concat_list[] = sprintf(
           'IF( alternate_data.is_%s, CONCAT( "%s", IF( alternate_data.%s_consent, " with consent", "" ) ), NULL )',
@@ -187,7 +206,6 @@ class query extends \cenozo\service\query
         false
       );
 
-      $phone_class_name = lib::get_class_name( 'database\phone' );
       return $phone_class_name::select( $select, $modifier );
     }
     else
@@ -195,4 +213,10 @@ class query extends \cenozo\service\query
       return parent::get_record_list();
     }
   }
+
+  /**
+   * A list of alternate types to include in the phone list (set by qnaire_has_alternate_type)
+   * @var boolean $include_alternates
+   */
+  private $alternate_type_list = array();
 }
