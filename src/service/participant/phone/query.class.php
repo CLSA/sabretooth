@@ -131,6 +131,8 @@ class query extends \cenozo\service\query
    */
   protected function get_record_count()
   {
+    $count = parent::get_record_count();
+
     $phone_class_name = lib::get_class_name( 'database\phone' );
 
     // if requested then join to the temporary table created in setup()
@@ -145,12 +147,10 @@ class query extends \cenozo\service\query
       $modifier->or_where( 'alternate_data.alternate_id', '!=', NULL );
       $modifier->where_bracket( false );
 
-      return $phone_class_name::count( $modifier );
+      $count += $phone_class_name::count( $modifier );
     }
-    else
-    {
-      return parent::get_record_count();
-    }
+
+    return $count;
   }
 
   /**
@@ -160,17 +160,13 @@ class query extends \cenozo\service\query
   {
     $phone_class_name = lib::get_class_name( 'database\phone' );
 
+    $list = parent::get_record_list();
+
     // if requested then join to the temporary table created in setup()
     if( 0 < count( $this->alternate_type_list ) )
     {
       $modifier = clone $this->modifier;
-      $modifier->left_join( 'participant', 'phone.participant_id', 'participant.id' );
-      $modifier->left_join( 'alternate_data', 'phone.alternate_id', 'alternate_data.alternate_id' );
-
-      $modifier->where_bracket( true );
-      $modifier->where( 'participant.id', '=', $this->get_parent_record()->id );
-      $modifier->or_where( 'alternate_data.alternate_id', '!=', NULL );
-      $modifier->where_bracket( false );
+      $modifier->join( 'alternate_data', 'phone.alternate_id', 'alternate_data.alternate_id' );
 
       // find aliases in the select and translate them in the modifier
       $this->select->apply_aliases_to_modifier( $modifier );
@@ -190,28 +186,26 @@ class query extends \cenozo\service\query
       $select = clone $this->select;
       $select->add_column(
         sprintf(
-          'IFNULL( '.
-            'CONCAT( '.
-              // include the alternat's first and last name
-              'alternate_data.first_name, " ", alternate_data.last_name, '.
-              // include what alternate types and consent the alternate has
-              '" [", CONCAT_WS( ", ", %s ), "]" '.
-            '), '.
-            // when not an alternate simply label the number as belonging to the participant
-            '"Participant" '.
-          ')',
+          'CONCAT( '.
+            // include the alternat's first and last name
+            'alternate_data.first_name, " ", alternate_data.last_name, '.
+            // include what alternate types and consent the alternate has
+            '" [", CONCAT_WS( ", ", %s ), "]" '.
+          ') ',
           implode( ', ', $concat_list )
         ),
         'person',
         false
       );
 
-      return $phone_class_name::select( $select, $modifier );
+      // identify the existing phone numbers as belonging to the participant
+      foreach( $list as $index => $phone ) $list[$index]['person'] = 'Participant';
+
+      // add the alternate's phone numbers before the participant's phone numbers
+      $list = array_merge( $phone_class_name::select( $select, $modifier ), $list );
     }
-    else
-    {
-      return parent::get_record_list();
-    }
+
+    return $list;
   }
 
   /**

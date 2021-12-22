@@ -249,7 +249,6 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
                                  ? this.phoneCallList[len-1]
                                  : null;
 
-            console.log( this.activePhoneCall );
             if( null === this.qnaireList ) {
               // get the qnaire list and store the current and last qnaires
               var response = await CnHttpFactory.instance( {
@@ -298,9 +297,7 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
                 select: { column: [ 'id', 'rank', 'type', 'number', 'international', 'note' ] },
                 modifier: {
                   where: { column: 'phone.active', operator: '=', value: true },
-                  // Note: a negative column sorted desc means sort asc but put null values last
-                  // We do this because we want the participant's numbers at the very end of the list
-                  order: [ { '-phone.alternate_id': true }, 'rank' ]
+                  order: [ 'rank' ]
                 }
               }
             } ).query();
