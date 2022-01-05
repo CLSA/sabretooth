@@ -580,6 +580,11 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
           }
         } );
 
+        this.participantModel.listModel.onList = async function( replace ) {
+
+          await this.$$onList( replace );
+        };
+
         var self = this;
         angular.extend( this.participantModel.listModel, {
           // override the default column order for the participant list to rank
@@ -609,6 +614,25 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
 
           // add the reserved row as a hidden column to be used for highlighting reserved appointments
           object.participantModel.addColumn( 'reserved', { type: 'hidden', highlight: true } );
+
+          // if there are any alternate-types with consents then add a column for each one
+          var response = await CnHttpFactory.instance( {
+            path: 'alternate_type',
+            data: {
+              modifier: {
+                join: {
+                  table: 'qnaire_has_alternate_type',
+                  onleft: 'alternate_type.id',
+                  onright: 'qnaire_has_alternate_type.alternate_type_id'
+                }
+              },
+              select: { column: [ 'id', 'name', 'title' ] }
+            }
+          } ).query();
+
+          response.data.forEach( column => {
+            object.participantModel.addColumn( column.name+'_consent', { title: column.title + ' Consent', type: 'boolean' } );
+          } );
         }
 
         init( this );

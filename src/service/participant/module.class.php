@@ -67,6 +67,7 @@ class module extends \cenozo\service\participant\module
     {
       $queue_class_name = lib::get_class_name( 'database\queue' );
       $interview_class_name = lib::get_class_name( 'database\interview' );
+      $alternate_type_class_name = lib::get_class_name( 'database\alternate_type' );
 
       $session = lib::create( 'business\session' );
       $db_user = $session->get_user();
@@ -152,6 +153,58 @@ class module extends \cenozo\service\participant\module
           sprintf( '( %s %s )', $sub_select->get_sql(), $sub_modifier->get_sql( true ) ),
           false
         );
+      }
+
+      $alternate_type_sel = lib::create( 'database\select' );
+      $alternate_type_sel->add_column( 'id' );
+      $alternate_type_sel->add_column( 'name' );
+      foreach( $alternate_type_class_name::select( $alternate_type_sel ) as $alternate_type )
+      {
+        $column_name = sprintf( '%s_consent', $alternate_type['name'] );
+        if( $select->has_column( $column_name ) )
+        {
+          $temp_sel = lib::create( 'database\select' );
+          $temp_sel->from( 'alternate_type' );
+          $temp_sel->add_table_column( 'alternate', 'participant_id' );
+          $temp_sel->add_column( 'name' );
+          $temp_sel->add_column( 'MAX( IFNULL( alternate_consent.accept, 0 ) )', 'consent', false );
+          $temp_mod = lib::create( 'database\modifier' );
+          $temp_mod->inner_join( 'alternate' );
+
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->where( 'alternate_type.id', '=', 'alternate_has_alternate_type.alternate_type_id', false );
+          $join_mod->where( 'alternate.id', '=', 'alternate_has_alternate_type.alternate_id', false );
+          $temp_mod->join_modifier( 'alternate_has_alternate_type', $join_mod );
+
+          $join_mod = lib::create( 'database\modifier' );
+          $join_mod->where( 'alternate.id', '=', 'alternate_consent.alternate_id', false );
+          $join_mod->where( 'alternate_type.alternate_consent_type_id', '=', 'alternate_consent.alternate_consent_type_id', false );
+          $temp_mod->join_modifier( 'alternate_consent', $join_mod );
+
+          $temp_mod->where( 'alternate_type.id', '=', $alternate_type['id'] );
+          $temp_mod->group( 'participant_id' );
+
+          $temp_table_name = sprintf( 'temp_%s_consent', $alternate_type['name'] );
+          $alternate_type_class_name::db()->execute( sprintf(
+            'CREATE TEMPORARY TABLE %s %s %s',
+            $temp_table_name,
+            $temp_sel->get_sql(),
+            $temp_mod->get_sql()
+          ) );
+
+          $alternate_type_class_name::db()->execute( sprintf(
+            'ALTER TABLE %s ADD PRIMARY KEY (participant_id)',
+            $temp_table_name
+          ) );
+
+          $modifier->left_join(
+            sprintf( '%s', $temp_table_name ),
+            'participant.id',
+            sprintf( '%s.participant_id', $temp_table_name )
+          );
+
+          $select->add_column( sprintf( 'IFNULL( %s.consent, false )', $temp_table_name ), $column_name, false );
+        }
       }
     }
     else
