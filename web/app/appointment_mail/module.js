@@ -210,7 +210,7 @@ cenozoApp.defineModule( { name: 'appointment_mail', dependencies: 'trace', model
             return list;
           }, [] );
 
-          this.metadata.columnList.site_id.enumList = siteResponse.data.reduce( ( item ) => {
+          this.metadata.columnList.site_id.enumList = siteResponse.data.reduce( ( list, item ) => {
             list.push( { value: item.id, name: item.name } );
             return list;
           }, [] );
