@@ -254,7 +254,7 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
               var response = await CnHttpFactory.instance( {
                 path: 'qnaire',
                 data: {
-                  select: { column: ['id', 'rank', 'script_id', 'delay_offset', 'delay_unit'] },
+                  select: { column: ['id', 'rank', 'script_id', 'delay_offset', 'delay_unit', 'allow_missing_consent'] },
                   modifier: { order: 'rank' }
                 }
               } ).query();
@@ -403,49 +403,80 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
 
           launchingScript: false,
           launchScript: async function( script ) {
-            if( 0 < this.activeQnaire.delay_offset && 1 < this.activeQnaire.rank ) {
+            var cannotProceedMessage = null;
+
+            // if the application has a consent type then check if the script can proceed without consent or not
+            if( null != CnSession.application.consentTypeId ) {
+              var matchingQnaire = this.qnaireList.findByProperty( 'script_id', script.id );
+              if( null != matchingQnaire && !matchingQnaire.allow_missing_consent ) {
+                try {
+                  var identifier = ['type=last', 'consent_type_id=' + CnSession.application.consentTypeId].join( ';' );
+                  var response = await CnHttpFactory.instance( {
+                    path: ['participant', this.assignment.participant_id, 'consent', identifier].join( '/' ),
+                    onError: function( error ) {
+                      if( 404 == error.status ) {
+                        // if we get a 404 then the participant does not have consent to proceed with this qnaire
+                        cannotProceedMessage =
+                          'The participant cannot continue the interview as they have not consented to participate in the study.';
+                      } else { CnModalMessageFactory.httpError( error ); }
+                      console.log( error, cannotProceedMessage );
+                    }
+                  } ).get();
+
+                  if( !response.data.accept ) cannotProceedMessage =
+                    'The participant cannot continue the interview as they have declined to participate in the study.';
+                } catch( err ) {
+                  // handled by onError function above
+                }
+              }
+            }
+
+            console.log( 'b' );
+            if( null == cannotProceedMessage && 0 < this.activeQnaire.delay_offset && 1 < this.activeQnaire.rank ) {
               var previousQnaire = this.qnaireList.findByProperty( 'rank', this.activeQnaire.rank - 1 );
               var delayUntil = moment( this.qnaireScriptList.findByProperty( 'id', previousQnaire.script_id ).finished_datetime ).add(
                 this.activeQnaire.delay_offset, this.activeQnaire.delay_unit
               );
 
               if( delayUntil.isAfter( moment( new Date() ), 'days' ) ) {
-                // do not launch the script (return here)
-                await CnModalMessageFactory.instance( {
-                  title: 'Interview Cannot Proceed',
-                  message: 'The participant cannot continue the interview process until ' + delayUntil.format( 'dddd, MMMM Do' ) +
-                           '.  Please end your assignment now, the participant will become available for assignment after the ' +
-                           'delay has ended.'
-                } ).show();
+                cannotProceedMessage =
+                  'The participant cannot continue the interview process until ' + delayUntil.format( 'dddd, MMMM Do' ) +
+                  '.  Please end your assignment now, the participant will become available for assignment after the ' +
+                  'delay has ended.';
               }
             }
 
-            try {
-              this.launchingScript = true;
-              this.scriptLauncher = CnScriptLauncherFactory.instance( {
-                script: script,
-                identifier: 'uid=' + this.participant.uid,
-                lang: this.participant.language_code
-              } );
-              await this.scriptLauncher.initialize();
 
-              await this.scriptLauncher.launch();
-              await this.loadScriptList();
-            } finally {
-              this.launchingScript = false;
-            };
+            if( null != cannotProceedMessage ) {
+              await CnModalMessageFactory.instance( { title: 'Interview Cannot Proceed', message: cannotProceedMessage } ).show();
+            } else {
+              try {
+                this.launchingScript = true;
+                this.scriptLauncher = CnScriptLauncherFactory.instance( {
+                  script: script,
+                  identifier: 'uid=' + this.participant.uid,
+                  lang: this.participant.language_code
+                } );
+                await this.scriptLauncher.initialize();
 
-            // check for when the window gets focus back and update the participant details
-            if( null != script.name.match( /withdraw|proxy/i ) ) {
-              var win = angular.element( $window ).on( 'focus', async () => {
-                win.off( 'focus' );
-
-                // the following will process the withdraw or proxy script (in case it was finished)
-                await CnHttpFactory.instance( {
-                  path: 'script/' + script.id + '/token/uid=' + this.participant.uid
-                } ).get()
+                await this.scriptLauncher.launch();
                 await this.loadScriptList();
-              } );
+              } finally {
+                this.launchingScript = false;
+              };
+
+              // check for when the window gets focus back and update the participant details
+              if( null != script.name.match( /withdraw|proxy/i ) ) {
+                var win = angular.element( $window ).on( 'focus', async () => {
+                  win.off( 'focus' );
+
+                  // the following will process the withdraw or proxy script (in case it was finished)
+                  await CnHttpFactory.instance( {
+                    path: 'script/' + script.id + '/token/uid=' + this.participant.uid
+                  } ).get()
+                  await this.loadScriptList();
+                } );
+              }
             }
           },
 
