@@ -419,7 +419,6 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
                         cannotProceedMessage =
                           'The participant cannot continue the interview as they have not consented to participate in the study.';
                       } else { CnModalMessageFactory.httpError( error ); }
-                      console.log( error, cannotProceedMessage );
                     }
                   } ).get();
 
@@ -431,7 +430,6 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
               }
             }
 
-            console.log( 'b' );
             if( null == cannotProceedMessage && 0 < this.activeQnaire.delay_offset && 1 < this.activeQnaire.rank ) {
               var previousQnaire = this.qnaireList.findByProperty( 'rank', this.activeQnaire.rank - 1 );
               var delayUntil = moment( this.qnaireScriptList.findByProperty( 'id', previousQnaire.script_id ).finished_datetime ).add(
