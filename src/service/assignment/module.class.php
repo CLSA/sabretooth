@@ -163,14 +163,15 @@ class module extends \cenozo\service\assignment\module
     if( $select->has_table_columns( 'queue' ) )
       $modifier->left_join( 'queue', 'assignment.queue_id', 'queue.id' );
 
+
     if( $select->has_table_columns( 'qnaire' ) ||
         $select->has_table_columns( 'script' ) ||
-        $select->has_column( 'qnaire_name' ) )
+        $select->has_column( 'qnaire_name' ) ||
+        $select->has_column( 'page_progress' ) )
     {
-      if( !$modifier->has_join( 'interview' ) )
-        $modifier->join( 'interview', 'assignment.interview_id', 'interview.id' );
-      $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
-      $modifier->join( 'script', 'script.id', 'qnaire.script_id' );
+      if( !$modifier->has_join( 'interview' ) ) $modifier->join( 'interview', 'assignment.interview_id', 'interview.id' );
+      if( !$modifier->has_join( 'qnaire' ) ) $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
+      if( !$modifier->has_join( 'script' ) ) $modifier->join( 'script', 'script.id', 'qnaire.script_id' );
 
       // define the qnaire_name alias from the script's name
       if( $select->has_column( 'qnaire_name' ) ) $select->add_column( 'script.name', 'qnaire_name', false );

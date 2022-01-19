@@ -347,12 +347,12 @@
                   ng-click="model.advanceQnaire()">Advance Questionnaire</button>
           <button type="button"
                   class="btn btn-primary"
-                  ng-if="!model.launchingScript"
+                  ng-if="!model.scriptLauncherBusy"
                   ng-disabled="!model.activeScript.repeated && model.activeScript.finished_datetime"
                   ng-click="model.launchScript( model.activeScript )">Launch Script</button>
           <button type="button"
                   class="btn btn-primary"
-                  ng-if="model.launchingScript"
+                  ng-if="model.scriptLauncherBusy"
                   disabled>Please Wait...</button>
         </div>
       </div>

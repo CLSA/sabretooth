@@ -28,9 +28,12 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
         },
         link: function( scope ) {
           // update the script list whenever we regain focus since there may have been script activity
-          var focusFn = function() { if( null != scope.model.assignment ) scope.model.onLoad( false ); };
-          var win = angular.element( $window ).on( 'focus', focusFn );
-          scope.$on( '$destroy', function() { win.off( 'focus', focusFn ); } );
+          var win = angular.element( $window ).on( 'focus', async () => {
+            await scope.model.updateLimesurveyToken();
+            scope.model.loadScriptList();
+            scope.model.updatePageProgress();
+          } );
+          scope.$on( '$destroy', function() { win.off( 'focus' ); } );
 
           // close the session's script window whenever this page is unloaded (refreshed or closed)
           $window.onunload = function() { CnSession.closeScript(); };
@@ -152,7 +155,7 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
               this.isPrevAssignmentLoading = true;
               if( closeScript ) CnSession.closeScript();
 
-              var column = [ 'id', 'interview_id', 'start_datetime', 'page_progress',
+              var column = [ 'id', 'interview_id', 'start_datetime',
                 { table: 'participant', column: 'id', alias: 'participant_id' },
                 { table: 'qnaire', column: 'id', alias: 'qnaire_id' },
                 { table: 'qnaire', column: 'web_version', type: 'boolean' },
@@ -167,7 +170,7 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
 
               var self = this;
               var response = await CnHttpFactory.instance( {
-                path: 'assignment/0?update_data=1',
+                path: 'assignment/0',
                 data: { select: { column: column } },
                 onError: async function( error ) {
                   await CnSession.updateData();
@@ -220,7 +223,8 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
                   { table: 'participant_identifier', column: 'value', alias: 'sid' },
                   { table: 'language', column: 'code', alias: 'language_code' },
                   { table: 'language', column: 'name', alias: 'language' }
-                ] } }
+                ] } },
+                onError: function () { console.error( 'Failed to get participant\'s details' ); }
               } ).get();
               this.participant = response.data;
 
@@ -237,6 +241,8 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
             var response = await CnHttpFactory.instance( {
               path: 'assignment/0/phone_call',
               data: { select: { column: [ 'end_datetime', 'status', 'person',
+                { table: 'phone', column: 'participant_id' },
+                { table: 'phone', column: 'alternate_id' },
                 { table: 'phone', column: 'rank' },
                 { table: 'phone', column: 'type' },
                 { table: 'phone', column: 'number' }
@@ -265,7 +271,10 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
                 this.activeQnaire = this.qnaireList.findByProperty( 'id', this.assignment.qnaire_id );
                 this.lastQnaire = this.qnaireList[len-1];
               }
-              this.loadScriptList(); // now load the script list
+
+              // now load the script list and update the page progress
+              this.loadScriptList();
+              this.updatePageProgress();
             }
 
             var response = await CnHttpFactory.instance( {
@@ -341,67 +350,77 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
             }
           },
 
+          updatePageProgress: async function() {
+            if( null == this.assignment ) return;
+
+            var response = await CnHttpFactory.instance( {
+              path: 'assignment/0?update_data=1',
+              data: { select: { column: 'page_progress' } }
+            } ).get();
+            this.assignment.page_progress = response.data.page_progress;
+          },
+
           loadScriptList: async function() {
-            if( null != this.assignment ) {
-              try {
-                this.isScriptListLoading = true;
+            if( null == this.assignment ) return;
 
-                if( null != this.participant ) {
-                  var response = await CnHttpFactory.instance( {
-                    path: 'participant/' + this.assignment.participant_id,
-                    data: { select: { column: [
-                      { table: 'hold_type', column: 'name', alias: 'hold' },
-                      { table: 'proxy_type', column: 'name', alias: 'proxy' }
-                    ] } }
-                  } ).get();
+            try {
+              this.isScriptListLoading = true;
 
-                  this.participant.withdrawn = 'Withdrawn' == response.data.hold;
-                  this.participant.proxy = null != response.data.proxy;
-                }
-
+              if( null != this.participant ) {
                 var response = await CnHttpFactory.instance( {
-                  path: 'application/0/script?participant_id=' + this.assignment.participant_id,
-                  data: {
-                    modifier: { order: ['repeated','name'] },
-                    select: { column: [
-                      'id', 'name', 'repeated', 'supporting', 'url', 'description',
-                      { table: 'started_event', column: 'datetime', alias: 'started_datetime' },
-                      { table: 'finished_event', column: 'datetime', alias: 'finished_datetime' }
-                    ] }
-                  }
-                } ).query();
+                  path: 'participant/' + this.assignment.participant_id,
+                  data: { select: { column: [
+                    { table: 'hold_type', column: 'name', alias: 'hold' },
+                    { table: 'proxy_type', column: 'name', alias: 'proxy' }
+                  ] } }
+                } ).get();
 
-                // put qnaire scripts in separate list and only include the current qnaire script in the main list
-                this.scriptList = [];
-                this.qnaireScriptList = [];
-                response.data.forEach( item => {
-                  if( angular.isArray( this.qnaireList ) &&
-                      null != this.qnaireList.findByProperty( 'script_id', item.id ) ) {
-                    this.qnaireScriptList.push( item );
-                    if( item.id == this.assignment.script_id ) this.scriptList.unshift( item );
-                  } else {
-                    this.scriptList.push( item );
-                  }
-                } );
-
-                if( 0 == this.scriptList.length ) {
-                  this.activeScript = null;
-                } else {
-                  if( null == this.activeScript ||
-                      null == this.scriptList.findByProperty( 'id', this.activeScript.id ) ) {
-                    this.activeScript = this.scriptList[0];
-                  } else {
-                    var activeScriptName = this.activeScript.name;
-                    this.scriptList.forEach( item => { if( activeScriptName == item.name ) this.activeScript = item; } );
-                  }
-                }
-              } finally {
-                this.isScriptListLoading = false;
+                this.participant.withdrawn = 'Withdrawn' == response.data.hold;
+                this.participant.proxy = null != response.data.proxy;
               }
+
+              var response = await CnHttpFactory.instance( {
+                path: 'application/0/script?participant_id=' + this.assignment.participant_id,
+                data: {
+                  modifier: { order: ['repeated','name'] },
+                  select: { column: [
+                    'id', 'name', 'repeated', 'supporting', 'url', 'description',
+                    { table: 'started_event', column: 'datetime', alias: 'started_datetime' },
+                    { table: 'finished_event', column: 'datetime', alias: 'finished_datetime' }
+                  ] }
+                }
+              } ).query();
+
+              // put qnaire scripts in separate list and only include the current qnaire script in the main list
+              this.scriptList = [];
+              this.qnaireScriptList = [];
+              response.data.forEach( item => {
+                if( angular.isArray( this.qnaireList ) &&
+                    null != this.qnaireList.findByProperty( 'script_id', item.id ) ) {
+                  this.qnaireScriptList.push( item );
+                  if( item.id == this.assignment.script_id ) this.scriptList.unshift( item );
+                } else {
+                  this.scriptList.push( item );
+                }
+              } );
+
+              if( 0 == this.scriptList.length ) {
+                this.activeScript = null;
+              } else {
+                if( null == this.activeScript ||
+                    null == this.scriptList.findByProperty( 'id', this.activeScript.id ) ) {
+                  this.activeScript = this.scriptList[0];
+                } else {
+                  var activeScriptName = this.activeScript.name;
+                  this.scriptList.forEach( item => { if( activeScriptName == item.name ) this.activeScript = item; } );
+                }
+              }
+            } finally {
+              this.isScriptListLoading = false;
             }
           },
 
-          launchingScript: false,
+          scriptLauncherBusy: false,
           launchScript: async function( script ) {
             var cannotProceedMessage = null;
 
@@ -444,36 +463,51 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
               }
             }
 
-
             if( null != cannotProceedMessage ) {
               await CnModalMessageFactory.instance( { title: 'Interview Cannot Proceed', message: cannotProceedMessage } ).show();
             } else {
               try {
-                this.launchingScript = true;
+                this.scriptLauncherBusy = true;
+
+                var urlParams = { show_hidden: 1 };
+                if( this.activePhoneCall.alternate_id ) urlParams.alternate_id = this.activePhoneCall.alternate_id;
                 this.scriptLauncher = CnScriptLauncherFactory.instance( {
                   script: script,
                   identifier: 'uid=' + this.participant.uid,
                   lang: this.participant.language_code
                 } );
                 await this.scriptLauncher.initialize();
-
-                await this.scriptLauncher.launch();
+                await this.scriptLauncher.launch( urlParams );
                 await this.loadScriptList();
+                this.updatePageProgress(); // no need to await
               } finally {
-                this.launchingScript = false;
+                this.scriptLauncherBusy = false;
               };
 
               // check for when the window gets focus back and update the participant details
               if( null != script.name.match( /withdraw|proxy/i ) ) {
-                var win = angular.element( $window ).on( 'focus', async () => {
-                  win.off( 'focus' );
+                this.updateLimesurveyTokenScriptId = script.id;
+              }
+            }
+          },
 
-                  // the following will process the withdraw or proxy script (in case it was finished)
-                  await CnHttpFactory.instance( {
-                    path: 'script/' + script.id + '/token/uid=' + this.participant.uid
-                  } ).get()
-                  await this.loadScriptList();
-                } );
+          updateLimesurveyTokenScriptId: null,
+          updateLimesurveyToken: async function() {
+            if( null == this.assignment ) {
+              this.updateLimesurveyTokenScriptId = null;
+              return;
+            }
+
+            if( this.updateLimesurveyTokenScriptId ) {
+              var url = 'script/' + this.updateLimesurveyTokenScriptId + '/token/uid=' + this.participant.uid;
+              this.updateLimesurveyTokenScriptId = null;
+
+              // the following will process the withdraw or proxy script (in case it was finished)
+              try {
+                this.scriptLauncherBusy = true;
+                await CnHttpFactory.instance( { path: url } ).get();
+              } finally {
+                this.scriptLauncherBusy = false;
               }
             }
           },
@@ -509,7 +543,7 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
                       error: true
                     } ).show();
                   } else if( !phone.international ) {
-                    call = await CnModalConfirmFactory.instance( {
+                    var response = await CnModalConfirmFactory.instance( {
                       title: 'Webphone Not Found',
                       message: 'You are about to place a call with no webphone connection. ' +
                                'If you choose to proceed you will have to contact the participant without the use ' +
@@ -518,10 +552,11 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
                                '"Webphone" link under the "Utilities" submenu to connect to the webphone.\n\n' +
                                'Do you wish to proceed without a webphone connection?',
                     } ).show();
+                    call = response;
                   }
                 } else {
                   if( phone.international ) {
-                    call = await CnModalConfirmFactory.instance( {
+                    var response = await CnModalConfirmFactory.instance( {
                       title: 'International Phone Number',
                       message: 'The phone number you are about to call is international. ' +
                                'The VoIP system cannot place international calls so if you choose to proceed you ' +
@@ -529,6 +564,7 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
                                'telephone system.\n\n' +
                                'Do you wish to proceed without a webphone connection?',
                     } ).show();
+                    call = response;
                   } else {
                     var response = await CnHttpFactory.instance( {
                       path: 'voip',
@@ -609,13 +645,10 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
           }
         } );
 
-        this.participantModel.listModel.onList = async function( replace ) {
-
-          await this.$$onList( replace );
-        };
-
         var self = this;
         angular.extend( this.participantModel.listModel, {
+          onList: async function( replace ) { await this.$$onList( replace ); },
+
           // override the default column order for the participant list to rank
           order: { column: 'rank', reverse: false },
 
