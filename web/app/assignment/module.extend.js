@@ -650,7 +650,7 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
           onList: async function( replace ) { await this.$$onList( replace ); },
 
           // override the default column order for the participant list to rank
-          order: { column: 'rank', reverse: false },
+          order: { column: 'queue.rank', reverse: false },
 
           // override the default order and set the heading
           heading: 'Participant Selection List',
@@ -667,7 +667,7 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
 
           // add additional columns to the model
           var index = 0;
-          object.participantModel.addColumn( 'rank', { title: 'Rank', column: 'queue.rank', type: 'rank', type: 'string' }, index++ );
+          object.participantModel.addColumn( 'rank', { title: 'Rank', column: 'queue.rank', type: 'rank' }, index++ );
           object.participantModel.addColumn( 'queue', { title: 'Queue', column: 'queue.name', type: 'string' }, index++ );
           object.participantModel.addColumn( 'qnaire', { title: 'Questionnaire', column: 'script.name' }, index++ );
           object.participantModel.addColumn( 'page_progress', { title: 'Page Progress' }, index++ );
