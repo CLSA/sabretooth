@@ -100,7 +100,7 @@ class query extends \cenozo\service\query
 
       $alternate_mod->where( sprintf( 'COALESCE( %s )', implode( ', ', $coalesce_column_list ) ), '!=', NULL );
       $alternate_mod->where( 'alternate.participant_id', '=', $this->get_parent_record()->id );
-
+      $alternate_mod->where( 'alternate.active', '=', true );
 
       $sql = 'CREATE TEMPORARY TABLE IF NOT EXISTS alternate_data ( alternate_id INT UNSIGNED NOT NULL, ';
 
