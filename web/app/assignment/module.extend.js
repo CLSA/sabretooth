@@ -625,6 +625,8 @@ cenozoApp.extendModule( { name: 'assignment', dependencies: 'participant', creat
                 }
               } ).get();
 
+              // make absolute sure that the script has been closed
+              CnSession.closeScript();
               await CnHttpFactory.instance( { path: 'assignment/0?operation=close', data: {} } ).patch();
               await this.onLoad();
             }
