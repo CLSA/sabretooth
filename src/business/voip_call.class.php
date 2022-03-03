@@ -19,7 +19,7 @@ class voip_call extends \cenozo\business\voip_call
    * @param string $filename The file name the recorded call is to be saved under.
    * @access public
    */
-  public function start_recording( $filename )
+  public function start_monitoring( $filename )
   {
     // prepend the assigned participant's uid/, or if not assigned then the user's name/datetime
     $session = lib::create( 'business\session' );
@@ -37,6 +37,6 @@ class voip_call extends \cenozo\business\voip_call
                            $filename );
     }
     
-    parent::start_recording( $filename );
+    parent::start_monitoring( $filename );
   }
 }
