@@ -31,7 +31,7 @@ class qnaire extends \cenozo\database\has_rank
     if( 'phone' == $method )
     {
       // delete pending emails for all interviews
-      $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+      $cenozo_manager = lib::create( 'business\cenozo_manager', lib::create( 'business\session' )->get_pine_application() );
       $cenozo_manager->post(
         sprintf( 'qnaire/%d/participant', $pine_qnaire_id ),
         array(
@@ -102,7 +102,7 @@ class qnaire extends \cenozo\database\has_rank
    */
   public function launch_web_interviews( $db_identifier, $identifier_list )
   {
-    $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+    $cenozo_manager = lib::create( 'business\cenozo_manager', lib::create( 'business\session' )->get_pine_application() );
     $pine_qnaire_id = $this->get_script()->pine_qnaire_id;
     if( is_null( $pine_qnaire_id ) )
       throw lib::create( 'exception\runtime', 'Tried to launch web interviews for non Pine questionnaire.', __METHOD__ );
@@ -138,7 +138,7 @@ class qnaire extends \cenozo\database\has_rank
    */
   public function update_interview_progress( $db_participant = NULL )
   {
-    $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+    $cenozo_manager = lib::create( 'business\cenozo_manager', lib::create( 'business\session' )->get_pine_application() );
     
     $updated_total = 0;
     $db_script = $this->get_script();

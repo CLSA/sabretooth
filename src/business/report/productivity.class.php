@@ -24,7 +24,7 @@ class productivity extends \cenozo\business\report\base_report
     $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $interview_class_name = lib::get_class_name( 'database\interview' );
-    $pine_server = lib::create( 'business\cenozo_manager', 'pine' );
+    $cenozo_manager = lib::create( 'business\cenozo_manager', lib::create( 'business\session' )->get_pine_application() );
 
     // create a list of all qnaires
     $qnaire_mod = lib::create( 'database\modifier' );
@@ -270,11 +270,7 @@ class productivity extends \cenozo\business\report\base_report
         // send all queries to pine as a single request to reduce machine-to-machine overhead
         if( 0 < count( $time_report['query'] ) )
         {
-          $response = $pine_server->post(
-            'respondent?time_report=1',
-            $time_report['query']
-          );
-
+          $response = $cenozo_manager->post( 'respondent?time_report=1', $time_report['query'] );
           foreach( $response as $row )
           {
             // pine tracks time in seconds so we divide by 60 to convert to minutes

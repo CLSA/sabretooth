@@ -47,7 +47,7 @@ class interview extends \cenozo\database\interview
       $token = NULL;
 
       // try and get the respondent record from pine, if it exists
-      $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+      $cenozo_manager = lib::create( 'business\cenozo_manager', lib::create( 'business\session' )->get_pine_application() );
       try
       {
         $response = $cenozo_manager->get( sprintf(
@@ -99,7 +99,7 @@ class interview extends \cenozo\database\interview
       $token = NULL;
 
       // try and get the respondent record from pine, if it exists
-      $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+      $cenozo_manager = lib::create( 'business\cenozo_manager', lib::create( 'business\session' )->get_pine_application() );
       try
       {
         $response = $cenozo_manager->get( sprintf(
@@ -148,7 +148,7 @@ class interview extends \cenozo\database\interview
     $is_complete = false;
     if( 'pine' == $db_script->get_type() )
     {
-      $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+      $cenozo_manager = lib::create( 'business\cenozo_manager', lib::create( 'business\session' )->get_pine_application() );
       try
       {
         $response = $cenozo_manager->get( sprintf(
@@ -290,7 +290,7 @@ class interview extends \cenozo\database\interview
 
     if( 'pine' == $db_script->get_type() )
     {
-      $cenozo_manager = lib::create( 'business\cenozo_manager', 'pine' );
+      $cenozo_manager = lib::create( 'business\cenozo_manager', lib::create( 'business\session' )->get_pine_application() );
       $cenozo_manager->patch(
         // note that we have to use the root respondent/<identifier> service for this operation
         sprintf( 'respondent/qnaire_id=%d;participant_id=%d?action=force_submit', $db_script->pine_qnaire_id, $db_participant->id ),
