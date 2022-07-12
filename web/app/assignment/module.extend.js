@@ -43,7 +43,6 @@ cenozoApp.extendModule({
           link: function (scope) {
             // update the script list whenever we regain focus since there may have been script activity
             var win = angular.element($window).on("focus", async () => {
-              await scope.model.updateLimesurveyToken();
               scope.model.loadScriptList();
               scope.model.updatePageProgress();
             });
@@ -710,39 +709,6 @@ cenozoApp.extendModule({
                   await this.scriptLauncher.launch(urlParams);
                   await this.loadScriptList();
                   this.updatePageProgress(); // no need to await
-                } finally {
-                  this.scriptLauncherBusy = false;
-                }
-
-                // check for when the window gets focus back and update the participant details
-                if (
-                  "pine" != script.application &&
-                  null != script.name.match(/withdraw|proxy/i)
-                ) {
-                  this.updateLimesurveyTokenScriptId = script.id;
-                }
-              }
-            },
-
-            updateLimesurveyTokenScriptId: null,
-            updateLimesurveyToken: async function () {
-              if (null == this.assignment) {
-                this.updateLimesurveyTokenScriptId = null;
-                return;
-              }
-
-              if (this.updateLimesurveyTokenScriptId) {
-                var url =
-                  "script/" +
-                  this.updateLimesurveyTokenScriptId +
-                  "/token/uid=" +
-                  this.participant.uid;
-                this.updateLimesurveyTokenScriptId = null;
-
-                // the following will process the withdraw or proxy script (in case it was finished)
-                try {
-                  this.scriptLauncherBusy = true;
-                  await CnHttpFactory.instance({ path: url }).get();
                 } finally {
                   this.scriptLauncherBusy = false;
                 }
