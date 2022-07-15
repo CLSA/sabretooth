@@ -26,4 +26,8 @@ INSERT IGNORE INTO service ( subject, method, resource, restricted ) VALUES
 
 UPDATE service SET restricted = 1 WHERE subject = 'pine_response' AND method = 'GET';
 
+-- adding events is now restricted by event-type (role_has_event_type table)
+UPDATE service SET restricted = 0 WHERE subject = 'event' AND method = 'POST';
+
+-- don't allow alternate types to be deleted by anyone
 DELETE FROM service WHERE subject = 'alternate_type' AND method = 'DELETE';
