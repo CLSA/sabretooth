@@ -25,7 +25,6 @@ $SETTINGS['general']['vacancy_size'] = 30;
 $SETTINGS['path']['APPLICATION'] = str_replace( '/settings.ini.php', '', __FILE__ );
 
 // add modules used by the application
-$SETTINGS['module']['equipment'] = true;
 $SETTINGS['module']['interview'] = true;
 $SETTINGS['module']['recording'] = true;
 $SETTINGS['module']['script'] = true;
