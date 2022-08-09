@@ -20,7 +20,7 @@ class delete extends \cenozo\service\delete
   {
     parent::validate();
 
-    if( 300 > $this->status->get_code() )
+    if( $this->may_continue() )
     {
       // never allow anyone to remove participants from a queue
       $this->status->set_code( 403 );

@@ -19,7 +19,7 @@ class post extends \cenozo\service\participant\interview\post
 
     $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
 
-    if( 300 > $this->get_status()->get_code() )
+    if( $this->may_continue() )
     {
       $db_participant = $this->get_parent_record();
 

@@ -28,7 +28,7 @@ class post extends \cenozo\service\write
   {
     parent::validate();
 
-    if( 300 > $this->status->get_code() )
+    if( $this->may_continue() )
     {
       $file = $this->get_file_as_object();
       if( !property_exists( $file, 'mode' ) ||

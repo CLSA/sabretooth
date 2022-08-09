@@ -32,7 +32,7 @@ class module extends \cenozo\service\base_calendar_module
   {
     parent::validate();
 
-    if( 300 > $this->get_status()->get_code() )
+    if( $this->service->may_continue() )
     {
       $record = $this->get_resource();
       if( !is_null( $record ) )

@@ -63,7 +63,7 @@ class post extends \cenozo\service\post
   {
     parent::validate();
 
-    if( 300 > $this->get_status()->get_code() )
+    if( $this->may_continue() )
     {
       $db_role = lib::create( 'business\session' )->get_role();
 

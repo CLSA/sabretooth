@@ -20,7 +20,7 @@ class module extends \cenozo\service\participant\module
   {
     parent::validate();
 
-    if( 300 > $this->get_status()->get_code() )
+    if( $this->service->may_continue() )
     {
       $session = lib::create( 'business\session' );
       $db_user = $session->get_user();

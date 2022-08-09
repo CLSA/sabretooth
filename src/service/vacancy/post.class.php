@@ -34,7 +34,7 @@ class post extends \cenozo\service\post
   {
     parent::validate();
 
-    if( 300 > $this->status->get_code() )
+    if( $this->may_continue() )
     {
       if( !is_null( $this->start_datetime ) || !is_null( $this->end_datetime ) )
       { // validate the start/end datetimes

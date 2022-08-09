@@ -20,7 +20,7 @@ class module extends \cenozo\service\interview\module
   {
     parent::validate();
 
-    if( 300 > $this->get_status()->get_code() )
+    if( $this->service->may_continue() )
     {
       $operation = $this->get_argument( 'operation', false );
       if( 'force_delete' == $operation )
