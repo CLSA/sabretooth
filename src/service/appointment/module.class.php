@@ -14,18 +14,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class module extends \cenozo\service\base_calendar_module
 {
   /**
-   * Contructor
-   */
-  public function __construct( $index, $service )
-  {
-    parent::__construct( $index, $service );
-    $db_user = lib::create( 'business\session' )->get_user();
-    $date_string = sprintf( 'DATE( CONVERT_TZ( start_vacancy.datetime, "UTC", "%s" ) )', $db_user->timezone );
-    $this->lower_date = array( 'null' => false, 'column' => $date_string );
-    $this->upper_date = array( 'null' => false, 'column' => $date_string );
-  }
-
-  /**
    * Extend parent method
    */
   public function validate()
@@ -136,9 +124,17 @@ class module extends \cenozo\service\base_calendar_module
    */
   public function prepare_read( $select, $modifier )
   {
+    $session = lib::create( 'business\session' );
+    $db_application = $session->get_application();
+    $db_user = $session->get_user();
+
+    // make sure to define the lower and upper date before calling the parent method
+    $date_string = sprintf( 'DATE( CONVERT_TZ( start_vacancy.datetime, "UTC", "%s" ) )', $db_user->timezone );
+    $this->lower_date = array( 'null' => false, 'column' => $date_string );
+    $this->upper_date = array( 'null' => false, 'column' => $date_string );
+
     parent::prepare_read( $select, $modifier );
 
-    $session = lib::create( 'business\session' );
     $vacancy_size = lib::create( 'business\setting_manager' )->get_setting( 'general', 'vacancy_size' );
 
     $modifier->left_join( 'user', 'appointment.user_id', 'user.id' );
@@ -171,7 +167,7 @@ class module extends \cenozo\service\base_calendar_module
     $participant_site_join_mod->where(
       'interview.participant_id', '=', 'participant_site.participant_id', false );
     $participant_site_join_mod->where(
-      'participant_site.application_id', '=', $session->get_application()->id );
+      'participant_site.application_id', '=', $db_application->id );
     $modifier->join_modifier( 'participant_site', $participant_site_join_mod, 'left' );
 
     // restrict by site
@@ -191,7 +187,7 @@ class module extends \cenozo\service\base_calendar_module
     {
       $date_string = sprintf(
         'DATE( CONVERT_TZ( start_vacancy.datetime, "UTC", "%s" ) )',
-        $session->get_user()->timezone
+        $db_user->timezone
       );
       $select->add_column( $date_string, 'date', false );
     }

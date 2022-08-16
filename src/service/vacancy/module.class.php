@@ -14,18 +14,6 @@ use cenozo\lib, cenozo\log, sabretooth\util;
 class module extends \cenozo\service\base_calendar_module
 {
   /**
-   * Contructor
-   */
-  public function __construct( $index, $service )
-  {
-    parent::__construct( $index, $service );
-    $db_user = lib::create( 'business\session' )->get_user();
-    $date_string = sprintf( 'DATE( CONVERT_TZ( datetime, "UTC", "%s" ) )', $db_user->timezone );
-    $this->lower_date = array( 'null' => false, 'column' => $date_string );
-    $this->upper_date = array( 'null' => false, 'column' => $date_string );
-  }
-
-  /**
    * Extend parent method
    */
   public function validate()
@@ -53,6 +41,12 @@ class module extends \cenozo\service\base_calendar_module
    */
   public function prepare_read( $select, $modifier )
   {
+    // make sure to define the lower and upper date before calling the parent method
+    $db_user = lib::create( 'business\session' )->get_user();
+    $date_string = sprintf( 'DATE( CONVERT_TZ( datetime, "UTC", "%s" ) )', $db_user->timezone );
+    $this->lower_date = array( 'null' => false, 'column' => $date_string );
+    $this->upper_date = array( 'null' => false, 'column' => $date_string );
+    
     parent::prepare_read( $select, $modifier );
 
     // restrict by site
