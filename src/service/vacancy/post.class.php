@@ -107,8 +107,15 @@ class post extends \cenozo\service\post
     {
       foreach( $this->delete_ids as $id )
       {
-        $db_vacancy = lib::create( 'database\vacancy', $id );
-        if( !is_null( $db_vacancy ) ) $db_vacancy->delete();
+        try
+        {
+          $db_vacancy = lib::create( 'database\vacancy', $id );
+          $db_vacancy->delete();
+        }
+        catch( \cenozo\exception\runtime $e )
+        {
+          // a runtime exception means the record doesn't exist (so we can ignore it)
+        }
       }
     }
     else parent::execute();
