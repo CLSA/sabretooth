@@ -24,7 +24,7 @@ class appointment extends \cenozo\business\report\base_report
     $interview_class_name = lib::get_class_name( 'database\interview' );
     $session = lib::create( 'business\session' );
     $db_study_phase = $session->get_application()->get_study_phase();
-    $db_identifier = is_null( $db_study_phase ) ? NULL : $db_study_phase->get_study()->get_identifier();
+    $db_identifier = is_null( $db_study_phase ) ? NULL : $db_study_phase->get_identifier();
 
     // get whether restricting by qnaire or site
     $db_site = NULL;
