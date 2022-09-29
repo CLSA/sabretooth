@@ -432,9 +432,11 @@ cenozoApp.extendModule({
               this.isPrevAssignmentLoading = false;
 
               this.phoneList = null;
+              const path = "participant/" + this.assignment.participant_id + "/phone" + (
+                this.proxyInterview ? "?include_alternates=1" : ''
+              );
               var response = await CnHttpFactory.instance({
-                path:
-                  "participant/" + this.assignment.participant_id + "/phone",
+                path: path,
                 data: {
                   select: {
                     column: [
@@ -466,9 +468,9 @@ cenozoApp.extendModule({
                   var newPhone = angular.copy(phone);
                   newPhone.newPerson = true;
                   this.phoneList.push(newPhone);
+                } else {
+                  this.phoneList.push(phone);
                 }
-
-                this.phoneList.push(phone);
                 lastPerson = phone.person;
               });
 
@@ -498,11 +500,19 @@ cenozoApp.extendModule({
                 });
             },
 
-            useTimezone: async function () {
-              if (null != this.participant) {
-                await CnSession.setTimezone({
-                  participant_id: this.participant.id,
-                });
+            /** 
+             * The object can be undefined, in which case the current participant's timezone will be used.
+             * Otherwise it should be the alternate {alternate_id:...} or participant {participant_id:...}
+             */
+            useTimezone: async function (obj) {
+              if (angular.isUndefined(obj)) {
+                if (null != this.participant) {
+                  obj = {participant_id: this.participant.id};
+                }
+              }
+
+              if (angular.isDefined(obj)) {
+                await CnSession.setTimezone(obj);
                 await $state.go("self.wait");
                 $window.location.reload();
               }

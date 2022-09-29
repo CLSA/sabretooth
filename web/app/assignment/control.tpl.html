@@ -189,11 +189,29 @@
             <div class="btn-group">
               <button type="button" class="btn btn-default" ng-click="model.openHistory()">History</button>
             </div>
-            <div class="btn-group">
+            <div class="btn-group" ng-if="!model.proxyInterview">
               <button type="button"
                       class="btn btn-default"
                       uib-tooltip="Changes to the same timezone as the participant's first active address"
                       ng-click="model.useTimezone()">Use Timezone</button>
+            </div>
+            <div ng-if="model.proxyInterview" class="btn-group dropdown">
+              <button type="button"
+                      class="btn btn-primary dropdown-toggle"
+                      id="timeZoneList"
+                      data-toggle="dropdown"
+                      aria-haspopup="true"
+                      ng-disabled="null == model.phoneList"
+                      aria-expanded="false">
+                Use Timezone <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu full-width" aria-labelledby="timeZoneList">
+                <li ng-repeat="phone in model.phoneList" ng-if="phone.newPerson">
+                  <a ng-click="model.useTimezone(
+                    phone.alternate_id ? {alternate_id:phone.alternate_id} : undefined
+                  )">{{ phone.person_name }}</a>
+                </li>
+              </ul>
             </div>
           </div>
           <div class="btn-group btn-group-justified">
@@ -229,7 +247,7 @@
                 <li>
                 <li ng-if="0 < model.phoneList.length" ng-repeat="phone in model.phoneList">
                   <h4 class="horizontal-spacer text-primary" ng-if="phone.newPerson">{{ phone.person }}</h4>
-                  <a ng-if="!phone.newPerson" ng-click="model.startCall( phone )">
+                  <a ng-click="model.startCall( phone )">
                     <div class="row"
                          uib-tooltip="{{ phone.note }}"
                          tooltip-popup-delay="100"
