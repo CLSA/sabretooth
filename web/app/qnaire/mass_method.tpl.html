@@ -1,5 +1,17 @@
 <div class="utility-view rounded">
-  <div class="container-fluid bg-primary rounded-top"><h4>Mass Interview "{{ model.qnaireName }}"</h4></div>
+  <div class="container-fluid bg-primary rounded-top">
+    <h4>
+      <div class="pull-right">
+        <i class="glyphicon glyphicon-question-sign glyph-hover btn-primary btn-header"
+           ng-class="{'glyph-disabled':!model.parentModel.module.hasNotation()}"
+           ng-if="model.parentModel.isRole('administrator') || model.parentModel.module.hasNotation()"
+           uib-tooltip="Click to view documentation"
+           tooltip-placement="left"
+           ng-click="model.parentModel.showNotation(); $event.stopPropagation()"></i>
+      </div>
+      Mass Interview "{{ model.qnaireName }}"
+    </h4>
+  </div>
   <form name="form" class="form-horizontal" novalidate>
     <div class="form-body container-fluid">
       <div class="container-fluid text-info">

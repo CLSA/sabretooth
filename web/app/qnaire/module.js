@@ -141,12 +141,14 @@ cenozoApp.defineModule({
 
     /* ############################################################################################## */
     cenozo.providers.factory("CnQnaireMassMethodFactory", [
+      "CnQnaireModelFactory",
       "CnSession",
       "CnHttpFactory",
       "CnModalMessageFactory",
       "CnParticipantSelectionFactory",
       "$state",
       function (
+        CnQnaireModelFactory,
         CnSession,
         CnHttpFactory,
         CnModalMessageFactory,
@@ -155,6 +157,7 @@ cenozoApp.defineModule({
       ) {
         var object = function () {
           angular.extend(this, {
+            parentModel: CnQnaireModelFactory.root,
             method: "phone",
             working: false,
             qnaireId: $state.params.identifier,

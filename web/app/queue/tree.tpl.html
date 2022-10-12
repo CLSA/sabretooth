@@ -1,11 +1,19 @@
 <div class="utility-view rounded">
   <div class="container-fluid bg-primary rounded-top">
     <h4>
-      <i class="glyphicon glyphicon-refresh glyph-hover rounded pull-right btn-primary"
-         ng-if="!isLoading && !model.form.isRepopulating"
-         ng-click="model.onView( true )"
-         uib-tooltip="Click to refresh data"
-         tooltip-placement="left"></i>
+      <div class="pull-right">
+        <i class="glyphicon glyphicon-question-sign glyph-hover btn-primary btn-header"
+           ng-class="{'glyph-disabled':!model.queueModel.module.hasNotation()}"
+           ng-if="model.queueModel.isRole('administrator') || model.queueModel.module.hasNotation()"
+           uib-tooltip="Click to view documentation"
+           tooltip-placement="left"
+           ng-click="model.queueModel.showNotation(); $event.stopPropagation()"></i>
+        <i class="glyphicon glyphicon-refresh glyph-hover btn-primary btn-header"
+           ng-if="!isLoading && !model.form.isRepopulating"
+           ng-click="model.onView( true )"
+           uib-tooltip="Click to refresh data"
+           tooltip-placement="left"></i>
+      </div>
       Queue Tree
       <span ng-if="isLoading">(Loading&hellip;)</span>
       <span ng-if="model.form.isRepopulating">(Re-populating&hellip;)</span>
