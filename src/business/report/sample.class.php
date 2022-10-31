@@ -75,8 +75,11 @@ class sample extends \cenozo\business\report\base_report
     }
 
     $select = lib::create( 'database\select' );
+    $modifier = lib::create( 'database\modifier' );
+
     $select->from( 'participant' );
     $select->add_column( 'uid', 'UID' );
+    $this->add_application_identifier_columns( $select, $modifier );
     if( $this->db_role->all_sites ) $select->add_column( 'site.name', 'Site', false );
     $select->add_column( 'TIMESTAMPDIFF( YEAR, participant.date_of_birth, CURDATE() )', 'Age', false );
     $select->add_column( 'language.name', 'Language', false );
@@ -101,8 +104,6 @@ class sample extends \cenozo\business\report\base_report
       'Appointment',
       false
     );
-
-    $modifier = lib::create( 'database\modifier' );
 
     // do not include excluded participants
     $modifier->where( 'participant.exclusion_id', '=', NULL);

@@ -66,6 +66,7 @@ class interview_method extends \cenozo\business\report\base_report
     $select->from( 'participant' );
     $select->add_column( 'IFNULL( site.name, "(none)" )', 'Site', false );
     $select->add_column( 'participant.uid', 'UID', false );
+    $this->add_application_identifier_columns( $select, $modifier );
     $select->add_column( 'language.name', 'Language', false );
     $select->add_column( 'participant.sex', 'Sex', false );
     $select->add_column( 'TIMESTAMPDIFF( YEAR, participant.date_of_birth, CURDATE() )', 'Age', false );

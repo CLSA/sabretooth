@@ -84,6 +84,7 @@ class call_history extends \cenozo\business\report\base_report
     $select->from( 'phone_call' );
     if( $this->db_role->all_sites ) $select->add_column( 'site.name', 'Site', false );
     $select->add_column( 'participant.uid', 'UID', false );
+    $this->add_application_identifier_columns( $select, $modifier );
     $select->add_column( 'language.name', 'Language', false );
     $select->add_column( 'participant.sex', 'Sex', false );
     $select->add_column( 'participant.email', 'Email', false );
