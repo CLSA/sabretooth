@@ -325,7 +325,7 @@ class participant extends \cenozo\database\participant
     $modifier->limit( 1 );
     $row = static::db()->get_row( sprintf( '%s %s', $select->get_sql(), $modifier->get_sql() ) );
 
-    if( count( $row ) )
+    if( !is_null( $row ) && count( $row ) )
     {
       $this->current_queue_id = $row['queue_id'];
       $this->effective_qnaire_id = $row['qnaire_id'];
