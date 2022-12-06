@@ -25,7 +25,7 @@ cenozoApp.defineModule({
           title: "Language",
         },
         delay: {
-          title: "Delay (days)",
+          title: "Delay",
         },
         subject: {
           title: "Subject",
@@ -71,10 +71,18 @@ cenozoApp.defineModule({
         type: "string",
         help: 'May be a comma-delimited list of eappointment_mail addresses in the format "account@domain.name".',
       },
-      delay: {
+      delay_offset: {
         title: "Delay (days)",
         type: "string",
         format: "integer",
+        isExcluded: function ($state, model) {
+          // temporary until add scope is loaded
+          return "immediately" == model.viewModel.record.delay_unit ? true : "add";
+        },
+      },
+      delay_unit: {
+        title: "Delay Type",
+        type: "enum",
       },
       subject: {
         title: "Subject",
@@ -99,6 +107,53 @@ cenozoApp.defineModule({
         model.viewModel.validate();
       },
     });
+
+    /* ############################################################################################## */
+    cenozo.providers.directive("cnAppointmentMailAdd", [
+      "CnAppointmentMailModelFactory",
+      function (CnAppointmentMailModelFactory) {
+        return {
+          templateUrl: module.getFileUrl("add.tpl.html"),
+          restrict: "E",
+          scope: { model: "=?" },
+          controller: function ($scope) {
+            if (angular.isUndefined($scope.model))
+              $scope.model = CnAppointmentMailModelFactory.root;
+
+            // get the child cn-record-add's scope
+            $scope.$on("cnRecordAdd ready", async function (event, data) {
+              var cnRecordAddScope = data;
+              var checkFunction = cnRecordAddScope.check;
+
+              angular.extend(cnRecordAddScope, {
+                // Only show the delay offset if the delay unit value is not "immediately"
+                updateDelayOffsetInputVisibility: function() {
+                  const group = this.model.module.inputGroupList.findByProperty( "title", "" );
+                  group.inputList.delay_offset.isExcluded = function($state, model) {
+                    return "view" == model.getActionFromState() ?
+                      "immediately" == model.viewModel.record.delay_unit :
+                      "immediately" == cnRecordAddScope.record.delay_unit;
+                  };
+                },
+
+                check: function (property) {
+                  // run the original check function first
+                  checkFunction(property);
+
+                  if ("delay_unit" == property) {
+                    // Update whether the delay offset input is visible
+                    this.updateDelayOffsetInputVisibility();
+                  }
+                },
+              });
+
+              // make sure to define whether or not to show the delay offset input
+              cnRecordAddScope.updateDelayOffsetInputVisibility();
+            });
+          },
+        };
+      },
+    ]);
 
     /* ############################################################################################## */
     cenozo.providers.factory("CnAppointmentMailAddFactory", [
@@ -145,6 +200,20 @@ cenozoApp.defineModule({
           CnBaseViewFactory.construct(this, parentModel, root);
 
           angular.extend(this, {
+            onPatch: async function (data) {
+              await this.$$onPatch(data);
+
+              // The server-side will ensure that the delay_offset is empty when immediately is selected,
+              // and delay_offset is not empty (any integer) when days is selected, so reflect that here
+              if( angular.isDefined(data.delay_offset) || angular.isDefined(data.delay_unit) ) {
+                if( "immediately" == this.record.delay_unit && null != this.record.delay_offset ) {
+                  this.record.delay_offset = null;
+                } else if( "immediately" != this.record.delay_unit && null == this.record.delay_offset ) {
+                  this.record.delay_offset = 1;
+                }
+              }
+            },
+
             preview: async function () {
               var response = await CnHttpFactory.instance({
                 path: "application/" + CnSession.application.id,

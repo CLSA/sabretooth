@@ -7,6 +7,7 @@ SOURCE table_character_sets.sql
 SOURCE service.sql
 SOURCE role_has_service.sql
 SOURCE qnaire_has_alternate_type.sql
+SOURCE appointment_mail.sql
 
 SOURCE update_version_number.sql
 
