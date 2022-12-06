@@ -18,7 +18,7 @@ chdir( dirname( __FILE__ ).'/../' );
 require_once 'settings.ini.php';
 require_once 'settings.local.ini.php';
 require_once $SETTINGS['path']['CENOZO'].'/src/initial.class.php';
-$initial = new \cenozo\initial();
+$initial = new \cenozo\initial( true );
 $settings = $initial->get_settings();
 define( 'USER', $settings['db']['username'] );
 define( 'HOST', $settings['db']['server'] );
