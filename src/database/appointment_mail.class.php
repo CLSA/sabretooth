@@ -72,7 +72,7 @@ class appointment_mail extends \cenozo\database\record
         $schedule_datetime = clone $db_start_vacancy->datetime;
         $schedule_datetime->sub( new \DateInterval( sprintf( 'P%dD', $this->delay_offset ) ) );
         // don't send future reminders that have already passed
-        if( util::get_datetime_object() < $schedule_datetime ) return;
+        if( util::get_datetime_object() >= $schedule_datetime ) return;
       }
 
       // work on the existing mail if one already exists
