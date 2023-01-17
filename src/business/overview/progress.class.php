@@ -16,7 +16,7 @@ class progress extends \cenozo\business\overview\base_overview
   /**
    * Implements abstract method
    */
-  protected function build()
+  protected function build( $modifier = NULL )
   {
     $phone_call_class_name = lib::get_class_name( 'database\phone_call' );
     $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
@@ -73,6 +73,9 @@ class progress extends \cenozo\business\overview\base_overview
     $select->add_table_column( 'site', 'IFNULL( site.name, "(none)" )', 'site', false );
     $select->add_column( 'COUNT(*)', 'total', false );
 
+    // we need to add the input modifier's statements at the end, so rename it and merge it later
+    $input_modifier = $modifier;
+
     $modifier = lib::create( 'database\modifier' );
     $modifier->join( 'queue', 'queue_has_participant.queue_id', 'queue.id' );
     $modifier->left_join( 'site', 'queue_has_participant.site_id', 'site.id' );
@@ -80,6 +83,21 @@ class progress extends \cenozo\business\overview\base_overview
     $modifier->left_join( 'script', 'qnaire.script_id', 'script.id' );
     if( !$db_role->all_sites ) $modifier->where( 'site.id', '=', $db_site->id );
     $modifier->group( 'queue_has_participant.site_id' );
+
+    if( !is_null( $input_modifier ) )
+    {
+      $modifier->join(
+        'study_has_participant',
+        'queue_has_participant.participant_id',
+        'study_has_participant.participant_id'
+      );
+      $modifier->join(
+        'study',
+        'study_has_participant.study_id',
+        'study.id'
+      );
+      $modifier->merge( $input_modifier );
+    }
 
     // start with the participant totals
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -135,7 +153,7 @@ class progress extends \cenozo\business\overview\base_overview
     $cat_mod->join( 'hold', 'participant_last_hold.hold_id', 'hold.id' );
     $cat_mod->join( 'hold_type', 'hold.hold_type_id', 'hold_type.id' );
     $cat_mod->group( 'hold_type.id' );
-    
+
     foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
       $parent_node = $site_node_lookup[$row['site']]->find_node( 'Hold Types' );
@@ -155,7 +173,7 @@ class progress extends \cenozo\business\overview\base_overview
     $cat_mod->join( 'trace', 'participant_last_trace.trace_id', 'trace.id' );
     $cat_mod->join( 'trace_type', 'trace.trace_type_id', 'trace_type.id' );
     $cat_mod->group( 'trace_type.id' );
-    
+
     foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
       $parent_node = $site_node_lookup[$row['site']]->find_node( 'Trace Types' );
@@ -175,7 +193,7 @@ class progress extends \cenozo\business\overview\base_overview
     $cat_mod->join( 'proxy', 'participant_last_proxy.proxy_id', 'proxy.id' );
     $cat_mod->join( 'proxy_type', 'proxy.proxy_type_id', 'proxy_type.id' );
     $cat_mod->group( 'proxy_type.id' );
-    
+
     foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
       $parent_node = $site_node_lookup[$row['site']]->find_node( 'Proxy Types' );
