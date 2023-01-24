@@ -178,6 +178,19 @@ class module extends \cenozo\service\assignment\module
       if( $select->has_column( 'page_progress' ) )
         $select->add_column( $interview_class_name::get_page_progress_column(), 'page_progress', false );
     }
+
+    $db_assignment = $this->get_resource();
+    if( !is_null( $db_assignment ) )
+    {
+      if( $select->has_column( 'has_alternate_types' ) )
+      {
+        $select->add_constant(
+          0 < $db_assignment->get_interview()->get_qnaire()->get_alternate_type_count(),
+          'has_alternate_types',
+          'boolean'
+        );
+      }
+    }
   }
 
   /**

@@ -202,6 +202,7 @@ cenozoApp.extendModule({
                   "id",
                   "interview_id",
                   "start_datetime",
+                  "has_alternate_types",
                   {
                     table: "participant",
                     column: "id",
@@ -341,34 +342,9 @@ cenozoApp.extendModule({
                 this.isAssignmentLoading = false;
               }
 
-              var response = await CnHttpFactory.instance({
-                path: "assignment/0/phone_call",
-                data: {
-                  select: {
-                    column: [
-                      "end_datetime",
-                      "status",
-                      "person",
-                      { table: "phone", column: "participant_id" },
-                      { table: "phone", column: "alternate_id" },
-                      { table: "phone", column: "rank" },
-                      { table: "phone", column: "type" },
-                      { table: "phone", column: "number" },
-                    ],
-                  },
-                },
-              }).query();
-
-              this.phoneCallList = response.data;
-              var len = this.phoneCallList.length;
-              this.activePhoneCall =
-                0 < len && null === this.phoneCallList[len - 1].end_datetime
-                  ? this.phoneCallList[len - 1]
-                  : null;
-
               if (null === this.qnaireList) {
                 // get the qnaire list and store the current and last qnaires
-                var response = await CnHttpFactory.instance({
+                var qnaireResponse = await CnHttpFactory.instance({
                   path: "qnaire",
                   data: {
                     select: {
@@ -385,7 +361,7 @@ cenozoApp.extendModule({
                   },
                 }).query();
 
-                this.qnaireList = response.data;
+                this.qnaireList = qnaireResponse.data;
                 var len = this.qnaireList.length;
                 if (0 < len) {
                   this.activeQnaire = this.qnaireList.findByProperty(
@@ -400,68 +376,99 @@ cenozoApp.extendModule({
                 this.updatePageProgress();
               }
 
-              var response = await CnHttpFactory.instance({
-                path:
-                  "participant/" +
-                  this.assignment.participant_id +
-                  "/interview/" +
-                  this.assignment.interview_id +
-                  "/assignment",
-                data: {
-                  select: {
-                    column: [
-                      "start_datetime",
-                      "end_datetime",
-                      "phone_call_count",
-                      { table: "last_phone_call", column: "status" },
-                      { table: "user", column: "first_name" },
-                      { table: "user", column: "last_name" },
-                      { table: "user", column: "name" },
-                    ],
-                  },
-                  modifier: {
-                    order: { start_datetime: true },
-                    offset: 1,
-                    limit: 1,
-                  },
-                },
-              }).query();
-
-              this.prevAssignment =
-                1 == response.data.length ? response.data[0] : null;
-              this.isPrevAssignmentLoading = false;
-
-              this.phoneList = null;
-              const path = "participant/" + this.assignment.participant_id + "/phone" + (
-                this.proxyInterview ? "?include_alternates=1" : ''
-              );
-              var response = await CnHttpFactory.instance({
-                path: path,
-                data: {
-                  select: {
-                    column: [
-                      "id",
-                      "rank",
-                      "type",
-                      "number",
-                      "international",
-                      "note",
-                    ],
-                  },
-                  modifier: {
-                    where: {
-                      column: "phone.active",
-                      operator: "=",
-                      value: true,
+              const [
+                phoneCallResponse,
+                assignmentResponse,
+                phoneResponse,
+                phoneCallStatusResponse,
+              ] = await Promise.all([
+                CnHttpFactory.instance({
+                  path: "assignment/0/phone_call",
+                  data: {
+                    select: {
+                      column: [
+                        "end_datetime",
+                        "status",
+                        "person",
+                        { table: "phone", column: "participant_id" },
+                        { table: "phone", column: "alternate_id" },
+                        { table: "phone", column: "rank" },
+                        { table: "phone", column: "type" },
+                        { table: "phone", column: "number" },
+                      ],
                     },
-                    order: ["rank"],
                   },
-                },
-              }).query();
+                }).query(),
+
+                CnHttpFactory.instance({
+                  path:
+                    "participant/" +
+                    this.assignment.participant_id +
+                    "/interview/" +
+                    this.assignment.interview_id +
+                    "/assignment",
+                  data: {
+                    select: {
+                      column: [
+                        "start_datetime",
+                        "end_datetime",
+                        "phone_call_count",
+                        { table: "last_phone_call", column: "status" },
+                        { table: "user", column: "first_name" },
+                        { table: "user", column: "last_name" },
+                        { table: "user", column: "name" },
+                      ],
+                    },
+                    modifier: {
+                      order: { start_datetime: true },
+                      offset: 1,
+                      limit: 1,
+                    },
+                  },
+                }).query(),
+
+                await CnHttpFactory.instance({
+                  path: "participant/" + this.assignment.participant_id + "/phone" + (
+                    this.proxyInterview || this.assignment.has_alternate_types ? "?include_alternates=1" : ''
+                  ),
+                  data: {
+                    select: {
+                      column: [
+                        "id",
+                        "rank",
+                        "type",
+                        "number",
+                        "international",
+                        "note",
+                      ],
+                    },
+                    modifier: {
+                      where: {
+                        column: "phone.active",
+                        operator: "=",
+                        value: true,
+                      },
+                      order: ["rank"],
+                    },
+                  },
+                }).query(),
+
+                CnHttpFactory.instance({ path: "phone_call", }).head(),
+              ]);
+
+              this.phoneCallList = phoneCallResponse.data;
+              var len = this.phoneCallList.length;
+              this.activePhoneCall =
+                0 < len && null === this.phoneCallList[len - 1].end_datetime
+                  ? this.phoneCallList[len - 1]
+                  : null;
+
+              this.prevAssignment = 1 == assignmentResponse.data.length ? assignmentResponse.data[0] : null;
+              this.isPrevAssignmentLoading = false;
 
               this.phoneList = [];
               var lastPerson = null;
-              response.data.forEach((phone) => {
+              phoneResponse.data.forEach((phone) => {
                 phone.newPerson = false;
 
                 if (phone.person != lastPerson) {
@@ -474,11 +481,8 @@ cenozoApp.extendModule({
                 lastPerson = phone.person;
               });
 
-              var response = await CnHttpFactory.instance({
-                path: "phone_call",
-              }).head();
               this.phoneCallStatusList = cenozo.parseEnumList(
-                angular.fromJson(response.headers("Columns")).status
+                angular.fromJson(phoneCallStatusResponse.headers("Columns")).status
               );
             },
 
