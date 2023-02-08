@@ -5,6 +5,14 @@
  * @author Patrick Emond <emondpd@mcmaster.ca>
  */
 
+// this script must be run as root only
+$user = posix_getpwuid( posix_geteuid() )['name'];
+if( 'root' != $user )
+{
+  print "Script must be run as root.\n";
+  exit( 2 );
+}
+
 // back up to root directory if we're not already in it
 if( '/aux' == substr( getcwd(), -4 ) ) chdir( '..' );
 
