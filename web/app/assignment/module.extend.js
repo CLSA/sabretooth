@@ -306,7 +306,7 @@ cenozoApp.extendModule({
                         {
                           table: "participant_identifier",
                           column: "value",
-                          alias: "sid",
+                          alias: "study_id",
                         },
                         {
                           table: "language",
@@ -718,8 +718,6 @@ cenozoApp.extendModule({
                     identifier: "uid=" + this.participant.uid,
                     lang: this.participant.language_code,
                   });
-                  if ("limesurvey" == script.application)
-                    await this.scriptLauncher.initialize();
                   await this.scriptLauncher.launch(urlParams);
                   await this.loadScriptList();
                   this.updatePageProgress(); // no need to await

@@ -21,7 +21,6 @@ class productivity extends \cenozo\business\report\base_report
   {
     $qnaire_class_name = lib::get_class_name( 'database\qnaire' );
     $activity_class_name = lib::get_class_name( 'database\activity' );
-    $survey_class_name = lib::get_class_name( 'database\limesurvey\survey' );
     $participant_class_name = lib::get_class_name( 'database\participant' );
     $interview_class_name = lib::get_class_name( 'database\interview' );
     $cenozo_manager = lib::create( 'business\cenozo_manager', lib::create( 'business\session' )->get_pine_application() );
@@ -235,31 +234,6 @@ class productivity extends \cenozo\business\report\base_report
                   'participant_id_list' => $participant_id_list
                 );
               }
-            }
-            else
-            {
-              // for limesurvey get the data directly from limesurvey's database
-              $survey_time_mod = lib::create( 'database\modifier' );
-              $survey_time_mod->join(
-                sprintf( '%s.participant',
-                         str_replace( INSTANCE, 'cenozo', $participant_class_name::db()->get_name() ) ),
-                'token',
-                'participant.uid'
-              );
-              $survey_time_mod->join(
-                sprintf( '%s.interview', $participant_class_name::db()->get_name() ),
-                'participant.id',
-                'interview.participant_id'
-              );
-              $survey_time_mod->merge( $interview_mod );
-
-              $old_sid = $survey_class_name::get_sid();
-              $survey_class_name::set_sid( $db_script->sid );
-
-              // limesurvey tracks time in seconds so we divide by 60 to convert to minutes
-              $data[$row['user']][$db_script->name.' Time'] = $survey_class_name::get_total_time( $survey_time_mod ) / 60;
-
-              $survey_class_name::set_sid( $old_sid );
             }
           }
         }
