@@ -272,6 +272,7 @@ class progress extends \cenozo\business\overview\base_overview
     $cat_mod->group( 'script.name' );
     $cat_mod->replace_where( 'site.id', 'IFNULL( interview_site.id, site.id )' );
     $cat_mod->replace_group( 'queue_has_participant.site_id', 'IFNULL( interview_site.id, site.id )' );
+    $cat_mod->where( 'IFNULL( interview_site.name, site.name )', '!=', NULL );
 
     foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
@@ -316,6 +317,7 @@ class progress extends \cenozo\business\overview\base_overview
     $cat_mod->group( 'script.name' );
     $cat_mod->replace_where( 'site.id', 'IFNULL( interview_site.id, site.id )' );
     $cat_mod->replace_group( 'queue_has_participant.site_id', 'IFNULL( interview_site.id, site.id )' );
+    $cat_mod->where( 'IFNULL( interview_site.name, site.name )', '!=', NULL );
 
     foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
@@ -343,6 +345,7 @@ class progress extends \cenozo\business\overview\base_overview
     $cat_mod->group( 'script.name' );
     $cat_mod->replace_where( 'site.id', 'IFNULL( interview_site.id, site.id )' );
     $cat_mod->replace_group( 'queue_has_participant.site_id', 'IFNULL( interview_site.id, site.id )' );
+    $cat_mod->where( 'IFNULL( interview_site.name, site.name )', '!=', NULL );
 
     foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
