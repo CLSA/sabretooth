@@ -794,13 +794,19 @@ cenozoApp.extendModule({
                       if (201 == response.status) {
                         call = true;
                       } else {
-                        CnModalMessageFactory.instance({
+                        var response = await CnModalConfirmFactory.instance({
                           title: "Webphone Error",
                           message:
-                            "The webphone was unable to place your call, please try again. " +
-                            "If this problem persists then please contact support.",
+                            "The telephone system was unable to find the call which was just placed. " +
+                            "If you are connected to a call please select \"Proceed with call\" to proceed " +
+                            "with the interview, otherwise please click the \"Cancel\" button and you will " +
+                            "be able to try the call again.",
+                          noText: "Cancel",
+                          yesText: "Proceed with call",
                           error: true,
                         }).show();
+
+                        if( response ) call = true;
                       }
                     }
                   }
