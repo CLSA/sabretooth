@@ -1,0 +1,60 @@
+#!/usr/bin/php
+<?php
+/**
+ * Updates the framework and application repositories and patches the databases
+ * Author: Patrick Emond <emondpd@mcmaster.ca>
+ */
+
+/**
+ * Make sure to fill in the following
+ */
+
+define( 'URL', 'https://localhost/<PATH-TO-APPLICATION>/api/' );
+
+/**
+ * Do not edit any of the following lines
+ */
+
+chdir( dirname( __FILE__ ).'/../' );
+require_once 'settings.ini.php';
+require_once 'settings.local.ini.php';
+require_once $SETTINGS['path']['CENOZO'].'/src/initial.class.php';
+$initial = new \cenozo\initial( true );
+$settings = $initial->get_settings();
+define( 'USER', $settings['utility']['username'] );
+define( 'CENOZO_VERSION', $settings['general']['cenozo_version'] );
+define( 'APPLICATION_VERSION', $settings['general']['version'] );
+
+// function for writing to the log
+function write_log( $message )
+{
+  file_put_contents(
+    LOG_FILE_PATH,
+    sprintf( "%s  [cron] <%s> %s\n\n", date( 'Y-m-d (D) H:i:s' ), USER, $message ),
+    FILE_APPEND
+  );
+}
+
+function execute( $command, $description )
+{
+  $result = NULL;
+  passthru( $command, $result );
+  if( 0 != $result ) write_log( sprintf( 'Failed to %s', $description ) );
+  return $result;
+}
+
+write_log( 'Updating the framework and application software and database' );
+chdir( CENOZO_PATH );
+$result = execute( 'git pull', 'update cenozo repository' );
+if( 0 != $result ) exit( $result );
+$result = execute( sprintf( 'aux/patch_database %s', CENOZO_VERSION ), 'patch cenozo database' );
+if( 0 != $result ) exit( $result );
+
+chdir( APPLICATION_PATH );
+$result = execute( 'git pull', 'update application repository' );
+if( 0 != $result ) exit( $result );
+$result = execute( sprintf( 'aux/patch_database %s', APPLICATION_VERSION ), 'patch application database' );
+if( 0 != $result ) exit( $result );
+$result = execute( 'aux/remove_cached_schema', 'remove the cached database schema' );
+if( 0 != $result ) exit( $result );
+write_log( 'Update completed successfully' );
