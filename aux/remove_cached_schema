@@ -5,14 +5,6 @@
  * @author Patrick Emond <emondpd@mcmaster.ca>
  */
 
-// this script must be run as root only
-$user = posix_getpwuid( posix_geteuid() )['name'];
-if( 'root' != $user )
-{
-  print "Script must be run as root.\n";
-  exit( 2 );
-}
-
 // back up to root directory if we're not already in it
 if( '/aux' == substr( getcwd(), -4 ) ) chdir( '..' );
 
@@ -28,7 +20,5 @@ if( 1 != $argc )
   exit( 1 );
 }
 
-$filename = sprintf( TEMPORARY_FILES_PATH.'/*.schema.ser' );
 print "Removing all cached schema files\n";
-
-$result = passthru( sprintf( 'rm -fv %s %s', $filename, preg_replace( '#^/tmp/#', '/tmp/*apache2*/tmp/', $filename ) ) );
+$result = passthru( sprintf( 'rm -fv %s/*.schema.ser', TEMP_PATH ) );
