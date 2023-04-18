@@ -179,9 +179,6 @@ class interview extends \cenozo\database\interview
 
     $db_participant = $this->get_participant();
 
-    // record the script finished event
-    $this->get_qnaire()->get_script()->add_finished_event_types( $db_participant );
-
     // If there are any appointments belonging to this interview which are unassigned then immediately
     // create make the next interview an reassign it (or delete it if this is the last interview)
     $appointment_mod = lib::create( 'database\modifier' );
