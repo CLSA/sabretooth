@@ -504,7 +504,7 @@ cenozoApp.extendModule({
                 });
             },
 
-            /** 
+            /**
              * The object can be undefined, in which case the current participant's timezone will be used.
              * Otherwise it should be the alternate {alternate_id:...} or participant {participant_id:...}
              */
@@ -709,8 +709,7 @@ cenozoApp.extendModule({
               } else {
                 try {
                   this.scriptLauncherBusy = true;
-
-                  var urlParams = { show_hidden: 1 };
+                  var urlParams = { show_hidden: 1, username: CnSession.user.name };
                   if (this.activePhoneCall.alternate_id)
                     urlParams.alternate_id = this.activePhoneCall.alternate_id;
                   this.scriptLauncher = CnScriptLauncherFactory.instance({
