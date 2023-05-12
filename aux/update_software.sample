@@ -15,7 +15,7 @@ define( 'URL', 'https://localhost/<PATH-TO-APPLICATION>/api/' );
  * Do not edit any of the following lines
  */
 
-chdir( dirname( __FILE__ ).'/../' );
+if( '/aux' == substr( getcwd(), -4 ) ) chdir( '..' );
 require_once 'settings.ini.php';
 require_once 'settings.local.ini.php';
 require_once $SETTINGS['path']['CENOZO'].'/src/initial.class.php';
