@@ -33,7 +33,7 @@ class voip_call extends \cenozo\business\voip_call
     {
       $filename = sprintf( '%s/%s/%s',
                            $session->get_user()->name,
-                           util::get_datetime_object()->format( 'Y-m-d' ),
+                           util::get_datetime_object()->format( 'Y_m_d_H_i_s' ),
                            $filename );
     }
     
