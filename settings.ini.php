@@ -27,5 +27,6 @@ $SETTINGS['path']['APPLICATION'] = str_replace( '/settings.ini.php', '', __FILE_
 // add modules used by the application
 $SETTINGS['module']['interview'] = true;
 $SETTINGS['module']['recording'] = true;
+$SETTINGS['module']['relation'] = true;
 $SETTINGS['module']['script'] = true;
 $SETTINGS['module']['voip'] = true;
