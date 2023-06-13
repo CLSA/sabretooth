@@ -2,7 +2,7 @@ SELECT 'Adding new services' AS '';
 
 INSERT IGNORE INTO service ( subject, method, resource, restricted ) VALUES
 ( 'relation', 'DELETE', 1, 1 ),
-( 'relation', 'GET', 0, 1 ),
+( 'relation', 'GET', 0, 0 ),
 ( 'relation', 'GET', 1, 1 ),
 ( 'relation', 'PATCH', 1, 1 ),
 ( 'relation', 'POST', 0, 1 ),
