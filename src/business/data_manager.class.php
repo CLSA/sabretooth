@@ -21,7 +21,7 @@ class data_manager extends \cenozo\business\data_manager
    * @return string
    * @access public
    */
-  public function get_participant_value( $db_participant, $key )
+  public function get_participant_value( $db_participant, $key, &$warning = NULL )
   {
     // make sure the db_participant object is valid
     if( is_null( $db_participant ) ||
@@ -86,7 +86,7 @@ class data_manager extends \cenozo\business\data_manager
     else
     {
       // to be handled by the base class
-      $value = parent::get_participant_value( $db_participant, $key );
+      $value = parent::get_participant_value( $db_participant, $key, $warning );
     }
 
     return $value;
