@@ -709,7 +709,11 @@ cenozoApp.extendModule({
               } else {
                 try {
                   this.scriptLauncherBusy = true;
-                  var urlParams = { show_hidden: 1, username: CnSession.user.name };
+                  var urlParams = {
+                    show_hidden: 1,
+                    site: CnSession.site.name,
+                    username: CnSession.user.name,
+                  };
                   if (this.activePhoneCall.alternate_id)
                     urlParams.alternate_id = this.activePhoneCall.alternate_id;
                   this.scriptLauncher = CnScriptLauncherFactory.instance({
