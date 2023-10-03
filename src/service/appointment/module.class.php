@@ -124,6 +124,7 @@ class module extends \cenozo\service\base_calendar_module
    */
   public function prepare_read( $select, $modifier )
   {
+    $interview_class_name = lib::get_class_name( 'database\interview' );
     $session = lib::create( 'business\session' );
     $db_application = $session->get_application();
     $db_user = $session->get_user();
@@ -158,8 +159,19 @@ class module extends \cenozo\service\base_calendar_module
     $modifier->join( 'participant', 'interview.participant_id', 'participant.id' );
     $modifier->join( 'language', 'participant.language_id', 'language.id' );
     $modifier->join( 'qnaire', 'interview.qnaire_id', 'qnaire.id' );
+    $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
     $select->add_table_column( 'participant', 'uid' );
-    $select->add_table_column( 'participant', 'global_note', 'help' );
+    $select->add_column(
+      sprintf(
+        'CONCAT( '.
+          '"Page: ", %s, '.
+          'IF( participant.global_note IS NULL, "", CONCAT( "\n\n", participant.global_note ) ) '.
+        ')',
+        $interview_class_name::get_page_progress_column()
+      ),
+      'help',
+      false
+    );
     $select->add_table_column( 'language', 'code', 'language_code' );
     $select->add_table_column( 'qnaire', 'rank', 'qnaire_rank' );
 
