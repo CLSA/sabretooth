@@ -194,7 +194,8 @@ class queue extends \cenozo\database\record
       if( !is_null( $db_participant ) ) $queue_mod->where( 'temp_participant.id', '=', $db_participant->id );
 
       $queue_sel->set_distinct( true );
-      $queue_sel->add_table_column( 'temp_participant', 'id' );
+      $queue_sel->from( 'temp_participant' );
+      $queue_sel->add_column( 'id' );
       $queue_sel->add_constant( $db_queue->id );
       $queue_sel->add_column( 'participant_site_id', NULL, false );
       $queue_sel->add_column( 'effective_qnaire_id', NULL, false );
@@ -204,7 +205,9 @@ class queue extends \cenozo\database\record
       static::db()->execute( sprintf(
         'REPLACE INTO queue_has_participant( '.
           "participant_id, queue_id, site_id, qnaire_id, start_qnaire_date, create_timestamp )\n%s %s",
-        $queue_sel->get_sql(), $queue_mod->get_sql() ) );
+        $queue_sel->get_sql(),
+        $queue_mod->get_sql()
+      ) );
 
       if( static::$debug ) log::debug( sprintf(
         '(Queue) "%s" build time%s: %0.2f',
