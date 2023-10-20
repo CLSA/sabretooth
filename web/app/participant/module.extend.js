@@ -75,7 +75,7 @@ cenozoApp.extendModule({
                         onright: "vacancy.id",
                       },
                     ],
-                    order: { "appointment.start_datetime": true },
+                    order: { "interview.start_datetime": true },
                   },
                   select: {
                     column: [
