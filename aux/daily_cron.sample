@@ -102,24 +102,3 @@ else
   }
 }
 curl_close( $curl );
-
-/**
- * Update log entries
- */
-$curl = curl_init();
-curl_setopt( $curl, CURLOPT_URL, URL.'log_entry?update=1' );
-curl_setopt( $curl, CURLOPT_SSL_VERIFYHOST, false );
-curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
-curl_setopt( $curl, CURLOPT_HTTPHEADER, array( AUTH ) );
-
-$result = curl_exec( $curl );
-if( curl_errno( $curl ) )
-{
-  write_log( sprintf(
-    "Returned error code %s when trying to update log entry table\nMessage: %s",
-    curl_errno( $curl ),
-    curl_error( $curl )
-  ) );
-}
-
-curl_close( $curl );
