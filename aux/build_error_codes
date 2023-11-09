@@ -5,6 +5,7 @@
  * It uses this information to rebuild the src/exception/error_codes.inc.php file.
  */
 
+ini_set( 'memory_limit', '1G' );
 $filename = 'src/exception/error_codes.inc.php';
 
 // if we are in the aux/ directory then back out
