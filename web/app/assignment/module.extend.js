@@ -101,6 +101,7 @@ cenozoApp.extendModule({
                 activeScript: null,
                 phoneCallStatusList: null,
                 phoneCallList: null,
+                isInterfaceLoading: true,
                 isAssignmentLoading: false,
                 isForbidden: false,
                 isPrevAssignmentLoading: false,
@@ -979,6 +980,8 @@ cenozoApp.extendModule({
                 type: "boolean",
               });
             });
+
+            object.isInterfaceLoading = false;
           }
 
           init(this);

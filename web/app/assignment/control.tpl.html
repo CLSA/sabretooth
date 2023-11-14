@@ -1,5 +1,8 @@
-<cn-loading ng-if="model.isAssignmentLoading" message="Loading assignment details"></cn-loading>
-<div ng-if="!model.isAssignmentLoading">
+<cn-loading
+  ng-if="model.isInterfaceLoading || model.isAssignmentLoading"
+  message="Loading assignment details"
+></cn-loading>
+<div ng-if="!model.isInterfaceLoading && !model.isAssignmentLoading">
   <div ng-if="model.isForbidden" class="container-fluid">
     <div class="record-view rounded">
       <div class="container-fluid bg-primary rounded-top">
