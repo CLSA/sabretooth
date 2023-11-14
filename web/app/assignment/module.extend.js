@@ -83,6 +83,7 @@ cenozoApp.extendModule({
           angular.extend(this, {
             scriptLauncher: null,
             participantModel: CnParticipantModelFactory.instance(),
+            isInterfaceLoading: true,
 
             reset: function () {
               angular.extend(this, {
@@ -101,7 +102,6 @@ cenozoApp.extendModule({
                 activeScript: null,
                 phoneCallStatusList: null,
                 phoneCallList: null,
-                isInterfaceLoading: true,
                 isAssignmentLoading: false,
                 isForbidden: false,
                 isPrevAssignmentLoading: false,
