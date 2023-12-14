@@ -16,23 +16,23 @@ class post extends \cenozo\service\post
   /**
    * Override parent method
    */
-  public function get_file_as_array()
+  public function get_file_as_object()
   {
     // store non-standard columns into temporary variables
-    $post_array = parent::get_file_as_array();
+    $post_object = parent::get_file_as_object();
 
-    if( array_key_exists( 'duration', $post_array ) )
+    if( property_exists( $post_object, 'duration' ) )
     {
-      $this->duration = $post_array['duration'];
-      unset( $post_array['duration'] );
+      $this->duration = $post_object->duration;
+      unset( $post_object->duration );
     }
-    if( array_key_exists( 'disable_mail', $post_array ) )
+    if( property_exists( $post_object, 'disable_email' ) )
     {
-      $this->disable_mail = $post_array['disable_mail'];
-      unset( $post_array['disable_mail'] );
+      $this->disable_mail = $post_object->disable_mail;
+      unset( $post_object->disable_mail );
     }
 
-    return $post_array;
+    return $post_object;
   }
 
   /**
