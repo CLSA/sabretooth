@@ -16,50 +16,30 @@ class patch extends \cenozo\service\patch
   /**
    * Override parent method
    */
-  public function get_file_as_array()
-  {
-    // store non-standard columns into temporary variables
-    $patch_array = parent::get_file_as_array();
-    if( array_key_exists( 'duration', $patch_array ) )
-    {
-      $this->update_vacancies = true;
-      $this->duration = $patch_array['duration'];
-      unset( $patch_array['duration'] );
-    }
-    if( array_key_exists( 'start_vacancy_id', $patch_array ) )
-    {
-      $this->update_vacancies = true;
-      $this->start_vacancy_id = $patch_array['start_vacancy_id'];
-      unset( $patch_array['start_vacancy_id'] );
-    }
-    else if( array_key_exists( 'start_datetime', $patch_array ) )
-    {
-      $this->update_vacancies = true;
-      $this->start_datetime = $patch_array['start_datetime'];
-      unset( $patch_array['start_datetime'] );
-    }
-
-    return $patch_array;
-  }
-
-  /**
-   * Override parent method
-   */
   protected function prepare()
   {
+    $this->extract_parameter_list = array_merge(
+      $this->extract_parameter_list,
+      [ 'duration', 'start_vacancy_id', 'start_datetime']
+    );
+
     parent::prepare();
 
     $this->get_file_as_array(); // run to make sure we've processed special patch data
 
-    if( $this->update_vacancies )
+    $duration = $this->get_argument( 'duration', NULL );
+    $start_vacancy_id = $this->get_argument( 'start_vacancy_id', NULL );
+    $start_datetime = $this->get_argument( 'start_datetime', NULL );
+
+    if( !is_null( $duration ) || !is_null( $start_vacancy_id ) || !is_null( $start_datetime ) )
     {
       $db_appointment = $this->get_leaf_record();
 
       // determine the start datetime
-      if( !is_null( $this->start_vacancy_id ) )
-        $datetime = lib::create( 'database\vacancy', $this->start_vacancy_id )->datetime;
-      else if( !is_null( $this->start_datetime ) )
-        $datetime = util::get_datetime_object( $this->start_datetime );
+      if( !is_null( $start_vacancy_id ) )
+        $datetime = lib::create( 'database\vacancy', $start_vacancy_id )->datetime;
+      else if( !is_null( $start_datetime ) )
+        $datetime = util::get_datetime_object( $start_datetime );
       else $datetime = $db_appointment->get_start_vacancy()->datetime;
 
       $this->appointment_manager = lib::create( 'business\appointment_manager' );
@@ -68,7 +48,7 @@ class patch extends \cenozo\service\patch
       );
       $this->appointment_manager->set_datetime_and_duration(
         $datetime,
-        is_null( $this->duration ) ? $db_appointment->get_duration() : $this->duration
+        is_null( $duration ) ? $db_appointment->get_duration() : $duration
       );
     }
   }
@@ -82,7 +62,8 @@ class patch extends \cenozo\service\patch
 
     if( $this->may_continue() )
     {
-      if( $this->update_vacancies )
+      // if the appointment manager is defined then we're changing the duration, vacancy or start datetime
+      if( !is_null( $this->appointment_manager ) )
       {
         $db_role = lib::create( 'business\session' )->get_role();
 
@@ -106,7 +87,8 @@ class patch extends \cenozo\service\patch
   {
     parent::execute();
 
-    if( $this->update_vacancies )
+    // if the appointment manager is defined then we're changing the duration, vacancy or start datetime
+    if( !is_null( $this->appointment_manager ) )
     {
       $this->appointment_manager->apply_vacancy_list();
       $this->appointment_manager->release();
@@ -144,24 +126,4 @@ class patch extends \cenozo\service\patch
    * The appointment manager used by the patch service
    */
   protected $appointment_manager = NULL;
-
-  /**
-   * Caching variable
-   */
-  protected $update_vacancies = false;
-
-  /**
-   * Caching variable
-   */
-  protected $start_vacancy_id = NULL;
-
-  /**
-   * Caching variable
-   */
-  protected $start_datetime = NULL;
-
-  /**
-   * Caching variable
-   */
-  protected $duration = NULL;
 }

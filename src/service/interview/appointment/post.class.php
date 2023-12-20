@@ -16,30 +16,13 @@ class post extends \cenozo\service\post
   /**
    * Override parent method
    */
-  public function get_file_as_object()
-  {
-    // store non-standard columns into temporary variables
-    $post_object = parent::get_file_as_object();
-
-    if( property_exists( $post_object, 'duration' ) )
-    {
-      $this->duration = $post_object->duration;
-      unset( $post_object->duration );
-    }
-    if( property_exists( $post_object, 'disable_email' ) )
-    {
-      $this->disable_mail = $post_object->disable_mail;
-      unset( $post_object->disable_mail );
-    }
-
-    return $post_object;
-  }
-
-  /**
-   * Override parent method
-   */
   protected function prepare()
   {
+    $this->extract_parameter_list = array_merge(
+      $this->extract_parameter_list,
+      ['duration', 'disable_mail']
+    );
+
     parent::prepare();
 
     $post_array = $this->get_file_as_array();
@@ -53,7 +36,7 @@ class post extends \cenozo\service\post
       $db_start_vacancy = lib::create( 'database\vacancy', $post_array['start_vacancy_id'] );
       $datetime = $db_start_vacancy->datetime;
     }
-    $this->appointment_manager->set_datetime_and_duration( $datetime, $this->duration );
+    $this->appointment_manager->set_datetime_and_duration( $datetime, $this->get_argument( 'duration', NULL ) );
   }
 
   /**
@@ -98,14 +81,4 @@ class post extends \cenozo\service\post
    * The appointment manager used by the patch service
    */
   protected $appointment_manager = NULL;
-
-  /**
-   * Caching variable
-   */
-  protected $duration = NULL;
-
-  /**
-   * Caching variable
-   */
-  protected $disable_mail = false;
 }
