@@ -31,10 +31,13 @@ class voip_call extends \cenozo\business\voip_call
     }
     else
     {
-      $filename = sprintf( '%s/%s/%s',
-                           $session->get_user()->name,
-                           util::get_datetime_object()->format( 'Y_m_d_H_i_s' ),
-                           $filename );
+      $filename = sprintf(
+        '%s/%s_%s/%s',
+        $session->get_user()->name,
+        util::get_datetime_object()->format( 'Y_m_d_H_i_s' ),
+        $this->get_number(),
+        $filename
+      );
     }
     
     parent::start_recording( $filename );
