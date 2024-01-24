@@ -2,3 +2,4 @@ settings.local.ini.php
 *.swp
 !.gitkeep
 log
+log.*.gz

@@ -1,0 +1,41 @@
+#!/usr/bin/php
+<?php
+/**
+ * This is a script that compresses the log and creates a new, empty one in its place
+ * 
+ * @author Patrick Emond <emondpd@mcmaster.ca>
+ */
+
+if( '/aux' == substr( getcwd(), -4 ) ) chdir( '..' );
+require_once 'settings.ini.php';
+require_once 'settings.local.ini.php';
+
+define( 'LOG_FILE', $SETTINGS['path']['LOG_FILE'] );
+
+printf( "Compressing log file %s\n", LOG_FILE );
+
+if( file_exists( LOG_FILE ) )
+{
+  $new_filename = sprintf( '%s.%s', LOG_FILE, date( 'Ymd' ) );
+  if( 0 != exec( sprintf( 'mv %s %s', LOG_FILE, $new_filename ) ) )
+  {
+    printf( "Unable to rename log file.\n" );
+    return 1;
+  }
+  if( 0 != exec( sprintf( 'gzip %s', $new_filename ) ) )
+  {
+    printf( "Unable to gzip log file.\n" );
+    return 2;
+  }
+}
+
+if( 0 != exec( sprintf( 'touch %s', LOG_FILE ) ) )
+{
+  printf( "Unable to create new log file.\n" );
+  return 3;
+}
+if( 0 != exec( sprintf( 'chown www-data.www-data %s', LOG_FILE ) ) )
+{
+  printf( "Unable to set new log file ownership to www-data.\n" );
+  return 4;
+}
