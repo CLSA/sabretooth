@@ -43,8 +43,8 @@ cenozoApp.extendModule({
           link: function (scope) {
             // update the script list whenever we regain focus since there may have been script activity
             var win = angular.element($window).on("focus", async () => {
-              scope.model.loadScriptList();
-              scope.model.updatePageProgress();
+              await scope.model.loadScriptList();
+              await scope.model.updatePageProgress();
             });
             scope.$on("$destroy", function () {
               win.off("focus");
@@ -373,8 +373,8 @@ cenozoApp.extendModule({
                 }
 
                 // now load the script list and update the page progress
-                this.loadScriptList();
-                this.updatePageProgress();
+                await this.loadScriptList();
+                await this.updatePageProgress();
               }
 
               const [
@@ -529,6 +529,14 @@ cenozoApp.extendModule({
               var response = await CnHttpFactory.instance({
                 path: "assignment/0?update_data=1",
                 data: { select: { column: "page_progress" } },
+                onError: function (error) {
+                  if (307 == error.status) {
+                    // 307 means the user has no active assignment, so just refresh the page data
+                    self.onLoad();
+                  } else {
+                    CnModalMessageFactory.httpError(error);
+                  }
+                },
               }).get();
               this.assignment.page_progress = response.data.page_progress;
             },
@@ -556,8 +564,7 @@ cenozoApp.extendModule({
                     },
                   }).get();
 
-                  this.participant.withdrawn =
-                    "Withdrawn" == response.data.hold;
+                  this.participant.withdrawn = "Withdrawn" == response.data.hold;
                   this.participant.proxy = null != response.data.proxy;
                 }
 
@@ -724,7 +731,7 @@ cenozoApp.extendModule({
                   });
                   await this.scriptLauncher.launch(urlParams);
                   await this.loadScriptList();
-                  this.updatePageProgress(); // no need to await
+                  await this.updatePageProgress();
                 } finally {
                   this.scriptLauncherBusy = false;
                 }
