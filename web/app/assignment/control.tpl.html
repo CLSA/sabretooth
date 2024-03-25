@@ -1,8 +1,8 @@
 <cn-loading
-  ng-if="model.isInterfaceLoading || model.isAssignmentLoading"
-  message="Loading assignment details"
+  ng-if="model.isInterfaceLoading || model.isAssignmentLoading || model.isAssignmentClosing"
+  message="{{ model.isAssignmentClosing ? 'Closing active assignment' : 'Loading assignment details' }}, please wait"
 ></cn-loading>
-<div ng-if="!model.isInterfaceLoading && !model.isAssignmentLoading">
+<div ng-if="!model.isInterfaceLoading && !model.isAssignmentLoading && !model.isAssignmentClosing">
   <div ng-if="model.isForbidden" class="container-fluid">
     <div class="record-view rounded">
       <div class="container-fluid bg-primary rounded-top">
@@ -266,7 +266,7 @@
               <button type="button"
                       class="btn btn-success"
                       ng-click="model.endAssignment()"
-                      ng-disabled="model.activePhoneCall">End Assignment</button>
+                      ng-disabled="null == model.phoneList || model.activePhoneCall">End Assignment</button>
             </div>
           </div>
         </div>

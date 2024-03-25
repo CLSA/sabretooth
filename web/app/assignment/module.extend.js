@@ -103,6 +103,7 @@ cenozoApp.extendModule({
                 phoneCallStatusList: null,
                 phoneCallList: null,
                 isAssignmentLoading: false,
+                isAssignmentClosing: false,
                 isForbidden: false,
                 isPrevAssignmentLoading: false,
               });
@@ -739,11 +740,20 @@ cenozoApp.extendModule({
             },
 
             advanceQnaire: async function () {
+              var modal = CnModalMessageFactory.instance({
+                title: "Please Wait",
+                message: "Please wait while advancing to the next questionnaire, this may take a moment.",
+                block: true,
+              });
+              modal.show();
+
               await CnHttpFactory.instance({
                 path: "assignment/0?operation=advance",
                 data: {},
               }).patch();
               await this.onLoad();
+
+              modal.close();
             },
 
             startCall: async function (phone) {
@@ -824,6 +834,7 @@ cenozoApp.extendModule({
                 }
 
                 if (call) {
+                  this.phoneList = null;
                   await CnHttpFactory.instance({
                     path: "phone_call?operation=open",
                     data: { phone_id: phone.id },
@@ -865,6 +876,7 @@ cenozoApp.extendModule({
             endAssignment: async function () {
               if (null != this.assignment) {
                 var self = this;
+                this.isAssignmentClosing = true;
                 var response = await CnHttpFactory.instance({
                   path: "assignment/0",
                   onError: function (error) {
@@ -884,6 +896,7 @@ cenozoApp.extendModule({
                   data: {},
                 }).patch();
                 await this.onLoad();
+                this.isAssignmentClosing = false;
               }
             },
           });
