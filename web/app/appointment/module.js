@@ -875,7 +875,7 @@ cenozoApp.defineModule({
               }
 
               if (angular.isDefined(parent.subject)) {
-                // get the particiapnt's id
+                // get the participant's id
                 var response = await CnHttpFactory.instance({
                   path: [parent.subject, parent.identifier].join("/"),
                   data: { select: { column: { column: "participant_id" } } },
