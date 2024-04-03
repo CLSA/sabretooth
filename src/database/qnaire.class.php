@@ -25,7 +25,7 @@ class qnaire extends \cenozo\database\has_rank
     if( is_null( $pine_qnaire_id ) )
       throw lib::create( 'exception\runtime', 'Tried to set method for non Pine questionnaire.', __METHOD__ );
 
-    ini_set( 'memory_limit', '1G' );
+    ini_set( 'memory_limit', '-1' );
     set_time_limit( 900 ); // 15 minutes max
 
     if( 'phone' == $method )
@@ -107,7 +107,7 @@ class qnaire extends \cenozo\database\has_rank
     if( is_null( $pine_qnaire_id ) )
       throw lib::create( 'exception\runtime', 'Tried to launch web interviews for non Pine questionnaire.', __METHOD__ );
 
-    ini_set( 'memory_limit', '1G' );
+    ini_set( 'memory_limit', '-1' );
     set_time_limit( 900 ); // 15 minutes max
 
     // make sure all existing respondents get mail
