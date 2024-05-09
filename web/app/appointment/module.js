@@ -110,8 +110,7 @@ cenozoApp.defineModule({
         type: "lookup-typeahead",
         typeahead: {
           table: "user",
-          select:
-            'CONCAT( user.first_name, " ", user.last_name, " (", user.name, ")" )',
+          select: 'CONCAT( user.first_name, " ", user.last_name, " (", user.name, ")" )',
           where: ["user.first_name", "user.last_name", "user.name"],
         },
         help:
@@ -187,46 +186,30 @@ cenozoApp.defineModule({
       var date = moment(datetime);
       var offset = moment.tz.zone(timezone).utcOffset(date.unix());
       if (date.tz(timezone).isDST()) offset += -60;
-      return forward
-        ? moment(datetime).add(offset, "minute")
-        : moment(datetime).subtract(offset, "minute");
+      return forward ? moment(datetime).add(offset, "minute") : moment(datetime).subtract(offset, "minute");
     }
 
     // converts appointments into events
     function getEventFromAppointment(appointment, timezone) {
-      if (
-        angular.isDefined(appointment.start) &&
-        angular.isDefined(appointment.end)
-      ) {
+      if (angular.isDefined(appointment.start) && angular.isDefined(appointment.end)) {
         return appointment;
       } else {
         // get the identifier now and not in the getIdentifier() function below
         var identifier = appointment.getIdentifier();
         var event = {
-          getIdentifier: function () {
-            return identifier;
-          },
+          getIdentifier: function () { return identifier; },
           title:
-            (angular.isDefined(appointment.uid)
-              ? appointment.uid
-              : "new appointment") +
-            (angular.isDefined(appointment.language_code)
-              ? " (" + appointment.language_code + ")"
-              : "") +
-            (angular.isDefined(appointment.qnaire_rank)
-              ? " (" + appointment.qnaire_rank + ")"
-              : "") +
-            (null != appointment.username
-              ? "\nfor " + appointment.username
-              : ""),
+            (angular.isDefined(appointment.uid) ? appointment.uid : "new appointment") +
+            (angular.isDefined(appointment.language_code) ? " (" + appointment.language_code + ")" : "") +
+            (angular.isDefined(appointment.qnaire_rank) ? " (" + appointment.qnaire_rank + ")" : "") +
+            (null != appointment.username ? "\nfor " + appointment.username : ""),
           start: convertDatetime(appointment.start_datetime, timezone, false),
           end: convertDatetime(appointment.end_datetime, timezone, false),
           help: appointment.help,
         };
 
         if (null != appointment.outcome) {
-          if ("cancelled" == appointment.outcome)
-            event.className = "calendar-event-cancelled";
+          if ("cancelled" == appointment.outcome) event.className = "calendar-event-cancelled";
           event.textColor = "lightgray";
         }
         return event;
@@ -246,32 +229,15 @@ cenozoApp.defineModule({
       if ("same" == newDatetime) newDatetime = oldDatetime.clone();
       if ("same" == newDuration) newDuration = oldDuration;
       var oldFromDatetime = null == oldDatetime ? null : oldDatetime.clone();
-      var oldToDatetime =
-        null == oldDatetime
-          ? null
-          : oldDatetime.clone().add(oldDuration, "minute");
+      var oldToDatetime = null == oldDatetime ? null : oldDatetime.clone().add(oldDuration, "minute");
       var newFromDatetime = newDatetime.clone();
       var newToDatetime = newDatetime.clone().add(newDuration, "minute");
       var total = newDuration / vacancySize;
       var found = 0;
       cache.some((vacancy) => {
-        if (
-          vacancy.start.isBetween(
-            newFromDatetime,
-            newToDatetime,
-            "minute",
-            "[)"
-          )
-        ) {
+        if (vacancy.start.isBetween(newFromDatetime, newToDatetime, "minute", "[)")) {
           found++;
-          if (
-            vacancy.start.isBetween(
-              oldFromDatetime,
-              oldToDatetime,
-              "minute",
-              "[)"
-            )
-          ) {
+          if (vacancy.start.isBetween( oldFromDatetime, oldToDatetime, "minute", "[)")) {
             // this vacancy is already used by this appointment
             if (vacancy.appointments > vacancy.operators) available = false;
           } else {
@@ -305,8 +271,7 @@ cenozoApp.defineModule({
           restrict: "E",
           scope: { model: "=?" },
           controller: function ($scope) {
-            if (angular.isUndefined($scope.model))
-              $scope.model = CnAppointmentModelFactory.instance();
+            if (angular.isUndefined($scope.model)) $scope.model = CnAppointmentModelFactory.instance();
 
             // get the child cn-record-add's scope
             var cnRecordAddScope = null;
@@ -317,14 +282,10 @@ cenozoApp.defineModule({
               cnRecordAddScope.baseSaveFn = cnRecordAddScope.save;
               cnRecordAddScope.save = async function () {
                 // see if there are vacancies to fulfill the appointment's timespan
-                var cache =
-                  $scope.model.addModel.vacancyModel.calendarModel.cache;
+                var cache = $scope.model.addModel.vacancyModel.calendarModel.cache;
                 var vacancy =
                   null != cnRecordAddScope.record.start_vacancy_id
-                    ? cache.findByProperty(
-                        "id",
-                        cnRecordAddScope.record.start_vacancy_id
-                      )
+                    ? cache.findByProperty("id", cnRecordAddScope.record.start_vacancy_id)
                     : null;
                 var available = vacancy
                   ? vacancyAvailable(
@@ -339,10 +300,7 @@ cenozoApp.defineModule({
 
                 var proceed = true;
                 if (!available) {
-                  if (
-                    2 > CnSession.role.tier &&
-                    "operator+" != CnSession.role.name
-                  ) {
+                  if (2 > CnSession.role.tier && "operator+" != CnSession.role.name) {
                     proceed = false;
                     await CnModalMessageFactory.instance({
                       title: "No Vacancy",
@@ -364,9 +322,7 @@ cenozoApp.defineModule({
                 if (proceed) {
                   // warn if old appointment will be cancelled
                   var response = await CnHttpFactory.instance({
-                    path:
-                      "interview/" +
-                      $scope.model.getParentIdentifier().identifier,
+                    path: "interview/" + $scope.model.getParentIdentifier().identifier,
                     data: { select: { column: ["missed_appointment"] } },
                   }).get();
 
@@ -390,28 +346,16 @@ cenozoApp.defineModule({
               "model.addModel.vacancyModel",
               function (vacancyModel) {
                 if (angular.isDefined(vacancyModel)) {
-                  vacancyModel.calendarModel.settings.dayClick = function (
-                    date,
-                    event,
-                    view
-                  ) {
+                  vacancyModel.calendarModel.settings.dayClick = function (date, event, view) {
                     // if we are not looking at an appointment (parent interview) then do nothing
-                    if ("interview" != $scope.model.getSubjectFromState())
-                      return;
+                    if ("interview" != $scope.model.getSubjectFromState()) return;
 
                     // close the popover (this does nothing if there is no popover)
                     angular.element(this).popover("hide");
 
-                    if (
-                      1 < CnSession.role.tier ||
-                      "operator+" == CnSession.role.name
-                    ) {
+                    if (1 < CnSession.role.tier || "operator+" == CnSession.role.name) {
                       // get the clicked start time adjusted for daylight savings time
-                      var datetime = convertDatetime(
-                        date,
-                        CnSession.user.timezone,
-                        true
-                      );
+                      var datetime = convertDatetime(date, CnSession.user.timezone, true);
                       if (!datetime.isAfter(moment())) {
                         CnModalMessageFactory.instance({
                           title: "Invalid Appointment Time",
@@ -430,24 +374,16 @@ cenozoApp.defineModule({
                     }
                   };
 
-                  vacancyModel.calendarModel.settings.eventClick = function (
-                    vacancy
-                  ) {
+                  vacancyModel.calendarModel.settings.eventClick = function (vacancy) {
                     // if we are not looking at an appointment (parent interview) then view the vacancy
                     if ("interview" != $scope.model.getSubjectFromState())
-                      return vacancyModel.getViewEnabled()
-                        ? vacancyModel.transitionToViewState(vacancy)
-                        : null;
+                      return vacancyModel.getViewEnabled() ? vacancyModel.transitionToViewState(vacancy) : null;
 
                     // close the popover (this does nothing if there is no popover)
                     angular.element(this).popover("hide");
 
                     // get the vacancy's start time adjusted for daylight savings time
-                    var datetime = convertDatetime(
-                      vacancy.start,
-                      CnSession.user.timezone,
-                      true
-                    );
+                    var datetime = convertDatetime(vacancy.start, CnSession.user.timezone, true);
                     if (!datetime.isAfter(moment())) {
                       CnModalMessageFactory.instance({
                         title: "Invalid Appointment Time",
@@ -498,10 +434,8 @@ cenozoApp.defineModule({
             preventSiteChange: "@",
           },
           controller: function ($scope) {
-            if (angular.isUndefined($scope.model))
-              $scope.model = CnAppointmentModelFactory.instance();
-            $scope.model.calendarModel.heading =
-              $scope.model.site.name.ucWords() + " Appointment Calendar";
+            if (angular.isUndefined($scope.model)) $scope.model = CnAppointmentModelFactory.instance();
+            $scope.model.calendarModel.heading = $scope.model.site.name.ucWords() + " Appointment Calendar";
           },
           link: function (scope) {
             // factory name -> object map used below
@@ -513,28 +447,18 @@ cenozoApp.defineModule({
             // synchronize appointment/vacancy-based calendars
             scope.$watch("model.calendarModel.currentDate", function (date) {
               Object.keys(factoryList)
-                .filter((name) =>
-                  angular.isDefined(cenozoApp.moduleList[name].actions.calendar)
-                )
+                .filter((name) => angular.isDefined(cenozoApp.moduleList[name].actions.calendar))
                 .forEach((name) => {
-                  var calendarModel = factoryList[name].forSite(
-                    scope.model.site
-                  ).calendarModel;
-                  if (!calendarModel.currentDate.isSame(date, "day"))
-                    calendarModel.currentDate = date;
+                  var calendarModel = factoryList[name].forSite(scope.model.site).calendarModel;
+                  if (!calendarModel.currentDate.isSame(date, "day")) calendarModel.currentDate = date;
                 });
             });
             scope.$watch("model.calendarModel.currentView", function (view) {
               Object.keys(factoryList)
-                .filter((name) =>
-                  angular.isDefined(cenozoApp.moduleList[name].actions.calendar)
-                )
+                .filter((name) => angular.isDefined(cenozoApp.moduleList[name].actions.calendar))
                 .forEach((name) => {
-                  var calendarModel = factoryList[name].forSite(
-                    scope.model.site
-                  ).calendarModel;
-                  if (calendarModel.currentView != view)
-                    calendarModel.currentView = view;
+                  var calendarModel = factoryList[name].forSite(scope.model.site).calendarModel;
+                  if (calendarModel.currentView != view) calendarModel.currentView = view;
                 });
             });
           },
