@@ -141,7 +141,17 @@ class sample extends \cenozo\business\report\base_report
       $modifier->left_join( $interview_data, $interview.'.id', $interview_data.'.id' );
       $select->add_column( $interview.'.method', 'Method'.$postfix, false );
       $select->add_column(
-        $this->get_datetime_column( $interview.'.end_datetime' ), $qnaire['name'], false, 'string' );
+        $this->get_datetime_column( $interview.'.start_datetime' ),
+        sprintf( '%s Started', $qnaire['name'] ),
+        false,
+        'string'
+      );
+      $select->add_column(
+        $this->get_datetime_column( $interview.'.end_datetime' ),
+        sprintf( '%s Finished', $qnaire['name'] ),
+        false,
+        'string'
+      );
       $select->add_column(
         sprintf( 'IF( %s.total IS NULL, 0, %s.total )', $interview_data, $interview_data ),
         'Phone Calls'.$postfix,
