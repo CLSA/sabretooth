@@ -93,7 +93,8 @@ class sample extends \cenozo\business\report\base_report
     );  
     $select->add_column( $this->get_datetime_column( 'application_has_participant.datetime' ), 'Released', false );
     $select->add_column( 'region.abbreviation', 'Province/State', false );
-    $select->add_column( 'IF( participant.email IS NOT NULL, "Yes", "No" )', 'Has Email', false );
+    $select->add_column( 'participant.email', 'Email', false );
+    $select->add_column( 'participant.email2', 'Alt Email', false );
     $select->add_column(
       $this->get_datetime_column( 'participant.callback' ),
       'Callback',
