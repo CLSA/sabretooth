@@ -11,7 +11,6 @@
  */
 define( 'ARGUMENT_SABRETOOTH_BASE_ERRNO',   150000 );
 define( 'DATABASE_SABRETOOTH_BASE_ERRNO',   250000 );
-define( 'LDAP_SABRETOOTH_BASE_ERRNO',       350000 );
 define( 'NOTICE_SABRETOOTH_BASE_ERRNO',     450000 );
 define( 'PERMISSION_SABRETOOTH_BASE_ERRNO', 550000 );
 define( 'RUNTIME_SABRETOOTH_BASE_ERRNO',    650000 );
@@ -30,12 +29,6 @@ define( 'ARGUMENT__SABRETOOTH_DATABASE_QUEUE__PREPARE_QUEUE_QUERY__ERRNO',
  * "database" error codes
  * 
  * Since database errors already have codes this list is likely to stay empty.
- */
-
-/**
- * "ldap" error codes
- * 
- * Since ldap errors already have codes this list is likely to stay empty.
  */
 
 /**
