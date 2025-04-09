@@ -108,6 +108,9 @@ class progress extends \cenozo\business\overview\base_overview
     {
       $node = $this->add_root_item( $row['site'] );
       $this->add_item( $node, 'All Participants', $row['total'] );
+      $this->add_item( $node, 'Finished all Questionnaires (phone)', 0 );
+      $this->add_item( $node, 'Finished all Questionnaires (web)', 0 );
+      $this->add_item( $node, 'Finished all Questionnaires', 0 );
       $this->add_item( $node, 'Not Enrolled', 0 );
       $hold_type_node = $this->add_item( $node, 'Hold Types' );
       foreach( $hold_type_list as $hold_type ) $this->add_item( $hold_type_node, $hold_type, 0 );
@@ -117,7 +120,8 @@ class progress extends \cenozo\business\overview\base_overview
       foreach( $proxy_type_list as $proxy_type ) $this->add_item( $proxy_type_node, $proxy_type, 0 );
       foreach( $qnaire_list as $qnaire )
       {
-        $qnaire_node = $this->add_item( $node, $qnaire.' Interview' );
+        $node_title = sprintf( '%s Interview (excluding hold/trace/proxy)', $qnaire );
+        $qnaire_node = $this->add_item( $node, $node_title );
         $this->add_item( $qnaire_node, 'Not yet called', 0 );
         $this->add_item( $qnaire_node, 'Call in Progress', 0 );
         foreach( $call_status_list as $call_status ) $this->add_item( $qnaire_node, ucWords( $call_status ), 0 );
@@ -128,6 +132,30 @@ class progress extends \cenozo\business\overview\base_overview
       }
       $site_node_lookup[$row['site']] = $node;
     }
+
+    // finished participants
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    $cat_sel = clone $select;
+    $cat_sel->add_table_column( 'interview', 'method' );
+
+    $cat_mod = clone $modifier;
+    $cat_mod->where( 'queue.name', '=', 'finished' );
+    $cat_mod->join( 'interview', 'queue_has_participant.participant_id', 'interview.participant_id' );
+    $cat_mod->group( 'interview.method' );
+
+    $total = 0;
+    foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
+    {
+      $total += $row['total'];
+
+      $node = $site_node_lookup[$row['site']]->find_node(
+        sprintf( 'Finished all Questionnaires (%s)', $row['method'] )
+      );
+      $node->set_value( $row['total'] );
+    }
+
+    $node = $site_node_lookup[$row['site']]->find_node( 'Finished all Questionnaires' );
+    $node->set_value( $total );
 
     // not enrolled participants
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -212,7 +240,8 @@ class progress extends \cenozo\business\overview\base_overview
 
     foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
-      $parent_node = $site_node_lookup[$row['site']]->find_node( ucWords( $row['qnaire'] ).' Interview' );
+      $node_title = sprintf( '%s Interview (excluding hold/trace/proxy)', ucWords( $row['qnaire'] ) );
+      $parent_node = $site_node_lookup[$row['site']]->find_node( $node_title );
       $node = $parent_node->find_node( 'Not yet called' );
       $node->set_value( $row['total'] );
     }
@@ -228,7 +257,8 @@ class progress extends \cenozo\business\overview\base_overview
 
     foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
-      $parent_node = $site_node_lookup[$row['site']]->find_node( ucWords( $row['qnaire'] ).' Interview' );
+      $node_title = sprintf( '%s Interview (excluding hold/trace/proxy)', ucWords( $row['qnaire'] ) );
+      $parent_node = $site_node_lookup[$row['site']]->find_node( $node_title );
       $node = $parent_node->find_node( 'Call in Progress' );
       $node->set_value( $row['total'] );
     }
@@ -246,7 +276,8 @@ class progress extends \cenozo\business\overview\base_overview
 
       foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
       {
-        $parent_node = $site_node_lookup[$row['site']]->find_node( ucWords( $row['qnaire'] ).' Interview' );
+        $node_title = sprintf( '%s Interview (excluding hold/trace/proxy)', ucWords( $row['qnaire'] ) );
+        $parent_node = $site_node_lookup[$row['site']]->find_node( $node_title );
         $node = $parent_node->find_node( ucWords( $call_status ) );
         $node->set_value( $row['total'] );
       }
@@ -276,7 +307,8 @@ class progress extends \cenozo\business\overview\base_overview
 
     foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
-      $parent_node = $site_node_lookup[$row['site']]->find_node( ucWords( $row['qnaire'] ).' Interview' );
+      $node_title = sprintf( '%s Interview (excluding hold/trace/proxy)', ucWords( $row['qnaire'] ) );
+      $parent_node = $site_node_lookup[$row['site']]->find_node( $node_title );
       $node = $parent_node->find_node( 'Phone Version Completed' );
       $node->set_value( $row['total'] );
     }
@@ -292,7 +324,8 @@ class progress extends \cenozo\business\overview\base_overview
 
     foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
-      $parent_node = $site_node_lookup[$row['site']]->find_node( ucWords( $row['qnaire'] ).' Interview' );
+      $node_title = sprintf( '%s Interview (excluding hold/trace/proxy)', ucWords( $row['qnaire'] ) );
+      $parent_node = $site_node_lookup[$row['site']]->find_node( $node_title );
       $node = $parent_node->find_node( 'Web Version in Progress' );
       $node->set_value( $row['total'] );
     }
@@ -321,7 +354,8 @@ class progress extends \cenozo\business\overview\base_overview
 
     foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
-      $parent_node = $site_node_lookup[$row['site']]->find_node( ucWords( $row['qnaire'] ).' Interview' );
+      $node_title = sprintf( '%s Interview (excluding hold/trace/proxy)', ucWords( $row['qnaire'] ) );
+      $parent_node = $site_node_lookup[$row['site']]->find_node($node_title ); 
       $node = $parent_node->find_node( 'Web Version Completed' );
       $node->set_value( $row['total'] );
     }
@@ -349,7 +383,8 @@ class progress extends \cenozo\business\overview\base_overview
 
     foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
-      $parent_node = $site_node_lookup[$row['site']]->find_node( ucWords( $row['qnaire'] ).' Interview' );
+      $node_title = sprintf( '%s Interview (excluding hold/trace/proxy)', ucWords( $row['qnaire'] ) );
+      $parent_node = $site_node_lookup[$row['site']]->find_node( $node_title );
       $node = $parent_node->find_node( 'Completed Interviews' );
       $node->set_value( $row['total'] );
     }
