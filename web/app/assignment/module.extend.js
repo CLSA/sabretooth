@@ -781,7 +781,7 @@ cenozoApp.extendModule({
                           '"Utilities" submenu and make sure the webphone client is connected.',
                         error: true,
                       }).show();
-                    } else if (!phone.international) {
+                    } else {
                       var response = await CnModalConfirmFactory.instance({
                         title: "Webphone Not Found",
                         message:
