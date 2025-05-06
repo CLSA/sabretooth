@@ -210,8 +210,10 @@
               </button>
               <ul class="dropdown-menu full-width" aria-labelledby="timeZoneList">
                 <li ng-repeat="phone in model.phoneList" ng-if="phone.newPerson">
-                  <a ng-click="model.useTimezone(
-                    phone.alternate_id ? {alternate_id:phone.alternate_id} : undefined
+                  <a ng-click="
+                    phone.alternate_id ?
+                    model.useTimezone({ alternate_id: phone.alternate_id }) :
+                    model.useTimezone()
                   )">{{ phone.person_name }}</a>
                 </li>
               </ul>
