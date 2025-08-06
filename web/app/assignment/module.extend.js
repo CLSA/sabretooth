@@ -487,7 +487,7 @@ cenozoApp.extendModule({
               });
 
               this.phoneCallStatusList = cenozo.parseEnumList(
-                angular.fromJson(phoneCallStatusResponse.headers("Columns")).status
+                angular.fromJson(phoneCallStatusResponse.headers("X-Columns")).status
               );
             },
 
