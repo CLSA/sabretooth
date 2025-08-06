@@ -143,19 +143,16 @@ class progress extends \cenozo\business\overview\base_overview
     $cat_mod->join( 'interview', 'queue_has_participant.participant_id', 'interview.participant_id' );
     $cat_mod->group( 'interview.method' );
 
-    $total = 0;
     foreach( $db->get_all( sprintf( '%s %s', $cat_sel->get_sql(), $cat_mod->get_sql() ) ) as $row )
     {
-      $total += $row['total'];
-
       $node = $site_node_lookup[$row['site']]->find_node(
         sprintf( 'Finished all Questionnaires (%s)', $row['method'] )
       );
       $node->set_value( $row['total'] );
-    }
 
-    $node = $site_node_lookup[$row['site']]->find_node( 'Finished all Questionnaires' );
-    $node->set_value( $total );
+      $node = $site_node_lookup[$row['site']]->find_node( 'Finished all Questionnaires' );
+      $node->set_value( $node->get_value() + $row['total'] );
+    }
 
     // not enrolled participants
     /////////////////////////////////////////////////////////////////////////////////////////////
