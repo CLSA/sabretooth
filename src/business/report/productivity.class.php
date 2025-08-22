@@ -122,9 +122,9 @@ class productivity extends \cenozo\business\report\base_report
       $activity_mod->where( 'activity.application_id', '=', $this->db_application->id );
       $activity_mod->where( 'activity.site_id', '=', $site['id'] );
       $activity_mod->where( 'role.name', 'IN', array( 'operator', 'operator+' ) );
-      $activity_mod->group( 'user.name' );
-      $activity_mod->order( 'user.name' );
-      $activity_mod->order( 'activity.start_datetime' );
+      $activity_mod->group( 'user' ); // using the alias since activity has an archive table
+      $activity_mod->order( 'user' ); // using the alias since activity has an archive table
+      $activity_mod->order( 'time' ); // using the alias since activity has an archive table
       foreach( $activity_class_name::select( $activity_sel, $activity_mod ) as $row )
       {
         if( 0 < strlen( $row['user'] ) )
