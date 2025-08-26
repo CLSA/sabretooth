@@ -1148,17 +1148,17 @@ cenozoApp.defineModule({
               await this.$$getMetadata();
 
               // add the start_datetime and duration metadata details
-              var interval = CnSession.setting.vacancySize;
               angular.extend(this.metadata.columnList, {
                 start_datetime: { required: true },
                 duration: {
                   required: true,
-                  default: 2 * interval,
+                  default: CnSession.setting.appointmentDuration,
                   enumList: [],
                 },
               });
 
               // add 8 increments for possible appointment lengths
+              var interval = CnSession.setting.vacancySize;
               for (var i = 1; i <= 8; i++) {
                 var time = interval * i;
                 var hours = Math.floor(time / 60);
