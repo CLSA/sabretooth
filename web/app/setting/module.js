@@ -43,6 +43,11 @@ cenozoApp.defineModule({
           type: "time_notz",
           help: "The latest time to assign participants (in their local time)",
         },
+        appointment_duration: {
+          title: "Default Appointment",
+          type: "number",
+          help: "The length of time, in minutes, of the default appointment.  Value must be in 30-minute increments.",
+        },
         pre_call_window: {
           title: "Pre-Call",
           type: "number",
@@ -91,6 +96,12 @@ cenozoApp.defineModule({
         title: "Latest Call Time",
         type: "time_notz",
         help: "The latest time to assign participants (in their local time)",
+      },
+      appointment_duration: {
+        title: "Default Appointment Length",
+        type: "string",
+        format: "integer",
+        help: "The length of time, in minutes, of the default appointment.  Value must be in 30-minute increments.",
       },
       pre_call_window: {
         title: "Pre-Appointment Window",
