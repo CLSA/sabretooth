@@ -87,7 +87,12 @@ class appointment_mail extends \cenozo\database\record
       $db_mail->participant_id = $db_participant->id;
       $db_mail->from_name = $this->from_name;
       $db_mail->from_address = $this->from_address;
-      $db_mail->to_name = $db_participant->get_full_name();
+      $db_mail->to_name = sprintf(
+        '%s %s %s',
+        $db_participant->honorific,
+        $db_participant->first_name,
+        $db_participant->last_name
+      );
       $db_mail->to_address = $db_participant->email;
       $db_mail->cc_address = $this->cc_address;
       $db_mail->bcc_address = $this->bcc_address;
