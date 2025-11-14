@@ -88,10 +88,13 @@ class module extends \cenozo\service\base_calendar_module
           $this->set_data( 'Appointments cannot be changed after an interview is complete.' );
           $this->get_status()->set_code( 306 );
         }
-        // no writing of appointments if they have passed
-        else if( !is_null( $db_start_vacancy ) &&
-                 $db_start_vacancy->datetime < util::get_datetime_object() )
-        {
+        // no writing of appointments if they have passed, unless a missed appointment is being cancelled
+        else if(
+          'PATCH' == $method &&
+          !( 'missed' == $db_appointment->get_state() && 'cancelled' == $this->get_file_as_array()['outcome'] ) &&
+          !is_null( $db_start_vacancy ) &&
+          $db_start_vacancy->datetime < util::get_datetime_object()
+        ) {
           $this->set_data( 'Appointments cannot be changed after they have passed.' );
           $this->get_status()->set_code( 306 );
         }

@@ -144,7 +144,7 @@ class appointment extends \cenozo\database\record
     $pre_window_time = 60 * $db_setting->pre_call_window;
     $post_window_time = 60 * $db_setting->post_call_window;
     $now = util::get_datetime_object()->getTimestamp();
-    $appointment = $this->datetime->getTimestamp();
+    $appointment = $this->get_start_vacancy()->datetime->getTimestamp();
 
     // get the status of the appointment
     $db_assignment = $this->get_assignment();
