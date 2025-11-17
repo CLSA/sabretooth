@@ -174,7 +174,7 @@ cenozoApp.defineModule({
         title: "Cancel",
         classes: "btn-warning",
         isIncluded: function ($state, model) {
-          return "missed" == model.viewModel.record.state;
+          return ["assignable", "missed"].includes(model.viewModel.record.state);
         },
         operation: async function ($state, model) {
           await model.viewModel.cancelAppointment();
