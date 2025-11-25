@@ -171,6 +171,17 @@ cenozoApp.defineModule({
 
     if (angular.isDefined(module.actions.calendar)) {
       module.addExtraOperation("view", {
+        title: "Cancel",
+        classes: "btn-warning",
+        isIncluded: function ($state, model) {
+          return ["assignable", "missed"].includes(model.viewModel.record.state);
+        },
+        operation: async function ($state, model) {
+          await model.viewModel.cancelAppointment();
+        },
+      });
+
+      module.addExtraOperation("view", {
         title: "Appointment Calendar",
         operation: async function ($state, model) {
           await $state.go("appointment.calendar", {
@@ -961,6 +972,14 @@ cenozoApp.defineModule({
                 );
             },
 
+            cancelAppointment: async function () {
+              await CnHttpFactory.instance({
+                path: this.parentModel.getServiceResourcePath(),
+                data: { outcome: "cancelled" },
+              }).patch();
+              await this.onView();
+            },
+
             // remove and re-add the appointment's events from the calendar cache
             onPatch: async function (data) {
               await this.$$onPatch(data);
@@ -973,9 +992,7 @@ cenozoApp.defineModule({
               // the change in start vacancy.
               if (angular.isDefined(data.start_vacancy_id)) {
                 await CnHttpFactory.instance({
-                  path:
-                    this.parentModel.getServiceResourcePath() +
-                    "?update_mail=1",
+                  path: this.parentModel.getServiceResourcePath() + "?update_mail=1",
                 }).patch();
               }
 
