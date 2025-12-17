@@ -37,7 +37,7 @@ printf( "Patching %s database to version %s\n", INSTANCE, $patch_version );
 $output = array();
 exec(
   sprintf(
-    'mysql -u"%s" -h"%s" %s < patch_database.sql',
+    'mariadb -u"%s" -h"%s" %s < patch_database.sql',
     USER,
     HOST,
     DATABASE
