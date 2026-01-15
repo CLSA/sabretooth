@@ -12,29 +12,37 @@ require_once 'settings.local.ini.php';
 
 define( 'LOG_FILE', $SETTINGS['path']['LOG_FILE'] );
 
+function cmd( $command )
+{
+  $output = $code = NULL;
+  exec( $command, $output, $code );
+  return $code;
+}
+
 printf( "Compressing log file %s\n", LOG_FILE );
+
 
 if( file_exists( LOG_FILE ) )
 {
   $new_filename = sprintf( '%s.%s', LOG_FILE, date( 'Ymd' ) );
-  if( 0 != exec( sprintf( 'mv %s %s', LOG_FILE, $new_filename ) ) )
+  if( 0 != cmd( sprintf( 'mv %s %s', LOG_FILE, $new_filename ) ) )
   {
     printf( "Unable to rename log file.\n" );
     return 1;
   }
-  if( 0 != exec( sprintf( 'gzip %s', $new_filename ) ) )
+  if( 0 != cmd( sprintf( 'gzip -f aux/compress_log%s', $new_filename ) ) )
   {
     printf( "Unable to gzip log file.\n" );
     return 2;
   }
 }
 
-if( 0 != exec( sprintf( 'touch %s', LOG_FILE ) ) )
+if( 0 != cmd( sprintf( 'touch %s', LOG_FILE ) ) )
 {
   printf( "Unable to create new log file.\n" );
   return 3;
 }
-if( 0 != exec( sprintf( 'chown www-data.www-data %s', LOG_FILE ) ) )
+if( 0 != cmd( sprintf( 'chown www-data.www-data %s', LOG_FILE ) ) )
 {
   printf( "Unable to set new log file ownership to www-data.\n" );
   return 4;
