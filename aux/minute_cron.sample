@@ -60,13 +60,5 @@ else
   {
     write_log( sprintf( 'Failed to close lapsed activity (response code: %s)', $code ) );
   }
-  else
-  {
-    if( 0 < $result ) write_log( sprintf(
-      'Closed %d lapsed activity record%s',
-      $result,
-      1 != $result ? 's' : ''
-    ) );
-  }
 }
 curl_close( $curl );
