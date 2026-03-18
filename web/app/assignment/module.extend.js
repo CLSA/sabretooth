@@ -245,11 +245,11 @@ cenozoApp.extendModule({
                             "operator",
                             "operator+"
                           ) &&
-                          0 < self.participantModel.listModel.cache.length
+                          0 < self.participantModel.listModel.records.length
                         ) {
                           self.participantModel.listModel.heading =
                             "Participant Selection List (" +
-                            self.participantModel.listModel.cache[0].queue +
+                            self.participantModel.listModel.records[0].queue +
                             ")";
                         }
                         CnSession.setBreadcrumbTrail([
