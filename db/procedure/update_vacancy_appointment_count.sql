@@ -1,0 +1,8 @@
+CREATE PROCEDURE update_vacancy_appointment_count (IN proc_vacancy_id INT(10) UNSIGNED)
+BEGIN
+  IF proc_vacancy_id IS NOT NULL THEN
+    UPDATE vacancy
+    SET appointments = (SELECT COUNT(*) FROM appointment_has_vacancy WHERE vacancy_id = proc_vacancy_id)
+    WHERE id = proc_vacancy_id;
+  END IF;
+END$$
