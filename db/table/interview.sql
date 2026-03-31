@@ -34,4 +34,4 @@ CREATE TABLE interview (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
-COMMENT = 'aka: qnaire_has_participant';
+COLLATE = utf8mb4_general_ci;
