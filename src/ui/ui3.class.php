@@ -20,7 +20,10 @@ class ui3 extends \cenozo\ui\ui3
   {
     $data = parent::generate();
 
-    $db_role = lib::create( 'business\session' )->get_role();
+    $session = lib::create( 'business\session' );
+    $db_site = $session->get_site();
+    $db_role = $session->get_role();
+    $db_user = $session->get_user();
 
     if( 'operator' == $db_role->name ) $data['menu']['lists'] = [];
 
@@ -33,14 +36,14 @@ class ui3 extends \cenozo\ui\ui3
     if( array_key_exists( 'overview', $data['module_list'] ) )
     {
       $module = $data['module_list']['overview'];
-      // add the study parameter (usedc by the progress review only)
-      //$module->append_action_query( 'view', '?{study}' ); TODO: turn back on
+      // add the study parameter (used by the progress review only)
+      $module->append_action_query( 'view', '?{study}' );
     }
 
     if( array_key_exists( 'participant', $data['module_list'] ) )
     {
       $module = $data['module_list']['participant'];
-      //$module->append_action_query( 'history', '&{appointment}' ); TODO: turn back on
+      $module->append_action_query( 'history', '&{appointment}' );
     }
 
     if( array_key_exists( 'qnaire', $data['module_list'] ) )
@@ -60,7 +63,7 @@ class ui3 extends \cenozo\ui\ui3
       $module->set_list_menu( true ); // always show the queue list
       $module->add_choose( 'participant' );
       // add special query parameters to queue-view
-      //$module->append_action_query( 'view', '?{restrict}&{order}&{reverse}' ); TODO: turn back on
+      $module->append_action_query( 'view', '?{restrict}&{order}&{reverse}' );
     }
 
     if( array_key_exists( 'stratum', $data['module_list'] ) )
@@ -115,7 +118,7 @@ class ui3 extends \cenozo\ui\ui3
 
       // add calendar to user actions
       if( in_array( $db_role->name, [ 'helpline', 'operator', 'operator+', 'supervisor' ] ) )
-        $module->add_action( 'calendar', '/{identifier}' );
+        $module->add_action( 'calendar', '/{identifier}?{calendar}' );
     }
 
     if( array_key_exists( 'vacancy', $data['module_list'] ) )
@@ -149,9 +152,8 @@ class ui3 extends \cenozo\ui\ui3
     {   
       $data['menu']['utilities']['Personal Calendar'] = [
         'subject' => 'user',
-        'action' => 'calendar',
-        'query' => '/{identifier}',
-        'values' => sprintf( '{identifier:"name=%s"}', $db_user->name )
+        'action' => sprintf( 'calendar/name=%s', $db_user->name ),
+        'query' => '/{identifier}?{calendar}'
       ];
     }   
 
@@ -181,8 +183,8 @@ class ui3 extends \cenozo\ui\ui3
       $data['menu']['utilities']['Site Details'] = [
         'subject' => 'site',
         'action' => 'view',
+        'action' => sprintf( 'view/name=%s', $db_site->name ),
         'query' => '/{identifier}',
-        'values' => sprintf( '{identifier:"name=%s"}', $db_site->name )
       ];
     }   
 
@@ -190,18 +192,16 @@ class ui3 extends \cenozo\ui\ui3
     {   
       $data['menu']['utilities']['Appointment Calendar'] = [
         'subject' => 'appointment',
-        'action' => 'calendar',
-        'query' => '/{identifier}',
-        'values' => sprintf( '{identifier:"name=%s"}', $db_site->name )
+        'action' => sprintf( 'calendar/name=%s', $db_site->name ),
+        'query' => '/{identifier}?{calendar}',
       ];
 
       if( 1 < $db_role->tier )
       {   
         $data['menu']['utilities']['Vacancy Calendar'] = [
           'subject' => 'vacancy',
-          'action' => 'calendar',
-          'query' => '/{identifier}',
-          'values' => sprintf( '{identifier:"name=%s"}', $db_site->name )
+          'action' => sprintf( 'calendar/name=%s', $db_site->name ),
+          'query' => '/{identifier}?{calendar}',
         ];
       }
     }
