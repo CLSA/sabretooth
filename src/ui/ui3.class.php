@@ -27,6 +27,12 @@ class ui3 extends \cenozo\ui\ui3
 
     if( 'operator' == $db_role->name ) $data['menu']['lists'] = [];
 
+    if( array_key_exists( 'appointment', $data['module_list'] ) )
+    {
+      $module = $data['module_list']['appointment'];
+      $module->add_action( 'calendar', '/{identifier}?{calendar}' );
+    }
+
     if( array_key_exists( 'interview', $data['module_list'] ) )
     {
       $module = $data['module_list']['interview'];
