@@ -1,3 +1,5 @@
+const { CN_action_calendar } = await import(`${CENOZO_URL}/js/action/calendar.mjs`);
+const { CN_action_list } = await import(`${CENOZO_URL}/js/action/list.mjs`);
 const { CN_action_view } = await import(`${CENOZO_URL}/js/action/view.mjs`);
 const { CN_api } = await import(`${CENOZO_URL}/js/api.mjs`);
 const { CN_common } = await import(`${CENOZO_URL}/js/common.mjs`);
@@ -192,6 +194,61 @@ export class CN_appointment_model extends CN_base_model {
     }
 
     return super.allow_edit() && upcoming;
+  }
+}
+
+export class CN_appointment_calendar extends CN_action_calendar {
+  /**
+   * Extend parent method
+   */
+  create_footer_element() {
+    const footer_el = super.create_footer_element();
+
+    const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
+
+    const appointment_btn_el = this.constructor.html(
+      '<button name="appointment" class="btn btn-warning">Appointment</button>'
+    );
+    left_btn_group_el.append(appointment_btn_el);
+    this.constructor.set_disabled(appointment_btn_el, true);
+
+    const vacancy_btn_el = this.constructor.html(
+      '<button name="vacancy" class="btn btn-light btn-outline-primary">Vacancy</button>'
+    );
+    left_btn_group_el.append(vacancy_btn_el);
+    vacancy_btn_el.addEventListener("click", () => {
+      const calendar_params = this.get_query_parameter("calendar");
+      CN_session.navigate_to(
+        `vacancy/calendar/${this.get_model().get_identifier()}`,
+        calendar_params ? { calendar: calendar_params } : null,
+      );
+    });
+
+    return footer_el;
+  }
+}
+
+export class CN_appointment_list extends CN_action_list {
+  /**
+   * Extend parent method
+   */
+  update_element() {
+    super.update_element();
+
+    // replace the add button with a calendar button instead
+    const btn_group_el = this.get_footer_element().querySelector("div.btn-group");
+    const add_btn_el = btn_group_el.querySelector("button[name=add]");
+    if (add_btn_el) add_btn_el.remove();
+
+    if (!btn_group_el.querySelector("button[name=calendar]")) {
+      const calendar_btn_el = this.constructor.html(
+        '<button name="calendar" class="btn btn-primary">Appointment Calendar</button>'
+      );
+      btn_group_el.append(calendar_btn_el);
+      calendar_btn_el.addEventListener("click", () => {
+        CN_session.navigate_to(`appointment/calendar/${this.get_model().get_identifier()}`)
+      });
+    }
   }
 }
 

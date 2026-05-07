@@ -130,6 +130,7 @@ class ui3 extends \cenozo\ui\ui3
     if( array_key_exists( 'vacancy', $data['module_list'] ) )
     {
       $module = $data['module_list']['vacancy'];
+      $module->add_action( 'calendar', '/{identifier}?{calendar}' );
       $module->add_child( 'appointment' );
     }
 
