@@ -3,11 +3,11 @@ const { CN_action_list } = await import(`${CENOZO_URL}/js/action/list.mjs`);
 const { CN_action_view } = await import(`${CENOZO_URL}/js/action/view.mjs`);
 const { CN_api } = await import(`${CENOZO_URL}/js/api.mjs`);
 const { CN_common } = await import(`${CENOZO_URL}/js/common.mjs`);
-const { CN_base_model } = await import(`${CENOZO_URL}/js/model/base_model.mjs`);
+const { CN_model_base } = await import(`${CENOZO_URL}/js/model/base_model.mjs`);
 const { CN_session } = await import(`${CENOZO_URL}/js/session.mjs`);
-const { CN_user_model } = await import(`${CENOZO_URL}/js/model/user.mjs`);
+const { CN_model_user } = await import(`${CENOZO_URL}/js/model/user.mjs`);
 
-export class CN_appointment_model extends CN_base_model {
+export class CN_model_appointment extends CN_model_base {
   constructor() {
     super({
       wording: {
@@ -115,7 +115,7 @@ export class CN_appointment_model extends CN_base_model {
         user_id: {
           title: "Reserved for",
           type: "typeahead",
-          typeahead: CN_user_model.get_typeahead(),
+          typeahead: CN_model_user.get_typeahead(),
           help: `
             The user the appointment is specifically reserved for.
             Cannot be changed once the appointment has passed.
@@ -197,7 +197,7 @@ export class CN_appointment_model extends CN_base_model {
   }
 }
 
-export class CN_appointment_calendar extends CN_action_calendar {
+export class CN_calendar_appointment extends CN_action_calendar {
   /**
    * Extend parent method
    */
@@ -228,7 +228,7 @@ export class CN_appointment_calendar extends CN_action_calendar {
   }
 }
 
-export class CN_appointment_list extends CN_action_list {
+export class CN_list_appointment extends CN_action_list {
   /**
    * Extend parent method
    */
@@ -252,7 +252,7 @@ export class CN_appointment_list extends CN_action_list {
   }
 }
 
-export class CN_appointment_view extends CN_action_view {
+export class CN_view_appointment extends CN_action_view {
   /**
    * Extend parent method
    */
