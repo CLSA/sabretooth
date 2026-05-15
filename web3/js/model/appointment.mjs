@@ -3,11 +3,11 @@ const { CN_action_list } = await import(`${CENOZO_URL}/js/action/list.mjs`);
 const { CN_action_view } = await import(`${CENOZO_URL}/js/action/view.mjs`);
 const { CN_api } = await import(`${CENOZO_URL}/js/api.mjs`);
 const { CN_common } = await import(`${CENOZO_URL}/js/common.mjs`);
-const { CN_model_base } = await import(`${CENOZO_URL}/js/model/base_model.mjs`);
+const { CN_base_model } = await import(`${CENOZO_URL}/js/model/base_model.mjs`);
 const { CN_session } = await import(`${CENOZO_URL}/js/session.mjs`);
 const { CN_model_user } = await import(`${CENOZO_URL}/js/model/user.mjs`);
 
-export class CN_model_appointment extends CN_model_base {
+export class CN_model_appointment extends CN_base_model {
   constructor() {
     super({
       wording: {
