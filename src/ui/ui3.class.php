@@ -159,7 +159,7 @@ class ui3 extends \cenozo\ui\ui3
     {   
       $data['menu']['utilities']['Personal Calendar'] = [
         'subject' => 'user',
-        'action' => sprintf( 'calendar/name=%s', $db_user->name ),
+        'action' => sprintf( 'calendar/%d', $db_user->id ),
         'query' => '/{identifier}?{calendar}'
       ];
     }   
@@ -190,7 +190,7 @@ class ui3 extends \cenozo\ui\ui3
       $data['menu']['utilities']['Site Details'] = [
         'subject' => 'site',
         'action' => 'view',
-        'action' => sprintf( 'view/name=%s', $db_site->name ),
+        'action' => sprintf( 'view/%d', $db_site->id ),
         'query' => '/{identifier}',
       ];
     }   
@@ -199,7 +199,7 @@ class ui3 extends \cenozo\ui\ui3
     {   
       $data['menu']['utilities']['Appointment Calendar'] = [
         'subject' => 'appointment',
-        'action' => sprintf( 'calendar/name=%s', $db_site->name ),
+        'action' => sprintf( 'calendar/%d', $db_site->id ),
         'query' => '/{identifier}?{calendar}',
       ];
 
@@ -207,7 +207,7 @@ class ui3 extends \cenozo\ui\ui3
       {   
         $data['menu']['utilities']['Vacancy Calendar'] = [
           'subject' => 'vacancy',
-          'action' => sprintf( 'calendar/name=%s', $db_site->name ),
+          'action' => sprintf( 'calendar/%d', $db_site->id ),
           'query' => '/{identifier}?{calendar}',
         ];
       }

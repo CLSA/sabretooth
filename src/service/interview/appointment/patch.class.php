@@ -5,7 +5,7 @@
  * @author Patrick Emond <emondpd@mcmaster.ca>
  */
 
-namespace sabretooth\service\appointment;
+namespace sabretooth\service\interview\appointment;
 use cenozo\lib, cenozo\log, sabretooth\util;
 
 /**

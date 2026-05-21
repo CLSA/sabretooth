@@ -24,8 +24,7 @@ export class CN_model_vacancy extends CN_base_model {
         datetime: {
           title: "Date & Time",
           type: "datetime",
-          // minuteStep: 60, // TODO: need to implement missing feature
-          is_constant: (model) => 0 < model.get_action().get_property_value("appointments"),
+          is_constant: () => true,
           help: "Can only be changed if the vacancy has no appointments.",
         },
         operators: {
@@ -36,7 +35,6 @@ export class CN_model_vacancy extends CN_base_model {
         },
       },
       calendar: {
-        mode: "week",
         select: {
           column: [
             "id", // vacancy.id
@@ -47,32 +45,40 @@ export class CN_model_vacancy extends CN_base_model {
               table_prefix: false
             },
             {
-              column:
-                'IF(appointments > operators, "danger", IF(appointments < operators, "primary", "secondary"))',
+              column: `IF(
+                appointments > operators,
+                "danger",
+                IF(
+                  appointments < operators,
+                  "primary",
+                  "outline-primary"
+                )
+              )`,
               alias: "type",
               table_prefix: false
             },
-            { column: "30", alias: "duration", table_prefix: false },
+            { column: CN_session.get("setting", "vacancy_size"), alias: "duration", table_prefix: false },
             "appointments", // used to prevent deleting vacancies that have been filled
           ],
         },
         modifier: {
           order: "datetime",
         },
-        on_click: async (event) => {
+        on_click_event: async (event) => {
           await CN_session.navigate_to(`vacancy/view/${event.id}`);
         },
         on_select: async (model, dates, events) => {
           if (0 < dates.length && "month" != model.get_action().get_mode()) {
             // divide dates into blocks
+            const vacancy_size = CN_session.get("setting", "vacancy_size");
             let last_date = null;
             const blocks = dates.reduce((list, date) => {
               // create a date at the end of the current date's block
               const end_date = CN_common.clone(date);
-              end_date.setMinutes(end_date.getMinutes() + 30);
+              end_date.setMinutes(end_date.getMinutes() + vacancy_size);
 
-              // if this date is more than 30 minutes ahead of the last then start a new block
-              if (null == last_date || 30 < (date - last_date)/60000) {
+              // if this date is more than a vacancy block of time ahead of the last then start a new block
+              if (null == last_date || vacancy_size < (date - last_date)/60000) {
                 list.push({
                   start: CN_common.clone(date),
                 });
@@ -105,7 +111,7 @@ export class CN_model_vacancy extends CN_base_model {
                   If you wish to proceed please provide the number of operators that will be available:
                 </div>
               `,
-              input: { type: "integer", get_default: () => 1, min: 1 },
+              input: { type: "integer", get_default: () => 1, get_min: () => 1 },
             });
 
             if (0 < response) {
@@ -168,28 +174,66 @@ export class CN_calendar_vacancy extends CN_action_calendar {
   /**
    * Extend parent method
    */
+  async on_load() {
+    // check site access
+    if (!CN_session.get("role", "all_sites")) {
+      if (this.get_model().get_identifier() != CN_session.get("site", "id")) {
+        const error = new URIError();
+        error.title = "Page not found (403)";
+        error.message = "You do not have access to the requested resource.";
+        throw error;
+      }
+    }
+
+    await super.on_load();
+  }
+
+  /**
+   * Extend parent method
+   */
+  get_on_load_parameters() {
+    const parameters = super.get_on_load_parameters();
+    parameters.restricted_site_id = this.get_model().get_identifier();
+    return parameters;
+  }
+
+  /**
+   * Extend parent method
+   */
   create_footer_element() {
     const footer_el = super.create_footer_element();
 
-    const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
+    // add the appointment/vacancy calendar buttons (if the user has access to them)
+    const utilities = CN_session.get("menu", "utilities");
+    if (utilities["Appointment Calendar"] && utilities["Vacancy Calendar"]) {
+      const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
 
-    const appointment_btn_el = this.constructor.html(
-      '<button name="appointment" class="btn btn-light btn-outline-primary">Appointment</button>'
-    );
-    left_btn_group_el.append(appointment_btn_el);
-    appointment_btn_el.addEventListener("click", () => {
-      const calendar_params = this.get_query_parameter("calendar");
-      CN_session.navigate_to(
-        `appointment/calendar/${this.get_model().get_identifier()}`,
-        calendar_params ? { calendar: calendar_params } : null,
+      const appointment_btn_el = this.constructor.html(
+        '<button name="appointment" class="btn btn-light btn-outline-primary">Appointment</button>'
       );
-    });
+      left_btn_group_el.append(appointment_btn_el);
+      appointment_btn_el.addEventListener("click", () => {
+        const calendar_params = this.get_query_parameter("calendar");
+        CN_session.navigate_to(
+          `appointment/calendar/${this.get_model().get_identifier()}`,
+          calendar_params ? { calendar: calendar_params } : null,
+        );
+      });
 
-    const vacancy_btn_el = this.constructor.html(
-      '<button name="vacancy" class="btn btn-warning">Vacancy</button>'
-    );
-    left_btn_group_el.append(vacancy_btn_el);
-    this.constructor.set_disabled(vacancy_btn_el, true);
+      const vacancy_btn_el = this.constructor.html(
+        '<button name="vacancy" class="btn btn-warning">Vacancy</button>'
+      );
+      left_btn_group_el.append(vacancy_btn_el);
+      vacancy_btn_el.addEventListener("click", () => {
+        const calendar_params = this.get_query_parameter("calendar");
+        CN_session.navigate_to(
+          `vacancy/calendar/${this.get_model().get_identifier()}`,
+          calendar_params ? { calendar: calendar_params } : null,
+        );
+      });
+    } else {
+      footer_el.querySelector("button[name=list]").remove();
+    }
 
     return footer_el;
   }
