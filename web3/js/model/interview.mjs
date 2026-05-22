@@ -22,7 +22,6 @@ export class CN_model_interview extends classes.CN_model_interview {
     CN_common.insert_property_after(columns, "site", "page_progress", {
       title: "Page Progress",
       table_prefix: false,
-      is_hidden: () => !CN_session.get("role", "all_sites"),
     });
 
     return columns;
