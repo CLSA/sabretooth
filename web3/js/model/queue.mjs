@@ -11,7 +11,7 @@ export class CN_model_queue extends CN_base_model {
       columns: {
         rank: { title: "Rank", type: "rank" },
         name: { title: "Name" },
-        participant_count: { title: "Participants", type: "number", table_prefix: false },
+        participant_count: { title: "Participants", type: "integer", table_prefix: false },
       },
       properties: {
         rank: { title: "Rank", type: "rank", is_constant: () => true },
