@@ -148,8 +148,8 @@ export class CN_view_interview extends classes.CN_view_interview {
   /**
    * Extend parent method
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
     const model = this.get_model();
 
     if (2 < CN_session.get("role", "tier")) {

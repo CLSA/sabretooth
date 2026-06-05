@@ -399,7 +399,9 @@ export class CN_add_appointment extends CN_action_add {
         this.#vacancy_model.configure(
           this.get_element(),
           "calendar",
-          model.get_parent_model().get_action().get_property_value("effective_site_id")
+          model.get_parent_model().get_action().get_property_value("effective_site_id"),
+          null,
+          true
         );
 
         // private function used by event listeners below
@@ -480,7 +482,6 @@ export class CN_calendar_appointment extends CN_action_calendar {
       throw error;
     }
 
-
     await super.on_load();
   }
 
@@ -496,8 +497,8 @@ export class CN_calendar_appointment extends CN_action_calendar {
   /**
    * Extend parent method
    */
-  create_header_element() {
-    const header_el = super.create_header_element();
+  _create_header_element() {
+    const header_el = super._create_header_element();
 
     if (CN_session.get("role", "all_sites")) {
       const site_div_el = this.constructor.html(`
@@ -539,8 +540,8 @@ export class CN_calendar_appointment extends CN_action_calendar {
   /**
    * Extend parent method
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
 
     // add the appointment/vacancy calendar buttons (if the user has access to them)
     const utilities = CN_session.get("menu", "utilities");
@@ -657,7 +658,9 @@ export class CN_view_appointment extends CN_action_view {
         this.#vacancy_model.configure(
           this.get_element(),
           "calendar",
-          model.get_parent_model().get_action().get_property_value("effective_site_id")
+          model.get_parent_model().get_action().get_property_value("effective_site_id"),
+          null,
+          true
         );
 
         // private function used by event listeners below
@@ -708,8 +711,8 @@ export class CN_view_appointment extends CN_action_view {
   /**
    * Add operation to footer element
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
     const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]")
 
     // add the notes action

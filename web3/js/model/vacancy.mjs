@@ -200,8 +200,8 @@ export class CN_calendar_vacancy extends CN_action_calendar {
   /**
    * Extend parent method
    */
-  create_footer_element() {
-    const footer_el = super.create_footer_element();
+  _create_footer_element() {
+    const footer_el = super._create_footer_element();
 
     // add the appointment/vacancy calendar buttons (if the user has access to them)
     const utilities = CN_session.get("menu", "utilities");
