@@ -140,7 +140,7 @@ class module extends \cenozo\service\assignment\module
           {
             $this->set_data( 'There are no participants available for an assignment at this time, '.
                              'please try again later.' );
-            $this->get_status()->set_code( 408 );
+            $this->get_status()->set_code( 409 );
           }
           else
           {

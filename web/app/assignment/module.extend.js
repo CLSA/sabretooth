@@ -160,16 +160,8 @@ cenozoApp.extendModule({
                       ? { participant_id: record.id }
                       : undefined,
                     onError: async function (error) {
-                      if (408 == error.status) {
-                        // 408 means there are currently no participants available (this only happens with no record)
-                        await CnModalMessageFactory.instance({
-                          title: "No participants available",
-                          message: error.data,
-                          error: true,
-                        }).show();
-                        await self.onLoad();
-                      } else if (409 == error.status) {
-                        // 409 means there is a conflict (the assignment can't be made)
+                      if (409 == error.status) {
+                        // 409 means there are no participants or a conflict (the assignment can't be made)
                         await CnModalMessageFactory.instance({
                           title: angular.isDefined(record)
                             ? "Unable to start assignment with " + record.uid
