@@ -1,14 +1,13 @@
 CREATE TABLE recording (
-  id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  rank INT(11) NOT NULL,
-  name VARCHAR(45) NOT NULL,
-  record TINYINT(1) NOT NULL,
-  timer INT(11) NULL DEFAULT NULL,
+  id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
+  rank int(11) NOT NULL,
+  name varchar(45) NOT NULL,
+  record tinyint(1) NOT NULL,
+  timer int(11) DEFAULT NULL,
   PRIMARY KEY (id),
-  UNIQUE INDEX uq_rank (rank ASC),
-  UNIQUE INDEX uq_name (name ASC))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+  UNIQUE KEY uq_rank (rank),
+  UNIQUE KEY uq_name (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

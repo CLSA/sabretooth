@@ -1,20 +1,19 @@
 CREATE TABLE interview_last_assignment (
-  interview_id INT(10) UNSIGNED NOT NULL,
-  assignment_id INT(10) UNSIGNED NULL DEFAULT NULL,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
+  interview_id int(10) unsigned NOT NULL,
+  assignment_id int(10) unsigned DEFAULT NULL,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (interview_id),
-  INDEX fk_assignment_id (assignment_id ASC),
+  KEY fk_assignment_id (assignment_id),
   CONSTRAINT fk_interview_last_assignment_assignment_id
     FOREIGN KEY (assignment_id)
-    REFERENCES sabretooth.assignment (id)
+    REFERENCES assignment (id)
     ON DELETE SET NULL
     ON UPDATE NO ACTION,
   CONSTRAINT fk_interview_last_assignment_interview_id
     FOREIGN KEY (interview_id)
-    REFERENCES sabretooth.interview (id)
+    REFERENCES interview (id)
     ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

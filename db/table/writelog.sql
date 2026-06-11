@@ -1,18 +1,18 @@
 CREATE TABLE writelog (
-  id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  user_id INT(10) UNSIGNED NOT NULL,
-  site_id INT(10) UNSIGNED NOT NULL,
-  role_id INT(10) UNSIGNED NOT NULL,
-  method ENUM('DELETE', 'PATCH', 'POST', 'PUT') NULL DEFAULT NULL,
-  path VARCHAR(512) NULL DEFAULT NULL,
-  elapsed FLOAT NULL DEFAULT NULL,
-  status INT(11) NULL DEFAULT NULL,
-  datetime DATETIME NOT NULL,
+  id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  user_id int(10) unsigned NOT NULL,
+  site_id int(10) unsigned NOT NULL,
+  role_id int(10) unsigned NOT NULL,
+  method enum('DELETE','PATCH','POST','PUT') DEFAULT NULL,
+  path varchar(512) DEFAULT NULL,
+  elapsed float DEFAULT NULL,
+  status int(11) DEFAULT NULL,
+  datetime datetime NOT NULL,
   PRIMARY KEY (id),
-  INDEX fk_user_id (user_id ASC),
-  INDEX fk_site_id (site_id ASC),
-  INDEX fk_role_id (role_id ASC),
-  INDEX dk_datetime (datetime ASC),
+  KEY fk_user_id (user_id),
+  KEY fk_site_id (site_id),
+  KEY fk_role_id (role_id),
+  KEY dk_datetime (datetime),
   CONSTRAINT fk_writelog_role_id
     FOREIGN KEY (role_id)
     REFERENCES cenozo.role (id)
@@ -27,7 +27,5 @@ CREATE TABLE writelog (
     FOREIGN KEY (user_id)
     REFERENCES cenozo.user (id)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+    ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

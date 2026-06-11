@@ -1,22 +1,21 @@
 CREATE TABLE queue (
-  id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  name VARCHAR(45) NOT NULL,
-  title VARCHAR(255) NOT NULL,
-  rank INT(10) UNSIGNED NULL DEFAULT NULL,
-  time_specific TINYINT(1) NOT NULL,
-  parent_queue_id INT(10) UNSIGNED NULL DEFAULT NULL,
-  description MEDIUMTEXT NULL DEFAULT NULL,
+  id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
+  name varchar(45) NOT NULL,
+  title varchar(255) NOT NULL,
+  rank int(10) unsigned DEFAULT NULL,
+  time_specific tinyint(1) NOT NULL,
+  parent_queue_id int(10) unsigned DEFAULT NULL,
+  description mediumtext DEFAULT NULL,
   PRIMARY KEY (id),
-  UNIQUE INDEX uq_name (name ASC),
-  UNIQUE INDEX uq_rank (rank ASC),
-  INDEX fk_parent_queue_id (parent_queue_id ASC),
+  UNIQUE KEY uq_name (name),
+  UNIQUE KEY uq_rank (rank),
+  KEY fk_parent_queue_id (parent_queue_id),
   CONSTRAINT fk_queue_parent_queue_id
     FOREIGN KEY (parent_queue_id)
-    REFERENCES sabretooth.queue (id)
+    REFERENCES queue (id)
     ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+    ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

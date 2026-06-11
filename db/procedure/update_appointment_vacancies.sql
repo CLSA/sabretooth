@@ -1,4 +1,4 @@
-CREATE PROCEDURE update_appointment_vacancies (IN proc_appointment_id INT(10) UNSIGNED)
+CREATE PROCEDURE update_appointment_vacancies(IN proc_appointment_id INT(10) UNSIGNED)
 BEGIN
   IF proc_appointment_id IS NOT NULL THEN
     UPDATE appointment
@@ -18,4 +18,4 @@ BEGIN
     )
     WHERE id = proc_appointment_id;
   END IF;
-END$$
+END ;;

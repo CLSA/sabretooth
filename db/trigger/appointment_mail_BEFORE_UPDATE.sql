@@ -1,5 +1,4 @@
-CREATE TRIGGER appointment_mail_BEFORE_UPDATE
-BEFORE UPDATE ON appointment_mail FOR EACH ROW
+CREATE TRIGGER appointment_mail_BEFORE_UPDATE BEFORE UPDATE ON appointment_mail FOR EACH ROW
 BEGIN
   IF( "immediately" = NEW.delay_unit AND NEW.delay_offset IS NOT NULL ) THEN
     SET NEW.delay_offset = NULL;
@@ -8,4 +7,4 @@ BEGIN
       SET NEW.delay_offset = 1;
     END IF;
   END IF;
-END$$
+END ;;

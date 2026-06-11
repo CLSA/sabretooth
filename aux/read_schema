@@ -1,0 +1,130 @@
+#!/usr/bin/php
+<?php
+/**
+ * Running this script will rebuild the database schema found in the db directory
+ * 
+ * @author Patrick Emond <emondpd@mcmaster.ca>
+ */
+
+ini_set( 'display_errors', '1' );
+error_reporting( E_ALL | E_STRICT );
+ini_set( 'date.timezone', 'US/Eastern' );
+
+define( 'APP_NAME', 'sabretooth' );
+define( 'IGNORED_FILES', [] );
+
+// utility functions
+function out( $msg ) { printf( '%s: %s'."\n", date( 'Y-m-d H:i:s' ), $msg ); }
+function error( $msg ) { out( sprintf( 'ERROR! %s', $msg ) ); }
+function write_file( $filename, $contents )
+{
+  if( !is_null( $filename ) && 0 < count( $contents ) && !in_array( $filename, IGNORED_FILES ) )
+  {
+    file_put_contents( $filename, implode( "\n", $contents ) );
+  }
+}
+
+// always back out of the aux/ directory if we're in it
+if( preg_match('/\/aux$/', getcwd()) ) chdir( '..' );
+
+// validate arguments
+if( 3 != $argc )
+{
+  printf(
+    "Script expects exactly two arguments:\n".
+    "  Username: the username required to connect to\n".
+    "  Database: the name of a %s database to read a schema from\n",
+    APP_NAME
+  );  
+  exit( 1 );
+}
+
+$username = $argv[1];
+$db_name = $argv[2];
+$db_prefix = preg_match( sprintf( '/^(.*)%s/', APP_NAME ), $db_name, $matches ) ? $matches[1] : NULL;
+
+out( sprintf( 'Generating database schema from database "%s"', $db_name ) );
+$output = NULL;
+exec(
+  sprintf(
+    'mariadb-dump '.
+      '--skip-add-drop-table '.
+      '--skip-add-locks '.
+      '--skip-disable-keys '.
+      '--skip-set-charset '.
+      '--skip-comments '.
+      '--routines '.
+      '--no-data '.
+      '-u %s %s',
+    $username,
+    $db_name
+  ),
+  $output
+);
+
+out( 'Removing old schema files' );
+exec( 'rm -rf db/procedure/* db/table/* db/trigger/*' );
+
+out( 'Parsing database schema' );
+
+$filename = NULL;
+$contents = [];
+foreach( $output as $line )
+{
+  // ignore DELIMITER and ALTER DATABASE commands
+  if( preg_match( '/^(DELIMITER|ALTER DATABASE)/', $line ) ) continue;
+
+  // look for trigger declarations
+  $matches = NULL;
+  if( preg_match( '/^\/\*.*CREATE.*TRIGGER (.*)/', $line, $matches ) )
+  {
+    $line = sprintf( 'CREATE TRIGGER %s', $matches[1] );
+  }
+
+  // ignore commented lines
+  if( preg_match( '/^\/\*/', $line ) ) continue;
+
+  // remove backticks
+  $line = preg_replace( '/`/', '', $line );
+
+  // remove whitespace at the end of a line, auto increments and procedure definers
+  $line = preg_replace( ['/ +$/', '/AUTO_INCREMENT=[0-9]+ /', '/ DEFINER=[^ ]+/'], '', $line );
+
+  // remove the database name
+  $line = preg_replace( sprintf( '/\b%s\./', $db_name ), '', $line );
+
+  // remove the database prefix
+  if( !is_null( $db_prefix ) ) $line = str_replace( $db_prefix, '', $line );
+
+  $matches = NULL;
+  if( preg_match( '/^CREATE .*(TABLE|TRIGGER|PROCEDURE) ([a-zA-Z0-9_]+)/', $line, $matches ) )
+  {
+    write_file( $filename, $contents );
+
+    $type = strtolower( $matches[1] );
+    $name = $matches[2];
+    $filename = sprintf( "db/%s/%s.sql", $type, $name );
+    $contents = [$line];
+  }
+  else if( !is_null( $filename ) )
+  {
+    // never add more than one empty line in a row
+    if( 0 != strlen( $line ) || 0 != strlen( $last_line ) )
+    {
+      // remove junk at the end of closing triggers
+      if( 'trigger' == $type ) $line = preg_replace( '/^END \*\/(.*)/', 'END $1', $line );
+
+      // break up long lines
+      $contents[] = (
+        'table' == $type ?
+        preg_replace( '/ (FOREIGN KEY|REFERENCES|ON) /', "\n    $1 ", $line ) :
+        $line
+      );
+    }
+  }
+  $last_line = $line;
+}
+
+write_file( $filename, $contents );
+
+out( 'Done' );

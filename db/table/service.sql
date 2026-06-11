@@ -1,13 +1,12 @@
 CREATE TABLE service (
-  id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  method ENUM('DELETE', 'GET', 'PATCH', 'POST', 'PUT') NOT NULL,
-  subject VARCHAR(45) NOT NULL,
-  resource TINYINT(1) NOT NULL DEFAULT 0,
-  restricted TINYINT(1) NOT NULL DEFAULT 1,
+  id int(10) unsigned NOT NULL AUTO_INCREMENT,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
+  method enum('DELETE','GET','PATCH','POST','PUT') NOT NULL,
+  subject varchar(45) NOT NULL,
+  resource tinyint(1) NOT NULL DEFAULT 0,
+  restricted tinyint(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (id),
-  UNIQUE INDEX uq_method_subject_resource (method ASC, subject ASC, resource ASC))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+  UNIQUE KEY uq_method_subject_resource (method,subject,resource)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

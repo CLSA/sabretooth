@@ -1,11 +1,12 @@
 CREATE TABLE qnaire_has_collection (
-  qnaire_id INT(10) UNSIGNED NOT NULL,
-  collection_id INT(10) UNSIGNED NOT NULL,
-  update_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP() ON UPDATE CURRENT_TIMESTAMP(),
-  create_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP(),
-  PRIMARY KEY (qnaire_id, collection_id),
-  INDEX fk_collection_id (collection_id ASC),
-  INDEX fk_qnaire_id (qnaire_id ASC),
+  qnaire_id int(10) unsigned NOT NULL,
+  collection_id int(10) unsigned NOT NULL,
+  update_timestamp timestamp NOT NULL DEFAULT current_timestamp()
+    ON UPDATE current_timestamp(),
+  create_timestamp timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (qnaire_id,collection_id),
+  KEY fk_collection_id (collection_id),
+  KEY fk_qnaire_id (qnaire_id),
   CONSTRAINT fk_qnaire_has_collection_collection_id
     FOREIGN KEY (collection_id)
     REFERENCES cenozo.collection (id)
@@ -13,9 +14,7 @@ CREATE TABLE qnaire_has_collection (
     ON UPDATE NO ACTION,
   CONSTRAINT fk_qnaire_has_collection_qnaire_id
     FOREIGN KEY (qnaire_id)
-    REFERENCES sabretooth.qnaire (id)
+    REFERENCES qnaire (id)
     ON DELETE CASCADE
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_general_ci;
+    ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
