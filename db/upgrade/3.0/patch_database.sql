@@ -2,6 +2,7 @@
 
 SET AUTOCOMMIT=0;
 
+SOURCE trainee_user.sql
 SOURCE service.sql
 SOURCE role_has_service.sql
 

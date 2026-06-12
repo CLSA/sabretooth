@@ -2,6 +2,21 @@ cenozoApp.extendModule({
   name: "user",
   dependencies: "appointment",
   create: (module) => {
+    module.addInput("", "trainee_user", {
+      title: "Trainee User",
+      type: "boolean",
+      help: "Whether the user is a trainee.",
+      isExcluded: function ($state, model) { return model.isTrainee(); },
+    } );
+
+    // remove most inputs when the user is a trainee
+    const inputList = module.inputGroupList.findByProperty( "title", "" ).inputList;
+    inputList.active.isExcluded = function ($state, model) { return model.isTrainee(); }
+    inputList.login_failures.isExcluded = function ($state, model) { return model.isTrainee() ? true : "add"; }
+    inputList.email.isExcluded = function ($state, model) { return model.isTrainee(); }
+    inputList.timezone.isExcluded = function ($state, model) { return model.isTrainee(); }
+    inputList.use_12hour_clock.isExcluded = function ($state, model) { return model.isTrainee(); }
+
     if (angular.isDefined(module.actions.calendar)) {
       module.addExtraOperation("view", {
         title: "Calendar",
@@ -181,6 +196,40 @@ cenozoApp.extendModule({
             return new object(parentModel);
           },
         };
+      },
+    ]);
+
+    /* ############################################################################################## */
+    cenozo.providers.decorator("CnUserViewFactory", [
+      "$delegate",
+      "CnSession",
+      function ($delegate, CnSession) {
+        const instance = $delegate.instance;
+        $delegate.instance = function (parentModel, root) {
+          const object = instance(parentModel, root);
+          object.afterView(async function () {
+            await CnSession.promise;
+
+            object.listenToCallIncluded =
+              (1 < CnSession.role.tier || CnSession.user.traineeUser) &&
+              CnSession.application.voipEnabled &&
+              object.record.in_call;
+          });
+          return object;
+        };
+        return $delegate;
+      },
+    ]);
+
+    /* ############################################################################################## */
+    cenozo.providers.decorator("CnUserModelFactory", [
+      "$delegate",
+      "CnSession",
+      function ($delegate, CnSession) {
+        $delegate.root.isTrainee = function () {
+          return 1 == CnSession.role.tier && CnSession.user.traineeUser;
+        };
+        return $delegate;
       },
     ]);
   },

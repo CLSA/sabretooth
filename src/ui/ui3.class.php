@@ -119,7 +119,9 @@ class ui3 extends \cenozo\ui\ui3
       if( 'operator' == $db_role->name || 'operator+' == $db_role->name )
       {
         $module->remove_action( 'list' );
-        $module->remove_action( 'view' );
+
+        // also remove the view action unless this is a trainee
+        if( !$db_user->get_trainee_user() ) $module->remove_action( 'view' );
       }
 
       // add calendar to user actions

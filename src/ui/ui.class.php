@@ -21,6 +21,7 @@ class ui extends \cenozo\ui\ui
     parent::build_module_list();
 
     $db_role = lib::create( 'business\session' )->get_role();
+    $db_user = lib::create( 'business\session' )->get_user();
 
     // remove all lists from the operator role
     if( 'operator' == $db_role->name ) $this->set_all_list_menu( false );
@@ -88,11 +89,13 @@ class ui extends \cenozo\ui\ui
       // remove the user list from the operator+ role
       if( 'operator+' == $db_role->name ) $module->set_list_menu( false );
 
-      // remove the user view action from operator roles (it is for viewing personal calendar only)
+      // remove the user live action from operator roles (it is for viewing personal calendar only)
       if( 'operator' == $db_role->name || 'operator+' == $db_role->name )
       {
         $module->remove_action( 'list' );
-        $module->remove_action( 'view' );
+
+        // also remove the view action unless this is a trainee
+        if( !$db_user->get_trainee_user() ) $module->remove_action( 'view' );
       }
 
       // add calendar to user actions

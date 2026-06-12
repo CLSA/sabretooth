@@ -29,6 +29,9 @@ class get extends \cenozo\service\self\get
     $resource['setting']['proxy'] = $setting_manager->get_setting( 'general', 'proxy' );
     $resource['setting']['vacancy_size'] = $setting_manager->get_setting( 'general', 'vacancy_size' );
 
+    // include whether the user is an trainee user
+    $resource['user']['trainee_user'] = $session->get_user()->get_trainee_user();
+
     return $resource;
   }
 }
