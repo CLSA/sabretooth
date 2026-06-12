@@ -25,6 +25,7 @@ cenozoApp.extendModule({
             identifier: model.viewModel.record.getIdentifier(),
           });
         },
+        isIncluded: function ($state, model) { return !model.isTrainee(); },
       });
     }
 
