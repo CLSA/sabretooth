@@ -20,7 +20,7 @@ function write_file( $filename, $contents )
 {
   if( !is_null( $filename ) && 0 < count( $contents ) && !in_array( $filename, IGNORED_FILES ) )
   {
-    file_put_contents( $filename, implode( "\n", $contents ) );
+    file_put_contents( $filename, implode( "\n", $contents )."\n" );
   }
 }
 

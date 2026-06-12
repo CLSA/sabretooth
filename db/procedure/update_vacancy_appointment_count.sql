@@ -6,3 +6,4 @@ BEGIN
     WHERE id = proc_vacancy_id;
   END IF;
 END ;;
+
