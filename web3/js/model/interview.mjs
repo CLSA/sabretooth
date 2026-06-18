@@ -162,8 +162,9 @@ export class CN_view_interview extends classes.CN_view_interview {
           type="button"
           class="btn btn-danger"
           data-bs-toggle="tooltip"
+          data-bs-html="true"
           data-bs-title="
-            Force removes the interview.
+            <div class='fw-bold'>Force removes the interview:</div>
             This will delete all appointments, calls, and assignments along with the interview.
             Questionnaires associated with the interview will not be changed and must be edited/deleted directly.
           "
@@ -204,8 +205,9 @@ export class CN_view_interview extends classes.CN_view_interview {
           type="button"
           class="btn btn-danger"
           data-bs-toggle="tooltip"
+          data-bs-html="true"
           data-bs-title="
-            Force completes the interview.
+            <div class='fw-bold'>Force completes the interview:</div>
             This will end the interview's questionnaire leaving any remaining questions unanswered.
             You should only force-close an interview when you are sure that as many questions in the
             questionnaire has been answered as possible and there is no reason to re-assign the participant.

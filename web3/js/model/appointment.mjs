@@ -33,7 +33,7 @@ export class CN_model_appointment extends CN_base_model {
         state: {
           title: "State",
           table_prefix: false,
-          help: "Will either be reached, not reached, upcoming, assignable, missed, assigned or in progress",
+          help: "Will either be reached, not reached, upcoming, assignable, missed, assigned or in progress.",
         },
         interview_id: { is_hidden: () => true },
       },
@@ -44,7 +44,7 @@ export class CN_model_appointment extends CN_base_model {
           type: "datetime",
           is_constant: () => true,
           required: true,
-          help: "Set by clicking a vacancy in the calendar below",
+          help: "Set by clicking a vacancy in the calendar below.",
         },
         duration: {
           meta: {}, // provided by the service
@@ -71,7 +71,7 @@ export class CN_model_appointment extends CN_base_model {
           },
           get_default: () => CN_session.get("setting", "appointment_duration"),
           required: true,
-          help: "Not all durations are necessarily available, check the vacancy calendar for details",
+          help: "Not all durations are necessarily available, check the vacancy calendar for details.",
         },
         participant: {
           meta: { table: "participant", column: "uid" },
@@ -154,7 +154,7 @@ export class CN_model_appointment extends CN_base_model {
           title: "State",
           is_hidden: (model) => "add" == model.get_action_name(),
           is_constant: () => true,
-          help: "One of reached, not reached, upcoming, assignable, missed, assigned or in progress",
+          help: "One of reached, not reached, upcoming, assignable, missed, assigned or in progress.",
         },
         start_vacancy_id: {
           is_hidden: () => true,
@@ -414,11 +414,11 @@ export class CN_add_appointment extends CN_action_add {
 
           if (response) {
             // warn if an appointment will be cancelled
-            this.set_property_value("start_datetime", CN_common.format_datetime(object.date, "record"));
+            await this.set_property_value("start_datetime", CN_common.format_datetime(object.date, "record"));
             await this.on_set_property("start_datetime");
 
             if (object.id) {
-              this.set_property_value("start_vacancy_id", object.id);
+              await this.set_property_value("start_vacancy_id", object.id);
               await this.on_set_property("start_vacancy_id");
             }
           }
