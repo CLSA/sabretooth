@@ -23,7 +23,7 @@ class post extends \cenozo\service\user\post
       if( property_exists( $post_object, 'trainee_user' ) )
       {
         $db_user = $this->get_leaf_record();
-        $db_user->set_trainee_user( $trainee_user );
+        $db_user->set_trainee_user( $post_object->trainee_user );
       }
     }
   }
