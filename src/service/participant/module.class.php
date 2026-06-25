@@ -71,6 +71,8 @@ class module extends \cenozo\service\participant\module
 
       $session = lib::create( 'business\session' );
       $db_user = $session->get_user();
+      $db_role = $session->get_role();
+      $db_setting = $session->get_site()->get_setting();
 
       // remove hold/proxy/trace/exclusion joins for efficiency
       $modifier->remove_join( 'exclusion' );
@@ -93,13 +95,49 @@ class module extends \cenozo\service\participant\module
 
       // only show reserved appointments to the reserved user
       $modifier->left_join(
-        'participant_last_interview', 'participant.id', 'participant_last_interview.participant_id' );
-      $modifier->left_join( 'interview', 'participant_last_interview.interview_id', 'interview.id' );
+        'participant_last_interview',
+        'participant.id',
+        'participant_last_interview.participant_id'
+      );
       $join_mod = lib::create( 'database\modifier' );
-      $join_mod->where( 'participant_last_interview.interview_id', '=', 'appointment.interview_id', false );
+      $join_mod->where( 'participant_last_interview.interview_id', '=', 'interview.id', false );
+      $join_mod->where( 'qnaire.id', '=', 'interview.qnaire_id', false );
+      $modifier->join_modifier( 'interview', $join_mod, 'left' );
+      $join_mod = lib::create( 'database\modifier' );
+      $join_mod->where( 'interview.id', '=', 'appointment.interview_id', false );
       $join_mod->where( 'appointment.assignment_id', '=', NULL );
       $join_mod->where( 'appointment.outcome', '=', NULL );
       $modifier->join_modifier( 'appointment', $join_mod, 'left' );
+
+      // determine the time of the last assignment that had a phone call status of "contacted"
+      $temp_sel = lib::create( 'database\select' );
+      $temp_sel->from( 'interview' );
+      $temp_sel->add_column( 'id', 'interview_id' );
+      $temp_sel->add_column( 'MAX(assignment.end_datetime)', 'datetime', false );
+      $temp_mod = lib::create( 'database\modifier' );
+      $temp_mod->join( 'assignment', 'interview.id', 'assignment.interview_id' );
+      $temp_mod->join( 'phone_call', 'assignment.id', 'phone_call.assignment_id' );
+      $temp_mod->where( 'phone_call.status', '=', 'contacted' );
+      $temp_mod->group( 'interview.id' );
+
+      if( $db_setting->last_contacted )
+      {
+        $interview_class_name::db()->execute( sprintf(
+          'CREATE TEMPORARY TABLE interview_last_contacted %s %s',
+          $temp_sel->get_sql(),
+          $temp_mod->get_sql()
+        ) );
+
+        $interview_class_name::db()->execute(
+          'ALTER TABLE interview_last_contacted ADD PRIMARY KEY (interview_id)',
+        );
+
+        $modifier->left_join(
+          'interview_last_contacted',
+          'interview.id',
+          'interview_last_contacted.interview_id'
+        );
+      }
 
       $modifier->where_bracket( true );
       $modifier->where( 'queue.name', '!=', 'assignable appointment' );
@@ -140,8 +178,7 @@ class module extends \cenozo\service\participant\module
       }
 
       // only provide the highest ranking participants to operators
-      $role = $session->get_role()->name;
-      if( 'operator' == $role || 'operator+' == $role )
+      if( 'operator' == $db_role->name || 'operator+' == $db_role->name )
       {
         $sub_modifier = clone $modifier;
         $sub_select = lib::create( 'database\select' );
@@ -198,7 +235,7 @@ class module extends \cenozo\service\participant\module
           ) );
 
           $modifier->left_join(
-            sprintf( '%s', $temp_table_name ),
+            $temp_table_name,
             'participant.id',
             sprintf( '%s.participant_id', $temp_table_name )
           );

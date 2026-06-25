@@ -10,6 +10,7 @@ CREATE TABLE setting (
   calling_start_time time NOT NULL DEFAULT '09:00:00',
   calling_end_time time NOT NULL DEFAULT '21:00:00',
   appointment_duration int(10) unsigned NOT NULL DEFAULT 60,
+  last_contacted tinyint(1) NOT NULL DEFAULT 0,
   pre_call_window int(10) unsigned NOT NULL DEFAULT 5,
   post_call_window int(10) unsigned NOT NULL DEFAULT 15,
   contacted_wait int(10) unsigned NOT NULL DEFAULT 10080,

@@ -967,6 +967,15 @@ cenozoApp.extendModule({
               title: "Availability",
               column: "availability_type.name",
             });
+            if (CnSession.setting.lastContacted) {
+              object.participantModel.addColumn("last_contacted", {
+                title: "Last Contacted",
+                column: "interview_last_contacted.datetime",
+                type: "datetime",
+                help:
+                  "The last time an assignment for the current questionnaire ended with a contacted call status.",
+              });
+            }
 
             // add the reserved row as a hidden column to be used for highlighting reserved appointments
             object.participantModel.addColumn("reserved", {

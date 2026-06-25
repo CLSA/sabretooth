@@ -33,6 +33,11 @@ cenozoApp.defineModule({
           type: "boolean",
           help: "Allow users to make calls without being connected to the webphone",
         },
+        last_contacted: {
+          title: "Show Last Contacted Column",
+          type: "boolean",
+          help: "Whether to show to Last Contacted column in the assignment control participant selection list.",
+        },
         calling_start_time: {
           title: "Start Call",
           type: "time_notz",
@@ -86,6 +91,11 @@ cenozoApp.defineModule({
         title: "Allow calls without a webphone",
         type: "boolean",
         help: "Allow users to make calls without being connected to the webphone",
+      },
+      last_contacted: {
+        title: "Show Last Contacted Column",
+        type: "boolean",
+        help: "Whether to show to Last Contacted column in the assignment control participant selection list.",
       },
       calling_start_time: {
         title: "Earliest Call Time",
