@@ -11,15 +11,15 @@ export class CN_model_interview extends classes.CN_model_interview {
   clone_columns() {
     const columns = super.clone_columns();
 
-    CN_common.insert_property_after(columns, "uid", "qnaire", {
+    CN_common.insert_property(columns, "after", "uid", "qnaire", {
       column: "script.name",
       title: "Questionnaire",
     });
-    CN_common.insert_property_after(columns, "qnaire", "method", {
+    CN_common.insert_property(columns, "after", "qnaire", "method", {
       column: "interview.method",
       title: "Method",
     });
-    CN_common.insert_property_after(columns, "site", "page_progress", {
+    CN_common.insert_property(columns, "after", "site", "page_progress", {
       title: "Page Progress",
       table_prefix: false,
     });
@@ -33,19 +33,19 @@ export class CN_model_interview extends classes.CN_model_interview {
   clone_properties() {
     const properties = super.clone_properties();
 
-    CN_common.insert_property_after(properties, "uid", "method", {
+    CN_common.insert_property(properties, "after", "uid", "method", {
       title: "Interviewing Method",
       type: "enum",
       is_constant: () => true,
     });
 
-    CN_common.insert_property_after(properties, "uid", "qnaire", {
+    CN_common.insert_property(properties, "after", "uid", "qnaire", {
       meta: { table: "script", column: "name" },
       title: "Questionnaire",
       is_constant: () => true,
     });
 
-    CN_common.insert_property_after(properties, "site_id", "page_progress", {
+    CN_common.insert_property(properties, "after", "site_id", "page_progress", {
       meta: {}, // defined on the server side
       title: "Page Progress",
       is_constant: () => true,

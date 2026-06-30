@@ -34,7 +34,7 @@ cenozoApp.defineModule({
           help: "Allow users to make calls without being connected to the webphone",
         },
         last_contacted: {
-          title: "Show Last Contacted Column",
+          title: "Contacted Column",
           type: "boolean",
           help: "Whether to show to Last Contacted column in the assignment control participant selection list.",
         },

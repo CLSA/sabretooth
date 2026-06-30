@@ -69,7 +69,7 @@ class ui3 extends \cenozo\ui\ui3
       $module->set_list_menu( true ); // always show the queue list
       $module->add_choose( 'participant' );
       // add special query parameters to queue-view
-      $module->append_action_query( 'view', '?{restrict}&{order}&{reverse}' );
+      $module->append_action_query( 'view', '?{tables}' );
     }
 
     if( array_key_exists( 'stratum', $data['module_list'] ) )
@@ -157,27 +157,27 @@ class ui3 extends \cenozo\ui\ui3
       unset( $data['menu']['utilities']['Participant Search'] );
     }
 
-    if( in_array( $db_role->name, [ 'operator', 'operator+' ] ) ) 
-    {   
+    if( in_array( $db_role->name, [ 'operator', 'operator+' ] ) )
+    {
       $data['menu']['utilities']['Personal Calendar'] = [
         'subject' => 'user',
         'action' => sprintf( 'calendar/%d', $db_user->id ),
         'query' => '/{identifier}?{calendar}'
       ];
-    }   
+    }
 
     // add application-specific lists to the base list
-    if( in_array( $db_role->name, [ 'helpline', 'operator', 'operator+', 'supervisor' ] ) ) 
-    {   
+    if( in_array( $db_role->name, [ 'helpline', 'operator', 'operator+', 'supervisor' ] ) )
+    {
       $data['menu']['utilities']['Assignment Control'] = [
         'subject' => 'assignment',
         'action' => 'control',
-        'query' => '?{restrict}&{order}&{reverse}'
+        'query' => '?{tables}'
       ];
-    }   
+    }
 
     if( 2 <= $db_role->tier )
-    {   
+    {
       $query = '?{qnaire}&{language}';
       if( $db_role->all_sites ) $query .= '&{site}';
       $data['menu']['utilities']['Queue Tree'] = [
@@ -185,20 +185,19 @@ class ui3 extends \cenozo\ui\ui3
         'action' => 'tree',
         'query' => $query
       ];
-    }   
+    }
 
     if( !$db_role->all_sites && 1 < $db_role->tier )
-    {   
+    {
       $data['menu']['utilities']['Site Details'] = [
         'subject' => 'site',
-        'action' => 'view',
         'action' => sprintf( 'view/%d', $db_site->id ),
         'query' => '/{identifier}',
       ];
-    }   
+    }
 
     if( !$db_role->all_sites || 'helpline' == $db_role->name )
-    {   
+    {
       $data['menu']['utilities']['Appointment Calendar'] = [
         'subject' => 'appointment',
         'action' => sprintf( 'calendar/%d', $db_site->id ),
@@ -206,13 +205,21 @@ class ui3 extends \cenozo\ui\ui3
       ];
 
       if( 1 < $db_role->tier )
-      {   
+      {
         $data['menu']['utilities']['Vacancy Calendar'] = [
           'subject' => 'vacancy',
           'action' => sprintf( 'calendar/%d', $db_site->id ),
           'query' => '/{identifier}?{calendar}',
         ];
       }
+    }
+
+    foreach( $data['menu']['utilities'] as $title => $item )
+    {
+      if( !array_key_exists( $item['subject'], $data['module_list'] ) )
+        $data['module_list'][$item['subject']] = lib::create( 'ui\module', $item['subject'] );
+      $module = $data['module_list'][$item['subject']];
+      $module->add_action( $item['action'], array_key_exists( 'query', $item ) ? $item['query'] : '' );
     }
 
     return $data;

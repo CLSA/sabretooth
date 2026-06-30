@@ -256,7 +256,7 @@ export class CN_model_appointment extends CN_base_model {
     const start_datetime = this.get_action().get_property_value("start_datetime");
     if (start_datetime && "(empty)" != start_datetime) {
       const date = new Date(start_datetime.replace(/ @ /, " "));
-      const now = new Date();
+      const now = CN_common.get_date();
       now.setSeconds(0);
       upcoming = date >= now;
     }
@@ -274,7 +274,7 @@ export class CN_model_appointment extends CN_base_model {
     // check when editing an appointment that editing is allowed
     if (!new_appointment && !this.allow_edit()) {
       await CN_modal_message.create_and_open({
-        type: "danger",
+        header_class: "text-bg-danger",
         title: "Cannot Change",
         message: `
           You cannot change the start time of missed or cancelled appointment.
@@ -285,9 +285,9 @@ export class CN_model_appointment extends CN_base_model {
     }
 
     // Do not allow selecting times in the past
-    if (object.date < new Date()) {
+    if (object.date < CN_common.get_date()) {
       await CN_modal_message.create_and_open({
-        type: "danger",
+        header_class: "text-bg-danger",
         title: "Invalid Appointment Time",
         message: `The time you have selected is in the past.  The appointment must be scheduled in the future.`,
       });
@@ -324,7 +324,7 @@ export class CN_model_appointment extends CN_base_model {
       "operator+" != CN_session.get("role", "name")
     ) {
       await CN_modal_message.create_and_open({
-        type: "danger",
+        header_class: "text-bg-danger",
         title: "No Vacancy",
         message: `
           The appointment time you have selected is missing vacancy.
@@ -515,7 +515,7 @@ export class CN_calendar_appointment extends CN_action_calendar {
       const site_id = this.get_model().get_identifier();
       this.#site_list.forEach(site => {
         const site_btn_el = this.constructor.html(`
-          <button class="dropdown-item" href="#">${site.name}</button>
+          <button type="button" class="dropdown-item" href="#">${site.name}</button>
         `);
         site_btn_el.addEventListener("click", () => {
           const calendar_params = this.get_query_parameter("calendar");
@@ -549,7 +549,7 @@ export class CN_calendar_appointment extends CN_action_calendar {
       const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
 
       const appointment_btn_el = this.constructor.html(
-        '<button name="appointment" class="btn btn-warning">Appointment</button>'
+        '<button type="button" name="appointment" class="btn btn-warning">Appointment</button>'
       );
       left_btn_group_el.append(appointment_btn_el);
       appointment_btn_el.addEventListener("click", () => {
@@ -561,7 +561,7 @@ export class CN_calendar_appointment extends CN_action_calendar {
       });
 
       const vacancy_btn_el = this.constructor.html(
-        '<button name="vacancy" class="btn btn-light btn-outline-primary">Vacancy</button>'
+        '<button type="button" name="vacancy" class="btn btn-light btn-outline-primary">Vacancy</button>'
       );
       left_btn_group_el.append(vacancy_btn_el);
       vacancy_btn_el.addEventListener("click", () => {
@@ -590,7 +590,7 @@ export class CN_list_appointment extends CN_action_list {
     const btn_group_el = this.get_footer_element().querySelector("div.btn-group");
     if (null == this.get_model().get_parent_model() && !btn_group_el.querySelector("button[name=calendar]")) {
       const calendar_btn_el = this.constructor.html(
-        '<button name="calendar" class="btn btn-primary">Appointment Calendar</button>'
+        '<button type="button" name="calendar" class="btn btn-primary">Appointment Calendar</button>'
       );
       btn_group_el.append(calendar_btn_el);
       calendar_btn_el.addEventListener("click", () => {

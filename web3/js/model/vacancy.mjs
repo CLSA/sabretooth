@@ -209,7 +209,7 @@ export class CN_calendar_vacancy extends CN_action_calendar {
       const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
 
       const appointment_btn_el = this.constructor.html(
-        '<button name="appointment" class="btn btn-light btn-outline-primary">Appointment</button>'
+        '<button type="button" name="appointment" class="btn btn-light btn-outline-primary">Appointment</button>'
       );
       left_btn_group_el.append(appointment_btn_el);
       appointment_btn_el.addEventListener("click", () => {
@@ -221,7 +221,7 @@ export class CN_calendar_vacancy extends CN_action_calendar {
       });
 
       const vacancy_btn_el = this.constructor.html(
-        '<button name="vacancy" class="btn btn-warning">Vacancy</button>'
+        '<button type="button" name="vacancy" class="btn btn-warning">Vacancy</button>'
       );
       left_btn_group_el.append(vacancy_btn_el);
       vacancy_btn_el.addEventListener("click", () => {
@@ -253,7 +253,7 @@ export class CN_list_vacancy extends CN_action_list {
 
     if (!btn_group_el.querySelector("button[name=calendar]")) {
       const calendar_btn_el = this.constructor.html(
-        '<button name="calendar" class="btn btn-primary">Vacancy Calendar</button>'
+        '<button type="button" name="calendar" class="btn btn-primary">Vacancy Calendar</button>'
       );
       btn_group_el.append(calendar_btn_el);
       calendar_btn_el.addEventListener("click", () => {
