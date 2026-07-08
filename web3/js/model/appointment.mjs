@@ -515,7 +515,7 @@ export class CN_calendar_appointment extends CN_action_calendar {
       const site_id = this.get_model().get_identifier();
       this.#site_list.forEach(site => {
         const site_btn_el = this.constructor.html(`
-          <button type="button" class="dropdown-item" href="#">${site.name}</button>
+          <button type="button" class="dropdown-item">${site.name}</button>
         `);
         site_btn_el.addEventListener("click", () => {
           const calendar_params = this.get_query_parameter("calendar");

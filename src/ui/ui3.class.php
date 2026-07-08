@@ -167,7 +167,10 @@ class ui3 extends \cenozo\ui\ui3
     }
 
     // add application-specific lists to the base list
-    if( in_array( $db_role->name, [ 'helpline', 'operator', 'operator+', 'supervisor' ] ) )
+    if(
+      in_array( $db_role->name, [ 'helpline', 'operator', 'operator+', 'supervisor' ] ) ||
+      !is_null( $db_user->get_open_assignment() )
+    )
     {
       $data['menu']['utilities']['Assignment Control'] = [
         'subject' => 'assignment',

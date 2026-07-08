@@ -6,7 +6,9 @@ const { CN_element_loading_box } = await import(`${CENOZO_URL}/js/element/loadin
 const { CN_input_enum } = await import(`${CENOZO_URL}/js/input/enum.mjs`);
 const { CN_modal_confirm } = await import(`${CENOZO_URL}/js/modal/confirm.mjs`);
 const { CN_modal_message } = await import(`${CENOZO_URL}/js/modal/message.mjs`);
+const { CN_script } = await import(`${CENOZO_URL}/js/script.mjs`);
 const { CN_session } = await import(`${CENOZO_URL}/js/session.mjs`);
+const { CN_voip } = await import(`${CENOZO_URL}/js/voip.mjs`);
 const classes = await import(`${CENOZO_URL}/js/model/assignment.mjs`);
 
 export class CN_model_assignment extends classes.CN_model_assignment {
@@ -75,6 +77,7 @@ export class CN_control_assignment extends CN_action_list {
   #assignment = null;
   #participant = null;
   #phone_call_list = [];
+  #active_phone_call = null;
   #previous_assignment = null;
   #update_assignment_duration_id = null;
   #phone_list = [];
@@ -125,6 +128,14 @@ export class CN_control_assignment extends CN_action_list {
    * Extend parent method
    */
   async on_load() {
+    this.#assignment = null;
+    this.#participant = null;
+    this.#phone_call_list = [];
+    this.#active_phone_call = null;
+    this.#previous_assignment = null;
+    this.#update_assignment_duration_id = null;
+    this.#phone_list = [];
+
     try {
       // get current assignment details
       const assignment_column = [
@@ -221,12 +232,24 @@ export class CN_control_assignment extends CN_action_list {
 
       this.#participant = participant_response;
       this.#phone_call_list = phone_call_response;
+      const len = this.#phone_call_list.length
+      this.#active_phone_call = (
+        0 < len && null == this.#phone_call_list[len - 1].end_datetime ?
+        this.#phone_call_list[len - 1] :
+        null
+      );
       this.#previous_assignment = (
         1 == previous_assignment_response.length ?
         previous_assignment_response[0] :
         null
       );
-      this.#phone_list = phone_response;
+
+      let last_person = null;
+      this.#phone_list = phone_response.map(phone => {
+        phone.new_person = phone.person != last_person;
+        last_person = phone.person;
+        return phone;
+      });
     } catch (error) {
       this.#assignment = null;
       this.#participant = null;
@@ -240,8 +263,6 @@ export class CN_control_assignment extends CN_action_list {
         throw error;
       }
     }
-
-    // TODO: need to update UI to show we're in an assignment (v2: CnSession.updateData())
   }
 
   /**
@@ -257,25 +278,7 @@ export class CN_control_assignment extends CN_action_list {
       `,
     });
 
-    if (response) {
-      try {
-        await this.constructor.wait_for(async () => {
-          await CN_api.post("assignment?operation=open", { participant_id: record.participant_id });
-        }, 0);
-        await this.run();
-      } catch (error) {
-        if (409 == error.response.status) {
-          // 409 means there are no participants or a conflict (the assignment can't be made)
-          await CN_modal_message.create_and_open({
-            header_class: "text-bg-danger",
-            title: "Unable to start assignment",
-            message: JSON.parse(error.body),
-          });
-        } else {
-          throw error;
-        }
-      }
-    }
+    if (response) this.#start_assignment(record.participant_id);
   }
 
   /**
@@ -293,6 +296,8 @@ export class CN_control_assignment extends CN_action_list {
       this.#assignment_footer_el.classList.add("d-none");
       super.update_element();
     } else {
+      const proxy = CN_session.get("setting", "proxy");
+
       // fill in the details properties
       const details_el = this.#assignment_body_el.querySelector("div[name=details]");
       details_el.querySelector("div[name=uid]").innerHTML = this.#participant.uid;
@@ -305,7 +310,7 @@ export class CN_control_assignment extends CN_action_list {
         this.#participant.other_name ? "(" + this.#participant.other_name + ")" : null,
         this.#participant.last_name
       ].join(" ");
-      if (CN_session.get("setting", "proxy")) {
+      if (proxy) {
         details_el.querySelector("div[name=dm]").innerHTML = this.#assignment.use_decision_maker ? "Yes" : "No";
       }
       details_el.querySelector("div[name=language]").innerHTML = this.#participant.language;
@@ -347,13 +352,12 @@ export class CN_control_assignment extends CN_action_list {
         this.#update_assignment_duration_id = setInterval(() => { this.#update_assignment_duration() }, 1000);
       }
 
-      if (0 == this.#phone_call_list.length) {
+      if (null == this.#active_phone_call) {
         active_el.querySelector("div[name=call]").innerHTML = "No active call";
       } else {
-        const active_call = this.#phone_call_list[this.#phone_call_list.length-1];
         active_el.querySelector("div[name=call]").innerHTML = `
-          ${active_call.person}<br/>
-          ${active_call.rank}. ${active_call.type} (${active_call.number})
+          ${this.#active_phone_call.person}<br/>
+          ${this.#active_phone_call.rank}. ${this.#active_phone_call.type} (${this.#active_phone_call.number})
         `;
       }
 
@@ -377,17 +381,33 @@ export class CN_control_assignment extends CN_action_list {
         previous_el.querySelector("div[name=status]").innerHTML = this.#previous_assignment.status;
       }
 
-      if (CN_session.get("setting", "proxy")) {
-        const use_timezone_list_el = this.#assignment_footer_el.querySelector("ul[name=use-timezone-list]");
-        if (0 == this.#phone_list.length) {
-          //this.constructor.set_disabled(use_timezone_el, true);
-        } else {
-          //this.constructor.set_disabled(use_timezone_el, false);
-          this.#phone_list.forEach(phone => {
+      const end_assignment_el = this.#assignment_footer_el.querySelector("button[name=end-assignment]");
+      const call_el = this.#assignment_footer_el.querySelector("button[name=call]");
+      const call_list_el = this.#assignment_footer_el.querySelector("ul[name=call-list]");
+      const use_tz_el = this.#assignment_footer_el.querySelector("button[name=use-tz]");
+      const use_tz_list_el = this.#assignment_footer_el.querySelector("ul[name=use-tz-list]");
+
+      call_el.innerHTML = this.#active_phone_call ? "End Call" : "Call";
+      this.constructor.set_disabled(end_assignment_el, null != this.#active_phone_call);
+      if (0 == this.#phone_list.length) {
+        if (proxy) {
+          use_tz_el.classList.remove("btn-outline-primary");
+          this.constructor.set_disabled(use_tz_el, true);
+        }
+        if (null == this.#active_phone_call) this.constructor.set_disabled(call_el, true);
+      } else {
+        if (proxy) {
+          use_tz_el.classList.add("btn-outline-primary");
+          this.constructor.set_disabled(use_tz_el, false);
+        }
+        this.constructor.set_disabled(call_el, false);
+
+        // when in proxy mode populate the use timezone dropdown with each alternate and the participant
+        if (proxy) {
+          use_tz_list_el.innerHTML = "";
+          this.#phone_list.filter(phone => phone.new_person).forEach(phone => {
             const li_el = this.constructor.html(`
-              <li>
-                <button type="button" class="dropdown-item">${phone.person_name}</button>
-              </li>
+              <li><button type="button" class="dropdown-item">${phone.person_name}</button></li>
             `);
             li_el.querySelector("button").addEventListener("click", () => {
               const data = {};
@@ -397,8 +417,47 @@ export class CN_control_assignment extends CN_action_list {
                 data.participant_id = this.#assignment.participant_id;
               }
               CN_session.set_timezone(data, CN_session.get("user", "am_pm"));
-            })
-            use_timezone_list_el.append(li_el);
+            });
+            use_tz_list_el.append(li_el);
+          });
+        }
+
+        // populate the call dropdown with phone-call statuses if in an active call, or list of numbers if not
+        call_list_el.innerHTML = "";
+        if (this.#active_phone_call) {
+          CN_session.get_module("phone_call").get_property("status").enum_list.forEach(status => {
+            const li_el = this.constructor.html(`
+              <li><button type="button" class="dropdown-item">${status}</button></li>
+            `);
+            li_el.querySelector("button").addEventListener("click", this.#end_call.bind(this, status));
+            call_list_el.append(li_el);
+          });
+        } else {
+          this.#phone_list.forEach((phone, index) => {
+            const li_el = this.constructor.html("<li></li>");
+            if (phone.new_person) {
+              li_el.innerHTML = `
+                ${0 < index ? '<hr class="m-0" />' : ""}
+                <div class="fw-bold px-2 py-1">${phone.person}</div>
+                <hr class="m-0" />
+              `;
+            }
+            const button_el = this.constructor.html(`
+              <button type="button" class="dropdown-item d-flex">
+                <div>${phone.rank}. ${phone.type}</div>
+                <div class="w-100 text-end">${phone.number}</div>
+              </button>
+            `);
+            if (phone.note) {
+              button_el.setAttribute("data-bs-toggle", "tooltip");
+              button_el.setAttribute("data-bs-placement", "right");
+              button_el.setAttribute("data-bs-html", "true");
+              button_el.setAttribute("data-bs-title", CN_common.nl_to_br(phone.note.replace(/"/g, "&quot;")));
+              new bootstrap.Tooltip(button_el);
+            }
+            button_el.addEventListener("click", this.#start_call.bind(this, phone));
+            li_el.append(button_el);
+            call_list_el.append(li_el);
           });
         }
       }
@@ -502,7 +561,7 @@ export class CN_control_assignment extends CN_action_list {
     }
     if (CN_session.get("setting", "proxy")) {
       details_props.splice(
-        details_props.findIndex(o => "participant" == o.name),
+        details_props.findIndex(o => "language" == o.name),
         0,
         { name: "dm", title: "Use Decision Maker" }
       );
@@ -585,11 +644,17 @@ export class CN_control_assignment extends CN_action_list {
           >History</button>
         </div>
         <div class="btn-group w-100 pt-1" role="group">
-          <button
-            type="button"
-            class="btn btn-primary"
-            name="call"
-          >Call</button>
+          <div class="btn-group flex-fill" role="group">
+            <button
+              type="button"
+              name="call"
+              class="btn btn-primary dropdown-toggle"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            ></button>
+            <ul name="call-list" class="dropdown-menu w-100">
+            </ul>
+          </div>
           <button
             type="button"
             class="btn btn-success"
@@ -611,6 +676,10 @@ export class CN_control_assignment extends CN_action_list {
     this.#assignment_footer_el.querySelector("button[name=history]").addEventListener("click", () => {
       CN_session.navigate_to(`participant/history/${this.#assignment.participant_id}`);
     });
+    this.#assignment_footer_el.querySelector("button[name=end-assignment]").addEventListener(
+      "click",
+      this.#end_assignment.bind(this)
+    );
 
     const navigation_el = this.#assignment_footer_el.querySelector("div[name=navigation]");
     if (CN_session.get("setting", "proxy")) {
@@ -618,26 +687,26 @@ export class CN_control_assignment extends CN_action_list {
         <div class="btn-group flex-fill" role="group">
           <button
             type="button"
-            name="use-timezone"
+            name="use-tz"
             class="btn btn-light btn-outline-primary dropdown-toggle"
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >Use Timezone</button>
-          <ul name="use-timezone-list" class="dropdown-menu">
+          <ul name="use-tz-list" class="dropdown-menu w-100">
           </ul>
         </div>
       `));
     } else {
-      const use_timezone_btn_el = this.constructor.html(`
-        <button type="button" class="btn btn-light btn-outline-primary" name="use-timezone">Use Timezone</button>
+      const use_tz_btn_el = this.constructor.html(`
+        <button type="button" class="btn btn-light btn-outline-primary" name="use-tz">Use Timezone</button>
       `);
-      use_timezone_btn_el.addEventListener("click", () => {
+      use_tz_btn_el.addEventListener("click", () => {
         CN_session.set_timezone(
           { participant_id: this.#assignment.participant_id },
           CN_session.get("user", "am_pm")
         );
       });
-      navigation_el.append(use_timezone_btn_el);
+      navigation_el.append(use_tz_btn_el);
     }
 
     return this.#no_assignment_footer_el;
@@ -669,26 +738,181 @@ export class CN_control_assignment extends CN_action_list {
    * ADD DOCS
    */
   async #update_assignment_duration() {
-    const duration_parts = [];
-    let seconds = Math.floor((CN_common.get_date() - new Date(this.#assignment.start_datetime))/1000);
-    if (86400 < seconds) {
-      const days = Math.floor(seconds / 86400);
-      seconds -= 86400 * days;
-      duration_parts.push(`${days} day${1 == days ? "" : "s"}`);
+    let duration = "(loading...)"
+    if (this.#assignment) {
+      const duration_parts = [];
+      let seconds = Math.floor((CN_common.get_date() - new Date(this.#assignment.start_datetime))/1000);
+      if (86400 <= seconds) {
+        const days = Math.floor(seconds / 86400);
+        seconds -= 86400 * days;
+        duration_parts.push(`${days} day${1 == days ? "" : "s"}`);
+      }
+      if (3600 <= seconds) {
+        const hours = Math.floor(seconds / 3600);
+        seconds -= 3600 * hours;
+        duration_parts.push(`${hours} hour${1 == hours ? "" : "s"}`);
+      }
+      if (60 <= seconds) {
+        const minutes = Math.floor(seconds / 60);
+        seconds -= 60 * minutes;
+        duration_parts.push(`${minutes} minute${1 == minutes ? "" : "s"}`);
+      }
+      duration_parts.push(`${seconds} second${1 == seconds ? "" : "s"}`);
+      duration = duration_parts.join(", ");
     }
-    if (3600 < seconds) {
-      const hours = Math.floor(seconds / 3600);
-      seconds -= 3600 * hours;
-      duration_parts.push(`${hours} hour${1 == hours ? "" : "s"}`);
-    }
-    if (60 < seconds) {
-      const minutes = Math.floor(seconds / 60);
-      seconds -= 60 * minutes;
-      duration_parts.push(`${minutes} minute${1 == minutes ? "" : "s"}`);
-    }
-    duration_parts.push(`${seconds} second${1 == seconds ? "" : "s"}`);
 
     const active_el = this.#assignment_body_el.querySelector("div[name=active-assignment]");
-    active_el.querySelector("div[name=duration]").innerHTML = duration_parts.join(", ");
+    active_el.querySelector("div[name=duration]").innerHTML = duration;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async #start_call(phone) {
+    // start a call
+    await CN_voip.update();
+
+    var proceed = false;
+    if (
+      !CN_voip.get_enabled() || (
+        angular.isObject(CN_voip.get_info()) &&
+        "UNKNOWN" == CN_voip.get_info().status &&
+        CN_session.get("setting", "call_without_webphone")
+      )
+    ) {
+      proceed = true;
+    } else {
+      if (!CN_voip.get_info()) {
+        if (!CN_session.get("setting", "call_without_webphone")) {
+          await CN_modal_message.create_and_open({
+            header_class: "text-bg-danger",
+            title: "Webphone Not Found",
+            message: `
+              You cannot start a call without a webphone connection.
+              <br/>
+              To use the built-in telephone system click on the "Webphone" link under the
+              "Utilities" submenu and make sure the webphone client is connected.
+            `,
+          });
+        } else {
+          proceed = await CN_modal_confirm.create_and_open({
+            title: "Webphone Not Found",
+            message: `
+              You are about to place a call with no webphone connection.
+              If you choose to proceed you will have to contact the participant without the use
+              of the software-based telephone system.
+              If you wish to use the built-in telephone system click "No", then click on the
+              "Webphone" link under the "Utilities" submenu to connect to the webphone.
+              <br/>
+              <br/>
+              Do you wish to proceed without a webphone connection?
+            `,
+          });
+        }
+      } else {
+        if (phone.international) {
+          proceed = await CN_modal_confirm.create_and_open({
+            title: "International Phone Number",
+            message: `
+              The phone number you are about to call is international.
+              The VoIP system cannot place international calls so if you choose to proceed you
+              will have to contact the participant without the use of the software-based
+              telephone system.
+              <br/>
+              <br/>
+              Do you wish to proceed without a webphone connection?
+            `,
+          });
+        } else {
+          const response = await CN_api.post("voip", { phone_id: phone.id });
+          if (201 == response.status) {
+            proceed = true;
+          } else {
+            proceed = await CN_modal_confirm.create_and_open({
+              header_class: "text-bg-danger",
+              title: "Webphone Error",
+              message: `
+                The telephone system was unable to find the call which was just placed.
+                If you are connected to a call please select "Proceed with call" to proceed
+                with the interview, otherwise please click the "Cancel" button and you will
+                be able to try the call again
+              `,
+              no_text: "Cancel",
+              yes_text: "Proceed with call",
+            });
+          }
+        }
+      }
+    }
+
+    if (proceed) {
+      await CN_api.post("phone_call?operation=open", { phone_id: phone.id });
+      await this.run();
+    }
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async #end_call(status) {
+    if (CN_voip.get_enabled() && CN_voip.get_info() && !this.#active_phone_call.international) {
+      try {
+        await CN_api.delete("voip/0");
+      } catch (error) {
+        if (404 == error.response.status) {
+          // ignore 404 errors, it just means there was no phone call found to hang up
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    await CN_api.patch("phone_call/0?operation=close", { status: status });
+    await this.run();
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async #start_assignment(participant_id) {
+    try {
+      await this.constructor.wait_for(async () => {
+        await CN_api.post("assignment?operation=open", { participant_id: participant_id });
+      }, 0);
+      CN_session.reload();
+    } catch (error) {
+      if (409 == error.response.status) {
+        // 409 means there are no participants or a conflict (the assignment can't be made)
+        await CN_modal_message.create_and_open({
+          header_class: "text-bg-danger",
+          title: "Unable to start assignment",
+          message: JSON.parse(error.body),
+        });
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async #end_assignment() {
+    if (this.#assignment) {
+      await this.constructor.wait_for(async () => {
+        try {
+          // check that there's an active assignment
+          await CN_api.get("assignment/0");
+
+          // make absolute sure that the script has been closed
+          CN_script.close();
+          await CN_api.patch("assignment/0?operation=close", {});
+        } catch (error) {
+          // 307 means the user's assignment has already been closed, so we can ignore it
+          if (307 != error.response.status) throw error;
+        }
+      }, 0);
+      CN_session.reload();
+    }
   }
 }
