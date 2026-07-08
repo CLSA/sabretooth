@@ -16,8 +16,7 @@ class app_session extends CN_base_app_session {
     await super.render();
 
     // flash the menu and assignment control buttons when in an assignment
-    const assignment = CN_session.get("user", "assignment");
-    if (CN_common.is_object(assignment) && assignment.id) {
+    if (CN_session.get("user", "assignment")) {
       this.#menu_btn_el.classList.add("btn-pulse-danger");
       this.#control_btn_el.classList.add("btn-pulse-danger");
     }
