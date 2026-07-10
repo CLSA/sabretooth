@@ -630,8 +630,8 @@ export class CN_view_appointment extends CN_action_view {
   /**
    * Extend parent method
    */
-  async on_set_property(prop_name) {
-    await this.constructor.wait_for(async () => await super.on_set_property(prop_name));
+  async on_set_property(prop_name, run = true) {
+    await this.constructor.wait_for(async () => await super.on_set_property(prop_name, run));
   }
 
   /**

@@ -775,7 +775,7 @@ export class CN_control_assignment extends CN_action_list {
     var proceed = false;
     if (
       !CN_voip.get_enabled() || (
-        angular.isObject(CN_voip.get_info()) &&
+        CN_common.is_object(CN_voip.get_info()) &&
         "UNKNOWN" == CN_voip.get_info().status &&
         CN_session.get("setting", "call_without_webphone")
       )
