@@ -189,7 +189,7 @@ export class CN_view_interview extends classes.CN_view_interview {
             await CN_api.patch(`${model.get_view_url(null, "api")}?operation=force_delete`, {});
             await this.on_navigate_to_parent();
           } catch (error) {
-            if (409 == error.response.status) {
+            if (CN_common.is_uri_error(error, 409)) {
             } else {
               throw error;
             }
@@ -232,7 +232,7 @@ export class CN_view_interview extends classes.CN_view_interview {
             await CN_api.patch(`${model.get_view_url(null, "api")}?operation=force_complete`, {});
             await this.run();
           } catch (error) {
-            if (409 == error.response.status) {
+            if (CN_common.is_uri_error(error, 409)) {
             } else {
               throw error;
             }

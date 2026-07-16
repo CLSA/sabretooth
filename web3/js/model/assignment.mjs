@@ -91,7 +91,7 @@ class CN_element_script_control extends CN_element_card {
   constructor(parent_el, config = {}) {
     super(parent_el, {
       ...{
-        header: '<div class="d-flex"><div class="flex-grow-1">Script Launcher</div></div>',
+        header: '<div class="d-flex"><div class="flex-grow-1" name="title">Script Launcher</div></div>',
         body: "",
         footer: "",
       },
@@ -242,6 +242,8 @@ class CN_element_script_control extends CN_element_card {
   async on_load() {
     if (!this.#assignment) return;
 
+    const title_el = this.get_element().querySelector("div[name=title]");
+    title_el.innerHTML = "Script Launcher (Loading...)";
     const [participant_response, qnaire_response, script_response] = await Promise.all([
       CN_api.get(`participant/${this.#assignment.participant_id}`, {
         select: { column: [
@@ -285,6 +287,8 @@ class CN_element_script_control extends CN_element_card {
     if (null == this.#active_script_id) {
       this.#active_script_id = 0 < this.#script_list.length ? this.#script_list[0].id : null;
     }
+
+    title_el.innerHTML = "Script Launcher";
   }
 
   /**
@@ -407,7 +411,7 @@ class CN_element_script_control extends CN_element_card {
             `;
           }
         } catch (error) {
-          if (404 == error.response.status) {
+          if (CN_common.is_uri_error(error, 404)) {
             do_not_proceed_reason =
               "The participant cannot continue the interview as they have declined to participate in the study.";
           } else {
@@ -506,18 +510,22 @@ export class CN_control_assignment extends CN_action_list {
    * Extend parent method
    */
   async get_text(type) {
-    await this.after_first_load();
-
     if ("crumb" == type) {
+      await this.after_first_load();
       return (
-        null == this.#assignment.participant ?
+        null == this.#assignment || null == this.#assignment.participant ?
         "Assignment Select" :
         `Assignment: ${this.#assignment.participant.uid}`
       );
     }
 
     if ("header" == type) {
-      return null == this.#assignment.participant ? "Participant Selection List" : "Current Assignment";
+      await this.after_first_load();
+      return (
+        null == this.#assignment || null == this.#assignment.participant ?
+        "Participant Selection List" :
+        "Current Assignment"
+      );
     }
 
     return await super.get_text(type);
@@ -677,10 +685,10 @@ export class CN_control_assignment extends CN_action_list {
     } catch (error) {
       this.#assignment = null;
 
-      if (307 == error.response.status) {
+      if (CN_common.is_uri_error(error, 307)) {
         // 307 means the user has no active assignment, so load the participant select list
         await super.on_load();
-      } else if (403 == error.status) {
+      } else if (CN_common.is_uri_error(error, 403)) {
         // 403 means the user has an assignment but is logged in under the wrong site
       } else {
         throw error;
@@ -1178,7 +1186,7 @@ export class CN_control_assignment extends CN_action_list {
       });
       this.#assignment.page_progress = response.page_progress;
     } catch (error) {
-      if (307 == error.response.status) {
+      if (CN_common.is_uri_error(error, 307)) {
         // 307 means the user has no active assignment, so just refresh the page data
         await this.run();
       } else {
@@ -1312,7 +1320,7 @@ export class CN_control_assignment extends CN_action_list {
       try {
         await CN_api.delete("voip/0");
       } catch (error) {
-        if (404 == error.response.status) {
+        if (CN_common.is_uri_error(error, 404)) {
           // ignore 404 errors, it just means there was no phone call found to hang up
         } else {
           throw error;
@@ -1334,7 +1342,7 @@ export class CN_control_assignment extends CN_action_list {
       }, 0);
       CN_session.reload();
     } catch (error) {
-      if (409 == error.response.status) {
+      if (CN_common.is_uri_error(error, 409)) {
         // 409 means there are no participants or a conflict (the assignment can't be made)
         await CN_modal_message.create_and_open({
           header_class: "text-bg-danger",
@@ -1363,7 +1371,7 @@ export class CN_control_assignment extends CN_action_list {
           await CN_api.patch("assignment/0?operation=close", {});
         } catch (error) {
           // 307 means the user's assignment has already been closed, so we can ignore it
-          if (307 != error.response.status) throw error;
+          if (!CN_common.is_uri_error(error, 307)) throw error;
         }
       }, 0);
       CN_session.reload();
