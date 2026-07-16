@@ -1,12 +1,13 @@
 const { CN_action_list } = await import(`${CENOZO_URL}/js/action/list.mjs`);
 const { CN_api } = await import(`${CENOZO_URL}/js/api.mjs`);
 const { CN_common } = await import(`${CENOZO_URL}/js/common.mjs`);
+const { CN_element_card } = await import(`${CENOZO_URL}/js/element/card.mjs`);
 const { CN_element_label } = await import(`${CENOZO_URL}/js/element/label.mjs`);
 const { CN_element_loading_box } = await import(`${CENOZO_URL}/js/element/loading_box.mjs`);
 const { CN_input_enum } = await import(`${CENOZO_URL}/js/input/enum.mjs`);
 const { CN_modal_confirm } = await import(`${CENOZO_URL}/js/modal/confirm.mjs`);
 const { CN_modal_message } = await import(`${CENOZO_URL}/js/modal/message.mjs`);
-const { CN_script } = await import(`${CENOZO_URL}/js/script.mjs`);
+const { CN_script_launcher } = await import(`${CENOZO_URL}/js/script_launcher.mjs`);
 const { CN_session } = await import(`${CENOZO_URL}/js/session.mjs`);
 const { CN_voip } = await import(`${CENOZO_URL}/js/voip.mjs`);
 const classes = await import(`${CENOZO_URL}/js/model/assignment.mjs`);
@@ -73,22 +74,432 @@ export class CN_model_assignment extends classes.CN_model_assignment {
   }
 }
 
+// A private class used by the control assignment action
+class CN_element_script_control extends CN_element_card {
+  #assignment = null;
+  #withdrawn = false;
+  #proxy = false;
+  #qnaire_list = [];
+  #script_list = [];
+  #active_script_id = null;
+
+  #active_script_form_input = {};
+  #advance_btn_el;
+  #launch_btn_el;
+  #script_launcher;
+
+  constructor(parent_el, config = {}) {
+    super(parent_el, {
+      ...{
+        header: '<div class="d-flex"><div class="flex-grow-1">Script Launcher</div></div>',
+        body: "",
+        footer: "",
+      },
+      ...config,
+    });
+
+    this.#advance_btn_el = this.constructor.html(`
+      <button
+        type="button"
+        name="advance"
+        class="btn btn-light btn-outline-primary w-50"
+      >Advance Questionnaire</button>
+    `);
+    this.#advance_btn_el.addEventListener("click", this.#advance.bind(this));
+
+    this.#launch_btn_el = this.constructor.html(`
+      <button
+        type="button"
+        name="launch"
+        class="btn btn-primary w-50"
+      >Launch Script</button>
+    `);
+    this.#launch_btn_el.addEventListener("click", this.#launch.bind(this));
+  }
+
+  // getters and setters
+  set_assignment(assignment) {
+    this.#assignment = assignment;
+    this.#withdrawn = false;
+    this.#proxy = false;
+    this.#script_list = [];
+  }
+  get_script_launcher() { return this.#script_launcher; }
+  get_active_script() { return this.#script_list.find(script => script.id == this.#active_script_id); }
+  get_active_qnaire() { return this.#qnaire_list.find(qnaire => qnaire.script_id == this.#active_script_id); }
+  get_previous_qnaire() {
+    const previous_rank = this.get_active_qnaire().rank - 1;
+    return this.#qnaire_list.find(qnaire => qnaire.rank == previous_rank);
+  }
+
+  /**
+   * ADD DOCS
+   */
+  can_advance() {
+    if (!this.#assignment) return false;
+    const active_qnaire_id = this.#qnaire_list.findIndex(qnaire => qnaire.script_id == this.#active_script_id);
+    const last_qnaire_id = this.#qnaire_list.length - 1;
+    return this.#active_script_id == this.#assignment.script_id && active_qnaire_id < last_qnaire_id;
+  }
+
+  /**
+   * Extend parent method
+   */
+  update_element() {
+    super.update_element();
+
+    const body_el = this.get_element().querySelector(".card-body");
+    const footer_el = this.get_element().querySelector(".card-footer");
+    footer_el.innerHTML = "";
+
+    const proxy_interview = CN_session.get("setting", "proxy");
+    if (this.#withdrawn || (this.#proxy != proxy_interview)) {
+      body_el.querySelector("div[name=interface]").classList.add("d-none");
+      body_el.querySelector("span[name=reason]").innerHTML = (
+        this.#withdrawn ?
+        "they have withdrawn from the study" :
+        proxy_interview ?
+        "they are not ready for the proxy system" :
+        "a proxy is required for the interview"
+      );
+      body_el.querySelector("div[name=blocked]").classList.remove("d-none");
+    } else {
+      body_el.querySelector("div[name=blocked]").classList.add("d-none");
+      body_el.querySelector("div[name=interface]").classList.remove("d-none");
+
+      this.#active_script_form_input.update();
+      this.#active_script_form_input.set_value(this.#active_script_id);
+      const active_script = this.get_active_script();
+
+      // define active script details
+      const started_datetime_el = body_el.querySelector("div[name=started_datetime]");
+      const finished_datetime_el = body_el.querySelector("div[name=finished_datetime]");
+      const repeated_el = body_el.querySelector("div[name=repeated]");
+      const description_el = body_el.querySelector("div[name=description]");
+
+      started_datetime_el.innerHTML = "Loading...";
+      finished_datetime_el.innerHTML = "Loading...";
+      repeated_el.innerHTML = "Loading...";
+      description_el.innerHTML = "Loading...";
+
+      if (active_script && active_script.supporting) {
+        started_datetime_el.parentElement.classList.add("d-none");
+        finished_datetime_el.parentElement.classList.add("d-none");
+        repeated_el.parentElement.classList.add("d-none");
+      } else {
+        started_datetime_el.parentElement.classList.remove("d-none");
+        finished_datetime_el.parentElement.classList.remove("d-none");
+        repeated_el.parentElement.classList.remove("d-none");
+      }
+
+      if (active_script) {
+        if (!active_script.supporting) {
+          started_datetime_el.innerHTML = (
+            active_script.started_datetime ?
+            CN_common.format_datetime(active_script.started_datetime, "datetimesecond") :
+            "(empty)"
+          );
+          finished_datetime_el.innerHTML = (
+            active_script.finished_datetime ?
+            CN_common.format_datetime(active_script.finished_datetime, "datetimesecond") :
+            "(empty)"
+          );
+          repeated_el.innerHTML = active_script.repeated ? "Yes" : "No";
+        }
+        description_el.innerHTML = (
+          null == active_script.description ?
+          "(empty)" :
+          CN_common.nl_to_br(active_script.description)
+        );
+      }
+
+      // show the launch button, or both the advance and launch buttons (if the interview can be advanced only)
+      let btn_group_el = null;
+      if (this.can_advance()) {
+        // the active script can be advanced
+        btn_group_el = this.constructor.html('<div class="btn-group w-100" role="group"></div>');
+        btn_group_el.append(this.#advance_btn_el);
+
+        const disabled = null == this.get_active_qnaire().script.finished_datetime;
+        this.constructor.set_disabled(this.#advance_btn_el, disabled);
+        if (disabled) {
+          this.#advance_btn_el.classList.remove("btn-outline-primary");
+        } else {
+          this.#advance_btn_el.classList.add("btn-outline-primary");
+        }
+      } else {
+        // the active script cannot be advanced
+        btn_group_el = this.constructor.html('<div class="d-flex flex-row-reverse w-100"></div>');
+      }
+      btn_group_el.append(this.#launch_btn_el);
+      footer_el.append(btn_group_el);
+    }
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async on_load() {
+    if (!this.#assignment) return;
+
+    const [participant_response, qnaire_response, script_response] = await Promise.all([
+      CN_api.get(`participant/${this.#assignment.participant_id}`, {
+        select: { column: [
+          { table: "hold_type", column: "name", alias: "hold" },
+          { table: "proxy_type", column: "name", alias: "proxy" },
+        ] },
+      }),
+
+      CN_api.get("qnaire", {
+        select: { column: ["id", "rank", "script_id", "delay_offset", "delay_unit", "allow_missing_consent"] },
+        modifier: { order: "rank" },
+      }),
+
+      CN_api.get("application/0/script", {
+        participant_id: this.#assignment.participant_id,
+        select: {
+          column: [
+            "id", "name", "repeated", "supporting", "url", "description",
+            { table: "started_event", column: "datetime", alias: "started_datetime" },
+            { table: "finished_event", column: "datetime", alias: "finished_datetime" },
+          ],
+        },
+        modifier: { order: ["repeated", "name"] },
+      }),
+    ]);
+
+    this.#withdrawn = "Withdrawn" == participant_response.hold;
+    this.#proxy = null != participant_response.proxy;
+    this.#qnaire_list = qnaire_response;
+    this.#script_list = [];
+    script_response.forEach(script => {
+      const qnaire = this.#qnaire_list.find(qnaire => qnaire.script_id == script.id);
+      if (qnaire) {
+        qnaire.script = script;
+        if (this.#assignment.qnaire_id == qnaire.id) this.#script_list.unshift(script);
+      } else {
+        this.#script_list.push(script);
+      }
+    });
+
+    if (null == this.#active_script_id) {
+      this.#active_script_id = 0 < this.#script_list.length ? this.#script_list[0].id : null;
+    }
+  }
+
+  /**
+   * Extend parent method
+   */
+  _create_element() {
+    const el = super._create_element();
+    const body_el = el.querySelector(".card-body");
+
+    // add the refresh button to the header
+    const refresh_btn_el = this.constructor.html(`
+      <button type="button" name="refresh" class="btn btn-primary px-2 py-0">
+        <i class="bi bi-arrow-clockwise fs-5"></i>
+      </button>
+    `);
+    refresh_btn_el.addEventListener("click", this.on_load.bind(this));
+    el.querySelector(".card-header").querySelector("div.d-flex").append(refresh_btn_el);
+    new bootstrap.Tooltip(refresh_btn_el, {
+      title: "Refresh Data",
+      trigger: "hover",
+      delay: { "show": 1000, "hide": 100 },
+    });
+
+    // add the script details to the interface
+    const interface_el = this.constructor.html('<div name="interface"></div>');
+
+    const props = [
+      { name: "script", title: "Active Script" },
+      { name: "started_datetime", title: "Started Date & Time" },
+      { name: "finished_datetime", title: "Finished Date & Time" },
+      { name: "repeated", title: "Repeated" },
+      { name: "description", title: "Description" },
+    ];
+
+    props.forEach((prop, index) => {
+      const row_el = this.constructor.html(`<div class="row ${0 == index ? "pb-1" : ""}"></div>`);
+      CN_element_label.append(row_el, {
+        for: prop.name,
+        value: prop.title,
+        class: "col-sm-3" + (0 == index ? "" : " pt-0 pb-1"),
+      });
+      if (0 == index) {
+        this.#active_script_form_input = CN_input_enum.append(row_el, {
+          id: "script",
+          class: "col-sm-9",
+          required: true,
+          get_default: () => false, // setting to false so that "Choose an option" doesn't show
+          enum: {
+            get_enums: async () => this.#script_list.map(script => ({ key: script.id, value: script.name })),
+          },
+          on_change: (form_input) => {
+            this.#active_script_id = form_input.get_value();
+            this.update_element();
+          },
+        });
+      } else {
+        row_el.append(this.constructor.html(`<div name="${prop.name}" class="col-9">Loading...</div>`));
+      }
+      interface_el.append(row_el);
+    });
+
+    // add instructions to the interface
+    interface_el.append(this.constructor.html(`
+      <div class="alert alert-success mt-2 mb-0" role="alert">
+        When launching on a script your browser will open the script in a new tab.
+        The application will still be accessible by clicking the brower's
+        <em>${CN_session.get("application", "title")}</em> tab.
+        <br/>
+        NOTE: If you already have the script tab open then selecting a new script will not automatically
+        switch to the script tab.
+        Simply select the script tab after you have clicked the <em>Launch Script</em> button.
+      </div>
+    `));
+
+    body_el.append(interface_el);
+
+    // add a notice for when the participant is withdrawn or not ready for a proxy interview
+    body_el.append(this.constructor.html(`
+      <div name="blocked" class="text-danger d-none">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        You may not launch any scripts for this participant since
+        <span name="reason"></span>.
+      </div>
+    `));
+
+    return el;
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async #advance() {
+    await this.constructor.wait_for(async () => {
+      await CN_api.patch("assignment/0?operation=advance", {});
+      await this.run();
+    });
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async #launch() {
+    const active_script = this.get_active_script();
+    const active_qnaire = this.get_active_qnaire();
+
+    let do_not_proceed_reason = null;
+    if (active_qnaire) {
+      // if the application has a consent type then check if the script can proceed without consent
+      const consent_type_id = CN_session.get("application", "consent_type_id");
+      if (null != consent_type_id && !active_script.allow_missing_consent) {
+        try {
+          const response = await CN_api.get(
+            `participant/${this.#assignment.participant_id}/consent/type=last;consent_type_id=${consent_type_id}`
+          );
+
+          if (!response.accept) {
+            do_not_proceed_reason = `
+              The participant cannot continue the interview as they
+              have not consented to participate in the study.
+            `;
+          }
+        } catch (error) {
+          if (404 == error.response.status) {
+            do_not_proceed_reason =
+              "The participant cannot continue the interview as they have declined to participate in the study.";
+          } else {
+            throw error;
+          }
+        }
+      }
+
+      // check that the qnaire isn't delayed
+      if (null == do_not_proceed_reason && 0 < active_qnaire.delay_offset && 1 < active_qnaire.rank) {
+        // test the delay until date with today (both at midnight) to see if the delay until date has been reached
+        const delay_until = CN_common.add_date(
+          CN_common.get_date(this.get_previous_qnaire().script.finished_datetime),
+          active_qnaire.delay_unit,
+          active_qnaire.delay_offset
+        );
+        delay_until.setHours(0);
+        delay_until.setMinutes(0);
+        delay_until.setSeconds(0);
+        delay_until.setMilliseconds(0);
+
+        const today = CN_common.get_date();
+        today.setHours(0);
+        today.setMinutes(0);
+        today.setSeconds(0);
+        today.setMilliseconds(0);
+
+        if (delay_until > today) {
+          do_not_proceed_reason = `
+            The participant cannot continue to this script until
+            ${CN_common.format_datetime(delay_until, "date", true)}.
+            <br/>
+            <br/>
+            Please end your assignment now, the participant will become available for assignment after the
+            delay has ended.
+          `;
+        }
+      }
+    }
+
+    if (do_not_proceed_reason) {
+      await CN_modal_message.create_and_open({
+        title: "Interview Cannot Proceed",
+        message: do_not_proceed_reason
+      });
+    } else {
+      this.#script_launcher = new CN_script_launcher({
+        script: active_script,
+        identifier: this.#assignment.participant.id,
+        lang: this.#assignment.participant.language_code,
+      });
+      await this.#script_launcher.initialize();
+
+      const url_params = {
+        show_hidden: 1,
+        site: CN_session.get("site", "name"),
+        username: CN_session.get("user", "name"),
+      };
+      if (this.#assignment.active_phone_call.alternate_id) {
+        url_params.alternate_id = this.#assignment.active_phone_call.alternate_id;
+      }
+      await this.#script_launcher.open(url_params);
+    }
+  }
+}
+
 export class CN_control_assignment extends CN_action_list {
   #assignment = null;
-  #participant = null;
   #phone_call_list = [];
   #active_phone_call = null;
   #previous_assignment = null;
   #update_assignment_duration_id = null;
   #phone_list = [];
 
+  #regained_focus_fn;
   #no_assignment_body_el;
   #no_assignment_footer_el;
   #assignment_body_el;
   #assignment_footer_el;
+  #script_control_el;
 
   constructor(parent_el, model) {
     super(parent_el, model, "control");
+
+    this.#regained_focus_fn = async () => {
+      await CN_common.sleep(100); // this helps to prevent an error when re-focus is gained by reloading the page
+      await Promise.all([
+        this.#script_control_el.on_load(),
+        this.#update_page_progress(),
+      ]);
+      this.update_element();
+    };
   }
 
   /**
@@ -98,11 +509,15 @@ export class CN_control_assignment extends CN_action_list {
     await this.after_first_load();
 
     if ("crumb" == type) {
-      return null == this.#participant ?  "Assignment Select" : `Assignment: ${this.#participant.uid}`;
+      return (
+        null == this.#assignment.participant ?
+        "Assignment Select" :
+        `Assignment: ${this.#assignment.participant.uid}`
+      );
     }
 
     if ("header" == type) {
-      return null == this.#participant ?  "Participant Selection List" : "Current Assignment";
+      return null == this.#assignment.participant ? "Participant Selection List" : "Current Assignment";
     }
 
     return await super.get_text(type);
@@ -129,12 +544,11 @@ export class CN_control_assignment extends CN_action_list {
    */
   async on_load() {
     this.#assignment = null;
-    this.#participant = null;
     this.#phone_call_list = [];
-    this.#active_phone_call = null;
     this.#previous_assignment = null;
     this.#update_assignment_duration_id = null;
     this.#phone_list = [];
+    this.#script_control_el.set_assignment(null);
 
     try {
       // get current assignment details
@@ -154,6 +568,8 @@ export class CN_control_assignment extends CN_action_list {
       if (CN_session.get("application", "check_for_missing_hin")) assignment_column.push("missing_hin");
       if (CN_session.get("setting", "proxy")) assignment_column.push("use_decision_maker");
       this.#assignment = await CN_api.get("assignment/0", { select: { column: assignment_column } });
+      this.#assignment.participant = null;
+      this.#assignment.active_phone_call = null;
 
       // get current participant details
       const participant_column = [
@@ -230,10 +646,10 @@ export class CN_control_assignment extends CN_action_list {
         }),
       ]);
 
-      this.#participant = participant_response;
+      this.#assignment.participant = participant_response;
       this.#phone_call_list = phone_call_response;
       const len = this.#phone_call_list.length
-      this.#active_phone_call = (
+      this.#assignment.active_phone_call = (
         0 < len && null == this.#phone_call_list[len - 1].end_datetime ?
         this.#phone_call_list[len - 1] :
         null
@@ -250,9 +666,16 @@ export class CN_control_assignment extends CN_action_list {
         last_person = phone.person;
         return phone;
       });
+
+      this.#script_control_el.set_assignment(this.#assignment);
+      if (this.#assignment.active_phone_call) {
+        await this.#script_control_el.on_load();
+
+        // re-run the action once the user returns to this tab
+        window.addEventListener("focus", this.#regained_focus_fn);
+      }
     } catch (error) {
       this.#assignment = null;
-      this.#participant = null;
 
       if (307 == error.response.status) {
         // 307 means the user has no active assignment, so load the participant select list
@@ -294,40 +717,41 @@ export class CN_control_assignment extends CN_action_list {
       this.#assignment_body_el.classList.add("d-none");
       this.#no_assignment_footer_el.classList.remove("d-none");
       this.#assignment_footer_el.classList.add("d-none");
+      this.#script_control_el.get_element().classList.add("d-none");
       super.update_element();
     } else {
       const proxy = CN_session.get("setting", "proxy");
 
       // fill in the details properties
       const details_el = this.#assignment_body_el.querySelector("div[name=details]");
-      details_el.querySelector("div[name=uid]").innerHTML = this.#participant.uid;
+      details_el.querySelector("div[name=uid]").innerHTML = this.#assignment.participant.uid;
       if (CN_session.get("application", "identifier")) {
-        details_el.querySelector("div[name=study]").innerHTML = this.#participant.study_id;
+        details_el.querySelector("div[name=study]").innerHTML = this.#assignment.participant.study_id;
       }
       details_el.querySelector("div[name=participant]").innerHTML = [
-        this.#participant.honorific,
-        this.#participant.first_name,
-        this.#participant.other_name ? "(" + this.#participant.other_name + ")" : null,
-        this.#participant.last_name
+        this.#assignment.participant.honorific,
+        this.#assignment.participant.first_name,
+        this.#assignment.participant.other_name ? "(" + this.#assignment.participant.other_name + ")" : null,
+        this.#assignment.participant.last_name
       ].join(" ");
       if (proxy) {
         details_el.querySelector("div[name=dm]").innerHTML = this.#assignment.use_decision_maker ? "Yes" : "No";
       }
-      details_el.querySelector("div[name=language]").innerHTML = this.#participant.language;
-      details_el.querySelector("div[name=gender]").innerHTML = this.#participant.gender_identity;
+      details_el.querySelector("div[name=language]").innerHTML = this.#assignment.participant.language;
+      details_el.querySelector("div[name=gender]").innerHTML = this.#assignment.participant.gender_identity;
       details_el.querySelector("div[name=pronouns]").innerHTML = (
-        !this.#participant.pronouns ?
+        !this.#assignment.participant.pronouns ?
         "(empty)" :
-        this.#participant.pronouns
+        this.#assignment.participant.pronouns
       );
-        this.#participant.pronouns;
+        this.#assignment.participant.pronouns;
       details_el.querySelector("div[name=queue]").innerHTML = this.#assignment.queue;
       details_el.querySelector("div[name=qnaire]").innerHTML = this.#assignment.qnaire;
       details_el.querySelector("div[name=page]").innerHTML = this.#assignment.page_progress;
       details_el.querySelector("div[name=note]").innerHTML = (
-        null == this.#participant.global_note ?
+        null == this.#assignment.participant.global_note ?
         "(empty)" :
-        CN_common.nl_to_br(this.#participant.global_note)
+        CN_common.nl_to_br(this.#assignment.participant.global_note)
       );
 
       // We don't know whether to use the method property until after the assignment has been loaded,
@@ -352,12 +776,12 @@ export class CN_control_assignment extends CN_action_list {
         this.#update_assignment_duration_id = setInterval(() => { this.#update_assignment_duration() }, 1000);
       }
 
-      if (null == this.#active_phone_call) {
+      if (null == this.#assignment.active_phone_call) {
         active_el.querySelector("div[name=call]").innerHTML = "No active call";
       } else {
         active_el.querySelector("div[name=call]").innerHTML = `
-          ${this.#active_phone_call.person}<br/>
-          ${this.#active_phone_call.rank}. ${this.#active_phone_call.type} (${this.#active_phone_call.number})
+          ${this.#assignment.active_phone_call.person}<br/>
+          ${this.#assignment.active_phone_call.rank}. ${this.#assignment.active_phone_call.type} (${this.#assignment.active_phone_call.number})
         `;
       }
 
@@ -387,14 +811,14 @@ export class CN_control_assignment extends CN_action_list {
       const use_tz_el = this.#assignment_footer_el.querySelector("button[name=use-tz]");
       const use_tz_list_el = this.#assignment_footer_el.querySelector("ul[name=use-tz-list]");
 
-      call_el.innerHTML = this.#active_phone_call ? "End Call" : "Call";
-      this.constructor.set_disabled(end_assignment_el, null != this.#active_phone_call);
+      call_el.innerHTML = this.#assignment.active_phone_call ? "End Call" : "Call";
+      this.constructor.set_disabled(end_assignment_el, null != this.#assignment.active_phone_call);
       if (0 == this.#phone_list.length) {
         if (proxy) {
           use_tz_el.classList.remove("btn-outline-primary");
           this.constructor.set_disabled(use_tz_el, true);
         }
-        if (null == this.#active_phone_call) this.constructor.set_disabled(call_el, true);
+        if (null == this.#assignment.active_phone_call) this.constructor.set_disabled(call_el, true);
       } else {
         if (proxy) {
           use_tz_el.classList.add("btn-outline-primary");
@@ -424,7 +848,7 @@ export class CN_control_assignment extends CN_action_list {
 
         // populate the call dropdown with phone-call statuses if in an active call, or list of numbers if not
         call_list_el.innerHTML = "";
-        if (this.#active_phone_call) {
+        if (this.#assignment.active_phone_call) {
           CN_session.get_module("phone_call").get_property("status").enum_list.forEach(status => {
             const li_el = this.constructor.html(`
               <li><button type="button" class="dropdown-item">${status}</button></li>
@@ -466,6 +890,13 @@ export class CN_control_assignment extends CN_action_list {
       this.#no_assignment_body_el.classList.add("d-none");
       this.#assignment_footer_el.classList.remove("d-none");
       this.#no_assignment_footer_el.classList.add("d-none");
+
+      if (this.#assignment.active_phone_call) {
+        this.#script_control_el.update_element();
+        this.#script_control_el.get_element().classList.remove("d-none");
+      } else {
+        this.#script_control_el.get_element().classList.add("d-none");
+      }
     }
   }
 
@@ -485,10 +916,15 @@ export class CN_control_assignment extends CN_action_list {
     card_footer_el.append(this.#assignment_footer_el);
   }
 
+
   /**
-   * Extend parent method
+   *  Replace parent method
    */
-  async on_dom_add() {
+  show_placeholder() {
+    super.show_placeholder();
+
+    // hide the script launcher while loading
+    this.#script_control_el.get_element().classList.add("d-none");
   }
 
   /**
@@ -502,6 +938,9 @@ export class CN_control_assignment extends CN_action_list {
       clearInterval(this.#update_assignment_duration_id);
       this.#update_assignment_duration_id = null
     }
+
+    // remove the window focus event listener
+    window.removeEventListener("focus", this.#regained_focus_fn);
   }
 
   /**
@@ -509,6 +948,16 @@ export class CN_control_assignment extends CN_action_list {
    */
   _create_placeholder_element() {
     return CN_element_loading_box.create();
+  }
+
+  /**
+   * Extend parent method
+   */
+  _create_header_element() {
+    const header_el = super._create_header_element();
+    // remove the report button, we don't need it
+    header_el.querySelector("div[name=report]").remove();
+    return header_el;
   }
 
   /**
@@ -644,7 +1093,7 @@ export class CN_control_assignment extends CN_action_list {
           >History</button>
         </div>
         <div class="btn-group w-100 pt-1" role="group">
-          <div class="btn-group flex-fill" role="group">
+          <div class="btn-group w-50" role="group">
             <button
               type="button"
               name="call"
@@ -652,14 +1101,9 @@ export class CN_control_assignment extends CN_action_list {
               data-bs-toggle="dropdown"
               aria-expanded="false"
             ></button>
-            <ul name="call-list" class="dropdown-menu w-100">
-            </ul>
+            <ul name="call-list" class="dropdown-menu w-100"></ul>
           </div>
-          <button
-            type="button"
-            class="btn btn-success"
-            name="end-assignment"
-          >End Assignment</button>
+          <button type="button" class="btn btn-success w-50" name="end-assignment">End Assignment</button>
         </div>
       </div>
     `);
@@ -710,6 +1154,15 @@ export class CN_control_assignment extends CN_action_list {
     }
 
     return this.#no_assignment_footer_el;
+  }
+
+  /**
+   * Extend parent method
+   */
+  _create_element() {
+    const el = super._create_element();
+    this.#script_control_el = CN_element_script_control.append(el, { class: "d-none" });
+    return el;
   }
 
   /**
@@ -855,7 +1308,7 @@ export class CN_control_assignment extends CN_action_list {
    * ADD DOCS
    */
   async #end_call(status) {
-    if (CN_voip.get_enabled() && CN_voip.get_info() && !this.#active_phone_call.international) {
+    if (CN_voip.get_enabled() && CN_voip.get_info() && !this.#assignment.active_phone_call.international) {
       try {
         await CN_api.delete("voip/0");
       } catch (error) {
@@ -905,7 +1358,8 @@ export class CN_control_assignment extends CN_action_list {
           await CN_api.get("assignment/0");
 
           // make absolute sure that the script has been closed
-          CN_script.close();
+          const script_launcher = this.script_control_el.get_script_launcher();
+          if (script_launcher) script_launcher.close();
           await CN_api.patch("assignment/0?operation=close", {});
         } catch (error) {
           // 307 means the user's assignment has already been closed, so we can ignore it

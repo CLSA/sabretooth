@@ -23,7 +23,7 @@ export class CN_model_appointment_mail extends CN_base_model {
           enum: { path: "site" },
           is_hidden: (model) => "add" == model.get_action_name() || !CN_session.get("role", "all_sites"),
           is_constant: (model) => "view" == model.get_action_name(),
-        },  
+        },
         language_id: {
           title: "Language",
           type: "enum",
