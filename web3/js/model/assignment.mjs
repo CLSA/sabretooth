@@ -938,6 +938,18 @@ export class CN_control_assignment extends CN_action_list {
   /**
    * Extend parent method
    */
+  async on_dom_add() {
+    await super.on_dom_add();
+    window.addEventListener("unload", () => {
+      // make sure that the script has been closed
+      const script_launcher = this.#script_control_el.get_script_launcher();
+      if (script_launcher) script_launcher.close();
+    });
+  }
+
+  /**
+   * Extend parent method
+   */
   async on_dom_remove() {
     await super.on_dom_remove();
 
@@ -1365,8 +1377,8 @@ export class CN_control_assignment extends CN_action_list {
           // check that there's an active assignment
           await CN_api.get("assignment/0");
 
-          // make absolute sure that the script has been closed
-          const script_launcher = this.script_control_el.get_script_launcher();
+          // make sure that the script has been closed
+          const script_launcher = this.#script_control_el.get_script_launcher();
           if (script_launcher) script_launcher.close();
           await CN_api.patch("assignment/0?operation=close", {});
         } catch (error) {
