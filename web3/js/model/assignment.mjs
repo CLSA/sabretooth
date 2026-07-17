@@ -383,7 +383,7 @@ class CN_element_script_control extends CN_element_card {
   async #advance() {
     await this.constructor.wait_for(async () => {
       await CN_api.patch("assignment/0?operation=advance", {});
-      await this.run();
+      CN_session.reload()
     });
   }
 
