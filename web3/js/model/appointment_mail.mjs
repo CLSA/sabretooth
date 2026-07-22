@@ -21,8 +21,8 @@ export class CN_model_appointment_mail extends CN_base_model {
           title: "Site",
           type: "enum",
           enum: { path: "site" },
-          is_hidden: (model) => "add" == model.get_action_name() || !CN_session.get("role", "all_sites"),
-          is_constant: (model) => "view" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name() || !CN_session.get("role", "all_sites"),
+          is_constant: () => "view" == this.get_action_name(),
         },
         language_id: {
           title: "Language",
@@ -34,7 +34,7 @@ export class CN_model_appointment_mail extends CN_base_model {
               order: "language.name",
             },
           },
-          is_constant: (model) => "view" == model.get_action_name(),
+          is_constant: () => "view" == this.get_action_name(),
         },
         from_name: { title: "From Name" },
         from_address: {
@@ -55,9 +55,9 @@ export class CN_model_appointment_mail extends CN_base_model {
         delay_offset: {
           title: "Delay (days)",
           format: "integer",
-          is_hidden:
-            (model) => "add" == model.get_action_name() ||
-            "immediately" == model.get_action().get_property_value("delay_unit"),
+          is_hidden: () =>
+            "add" == this.get_action_name() ||
+            "immediately" == this.get_action().get_property_value("delay_unit"),
         },
         delay_unit: { title: "Delay Type", type: "enum" },
         subject: { title: "Subject" },

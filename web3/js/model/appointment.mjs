@@ -25,7 +25,7 @@ export class CN_model_appointment extends CN_base_model {
         language: {
           column: "language.name",
           title: "Language",
-          is_hidden: (model) => "appointment" != CN_session.get_leaf_model().get_name(),
+          is_hidden: () => "appointment" != CN_session.get_leaf_model().get_name(),
         },
         phone: { column: "phone.name", title: "Phone Number" },
         user: { column: "user.name", title: "Reserved For" },
@@ -51,7 +51,7 @@ export class CN_model_appointment extends CN_base_model {
           title: "Duration",
           type: "enum",
           enum: {
-            get_enums: (model) => {
+            get_enums: () => {
               // add 8 increments for possible appointment lengths
               const interval = CN_session.get("setting", "vacancy_size");
               return CN_common.get_list_of_numbers(8).map(index => {
@@ -76,13 +76,13 @@ export class CN_model_appointment extends CN_base_model {
         participant: {
           meta: { table: "participant", column: "uid" },
           title: "Participant",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
         },
         qnaire: {
           meta: { table: "script", column: "name" },
           title: "Questionnaire",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
         },
         phone_id: {
@@ -135,14 +135,14 @@ export class CN_model_appointment extends CN_base_model {
           title: "Disable Email Reminder(s)",
           type: "boolean",
           get_default: () => false,
-          is_hidden: (model) => "view" == model.get_action_name(),
+          is_hidden: () => "view" == this.get_action_name(),
           required: true,
           help: "If selected then no automatic email reminders will be created for this appointment.",
         },
         assignment_user: {
           meta: { table: "assignment_user", column: "name" },
           title: "Assigned to",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
           help: `
             This will remain blank until the appointment has been assigned. The assigned user can only be
@@ -152,7 +152,7 @@ export class CN_model_appointment extends CN_base_model {
         state: {
           meta: {}, // provided by the service
           title: "State",
-          is_hidden: (model) => "add" == model.get_action_name(),
+          is_hidden: () => "add" == this.get_action_name(),
           is_constant: () => true,
           help: "One of reached, not reached, upcoming, assignable, missed, assigned or in progress.",
         },
