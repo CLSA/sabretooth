@@ -352,7 +352,7 @@ class CN_element_script_control extends CN_element_card {
 
     // add instructions to the interface
     interface_el.append(this.constructor.html(`
-      <div class="alert alert-success mt-2 mb-0" role="alert">
+      <div class="alert alert-info mt-2 mb-0" role="alert">
         When launching on a script your browser will open the script in a new tab.
         The application will still be accessible by clicking the brower's
         <em>${CN_session.get("application", "title")}</em> tab.
@@ -381,10 +381,8 @@ class CN_element_script_control extends CN_element_card {
    * ADD DOCS
    */
   async #advance() {
-    await this.constructor.wait_for(async () => {
-      await CN_api.patch("assignment/0?operation=advance", {});
-      CN_session.reload()
-    });
+    await this.constructor.wait_for(CN_api.patch("assignment/0?operation=advance", {}));
+    CN_session.reload()
   }
 
   /**
@@ -511,7 +509,6 @@ export class CN_control_assignment extends CN_action_list {
    */
   async get_text(type) {
     if ("crumb" == type) {
-      await this.after_first_load();
       return (
         null == this.#assignment || null == this.#assignment.participant ?
         "Assignment Select" :
@@ -520,7 +517,6 @@ export class CN_control_assignment extends CN_action_list {
     }
 
     if ("header" == type) {
-      await this.after_first_load();
       return (
         null == this.#assignment || null == this.#assignment.participant ?
         "Participant Selection List" :
@@ -1349,9 +1345,10 @@ export class CN_control_assignment extends CN_action_list {
    */
   async #start_assignment(participant_id) {
     try {
-      await this.constructor.wait_for(async () => {
-        await CN_api.post("assignment?operation=open", { participant_id: participant_id });
-      }, 0);
+      await this.constructor.wait_for(
+        CN_api.post("assignment?operation=open", { participant_id: participant_id }),
+        0,
+      );
       CN_session.reload();
     } catch (error) {
       if (CN_common.is_uri_error(error, 409)) {

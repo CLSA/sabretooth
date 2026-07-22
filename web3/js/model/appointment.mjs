@@ -379,6 +379,8 @@ export class CN_add_appointment extends CN_action_add {
    * Extend parent method
    */
   async on_pre_submit(record) {
+    await super.on_pre_submit(record);
+
     // add the start_vacancy_id property since it's a hidden property which doesn't get added to the record
     record.start_vacancy_id = this.get_property_value("start_vacancy_id");
   }
@@ -631,7 +633,7 @@ export class CN_view_appointment extends CN_action_view {
    * Extend parent method
    */
   async on_set_property(prop_name, run = true) {
-    await this.constructor.wait_for(async () => await super.on_set_property(prop_name, run));
+    await this.constructor.wait_for(super.on_set_property(prop_name, run));
   }
 
   /**

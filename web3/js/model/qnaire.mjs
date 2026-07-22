@@ -93,7 +93,6 @@ export class CN_mass_method_qnaire extends CN_base_action {
 
     if ("header" == type) {
       // load the qnaire details and site list
-      await this.after_first_load();
       return `Mass Interview "${this.#qnaire_name}"`;
     }
 
@@ -171,14 +170,15 @@ export class CN_mass_method_qnaire extends CN_base_action {
       const identifier_list = this.#participant_selection.get_identifier_list();
       if (0 == identifier_list.length) return;
 
-      await this.constructor.wait_for(async () => {
-        CN_api.post(`qnaire/${this.get_model().get_identifier()}/participant`, {
+      await this.constructor.wait_for(CN_api.post(
+        `qnaire/${this.get_model().get_identifier()}/participant`,
+        {
           mode: "update",
           identifier_id: this.#participant_selection.get_idtype(),
           identifier_list: identifier_list,
           method: method,
-        });
-      });
+        }
+      ));
 
       await CN_modal_message.create_and_open({
         title: "Interview Methods Updated",
