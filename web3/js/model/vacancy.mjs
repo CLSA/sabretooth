@@ -29,8 +29,8 @@ export class CN_model_vacancy extends CN_base_model {
         },
         operators: {
           title: "Operators",
-          format: "integer",
-          minValue: 1,
+          type: "integer",
+          get_min: () => 1,
           help: "How many operators are available at this time",
         },
       },

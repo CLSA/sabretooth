@@ -95,7 +95,7 @@ export class CN_model_setting extends classes.CN_model_setting {
         },
         appointment_duration: {
           title: "Default Appointment Length",
-          format: "integer",
+          type: "integer",
           help: `
             The length of time, in minutes, of the default appointment.
             Value must be in 30-minute increments.
@@ -103,13 +103,13 @@ export class CN_model_setting extends classes.CN_model_setting {
         },
         pre_call_window: {
           title: "Pre-Appointment Window",
-          format: "integer",
+          type: "integer",
           get_min: () => 0,
           help: "How many minutes before an appointment that a participant can be assigned.",
         },
         post_call_window: {
           title: "Post-Appointment Window",
-          format: "integer",
+          type: "integer",
           get_min: () => 0,
           help: "How many minutes after an appointment before it is considered missed.",
         },

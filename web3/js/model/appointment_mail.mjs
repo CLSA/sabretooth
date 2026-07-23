@@ -39,7 +39,7 @@ export class CN_model_appointment_mail extends CN_base_model {
         from_name: { title: "From Name" },
         from_address: {
           title: "From Address",
-          format: "eappointment_mail",
+          type: "email",
           help: 'Must be in the format "account@domain.name".',
         },
         cc_address: {
@@ -54,7 +54,8 @@ export class CN_model_appointment_mail extends CN_base_model {
         },
         delay_offset: {
           title: "Delay (days)",
-          format: "integer",
+          type: "integer",
+          get_min: () => 0,
           is_hidden: () =>
             "add" == this.get_action_name() ||
             "immediately" == this.get_action().get_property_value("delay_unit"),

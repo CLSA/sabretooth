@@ -38,7 +38,7 @@ export class CN_model_qnaire extends CN_base_model {
               limit: 1000,
             },
           },
-          is_constant: model => "view" == model.get_action_name(),
+          is_constant: () => "view" == this.get_action_name(),
           help: "Only scripts which are marked as non-repeatable may be used as a questionnaire.",
         },
         allow_missing_consent: {
@@ -52,12 +52,13 @@ export class CN_model_qnaire extends CN_base_model {
         web_version: {
           title: "Web Version",
           type: "boolean",
-          is_constant: model =>
-            "add" != model.get_action_name() &&
-            null == model.get_action().get_property_value("pine_qnaire_id"),
+          is_constant: () => (
+            "add" != this.get_action_name() &&
+            null == this.get_action().get_property_value("pine_qnaire_id")
+          ),
           help: "Defines whether this questionnaire has a web-version.",
         },
-        delay_offset: { title: "Delay Offset", format: "integer", get_min: 0 },
+        delay_offset: { title: "Delay Offset", type: "integer", get_min: () => 0 },
         delay_unit: { title: "Delay Unit", type: "enum" },
         pine_qnaire_id: { meta: { table: "script", column: "pine_qnaire_id" }, is_hidden: () => true, },
       },
