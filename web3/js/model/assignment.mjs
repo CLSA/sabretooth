@@ -575,6 +575,32 @@ export class CN_control_assignment extends CN_action_list {
       this.#assignment.participant = null;
       this.#assignment.active_phone_call = null;
 
+      // Show a popup if the participant is missing HIN data
+      // Note: this will only show if the participant has consented to provide HIN
+      if (CN_session.get("application", "check_for_missing_hin") && this.#assignment.missing_hin) {
+        const modal = new CN_modal_message({
+          title: "Missing HIN",
+          message: `
+            The participant has consented to provide their Health Insurance Number (HIN)
+            but their number is not on file.
+            <br/>
+            <br/>
+            Please ask the participant to provide their HIN number.
+            The details can be added in the participant's file under "HIN" in the list selector or by
+            <a href="#">clicking here</a>.
+          `,
+        });
+        modal.get_element().querySelector("a").addEventListener("click", () => {
+          modal.close();
+          CN_session.navigate_to(`participant/view/${this.#assignment.participant_id}/hin/add`);
+        });
+
+        // Open but do not await, that way the rest of the assignment's details can finish loading
+        // while the warning is being read.
+        modal.open();
+      }
+
+
       // get current participant details
       const participant_column = [
         "id",
