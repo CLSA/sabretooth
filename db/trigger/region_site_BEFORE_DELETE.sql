@@ -27,4 +27,4 @@ CREATE TRIGGER region_site_BEFORE_DELETE
     AND application_has_cohort.grouping = "region"
     AND region_site.id = OLD.id;
 
-  END */;;
+  END ;;

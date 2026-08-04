@@ -24,4 +24,4 @@ CREATE TRIGGER jurisdiction_BEFORE_DELETE
     AND application_has_cohort.grouping = "jurisdiction"
     AND jurisdiction.id = OLD.id;
 
-  END */;;
+  END ;;

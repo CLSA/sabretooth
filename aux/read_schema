@@ -112,7 +112,7 @@ foreach( $output as $line )
     if( 0 != strlen( $line ) || 0 != strlen( $last_line ) )
     {
       // remove junk at the end of closing triggers
-      if( 'trigger' == $type ) $line = preg_replace( '/^END \*\/(.*)/', 'END $1', $line );
+      if( 'trigger' == $type ) $line = preg_replace( '/^( *)END \*\//', '$1END ', $line );
 
       // break up long lines
       $contents[] = (
