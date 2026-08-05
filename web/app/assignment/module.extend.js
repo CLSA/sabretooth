@@ -550,11 +550,7 @@ cenozoApp.extendModule({
                       select: {
                         column: [
                           { table: "hold_type", column: "name", alias: "hold" },
-                          {
-                            table: "proxy_type",
-                            column: "name",
-                            alias: "proxy",
-                          },
+                          { table: "proxy_type", column: "name", alias: "proxy" },
                         ],
                       },
                     },
@@ -983,7 +979,7 @@ cenozoApp.extendModule({
               highlight: true,
             });
 
-            // if there are any alternate-types with consents then add a column for each one
+            // add a column for every alternate type that has a consent type
             var response = await CnHttpFactory.instance({
               path: "alternate_type",
               data: {
@@ -993,6 +989,11 @@ cenozoApp.extendModule({
                     onleft: "alternate_type.id",
                     onright: "qnaire_has_alternate_type.alternate_type_id",
                   },
+                  where: {
+                    column: "alternate_type.alternate_consent_type_id",
+                    operator: "!=",
+                    value: null,
+                  }
                 },
                 select: { column: ["id", "name", "title"] },
               },
