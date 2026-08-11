@@ -151,6 +151,7 @@ class query extends \cenozo\service\query
         $modifier->where( 'participant.id', '=', $this->get_parent_record()->id );
         $modifier->or_where( 'alternate_data.alternate_id', '!=', NULL );
         $modifier->where_bracket( false );
+        $this->select->apply_aliases_to_modifier( $modifier );
 
         $count += $phone_class_name::count( $modifier );
       }
