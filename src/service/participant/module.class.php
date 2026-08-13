@@ -215,9 +215,19 @@ class module extends \cenozo\service\participant\module
           $temp_mod->join_modifier( 'alternate_has_alternate_type', $join_mod );
 
           $join_mod = lib::create( 'database\modifier' );
-          $join_mod->where( 'alternate.id', '=', 'alternate_consent.alternate_id', false );
-          $join_mod->where( 'alternate_type.alternate_consent_type_id', '=', 'alternate_consent.alternate_consent_type_id', false );
-          $temp_mod->join_modifier( 'alternate_consent', $join_mod );
+          $join_mod->where( 'alternate.id', '=', 'alternate_last_alternate_consent.alternate_id', false );
+          $join_mod->where(
+            'alternate_type.alternate_consent_type_id',
+            '=',
+            'alternate_last_alternate_consent.alternate_consent_type_id',
+            false
+          );
+          $temp_mod->join_modifier( 'alternate_last_alternate_consent', $join_mod );
+          $temp_mod->join(
+            'alternate_consent',
+            'alternate_last_alternate_consent.alternate_consent_id',
+            'alternate_consent.id'
+          );
 
           $temp_mod->where( 'alternate_type.id', '=', $alternate_type['id'] );
           $temp_mod->group( 'participant_id' );
