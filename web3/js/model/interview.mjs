@@ -8,8 +8,8 @@ export class CN_model_interview extends classes.CN_model_interview {
   /**
    * Extend parent method
    */
-  clone_columns() {
-    const columns = super.clone_columns();
+  async clone_columns() {
+    const columns = await super.clone_columns();
 
     CN_common.insert_property(columns, "after", "uid", "qnaire", {
       column: "script.name",
@@ -30,8 +30,8 @@ export class CN_model_interview extends classes.CN_model_interview {
   /**
    * Extend parent method
    */
-  clone_properties() {
-    const properties = super.clone_properties();
+  async clone_properties() {
+    const properties = await super.clone_properties();
 
     CN_common.insert_property(properties, "after", "uid", "method", {
       title: "Interviewing Method",
@@ -133,6 +133,17 @@ export class CN_list_interview extends classes.CN_list_interview {
 }
 
 export class CN_view_interview extends classes.CN_view_interview {
+  /**
+   * Extend parent method
+   */
+  async get_text(type) {
+    if ("crumb" == type) {
+      return this.get_property_value("qnaire");
+    }
+
+    return await super.get_text(type);
+  }
+
   /**
    * Extend parent method
    */

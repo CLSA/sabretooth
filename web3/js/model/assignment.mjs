@@ -16,36 +16,65 @@ export class CN_model_assignment extends classes.CN_model_assignment {
   /**
    * Extend parent method
    */
-  clone_columns() {
-    const control_columns = {
-      rank: { title: "Rank", column: "queue.rank", type: "rank", max_rank: 11 },
-      queue: { title: "Queue", column: "queue.name" },
-      qnaire: { title: "Questionnaire", column: "script.name" },
-      page_progress: { title: "Page Progress", table_prefix: false },
-      language: { title: "Language", column: "language.name" },
-      uid: { title: "UID", column: "participant.uid" },
-      global_note: { title: "Special Note", column: "participant.global_note", type: "text", limit: 20 },
-      availability: { title: "Availability", column: "availability_type.name" },
-      participant_id: { column: "participant.id", is_hidden: () => true },
-    };
+  async clone_columns() {
+    if ("control" == CN_session.get_leaf_model().get_action_name()) {
+      const columns = {
+        rank: { title: "Rank", column: "queue.rank", type: "rank", max_rank: 11 },
+        queue: { title: "Queue", column: "queue.name" },
+        qnaire: { title: "Questionnaire", column: "script.name" },
+        page_progress: { title: "Page Progress", table_prefix: false },
+        language: { title: "Language", column: "language.name" },
+        uid: { title: "UID", column: "participant.uid" },
+        global_note: { title: "Special Note", column: "participant.global_note", type: "text", limit: 20 },
+        availability: { title: "Availability", column: "availability_type.name" },
+        participant_id: { column: "participant.id", is_hidden: () => true },
+      };
 
-    if (CN_session.get("setting", "last_contacted")) {
-      CN_common.insert_property(control_columns, "after", "availability", "last_contacted", {
-        title: "Last Contacted",
-        column: "interview_last_contacted.datetime",
-        type: "datetime",
-        help: "The last time an assignment for the current questionnaire ended with a contacted call status.",
+      if (CN_session.get("setting", "last_contacted")) {
+        CN_common.insert_property(columns, "after", "availability", "last_contacted", {
+          title: "Last Contacted",
+          column: "interview_last_contacted.datetime",
+          type: "datetime",
+          help: "The last time an assignment for the current questionnaire ended with a contacted call status.",
+        });
+      }
+
+      // add qnaire alternate type consent columns
+      const response = await CN_api.get("alternate_type", {
+        select: { distinct: true, column: ["id", "name", "title"] },
+        modifier: {
+          join: {
+            table: "qnaire_has_alternate_type",
+            onleft: "alternate_type.id",
+            onright: "qnaire_has_alternate_type.alternate_type_id",
+          },
+          where: {
+            column: "alternate_type.alternate_consent_type_id",
+            operator: "!=",
+            value: null,
+          },
+        }
       });
+
+      response.forEach(column => {
+        columns[`${column.name}_consent`] = {
+          title: `${column.title} Consent`,
+          table_prefix: false,
+          type: "boolean",
+        };
+      });
+
+      return columns;
     }
 
-    return "control" == CN_session.get_leaf_model().get_action_name() ?  control_columns : super.clone_columns();
+    return await super.clone_columns();
   }
 
   /**
    * Extend parent method
    */
-  clone_properties() {
-    const properties = super.clone_properties();
+  async clone_properties() {
+    const properties = await super.clone_properties();
 
     CN_common.insert_property(properties, "after", "participant", "qnaire", {
       meta: { table: "script", column: "name" },
@@ -511,8 +540,8 @@ export class CN_control_assignment extends CN_action_list {
     if ("crumb" == type) {
       return (
         null == this.#assignment || null == this.#assignment.participant ?
-        "Assignment Select" :
-        `Assignment: ${this.#assignment.participant.uid}`
+        "Select" :
+        this.#assignment.participant.uid
       );
     }
 
@@ -1204,6 +1233,18 @@ export class CN_control_assignment extends CN_action_list {
   _create_element() {
     const el = super._create_element();
     this.#script_control_el = CN_element_script_control.append(el, { class: "d-none" });
+    return el;
+  }
+
+  /**
+   * Extend parent method
+   */
+  _create_column_element(col_name, column, record, last_column) {
+    const el = super._create_column_element(col_name, column, record, last_column);
+
+    // highlight reserved rows
+    if (record.reserved) el.style.background = "rgb(255, 242, 174)";
+
     return el;
   }
 

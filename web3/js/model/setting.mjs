@@ -4,9 +4,9 @@ export class CN_model_setting extends classes.CN_model_setting {
   /**
    * Extend parent method
    */
-  clone_columns() {
+  async clone_columns() {
     return {
-      ...super.clone_columns(),
+      ...await super.clone_columns(),
       ...{
         mail_name: {
           title: "Default Email Name",
@@ -61,9 +61,9 @@ export class CN_model_setting extends classes.CN_model_setting {
   /**
    * Extend parent method
    */
-  clone_properties() {
+  async clone_properties() {
     return {
-      ...super.clone_properties(),
+      ...await super.clone_properties(),
       ...{
         mail_name: {
           title: "Default Email Name",

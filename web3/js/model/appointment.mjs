@@ -397,15 +397,8 @@ export class CN_add_appointment extends CN_action_add {
     if (this.#vacancy_model) {
       if (null != this.#vacancy_model.get_action()) {
         this.#vacancy_model.get_action().update_element();
+        this.get_element().append(this.#vacancy_model.get_element());
       } else {
-        this.#vacancy_model.configure(
-          this.get_element(),
-          "calendar",
-          model.get_parent_model().get_action().get_property_value("effective_site_id"),
-          null,
-          true
-        );
-
         // private function used by event listeners below
         const select_datetime_fn = async (object) => {
           const response = await model.select_datetime_from_calendar(
@@ -424,16 +417,25 @@ export class CN_add_appointment extends CN_action_add {
               await this.on_set_property("start_vacancy_id");
             }
           }
-        }
+        };
 
-        // change the calendar's events to act as a way to set the appointment's datetime
-        const vacancy_action = this.#vacancy_model.get_action();
-        vacancy_action.set_config("on_select", null);
-        vacancy_action.set_config("on_click_cell", select_datetime_fn);
-        vacancy_action.set_config("on_click_event", select_datetime_fn);
+        (async () => {
+          await this.#vacancy_model.configure(
+            this.get_element(),
+            "calendar",
+            model.get_parent_model().get_action().get_property_value("effective_site_id"),
+            null,
+            true
+          );
+
+          // change the calendar's events to act as a way to set the appointment's datetime
+          const vacancy_action = this.#vacancy_model.get_action();
+          vacancy_action.set_config("on_select", null);
+          vacancy_action.set_config("on_click_cell", select_datetime_fn);
+          vacancy_action.set_config("on_click_event", select_datetime_fn);
+          this.get_element().append(this.#vacancy_model.get_element());
+        })();
       }
-
-      this.get_element().append(this.#vacancy_model.get_element());
     }
   }
 
@@ -656,15 +658,8 @@ export class CN_view_appointment extends CN_action_view {
     if (this.#vacancy_model) {
       if (null != this.#vacancy_model.get_action()) {
         this.#vacancy_model.get_action().update_element();
+        this.get_element().append(this.#vacancy_model.get_element());
       } else {
-        this.#vacancy_model.configure(
-          this.get_element(),
-          "calendar",
-          model.get_parent_model().get_action().get_property_value("effective_site_id"),
-          null,
-          true
-        );
-
         // private function used by event listeners below
         const select_datetime_fn = async (object) => {
           const response = await model.select_datetime_from_calendar(
@@ -699,14 +694,23 @@ export class CN_view_appointment extends CN_action_view {
           }
         };
 
-        // change the calendar's events to act as a way to set the appointment's datetime
-        const vacancy_action = this.#vacancy_model.get_action();
-        vacancy_action.set_config("on_select", null);
-        vacancy_action.set_config("on_click_cell", select_datetime_fn);
-        vacancy_action.set_config("on_click_event", select_datetime_fn);
-      }
+        (async () => {
+          await this.#vacancy_model.configure(
+            this.get_element(),
+            "calendar",
+            model.get_parent_model().get_action().get_property_value("effective_site_id"),
+            null,
+            true
+          );
 
-      this.get_element().append(this.#vacancy_model.get_element());
+          // change the calendar's events to act as a way to set the appointment's datetime
+          const vacancy_action = this.#vacancy_model.get_action();
+          vacancy_action.set_config("on_select", null);
+          vacancy_action.set_config("on_click_cell", select_datetime_fn);
+          vacancy_action.set_config("on_click_event", select_datetime_fn);
+          this.get_element().append(this.#vacancy_model.get_element());
+        })();
+      }
     }
   }
 
