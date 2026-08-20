@@ -181,8 +181,8 @@ class ui3 extends \cenozo\ui\ui3
 
     if( 2 <= $db_role->tier )
     {
-      $query = '?{qnaire}&{language}';
-      if( $db_role->all_sites ) $query .= '&{site}';
+      $query = '?{qnaire_id}&{language_id}';
+      if( $db_role->all_sites ) $query .= '&{site_id}';
       $data['menu']['utilities']['Queue Tree'] = [
         'subject' => 'queue',
         'action' => 'tree',
