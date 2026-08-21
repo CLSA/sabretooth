@@ -113,6 +113,54 @@ export class CN_model_setting extends classes.CN_model_setting {
           get_min: () => 0,
           help: "How many minutes after an appointment before it is considered missed.",
         },
+
+        call_wait_times: {
+          title: "Last Call Wait Times",
+          properties: {
+            contacted_wait: {
+              title: "Contacted Wait",
+              type: "integer",
+              get_min: () => 0,
+              help: 'How many minutes after a "contacted" call result to allow a participant to be called',
+            },  
+            busy_wait: {
+              title: "Busy Wait",
+              type: "integer",
+              get_min: () => 0,
+              help: 'How many minutes after a "busy" call result to allow a participant to be called',
+            },  
+            fax_wait: {
+              title: "Fax Wait",
+              type: "integer",
+              get_min: () => 0,
+              help: 'How many minutes after a "fax" call result to allow a participant to be called',
+            },  
+            no_answer_wait: {
+              title: "No Answer Wait",
+              type: "integer",
+              get_min: () => 0,
+              help: 'How many minutes after a "no answer" call result to allow a participant to be called',
+            },  
+            not_reached_wait: {
+              title: "Not Reached Wait",
+              type: "integer",
+              get_min: () => 0,
+              help: 'How many minutes after a "not reached" call result to allow a participant to be called',
+            },  
+            hang_up_wait: {
+              title: "Hang Up Wait",
+              type: "integer",
+              get_min: () => 0,
+              help: 'How many minutes after a "hang up" call result to allow a participant to be called',
+            },
+            soft_refusal_wait: {
+              title: "Soft Refusal Wait",
+              type: "integer",
+              get_min: () => 0,
+              help: 'How many minutes after a "soft refusal" call result to allow a participant to be called',
+            },
+          },
+        },
       },
     };
   }
