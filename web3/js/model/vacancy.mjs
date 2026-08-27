@@ -204,7 +204,7 @@ export class CN_calendar_vacancy extends CN_action_calendar {
     const footer_el = super._create_footer_element();
 
     // add the appointment/vacancy calendar buttons (if the user has access to them)
-    const utilities = CN_session.get("menu", "utilities");
+    const utilities = CN_session.get("menus", "utilities");
     if (utilities["Appointment Calendar"] && utilities["Vacancy Calendar"]) {
       const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
 

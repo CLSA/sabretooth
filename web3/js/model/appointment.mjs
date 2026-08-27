@@ -548,7 +548,7 @@ export class CN_calendar_appointment extends CN_action_calendar {
     const footer_el = super._create_footer_element();
 
     // add the appointment/vacancy calendar buttons (if the user has access to them)
-    const utilities = CN_session.get("menu", "utilities");
+    const utilities = CN_session.get("menus", "utilities");
     if (utilities["Appointment Calendar"] && utilities["Vacancy Calendar"]) {
       const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
 
@@ -743,7 +743,7 @@ export class CN_view_appointment extends CN_action_view {
     left_btn_group_el.append(cancel_btn_el);
 
     // add a button to the appointment calendar (if the user has access)
-    if (CN_session.get("menu", "utilities")["Appointment Calendar"]) {
+    if (CN_session.get("menus", "utilities")["Appointment Calendar"]) {
       const calendar_btn_el = this.constructor.html(`
         <button name="calendar" type="button" class="btn btn-light btn-outline-primary">
           Appointment Calendar
