@@ -27,7 +27,7 @@ class ui3 extends \cenozo\ui\ui3
     $module = $this->get_module( 'appointment' );
     if( !is_null( $module ) ) $module->add_action( 'calendar', '/{identifier}?{calendar}' );
 
-    $module = $this->get_module( 'user' );
+    $module = $this->get_module( 'assignment' );
     if( !is_null( $module ) )
     {
       if( in_array( $db_role->name, [ 'helpline', 'operator', 'operator+', 'supervisor' ] ) )
