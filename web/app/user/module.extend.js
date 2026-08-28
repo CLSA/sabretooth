@@ -230,6 +230,16 @@ cenozoApp.extendModule({
         $delegate.root.isTrainee = function () {
           return 1 == CnSession.role.tier && CnSession.user.traineeUser;
         };
+
+        const instance = $delegate.instance;
+        $delegate.instance = function () {
+          const object = instance();
+          object.isTrainee = function () {
+            return 1 == CnSession.role.tier && CnSession.user.traineeUser;
+          };
+          return object;
+        };
+
         return $delegate;
       },
     ]);
