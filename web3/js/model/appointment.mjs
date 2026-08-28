@@ -124,7 +124,16 @@ export class CN_model_appointment extends CN_base_model {
         user_id: {
           title: "Reserved for",
           type: "typeahead",
-          typeahead: CN_model_user.get_typeahead(),
+          typeahead: CN_model_user.get_typeahead({
+            modifier: {
+              where: [
+                { bracket: true, open: true },
+                { column: "role_list", operator: "LIKE", value: "%operator%" },
+                { column: "role_list", operator: "LIKE", value: "%supervisor%", or: true },
+                { bracket: true, open: false },
+              ],
+            }
+          }),
           help: `
             The user the appointment is specifically reserved for.
             Cannot be changed once the appointment has passed.
@@ -449,18 +458,41 @@ export class CN_add_appointment extends CN_action_add {
 }
 
 export class CN_calendar_appointment extends CN_action_calendar {
-  #site_list = [];
+  #calendar_type = null;
+  #identifier = null;
+  #change_type_allowed = false;
+  #item_list = [];
+
+  constructor(parent_el, model) {
+    super(parent_el, model);
+
+    const identifier = this.get_model().get_identifier();
+    const matches = identifier.match(/^(site_id|user_id)=([0-9]+)/);
+    if (null != matches) {
+      this.#calendar_type = "site_id" == matches[1] ? "site" : "user";
+      this.#identifier = matches[2];
+      this.#change_type_allowed = (
+        "site_id" == matches[1] ?
+        CN_session.get("role", "all_sites") :
+        1 < CN_session.get("role", "tier")
+      );
+    }
+  }
 
   /**
    * Extend parent method
    */
   async get_text(type) {
     if ("header" == type) {
-      const site_id = this.get_model().get_identifier();
-      const response = await CN_api.get(`site/${site_id}`);
-
-      const title = await super.get_text(type);
-      return `${response.name} ${title}`;
+      if (null != this.#calendar_type) {
+        const response = await CN_api.get([this.#calendar_type, this.#identifier].join("/"));
+        const title = await super.get_text(type);
+        return (
+          "site" == this.#calendar_type ?
+          `${title} for ${response.name}` :
+          `${title} for ${response.first_name} ${response.last_name} (${response.name})`
+        );
+      }
     }
 
     return await super.get_text(type);
@@ -470,20 +502,42 @@ export class CN_calendar_appointment extends CN_action_calendar {
    * Extend parent method
    */
   async on_load() {
-    const site_id = this.get_model().get_identifier();
-
-    if (CN_session.get("role", "all_sites")) {
-      // populate the site list for calendar switching
-      this.#site_list = await CN_api.get("site", {
-        select: { column: ["id", "name"] },
-        modifier: { order: "name" },
-      });
-    } else if (site_id != CN_session.get("site", "id")) {
-      // check site access
-      const error = new URIError();
-      error.title = "Page not found (403)";
-      error.message = "You do not have access to the requested resource.";
-      throw error;
+    if (this.#change_type_allowed) {
+      const modifier = {};
+      if ("site" == this.#calendar_type) {
+        modifier.order = "name";
+      } else if ("user" == this.#calendar_type) {
+        modifier.where = [
+          // includes users with an operator or supervisor role
+          { bracket: true, open: true },
+          { column: "role_list", operator: "LIKE", value: "%operator%" },
+          { column: "role_list", operator: "LIKE", value: "%supervisor%", or: true },
+          { bracket: true, open: false },
+          // which are active or is the currently selected user (since they may not be active)
+          { bracket: true, open: true },
+          { column: "user.active", operator: "=", value: true },
+          { column: "user.id", operator: "=", value: this.#identifier, or: true },
+          { bracket: true, open: false },
+        ];
+        modifier.order = ["user.first_name", "user.last_name"];
+      }
+      this.#item_list = await CN_api.get(this.#calendar_type, { modifier: modifier });
+    } else {
+      // check permissions
+      if (null == this.#calendar_type) {
+        const error = new URIError();
+        error.title = "Not found (404)";
+        error.message = "The needed resource could not be found.";
+        throw error;
+      } else if (
+        ("site" == this.#calendar_type && this.#identifier != CN_session.get("site", "id")) ||
+        ("user" == this.#calendar_type && this.#identifier != CN_session.get("user", "id"))
+      ) {
+        const error = new URIError();
+        error.title = "Permission Denied (403)";
+        error.message = "You do not have access to the requested resource.";
+        throw error;
+      }
     }
 
     await super.on_load();
@@ -492,10 +546,62 @@ export class CN_calendar_appointment extends CN_action_calendar {
   /**
    * Extend parent method
    */
+  get_on_load_path() {
+    return (
+      "user" == this.#calendar_type ?
+      `user/${this.#identifier}/appointment` :
+      super.get_on_load_path()
+    );
+  }
+
+  /**
+   * Extend parent method
+   */
   get_on_load_parameters() {
     const parameters = super.get_on_load_parameters();
-    parameters.restricted_site_id = this.get_model().get_identifier();
+    parameters.restricted_site_id = (
+      "site" == this.#calendar_type ?
+      this.#identifier :
+      CN_session.get("site", "id")
+    );
     return parameters;
+  }
+
+  /**
+   * Extend parent method
+   */
+  update_element() {
+    super.update_element();
+
+    if (this.#change_type_allowed) {
+      const ul_el = this.get_header_element().querySelector("div[name=calendar-type] ul");
+      ul_el.replaceChildren(this.constructor.html(
+        '<li><div class="dropdown-header text-bg-secondary">Site Calendars</div></li>'
+      ));
+
+      this.#item_list.forEach(item => {
+        const name = (
+          "site" == this.#calendar_type ?
+          item.name :
+          `${item.first_name} ${item.last_name} (${item.name})`
+        );
+        const item_btn_el = this.constructor.html(`
+          <button type="button" class="dropdown-item">${name}</button>
+        `);
+        item_btn_el.addEventListener("click", () => {
+          const calendar_params = this.get_query_parameter("calendar");
+          CN_session.navigate_to(
+            `appointment/calendar/${this.#calendar_type}_id=${item.id}`,
+            calendar_params ? { calendar: calendar_params } : null,
+          );
+        });
+        const item_li_el = this.constructor.html(
+          `<li class="bg-${item.id == this.#identifier ? "warning" : "body"}"></li>`
+        );
+        item_li_el.append(item_btn_el);
+        ul_el.append(item_li_el);
+      });
+    }
   }
 
   /**
@@ -504,38 +610,18 @@ export class CN_calendar_appointment extends CN_action_calendar {
   _create_header_element() {
     const header_el = super._create_header_element();
 
-    if (CN_session.get("role", "all_sites")) {
-      const site_div_el = this.constructor.html(`
-        <div class="dropdown" name="site">
-          <button name="site" type="button" class="btn btn-primary px-2 py-0" data-bs-toggle="dropdown">
+    if (this.#change_type_allowed) {
+      const calendar_type_div_el = this.constructor.html(`
+        <div class="dropdown" name="calendar-type">
+          <button name="calendar-type" type="button" class="btn btn-primary px-2 py-0" data-bs-toggle="dropdown">
             <i class="bi bi-calendar fs-5"></i>
           </button>
           <ul class="dropdown-menu bg-secondary">
-            <li><div class="dropdown-header text-bg-secondary">Site Calendars</div></li>
           </ul>
         </div>
       `);
 
-      const site_id = this.get_model().get_identifier();
-      this.#site_list.forEach(site => {
-        const site_btn_el = this.constructor.html(`
-          <button type="button" class="dropdown-item">${site.name}</button>
-        `);
-        site_btn_el.addEventListener("click", () => {
-          const calendar_params = this.get_query_parameter("calendar");
-          CN_session.navigate_to(
-            `appointment/calendar/${site.id}`,
-            calendar_params ? { calendar: calendar_params } : null,
-          );
-        });
-        const site_li_el = this.constructor.html(
-          `<li class="bg-${site.id == site_id ? "warning" : "body"}"></li>`
-        );
-        site_li_el.append(site_btn_el);
-        site_div_el.querySelector("ul").append(site_li_el);
-      });
-
-      header_el.querySelector("div[name=report]").before(site_div_el);
+      header_el.querySelector("div[name=report]").before(calendar_type_div_el);
     }
 
     return header_el;
@@ -559,7 +645,7 @@ export class CN_calendar_appointment extends CN_action_calendar {
       appointment_btn_el.addEventListener("click", () => {
         const calendar_params = this.get_query_parameter("calendar");
         CN_session.navigate_to(
-          `appointment/calendar/${this.get_model().get_identifier()}`,
+          `appointment/calendar/${this.#calendar_type}_id=${this.#identifier}`,
           calendar_params ? { calendar: calendar_params } : null,
         );
       });
@@ -571,7 +657,7 @@ export class CN_calendar_appointment extends CN_action_calendar {
       vacancy_btn_el.addEventListener("click", () => {
         const calendar_params = this.get_query_parameter("calendar");
         CN_session.navigate_to(
-          `vacancy/calendar/${this.get_model().get_identifier()}`,
+          `vacancy/calendar/${"site" == this.#calendar_type ?  this.#identifier : CN_session.get("site", "id")}`,
           calendar_params ? { calendar: calendar_params } : null,
         );
       });

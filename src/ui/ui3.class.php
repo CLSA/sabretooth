@@ -141,7 +141,15 @@ class ui3 extends \cenozo\ui\ui3
     $this->add_menu_item( 'list', 'Vacancies', 'vacancy' );
     if( 'operator' == $db_role->name ) $this->remove_menu_item( 'utility', 'Participant Search' );
     if( in_array( $db_role->name, [ 'operator', 'operator+' ] ) )
-      $this->add_menu_item( 'utility', 'Personal Calendar', 'user', 'calendar', sprintf( '/%d', $db_user->id ) );
+    {
+      $this->add_menu_item(
+        'utility',
+        'Personal Calendar',
+        'appointment',
+        'calendar',
+        sprintf( '/user_id=%d', $db_user->id )
+      );
+    }
     if( in_array( $db_role->name, [ 'helpline', 'operator', 'operator+', 'supervisor' ] ) )
       $this->add_menu_item( 'utility', 'Assignment Control', 'assignment', 'control' );
     if( 2 <= $db_role->tier ) $this->add_menu_item( 'utility', 'Queue Tree', 'queue', 'tree' );
@@ -155,7 +163,7 @@ class ui3 extends \cenozo\ui\ui3
         'Appointment Calendar',
         'appointment',
         'calendar',
-        sprintf( '/%d', $db_site->id )
+        sprintf( '/site_id=%d', $db_site->id )
       );
 
       if( 1 < $db_role->tier )
