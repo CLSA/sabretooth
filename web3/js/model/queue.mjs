@@ -300,7 +300,7 @@ export class CN_tree_queue extends CN_base_action {
         if (this.#qnaire_form_input.get_value()) {
           columns.qnaire = [{ operator: "=", value: this.#qnaire_form_input.get_value_label(), or: false }];
         }
-        if (this.#site_form_input.get_value()) {
+        if (CN_session.get("role", "all_sites") && this.#site_form_input.get_value()) {
           columns.site = [{ operator: "=", value: this.#site_form_input.get_value_label(), or: false }];
         }
         if (this.#language_form_input.get_value()) {
