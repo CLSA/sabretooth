@@ -17,8 +17,8 @@ class app_session extends CN_base_app_session {
 
     // flash the menu and assignment control buttons when in an assignment
     if (CN_session.get("user", "assignment")) {
-      this.#menu_btn_el.classList.add("btn-pulse-danger");
-      this.#control_btn_el.classList.add("btn-pulse-danger");
+      if (this.#menu_btn_el) this.#menu_btn_el.classList.add("btn-pulse-danger");
+      if (this.#control_btn_el) this.#control_btn_el.classList.add("btn-pulse-danger");
     }
   }
 
@@ -27,6 +27,9 @@ class app_session extends CN_base_app_session {
    */
   async start() {
     await super.start();
+
+    // we must force the participant module's root status in case the participant list isn't in the menu
+    CN_session.get_module("participant").set_root(true);
 
     this.#menu_btn_el = document
       .getElementById("main-menu-header")
@@ -41,7 +44,7 @@ class app_session extends CN_base_app_session {
     if (
       this.#control_btn_el &&
       null != assignment && (
-        CN_session.get("role", "id") != assignment.role_id ||
+        !["helpline", "operator", "operator+", "supervisor"].includes(CN_session.get("role", "name")) ||
         CN_session.get("site", "id") != assignment.site_id
       )
     ) {

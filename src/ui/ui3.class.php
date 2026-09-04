@@ -39,7 +39,7 @@ class ui3 extends \cenozo\ui\ui3
 
     // add the study parameter (used by the progress review only)
     $module = $this->get_module( 'overview' );
-    if( !is_null( $module ) ) $module->append_action_query( 'view', '?{study}' );
+    if( !is_null( $module ) ) $module->append_action_query( 'view', '?{study_id}' );
 
     $module = $this->get_module( 'participant' );
     if( !is_null( $module ) ) $module->append_action_query( 'history', '&{appointment}' );

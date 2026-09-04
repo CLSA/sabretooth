@@ -1,3 +1,4 @@
+const { CN_action_list } = await import(`${CENOZO_URL}/js/action/list.mjs`);
 const { CN_action_view } = await import(`${CENOZO_URL}/js/action/view.mjs`);
 const { CN_api } = await import(`${CENOZO_URL}/js/api.mjs`);
 const { CN_base_action } = await import(`${CENOZO_URL}/js/action/base_action.mjs`);
@@ -63,6 +64,20 @@ export class CN_model_qnaire extends CN_base_model {
         pine_qnaire_id: { meta: { table: "script", column: "pine_qnaire_id" }, is_hidden: () => true, },
       },
     });
+  }
+}
+
+export class CN_list_qnaire extends CN_action_list {
+  /**
+   * Extend parent method
+   */
+  async get_text(type) {
+    const text = await super.get_text(type);
+    return (
+      "header" == type && ["site", "stratum"].includes(CN_session.get_leaf_model().get_name()) ?
+      `Disabled ${text}` :
+      text
+    );
   }
 }
 

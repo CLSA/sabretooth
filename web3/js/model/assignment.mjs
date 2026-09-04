@@ -1274,39 +1274,21 @@ export class CN_control_assignment extends CN_action_list {
    * ADD DOCS
    */
   async #update_assignment_duration() {
-    let duration = "(loading...)"
-    if (this.#assignment) {
-      const duration_parts = [];
-      let seconds = Math.floor((CN_common.get_date() - new Date(this.#assignment.start_datetime))/1000);
-      if (86400 <= seconds) {
-        const days = Math.floor(seconds / 86400);
-        seconds -= 86400 * days;
-        duration_parts.push(`${days} day${1 == days ? "" : "s"}`);
-      }
-      if (3600 <= seconds) {
-        const hours = Math.floor(seconds / 3600);
-        seconds -= 3600 * hours;
-        duration_parts.push(`${hours} hour${1 == hours ? "" : "s"}`);
-      }
-      if (60 <= seconds) {
-        const minutes = Math.floor(seconds / 60);
-        seconds -= 60 * minutes;
-        duration_parts.push(`${minutes} minute${1 == minutes ? "" : "s"}`);
-      }
-      duration_parts.push(`${seconds} second${1 == seconds ? "" : "s"}`);
-      duration = duration_parts.join(", ");
-    }
-
     const active_el = this.#assignment_body_el.querySelector("div[name=active-assignment]");
-    active_el.querySelector("div[name=duration]").innerHTML = duration;
+    active_el.querySelector("div[name=duration]").innerHTML = (
+      this.#assignment ?
+      CN_common.seconds_to_string(
+        Math.floor((CN_common.get_date() - new Date(this.#assignment.start_datetime))/1000)
+      ) :
+      "(loading...)"
+    );
   }
 
   /**
    * ADD DOCS
    */
   async #start_call(phone) {
-    // start a call
-    await CN_voip.update();
+    await CN_session.update_webphone();
 
     var proceed = false;
     if (

@@ -56,11 +56,21 @@ export class CN_model_appointment_mail extends CN_base_model {
           title: "Delay (days)",
           type: "integer",
           get_min: () => 0,
-          is_hidden: () =>
-            "add" == this.get_action_name() ||
-            "immediately" == this.get_action().get_property_value("delay_unit"),
+          is_hidden: () => "immediately" == this.get_action().get_property_value("delay_unit"),
         },
-        delay_unit: { title: "Delay Type", type: "enum" },
+        delay_unit: {
+          title: "Delay Type",
+          type: "enum",
+          on_change: async (form_input, valid) => {
+            const action = this.get_action();
+
+            // run the default behaviour
+            await action.on_property_change("delay_unit", valid);
+
+            // re-run the action so the changed property is applied in the view
+            if (valid) action.update_element();
+          },
+        },
         subject: { title: "Subject" },
         body: { title: "Body", type: "text" },
       },
