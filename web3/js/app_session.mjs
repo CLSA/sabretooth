@@ -1,7 +1,5 @@
 const { CN_api } = await import(`${CENOZO_URL}/js/api.mjs`);
 const { CN_base_app_session } = await import(`${CENOZO_URL}/js/base_app_session.mjs`);
-const { CN_base_element } = await import(`${CENOZO_URL}/js/element/base_element.mjs`);
-const { CN_common } = await import(`${CENOZO_URL}/js/common.mjs`);
 const { CN_modal_confirm } = await import(`${CENOZO_URL}/js/modal/confirm.mjs`);
 const { CN_session } = await import(`${CENOZO_URL}/js/session.mjs`);
 

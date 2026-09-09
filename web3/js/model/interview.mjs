@@ -138,7 +138,7 @@ export class CN_view_interview extends classes.CN_view_interview {
    */
   async get_text(type) {
     if ("crumb" == type) {
-      return this.get_property_value("qnaire");
+      return `${this.get_property_value("uid")}: ${this.get_property_value("qnaire")}`;
     }
 
     return await super.get_text(type);

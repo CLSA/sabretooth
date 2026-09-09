@@ -19,7 +19,7 @@ export class CN_model_appointment extends CN_base_model {
         posessive: "appointment's",
       },
       columns: {
-        uid: { column: "participant.uid", title: "UID" },
+        uid: { column: "participant.uid", title: "UID", is_hidden: () => null != this.get_parent_model() },
         start_datetime: { type: "datetime", title: "Date & Time", table_prefix: false, },
         duration: { title: "Duration", table_prefix: false, },
         language: {
