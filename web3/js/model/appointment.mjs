@@ -172,6 +172,7 @@ export class CN_model_appointment extends CN_base_model {
           meta: { table: "interview", column: "participant_id" },
           is_hidden: () => true,
         },
+        note_count: { meta: {}, is_hidden: () => true },
       },
       calendar: {
         select: {
@@ -739,6 +740,9 @@ export class CN_view_appointment extends CN_action_view {
     } else {
       cancel_btn_el.classList.add("d-none");
     }
+
+    const notes_btn_el = this.get_footer_element().querySelector("button[name=notes]");
+    notes_btn_el.innerHTML = `Notes (${this.get_property_value("note_count")})`;
 
     // add the vacancy calendar if it hasn't been configured yet (once)
     if (this.#vacancy_model) {

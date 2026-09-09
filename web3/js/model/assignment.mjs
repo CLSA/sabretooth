@@ -641,6 +641,7 @@ export class CN_control_assignment extends CN_action_list {
         "gender_identity",
         "pronouns",
         "global_note",
+        "note_count",
         { table: "language", column: "code", alias: "language_code" },
         { table: "language", column: "name", alias: "language" },
       ];
@@ -778,184 +779,187 @@ export class CN_control_assignment extends CN_action_list {
       this.#assignment_footer_el.classList.add("d-none");
       this.#script_control_el.get_element().classList.add("d-none");
       super.update_element();
+      return;
+    }
+
+    const proxy = CN_session.get("setting", "proxy");
+
+    // fill in the details properties
+    const details_el = this.#assignment_body_el.querySelector("div[name=details]");
+    details_el.querySelector("div[name=uid]").innerHTML = this.#assignment.participant.uid;
+    if (CN_session.get("application", "identifier")) {
+      details_el.querySelector("div[name=study]").innerHTML = this.#assignment.participant.study_id;
+    }
+    details_el.querySelector("div[name=participant]").innerHTML = [
+      this.#assignment.participant.honorific,
+      this.#assignment.participant.first_name,
+      this.#assignment.participant.other_name ? "(" + this.#assignment.participant.other_name + ")" : null,
+      this.#assignment.participant.last_name
+    ].join(" ");
+    if (proxy) {
+      details_el.querySelector("div[name=dm]").innerHTML = this.#assignment.use_decision_maker ? "Yes" : "No";
+    }
+    details_el.querySelector("div[name=language]").innerHTML = this.#assignment.participant.language;
+    details_el.querySelector("div[name=gender]").innerHTML = this.#assignment.participant.gender_identity;
+    details_el.querySelector("div[name=pronouns]").innerHTML = (
+      !this.#assignment.participant.pronouns ?
+      "(empty)" :
+      this.#assignment.participant.pronouns
+    );
+      this.#assignment.participant.pronouns;
+    details_el.querySelector("div[name=queue]").innerHTML = this.#assignment.queue;
+    details_el.querySelector("div[name=qnaire]").innerHTML = this.#assignment.qnaire;
+    details_el.querySelector("div[name=page]").innerHTML = this.#assignment.page_progress;
+    details_el.querySelector("div[name=note]").innerHTML = (
+      null == this.#assignment.participant.global_note ?
+      "(empty)" :
+      CN_common.nl_to_br(this.#assignment.participant.global_note)
+    );
+
+    // We don't know whether to use the method property until after the assignment has been loaded,
+    // so it has to be shown or hidden here.
+    const method_el = details_el.querySelector("div[name=method]");
+    if (this.#assignment.web_version) {
+      method_el.parentElement.classList.remove("d-none");
+      details_el.querySelector("div[name=method]").innerHTML = this.#assignment.interview_method;
     } else {
-      const proxy = CN_session.get("setting", "proxy");
+      method_el.parentElement.classList.add("d-none");
+    }
 
-      // fill in the details properties
-      const details_el = this.#assignment_body_el.querySelector("div[name=details]");
-      details_el.querySelector("div[name=uid]").innerHTML = this.#assignment.participant.uid;
-      if (CN_session.get("application", "identifier")) {
-        details_el.querySelector("div[name=study]").innerHTML = this.#assignment.participant.study_id;
-      }
-      details_el.querySelector("div[name=participant]").innerHTML = [
-        this.#assignment.participant.honorific,
-        this.#assignment.participant.first_name,
-        this.#assignment.participant.other_name ? "(" + this.#assignment.participant.other_name + ")" : null,
-        this.#assignment.participant.last_name
+    // fill in the active assignment properties
+    const active_el = this.#assignment_body_el.querySelector("div[name=active-assignment]");
+    active_el.querySelector("div[name=start]").innerHTML =
+      CN_common.format_datetime(this.#assignment.start_datetime, "datetimesecond", true);
+    active_el.querySelector("div[name=calls]").innerHTML = this.#phone_call_list.length;
+
+    // start tracking the assignment duration
+    if (null == this.#update_assignment_duration_id) {
+      this.#update_assignment_duration();
+      this.#update_assignment_duration_id = setInterval(() => { this.#update_assignment_duration() }, 1000);
+    }
+
+    if (null == this.#assignment.active_phone_call) {
+      active_el.querySelector("div[name=call]").innerHTML = "No active call";
+    } else {
+      active_el.querySelector("div[name=call]").innerHTML = `
+        ${this.#assignment.active_phone_call.person}<br/>
+        ${this.#assignment.active_phone_call.rank}. ${this.#assignment.active_phone_call.type} (${this.#assignment.active_phone_call.number})
+      `;
+    }
+
+    // fill in the previous assignment properties
+    const previous_el = this.#assignment_body_el.querySelector("div[name=previous-assignment]");
+    if (null == this.#previous_assignment) {
+      previous_el.innerHTML = `
+        This participant has never been called for the "${this.#assignment.qnaire}" questionnaire.
+      `;
+    } else {
+      previous_el.querySelector("div[name=user]").innerHTML = [
+        this.#previous_assignment.first_name,
+        this.#previous_assignment.last_name,
+        `(${this.#previous_assignment.name})`
       ].join(" ");
+      previous_el.querySelector("div[name=start]").innerHTML =
+        CN_common.format_datetime(this.#previous_assignment.start_datetime, "datetimesecond", true);
+      previous_el.querySelector("div[name=end]").innerHTML =
+        CN_common.format_datetime(this.#previous_assignment.end_datetime, "datetimesecond", true);
+      previous_el.querySelector("div[name=calls]").innerHTML = this.#previous_assignment.phone_call_count;
+      previous_el.querySelector("div[name=status]").innerHTML = this.#previous_assignment.status;
+    }
+
+    const notes_btn_el = this.#assignment_footer_el.querySelector("button[name=notes]");
+    const end_assignment_el = this.#assignment_footer_el.querySelector("button[name=end-assignment]");
+    const call_el = this.#assignment_footer_el.querySelector("button[name=call]");
+    const call_list_el = this.#assignment_footer_el.querySelector("ul[name=call-list]");
+    const use_tz_el = this.#assignment_footer_el.querySelector("button[name=use-tz]");
+    const use_tz_list_el = this.#assignment_footer_el.querySelector("ul[name=use-tz-list]");
+
+    notes_btn_el.innerHTML = `Notes (${this.#assignment.participant.note_count})`;
+    call_el.innerHTML = this.#assignment.active_phone_call ? "End Call" : "Call";
+    this.constructor.set_disabled(end_assignment_el, null != this.#assignment.active_phone_call);
+    if (0 == this.#phone_list.length) {
       if (proxy) {
-        details_el.querySelector("div[name=dm]").innerHTML = this.#assignment.use_decision_maker ? "Yes" : "No";
+        use_tz_el.classList.remove("btn-outline-primary");
+        this.constructor.set_disabled(use_tz_el, true);
       }
-      details_el.querySelector("div[name=language]").innerHTML = this.#assignment.participant.language;
-      details_el.querySelector("div[name=gender]").innerHTML = this.#assignment.participant.gender_identity;
-      details_el.querySelector("div[name=pronouns]").innerHTML = (
-        !this.#assignment.participant.pronouns ?
-        "(empty)" :
-        this.#assignment.participant.pronouns
-      );
-        this.#assignment.participant.pronouns;
-      details_el.querySelector("div[name=queue]").innerHTML = this.#assignment.queue;
-      details_el.querySelector("div[name=qnaire]").innerHTML = this.#assignment.qnaire;
-      details_el.querySelector("div[name=page]").innerHTML = this.#assignment.page_progress;
-      details_el.querySelector("div[name=note]").innerHTML = (
-        null == this.#assignment.participant.global_note ?
-        "(empty)" :
-        CN_common.nl_to_br(this.#assignment.participant.global_note)
-      );
-
-      // We don't know whether to use the method property until after the assignment has been loaded,
-      // so it has to be shown or hidden here.
-      const method_el = details_el.querySelector("div[name=method]");
-      if (this.#assignment.web_version) {
-        method_el.parentElement.classList.remove("d-none");
-        details_el.querySelector("div[name=method]").innerHTML = this.#assignment.interview_method;
-      } else {
-        method_el.parentElement.classList.add("d-none");
+      if (null == this.#assignment.active_phone_call) this.constructor.set_disabled(call_el, true);
+    } else {
+      if (proxy) {
+        use_tz_el.classList.add("btn-outline-primary");
+        this.constructor.set_disabled(use_tz_el, false);
       }
+      this.constructor.set_disabled(call_el, false);
 
-      // fill in the active assignment properties
-      const active_el = this.#assignment_body_el.querySelector("div[name=active-assignment]");
-      active_el.querySelector("div[name=start]").innerHTML =
-        CN_common.format_datetime(this.#assignment.start_datetime, "datetimesecond", true);
-      active_el.querySelector("div[name=calls]").innerHTML = this.#phone_call_list.length;
-
-      // start tracking the assignment duration
-      if (null == this.#update_assignment_duration_id) {
-        this.#update_assignment_duration();
-        this.#update_assignment_duration_id = setInterval(() => { this.#update_assignment_duration() }, 1000);
-      }
-
-      if (null == this.#assignment.active_phone_call) {
-        active_el.querySelector("div[name=call]").innerHTML = "No active call";
-      } else {
-        active_el.querySelector("div[name=call]").innerHTML = `
-          ${this.#assignment.active_phone_call.person}<br/>
-          ${this.#assignment.active_phone_call.rank}. ${this.#assignment.active_phone_call.type} (${this.#assignment.active_phone_call.number})
-        `;
-      }
-
-      // fill in the previous assignment properties
-      const previous_el = this.#assignment_body_el.querySelector("div[name=previous-assignment]");
-      if (null == this.#previous_assignment) {
-        previous_el.innerHTML = `
-          This participant has never been called for the "${this.#assignment.qnaire}" questionnaire.
-        `;
-      } else {
-        previous_el.querySelector("div[name=user]").innerHTML = [
-          this.#previous_assignment.first_name,
-          this.#previous_assignment.last_name,
-          `(${this.#previous_assignment.name})`
-        ].join(" ");
-        previous_el.querySelector("div[name=start]").innerHTML =
-          CN_common.format_datetime(this.#previous_assignment.start_datetime, "datetimesecond", true);
-        previous_el.querySelector("div[name=end]").innerHTML =
-          CN_common.format_datetime(this.#previous_assignment.end_datetime, "datetimesecond", true);
-        previous_el.querySelector("div[name=calls]").innerHTML = this.#previous_assignment.phone_call_count;
-        previous_el.querySelector("div[name=status]").innerHTML = this.#previous_assignment.status;
-      }
-
-      const end_assignment_el = this.#assignment_footer_el.querySelector("button[name=end-assignment]");
-      const call_el = this.#assignment_footer_el.querySelector("button[name=call]");
-      const call_list_el = this.#assignment_footer_el.querySelector("ul[name=call-list]");
-      const use_tz_el = this.#assignment_footer_el.querySelector("button[name=use-tz]");
-      const use_tz_list_el = this.#assignment_footer_el.querySelector("ul[name=use-tz-list]");
-
-      call_el.innerHTML = this.#assignment.active_phone_call ? "End Call" : "Call";
-      this.constructor.set_disabled(end_assignment_el, null != this.#assignment.active_phone_call);
-      if (0 == this.#phone_list.length) {
-        if (proxy) {
-          use_tz_el.classList.remove("btn-outline-primary");
-          this.constructor.set_disabled(use_tz_el, true);
-        }
-        if (null == this.#assignment.active_phone_call) this.constructor.set_disabled(call_el, true);
-      } else {
-        if (proxy) {
-          use_tz_el.classList.add("btn-outline-primary");
-          this.constructor.set_disabled(use_tz_el, false);
-        }
-        this.constructor.set_disabled(call_el, false);
-
-        // when in proxy mode populate the use timezone dropdown with each alternate and the participant
-        if (proxy) {
-          use_tz_list_el.innerHTML = "";
-          this.#phone_list.filter(phone => phone.new_person).forEach(phone => {
-            const li_el = this.constructor.html(`
-              <li><button type="button" class="dropdown-item">${phone.person_name}</button></li>
-            `);
-            li_el.querySelector("button").addEventListener("click", () => {
-              const data = {};
-              if (phone.alternate_id) {
-                data.alternate_id = phone.alternate_id;
-              } else {
-                data.participant_id = this.#assignment.participant_id;
-              }
-              CN_session.set_timezone(data, CN_session.get("user", "am_pm"));
-            });
-            use_tz_list_el.append(li_el);
-          });
-        }
-
-        // populate the call dropdown with phone-call statuses if in an active call, or list of numbers if not
-        call_list_el.innerHTML = "";
-        if (this.#assignment.active_phone_call) {
-          CN_session.get_module("phone_call").get_property("status").enum_list.forEach(status => {
-            const li_el = this.constructor.html(`
-              <li><button type="button" class="dropdown-item">${status}</button></li>
-            `);
-            li_el.querySelector("button").addEventListener("click", this.#end_call.bind(this, status));
-            call_list_el.append(li_el);
-          });
-        } else {
-          this.#phone_list.forEach((phone, index) => {
-            const li_el = this.constructor.html("<li></li>");
-            if (phone.new_person) {
-              li_el.innerHTML = `
-                ${0 < index ? '<hr class="m-0" />' : ""}
-                <div class="fw-bold px-2 py-1">${phone.person}</div>
-                <hr class="m-0" />
-              `;
+      // when in proxy mode populate the use timezone dropdown with each alternate and the participant
+      if (proxy) {
+        use_tz_list_el.innerHTML = "";
+        this.#phone_list.filter(phone => phone.new_person).forEach(phone => {
+          const li_el = this.constructor.html(`
+            <li><button type="button" class="dropdown-item">${phone.person_name}</button></li>
+          `);
+          li_el.querySelector("button").addEventListener("click", () => {
+            const data = {};
+            if (phone.alternate_id) {
+              data.alternate_id = phone.alternate_id;
+            } else {
+              data.participant_id = this.#assignment.participant_id;
             }
-            const button_el = this.constructor.html(`
-              <button type="button" class="dropdown-item d-flex">
-                <div>${phone.rank}. ${phone.type}</div>
-                <div class="w-100 text-end">${phone.number}</div>
-              </button>
-            `);
-            if (phone.note) {
-              button_el.setAttribute("data-bs-toggle", "tooltip");
-              button_el.setAttribute("data-bs-placement", "right");
-              button_el.setAttribute("data-bs-html", "true");
-              button_el.setAttribute("data-bs-title", CN_common.nl_to_br(phone.note.replace(/"/g, "&quot;")));
-              new bootstrap.Tooltip(button_el);
-            }
-            button_el.addEventListener("click", this.#start_call.bind(this, phone));
-            li_el.append(button_el);
-            call_list_el.append(li_el);
+            CN_session.set_timezone(data, CN_session.get("user", "am_pm"));
           });
-        }
+          use_tz_list_el.append(li_el);
+        });
       }
 
-      this.#assignment_body_el.classList.remove("d-none");
-      this.#no_assignment_body_el.classList.add("d-none");
-      this.#assignment_footer_el.classList.remove("d-none");
-      this.#no_assignment_footer_el.classList.add("d-none");
-
+      // populate the call dropdown with phone-call statuses if in an active call, or list of numbers if not
+      call_list_el.innerHTML = "";
       if (this.#assignment.active_phone_call) {
-        this.#script_control_el.update_element();
-        this.#script_control_el.get_element().classList.remove("d-none");
+        CN_session.get_module("phone_call").get_property("status").enum_list.forEach(status => {
+          const li_el = this.constructor.html(`
+            <li><button type="button" class="dropdown-item">${status}</button></li>
+          `);
+          li_el.querySelector("button").addEventListener("click", this.#end_call.bind(this, status));
+          call_list_el.append(li_el);
+        });
       } else {
-        this.#script_control_el.get_element().classList.add("d-none");
+        this.#phone_list.forEach((phone, index) => {
+          const li_el = this.constructor.html("<li></li>");
+          if (phone.new_person) {
+            li_el.innerHTML = `
+              ${0 < index ? '<hr class="m-0" />' : ""}
+              <div class="fw-bold px-2 py-1">${phone.person}</div>
+              <hr class="m-0" />
+            `;
+          }
+          const button_el = this.constructor.html(`
+            <button type="button" class="dropdown-item d-flex">
+              <div>${phone.rank}. ${phone.type}</div>
+              <div class="w-100 text-end">${phone.number}</div>
+            </button>
+          `);
+          if (phone.note) {
+            button_el.setAttribute("data-bs-toggle", "tooltip");
+            button_el.setAttribute("data-bs-placement", "right");
+            button_el.setAttribute("data-bs-html", "true");
+            button_el.setAttribute("data-bs-title", CN_common.nl_to_br(phone.note.replace(/"/g, "&quot;")));
+            new bootstrap.Tooltip(button_el);
+          }
+          button_el.addEventListener("click", this.#start_call.bind(this, phone));
+          li_el.append(button_el);
+          call_list_el.append(li_el);
+        });
       }
+    }
+
+    this.#assignment_body_el.classList.remove("d-none");
+    this.#no_assignment_body_el.classList.add("d-none");
+    this.#assignment_footer_el.classList.remove("d-none");
+    this.#no_assignment_footer_el.classList.add("d-none");
+
+    if (this.#assignment.active_phone_call) {
+      this.#script_control_el.update_element();
+      this.#script_control_el.get_element().classList.remove("d-none");
+    } else {
+      this.#script_control_el.get_element().classList.add("d-none");
     }
   }
 
