@@ -486,12 +486,14 @@ export class CN_calendar_appointment extends CN_action_calendar {
   async get_text(type) {
     if ("header" == type) {
       if (null != this.#calendar_type) {
-        const response = await CN_api.get([this.#calendar_type, this.#identifier].join("/"));
-        const title = await super.get_text(type);
+        const [title, site] = await Promise.all([
+          super.get_text(type),
+          CN_api.get([this.#calendar_type, this.#identifier].join("/")),
+        ]);
         return (
           "site" == this.#calendar_type ?
-          `${title} for ${response.name}` :
-          `${title} for ${response.first_name} ${response.last_name} (${response.name})`
+          `${title} for ${site.name}` :
+          `${title} for ${site.first_name} ${site.last_name} (${site.name})`
         );
       }
     }
