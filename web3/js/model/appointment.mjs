@@ -89,10 +89,10 @@ export class CN_model_appointment extends CN_base_model {
           title: "Phone Number",
           type: "enum",
           enum: {
-            get_enums: async (form_input) => {
+            get_enums: async () => {
               let enums = [];
 
-              const parent_model = form_input.get_action().get_model().get_parent_model();
+              const parent_model = this.get_action().get_model().get_parent_model();
               const participant_id = (
                 parent_model ?
                 parent_model.get_action().get_property_value("participant_id") :
