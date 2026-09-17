@@ -11,6 +11,8 @@ const { CN_model_user } = await import(`${CENOZO_URL}/js/model/user.mjs`);
 const { CN_session } = await import(`${CENOZO_URL}/js/session.mjs`);
 
 export class CN_model_appointment extends CN_base_model {
+  #calendar_model;
+
   constructor() {
     super({
       wording: {
@@ -275,6 +277,47 @@ export class CN_model_appointment extends CN_base_model {
   }
 
   /**
+   * Extend parent method
+   */
+  async configure(parent_el, action_name, identifier=null, parent_model=null, is_rendered=false) {
+    await super.configure(parent_el, action_name, identifier, parent_model, is_rendered);
+
+    // create a second appoinment model for the calendar that gets embedded after the add and view actions
+    if (["add", "view"].includes(action_name)) {
+      const vacancy_module = CN_session.get_module("vacancy");
+      await vacancy_module.load_classes();
+      this.#calendar_model = vacancy_module.create_model();
+    }
+  }
+
+  /**
+   * Extend parent method
+   */
+  async run() {
+    await super.run();
+    if (this.#calendar_model) await this.#calendar_model.run();
+  }
+
+  /**
+   * ADD DOCS
+   */
+  async embed_calendar(parent_element, config = {}) {
+    const parent_model = this.get_parent_model();
+    await this.#calendar_model.configure(
+      parent_element,
+      "calendar",
+      parent_model.get_action().get_property_value("effective_site_id"),
+      null,
+      true
+    );
+
+    // change the calendar's events to act as a way to set the appointment's datetime
+    const calendar_action = this.#calendar_model.get_action();
+    for (const name in config) calendar_action.set_config(name, config[name]);
+    parent_element.append(this.#calendar_model.get_element());
+  }
+
+  /**
    * ADD DOCS
    */
   async select_datetime_from_calendar(object, current_start_vacancy_id = null, duration = null) {
@@ -370,21 +413,6 @@ export class CN_model_appointment extends CN_base_model {
 }
 
 export class CN_add_appointment extends CN_action_add {
-  #vacancy_model = null;
-
-  /**
-   * Extend parent method
-   */
-  async on_load() {
-    await super.on_load();
-
-    if (null == this.#vacancy_model) {
-      const vacancy_module = CN_session.get_module("vacancy");
-      await vacancy_module.load_classes();
-      this.#vacancy_model = vacancy_module.create_model();
-    }
-  }
-
   /**
    * Extend parent method
    */
@@ -398,63 +426,31 @@ export class CN_add_appointment extends CN_action_add {
   /**
    * Extend parent method
    */
-  update_element() {
-    super.update_element();
+  _create_element() {
+    const select_datetime_fn = async (object) => {
+      const response = await this.get_model().select_datetime_from_calendar(
+        object,
+        null,
+        this.get_property_value("duration")
+      );
 
-    const model = this.get_model();
+      if (response) {
+        // warn if an appointment will be cancelled
+        await this.set_property_value("start_datetime", CN_common.format_datetime(object.date, "record"));
+        await this.on_set_property("start_datetime");
 
-    // add the vacancy calendar if it hasn't been configured yet (once)
-    if (this.#vacancy_model) {
-      if (null != this.#vacancy_model.get_action()) {
-        this.#vacancy_model.get_action().update_element();
-        this.get_element().append(this.#vacancy_model.get_element());
-      } else {
-        // private function used by event listeners below
-        const select_datetime_fn = async (object) => {
-          const response = await model.select_datetime_from_calendar(
-            object,
-            null,
-            this.get_property_value("duration")
-          );
-
-          if (response) {
-            // warn if an appointment will be cancelled
-            await this.set_property_value("start_datetime", CN_common.format_datetime(object.date, "record"));
-            await this.on_set_property("start_datetime");
-
-            if (object.id) {
-              await this.set_property_value("start_vacancy_id", object.id);
-              await this.on_set_property("start_vacancy_id");
-            }
-          }
-        };
-
-        (async () => {
-          await this.#vacancy_model.configure(
-            this.get_element(),
-            "calendar",
-            model.get_parent_model().get_action().get_property_value("effective_site_id"),
-            null,
-            true
-          );
-
-          // change the calendar's events to act as a way to set the appointment's datetime
-          const vacancy_action = this.#vacancy_model.get_action();
-          vacancy_action.set_config("on_select", null);
-          vacancy_action.set_config("on_click_cell", select_datetime_fn);
-          vacancy_action.set_config("on_click_event", select_datetime_fn);
-          this.get_element().append(this.#vacancy_model.get_element());
-        })();
+        if (object.id) {
+          await this.set_property_value("start_vacancy_id", object.id);
+          await this.on_set_property("start_vacancy_id");
+        }
       }
-    }
-  }
+    };
 
-  /**
-   * Extend parent method
-   */
-  async run() {
-    await super.run();
-    await this.#vacancy_model.run();
+    this.get_model().embed_calendar(this.get_parent_element(), {
+      on_click_cell: select_datetime_fn,
+      on_click_event: select_datetime_fn,
+    });
+    return super._create_element();
   }
 }
 
@@ -702,24 +698,6 @@ export class CN_list_appointment extends CN_action_list {
 }
 
 export class CN_view_appointment extends CN_action_view {
-  #vacancy_model = null;
-
-  /**
-   * Extend parent method
-   */
-  async on_load() {
-    // do not allow loading an appointment with no parent model
-    if (null == this.get_model().get_parent_model()) throw new URIError();
-
-    await super.on_load();
-
-    if (null == this.#vacancy_model) {
-      const vacancy_module = CN_session.get_module("vacancy");
-      await vacancy_module.load_classes();
-      this.#vacancy_model = vacancy_module.create_model();
-    }
-  }
-
   /**
    * Extend parent method
    */
@@ -733,8 +711,6 @@ export class CN_view_appointment extends CN_action_view {
   update_element() {
     super.update_element();
 
-    const model = this.get_model();
-
     // only include the cancel button when the appointment is assignable or missed
     const cancel_btn_el = this.get_footer_element().querySelector("button[name=cancel]");
     if (["assignable", "missed"].includes(this.get_property_value("state"))) {
@@ -745,65 +721,50 @@ export class CN_view_appointment extends CN_action_view {
 
     const notes_btn_el = this.get_footer_element().querySelector("button[name=notes]");
     notes_btn_el.innerHTML = `Notes (${this.get_property_value("note_count")})`;
+  }
 
-    // add the vacancy calendar if it hasn't been configured yet (once)
-    if (this.#vacancy_model) {
-      if (null != this.#vacancy_model.get_action()) {
-        this.#vacancy_model.get_action().update_element();
-        this.get_element().append(this.#vacancy_model.get_element());
-      } else {
-        // private function used by event listeners below
-        const select_datetime_fn = async (object) => {
-          const response = await model.select_datetime_from_calendar(
-            object,
-            this.get_property_value("start_vacancy_id"),
-            this.get_property_value("duration")
-          );
+  /**
+   * Extend parent method
+   */
+  _create_element() {
+    const select_datetime_fn = async (object) => {
+      const response = await this.get_model().select_datetime_from_calendar(
+        object,
+        this.get_property_value("start_vacancy_id"),
+        this.get_property_value("duration")
+      );
 
-          if (response) {
-            await this.constructor.wait_for(async() => {
-              // update the appointment's start vacancy if a vacancy was selected, otherwise use the datetime
-              const data = {};
-              if (object.id) {
-                data.start_vacancy_id = object.id;
-              } else {
-                data.start_datetime = CN_common.format_datetime(object.date, "record");
-              }
-
-              const path = `appointment/${model.get_identifier()}`;
-              await CN_api.patch(path, data);
-
-              // PLEASE NOTE:
-              // The "update_email" option is used to update an appointment's mail reminders after the start
-              // vacancy has been changed.  We can't do this at the time that the vacancy is changed because
-              // the start_vacancy_id column is updated as part of a trigger, so the software layer won't be
-              // aware of the change until after the process which made the change is complete.
-              // Therefore, an additional request must be made after the change in start vacancy.
-              await CN_api.patch(`${path}?update_mail=1`, {});
-
-              await this.run();
-            }, 0);
+      if (response) {
+        await this.constructor.wait_for(async() => {
+          // update the appointment's start vacancy if a vacancy was selected, otherwise use the datetime
+          const data = {};
+          if (object.id) {
+            data.start_vacancy_id = object.id;
+          } else {
+            data.start_datetime = CN_common.format_datetime(object.date, "record");
           }
-        };
 
-        (async () => {
-          await this.#vacancy_model.configure(
-            this.get_element(),
-            "calendar",
-            model.get_parent_model().get_action().get_property_value("effective_site_id"),
-            null,
-            true
-          );
+          const path = `appointment/${this.get_model().get_identifier()}`;
+          await CN_api.patch(path, data);
 
-          // change the calendar's events to act as a way to set the appointment's datetime
-          const vacancy_action = this.#vacancy_model.get_action();
-          vacancy_action.set_config("on_select", null);
-          vacancy_action.set_config("on_click_cell", select_datetime_fn);
-          vacancy_action.set_config("on_click_event", select_datetime_fn);
-          this.get_element().append(this.#vacancy_model.get_element());
-        })();
+          // PLEASE NOTE:
+          // The "update_email" option is used to update an appointment's mail reminders after the start
+          // vacancy has been changed.  We can't do this at the time that the vacancy is changed because
+          // the start_vacancy_id column is updated as part of a trigger, so the software layer won't be
+          // aware of the change until after the process which made the change is complete.
+          // Therefore, an additional request must be made after the change in start vacancy.
+          await CN_api.patch(`${path}?update_mail=1`, {});
+
+          await this.get_model().run();
+        }, 0);
       }
-    }
+    };
+
+    this.get_model().embed_calendar(this.get_parent_element(), {
+      on_click_cell: select_datetime_fn,
+      on_click_event: select_datetime_fn,
+    });
+    return super._create_element();
   }
 
   /**
@@ -851,13 +812,5 @@ export class CN_view_appointment extends CN_action_view {
     }
 
     return footer_el;
-  }
-
-  /**
-   * Extend parent method
-   */
-  async run() {
-    await super.run();
-    await this.#vacancy_model.run();
   }
 }
