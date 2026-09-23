@@ -251,11 +251,6 @@ class CN_element_script_control extends CN_element_card {
 
         const disabled = null == this.get_active_qnaire().script.finished_datetime;
         this.constructor.set_disabled(this.#advance_btn_el, disabled);
-        if (disabled) {
-          this.#advance_btn_el.classList.remove("btn-outline-primary");
-        } else {
-          this.#advance_btn_el.classList.add("btn-outline-primary");
-        }
       } else {
         // the active script cannot be advanced
         btn_group_el = this.constructor.html('<div class="d-flex flex-row-reverse w-100"></div>');
@@ -878,16 +873,10 @@ export class CN_control_assignment extends CN_action_list {
     call_el.innerHTML = this.#assignment.active_phone_call ? "End Call" : "Call";
     this.constructor.set_disabled(end_assignment_el, null != this.#assignment.active_phone_call);
     if (0 == this.#phone_list.length) {
-      if (proxy) {
-        use_tz_el.classList.remove("btn-outline-primary");
-        this.constructor.set_disabled(use_tz_el, true);
-      }
+      if (proxy) this.constructor.set_disabled(use_tz_el, true);
       if (null == this.#assignment.active_phone_call) this.constructor.set_disabled(call_el, true);
     } else {
-      if (proxy) {
-        use_tz_el.classList.add("btn-outline-primary");
-        this.constructor.set_disabled(use_tz_el, false);
-      }
+      if (proxy) this.constructor.set_disabled(use_tz_el, false);
       this.constructor.set_disabled(call_el, false);
 
       // when in proxy mode populate the use timezone dropdown with each alternate and the participant
