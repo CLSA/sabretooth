@@ -682,7 +682,7 @@ export class CN_calendar_appointment extends CN_action_calendar {
                   get_enums: async () => await this.get_model().get_user_enums(
                     "site" == this.#calendar_type ?
                     this.#identifier :
-                    CN_session.get("site", "id") // TODO: what if typist is looking at user from other site?
+                    CN_session.get("site", "id")
                   ),
                 },
               }
@@ -712,11 +712,7 @@ export class CN_calendar_appointment extends CN_action_calendar {
       vacancy_btn_el.addEventListener("click", () => {
         const calendar_params = this.get_query_parameter("calendar");
         CN_session.navigate_to(
-          `vacancy/calendar/${
-            "site" == this.#calendar_type ?
-            this.#identifier :
-            CN_session.get("site", "id") // TODO: what if typist is looking at user from other site?
-          }`,
+          `vacancy/calendar/${"site" == this.#calendar_type ?  this.#identifier : CN_session.get("site", "id")}`,
           calendar_params ? { calendar: calendar_params } : null,
         );
       });
