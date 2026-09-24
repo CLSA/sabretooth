@@ -203,31 +203,18 @@ export class CN_calendar_vacancy extends CN_action_calendar {
   _create_footer_element() {
     const footer_el = super._create_footer_element();
 
-    // add the appointment/vacancy calendar buttons (if the user has access to them)
-    const utilities = CN_session.get("menus", "utilities");
-    if (utilities["Appointment Calendar"] && utilities["Vacancy Calendar"]) {
-      const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
-
-      const appointment_btn_el = this.constructor.html(
-        '<button type="button" name="appointment" class="btn btn-light btn-outline-primary">Appointment</button>'
-      );
-      left_btn_group_el.append(appointment_btn_el);
+    // add the appointment calendar button (if the user has access to it)
+    if (CN_session.get("menus", "utilities")["Appointment Calendar"]) {
+      const appointment_btn_el = this.constructor.html(`
+        <button type="button" name="appointment" class="btn btn-light btn-outline-primary">
+          Appointment Calendar
+        </button>
+      `);
+      footer_el.querySelector("div[name=left-btn-group]").append(appointment_btn_el);
       appointment_btn_el.addEventListener("click", () => {
         const calendar_params = this.get_query_parameter("calendar");
         CN_session.navigate_to(
-          `appointment/calendar/${this.get_model().get_identifier()}`,
-          calendar_params ? { calendar: calendar_params } : null,
-        );
-      });
-
-      const vacancy_btn_el = this.constructor.html(
-        '<button type="button" name="vacancy" class="btn btn-warning">Vacancy</button>'
-      );
-      left_btn_group_el.append(vacancy_btn_el);
-      vacancy_btn_el.addEventListener("click", () => {
-        const calendar_params = this.get_query_parameter("calendar");
-        CN_session.navigate_to(
-          `vacancy/calendar/${this.get_model().get_identifier()}`,
+          `appointment/calendar/site_id=${this.get_model().get_identifier()}`,
           calendar_params ? { calendar: calendar_params } : null,
         );
       });

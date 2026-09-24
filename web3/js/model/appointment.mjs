@@ -6,6 +6,7 @@ const { CN_api } = await import(`${CENOZO_URL}/js/api.mjs`);
 const { CN_common } = await import(`${CENOZO_URL}/js/common.mjs`);
 const { CN_base_model } = await import(`${CENOZO_URL}/js/model/base_model.mjs`);
 const { CN_modal_confirm } = await import(`${CENOZO_URL}/js/modal/confirm.mjs`);
+const { CN_modal_input } = await import(`${CENOZO_URL}/js/modal/input.mjs`);
 const { CN_modal_message } = await import(`${CENOZO_URL}/js/modal/message.mjs`);
 const { CN_model_user } = await import(`${CENOZO_URL}/js/model/user.mjs`);
 const { CN_session } = await import(`${CENOZO_URL}/js/session.mjs`);
@@ -125,17 +126,12 @@ export class CN_model_appointment extends CN_base_model {
         },
         user_id: {
           title: "Reserved for",
-          type: "typeahead",
-          typeahead: CN_model_user.get_typeahead({
-            modifier: {
-              where: [
-                { bracket: true, open: true },
-                { column: "role_list", operator: "LIKE", value: "%operator%" },
-                { column: "role_list", operator: "LIKE", value: "%supervisor%", or: true },
-                { bracket: true, open: false },
-              ],
-            }
-          }),
+          type: "enum",
+          enum: {
+            get_enums: async () => await this.get_user_enums(
+              this.get_parent_model().get_action().get_property_value_for_record("effective_site_id")
+            ),
+          },
           help: `
             The user the appointment is specifically reserved for.
             Cannot be changed once the appointment has passed.
@@ -410,6 +406,30 @@ export class CN_model_appointment extends CN_base_model {
     }
     return proceed;
   }
+
+  async get_user_enums(site_id = null) {
+    const where = [
+      { column: "role.name", operator: "IN", value: ["operator", "operator+", "supervisor"] },
+      { column: "user.active", operator: "=", value: true },
+    ];
+    if (site_id) where.push({ column: "access.site_id", operator: "=", value: site_id });
+
+    const user_list = await CN_api.get( "user", {
+      select: {
+        distinct: true,
+        column: ["id", "name", "first_name", "last_name"],
+      },
+      modifier: {
+        join: [
+          { table: "access", onleft: "user.id", onright: "access.user_id" },
+          { table: "role", onleft: "access.role_id", onright: "role.id" },
+        ],
+        where: where,
+        order: "user.first_name",
+      },
+    });
+    return user_list.map(u => ({ key: u.id, value: `${u.first_name} ${u.last_name} (${u.name})` }));
+  }
 }
 
 export class CN_add_appointment extends CN_action_add {
@@ -471,7 +491,7 @@ export class CN_calendar_appointment extends CN_action_calendar {
       this.#change_type_allowed = (
         "site_id" == matches[1] ?
         CN_session.get("role", "all_sites") :
-        1 < CN_session.get("role", "tier")
+        !CN_session.get("role", "name").match(/operator/)
       );
     }
   }
@@ -632,36 +652,74 @@ export class CN_calendar_appointment extends CN_action_calendar {
   _create_footer_element() {
     const footer_el = super._create_footer_element();
 
-    // add the appointment/vacancy calendar buttons (if the user has access to them)
+    const operator = CN_session.get("role", "name").match(/operator/);
     const utilities = CN_session.get("menus", "utilities");
-    if (utilities["Appointment Calendar"] && utilities["Vacancy Calendar"]) {
-      const left_btn_group_el = footer_el.querySelector("div[name=left-btn-group]");
 
-      const appointment_btn_el = this.constructor.html(
-        '<button type="button" name="appointment" class="btn btn-warning">Appointment</button>'
-      );
-      left_btn_group_el.append(appointment_btn_el);
-      appointment_btn_el.addEventListener("click", () => {
+    // add the user calendar button (if the user has access to it)
+    if (utilities["Appointment Calendar"]) {
+      const user_calendar_btn_el = this.constructor.html(`
+        <button type="button" name="user-calendar" class="btn btn-light btn-outline-primary">
+          ${"user" == this.#calendar_type ? "Appointment" : operator ? "Personal" : "User"} Calendar
+        </button>
+      `);
+      footer_el.querySelector("div[name=left-btn-group]").append(user_calendar_btn_el);
+      user_calendar_btn_el.addEventListener("click", async () => {
         const calendar_params = this.get_query_parameter("calendar");
-        CN_session.navigate_to(
-          `appointment/calendar/${this.#calendar_type}_id=${this.#identifier}`,
-          calendar_params ? { calendar: calendar_params } : null,
-        );
-      });
+        if ("user" == this.#calendar_type) {
+          CN_session.navigate_to(
+            `appointment/calendar/site_id=${CN_session.get("site", "id")}`,
+            calendar_params ? { calendar: calendar_params } : null,
+          );
+        } else {
+          let user_id = CN_session.get("user", "id");
+          if (!operator) {
+            user_id = await CN_modal_input.create_and_open({
+              title: "Select User",
+              message: "Please select which user's calendar you wish to see.",
+              input: {
+                type: "enum",
+                enum: {
+                  get_enums: async () => await this.get_model().get_user_enums(
+                    "site" == this.#calendar_type ?
+                    this.#identifier :
+                    CN_session.get("site", "id") // TODO: what if typist is looking at user from other site?
+                  ),
+                },
+              }
+            });
 
-      const vacancy_btn_el = this.constructor.html(
-        '<button type="button" name="vacancy" class="btn btn-light btn-outline-primary">Vacancy</button>'
-      );
-      left_btn_group_el.append(vacancy_btn_el);
-      vacancy_btn_el.addEventListener("click", () => {
-        const calendar_params = this.get_query_parameter("calendar");
-        CN_session.navigate_to(
-          `vacancy/calendar/${"site" == this.#calendar_type ?  this.#identifier : CN_session.get("site", "id")}`,
-          calendar_params ? { calendar: calendar_params } : null,
-        );
+            if (undefined === user_id) return;
+          }
+
+          CN_session.navigate_to(
+            `appointment/calendar/user_id=${user_id}`,
+            calendar_params ? { calendar: calendar_params } : null,
+          );
+        }
       });
     } else {
       footer_el.querySelector("button[name=list]").remove();
+    }
+
+    // add the vacancy calendar button (if the user has access to it)
+    if (utilities["Vacancy Calendar"]) {
+      const vacancy_btn_el = this.constructor.html(`
+        <button type="button" name="vacancy-calendar" class="btn btn-light btn-outline-primary">
+          Vacancy Calendar
+        </button>
+      `);
+      footer_el.querySelector("div[name=left-btn-group]").append(vacancy_btn_el);
+      vacancy_btn_el.addEventListener("click", () => {
+        const calendar_params = this.get_query_parameter("calendar");
+        CN_session.navigate_to(
+          `vacancy/calendar/${
+            "site" == this.#calendar_type ?
+            this.#identifier :
+            CN_session.get("site", "id") // TODO: what if typist is looking at user from other site?
+          }`,
+          calendar_params ? { calendar: calendar_params } : null,
+        );
+      });
     }
 
     return footer_el;
