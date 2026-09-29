@@ -68,9 +68,10 @@ class module extends \cenozo\service\base_calendar_module
         if( 'operator' == $db_role->name )
         {
           $db_assignment = $db_user->get_open_assignment();
-          if( is_null( $db_assignment ) ||
-              $db_participant->id != $db_assignment->get_interview()->participant_id )
-          {
+          if(
+            is_null( $db_assignment ) ||
+            $db_participant->id != $db_assignment->get_interview()->participant_id
+          ) {
             $this->get_status()->set_code( 403 );
             return;
           }
@@ -154,7 +155,8 @@ class module extends \cenozo\service\base_calendar_module
       $select->add_column(
         'CONCAT( user.first_name, " ", user.last_name, " (", user.name, ")" )',
         'formatted_user_id',
-        false );
+        false
+      );
     }
 
     // include the participant uid, language and interview's qnaire rank as supplemental data
@@ -181,10 +183,8 @@ class module extends \cenozo\service\base_calendar_module
     $select->add_table_column( 'qnaire', 'rank', 'qnaire_rank' );
 
     $participant_site_join_mod = lib::create( 'database\modifier' );
-    $participant_site_join_mod->where(
-      'interview.participant_id', '=', 'participant_site.participant_id', false );
-    $participant_site_join_mod->where(
-      'participant_site.application_id', '=', $db_application->id );
+    $participant_site_join_mod->where( 'interview.participant_id', '=', 'participant_site.participant_id', false );
+    $participant_site_join_mod->where( 'participant_site.application_id', '=', $db_application->id );
     $modifier->join_modifier( 'participant_site', $participant_site_join_mod, 'left' );
 
     // restrict by site
@@ -192,13 +192,19 @@ class module extends \cenozo\service\base_calendar_module
     if( !is_null( $db_restricted_site ) )
       $modifier->where( 'participant_site.site_id', '=', $db_restricted_site->id );
 
-    $modifier->join( 'setting', 'participant_site.site_id', 'setting.site_id' );
+    $modifier->left_join( 'site', 'participant_site.site_id', 'site.id' );
+    $modifier->left_join( 'setting', 'participant_site.site_id', 'setting.site_id' );
 
     if( $select->has_table_columns( 'script' ) )
       $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
 
     $select->add_column( 'start_vacancy.datetime', 'start_datetime', false, 'datetime' );
-    $select->add_column( sprintf( 'end_vacancy.datetime + INTERVAL %d MINUTE', $vacancy_size ), 'end_datetime', false, 'datetime' );
+    $select->add_column(
+      sprintf( 'end_vacancy.datetime + INTERVAL %d MINUTE', $vacancy_size ),
+      'end_datetime',
+      false,
+      'datetime'
+    );
 
     if( $select->has_column( 'date' ) )
     {
@@ -211,7 +217,13 @@ class module extends \cenozo\service\base_calendar_module
     if( $select->has_column( 'start_time' ) )
       $select->add_column( 'TIME( start_vacancy.datetime )', 'start_time', false );
     if( $select->has_column( 'end_time' ) )
-      $select->add_column( sprintf( 'TIME( end_vacancy.datetime + INTERVAL %d MINUTE )', $vacancy_size ), 'end_time', false );
+    {
+      $select->add_column(
+        sprintf( 'TIME( end_vacancy.datetime + INTERVAL %d MINUTE )', $vacancy_size ),
+        'end_time',
+        false
+      );
+    }
     if( $select->has_column( 'duration' ) )
     {
       $select->add_column(
@@ -232,7 +244,11 @@ class module extends \cenozo\service\base_calendar_module
     {
       $modifier->left_join( 'phone', 'appointment.phone_id', 'phone.id' );
       $select->add_table_column(
-        'phone', 'CONCAT( "(", phone.rank, ") ", phone.type, ": ", phone.number )', 'phone', false );
+        'phone',
+        'CONCAT( "(", phone.rank, ") ", phone.type, ": ", phone.number )',
+        'phone',
+        false
+      );
     }
 
     if( $select->has_column( 'state' ) )

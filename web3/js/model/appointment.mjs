@@ -22,6 +22,11 @@ export class CN_model_appointment extends CN_base_model {
         posessive: "appointment's",
       },
       columns: {
+        site: {
+          column: "site.name",
+          title: "Site",
+          is_hidden: () => !CN_session.get("role", "all_sites") || this.get_parent_model(),
+        },
         uid: { column: "participant.uid", title: "UID", is_hidden: () => null != this.get_parent_model() },
         start_datetime: { type: "datetime", title: "Date & Time", table_prefix: false, },
         duration: { title: "Duration", table_prefix: false, },
@@ -407,6 +412,9 @@ export class CN_model_appointment extends CN_base_model {
     return proceed;
   }
 
+  /**
+   * ADD DOCS
+   */
   async get_user_enums(site_id = null) {
     const where = [
       { column: "role.name", operator: "IN", value: ["operator", "operator+", "supervisor"] },
@@ -475,9 +483,9 @@ export class CN_add_appointment extends CN_action_add {
 }
 
 export class CN_calendar_appointment extends CN_action_calendar {
-  #calendar_type = null;
+  #user_calendar = false;
   #identifier = null;
-  #change_type_allowed = false;
+  #allow_change_identifier = false;
   #item_list = [];
 
   constructor(parent_el, model) {
@@ -486,12 +494,12 @@ export class CN_calendar_appointment extends CN_action_calendar {
     const identifier = this.get_model().get_identifier();
     const matches = identifier.match(/^(site_id|user_id)=([0-9]+)/);
     if (null != matches) {
-      this.#calendar_type = "site_id" == matches[1] ? "site" : "user";
+      if ("user_id" == matches[1]) this.#user_calendar = true;
       this.#identifier = matches[2];
-      this.#change_type_allowed = (
-        "site_id" == matches[1] ?
-        CN_session.get("role", "all_sites") :
-        !CN_session.get("role", "name").match(/operator/)
+      this.#allow_change_identifier = (
+        this.#user_calendar ?
+        !CN_session.get("role", "name").match(/operator/) :
+        CN_session.get("role", "all_sites")
       );
     }
   }
@@ -501,15 +509,15 @@ export class CN_calendar_appointment extends CN_action_calendar {
    */
   async get_text(type) {
     if ("header" == type) {
-      if (null != this.#calendar_type) {
-        const [title, site] = await Promise.all([
+      if (this.#identifier) {
+        const [title, record] = await Promise.all([
           super.get_text(type),
-          CN_api.get([this.#calendar_type, this.#identifier].join("/")),
+          CN_api.get([this.#user_calendar ? "user" : "site", this.#identifier].join("/")),
         ]);
         return (
-          "site" == this.#calendar_type ?
-          `${title} for ${site.name}` :
-          `${title} for ${site.first_name} ${site.last_name} (${site.name})`
+          this.#user_calendar ?
+          `${title} for ${record.first_name} ${record.last_name} (${record.name})` :
+          `${title} for ${record.name}`
         );
       }
     }
@@ -518,14 +526,62 @@ export class CN_calendar_appointment extends CN_action_calendar {
   }
 
   /**
+   * Replace parent method
+   */
+  async on_navigate_to_list() {
+    let params = null;
+    if (this.#user_calendar) {
+      const response = await CN_api.get(`user/${this.#identifier}`);
+      params = {
+        tables: JSON.stringify({
+          appointment: {
+            columns: {
+              assignment_user: [{ operator: "=", value: response.name, or: false }],
+            },
+          },
+        }),
+      };
+    } else if (CN_session.get("role", "all_sites")) {
+      const response = await CN_api.get(`site/${this.#identifier}`);
+      params = {
+        tables: JSON.stringify({
+          appointment: {
+            columns: {
+              site: [{ operator: "=", value: response.name, or: false }],
+            },
+          },
+        }),
+      };
+    }
+
+    await CN_session.navigate_to(this.get_model().get_list_url(), params);
+  }
+
+  /**
+   * Extend parent method
+   */
+  get_on_load_path() {
+    return this.#user_calendar ? `user/${this.#identifier}/appointment` : super.get_on_load_path();
+  }
+
+  /**
+   * Extend parent method
+   */
+  get_on_load_parameters() {
+    const params = super.get_on_load_parameters();
+    params.restricted_site_id = this.#user_calendar ? CN_session.get("site", "id") : this.#identifier;
+    return params;
+  }
+
+  /**
    * Extend parent method
    */
   async on_load() {
-    if (this.#change_type_allowed) {
+    if (this.#allow_change_identifier) {
       const modifier = {};
-      if ("site" == this.#calendar_type) {
+      if (!this.#user_calendar) {
         modifier.order = "name";
-      } else if ("user" == this.#calendar_type) {
+      } else {
         modifier.where = [
           // includes users with an operator or supervisor role
           { bracket: true, open: true },
@@ -540,17 +596,17 @@ export class CN_calendar_appointment extends CN_action_calendar {
         ];
         modifier.order = ["user.first_name", "user.last_name"];
       }
-      this.#item_list = await CN_api.get(this.#calendar_type, { modifier: modifier });
+      this.#item_list = await CN_api.get("user", { modifier: modifier });
     } else {
       // check permissions
-      if (null == this.#calendar_type) {
+      if (null == this.#identifier) {
         const error = new URIError();
         error.title = "Not found (404)";
         error.message = "The needed resource could not be found.";
         throw error;
       } else if (
-        ("site" == this.#calendar_type && this.#identifier != CN_session.get("site", "id")) ||
-        ("user" == this.#calendar_type && this.#identifier != CN_session.get("user", "id"))
+        (this.#user_calendar && this.#identifier != CN_session.get("user", "id")) ||
+        (!this.#user_calendar && this.#identifier != CN_session.get("site", "id"))
       ) {
         const error = new URIError();
         error.title = "Permission Denied (403)";
@@ -565,52 +621,24 @@ export class CN_calendar_appointment extends CN_action_calendar {
   /**
    * Extend parent method
    */
-  get_on_load_path() {
-    return (
-      "user" == this.#calendar_type ?
-      `user/${this.#identifier}/appointment` :
-      super.get_on_load_path()
-    );
-  }
-
-  /**
-   * Extend parent method
-   */
-  get_on_load_parameters() {
-    const parameters = super.get_on_load_parameters();
-    parameters.restricted_site_id = (
-      "site" == this.#calendar_type ?
-      this.#identifier :
-      CN_session.get("site", "id")
-    );
-    return parameters;
-  }
-
-  /**
-   * Extend parent method
-   */
   update_element() {
     super.update_element();
 
-    if (this.#change_type_allowed) {
+    if (this.#allow_change_identifier) {
       const ul_el = this.get_header_element().querySelector("div[name=calendar-type] ul");
       ul_el.replaceChildren(this.constructor.html(
         '<li><div class="dropdown-header text-bg-secondary">Site Calendars</div></li>'
       ));
 
       this.#item_list.forEach(item => {
-        const name = (
-          "site" == this.#calendar_type ?
-          item.name :
-          `${item.first_name} ${item.last_name} (${item.name})`
-        );
+        const name = this.#user_calendar ? `${item.first_name} ${item.last_name} (${item.name})` : item.name;
         const item_btn_el = this.constructor.html(`
           <button type="button" class="dropdown-item">${name}</button>
         `);
         item_btn_el.addEventListener("click", () => {
           const calendar_params = this.get_query_parameter("calendar");
           CN_session.navigate_to(
-            `appointment/calendar/${this.#calendar_type}_id=${item.id}`,
+            `appointment/calendar/${this.#user_calendar ? "user" : "site"}_id=${item.id}`,
             calendar_params ? { calendar: calendar_params } : null,
           );
         });
@@ -629,7 +657,7 @@ export class CN_calendar_appointment extends CN_action_calendar {
   _create_header_element() {
     const header_el = super._create_header_element();
 
-    if (this.#change_type_allowed) {
+    if (this.#allow_change_identifier) {
       const calendar_type_div_el = this.constructor.html(`
         <div class="dropdown" name="calendar-type">
           <button name="calendar-type" type="button" class="btn btn-primary px-2 py-0" data-bs-toggle="dropdown">
@@ -655,21 +683,21 @@ export class CN_calendar_appointment extends CN_action_calendar {
     const operator = CN_session.get("role", "name").match(/operator/);
     const utilities = CN_session.get("menus", "utilities");
 
-    // add the user calendar button (if the user has access to it)
+    // add the calendar buttons (if the user has access to them)
     if (utilities["Appointment Calendar"]) {
-      const user_calendar_btn_el = this.constructor.html(`
+      const calendar_btn_el = this.constructor.html(`
         <button type="button" name="user-calendar" class="btn btn-light btn-outline-primary">
-          ${"user" == this.#calendar_type ? "Appointment" : operator ? "Personal" : "User"} Calendar
+          ${this.#user_calendar ? "Appointment" : operator ? "Personal" : "User"} Calendar
         </button>
       `);
-      footer_el.querySelector("div[name=left-btn-group]").append(user_calendar_btn_el);
-      user_calendar_btn_el.addEventListener("click", async () => {
+      footer_el.querySelector("div[name=left-btn-group]").append(calendar_btn_el);
+      calendar_btn_el.addEventListener("click", async () => {
         const calendar_params = this.get_query_parameter("calendar");
-        if ("user" == this.#calendar_type) {
-          CN_session.navigate_to(
-            `appointment/calendar/site_id=${CN_session.get("site", "id")}`,
-            calendar_params ? { calendar: calendar_params } : null,
-          );
+        const params = calendar_params ? { calendar: calendar_params } : null;
+        let identifier = null;
+
+        if (this.#user_calendar) {
+          identifier = `site_id=${CN_session.get("site", "id")}`;
         } else {
           let user_id = CN_session.get("user", "id");
           if (!operator) {
@@ -679,11 +707,7 @@ export class CN_calendar_appointment extends CN_action_calendar {
               input: {
                 type: "enum",
                 enum: {
-                  get_enums: async () => await this.get_model().get_user_enums(
-                    "site" == this.#calendar_type ?
-                    this.#identifier :
-                    CN_session.get("site", "id")
-                  ),
+                  get_enums: async () => await this.get_model().get_user_enums(this.#identifier),
                 },
               }
             });
@@ -691,11 +715,10 @@ export class CN_calendar_appointment extends CN_action_calendar {
             if (undefined === user_id) return;
           }
 
-          CN_session.navigate_to(
-            `appointment/calendar/user_id=${user_id}`,
-            calendar_params ? { calendar: calendar_params } : null,
-          );
+          identifier = `user_id=${user_id}`;
         }
+
+        CN_session.navigate_to(`appointment/calendar/${identifier}`, params);
       });
     } else {
       footer_el.querySelector("button[name=list]").remove();
@@ -712,7 +735,7 @@ export class CN_calendar_appointment extends CN_action_calendar {
       vacancy_btn_el.addEventListener("click", () => {
         const calendar_params = this.get_query_parameter("calendar");
         CN_session.navigate_to(
-          `vacancy/calendar/${"site" == this.#calendar_type ?  this.#identifier : CN_session.get("site", "id")}`,
+          `vacancy/calendar/${this.#user_calendar ? CN_session.get("site", "id") : this.#identifier}`,
           calendar_params ? { calendar: calendar_params } : null,
         );
       });
@@ -737,7 +760,7 @@ export class CN_list_appointment extends CN_action_list {
       );
       btn_group_el.append(calendar_btn_el);
       calendar_btn_el.addEventListener("click", () => {
-        CN_session.navigate_to(`appointment/calendar/${this.get_model().get_identifier()}`)
+        CN_session.navigate_to(`appointment/calendar/site_id=${CN_session.get("site", "id")}`)
       });
     }
   }
@@ -848,22 +871,6 @@ export class CN_view_appointment extends CN_action_view {
       });
     });
     left_btn_group_el.append(cancel_btn_el);
-
-    // add a button to the appointment calendar (if the user has access)
-    if (CN_session.get("menus", "utilities")["Appointment Calendar"]) {
-      const calendar_btn_el = this.constructor.html(`
-        <button name="calendar" type="button" class="btn btn-light btn-outline-primary">
-          Appointment Calendar
-        </button>
-      `);
-      calendar_btn_el.addEventListener("click", async () => {
-        const response = await CN_api.get(`participant/${this.get_property_value("participant_id")}`, {
-          select: { column: { table: "site", column: "id", alias: "site_id" } },
-        });
-        CN_session.navigate_to(`appointment/calendar/${response.site_id}`);
-      });
-      left_btn_group_el.append(calendar_btn_el);
-    }
 
     return footer_el;
   }
