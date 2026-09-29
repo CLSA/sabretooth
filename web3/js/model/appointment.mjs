@@ -474,7 +474,8 @@ export class CN_add_appointment extends CN_action_add {
       }
     };
 
-    this.get_model().embed_calendar(this.get_parent_element(), {
+    // embed the calendar into the action
+    this.get_model().embed_calendar(this.get_parent_element().querySelector("div.container-fluid"), {
       on_click_cell: select_datetime_fn,
       on_click_event: select_datetime_fn,
     });
@@ -837,7 +838,8 @@ export class CN_view_appointment extends CN_action_view {
       }
     };
 
-    this.get_model().embed_calendar(this.get_parent_element(), {
+    // embed the calendar into the action
+    this.get_model().embed_calendar(this.get_parent_element().querySelector("div.container-fluid"), {
       on_click_cell: select_datetime_fn,
       on_click_event: select_datetime_fn,
     });
