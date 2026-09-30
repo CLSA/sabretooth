@@ -247,23 +247,24 @@ class CN_element_script_control extends CN_element_card {
           "(empty)" :
           CN_common.nl_to_br(active_script.description)
         );
-      }
 
-      // show the launch button, or both the advance and launch buttons (if the interview can be advanced only)
-      let btn_group_el = null;
-      if (this.can_advance()) {
-        // the active script can be advanced
-        btn_group_el = this.constructor.html('<div class="btn-group w-100" role="group"></div>');
-        btn_group_el.append(this.#advance_btn_el);
+        // show the launch button, or both the advance and launch buttons (if the interview can be advanced only)
+        this.constructor.set_disabled(this.#launch_btn_el, active_script.finished_datetime);
+        let btn_group_el = null;
+        if (this.can_advance()) {
+          // the active script can be advanced
+          btn_group_el = this.constructor.html('<div class="btn-group w-100" role="group"></div>');
+          btn_group_el.append(this.#advance_btn_el);
 
-        const disabled = null == this.get_active_qnaire().script.finished_datetime;
-        this.constructor.set_disabled(this.#advance_btn_el, disabled);
-      } else {
-        // the active script cannot be advanced
-        btn_group_el = this.constructor.html('<div class="d-flex flex-row-reverse w-100"></div>');
+          const disabled = null == this.get_active_qnaire().script.finished_datetime;
+          this.constructor.set_disabled(this.#advance_btn_el, disabled);
+        } else {
+          // the active script cannot be advanced
+          btn_group_el = this.constructor.html('<div class="d-flex flex-row-reverse w-100"></div>');
+        }
+        btn_group_el.append(this.#launch_btn_el);
+        footer_el.append(btn_group_el);
       }
-      btn_group_el.append(this.#launch_btn_el);
-      footer_el.append(btn_group_el);
     }
   }
 
