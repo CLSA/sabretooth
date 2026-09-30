@@ -14,6 +14,8 @@ const { CN_session } = await import(`${CENOZO_URL}/js/session.mjs`);
 export class CN_model_appointment extends CN_base_model {
   #calendar_model;
 
+  get_calendar_model() { return this.#calendar_model; }
+
   constructor() {
     super({
       wording: {
@@ -781,6 +783,16 @@ export class CN_view_appointment extends CN_action_view {
    */
   async on_set_property(prop_name, run = true) {
     await this.constructor.wait_for(super.on_set_property(prop_name, run));
+  }
+
+  /**
+   * Extend parent method
+   */
+  async on_load() {
+    await super.on_load();
+    this.get_model().get_calendar_model().get_action().set_date(
+      this.get_property_value_for_record("start_datetime")
+    );
   }
 
   /**
