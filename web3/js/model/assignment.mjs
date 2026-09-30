@@ -101,6 +101,13 @@ export class CN_model_assignment extends classes.CN_model_assignment {
       super.get_default_order()
     );
   }
+
+  /**
+   * Extend parent method
+   */
+  allow_add() {
+    return false;
+  }
 }
 
 // A private class used by the control assignment action
