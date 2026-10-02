@@ -20,7 +20,7 @@ class module extends \cenozo\service\module
   {
     parent::prepare_read( $select, $modifier );
 
-    $modifier->left_join( 'script', 'qnaire.script_id', 'script.id' );
+    $modifier->join( 'script', 'qnaire.script_id', 'script.id' );
 
     // join to the survey name
     if( $select->has_column( 'name' ) )
