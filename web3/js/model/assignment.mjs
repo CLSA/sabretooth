@@ -846,7 +846,8 @@ export class CN_control_assignment extends CN_action_list {
     } else {
       active_el.querySelector("div[name=call]").innerHTML = `
         ${this.#assignment.active_phone_call.person}<br/>
-        ${this.#assignment.active_phone_call.rank}. ${this.#assignment.active_phone_call.type} (${this.#assignment.active_phone_call.number})
+        ${this.#assignment.active_phone_call.rank}.
+        ${this.#assignment.active_phone_call.type} (${this.#assignment.active_phone_call.number})
       `;
     }
 
