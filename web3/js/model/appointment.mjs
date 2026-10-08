@@ -133,11 +133,16 @@ export class CN_model_appointment extends CN_base_model {
         },
         user_id: {
           title: "Reserved for",
-          type: "enum",
-          enum: {
-            get_enums: async () => await this.get_user_enums(
-              this.get_parent_model().get_action().get_property_value_for_record("effective_site_id")
-            ),
+          type: "typeahead",
+          typeahead: {
+            get_list: async (value) => {
+              // use the get_user_enums function, but filter by the typeahead value
+              const re = new RegExp(RegExp.escape(value), "i");
+              const user_list = await this.get_user_enums(
+                this.get_parent_model().get_action().get_property_value_for_record("effective_site_id")
+              );
+              return user_list.filter(user => re.test(user.value));
+            },
           },
           help: `
             The user the appointment is specifically reserved for.

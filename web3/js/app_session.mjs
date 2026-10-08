@@ -26,7 +26,8 @@ class app_session extends CN_base_app_session {
   async start() {
     await super.start();
 
-    // we must force the participant module's root status in case the participant list isn't in the menu
+    // we must force the interview and participant modules' root status in case the list isn't in the menu
+    CN_session.get_module("interview").set_root(true);
     CN_session.get_module("participant").set_root(true);
 
     this.#menu_btn_el = document
