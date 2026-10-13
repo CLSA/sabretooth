@@ -1,5 +1,6 @@
 const { CN_action_calendar } = await import(`${CENOZO_URL}/js/action/calendar.mjs`);
 const { CN_action_list } = await import(`${CENOZO_URL}/js/action/list.mjs`);
+const { CN_action_view } = await import(`${CENOZO_URL}/js/action/view.mjs`);
 const { CN_api } = await import(`${CENOZO_URL}/js/api.mjs`);
 const { CN_base_model } = await import(`${CENOZO_URL}/js/model/base_model.mjs`);
 const { CN_common } = await import(`${CENOZO_URL}/js/common.mjs`);
@@ -247,5 +248,25 @@ export class CN_list_vacancy extends CN_action_list {
         CN_session.navigate_to(`vacancy/calendar/${this.get_model().get_identifier()}`)
       });
     }
+  }
+}
+
+export class CN_view_vacancy extends CN_action_view {
+  /**
+   * Extend parent method
+   */
+  async get_text(type) {
+    if ("view_parent" == type) {
+      return `${CN_common.uc_words(this.get_model().get_singular())} Calendar`;
+    }
+
+    return await super.get_text(type);
+  }
+
+  /**
+   * Extend parent method
+   */
+  async on_navigate_to_parent() {
+    await CN_session.navigate_to(`vacancy/calendar/${CN_session.get("site", "id")}`);
   }
 }
