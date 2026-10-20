@@ -123,6 +123,7 @@ class CN_element_script_control extends CN_element_card {
   #advance_btn_el;
   #launch_btn_el;
   #script_launcher;
+  #refresh_tooltip;
 
   constructor(parent_el, config = {}) {
     super(parent_el, {
@@ -269,6 +270,18 @@ class CN_element_script_control extends CN_element_card {
   }
 
   /**
+   * Extend parent method
+   */
+  async on_dom_remove() {
+    await super.on_dom_remove();
+
+    if (this.#refresh_tooltip) {
+      this.#refresh_tooltip.dispose();
+      this.#refresh_tooltip = null;
+    }
+  }
+
+  /**
    * ADD DOCS
    */
   async on_load() {
@@ -338,7 +351,7 @@ class CN_element_script_control extends CN_element_card {
     `);
     refresh_btn_el.addEventListener("click", this.on_load.bind(this));
     el.querySelector(".card-header").querySelector("div.d-flex").append(refresh_btn_el);
-    new bootstrap.Tooltip(refresh_btn_el, {
+    this.#refresh_tooltip = new bootstrap.Tooltip(refresh_btn_el, {
       title: "Refresh Data",
       trigger: "hover",
       delay: { "show": 1000, "hide": 100 },
@@ -557,6 +570,42 @@ export class CN_control_assignment extends CN_action_list {
     }
 
     return await super.get_text(type);
+  }
+
+  /**
+   * Extend parent method
+   */
+  async on_dom_add() {
+    await super.on_dom_add();
+    window.addEventListener("unload", () => {
+      // make sure that the script has been closed
+      const script_launcher = this.#script_control_el.get_script_launcher();
+      if (script_launcher) script_launcher.close();
+    });
+  }
+
+  /**
+   * Extend parent method
+   */
+  async on_dom_remove() {
+    await super.on_dom_remove();
+
+    // stop tracking the assignment duration
+    if (this.#update_assignment_duration_id) {
+      clearInterval(this.#update_assignment_duration_id);
+      this.#update_assignment_duration_id = null
+    }
+
+    // remove all phone tooltips
+    this.#phone_list.filter(phone => {
+      if (phone.tooltip) {
+        phone.tooltip.dispose();
+        delete phone.tooltip;
+      }
+    });
+
+    // remove the window focus event listener
+    window.removeEventListener("focus", this.#regained_focus_fn);
   }
 
   /**
@@ -935,11 +984,12 @@ export class CN_control_assignment extends CN_action_list {
             </button>
           `);
           if (phone.note) {
-            button_el.setAttribute("data-bs-toggle", "tooltip");
-            button_el.setAttribute("data-bs-placement", "right");
-            button_el.setAttribute("data-bs-html", "true");
-            button_el.setAttribute("data-bs-title", CN_common.nl_to_br(phone.note.replace(/"/g, "&quot;")));
-            new bootstrap.Tooltip(button_el);
+            if (phone.tooltip) phone.tooltip.dispose();
+            phone.tooltip = new bootstrap.Tooltip(button_el, {
+              placement: "right",
+              html: true,
+              title: CN_common.nl_to_br(phone.note.replace(/"/g, "&quot;")),
+            });
           }
           button_el.addEventListener("click", this.#start_call.bind(this, phone));
           li_el.append(button_el);
@@ -986,34 +1036,6 @@ export class CN_control_assignment extends CN_action_list {
 
     // hide the script launcher while loading
     this.#script_control_el.get_element().classList.add("d-none");
-  }
-
-  /**
-   * Extend parent method
-   */
-  async on_dom_add() {
-    await super.on_dom_add();
-    window.addEventListener("unload", () => {
-      // make sure that the script has been closed
-      const script_launcher = this.#script_control_el.get_script_launcher();
-      if (script_launcher) script_launcher.close();
-    });
-  }
-
-  /**
-   * Extend parent method
-   */
-  async on_dom_remove() {
-    await super.on_dom_remove();
-
-    // stop tracking the assignment duration
-    if (this.#update_assignment_duration_id) {
-      clearInterval(this.#update_assignment_duration_id);
-      this.#update_assignment_duration_id = null
-    }
-
-    // remove the window focus event listener
-    window.removeEventListener("focus", this.#regained_focus_fn);
   }
 
   /**

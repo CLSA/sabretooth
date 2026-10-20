@@ -133,6 +133,9 @@ export class CN_list_interview extends classes.CN_list_interview {
 }
 
 export class CN_view_interview extends classes.CN_view_interview {
+  #remove_tooltip = null;
+  #complete_tooltip = null;
+
   /**
    * Extend parent method
    */
@@ -142,6 +145,23 @@ export class CN_view_interview extends classes.CN_view_interview {
     }
 
     return await super.get_text(type);
+  }
+
+  /**
+   * Extend parent method
+   */
+  async on_dom_remove() {
+    await super.on_dom_remove();
+
+    if (this.#remove_tooltip) {
+      this.#remove_tooltip.dispose();
+      this.#remove_tooltip = null;
+    }
+
+    if (this.#complete_tooltip) {
+      this.#complete_tooltip.dispose();
+      this.#complete_tooltip = null;
+    }
   }
 
   /**
@@ -181,7 +201,7 @@ export class CN_view_interview extends classes.CN_view_interview {
           "
         >Force Remove</button>
       `);
-      new bootstrap.Tooltip(remove_btn_el);
+      this.#remove_tooltip = new bootstrap.Tooltip(remove_btn_el);
       remove_btn_el.addEventListener("click", async () => {
         const response = await CN_modal_confirm.create_and_open({
           title: "Force Remove Interview?",
@@ -225,7 +245,7 @@ export class CN_view_interview extends classes.CN_view_interview {
           "
         >Force Complete</button>
       `);
-      new bootstrap.Tooltip(complete_btn_el);
+      this.#complete_tooltip = new bootstrap.Tooltip(complete_btn_el);
       complete_btn_el.addEventListener("click", async () => {
         const response = await CN_modal_confirm.create_and_open({
           title: "Force Complete Interview?",
