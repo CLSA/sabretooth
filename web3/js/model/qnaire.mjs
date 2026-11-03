@@ -112,7 +112,7 @@ export class CN_mass_method_qnaire extends CN_base_action {
       return `Mass Interview "${this.#qnaire_name}"`;
     }
 
-    return super.get_text(type);
+    return await super.get_text(type);
   }
 
   /**

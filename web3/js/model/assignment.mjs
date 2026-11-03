@@ -1263,8 +1263,8 @@ export class CN_control_assignment extends CN_action_list {
   /**
    * Extend parent method
    */
-  _create_column_element(col_name, column, record, last_column) {
-    const el = super._create_column_element(col_name, column, record, last_column);
+  _create_column_element(col_name, column, record) {
+    const el = super._create_column_element(col_name, column, record);
 
     // highlight reserved rows
     if (record.reserved) el.style.background = "rgb(255, 242, 174)";

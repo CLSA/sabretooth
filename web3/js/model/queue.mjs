@@ -102,7 +102,7 @@ export class CN_tree_queue extends CN_base_action {
       return "Queue Tree";
     }
 
-    return super.get_text(type);
+    return await super.get_text(type);
   }
 
   /**
