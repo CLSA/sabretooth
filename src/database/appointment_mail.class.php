@@ -152,7 +152,7 @@ class appointment_mail extends \cenozo\database\record
     $data_manager = lib::create( 'business\data_manager' );
     $db_language = $db_participant->get_language();
     $date_format = 'en' == $db_language->code ? 'l, F jS' : 'l j F';
-    $time_format = 'en' == $db_language->code ? 'g:i a T' : 'H:i T';
+    $time_format = 'en' == $db_language->code ? 'g:i a' : 'H:i';
 
     $db_address = $db_participant->get_first_address();
     $datetime->setTimezone(
