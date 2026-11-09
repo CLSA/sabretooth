@@ -51,8 +51,18 @@ cenozoApp.defineModule({
 
     // determines the offset given a date (moment object) and timezone
     function getTimezoneOffset(date, timezone) {
+      /**
+       * NOTE: As of 2026-11-09 moment's isDST() function does not return true for Western Canadian provinces
+       * from 2027 onward.  Strangely, the Z timezone value in moment's format() method returns the correct
+       * offset even from 2027 onward, so that string can be used to determine the timezone offset instead.
+
       var offset = moment.tz.zone(timezone).utcOffset(date.unix());
-      if (date.tz(timezone).isDST()) offset += -60; // adjust the appointment for daylight savings time
+      if (date.tz(timezone).isDST()) offset += -60;
+      */
+      date.tz(timezone);
+      const parts = date.format("Z").match(/(.*):(.*)/);
+      const offset = -(Number(parts[1]) * 60 + Number(parts[2]));
+
       return offset;
     }
 

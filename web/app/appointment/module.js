@@ -195,8 +195,19 @@ cenozoApp.defineModule({
     function convertDatetime(datetime, timezone, forward) {
       if (angular.isUndefined(forward)) forward = false;
       var date = moment(datetime);
+
+      /**
+       * NOTE: As of 2026-11-09 moment's isDST() function does not return true for Western Canadian provinces
+       * from 2027 onward.  Strangely, the Z timezone value in moment's format() method returns the correct
+       * offset even from 2027 onward, so that string can be used to determine the timezone offset instead.
+
       var offset = moment.tz.zone(timezone).utcOffset(date.unix());
       if (date.tz(timezone).isDST()) offset += -60;
+      */
+      date.tz(timezone);
+      const parts = date.format("Z").match(/(.*):(.*)/);
+      const offset = -(Number(parts[1]) * 60 + Number(parts[2]));
+
       return forward ? moment(datetime).add(offset, "minute") : moment(datetime).subtract(offset, "minute");
     }
 
