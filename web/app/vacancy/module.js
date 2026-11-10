@@ -85,8 +85,8 @@ cenozoApp.defineModule({
             return identifier;
           },
           title: vacancy.appointments + " of " + vacancy.operators + " booked",
-          start: moment(vacancy.datetime).subtract(offset, "minutes"),
-          end: moment(vacancy.datetime).subtract(offset, "minutes").add(vacancySize, "minutes"),
+          start: moment(vacancy.datetime).add(offset, "minutes"),
+          end: moment(vacancy.datetime).add(offset + vacancySize, "minutes"),
           color: color,
           offset: offset,
           operators: vacancy.operators,
@@ -320,12 +320,9 @@ cenozoApp.defineModule({
                         error: true,
                       }).show();
                     } else {
-                      var offset = getTimezoneOffset(
-                        start,
-                        CnSession.user.timezone
-                      );
-                      start.add(offset, "minutes");
-                      end.add(offset, "minutes");
+                      var offset = getTimezoneOffset(start, CnSession.user.timezone);
+                      start.subtract(offset, "minutes");
+                      end.subtract(offset, "minutes");
 
                       var response = await CnModalInputFactory.instance({
                         title: "Create Vacancy Block",
