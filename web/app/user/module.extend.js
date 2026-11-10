@@ -55,7 +55,7 @@ cenozoApp.extendModule({
         */
         date.tz(timezone);
         const parts = date.format("Z").match(/(.*):(.*)/);
-        const offset = -(Number(parts[1]) * 60 + Number(parts[2]));
+        const offset = Number(parts[1]) * 60 + Number(parts[2]) * (0 > Number(parts[1]) ? -1 : 1);
 
         event = {
           title:
@@ -68,8 +68,8 @@ cenozoApp.extendModule({
           getIdentifier: function () {
             return appointment.getIdentifier();
           },
-          start: moment(appointment.start_datetime).subtract(offset, "minutes"),
-          end: moment(appointment.end_datetime).subtract(offset, "minutes"),
+          start: moment(appointment.start_datetime).add(offset, "minutes"),
+          end: moment(appointment.end_datetime).add(offset, "minutes"),
         };
       }
 

@@ -206,9 +206,9 @@ cenozoApp.defineModule({
       */
       date.tz(timezone);
       const parts = date.format("Z").match(/(.*):(.*)/);
-      const offset = -(Number(parts[1]) * 60 + Number(parts[2]));
+      const offset = Number(parts[1]) * 60 + Number(parts[2]) * (0 > Number(parts[1]) ? -1 : 1);
 
-      return forward ? moment(datetime).add(offset, "minute") : moment(datetime).subtract(offset, "minute");
+      return forward ? moment(datetime).subtract(offset, "minute") : moment(datetime).add(offset, "minute");
     }
 
     // converts appointments into events

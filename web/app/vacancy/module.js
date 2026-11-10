@@ -61,7 +61,7 @@ cenozoApp.defineModule({
       */
       date.tz(timezone);
       const parts = date.format("Z").match(/(.*):(.*)/);
-      const offset = -(Number(parts[1]) * 60 + Number(parts[2]));
+      const offset = Number(parts[1]) * 60 + Number(parts[2]) * (0 > Number(parts[1]) ? -1 : 1);
 
       return offset;
     }
@@ -85,10 +85,8 @@ cenozoApp.defineModule({
             return identifier;
           },
           title: vacancy.appointments + " of " + vacancy.operators + " booked",
-          start: moment(vacancy.datetime).subtract(offset, "minutes"),
-          end: moment(vacancy.datetime)
-            .subtract(offset, "minutes")
-            .add(vacancySize, "minutes"),
+          start: moment(vacancy.datetime).add(offset, "minutes"),
+          end: moment(vacancy.datetime).add(offset + vacancySize, "minutes"),
           color: color,
           offset: offset,
           operators: vacancy.operators,
