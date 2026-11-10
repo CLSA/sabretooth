@@ -85,8 +85,8 @@ cenozoApp.defineModule({
             return identifier;
           },
           title: vacancy.appointments + " of " + vacancy.operators + " booked",
-          start: moment(vacancy.datetime).add(offset, "minutes"),
-          end: moment(vacancy.datetime).add(offset + vacancySize, "minutes"),
+          start: moment(vacancy.datetime).subtract(offset, "minutes"),
+          end: moment(vacancy.datetime).subtract(offset, "minutes").add(vacancySize, "minutes"),
           color: color,
           offset: offset,
           operators: vacancy.operators,
