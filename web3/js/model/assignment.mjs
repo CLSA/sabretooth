@@ -191,7 +191,7 @@ class CN_element_script_control extends CN_element_card {
 
     const proxy_interview = CN_session.get("setting", "proxy");
     if (this.#withdrawn || (this.#proxy != proxy_interview)) {
-      body_el.querySelector("div[name=interface]").classList.add("d-none");
+      this.constructor.hide(body_el.querySelector("div[name=interface]"));
       body_el.querySelector("span[name=reason]").innerHTML = (
         this.#withdrawn ?
         "they have withdrawn from the study" :
@@ -199,10 +199,10 @@ class CN_element_script_control extends CN_element_card {
         "they are not ready for the proxy system" :
         "a proxy is required for the interview"
       );
-      body_el.querySelector("div[name=blocked]").classList.remove("d-none");
+      this.constructor.show(body_el.querySelector("div[name=blocked]"));
     } else {
-      body_el.querySelector("div[name=blocked]").classList.add("d-none");
-      body_el.querySelector("div[name=interface]").classList.remove("d-none");
+      this.constructor.hide(body_el.querySelector("div[name=blocked]"));
+      this.constructor.show(body_el.querySelector("div[name=interface]"));
 
       this.#active_script_form_input.update();
       this.#active_script_form_input.set_value(this.#active_script_id);
@@ -219,15 +219,9 @@ class CN_element_script_control extends CN_element_card {
       repeated_el.innerHTML = "Loading...";
       description_el.innerHTML = "Loading...";
 
-      if (active_script && active_script.supporting) {
-        started_datetime_el.parentElement.classList.add("d-none");
-        finished_datetime_el.parentElement.classList.add("d-none");
-        repeated_el.parentElement.classList.add("d-none");
-      } else {
-        started_datetime_el.parentElement.classList.remove("d-none");
-        finished_datetime_el.parentElement.classList.remove("d-none");
-        repeated_el.parentElement.classList.remove("d-none");
-      }
+      this.constructor.set_hidden(started_datetime_el, active_script && active_script.supporting);
+      this.constructor.set_hidden(finished_datetime_el, active_script && active_script.supporting);
+      this.constructor.set_hidden(repeated_el, active_script && active_script.supporting);
 
       if (active_script) {
         if (!active_script.supporting) {
@@ -412,12 +406,13 @@ class CN_element_script_control extends CN_element_card {
 
     // add a notice for when the participant is withdrawn or not ready for a proxy interview
     body_el.append(this.constructor.html(`
-      <div name="blocked" class="text-danger d-none">
+      <div name="blocked" class="text-danger">
         <i class="bi bi-exclamation-triangle-fill"></i>
         You may not launch any scripts for this participant since
         <span name="reason"></span>.
       </div>
     `));
+    this.constructor.hide(body_el);
 
     return el;
   }
@@ -825,11 +820,11 @@ export class CN_control_assignment extends CN_action_list {
     if (!this.#no_assignment_body_el) return;
 
     if (null == this.#assignment) {
-      this.#no_assignment_body_el.classList.remove("d-none");
-      this.#assignment_body_el.classList.add("d-none");
-      this.#no_assignment_footer_el.classList.remove("d-none");
-      this.#assignment_footer_el.classList.add("d-none");
-      this.#script_control_el.get_element().classList.add("d-none");
+      this.constructor.show(this.#no_assignment_body_el);
+      this.constructor.hide(this.#assignment_body_el);
+      this.constructor.show(this.#no_assignment_footer_el);
+      this.constructor.hide(this.#assignment_footer_el);
+      this.constructor.hide(this.#script_control_el.get_element());
       super.update_element();
       return;
     }
@@ -872,10 +867,10 @@ export class CN_control_assignment extends CN_action_list {
     // so it has to be shown or hidden here.
     const method_el = details_el.querySelector("div[name=method]");
     if (this.#assignment.web_version) {
-      method_el.parentElement.classList.remove("d-none");
+      this.constructor.show(method_el.parentElement);
       details_el.querySelector("div[name=method]").innerHTML = this.#assignment.interview_method;
     } else {
-      method_el.parentElement.classList.add("d-none");
+      this.constructor.hide(method_el.parentElement);
     }
 
     // fill in the active assignment properties
@@ -931,11 +926,11 @@ export class CN_control_assignment extends CN_action_list {
     call_el.innerHTML = this.#assignment.active_phone_call ? "End Call" : "Call";
     this.constructor.set_disabled(end_assignment_el, null != this.#assignment.active_phone_call);
     if (0 == this.#phone_list.length) {
-      if (proxy) this.constructor.set_disabled(use_tz_el, true);
-      if (null == this.#assignment.active_phone_call) this.constructor.set_disabled(call_el, true);
+      if (proxy) this.constructor.disable(use_tz_el);
+      if (null == this.#assignment.active_phone_call) this.constructor.disable(call_el);
     } else {
-      if (proxy) this.constructor.set_disabled(use_tz_el, false);
-      this.constructor.set_disabled(call_el, false);
+      if (proxy) this.constructor.enable(use_tz_el);
+      this.constructor.enable(call_el);
 
       // when in proxy mode populate the use timezone dropdown with each alternate and the participant
       if (proxy) {
@@ -998,16 +993,16 @@ export class CN_control_assignment extends CN_action_list {
       }
     }
 
-    this.#assignment_body_el.classList.remove("d-none");
-    this.#no_assignment_body_el.classList.add("d-none");
-    this.#assignment_footer_el.classList.remove("d-none");
-    this.#no_assignment_footer_el.classList.add("d-none");
+    this.constructor.show(this.#assignment_body_el);
+    this.constructor.hide(this.#no_assignment_body_el);
+    this.constructor.show(this.#assignment_footer_el);
+    this.constructor.hide(this.#no_assignment_footer_el);
 
     if (this.#assignment.active_phone_call) {
       this.#script_control_el.update_element();
-      this.#script_control_el.get_element().classList.remove("d-none");
+      this.constructor.show(this.#script_control_el.get_element());
     } else {
-      this.#script_control_el.get_element().classList.add("d-none");
+      this.constructor.hide(this.#script_control_el.get_element());
     }
   }
 
@@ -1035,7 +1030,7 @@ export class CN_control_assignment extends CN_action_list {
     super.show_placeholder();
 
     // hide the script launcher while loading
-    this.#script_control_el.get_element().classList.add("d-none");
+    this.constructor.hide(this.#script_control_el.get_element());
   }
 
   /**
@@ -1060,7 +1055,7 @@ export class CN_control_assignment extends CN_action_list {
    */
   _create_body_element() {
     this.#no_assignment_body_el = super._create_body_element();
-    this.#no_assignment_body_el.classList.add("d-none");
+    this.constructor.hide(this.#no_assignment_body_el);
 
     this.#assignment_body_el = this.constructor.html(`
       <div>
@@ -1161,7 +1156,7 @@ export class CN_control_assignment extends CN_action_list {
    */
   _create_footer_element() {
     this.#no_assignment_footer_el = super._create_footer_element();
-    this.#no_assignment_footer_el.classList.add("d-none");
+    this.constructor.hide(this.#no_assignment_footer_el);
 
     this.#assignment_footer_el = this.constructor.html(`
       <div>

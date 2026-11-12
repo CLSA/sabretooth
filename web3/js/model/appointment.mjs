@@ -808,11 +808,10 @@ export class CN_view_appointment extends CN_action_view {
 
     // only include the cancel button when the appointment is assignable or missed
     const cancel_btn_el = this.get_footer_element().querySelector("button[name=cancel]");
-    if (["assignable", "missed"].includes(this.get_property_value("state"))) {
-      cancel_btn_el.classList.remove("d-none");
-    } else {
-      cancel_btn_el.classList.add("d-none");
-    }
+    this.constructor.set_hidden(
+      cancel_btn_el,
+      !["assignable", "missed"].includes(this.get_property_value("state"))
+    );
 
     const notes_btn_el = this.get_footer_element().querySelector("button[name=notes]");
     notes_btn_el.innerHTML = `Notes (${this.get_property_value("note_count")})`;

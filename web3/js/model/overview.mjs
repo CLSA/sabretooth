@@ -29,11 +29,7 @@ export class CN_view_overview extends classes.CN_view_overview {
     super.update_element();
 
     const study_div_el = this.get_element().querySelector("div[name=study]");
-    if ("progress" == this.get_record().name) {
-      study_div_el.classList.remove("d-none");
-    } else {
-      study_div_el.classList.add("d-none");
-    }
+    this.constructor.set_hidden(study_div_el, "progress" != this.get_record().name);
   }
 
   /**
@@ -42,7 +38,8 @@ export class CN_view_overview extends classes.CN_view_overview {
   _create_element() {
     const el = super._create_element();
 
-    const row_el = this.constructor.html('<div name="study" class="d-none d-flex mx-1 my-2"></div>');
+    const row_el = this.constructor.html('<div name="study" class="d-flex mx-1 my-2"></div>');
+    this.constructor.hide(row_el);
     CN_element_label.append(row_el, { for: "study_id", value: "Restrict to Study", class: "me-3" });
     CN_input_enum.append(row_el, {
       id: "study_id",

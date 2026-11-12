@@ -221,7 +221,7 @@ export class CN_mass_method_qnaire extends CN_base_action {
       summary_el.innerHTML = "";
       const selected_participants = this.#participant_selection.get_identifier_list().length;
       if (0 < selected_participants) {
-        confirm_el.classList.remove("d-none");
+        this.constructor.show(confirm_el);
         confirm_el.querySelector("div.card-body").innerHTML = `
           You have selected a total of ${selected_participants}
           participant${1 == selected_participants ? "" : "s"} to change the interviewing method for.
@@ -229,7 +229,7 @@ export class CN_mass_method_qnaire extends CN_base_action {
           or you may make changes to the participant selection list above.
         `;
       } else {
-        confirm_el.classList.add("d-none");
+        this.constructor.hide(confirm_el);
         confirm_el.querySelector("div.card-body").innerHTML = "";
       }
     });
@@ -265,11 +265,10 @@ export class CN_view_qnaire extends CN_action_view {
     // show or hide mass-method button based on whether this is a Pine-based qnaire
     const mass_method_btn_el = this.get_footer_element().querySelector("button[name=mass-method]");
     if (mass_method_btn_el) {
-      if (this.get_model().allow_edit() && this.get_property_value("pine_qnaire_id")) {
-        mass_method_btn_el.classList.remove("d-none");
-      } else {
-        mass_method_btn_el.classList.add("d-none");
-      }
+      this.constructor.set_hidden(
+        mass_method_btn_el,
+        !this.get_model().allow_edit() || !this.get_property_value("pine_qnaire_id")
+      );
     }
   }
 
@@ -282,10 +281,11 @@ export class CN_view_qnaire extends CN_action_view {
 
     // add the mass interview method action
     const mass_method_btn_el = this.constructor.html(`
-      <button name="mass-method" type="button" class="btn btn-light btn-outline-primary d-none">
+      <button name="mass-method" type="button" class="btn btn-light btn-outline-primary">
         Mass Interview Method
       </button>
     `);
+    this.constructor.hide(mass_method_btn_el);
     mass_method_btn_el.addEventListener("click", async () => {
       await CN_session.navigate_to(
         this.get_model().get_view_url().replace(/qnaire\/view/, "qnaire/mass_method")
