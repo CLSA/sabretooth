@@ -1,3 +1,4 @@
+const classes = await import(`${CENOZO_URL}/js/model/assignment.mjs`);
 const { CN_action_list } = await import(`${CENOZO_URL}/js/action/list.mjs`);
 const { CN_api } = await import(`${CENOZO_URL}/js/api.mjs`);
 const { CN_common } = await import(`${CENOZO_URL}/js/common.mjs`);
@@ -10,7 +11,6 @@ const { CN_modal_message } = await import(`${CENOZO_URL}/js/modal/message.mjs`);
 const { CN_script_launcher } = await import(`${CENOZO_URL}/js/script_launcher.mjs`);
 const { CN_session } = await import(`${CENOZO_URL}/js/session.mjs`);
 const { CN_voip } = await import(`${CENOZO_URL}/js/voip.mjs`);
-const classes = await import(`${CENOZO_URL}/js/model/assignment.mjs`);
 
 export class CN_model_assignment extends classes.CN_model_assignment {
   /**

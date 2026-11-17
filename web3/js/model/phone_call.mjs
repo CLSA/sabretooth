@@ -1,6 +1,6 @@
+const classes = await import(`${CENOZO_URL}/js/model/phone_call.mjs`);
 const { CN_common } = await import(`${CENOZO_URL}/js/common.mjs`);
 const { CN_session } = await import(`${CENOZO_URL}/js/session.mjs`);
-const classes = await import(`${CENOZO_URL}/js/model/phone_call.mjs`);
 
 export class CN_model_phone_call extends classes.CN_model_phone_call {
   /**

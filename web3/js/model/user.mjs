@@ -1,6 +1,6 @@
+const classes = await import(`${CENOZO_URL}/js/model/user.mjs`);
 const { CN_action_view } = await import(`${CENOZO_URL}/js/action/view.mjs`);
 const { CN_session } = await import(`${CENOZO_URL}/js/session.mjs`);
-const classes = await import(`${CENOZO_URL}/js/model/user.mjs`);
 
 export class CN_model_user extends classes.CN_model_user {
   /**
