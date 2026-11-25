@@ -10,7 +10,7 @@ export class CN_list_site extends base_list_class {
    */
   async get_text(type) {
     const text = await super.get_text(type);
-    return "header" == type && "qnaire" == CN_session.get_leaf_model().get_name() ? `Disabled ${text}` : text;
+    return "header" == type && "qnaire" == CN_session.get_leaf_name() ? `Disabled ${text}` : text;
   }
 }
 

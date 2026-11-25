@@ -17,7 +17,7 @@ export class CN_model_assignment extends classes.CN_model_assignment {
    * Extend parent method
    */
   async clone_columns() {
-    if ("control" == CN_session.get_leaf_model().get_action_name()) {
+    if ("control" == CN_session.get_leaf_action_name()) {
       const columns = {
         rank: { title: "Rank", column: "queue.rank", type: "rank", max_rank: 11 },
         queue: { title: "Queue", column: "queue.name" },
@@ -96,7 +96,7 @@ export class CN_model_assignment extends classes.CN_model_assignment {
    */
   get_default_order() {
     return (
-      "control" == CN_session.get_leaf_model().get_action_name() ?
+      "control" == CN_session.get_leaf_action_name() ?
       { column: "rank", desc: false } :
       super.get_default_order()
     );

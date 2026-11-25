@@ -35,7 +35,7 @@ export class CN_model_appointment extends CN_base_model {
         language: {
           column: "language.name",
           title: "Language",
-          is_hidden: () => "appointment" != CN_session.get_leaf_model().get_name(),
+          is_hidden: () => "appointment" != CN_session.get_leaf_name(),
         },
         phone: { column: "phone.name", title: "Phone Number" },
         user: { column: "user.name", title: "Reserved For" },

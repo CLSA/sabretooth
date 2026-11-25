@@ -11,7 +11,7 @@ export class CN_model_participant extends classes.CN_model_participant {
     const columns = await super.clone_columns();
 
     // add qnaire and language columns to the queue's participant list
-    if ("queue" == CN_session.get_leaf_model().get_name()) {
+    if ("queue" == CN_session.get_leaf_name()) {
       CN_common.insert_property(
         columns,
         "before",

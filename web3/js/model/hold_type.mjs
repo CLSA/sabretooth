@@ -9,6 +9,6 @@ export class CN_list_hold_type extends base_list_class {
    */
   async get_text(type) {
     const text = await super.get_text(type);
-    return "header" == type && "qnaire" == CN_session.get_leaf_model().get_name() ? `Overridden ${text}` : text;
+    return "header" == type && "qnaire" == CN_session.get_leaf_name() ? `Overridden ${text}` : text;
   }
 }

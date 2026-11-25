@@ -74,7 +74,7 @@ export class CN_list_qnaire extends CN_action_list {
   async get_text(type) {
     const text = await super.get_text(type);
     return (
-      "header" == type && ["site", "stratum"].includes(CN_session.get_leaf_model().get_name()) ?
+      "header" == type && ["site", "stratum"].includes(CN_session.get_leaf_name()) ?
       `Disabled ${text}` :
       text
     );
